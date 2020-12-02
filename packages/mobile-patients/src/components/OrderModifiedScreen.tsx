@@ -16,6 +16,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   orderIDViewStyle: {
@@ -285,7 +286,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
           >
             {item.updatedprice && (
               <Text style={styles.mrpQtyOrgValueTextStyle}>
-                {'Rs. ' + (item.originalPrice! || 0).toFixed(2)}
+                {`${string.common.Rs} ` + (item.originalPrice! || 0).toFixed(2)}
               </Text>
             )}
             {item.updatedquantity && (
@@ -302,7 +303,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
           >
             {item.updatedprice && (
               <Text style={styles.mrpQtyRevValueTextStyle}>
-                {'Rs.' + (item.mrp! || 0).toFixed(2)}
+                {`${string.common.Rs}` + (item.mrp! || 0).toFixed(2)}
               </Text>
             )}
             {item.updatedquantity && (

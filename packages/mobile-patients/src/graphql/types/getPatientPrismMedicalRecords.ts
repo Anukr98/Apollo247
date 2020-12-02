@@ -334,6 +334,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
   suggestedByDoctor: string | null;
   nature: HealthRestrictionNature | null;
   source: string | null;
+  notes: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions {

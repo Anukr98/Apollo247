@@ -11,11 +11,12 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 export interface CartItemsListProps {
   screen: 'cart' | 'summary';
   onPressProduct?: (item: ShoppingCartItem) => void;
+  setloading?: (value: boolean) => void;
 }
 
 export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem } = useShoppingCart();
-  const { screen, onPressProduct } = props;
+  const { screen, onPressProduct, setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
 
   const renderCartItemsHeader = () => {

@@ -2,90 +2,42 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  ArrowRight,
-  CouponIcon,
-  CrossPopup,
-  GreenTickIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  BOOK_APPOINTMENT,
-  BOOK_FOLLOWUP_APPOINTMENT,
-  MAKE_APPOINTMENT_PAYMENT,
-  VALIDATE_CONSULT_COUPON,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
-import {
-  BookFollowUpAppointment,
-  BookFollowUpAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
-import {
   getDoctorDetailsById_getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
-  AppointmentType,
-  APPOINTMENT_TYPE,
-  BookAppointmentInput,
-  BOOKINGSOURCE,
   ConsultMode,
-  DEVICETYPE,
   DoctorType,
+  BookAppointmentInput,
+  APPOINTMENT_TYPE,
+  BOOKINGSOURCE,
+  DEVICETYPE,
+  PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import {
-  ValidateConsultCoupon,
-  ValidateConsultCouponVariables,
-} from '@aph/mobile-patients/src/graphql/types/ValidateConsultCoupon';
-import {
-  validateConsultCoupon,
-  userSpecificCoupon,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  getNextAvailableSlots,
-  saveSearchDoctor,
-  saveSearchSpeciality,
-  whatsAppUpdateAPICall,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import {
-  dataSavedUserID,
-  g,
-  getNetStatus,
-  handleGraphQlError,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
-  postWebEngageEvent,
-  postWEGWhatsAppEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import AsyncStorage from '@react-native-community/async-storage';
-import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
   Dimensions,
   Linking,
   Platform,
@@ -96,12 +48,11 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
-import { FirebaseEventName } from '../../helpers/firebaseEvents';
+import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -109,7 +60,6 @@ const styles = StyleSheet.create({
   mainViewStyle: {
     backgroundColor: '#f7f8f5',
     marginTop: 16,
-    // width: width - 40,
     width: width - 40,
     height: 'auto',
     maxHeight: height - 98,
@@ -120,9 +70,7 @@ const styles = StyleSheet.create({
 });
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
-  // dispalyoverlay: boolean;
   setdisplayoverlay: (arg0: boolean) => void;
-  // setdisplayoverlay: () => void;
   patientId: string;
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
@@ -137,9 +85,11 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   callSaveSearch: string;
   mainContainerStyle?: StyleProp<ViewStyle>;
   scrollToSlot?: boolean;
+  isDoctorsOfTheHourStatus?: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
+  const { circleSubscriptionId } = useShoppingCart();
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? props.availableMode === ConsultMode.BOTH
@@ -175,16 +125,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
-  const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const { getPatientApiCall } = useAuth();
+  const circleDoctorDetails = calculateCircleDoctorPricing(props.doctor);
+  const {
+    isCircleDoctor,
+    onlineConsultSlashedPrice,
+    onlineConsultMRPPrice,
+    physicalConsultMRPPrice,
+    physicalConsultSlashedPrice,
+  } = circleDoctorDetails;
 
-  const renderErrorPopup = (desc: string) =>
-    showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: `${desc || ''}`.trim(),
-    });
+  const actualPrice = isCircleDoctor
+    ? selectedTab === 'Consult Online'
+      ? circleSubscriptionId
+        ? onlineConsultSlashedPrice
+        : onlineConsultMRPPrice
+      : circleSubscriptionId
+      ? physicalConsultSlashedPrice
+      : physicalConsultMRPPrice
+    : Number(doctorFees);
 
   const todayDate = new Date().toDateString().split('T')[0];
   const scrollToSlots = (top: number = 400) => {
@@ -221,209 +181,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       });
   }, []);
 
-  useEffect(() => {
-    if (selectedTimeSlot != '') {
-      fetchUserSpecificCoupon();
-    }
-  }, [selectedTimeSlot]);
-
-  const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
-      .then((resp: any) => {
-        if (resp.data.errorCode == 0) {
-          let couponList = resp.data.response;
-          if (typeof couponList != null && couponList.length) {
-            const coupon = couponList[0].coupon;
-            validateUserSpecificCoupon(coupon);
-          }
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('fetchingUserSpecificCoupon', error);
-      });
-  };
-
-  async function validateUserSpecificCoupon(coupon: string) {
-    try {
-      await validateCoupon(coupon, true);
-    } catch (error) {
-      setCoupon('');
-      setDoctorDiscountedFees(0);
-      setshowSpinner(false);
-      return;
-    }
-  }
-
-  const handleOrderSuccess = (doctorName: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-            params: {
-              isFreeConsult: true,
-              doctorName: doctorName,
-            },
-          }),
-        ],
-      })
-    );
-  };
-
-  const getConsultationBookedEventAttributes = (time: string, id: string) => {
-    const localTimeSlot = moment(new Date(time));
-    let date = new Date(time);
-    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
-    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
-      name: g(props.doctor, 'fullName')!,
-      specialisation: g(props.doctor, 'specialty', 'name')!,
-      category: g(props.doctor, 'doctorType')!, // send doctorType
-      // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Customer ID': g(currentPatient, 'id'),
-      'Consult ID': id,
-      'Speciality ID': g(props.doctor, 'specialty', 'id')!,
-      'Consult Date Time': date,
-      'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
-      'Hospital Name':
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}`
-          : '',
-      'Hospital City':
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.city}`
-          : '',
-      'Doctor ID': g(props.doctor, 'id')!,
-      'Doctor Name': g(props.doctor, 'fullName')!,
-      'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
-      af_revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
-      af_currency: 'INR',
-    };
-    return eventAttributes;
-  };
-
-  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
-    const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
-      'customer id': g(currentPatient, 'id'),
-      'doctor id': g(props.doctor, 'id')!,
-      'specialty id': g(props.doctor, 'specialty', 'id')!,
-      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
-      af_revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
-      af_currency: 'INR',
-      'consult id': id,
-      'coupon applied': coupon ? true : false,
-    };
-    return eventAttributes;
-  };
-  // const getConsultationBookedFirebaseEventAttributes = () => {
-  //   const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-  //     type: 'Consultation',
-  //   };
-  //   return eventAttributes;
-  // };
-
-  const makePayment = (
-    id: string,
-    amountPaid: number,
-    paymentDateTime: string,
-    displayID: string
-  ) => {
-    client
-      .mutate<makeAppointmentPayment, makeAppointmentPaymentVariables>({
-        mutation: MAKE_APPOINTMENT_PAYMENT,
-        variables: {
-          paymentInput: {
-            amountPaid: amountPaid,
-            paymentRefId: '',
-            paymentStatus: 'TXN_SUCCESS',
-            paymentDateTime: paymentDateTime,
-            responseCode: coupon,
-            responseMessage: 'Coupon applied',
-            bankTxnId: '',
-            orderId: id,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
-        let eventAttributes = getConsultationBookedEventAttributes(
-          paymentDateTime,
-          g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-        );
-        eventAttributes['Display ID'] = displayID;
-        postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
-        postAppsFlyerEvent(
-          AppsFlyerEventName.CONSULTATION_BOOKED,
-          getConsultationBookedAppsFlyerEventAttributes(
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-          )
-        );
-        try {
-          // postFirebaseEvent(
-          //   FirebaseEventName.IN_APP_PURCHASE,
-          //   getConsultationBookedFirebaseEventAttributes()
-          // );
-        } catch (error) {}
-
-        handleOrderSuccess(`${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`);
-      })
-      .catch((e) => {
-        // const error = g(e, 'graphQLErrors', '0', 'message');
-        handleGraphQlError(e);
-      })
-      .finally(() => setshowSpinner(false));
-  };
-
-  const storeAppointmentId = async (appointmentId: string) => {
-    if (!appointmentId) return;
-    try {
-      const ids = await AsyncStorage.getItem('APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE');
-      const appointmentIds: string[] = ids ? JSON.parse(ids || '[]') : [];
-      AsyncStorage.setItem(
-        'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
-        JSON.stringify([...appointmentIds, appointmentId])
-      );
-    } catch (error) {
-      console.log({ error });
-    }
-  };
-
-  const onSubmitBookAppointment = async () => {
+  const onPressCheckout = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
-    // again check coupon is valid or not
-    if (coupon) {
-      try {
-        // await validateAndApplyCoupon(coupon, isConsultOnline, true);
-        setshowSpinner(true);
-        await validateCoupon(coupon, true);
-        setshowSpinner(false);
-      } catch (error) {
-        setCoupon('');
-        setDoctorDiscountedFees(0);
-        setshowSpinner(false);
-        Alert.alert(
-          'Uh oh.. :(',
-          typeof error == 'string' && error
-            ? error
-            : 'Oops! seems like we are having an issue with coupon code. Please try again.'
-        );
-        return;
-      }
-    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isConsultOnline &&
@@ -453,225 +212,40 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       appointmentType:
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
-      couponCode: coupon ? coupon : null,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       ...externalConnectParam,
-      actualAmount: Number(doctorFees),
-      discountedAmount: doctorDiscountedFees,
+      actualAmount: actualPrice,
       pinCode: locationDetails && locationDetails.pincode,
-    };
-    console.log(appointmentInput, 'input');
-    const price = coupon ? doctorDiscountedFees : Number(doctorFees);
-    //   VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
-    //   Number(VirtualConsultationFee) > 0
-    //     ? VirtualConsultationFee
-    //     : props.doctor!.onlineConsultationFees;
-
-    if (price == 0) {
-      setshowSpinner(true);
-      client
-        .mutate<bookAppointment>({
-          mutation: BOOK_APPOINTMENT,
-          variables: {
-            bookAppointment: appointmentInput,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-          if (props.consultedWithDoctorBefore) {
-            storeAppointmentId(g(apptmt, 'id')!);
-          }
-          // If amount is zero don't redirect to PG
-
-          try {
-            if (props.callSaveSearch !== 'true') {
-              saveSearchDoctor(client, props.doctor ? props.doctor.id : '', props.patientId);
-
-              saveSearchSpeciality(
-                client,
-                props.doctor && props.doctor.specialty && props.doctor.specialty.id,
-                props.patientId
-              );
+      subscriptionDetails:
+        circleSubscriptionId && isCircleDoctor
+          ? {
+              userSubscriptionId: circleSubscriptionId,
+              plan: PLAN.CARE_PLAN,
             }
-          } catch (error) {}
-          setshowSpinner(false);
-          makePayment(
-            g(apptmt, 'id')!,
-            Number(price),
-            g(apptmt, 'appointmentDateTime'),
-            g(apptmt, 'displayId')!
-          );
-        })
-        .catch((error) => {
-          CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-          setshowSpinner(false);
-          let message = '';
-          try {
-            message = error.message.split(':')[1].trim();
-          } catch (error) {
-            CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
-          }
-          if (message == 'APPOINTMENT_EXIST_ERROR') {
-            renderErrorPopup(
-              `Oops ! The selected slot is unavailable. Please choose a different one`
-            );
-          } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
-            renderErrorPopup(
-              `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
-            );
-          } else if (
-            message === 'OUT_OF_CONSULT_HOURS' ||
-            message === 'DOCTOR_SLOT_BLOCKED' ||
-            message === 'APPOINTMENT_BOOK_DATE_ERROR'
-          ) {
-            renderErrorPopup(
-              `Slot you are trying to book is no longer available. Please try a different slot.`
-            );
-          } else {
-            renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-          }
-        });
-    } else {
-      props.navigation.navigate(AppRoutes.ConsultCheckout, {
-        doctor: props.doctor,
-        tabs: tabs,
-        selectedTab: selectedTab,
-        doctorName: `${g(props.doctor, 'fullName')}`,
-        price: coupon ? doctorDiscountedFees : Number(doctorFees),
-        appointmentInput: appointmentInput,
-        couponApplied: coupon == '' ? false : true,
-        consultedWithDoctorBefore: props.consultedWithDoctorBefore,
-        patientId: props.patientId,
-        callSaveSearch: props.callSaveSearch,
-      });
-    }
-  };
-
-  const postWebEngagePayButtonClickedEvent = () => {
-    const timeSlot =
-      tabs[0].title === selectedTab &&
-      isConsultOnline &&
-      availableInMin! <= 60 &&
-      0 < availableInMin!
-        ? nextAvailableSlot
-        : selectedTimeSlot;
-    const localTimeSlot = new Date(timeSlot);
-    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PAY_BUTTON_CLICKED] = {
-      'Consult Date Time': localTimeSlot,
-      Amount: Number(doctorFees),
-      'Doctor Name': g(props.doctor, 'fullName')!,
-      'Doctor City': g(props.doctor, 'city')!,
-      'Type of Doctor': g(props.doctor, 'doctorType')!,
-      'Doctor Specialty': g(props.doctor, 'specialty', 'name')!,
-      // 'Appointment Date': localTimeSlot.format('DD-MM-YYYY'),
-      // 'Appointment Time': localTimeSlot.format('hh:mm A'),
-      'Actual Price': Number(doctorFees),
-      'Discount used ?': !!coupon,
-      'Discount coupon': coupon,
-      'Discount Amount': coupon ? Number(doctorFees) - Number(doctorDiscountedFees) : 0,
-      'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
-      'Customer ID': g(currentPatient, 'id'),
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Patient UHID': g(currentPatient, 'uhid'),
-      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
-      'Doctor ID': g(props.doctor, 'id')!,
-      'Speciality ID': g(props.doctor, 'specialty', 'id')!,
-      'Hospital Name':
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}`
-          : '',
-      'Hospital City':
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.city}`
-          : '',
+          : null,
     };
-    postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
-    postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
-  };
 
-  const whatsappAPICalled = () => {
-    if (!g(currentPatient, 'whatsAppConsult')) {
-      postWEGWhatsAppEvent(whatsAppUpdate);
-      callWhatsOptAPICall(whatsAppUpdate);
-    }
-  };
-
-  const onPressPay = () => {
-    // Pay Button Clicked	event
-    postWebEngagePayButtonClickedEvent();
-    // callPermissions();
-    whatsappAPICalled();
-    CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
-    CommonLogEvent(
-      AppRoutes.DoctorDetails,
-      `PAY Rs. ${
-        tabs[0].title === selectedTab
-          ? props.doctor!.onlineConsultationFees
-          : props.doctor!.physicalConsultationFees
-      }`
-    );
-    getNetStatus()
-      .then((status) => {
-        // setdisablePay(true);
-        if (status) {
-          if (props.FollowUp == false) {
-            const timeSlot =
-              tabs[0].title === selectedTab &&
-              isConsultOnline &&
-              availableInMin! <= 60 &&
-              0 < availableInMin!
-                ? nextAvailableSlot
-                : selectedTimeSlot;
-            const input = {
-              patientId: props.patientId,
-              doctorId: props.doctorId,
-              appointmentDateTime: timeSlot,
-              appointmentType: APPOINTMENT_TYPE.ONLINE,
-              hospitalId: '',
-              followUpParentId: props.appointmentId,
-            };
-            console.log(input, 'input');
-            return;
-
-            client
-              .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
-                mutation: BOOK_FOLLOWUP_APPOINTMENT,
-                variables: {
-                  followUpAppointmentInput: input,
-                },
-                fetchPolicy: 'no-cache',
-              })
-              .then((_data: any) => {
-                props.navigation.navigate(AppRoutes.Consult);
-              })
-              .catch((e: any) => {
-                CommonBugFender('ConsultOverlay_onPressPay', e);
-                handleGraphQlError(e);
-              });
-          } else {
-            onSubmitBookAppointment();
-          }
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
-      });
+    props.navigation.navigate(AppRoutes.PaymentCheckout, {
+      doctor: props.doctor,
+      tabs: tabs,
+      selectedTab: selectedTab,
+      price: actualPrice,
+      appointmentInput: appointmentInput,
+      couponApplied: coupon == '' ? false : true,
+      consultedWithDoctorBefore: props.consultedWithDoctorBefore,
+      patientId: props.patientId,
+      callSaveSearch: props.callSaveSearch,
+      availableInMin: availableInMin,
+      nextAvailableSlot: nextAvailableSlot,
+      selectedTimeSlot: selectedTimeSlot,
+      followUp: props.FollowUp,
+      whatsAppUpdate: whatsAppUpdate,
+      isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
+    });
   };
 
   const renderBottomButton = () => {
-    const buttonText = `PAY Rs. ${(coupon ? doctorDiscountedFees : Number(doctorFees)).toFixed(2)}`;
     return (
       <StickyBottomComponent
         defaultBG
@@ -682,7 +256,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={buttonText}
+          title={`${string.common.proceedToCheckout}`}
           disabled={
             disablePay
               ? true
@@ -695,63 +269,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               ? true
               : false
           }
-          onPress={onPressPay}
+          onPress={() => {
+            onPressCheckout();
+          }}
         />
-        {/* <Button
-          title={
-            tabs[0].title === selectedTab ? (
-              <Text>
-                PAY{' '}
-                {Number(VirtualConsultationFee) <= 0 ||
-                VirtualConsultationFee === props.doctor!.onlineConsultationFees ? (
-                  <Text>{`Rs. ${props.doctor!.onlineConsultationFees}`}</Text>
-                ) : (
-                  <>
-                    <Text
-                      style={{
-                        textDecorationLine: 'line-through',
-                        textDecorationStyle: 'solid',
-                      }}
-                    >
-                      {`(Rs. ${props.doctor!.onlineConsultationFees})`}
-                    </Text>
-                    <Text> Rs. {VirtualConsultationFee}</Text>
-                  </>
-                )}
-                ||* {VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
-                  Number(VirtualConsultationFee) > 0 && (
-                    <>
-                      <Text
-                        style={{
-                          textDecorationLine: 'line-through',
-                          textDecorationStyle: 'solid',
-                        }}
-                      >
-                        {`(Rs. ${props.doctor!.onlineConsultationFees})`}
-                      </Text>
-                      <Text> </Text>
-                    </>
-                  )}
-                Rs. {VirtualConsultationFee} *||
-              </Text>
-            ) : (
-              `PAY Rs. ${props.doctor!.physicalConsultationFees}`
-            )
-          }
-          disabled={
-            disablePay
-              ? true
-              : tabs[0].title === selectedTab &&
-                isConsultOnline &&
-                availableInMin! <= 60 &&
-                0 < availableInMin!
-              ? false
-              : selectedTimeSlot === ''
-              ? true
-              : false
-          }
-          onPress={onPressPay}
-        /> */}
       </StickyBottomComponent>
     );
   };
@@ -777,258 +298,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     );
   };
 
-  const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      setNotificationAlert(true);
-      try {
-        const authorized = await firebase.messaging().requestPermission();
-        console.log('authorized', authorized);
-
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
-      }
-    }
-  };
-
-  const validateAndApplyCoupon = (
-    couponValue: string,
-    isOnlineConsult: boolean,
-    dontFireEvent?: boolean
-  ) => {
-    const timeSlot =
-      tabs[0].title === selectedTab &&
-      isConsultOnline &&
-      availableInMin! <= 60 &&
-      0 < availableInMin!
-        ? nextAvailableSlot
-        : selectedTimeSlot;
-
-    return new Promise((res, rej) => {
-      client
-        .mutate<ValidateConsultCoupon, ValidateConsultCouponVariables>({
-          mutation: VALIDATE_CONSULT_COUPON,
-          variables: {
-            doctorId: props.doctorId,
-            code: couponValue,
-            consultType:
-              tabs[0].title === selectedTab ? AppointmentType.ONLINE : AppointmentType.PHYSICAL,
-            appointmentDateTimeInUTC: timeSlot,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          console.log('v-alidateConsultCoupo-n');
-          console.log(JSON.stringify(data!.validateConsultCoupon));
-          console.log('\n\n\n\n\n\n\n');
-          if (g(data, 'validateConsultCoupon', 'validityStatus')) {
-            const revisedAmount = g(data, 'validateConsultCoupon', 'revisedAmount')!;
-            setCoupon(couponValue);
-            setDoctorDiscountedFees(Number(revisedAmount));
-            res();
-            if (!dontFireEvent) {
-              const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
-                CouponCode: couponValue,
-                'Discount Amount': Number(doctorFees) - Number(revisedAmount),
-                'Net Amount': Number(revisedAmount),
-                'Coupon Applied': true,
-              };
-              postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
-              if (Number(revisedAmount) == 0) {
-                fireBaseFCM();
-              }
-            }
-          } else {
-            if (!dontFireEvent) {
-              const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
-                CouponCode: couponValue,
-                'Coupon Applied': false,
-              };
-              postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
-            }
-            rej(g(data, 'validateConsultCoupon', 'reasonForInvalidStatus'));
-          }
-        })
-        .catch(rej);
-    });
-  };
-
   const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
     console.log('updateCouponDiscountOnChangeTab isOnlineConsult', isOnlineConsult);
     // this function will reset coupon discount on change in consultation type
     setCoupon('');
     setDoctorDiscountedFees(0);
-  };
-
-  const validateCoupon = (coupon: string, fireEvent?: boolean) => {
-    let packageId = '';
-    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-      packageId =
-        g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
-    }
-    const timeSlot =
-      tabs[0].title === selectedTab &&
-      isConsultOnline &&
-      availableInMin! <= 60 &&
-      0 < availableInMin!
-        ? nextAvailableSlot
-        : selectedTimeSlot;
-
-    let ts = new Date(timeSlot).getTime();
-    console.log(ts);
-    const data = {
-      mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: Number(doctorFees),
-      coupon: coupon,
-      // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
-      pinCode: locationDetails && locationDetails.pincode,
-      consultations: [
-        {
-          hospitalId: g(props.doctor, 'doctorHospital')![0].facility.id,
-          doctorId: g(props.doctor, 'id'),
-          specialityId: g(props.doctor, 'specialty', 'id'),
-          consultationTime: ts, //Unix timestamp“
-          consultationType: selectedTab === 'Consult Online' ? 1 : 0, //Physical 0, Virtual 1,  All -1
-          cost: Number(doctorFees),
-          rescheduling: false,
-        },
-      ],
-      packageId: packageId,
-      email: g(currentPatient, 'emailAddress'),
-    };
-
-    return new Promise((res, rej) => {
-      validateConsultCoupon(data)
-        .then((resp: any) => {
-          if (resp.data.errorCode == 0) {
-            if (resp.data.response.valid) {
-              const revisedAmount =
-                Number(doctorFees) - Number(g(resp, 'data', 'response', 'discount')!);
-              setCoupon(coupon);
-              setDoctorDiscountedFees(revisedAmount);
-              res();
-              if (fireEvent) {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
-                  CouponCode: coupon,
-                  'Discount Amount': Number(g(resp, 'data', 'response', 'discount')!),
-                  'Net Amount': Number(revisedAmount),
-                  'Coupon Applied': true,
-                };
-                postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
-              }
-              if (Number(revisedAmount) == 0) {
-                fireBaseFCM();
-              }
-            } else {
-              rej(resp.data.response.reason);
-              if (fireEvent) {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
-                  CouponCode: coupon,
-                  'Coupon Applied': false,
-                };
-                postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
-              }
-            }
-          } else {
-            rej(resp.data.errorMsg);
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('validatingConsultCoupon', error);
-          console.log(error);
-          rej();
-          renderErrorPopup(`Something went wrong, plaease try again after sometime`);
-        });
-    });
-  };
-
-  const onApplyCoupon = (value: string) => {
-    // return validateAndApplyCoupon(value, isConsultOnline);
-    return validateCoupon(value);
-  };
-
-  const renderApplyCoupon = () => {
-    return (
-      <ListCard
-        container={{
-          ...theme.viewStyles.card(),
-          borderRadius: 0,
-          marginHorizontal: 0,
-          marginTop: 16,
-          backgroundColor: theme.colors.CARD_BG,
-        }}
-        leftIcon={<CouponIcon />}
-        rightIcon={coupon ? <GreenTickIcon /> : <ArrowRight />}
-        title={!coupon ? 'Apply Coupon' : 'Coupon Applied'}
-        onPress={() => {
-          if (!selectedTimeSlot) {
-            Alert.alert('Uh oh.. :(', 'Please select a slot to apply coupon.');
-            return;
-          }
-          props.navigation.navigate(AppRoutes.ApplyConsultCoupon, {
-            coupon: coupon,
-            onApplyCoupon: onApplyCoupon,
-          });
-        }}
-      />
-    );
-  };
-
-  const renderPriceAndDiscount = () => {
-    if (!coupon) return null;
-
-    const localStyles = StyleSheet.create({
-      rowSpaceBetweenStyle: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-      },
-      blueTextStyle: {
-        ...theme.viewStyles.text('M', 16, '#01475b', 1, 24),
-        flex: 1,
-      },
-      blueRightTextStyle: {
-        ...theme.viewStyles.text('M', 16, '#01475b', 1, 24),
-        flex: 0.6,
-        textAlign: 'right',
-      },
-    });
-
-    const total = Number(doctorFees).toFixed(2);
-    const amountToPay = doctorDiscountedFees.toFixed(2);
-    const couponDiscount = (Number(total) - Number(amountToPay)).toFixed(2);
-
-    return (
-      <View style={{ ...theme.viewStyles.card(16, 10, 10, theme.colors.CARD_BG) }}>
-        <View style={localStyles.rowSpaceBetweenStyle}>
-          <Text style={localStyles.blueTextStyle}>Subtotal</Text>
-          <Text style={[localStyles.blueRightTextStyle]}>Rs. {total}</Text>
-        </View>
-        <View style={localStyles.rowSpaceBetweenStyle}>
-          <Text style={localStyles.blueTextStyle}>{`Coupon (${coupon})`}</Text>
-          <Text style={[localStyles.blueRightTextStyle]}>- Rs. {couponDiscount}</Text>
-        </View>
-        <Spearator style={{ marginTop: 16, marginBottom: 10 }} />
-        <View style={localStyles.rowSpaceBetweenStyle}>
-          <Text style={localStyles.blueTextStyle}>To Pay</Text>
-          <Text
-            style={[
-              localStyles.blueRightTextStyle,
-              theme.viewStyles.text('B', 16, '#01475b', 1, 24),
-            ]}
-          >
-            Rs. {amountToPay}
-          </Text>
-        </View>
-      </View>
-    );
   };
 
   const [slotsSelected, setSlotsSelected] = useState<string[]>([]);
@@ -1057,20 +331,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
       setSlotsSelected([...slotsSelected, slot]);
     }
-  };
-
-  const callWhatsOptAPICall = async (optedFor: boolean) => {
-    const userId = await dataSavedUserID('selectedProfileId');
-
-    whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
-      .then(({ data }: any) => {
-        console.log(data, 'whatsAppUpdateAPICall');
-        getPatientApiCall();
-      })
-      .catch((e: any) => {
-        CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
-        console.log('error', e);
-      });
   };
 
   return (
@@ -1182,8 +442,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
-              {renderApplyCoupon()}
-              {renderPriceAndDiscount()}
               {selectedTab === tabs[0].title && renderDisclamer()}
               {!g(currentPatient, 'whatsAppConsult') ? (
                 <WhatsAppStatus

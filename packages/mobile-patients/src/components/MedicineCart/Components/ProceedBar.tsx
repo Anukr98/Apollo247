@@ -1,15 +1,15 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WhiteArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
-import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 export interface ProceedBarProps {
   onPressAddDeliveryAddress?: () => void;
+  onPressSelectDeliveryAddress?: () => void;
   onPressUploadPrescription?: () => void;
   onPressProceedtoPay?: () => void;
   deliveryTime?: string;
@@ -30,6 +30,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
+    onPressSelectDeliveryAddress,
     onPressUploadPrescription,
     onPressProceedtoPay,
     deliveryTime,
@@ -38,14 +39,18 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     screen,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
-  const unServiceable = cartItems.find((item) => item.unserviceable);
+  const unServiceable = !!cartItems.find(
+    ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
+  );
 
   function getTitle() {
     return !deliveryAddressId
-      ? 'ADD DELIVERY ADDRESS'
+      ? addresses?.length
+        ? string.selectDeliveryAddress
+        : string.addDeliveryAddress
       : isPrescriptionRequired()
-      ? 'UPLOAD PRESCRIPTION'
-      : 'PROCEED TO PAY';
+      ? string.uploadPrescription
+      : string.proceedToPay;
   }
 
   function isPrescriptionRequired() {
@@ -57,10 +62,12 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   }
   function onPressButton() {
     return !deliveryAddressId
-      ? onPressAddDeliveryAddress!()
+      ? addresses?.length
+        ? onPressSelectDeliveryAddress?.()
+        : onPressAddDeliveryAddress?.()
       : isPrescriptionRequired()
-      ? onPressUploadPrescription!()
-      : onPressProceedtoPay!();
+      ? onPressUploadPrescription?.()
+      : onPressProceedtoPay?.();
   }
   const renderTotal = () => {
     return (
@@ -101,7 +108,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   const renderTatCard = () => {
-    if (selectedAddress && deliveryTime) {
+    if (selectedAddress && deliveryTime != undefined) {
       return (
         <TatCard
           deliveryTime={deliveryTime}

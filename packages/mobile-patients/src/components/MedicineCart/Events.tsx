@@ -6,8 +6,18 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  g,
+  postAppsFlyerEvent,
+  postWebEngageEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src//helpers/AppsFlyerEvents';
+import {
+  FirebaseEventName,
+  FirebaseEvents,
+} from '@aph/mobile-patients/src//helpers/firebaseEvents';
 
 export function postwebEngageProceedToPayEvent(
   shoppingCart: ShoppingCartContextProps,
@@ -75,6 +85,32 @@ export function PharmacyCartViewedEvent(shoppingCart: ShoppingCartContextProps, 
     eventAttributes['Coupon code used'] = shoppingCart.coupon.coupon;
   }
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_VIEWED, eventAttributes);
+
+  const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_VIEWED] = {
+    TotalItemsInCart: shoppingCart.cartItems.length,
+    SubTotal: shoppingCart.cartTotal,
+    Deliverycharge: shoppingCart.deliveryCharges,
+    TotalDiscount: Number((shoppingCart.couponDiscount + shoppingCart.productDiscount).toFixed(2)),
+    NetAfterDiscount: shoppingCart.grandTotal,
+    PrescriptionNeeded: shoppingCart.uploadPrescriptionRequired,
+    CartItems: shoppingCart.cartItems.map(
+      (item) =>
+        ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          specialPrice: item.specialPrice,
+        } as ShoppingCartItem)
+    ),
+    ServiceArea: 'Pharmacy',
+    CustomerID: id,
+  };
+  if (shoppingCart.coupon) {
+    firebaseAttributes['CouponCodeUsed'] = shoppingCart.coupon.coupon;
+  }
+  postFirebaseEvent(FirebaseEventName.PHARMACY_CART_VIEWED, firebaseAttributes);
 }
 
 export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number) {
@@ -119,6 +155,15 @@ export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id:
     'Product Name': cartItem.name,
   };
   postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
+
+  const firebaseAttributes: FirebaseEvents[FirebaseEventName.ITEMS_REMOVED_FROM_CART] = {
+    ProductID: cartItem.id,
+    CustomerID: id,
+    ProductName: cartItem.name,
+    'No.ofItems': cartItem.quantity,
+  };
+  postFirebaseEvent(FirebaseEventName.ITEMS_REMOVED_FROM_CART, firebaseAttributes);
 }
 
 export function applyCouponClickedEvent(id: string) {
@@ -127,3 +172,32 @@ export function applyCouponClickedEvent(id: string) {
   };
   postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
 }
+
+export function selectDeliveryAddressClickedEvent(id: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED] = {
+    'Customer ID': id,
+  };
+  postWebEngageEvent(
+    WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED,
+    eventAttributes
+  );
+}
+
+export function uploadPrescriptionClickedEvent(id: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED] = {
+    'Customer ID': id,
+  };
+  postWebEngageEvent(WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
+}
+
+export const fireCircleBuyNowEvent = (currentPatient: any) => {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+  postWebEngageEvent(
+    WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP,
+    CircleEventAttributes
+  );
+};

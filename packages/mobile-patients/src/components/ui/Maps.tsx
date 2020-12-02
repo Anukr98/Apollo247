@@ -57,7 +57,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import MapView, { Marker, PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Coordinate, MapEvent, Circle } from 'react-native-maps';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import Geolocation from '@react-native-community/geolocation';
@@ -201,8 +201,15 @@ export interface MapProps
 
 export const Maps: React.FC<MapProps> = (props) => {
   const addressObject = props.navigation.getParam('addressDetails');
-  const [latitude, setLatitude] = useState<number>(0);
-  const [longitude, setLongitude] = useState<number>(0);
+  const [latitude, setLatitude] = useState<number>(addressObject?.latitude!);
+  const [longitude, setLongitude] = useState<number>(addressObject?.longitude!);
+  const [initialAddressLatitude, setInitialAddressLatitude] = useState<number>(
+    addressObject?.latitude!
+  );
+  const [initialAddressLongitude, setInitialAddressLongitude] = useState<number>(
+    addressObject?.longitude!
+  );
+
   const [latitudeDelta, setLatitudeDelta] = useState<number>(0.01);
   const [longitudeDelta, setLongitudeDelta] = useState<number>(0.01);
   const [isMapDragging, setMapDragging] = useState<boolean>(false);
@@ -233,23 +240,23 @@ export const Maps: React.FC<MapProps> = (props) => {
   } = useDiagnosticsCart();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const _map = useRef(null);
+  const _circleRef = useRef(null);
 
   const [region, setRegion] = useState({
-    latitude: addressObject?.latitude,
-    longitude: addressObject?.longitude,
+    latitude: addressObject?.latitude!,
+    longitude: addressObject?.longitude!,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
 
   const client = useApolloClient();
   const [address, setAddress] = useState<string>('');
+  const [mapBoundaries, setMapBoundaries] = useState<any>(null);
 
   /**
    *  call the google api service, which finds lat-long from address
    */
   useEffect(() => {
-    const getLatitude = addressObject?.latitude;
-    const getLongtitude = addressObject?.longitude;
     const getLandmark = addressObject?.landmark || '';
     let address;
     const newAddr = [
@@ -271,6 +278,8 @@ export const Maps: React.FC<MapProps> = (props) => {
       .then(({ data }) => {
         try {
           const latLang = data.results[0].geometry.location || {};
+          setInitialAddressLatitude(latLang.lat);
+          setInitialAddressLongitude(latLang.lng);
           setLatitude(latLang.lat);
           setLongitude(latLang.lng);
           /**added so that, it always picks the one from the address entered.
@@ -288,6 +297,19 @@ export const Maps: React.FC<MapProps> = (props) => {
         }
       })
       .catch();
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS == 'ios') {
+      setTimeout(() => {
+        if (_circleRef.current) {
+          _circleRef?.current?.setNativeProps({
+            fillColor: 'rgba(230,238,255,0.5)',
+            strokeColor: '#1a66ff',
+          });
+        }
+      }, 0);
+    }
   }, []);
 
   const onChangePress = () => {
@@ -495,16 +517,36 @@ export const Maps: React.FC<MapProps> = (props) => {
   /** set lat-long when drag has been stopped */
   const _onRegionChangeComplete = (region: RegionObject) => {
     /**since double tap does not work in ios */
-    if (isMapDragging || Platform.OS == 'ios') {
-      setMapDragging(false);
-      setRegion(region);
-      setLatitude(region.latitude);
-      setLongitude(region.longitude);
-      console.log(region.latitude, region.longitude);
-    }
 
-    if (!isMapDragging && Platform.OS == 'android') {
-      return;
+    const diffInKm = distanceBwTwoLatLng(
+      initialAddressLatitude,
+      initialAddressLongitude,
+      latitude,
+      longitude
+    );
+    if (diffInKm > 5) {
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Uh oh.. :(',
+        description:
+          'The Pin seems too far from the Pin-code, please update the address if required or drop pin again.',
+        onPressOk: () => {
+          hideAphAlert && hideAphAlert();
+          onChangePress();
+        },
+      });
+    } else {
+      if (isMapDragging || Platform.OS == 'ios') {
+        setMapDragging(false);
+        setRegion(region);
+        setLatitude(region.latitude);
+        setLongitude(region.longitude);
+        console.log(region.latitude, region.longitude);
+      }
+
+      if (!isMapDragging && Platform.OS == 'android') {
+        return;
+      }
     }
   };
 
@@ -520,8 +562,8 @@ export const Maps: React.FC<MapProps> = (props) => {
       .then((response) => {
         if (response) {
           const currentRegion = {
-            latitude: response.latitude,
-            longitude: response.longitude,
+            latitude: response.latitude!,
+            longitude: response.longitude!,
             latitudeDelta: 0.005,
             longitudeDelta: 0.001,
           };
@@ -593,6 +635,20 @@ export const Maps: React.FC<MapProps> = (props) => {
       });
   };
 
+  const renderBoundaryCircle = () => {
+    return (
+      <Circle
+        center={{ latitude: initialAddressLatitude, longitude: initialAddressLongitude }}
+        radius={Platform.OS == 'android' ? 5100 : 5050}
+        strokeWidth={2}
+        strokeColor={'#1a66ff'}
+        lineJoin={'round'}
+        fillColor={'rgba(230,238,255,0.5)'}
+        ref={_circleRef}
+      />
+    );
+  };
+
   const renderMap = () => {
     return (
       <MapView
@@ -601,13 +657,15 @@ export const Maps: React.FC<MapProps> = (props) => {
         region={region}
         ref={_map}
         zoomEnabled={true}
-        minZoomLevel={9}
+        minZoomLevel={10}
         onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
         onDoublePress={_setMapDragging}
         onPanDrag={() => setMapDragging(true)}
         // initialRegion={{latitude: latitude,longitude: longitude,latitudeDelta: latitudeDelta,longitudeDelta: longitudeDelta,}}
-      ></MapView>
+      >
+        {renderBoundaryCircle()}
+      </MapView>
     );
   };
 

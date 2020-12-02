@@ -26,6 +26,7 @@ import {
   DELETE_PATIENT_PRISM_MEDICAL_RECORD,
   GET_PHR_USER_NOTIFY_EVENTS,
   GET_MEDICAL_PRISM_RECORD,
+  GET_ALL_GROUP_BANNERS_OF_USER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -77,6 +78,7 @@ import {
   USER_STATUS,
   DEVICETYPE,
   MedicalRecordType,
+  UserState,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -104,6 +106,12 @@ import {
   setAndGetNumberOfParticipantsVariables,
 } from '@aph/mobile-patients/src/graphql/types/setAndGetNumberOfParticipants';
 import { getPatientPrismMedicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  GetAllGroupBannersOfUser,
+  GetAllGroupBannersOfUserVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
+import { bannerType } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -753,5 +761,50 @@ export const getParticipantsLiveStatus = (
       .catch((e) => {
         rej(e);
       });
+  });
+};
+
+export const getUserBannersList = (
+  client: ApolloClient<object>,
+  currentPatient: any,
+  banner_context: string
+) => {
+  return new Promise((res, rej) => {
+    const mobile_number = g(currentPatient, 'mobileNumber');
+    mobile_number &&
+      client
+        .query<GetAllGroupBannersOfUser, GetAllGroupBannersOfUserVariables>({
+          query: GET_ALL_GROUP_BANNERS_OF_USER,
+          variables: {
+            mobile_number,
+            banner_context: banner_context,
+            user_state: UserState.LOGGED_IN,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const bannersData = g(data, 'data', 'GetAllGroupBannersOfUser', 'response');
+          const banners: bannerType[] = [];
+          if (bannersData && bannersData.length) {
+            bannersData.forEach((value) => {
+              const { _id, is_active, banner, cta_action, meta } = value;
+              banners.push({
+                _id,
+                is_active: !!is_active,
+                banner,
+                cta_action,
+                meta,
+                ...value,
+              });
+            });
+            res(banners);
+          } else {
+            res(null);
+          }
+        })
+        .catch((e) => {
+          rej(e);
+          CommonBugFender('ConsultRoom_GetAllGroupBannersOfUser', e);
+        });
   });
 };

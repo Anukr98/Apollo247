@@ -26,6 +26,7 @@ import {
   CODCity,
   BOOKINGSOURCE,
   DEVICETYPE,
+  ONE_APOLLO_STORE_CODE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveMedicineOrderOMS,
@@ -56,7 +57,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import firebase from 'react-native-firebase';
+import firebaseAuth from '@react-native-firebase/auth';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
   SaveMedicineOrderPaymentMq,
@@ -80,6 +81,7 @@ import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -90,8 +92,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
   const tatType = props.navigation.getParam('tatType');
+  const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
+  const circlePlanId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);
@@ -124,7 +128,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     stores,
     coupon,
     pinCode,
+    circleMembershipCharges,
+    circleSubPlanId,
   } = useShoppingCart();
+  const { circleSubscription } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -215,7 +222,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.MedicineCart);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     return () => {
       // setLoading && setLoading(false);
@@ -361,7 +368,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
       paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal);
     }
-    console.log(JSON.stringify(paymentInfo));
+    if (!circleSubscription?._id && !!circleMembershipCharges) {
+      paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
+      paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
+      paymentInfo.medicinePaymentMqInput['storeCode'] =
+        Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
+    }
 
     savePayment(paymentInfo)
       .then(({ data }) => {
@@ -389,7 +401,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             console.log(error);
           }
           clearCartInfo && clearCartInfo();
-          handleOrderSuccess(`${orderAutoId}`);
+          props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+            status: 'PAYMENT_SUCCESS',
+            price: getFormattedAmount(grandTotal),
+            orderId: orderAutoId,
+          });
         }
       })
       .catch((e) => {
@@ -415,10 +431,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         Type: 'Pharmacy',
         order_Id: orderId,
         order_AutoId: orderAutoId,
+        LOB: 'Pharmacy',
       };
       postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+      postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
     } catch (error) {}
-    const token = await firebase.auth().currentUser!.getIdToken();
+    const token = await firebaseAuth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, false),
@@ -439,6 +458,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
+      planId: circlePlanId || '',
+      subPlanId: circleSubPlanId || '',
     });
   };
 
@@ -453,12 +474,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       setShowChennaiOrderForm(true);
       return;
     }
+    const estimatedAmount = !!circleMembershipCharges
+      ? getFormattedAmount(grandTotal - circleMembershipCharges)
+      : getFormattedAmount(grandTotal);
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
+        storeDistanceKm: Number(storeDistance?.toFixed(3)) || 0,
         coupon: coupon ? coupon.coupon : '',
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
@@ -482,7 +507,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
         packagingCharges: packagingCharges,
-        estimatedAmount: getFormattedAmount(grandTotal),
+        estimatedAmount,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -491,7 +516,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         ].join(','),
-        orderTat: deliveryAddressId && moment(deliveryTime).isValid ? deliveryTime : '',
+        orderTat:
+          deliveryAddressId &&
+          moment(deliveryTime, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).isValid()
+            ? deliveryTime
+            : '',
         items: cartItems.map((item) => {
           const discountedPrice = getFormattedAmount(
             (coupon && item.couponPrice) || item.specialPrice || item.price
@@ -510,6 +539,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),
             isMedicine: item.isMedicine ? '1' : '0',
+            couponFree: item?.isFreeCouponProduct ? 1 : 0,
           } as MedicineCartOMSItem;
         }),
         bookingSource: BOOKINGSOURCE.MOBILE,
@@ -620,7 +650,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
     const deliveryTimeMomentFormat = moment(
       deliveryTime,
-      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+      AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
     );
     showAphAlert!({
       // unDismissable: true,
@@ -857,7 +887,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             </Text>
           </View>
           <View style={styles.total}>
-            <Text style={styles.grandTotalTxt}>Rs. {getFormattedAmount(grandTotal - burnHC)}</Text>
+            <Text style={styles.grandTotalTxt}>
+              {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
+            </Text>
           </View>
           {(couponDiscount != 0 || burnHC != 0) && (
             <TouchableOpacity
@@ -880,7 +912,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         <View style={styles.subCont}>
           <Text style={styles.SubtotalTxt}>Subtotal</Text>
           <Text style={styles.SubtotalTxt}>
-            Rs.{' '}
+            {string.common.Rs}{' '}
             {getFormattedAmount(cartTotal + deliveryCharges + packagingCharges - productDiscount)}
           </Text>
         </View>
@@ -890,19 +922,25 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               <Text style={styles.discountTxt}>Coupon Applied</Text>
               <Text style={styles.discountTxt}>({coupon?.coupon})</Text>
             </View>
-            <Text style={styles.discountTxt}>- Rs. {getFormattedAmount(couponDiscount)}</Text>
+            <Text style={styles.discountTxt}>
+              - {string.common.Rs} {getFormattedAmount(couponDiscount)}
+            </Text>
           </View>
         )}
         {burnHC != 0 && (
           <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
             <Text style={styles.discountTxt}>OneApollo HC</Text>
-            <Text style={styles.discountTxt}>- Rs. {getFormattedAmount(burnHC)}</Text>
+            <Text style={styles.discountTxt}>
+              - {string.common.Rs} {getFormattedAmount(burnHC)}
+            </Text>
           </View>
         )}
         <View style={styles.toPayBorder}></View>
         <View style={{ ...styles.subCont, marginTop: 0.02 * windowWidth }}>
           <Text style={styles.SubtotalTxt}>To Pay</Text>
-          <Text style={styles.grandTotalTxt}>Rs. {getFormattedAmount(grandTotal - burnHC)}</Text>
+          <Text style={styles.grandTotalTxt}>
+            {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
+          </Text>
         </View>
       </View>
     );
@@ -1249,7 +1287,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {availableHC != 0 && renderOneApolloOption()}
             {renderPaymentOptions()}
             {bankOptions.length > 0 && renderNetBanking()}
-            {renderCOD()}
+            {!circleMembershipCharges && renderCOD()}
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (

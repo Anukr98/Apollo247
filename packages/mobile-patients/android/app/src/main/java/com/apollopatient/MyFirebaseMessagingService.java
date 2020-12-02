@@ -70,6 +70,11 @@ public class MyFirebaseMessagingService
 
     private static DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter = null;
 
+    @Override
+    public void onNewToken(String s) {
+        super.onNewToken(s);
+        WebEngage.get().setRegistrationID(s);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -81,7 +86,7 @@ public class MyFirebaseMessagingService
             String disconnectCallType="call_disconnect";
 
             if(startCallType.equals(notifDataType)|| disconnectCallType.equals(notifDataType)) {
-                if(!Settings.canDrawOverlays(this) && startCallType.equals(notifDataType)){
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this) && startCallType.equals(notifDataType)){
                     sendNotifications(remoteMessage);
                     return;
                 }else {
@@ -100,7 +105,7 @@ public class MyFirebaseMessagingService
                     if(remoteMessage.getData().get("author") != null){
                         VitaTasksNotificationsManager.INSTANCE.createNotificationTwilio(this, remoteMessage.getData());
                     } else  {
-                        (new io.invertase.firebase.messaging.RNFirebaseMessagingService()).onMessageReceived(remoteMessage);
+                        (new io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService()).onMessageReceived(remoteMessage);
 
                 }
 
@@ -168,8 +173,9 @@ public class MyFirebaseMessagingService
         i.putExtra("CALL_TYPE",remoteMessage.getData().get("callType"));
         i.putExtra("APP_STATE",isAppRunning());
         i.putExtra("FALL_BACK",true);
+        i.putExtra("NOTIFICATION_ID",oneTimeID);
         PendingIntent fullScreenIntent = PendingIntent.getActivity(this, 0 /* Request code */, i,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent.FLAG_ONE_SHOT);
         //end
 
         //channel info start

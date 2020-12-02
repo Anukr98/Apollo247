@@ -31,6 +31,8 @@ import {
   g,
   isValidSearch,
   postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -54,6 +56,8 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -156,15 +160,19 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      // 'Patient Gender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const errorAlert = () => {
@@ -307,7 +315,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             {data.name}
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-            Rs. {data.price}
+            {string.common.Rs} {data.price}
           </Text>
         </View>
       );
@@ -361,6 +369,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       testPreparationData,
       toAgeInDays,
       itemType,
+      testDescription,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
@@ -374,6 +383,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             ToAgeInDays: toAgeInDays,
             collectionType: collectionType,
             preparation: testPreparationData,
+            testDescription: testDescription,
             source: 'Landing Page',
             type: itemType,
           } as TestPackageForDetails,
@@ -509,16 +519,17 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             title: medicine.itemName,
             testDetails: {
-              Rate: medicine!.rate,
-              Gender: medicine!.gender,
-              ItemID: `${medicine!.itemId}`,
-              ItemName: medicine!.itemName,
-              collectionType: medicine!.collectionType,
-              FromAgeInDays: medicine!.fromAgeInDays,
-              ToAgeInDays: medicine!.toAgeInDays,
-              preparation: medicine!.testPreparationData,
+              Rate: medicine?.rate,
+              Gender: medicine?.gender,
+              ItemID: `${medicine?.itemId}`,
+              ItemName: medicine?.itemName,
+              collectionType: medicine?.collectionType,
+              FromAgeInDays: medicine?.fromAgeInDays,
+              ToAgeInDays: medicine?.toAgeInDays,
+              preparation: medicine?.testPreparationData,
+              testDescription: medicine?.testDescription,
               source: 'Landing Page',
-              type: medicine!.itemType,
+              type: medicine?.itemType,
             } as TestPackageForDetails,
           });
         }}

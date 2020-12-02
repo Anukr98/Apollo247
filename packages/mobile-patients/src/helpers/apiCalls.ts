@@ -21,6 +21,8 @@ export interface MedicineProduct {
   thumbnail: string;
   type_id: 'FMCG' | 'Pharma' | 'PL';
   url_key: string;
+  careCashback?: number | null;
+  is_express?: 'Yes' | 'No';
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -32,6 +34,10 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
+export enum DIAGNOSTIC_GROUP_PLAN {
+  ALL = 'ALL',
+  CIRCLE = 'CIRCLE',
+}
 
 interface PharmaOverview {
   generic: string;
@@ -60,11 +66,42 @@ export interface MedicineOrderBilledItem {
 }
 
 export interface MedicineProductsResponse {
-  product_count: number;
   products: MedicineProduct[];
-  search_heading?: string;
+  product_count?: number;
+  count?: number;
 }
 
+export interface CategoryProductsApiResponse {
+  products: MedicineProduct[];
+  count: number;
+  filters: MedFilter[];
+  sort_by: Value[];
+}
+
+export interface PopcSrchPrdApiResponse {
+  products: MedicineProduct[];
+  product_count: number;
+  search_heading: string;
+  filters: MedFilter[];
+  sort_by: Value[];
+}
+
+interface Value {
+  id: string;
+  name: string;
+  child?: {
+    category_id: string;
+    title: string;
+  }[];
+}
+export interface MedFilter {
+  name: string;
+  attribute: string; // 'category' | 'brand' ...
+  select_type: 'single' | 'multi';
+  min?: number;
+  max?: number;
+  values?: Value[];
+}
 export interface Brand {
   category_id: string;
   image_url: number;
@@ -161,6 +198,7 @@ export interface GetTatResponse247 {
     inventoryExist: boolean;
     storeType: string;
     ordertime: number;
+    distance: number;
   };
   errorMSG?: string;
 }
@@ -280,7 +318,16 @@ export interface MedicinePageProducts {
   category_id?: number;
 }
 
+export interface Category {
+  category_id: string;
+  title: string;
+  url_key: string;
+  image_url?: string;
+  Child: Category[];
+}
+
 export interface MedicinePageAPiResponse {
+  categories: Category[];
   mainbanners: OfferBannerSection[];
   healthareas: MedicinePageSection[];
   deals_of_the_day: DealsOfTheDaySection[];
@@ -321,6 +368,7 @@ export interface TestPackage {
   ToAgeInDays: number;
   Gender: string;
   PackageInClussion: PackageInclusion[];
+  testDescription: string;
 }
 
 export interface TestsPackageResponse {
@@ -439,31 +487,40 @@ export const getMedicineDetailsApi = (
   );
 };
 
-let cancelSearchMedicineApi: Canceler | undefined;
-
 export const searchMedicineApi = async (
   searchText: string,
-  pageId: number = 1
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelSearchMedicineApi && cancelSearchMedicineApi();
-
+  pageId: number = 1,
+  sortBy: string | null,
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null
+): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
     data: {
       params: searchText,
       page_id: pageId,
+      sort_by: sortBy,
+      filters,
+      axdcCode,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelSearchMedicineApi = c;
-    }),
   });
 };
+
+export const formatFilters = (filters: { [key: string]: string[] } | null) =>
+  filters &&
+  Object.keys(filters).reduce(
+    (prevVal, currKey) => ({
+      ...prevVal,
+      ...(filters[currKey]?.length
+        ? { [currKey]: filters[currKey]?.length === 1 ? filters[currKey][0] : filters[currKey] } // to convert to string if array of length 1
+        : {}),
+    }),
+    {}
+  );
 
 export const searchPickupStoresApi = async (
   pincode: string
@@ -515,7 +572,7 @@ export const getStoreInventoryApi = (
 export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
+  const url = `${config.UATTAT_CONFIG[0]}/v2/serviceable?pincode=${pincode}`;
   return Axios.get(url, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -565,58 +622,77 @@ export const trackTagalysEvent = (
   });
 };
 
-let cancelSearchSuggestionsApi: Canceler | undefined;
-
 export const getMedicineSearchSuggestionsApi = (
-  searchText: string
+  searchText: string,
+  axdcCode?: string | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
-
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
     data: {
       params: searchText,
+      axdcCode,
     },
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelSearchSuggestionsApi = c;
-    }),
   });
 };
 
 export const getProductsByCategoryApi = (
   categoryId: string,
-  pageId: number = 1
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  pageId: number = 1,
+  sortBy: string | null,
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null
+): Promise<AxiosResponse<CategoryProductsApiResponse>> => {
   return Axios.post(
-    `${config.PRODUCTS_BY_CATEGORY[0]}?category_id=${categoryId}&page_id=${pageId}&type=category`,
+    config.PRODUCTS_BY_CATEGORY[0],
     {
       category_id: categoryId,
       page_id: pageId,
+      sort_by: sortBy,
+      filters,
+      axdcCode,
     },
     {
       headers: {
         Authorization: config.PRODUCTS_BY_CATEGORY[1],
       },
+      transformResponse: (_reponse: any) => {
+        const reponse = JSON.parse(_reponse || '{}');
+
+        const modifiedFilters = reponse?.filters?.map((f: any) => {
+          const modifiedValues = f?.values?.map((item: any) => ({
+            id: item.value,
+            name: item.label,
+            child: item.child,
+          }));
+          return { ...f, values: modifiedValues };
+        });
+
+        const modifiedSortBy = reponse?.sort_by?.values?.map((v: any) => {
+          return { ...v, id: v.value, name: v.label };
+        });
+
+        return { ...reponse, filters: modifiedFilters || [], sort_by: modifiedSortBy || [] };
+      },
     }
   );
 };
 
-export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
-  return Axios.post(
-    `${config.MEDICINE_PAGE[0]}`,
-    {},
-    {
-      headers: {
-        Authorization: config.MEDICINE_PAGE[1],
-      },
-    }
-  );
+export const getMedicinePageProducts = (
+  axdcCode?: string | null
+): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
+  let url = `${config.MEDICINE_PAGE[0]}`;
+  if (axdcCode) {
+    url += `&axdcCode=${axdcCode}`;
+  }
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.MEDICINE_PAGE[1],
+    },
+  });
 };
 
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -799,9 +875,10 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
   return Axios.post(url, { orderID: orderID });
 };
 
-export const fetchConsultCoupons = (packageId: string): Promise<AxiosResponse<any>> => {
+export const fetchConsultCoupons = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/frontend`;
+  let url = `${baseUrl}/frontend?mobile=${mobile}&email=${email}`;
   if (!!packageId) {
     url += `?packageId=${packageId}`;
   }
@@ -857,4 +934,18 @@ export const getSymptomsTrackerResult = (
   const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
   const url = `${baseUrl}/${chatId}/specialities`;
   return Axios.get(url);
+};
+
+export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: config.GET_SKU[0],
+    method: 'POST',
+    data: {
+      params: skuKey,
+      level: 'product',
+    },
+    headers: {
+      Authorization: config.GET_SKU[1],
+    },
+  });
 };

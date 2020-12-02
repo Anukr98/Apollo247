@@ -21,16 +21,16 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
   const addressHeader = () => {
     return (
       <View style={styles.addressHeader}>
-        <View style={{ flexDirection: 'row' }}>
-          <LocationIcon />
-          <View style={{ marginLeft: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <LocationIcon style={styles.icon} />
+          <View style={{ marginLeft: 3 }}>
             <Text style={styles.deliveryAddress}>
-              {orderType == 'Delivery' ? 'Delivery Address' : 'Selected Store'}
+              {orderType == 'Delivery' ? 'Delivery Address' : 'Pick Up Details'}
             </Text>
             <Text style={styles.deliveryMsg}>
               {orderType == 'Delivery'
                 ? 'We will deliver your order to this address'
-                : 'You will pick up your order from the selected store'}
+                : 'Kindly pick up your ordered items from the selected store'}
             </Text>
           </View>
         </View>
@@ -43,7 +43,7 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
 
   const address = () => {
     return orderType == 'Delivery' ? (
-      <View style={{ marginHorizontal: 20 }}>
+      <View style={{ marginHorizontal: 25 }}>
         <Text style={styles.name}>{selectedAddress?.name || selectedAddress?.addressType}</Text>
         <Text style={styles.address}>{formatSelectedAddress(selectedAddress!)}</Text>
         <Text style={styles.address}>
@@ -54,7 +54,7 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
         </Text>
       </View>
     ) : (
-      <View style={{ marginHorizontal: 20 }}>
+      <View style={{ marginHorizontal: 25 }}>
         <Text style={styles.name}>{selectedStore?.storename}</Text>
         <Text style={styles.address}>{selectedStore?.address}</Text>
         <Text style={styles.address}>
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   addressHeader: {
     flexDirection: 'row',
     marginTop: 20,
-    marginHorizontal: 15,
+    marginHorizontal: 20,
     justifyContent: 'space-between',
   },
   deliveryAddress: {
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   },
   deliveryMsg: {
     ...theme.fonts.IBMPlexSansRegular(10),
-    lineHeight: 20,
+    lineHeight: 18,
     color: '#01475B',
   },
   change: {
@@ -111,4 +111,5 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     color: '#01475B',
   },
+  icon: { height: 32, width: 32 },
 });

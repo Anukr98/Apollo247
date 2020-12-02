@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { ConsultQueueInput } from "./globalTypes";
@@ -15,13 +16,14 @@ export interface addToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAu
 }
 
 export interface addToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAutomatedQuestions {
-  __typename: "AddToConsultQueueResult";
+  __typename: "AddToConsultQueueWithJdAutomatedQuestionsResult";
   id: number;
   doctorId: string;
   totalJuniorDoctorsOnline: number;
   juniorDoctorsList: (addToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAutomatedQuestions_juniorDoctorsList | null)[];
   totalJuniorDoctors: number;
   isJdAllowed: boolean | null;
+  isJdAssigned: boolean | null;
 }
 
 export interface addToConsultQueueWithAutomatedQuestions {

@@ -26,6 +26,8 @@ import {
   ArrowRight,
   ShoppingBasketIcon,
   LocationOff,
+  CircleBannerNonMember,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
@@ -36,16 +38,13 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  SAVE_SEARCH,
   GET_RECOMMENDED_PRODUCTS_LIST,
   GET_LATEST_MEDICINE_ORDER,
   GET_PATIENT_ADDRESS_LIST,
   SET_DEFAULT_ADDRESS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  SEARCH_TYPE,
-  MEDICINE_ORDER_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   getMedicinePageProducts,
@@ -70,6 +69,9 @@ import {
   reOrderMedicines,
   getMaxQtyForMedicineItem,
   setWebEngageScreenNames,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -100,6 +102,7 @@ import {
   ViewStyle,
   Platform,
   FlatList,
+  BackHandler,
 } from 'react-native';
 import { Image, ListItem } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -118,11 +121,16 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import {
+  MedicineCategoryTree,
+  Props as MedicineCategoryTreeProps,
+} from '@aph/mobile-patients/src/components/Medicines/MedicineCategoryTree';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import _ from 'lodash';
+import { CategoryAndSpecialOffers } from '@aph/mobile-patients/src/components/Medicines/CategoryAndSpecialOffers';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import {
   getPatientAddressList,
@@ -136,8 +144,22 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import {
+  GetSubscriptionsOfUserByStatusVariables,
+  GetSubscriptionsOfUserByStatus,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
+
+const { width: winWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  searchInput: { minHeight: undefined, paddingVertical: 8 },
+  searchInputContainer: { marginBottom: 15, marginTop: 5 },
   sliderDotStyle: {
     height: 8,
     width: 8,
@@ -151,19 +173,40 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
   },
-  searchBarSuggestionsViewStyle: {
-    flex: 1,
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    left: 0,
-    top: 76,
+  categoryAndSpecialOffers: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
-  searchBarAndSuggestionMainViewStyle: {
-    flex: 1,
-    position: 'absolute',
-    width: '100%',
+  categoryTreeWrapper: {
+    ...StyleSheet.absoluteFill,
+    marginTop: -20,
+    flexDirection: 'row',
+  },
+  categoryTreeContainer: {
     height: '100%',
+    width: '75%',
+  },
+  categoryTreeDismissView: {
+    height: '100%',
+    width: winWidth,
+    backgroundColor: 'rgba(0,0,0,0.31)',
+  },
+  circleBanner: {
+    resizeMode: 'contain',
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
   },
 });
 
@@ -199,12 +242,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
     setLocationDetails,
+    setAxdcCode,
+    axdcCode,
+    circleSubscription,
+    setBannerData,
+    bannerData,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
-  const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
+    setCartItems,
     addCartItem,
     removeCartItem,
     updateCartItem,
@@ -214,8 +262,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAddresses,
     deliveryAddressId,
     setDeliveryAddressId,
+    cartTotalCashback,
+    cartTotal,
+    isCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
+    setCircleSubscriptionId,
+    setIsCircleSubscription,
+    productDiscount,
+    cartDiscountTotal,
   } = useShoppingCart();
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const {
+    cartItems: diagnosticCartItems,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
@@ -224,33 +284,42 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [latestMedicineOrder, setLatestMedicineOrder] = useState<
     getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
   >();
+  const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
+  const [categoryTreeVisible, setCategoryTreeVisible] = useState(false);
   const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
   const [error, setError] = useState<boolean>(false);
   const banners = !loading && !error && data ? filterBanners(g(data, 'mainbanners') || []) : [];
   const [imgHeight, setImgHeight] = useState(120);
-  const { width: winWidth } = Dimensions.get('window');
   const [bannerLoading, setBannerLoading] = useState(true);
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
-
+  type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
     categoryName: string,
     sectionName: string,
-    imageUrl: string
+    source: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED] = {
       'category name': categoryName,
       'category ID': categoryId,
       'Section Name': sectionName,
-      Source: 'Home',
-      imageUrl: imageUrl,
+      Source: source,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
+
+    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.CATEGORY_CLICKED] = {
+      categoryname: categoryName,
+      categoryID: categoryId,
+      Source: 'Home', // Home
+      SectionName: sectionName,
+    };
+    postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
   };
 
   const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
@@ -283,11 +352,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pincode: string,
     type?: 'autoDetect' | 'pincode' | 'addressSelect'
   ) => {
-    const onPresChangeAddress = () => {
-      hideAphAlert!();
-      setPincodePopupVisible(true);
-    };
-
     const CalltheNearestPharmacyEvent = () => {
       let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
         pincode: pincode,
@@ -327,13 +391,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     globalLoading!(true);
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
-        setServiceabilityMsg(response ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(response ? true : false);
-        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, response ? true : false);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, response ? true : false);
-        console.log(pincode, response);
+        const { servicable, axdcCode } = response;
+        setAxdcCode && setAxdcCode(axdcCode);
+        setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(!!servicable);
+        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
+        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
-        if (!response) {
+        if (!servicable) {
           globalLoading!(true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
@@ -391,7 +456,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                         paddingLeft: 12,
                       }}
                       titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
-                      onPress={() => showAccessAccessLocationPopup(false)}
+                      onPress={() => showAccessAccessLocationPopup(addresses, false)}
                     />
                   </View>
                 ),
@@ -411,7 +476,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   {
                     text: 'CHANGE THE ADDRESS',
                     type: 'orange-link',
-                    onPress: showAccessAccessLocationPopup,
+                    onPress: () => showAccessAccessLocationPopup(addresses),
                   },
                 ],
               });
@@ -438,20 +503,96 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // set cart items again to set item cashbacks and total cashback
+    if (cartItems.length) {
+      setCartItems && setCartItems(cartItems);
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setBannerData && setBannerData([]);
+
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    return false;
+  };
+
+  useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
-    fetchMedicinePageProducts();
+    fetchMedicinePageProducts(false);
   }, []);
+
+  useEffect(() => {
+    if (axdcCode) {
+      fetchMedicinePageProducts(true);
+    }
+  }, [axdcCode]);
 
   useEffect(() => {
     if (g(currentPatient, 'uhid')) {
       fetchRecommendedProducts();
       fetchLatestMedicineOrder();
     }
+    if (currentPatient) {
+      getUserBanners();
+    }
   }, [currentPatient]);
 
   useEffect(() => {
+    setBannerData && setBannerData([]); // default banners to be empty
     fetchAddress();
   }, []);
+
+  const getUserBanners = async () => {
+    const res: any = await getUserBannersList(
+      client,
+      currentPatient,
+      string.banner_context.PHARMACY_HOME
+    );
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+          from={string.banner_context.PHARMACY_HOME}
+          source={'Pharma'}
+        />
+      );
+    }
+  };
 
   const formatAddressToLocation = (address: Address): LocationData => ({
     displayName: address.city!,
@@ -491,11 +632,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         updateServiceability(deliveryAddress?.zipcode!);
         setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
       } else {
-        checkLocation();
+        checkLocation(addressList);
       }
       globalLoading!(false);
     } catch (error) {
-      checkLocation();
+      checkLocation(addresses);
       globalLoading!(false);
       CommonBugFender('fetching_Addresses_on_Medicine_Page', error);
     }
@@ -524,31 +665,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       globalLoading!(false);
     } catch (error) {
       globalLoading!(false);
+      checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
         title: string.common.uhOh,
-        description: "We're sorry! Unable to set default address. Please try again after some time",
+        description:
+          "We're sorry! Unable to set delivery address. Please try again after some time",
       });
     }
   }
 
-  const checkLocation = () => {
+  const checkLocation = (addresses: addressListType) => {
     !defaultAddress &&
       !locationDetails &&
       !pharmacyLocation &&
-      showAccessAccessLocationPopup(false);
+      showAccessAccessLocationPopup(addresses, false);
   };
 
   function isunDismissable() {
     return !defaultAddress && !locationDetails && !pharmacyLocation ? true : false;
   }
-  const showAccessAccessLocationPopup = (pincodeInput?: boolean) => {
+  const showAccessAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
     return showAphAlert!({
       unDismissable: isunDismissable(),
       removeTopIcon: true,
       children: !pincodeInput ? (
         <AccessLocation
-          addresses={addresses}
+          addresses={addressList}
           onPressSelectAddress={(address) => {
             setDefaultAddress(address);
           }}
@@ -557,6 +700,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               KeyName: 'Update',
               DataAddress: address,
               source: 'Medicine' as AddressSource,
+              ComingFrom: AppRoutes.Medicine,
             });
             hideAphAlert!();
           }}
@@ -568,11 +712,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           onPressCurrentLocaiton={() => {
             hideAphAlert!();
-            autoDetectLocation();
+            autoDetectLocation(addressList);
           }}
           onPressPincode={() => {
             hideAphAlert!();
-            showAccessAccessLocationPopup(true);
+            showAccessAccessLocationPopup(addressList, true);
           }}
         />
       ) : (
@@ -583,7 +727,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               updatePlaceInfoByPincode(pincode);
             }
           }}
-          onPressBack={() => showAccessAccessLocationPopup(false)}
+          onPressBack={() => showAccessAccessLocationPopup(addressList, false)}
         />
       ),
     });
@@ -611,13 +755,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .map((v) => `/catalog/product${v}`)[0];
   };
 
-  const fetchMedicinePageProducts = async () => {
-    if (medicinePageAPiResponse) {
+  const fetchMedicinePageProducts = async (callApiAgain?: boolean) => {
+    if (medicinePageAPiResponse && !callApiAgain) {
       return;
     }
     try {
       setLoading(true);
-      const resonse = (await getMedicinePageProducts()).data;
+      const resonse = (await getMedicinePageProducts(axdcCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
@@ -671,7 +815,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       if (formattedRecommendedProducts.length >= 5) {
         setRecommendedProducts(formattedRecommendedProducts);
         showRecommendedSection &&
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: -1,
             products: formattedRecommendedProducts,
             title: string.medicine.recommendedForYou,
@@ -702,7 +846,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
-  const autoDetectLocation = () => {
+  const autoDetectLocation = (addresses: addressListType) => {
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
@@ -713,8 +857,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         updateServiceability(response.pincode, 'autoDetect');
       })
       .catch((e) => {
-        CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
         globalLoading!(false);
+        checkLocation(addresses);
+        CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
         e &&
           typeof e == 'string' &&
           !e.includes('denied') &&
@@ -750,7 +895,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 {
                   text: 'CHANGE PINCODE',
                   type: 'orange-link',
-                  onPress: () => showAccessAccessLocationPopup(true),
+                  onPress: () => showAccessAccessLocationPopup(addresses, true),
                 },
               ],
             });
@@ -850,7 +995,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <TouchableOpacity
               style={{ marginTop: -7.5 }}
               onPress={() => {
-                showAccessAccessLocationPopup(false);
+                showAccessAccessLocationPopup(addresses, false);
               }}
             >
               <Text numberOfLines={1} style={localStyles.deliverToText}>
@@ -969,9 +1114,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       if (item.category_id) {
-        props.navigation.navigate(AppRoutes.SearchByBrand, {
+        props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
-          title: item.name || '',
+          title: item.name || 'Products',
         });
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -1356,15 +1501,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               item.title,
               productsThumbnailUrl(item.image_url),
               () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  title,
-                  productsThumbnailUrl(item.image_url)
-                );
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
+                props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
+                  title: item.title || 'Products',
                 });
               },
               {
@@ -1380,10 +1520,40 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
+
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
+        {renderCarouselBanners()}
+        <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
@@ -1396,13 +1566,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  postwebEngageCategoryClickedEvent(
-                    item.category_id,
-                    'Banner',
-                    title,
-                    productsThumbnailUrl(item.image_url)
-                  );
-                  props.navigation.navigate(AppRoutes.SearchByBrand, {
+                  postwebEngageCategoryClickedEvent(item.category_id, 'Banner', title, 'Home');
+                  props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: item.category_id,
                     title: title,
                   });
@@ -1457,10 +1622,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onPressRightText={
             categoryId
               ? () =>
-                  props.navigation.navigate(AppRoutes.SearchByBrand, {
-                    category_id: categoryId,
+                  props.navigation.navigate(AppRoutes.MedicineListing, {
+                    category_id: categoryId == -1 ? undefined : categoryId,
                     products: categoryId == -1 ? products : null,
-                    title: `${title || 'Products'}`.toUpperCase(),
+                    title: title || 'Products',
                     movedFrom: 'home',
                   })
               : undefined
@@ -1512,15 +1677,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             return renderBrandCard(
               imgUrl,
               () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  title,
-                  productsThumbnailUrl(item.image_url)
-                );
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
+                props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
+                  title: item.title || 'Products',
                 });
               },
               {
@@ -1545,7 +1705,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -1580,7 +1740,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             Source: 'Pharmacy Home',
           };
           postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+          props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
           setSearchText('');
           setMedicineList([]);
         }}
@@ -1604,11 +1764,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-              props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
             }
           }}
           value={searchText}
-          onFocus={() => setSearchFocused(true)}
+          onFocus={() => {
+            setSearchFocused(true);
+            setCategoryTreeVisible(false);
+          }}
           onBlur={() => {
             setSearchFocused(false);
             setMedicineList([]);
@@ -1623,6 +1786,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              if (value.length >= 3) {
+                setsearchSate('load');
+              } // this block is to fix no results errorMessage appearing while loading response
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
@@ -1635,24 +1801,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
           _itemsNotFound={itemsNotFound}
+          inputStyle={styles.searchInput}
+          containerStyle={styles.searchInputContainer}
         />
       </>
     );
   };
 
   const client = useApolloClient();
-  const savePastSeacrh = (sku: string, name: string) =>
-    client.mutate({
-      mutation: SAVE_SEARCH,
-      variables: {
-        saveSearchInput: {
-          type: SEARCH_TYPE.MEDICINE,
-          typeId: sku,
-          typeName: name,
-          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-      },
-    });
 
   const onAddCartItem = (item: MedicineProduct) => {
     const {
@@ -1686,6 +1842,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
+        circleCashbackAmt: 0,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1724,7 +1881,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <MedicineSearchSuggestionItem
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
@@ -1838,53 +1994,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <ScrollView removeClippedSubviews={true} bounces={false}>
-        <View style={{ height: 10 }} />
+        <CategoryAndSpecialOffers
+          containerStyle={styles.categoryAndSpecialOffers}
+          onPressShopByCategory={() => setCategoryTreeVisible(true)}
+          onPressSpecialOffers={() => {
+            const categoryId = AppConfig.Configuration.SPECIAL_OFFERS_CATEGORY_ID;
+            props.navigation.navigate(AppRoutes.MedicineListing, {
+              category_id: categoryId,
+              title: string.specialOffers,
+            });
+          }}
+        />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}
       </ScrollView>
     );
   };
 
-  const renderPincodePopup = () => {
-    const onClose = (serviceable?: boolean, response?: LocationData) => {
-      setPincodePopupVisible(false);
-      if (serviceable) {
-        setServiceabilityMsg('');
-        setPharmacyLocationServiceable!(true);
-      }
-    };
-    return (
-      pincodePopupVisible && (
-        <PincodePopup
-          onClickClose={() => {
-            onClose();
-            checkLocation();
-          }}
-          onComplete={onClose}
-        />
-      )
-    );
-  };
-
   const renderOverlay = () => {
     const isNoResultsFound =
       searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
-    const overlayStyle = {
-      flex: 1,
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      width: Dimensions.get('window').width,
-      height: Dimensions.get('window').height,
-    } as ViewStyle;
 
     return (
       (!!medicineList.length || searchSate == 'load' || isNoResultsFound) && (
-        <View style={overlayStyle}>
+        <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}
-            style={overlayStyle}
+            style={theme.viewStyles.overlayStyle}
             onPress={() => {
               if (medicineList.length == 0 && !searchText) return;
               setSearchText('');
@@ -1892,6 +2028,240 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               setSearchFocused(false);
             }}
           />
+        </View>
+      )
+    );
+  };
+
+  const renderCartDiscount = () => {
+    const cartDiscountPercent = getDiscountPercentage(cartTotal, cartTotal - productDiscount);
+    return (
+      <>
+        {cartDiscountPercent ? (
+          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {cartTotal})
+            </Text>
+            <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderCircleCartDetails = () => {
+    const circleStyles = StyleSheet.create({
+      container: {
+        position: 'absolute',
+        bottom: 0,
+        ...theme.viewStyles.cardContainer,
+        width: '100%',
+        padding: 10,
+      },
+      content: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      upgrade: {
+        borderWidth: 2,
+        borderColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        backgroundColor: '#FFFFFF',
+      },
+      upgradeTo: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      circleLogo: {
+        resizeMode: 'contain',
+        width: 35,
+        height: 23,
+        marginLeft: 5,
+      },
+      cartButton: {
+        backgroundColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        paddingHorizontal: 10,
+        alignItems: 'center',
+        alignSelf: 'center',
+      },
+      circleLogoTwo: {
+        resizeMode: 'contain',
+        width: 35,
+        height: 25,
+        marginRight: 4,
+      },
+    });
+    const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+
+    return (
+      <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
+        <View style={circleStyles.content}>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
+              {circleSubscription?._id || isCircleSubscription ? 'Items' : 'Total items'}
+            </Text>
+            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+              {cartItems.length}
+            </Text>
+          </View>
+          {circleSubscription?._id || isCircleSubscription ? (
+            <View
+              style={{
+                borderLeftWidth: 2,
+                borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
+                marginTop: 6,
+                marginBottom: 6,
+              }}
+            ></View>
+          ) : null}
+          {cartTotalCashback > 1 ? (
+            <>
+              {circleSubscription?._id || isCircleSubscription ? (
+                <View style={{ width: '60%' }}>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
+                      MRP{'  '}
+                      {string.common.Rs}
+                      {(cartTotal - productDiscount).toFixed(2)}
+                    </Text>
+                    {renderCartDiscount()}
+                  </View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <CircleLogo style={circleStyles.circleLogoTwo} />
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      cashback {string.common.Rs}
+                      {cartTotalCashback.toFixed(2)}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      Effective price for you{' '}
+                    </Text>
+                    <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
+                      {string.common.Rs}
+                      {effectivePrice}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setShowCirclePopup(true);
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+                      'Patient UHID': currentPatient?.uhid,
+                      'Mobile Number': currentPatient?.mobileNumber,
+                      'Customer ID': currentPatient?.id,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE,
+                      eventAttributes
+                    );
+                  }}
+                  style={circleStyles.upgrade}
+                >
+                  <View style={circleStyles.upgradeTo}>
+                    <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
+                    <CircleLogo style={circleStyles.circleLogo} />
+                  </View>
+                  <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
+                    {`Get Circle Cashback of ₹${cartTotalCashback.toFixed(2)}`}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            <View
+              style={{
+                marginTop: 13,
+              }}
+            >
+              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+                ₹{cartTotal - productDiscount}
+              </Text>
+            </View>
+          )}
+          <TouchableOpacity
+            style={circleStyles.cartButton}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.MedicineCart);
+            }}
+          >
+            <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
+            {!circleSubscription?._id && !isCircleSubscription && cartTotalCashback > 1 && (
+              <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
+                {`Buy for ${string.common.Rs}${cartDiscountTotal}`}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderCircleMembershipPopup = () => {
+    return (
+      <CircleMembershipPlans
+        isModal={true}
+        closeModal={() => setShowCirclePopup(false)}
+        navigation={props.navigation}
+        isConsultJourney={false}
+        from={string.banner_context.PHARMACY_HOME}
+        source={'Pharma'}
+        onSelectMembershipPlan={(plan) => {
+          if (plan) {
+            // if plan is selected
+            setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+            setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+          } else {
+            // if plan is removed
+            // setShowCareSelectPlans(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+          }
+        }}
+      />
+    );
+  };
+
+  const renderCategoryTree = () => {
+    const onPressCategory: MedicineCategoryTreeProps['onPressCategory'] = (category, tree) => {
+      setCategoryTreeVisible(false);
+      postwebEngageCategoryClickedEvent(
+        category.category_id,
+        category.title,
+        tree?.[0]?.title,
+        'Category Tree'
+      );
+      props.navigation.navigate(AppRoutes.MedicineListing, {
+        category_id: category.category_id,
+        title: category.title,
+        breadCrumb: tree,
+      });
+    };
+    const onPressDismissView = () => {
+      setCategoryTreeVisible(false);
+    };
+    return (
+      categoryTreeVisible && (
+        <View style={styles.categoryTreeWrapper}>
+          <MedicineCategoryTree
+            containerStyle={styles.categoryTreeContainer}
+            onPressCategory={onPressCategory}
+            categories={data?.categories || []}
+          />
+          <TouchableOpacity onPress={onPressDismissView}>
+            <View style={styles.categoryTreeDismissView} />
+          </TouchableOpacity>
         </View>
       )
     );
@@ -1905,14 +2275,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 80 : 0 }}>
           {renderSections()}
           {renderOverlay()}
+          {!!cartItems.length && renderCircleCartDetails()}
+          {renderCategoryTree()}
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
-      {renderPincodePopup()}
+      {showCirclePopup && renderCircleMembershipPopup()}
       {renderMedicineReOrderOverlay()}
     </View>
   );

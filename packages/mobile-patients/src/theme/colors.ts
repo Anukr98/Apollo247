@@ -28,6 +28,8 @@ const platinumGrey = '#525252';
 const bondi_blue = '#0187ba';
 const lightGray2 = '#cccccc';
 const lightYellow = '#fbe9be';
+const light_grey_blue = '#67919D';
+const careRed = '#F0533B';
 
 const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
@@ -49,6 +51,7 @@ const Card = {
   CARD_DESCRIPTION: sky_blue,
   CARD_INFO: tangerine_yellow,
   FILTER_CARD_LABEL: app_light_blue,
+  CARD_SUBTEXT: light_grey_blue,
 };
 
 const Common = {
@@ -89,6 +92,9 @@ const Common = {
   OFF_WHITE: '#F7F7F7',
   LIGHT_YELLOW: lightYellow,
   GREEN: '#07AE8B',
+  TURQUOISE_LIGHT_BLUE: '#007C9D',
+  CARE_RED: careRed,
+  CAROUSEL_INACTIVE_DOT: '#C4C4C4',
 };
 
 const Header = {

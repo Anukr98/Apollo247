@@ -1,10 +1,17 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
 // GraphQL query operation: paymentTransactionStatus
 // ====================================================
+
+export interface paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup {
+  __typename: "AmountBreakUp";
+  actual_price: number | null;
+  slashed_price: number | null;
+}
 
 export interface paymentTransactionStatus_paymentTransactionStatus_appointment {
   __typename: "AppointmentPaymentDetails";
@@ -13,6 +20,7 @@ export interface paymentTransactionStatus_paymentTransactionStatus_appointment {
   bankTxnId: string | null;
   paymentStatus: string | null;
   amountPaid: number | null;
+  amountBreakup: paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup | null;
 }
 
 export interface paymentTransactionStatus_paymentTransactionStatus {

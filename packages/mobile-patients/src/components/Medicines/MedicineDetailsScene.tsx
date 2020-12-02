@@ -10,6 +10,8 @@ import {
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
+  CheckBoxFilled,
+  CircleBannerNonMember,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -35,12 +37,20 @@ import {
   isEmptyObject,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postFirebaseAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   g,
   getDiscountPercentage,
+  getCareCashback,
+  addPharmaItemToCart,
+  savePastSearch,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
@@ -71,6 +81,15 @@ import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  GetSubscriptionsOfUserByStatusVariables,
+  GetSubscriptionsOfUserByStatus,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
 
 const { width, height } = Dimensions.get('window');
 
@@ -212,13 +231,91 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
+  careCardContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    padding: 15,
+    marginBottom: 20,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    borderStyle: 'dashed',
+  },
+  checkBoxIconStyle: {
+    borderRadius: 50,
+    width: 25,
+    height: 25,
+    resizeMode: 'contain',
+    marginRight: 10,
+    marginTop: 5,
+  },
+  careTextContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  careRedBox: {
+    width: 30,
+    height: 30,
+    backgroundColor: '#F0533B',
+    borderRadius: 5,
+    marginRight: 15,
+  },
+  getCareText: {
+    ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
+    flexWrap: 'wrap',
+  },
+  careSubscribeButton: {
+    ...theme.viewStyles.text('SB', 16, '#FC9916', 1, 18),
+    textAlign: 'right',
+    marginTop: 15,
+  },
+  circleText: {
+    ...theme.viewStyles.text('M', 10, '#02475B', 1, 15),
+    paddingVertical: 2,
+    marginLeft: -4,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 38,
+    height: 20,
+  },
+  careBanner: {
+    resizeMode: 'contain',
+    width: '100%',
+    height: 200,
+  },
+  priceView: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+  },
+  discountPriceView: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  mrp: {
+    ...theme.viewStyles.text('SB', 13, '#02475b', 1, 20, 0.35),
+  },
+  price: {
+    ...theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35),
+  },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
 });
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
-  'Category ID' | 'Category Name' | 'Section Name'
+  'CategoryID' | 'CategoryName' | 'SectionName'
 >;
 
 export interface MedicineDetailsSceneProps
@@ -237,8 +334,15 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const client = useApolloClient();
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    isPharmacyLocationServiceable,
+    circleSubscription,
+    setAxdcCode,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -254,17 +358,29 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
+  const [isCircleSubscribed, setIsCircleSubscribed] = useState<boolean>(false);
 
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
   const overview = medicineDetails?.PharmaOverview?.[0]?.Overview;
   const medicineOverview =
-    (!overview || typeof overview == 'string') ? [] : helpers.getMedicineOverview(overview || []);
+    !overview || typeof overview == 'string' ? [] : helpers.getMedicineOverview(overview || []);
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
 
-  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const {
+    addCartItem,
+    cartItems,
+    updateCartItem,
+    removeCartItem,
+    isCircleSubscription,
+    setCircleSubscriptionId,
+    setIsCircleSubscription,
+  } = useShoppingCart();
+  const {
+    cartItems: diagnosticCartItems,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
@@ -276,6 +392,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const movedFrom = props.navigation.getParam('movedFrom');
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
+
+  const { special_price, price, type_id } = medicineDetails;
+  const finalPrice = price - special_price ? special_price : price;
+  const cashback = getCareCashback(Number(finalPrice), type_id);
 
   useEffect(() => {
     if (!_deliveryError) {
@@ -292,6 +412,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setmedicineDetails(productDetails || {});
           postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
+          savePastSearch(client, {
+            typeId: productDetails.sku,
+            typeName: productDetails.name,
+            type: SEARCH_TYPE.MEDICINE,
+            patient: currentPatient?.id,
+            image: productDetails.thumbnail,
+          });
+
           if (_deliveryError) {
             setTimeout(() => {
               scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -361,10 +489,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         source: movedFrom,
         ProductId: sku,
         ProductName: name,
-        'Stock availability': !!is_in_stock ? 'Yes' : 'No',
+        Stockavailability: !!is_in_stock ? 'Yes' : 'No',
         ...productPageViewedEventProps,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
   };
 
@@ -399,6 +529,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       productType: type_id,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
+    postFirebaseAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
     postAppsFlyerAddToCartEvent(item, id);
   };
@@ -428,9 +559,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
     try {
+      const response = await pinCodeServiceabilityApi247(pincode);
+      const { data } = response;
+      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
       let pinCodeNotServiceable =
         isPharmacyLocationServiceable == undefined || pharmacyPincode != pincode
-          ? !(await pinCodeServiceabilityApi247(pincode)).data.response
+          ? !data?.response?.servicable
           : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
       setNotServiceable(pinCodeNotServiceable);
       if (pinCodeNotServiceable) {
@@ -612,6 +746,30 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     />
   );
 
+  const renderCareCashback = () => {
+    if (!!cashback) {
+      return (
+        <>
+          <CareCashbackBanner
+            bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
+            textStyle={styles.circleText}
+            logoStyle={styles.circleLogo}
+          />
+          <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
+            Effective price for you
+            <Text style={{ fontWeight: 'bold' }}>
+              {' '}
+              {string.common.Rs}
+              {(finalPrice - cashback).toFixed(2)}
+            </Text>
+          </Text>
+        </>
+      );
+    } else {
+      return <></>;
+    }
+  };
+
   const renderBottomButtons = () => {
     const itemQty = getItemQuantity(sku);
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
@@ -660,42 +818,23 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ) : (
           <View style={styles.bottomView}>
             <View style={styles.bottonButtonContainer}>
-              <View
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-start',
-                }}
-              >
-                <Text style={theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35)}>
-                  ₹{medicineDetails.special_price || medicineDetails.price}
+              <View style={styles.priceView}>
+                <Text style={styles.price}>
+                  {discountPercent
+                    ? `MRP ${string.common.Rs}${medicineDetails.special_price}`
+                    : `MRP ${string.common.Rs}${medicineDetails.price}`}
                 </Text>
                 {!!medicineDetails.special_price && (
-                  <View
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                    }}
-                  >
-                    <Text
-                      style={[
-                        theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
-                        {
-                          textDecorationLine: 'line-through',
-                          color: '#01475b',
-                          opacity: 0.6,
-                          paddingRight: 5,
-                        },
-                      ]}
-                    >
-                      (₹{medicineDetails.price})
+                  <View style={styles.discountPriceView}>
+                    {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
+                    <Text style={styles.priceStrikeOff}>
+                      ({string.common.Rs}
+                      {medicineDetails.price})
                     </Text>
-                    <Text style={theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35)}>
-                      {discountPercent}% off
-                    </Text>
+                    <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
+                {circleSubscription?._id && renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()
@@ -834,6 +973,63 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         </View>
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
+        {isCircleSubscribed && renderCircleSubscribeSuccess()}
+        {/* {!!cashback && renderCircleBanners()} */}
+      </View>
+    );
+  };
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setIsCircleSubscribed(true);
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setIsCircleSubscribed(false);
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
+
+  const renderCircleSubscribeSuccess = () => {
+    return (
+      <View style={styles.careCardContainer}>
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
+          <CheckBoxFilled style={styles.checkBoxIconStyle} />
+          <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30)}>Yay!</Text>
+          <CareCashbackBanner
+            bannerText={`membership added to your cart!`}
+            textStyle={{
+              ...theme.viewStyles.text('SB', 14, '#02475B', 1, 20),
+            }}
+            logoStyle={{
+              width: 60,
+              height: 35,
+            }}
+          />
+        </View>
       </View>
     );
   };

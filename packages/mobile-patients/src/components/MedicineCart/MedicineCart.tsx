@@ -1,6 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { View, SafeAreaView, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  SafeAreaView,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ScrollView,
+  AppState,
+  AppStateStatus,
+  BackHandler,
+} from 'react-native';
+import { WebView } from 'react-native-webview';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -32,9 +43,14 @@ import {
 import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
+  SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  g,
+  formatAddress,
+  formatAddressToLocation,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
@@ -62,6 +78,9 @@ import {
   PricemismatchEvent,
   postTatResponseFailureEvent,
   applyCouponClickedEvent,
+  selectDeliveryAddressClickedEvent,
+  uploadPrescriptionClickedEvent,
+  fireCircleBuyNowEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -72,6 +91,14 @@ import {
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import moment from 'moment';
+import {
+  makeAdressAsDefaultVariables,
+  makeAdressAsDefault,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -93,42 +120,71 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
+    setCircleMembershipCharges,
+    isCircleSubscription,
+    circlePlanSelected,
+    setCircleSubPlanId,
+    setIsCircleSubscription,
+    deliveryTime,
+    setdeliveryTime,
+    cartTotalCashback,
+    circleMembershipCharges,
+    setIsFreeDelivery,
+    setCirclePlanSelected,
+    setDefaultCirclePlan,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    setPharmacyLocation,
+    circleSubscription,
+    axdcCode,
+    setAxdcCode,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
   const [storeType, setStoreType] = useState<string | undefined>('');
+  const [storeDistance, setStoreDistance] = useState(0);
   const [shopId, setShopId] = useState<string | undefined>('');
-  const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isfocused, setisfocused] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
   const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
+  const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+  const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
 
   useEffect(() => {
     fetchAddress();
-    availabilityTat();
+    availabilityTat(false);
     fetchUserSpecificCoupon();
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
+    setCircleMembershipCharges && setCircleMembershipCharges(0);
+    if (!circleSubscription?._id && cartTotal > 400) {
+      setShowCareSelectPlans(true);
+    }
   }, []);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisfocused(true);
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      AppState.addEventListener('change', handleAppStateChange);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setisfocused(false);
+      AppState.removeEventListener('change', handleAppStateChange);
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
@@ -140,13 +196,17 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      isfocused ? availabilityTat(true) : availabilityTat();
+      isfocused && availabilityTat(false, true);
     }
   }, [deliveryAddressId]);
 
   useEffect(() => {
     if (isfocused) {
-      availabilityTat();
+      availabilityTat(false);
+    }
+    // remove circle subscription applied(for non member) if cart items are empty
+    if (cartItems.length < 1 && !circleSubscription?._id) {
+      setIsCircleSubscription && setIsCircleSubscription(false);
     }
   }, [cartItems]);
 
@@ -157,8 +217,40 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [couponProducts]);
 
   useEffect(() => {
+    if (!!coupon) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+    } else {
+      if (!circleSubscription?._id) {
+        setCircleMembershipCharges &&
+          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      } else {
+        setIsCircleSubscription && setIsCircleSubscription(true);
+      }
+    }
+  }, [coupon]);
+
+  useEffect(() => {
+    setIsFreeDelivery && setIsFreeDelivery(!!circleMembershipCharges);
+  }, [circleMembershipCharges])
+
+  useEffect(() => {
     onFinishUpload();
   }, [isPhysicalUploadComplete]);
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    setappState(nextAppState);
+  };
+
+  useEffect(() => {
+    if (appState == 'active') {
+      availabilityTat(true);
+    }
+  }, [appState]);
+
+  const handleBack = () => {
+    setCoupon!(null);
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+  };
 
   async function fetchAddress() {
     try {
@@ -192,6 +284,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             const coupon = couponList[0].coupon;
             const msg = couponList[0].message;
             try {
+              setCoupon!(null);
               await validateCoupon(coupon, msg, true);
             } catch (error) {
               return;
@@ -212,9 +305,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setloading(true);
       const response = await pinCodeServiceabilityApi247(address.zipcode!);
       const { data } = response;
-      console.log(data);
-      if (data.response) {
+      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
+      if (data?.response?.servicable) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
+        setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
@@ -228,10 +322,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }
 
-  async function availabilityTat(addressChange?: boolean) {
+  async function availabilityTat(forceCheck: boolean, addressChange?: boolean) {
     const newCartItems =
       cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
-    if (newCartItems == lastCartItems) {
+    if (newCartItems == lastCartItems && !forceCheck) {
       return;
     }
     if (deliveryAddressId && cartItems.length > 0) {
@@ -267,32 +361,36 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
-          console.log('res >>', res.data);
-          const tatTimeStamp = g(res, 'data', 'response', 'tatU');
+          const response = res?.data?.response;
+          const tatTimeStamp = response?.tatU;
           if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = g(res, 'data', 'response', 'tat');
+            const deliveryDate = response?.tat;
+            const { distance, storeCode, storeType } = response;
             if (deliveryDate) {
-              const inventoryData = g(res, 'data', 'response', 'items') || [];
+              const inventoryData = response?.items || [];
               setloading!(false);
-              if (inventoryData && inventoryData.length) {
-                setStoreType(g(res, 'data', 'response', 'storeCode'));
-                setShopId(g(res, 'data', 'response', 'storeType'));
-                setdeliveryTime(deliveryDate);
-                addressChange && NavigateToCartSummary(deliveryDate);
+              if (inventoryData?.length) {
+                setStoreType(storeType);
+                setShopId(storeCode);
+                setStoreDistance(distance);
+                setdeliveryTime?.(deliveryDate);
+                addressSelectedEvent(selectedAddress, deliveryDate);
+                addressChange &&
+                  NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
                 updatePricesAfterTat(inventoryData, updatedCartItems);
               }
-              addressChange && NavigateToCartSummary(deliveryDate);
+              addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
             } else {
-              addressChange && NavigateToCartSummary('');
+              addressChange && NavigateToCartSummary(genericServiceableDate);
               handleTatApiFailure(selectedAddress, {});
             }
           } else {
             handleTatApiFailure(selectedAddress, {});
-            addressChange && NavigateToCartSummary('');
+            addressChange && NavigateToCartSummary(genericServiceableDate);
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
-          addressChange && NavigateToCartSummary('');
+          addressChange && NavigateToCartSummary(genericServiceableDate);
         }
       } catch (error) {
         handleTatApiFailure(selectedAddress, error);
@@ -303,14 +401,61 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }
 
+  const genericServiceableDate = moment()
+    .add(2, 'days')
+    .set('hours', 20)
+    .set('minutes', 0)
+    .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+
   function handleTatApiFailure(
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
     error: any
   ) {
-    setdeliveryTime('');
+    // remove applied circle subscription if tat api returns error
+    if (!circleSubscription?._id) {
+      setIsCircleSubscription && setIsCircleSubscription(false);
+    }
+    addressSelectedEvent(selectedAddress, genericServiceableDate);
+    setdeliveryTime?.(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
     setloading(false);
     validatePharmaCoupon();
+  }
+
+  function addressSelectedEvent(
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    tatDate: string
+  ) {
+    const currentDate = moment();
+    postPhamracyCartAddressSelectedSuccess(
+      address?.zipcode!,
+      formatAddress(address),
+      'Yes',
+      new Date(tatDate),
+      moment(tatDate).diff(currentDate, 'd')
+    );
+  }
+
+  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
+    try {
+      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+        query: SET_DEFAULT_ADDRESS,
+        variables: { patientAddressId: address?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+      const updatedAddresses = addresses.map((item) => ({
+        ...item,
+        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+      }));
+      setAddresses!(updatedAddresses);
+      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
+    } catch (error) {
+      CommonBugFender('set_default_Address_on_Cart_Page', error);
+    }
   }
 
   async function updatePricesAfterTat(
@@ -335,12 +480,26 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     });
     setCartItems!(Items);
     await validatePharmaCoupon();
-    console.log(loading);
   }
-  function NavigateToCartSummary(deliveryTime: string) {
-    props.navigation.navigate(AppRoutes.CartSummary, {
-      deliveryTime: deliveryTime,
-    });
+  function hasUnserviceableproduct() {
+    return !!cartItems.find(
+      ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
+    );
+  }
+  function NavigateToCartSummary(
+    deliveryTime: string,
+    storeDistance?: number,
+    storeType?: string,
+    shopId?: string
+  ) {
+    !hasUnserviceableproduct() &&
+      isfocused &&
+      props.navigation.navigate(AppRoutes.CartSummary, {
+        deliveryTime: deliveryTime,
+        storeDistance: storeDistance,
+        tatType: storeType,
+        shopId: shopId,
+      });
   }
 
   async function validatePharmaCoupon() {
@@ -379,9 +538,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
-    if (couponProducts.length) {
-      removeFreeProductsFromCart();
-    }
     renderAlert(message);
   };
 
@@ -393,7 +549,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
-      pinCode: locationDetails && locationDetails.pincode,
+      pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
         sku: item.id,
         categoryId: item.productType,
@@ -415,6 +571,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             !autoApply && removeCouponWithAlert(g(response.data, 'response', 'reason'));
             rej(response.data.response.reason);
           }
+
+          // set coupon free products again (in case when price of sku is changed)
+          const products = g(response.data, 'response', 'products');
+          if (products && products.length) {
+            setCouponFreeProducts(products);
+          }
         } else {
           CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
           !autoApply && removeCouponWithAlert(g(response.data, 'errorMsg'));
@@ -427,6 +589,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         rej('Sorry, unable to validate coupon right now.');
       }
     });
+  };
+
+  const setCouponFreeProducts = (products: any) => {
+    const freeProducts = products.filter((product) => {
+      return product.couponFree === 1;
+    });
+    freeProducts.forEach((item, index) => {
+      const filteredProduct = cartItems.filter((product) => {
+        return product.id === item.sku;
+      });
+      if (filteredProduct.length) {
+        item.quantity = filteredProduct[0].quantity;
+      }
+    });
+    setCouponProducts!(freeProducts);
   };
 
   async function fetchPickupStores(pincode: string) {
@@ -471,6 +648,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
             isFreeCouponProduct: !!couponProducts[index]!.couponFree,
+            couponPrice: 0,
+            unserviceable: false,
+            unavailableOnline: medicineDetails.sell_online == 0,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -492,9 +672,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   async function fetchProductSuggestions() {
     const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
     const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
-    const response = await getProductsByCategoryApi(categoryId, pageCount);
-    const products = response?.data?.products.slice(0, 10) || [];
-    setsuggestedProducts(products);
+    try {
+      const response = await getProductsByCategoryApi(categoryId, pageCount, null, null, axdcCode);
+      const products = response?.data?.products.slice(0, 15) || [];
+      setsuggestedProducts(products);
+    } catch (error) {
+      CommonBugFender('YourCart_error_whilefetchingSuggestedProducts', error);
+    }
   }
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
@@ -570,6 +754,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             props.navigation.push(AppRoutes.AddAddress, {
               KeyName: 'Update',
               DataAddress: address,
+              ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
           }}
@@ -597,6 +782,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       isChennaiOrder: isChennaiAddress ? true : false,
+      storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });
@@ -610,9 +796,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPress={() => {
           props.navigation.navigate('MEDICINES', { focusSearch: true });
           setCoupon!(null);
-          if (couponProducts.length) {
-            removeFreeProductsFromCart();
-          }
           navigatedFrom === 'registration'
             ? props.navigation.dispatch(
                 StackActions.reset({
@@ -644,9 +827,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
           setCoupon!(null);
-          if (couponProducts.length) {
-            removeFreeProductsFromCart();
-          }
           props.navigation.goBack();
         }}
       />
@@ -660,12 +840,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     });
   };
 
-  const removeFreeProductsFromCart = () => {
-    const updatedCartItems = cartItems.filter((item) => item.price != 0);
-    setCartItems!(updatedCartItems);
-    setCouponProducts!([]);
-  };
-
   function applyCoupon() {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
@@ -673,9 +847,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       props.navigation.navigate(AppRoutes.ApplyCouponScene);
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'));
-      if (couponProducts.length) {
-        removeFreeProductsFromCart();
-      }
     }
   }
 
@@ -683,6 +854,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return (
       <CartItemsList
         screen={'cart'}
+        setloading={setloading}
         onPressProduct={(item) => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.id,
@@ -708,10 +880,116 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
+        {(coupon || isCircleSubscription || circleSubscription?._id) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
     );
+  };
+
+  const renderApplyCircleBenefits = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={styles.applyBenefits}
+        onPress={() => {
+          if (!coupon && isCircleSubscription) {
+            if (!circleSubscription?._id || cartTotalCashback) {
+              setIsCircleSubscription && setIsCircleSubscription(false);
+              setCirclePlanSelected && setCirclePlanSelected(null);
+              setDefaultCirclePlan && setDefaultCirclePlan(null);
+            }
+          } else {
+            setCoupon && setCoupon(null);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+          }
+        }}
+      >
+        {!coupon && isCircleSubscription ? (
+          <View style={{ flexDirection: 'row' }}>
+            <CheckedIcon style={{ marginTop: 8, marginRight: 4, }} />
+            <CareCashbackBanner
+              bannerText={`benefits APPLIED!`}
+              textStyle={styles.circleText}
+              logoStyle={styles.circleLogo}
+            />
+          </View>
+        ) : (
+          <View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={styles.circleApplyContainer} />
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.applyText}>Apply{' '}</Text>
+                <CareCashbackBanner
+                  bannerText={`benefits instead`}
+                  textStyle={styles.circleText}
+                  logoStyle={styles.circleLogo}
+                />
+              </View>
+            </View>
+            <Text style={styles.useCircleText}>
+              {`Use your Circle membership instead & get `}
+              <Text
+                style={{ ...theme.viewStyles.text('SB', 12, '#02475B', 1, 17) }}
+              >{`₹${cartTotalCashback} Cashback and Free delivery `}</Text>
+              <Text>on this order</Text>
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCareSubscriptionOptions = () => {
+    if (showCareSelectPlans) {
+      return (
+        <CircleMembershipPlans
+          navigation={props.navigation}
+          isConsultJourney={false}
+          onSelectMembershipPlan={(plan) => {
+            if (plan && !coupon) {
+              // if plan is selected
+              fireCircleBuyNowEvent(currentPatient);
+              setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+            } else {
+              // if plan is removed
+              setShowCareSelectPlans(false);
+              setCircleMembershipCharges && setCircleMembershipCharges(0);
+            }
+          }}
+          source={'Pharma Cart'}
+        />
+      );
+    } else {
+      return (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.viewPlanContainer}
+          onPress={() => {
+            setShowCareSelectPlans(true);
+          }}
+        >
+          <View style={{ flexDirection: 'row' }}>
+            <View style={styles.viewPlan} />
+            <View>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.viewText}>View</Text>
+                <CareCashbackBanner
+                  bannerText={`plans`}
+                  textStyle={styles.viewText}
+                  logoStyle={styles.circleLogo}
+                />
+              </View>
+              <Text style={styles.viewSubText}>
+                Viewing and/or selecting plans will remove any applied coupon. You can apply the
+                coupon again later.
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    }
   };
 
   const renderSavings = () => {
@@ -730,8 +1008,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         navigation={props.navigation}
         type={'cartOrMedicineFlow'}
         onUpload={() =>
+          !hasUnserviceableproduct() &&
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
+            storeDistance: storeDistance,
+            tatType: storeType,
+            shopId: shopId,
           })
         }
       />
@@ -761,16 +1043,32 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderProceedBar = () => {
     return (
       <ProceedBar
-        onPressAddDeliveryAddress={() => showAddressPopup()}
-        onPressUploadPrescription={() => setshowPopUp(true)}
+        onPressAddDeliveryAddress={() => {
+          props.navigation.navigate(AppRoutes.AddAddress, {
+            source: 'Cart' as AddressSource,
+          });
+          postPharmacyAddNewAddressClick('Cart');
+        }}
+        onPressSelectDeliveryAddress={() => {
+          selectDeliveryAddressClickedEvent(currentPatient?.id);
+          showAddressPopup();
+        }}
+        onPressUploadPrescription={() => {
+          uploadPrescriptionClickedEvent(currentPatient?.id);
+          setshowPopUp(true);
+        }}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
         onPressTatCard={() =>
+          !hasUnserviceableproduct() &&
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
+            storeDistance: storeDistance,
+            tatType: storeType,
+            shopId: shopId,
           })
         }
       />
@@ -788,6 +1086,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderHeader()}
           {renderUnServiceable()}
           {renderCartItems()}
+          {(!isCircleSubscription || showCareSelectPlans) &&
+            !coupon &&
+            !circleSubscription?._id &&
+            renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
@@ -834,5 +1136,67 @@ const styles = StyleSheet.create({
   amountHeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
+  },
+  applyBenefits: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 15,
+    marginTop: 10,
+    padding: 10,
+  },
+  circleText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 40,
+  },
+  circleApplyContainer: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#00B38E',
+    borderRadius: 5,
+    marginTop: 9,
+    marginRight: 10,
+  },
+  applyText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  useCircleText: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 17),
+    marginLeft: 25,
+  },
+  viewPlanContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    marginHorizontal: 13,
+    borderRadius: 5,
+    marginBottom: 0,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    borderStyle: 'dashed',
+  },
+  viewPlan: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    marginRight: 10,
+    marginTop: 10,
+  },
+  viewText: {
+    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+    marginRight: 5,
+  },
+  viewSubText: {
+    ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
+    width: '50%',
   },
 });

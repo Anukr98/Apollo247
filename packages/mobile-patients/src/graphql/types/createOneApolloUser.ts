@@ -18,5 +18,5 @@ export interface createOneApolloUser {
 }
 
 export interface createOneApolloUserVariables {
-  patientId?: string | null;
+  patientId: string;
 }

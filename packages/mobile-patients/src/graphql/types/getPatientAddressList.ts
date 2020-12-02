@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { PATIENT_ADDRESS_TYPE } from "./globalTypes";
@@ -26,6 +27,7 @@ export interface getPatientAddressList_getPatientAddressList_addressList {
   stateCode: string | null;
   mobileNumber: string | null;
   name: string | null;
+  defaultAddress: boolean | null;
 }
 
 export interface getPatientAddressList_getPatientAddressList {

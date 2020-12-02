@@ -56,6 +56,7 @@ type leftText = {
 };
 
 type rightText = {
+  style?: StyleProp<TextStyle>;
   isBack?: boolean;
   title?: string;
   onPress?: TextProps['onPress'];
@@ -133,7 +134,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
       </View>
       <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
         {rightText && (
-          <Text style={styles.rightTextStyle} onPress={rightText.onPress}>
+          <Text style={[styles.rightTextStyle, rightText.style]} onPress={rightText.onPress}>
             {rightText.title}
           </Text>
         )}

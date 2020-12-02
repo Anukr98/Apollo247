@@ -1,8 +1,10 @@
 import {
   LocationData,
   useAppCommonData,
+  bannerType,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import stripHtml from 'string-strip-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -10,6 +12,7 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
+import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import {
   CartIcon,
   DropdownGreen,
@@ -19,10 +22,13 @@ import {
   SearchSendIcon,
   TestsIcon,
   ShieldIcon,
-  HomeIcon,
-  PrimaryIcon,
   LinkedUhidIcon,
   PendingIcon,
+  OfferIcon,
+  SearchIcon,
+  AddIcon,
+  RemoveIcon,
+  CircleBannerNonMember,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -30,12 +36,14 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_DIAGNOSTIC_DATA,
   GET_DIAGNOSTIC_ORDER_LIST,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_ID,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_DIAGNOSTIC_HOME_PAGE_ITEMS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  GET_ALL_GROUP_BANNERS_OF_USER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -43,11 +51,6 @@ import {
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  getDiagnosticsData,
-  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
-  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import {
   searchDiagnosticsByCityID,
   searchDiagnosticsByCityIDVariables,
@@ -60,18 +63,21 @@ import {
   PackageInclusion,
   getPackageData,
   getPlaceInfoByPincode,
+  DIAGNOSTIC_GROUP_PLAN,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
   doRequestAndAccessLocation,
   doRequestAndAccessLocationModified,
   g,
-  getNetStatus,
   isValidSearch,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
   setWebEngageScreenNames,
   getFormattedLocation,
+  getDiscountPercentage,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -93,17 +99,17 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
+  Alert,
+  BackHandler,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -112,7 +118,29 @@ import _ from 'lodash';
 import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
-} from '../../graphql/types/getPincodeServiceability';
+} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
+import {
+  findDiagnosticsByItemIDsAndCityID,
+  findDiagnosticsByItemIDsAndCityIDVariables,
+  findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
+import {
+  getDiagnosticsHomePageItems,
+  getDiagnosticsHomePageItemsVariables,
+  getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers,
+  getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers_diagnostics,
+  getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHomePageItems';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
+import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -220,6 +248,53 @@ const styles = StyleSheet.create({
     marginTop: '1%',
     tintColor: '#890000',
   },
+  discountTagView: {
+    elevation: 20,
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    zIndex: 1,
+  },
+  discountTagText: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+  nonSubPrice: {
+    ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
+    textAlign: 'center',
+    marginRight: 5,
+    marginTop: -2,
+  },
+  nonSubStrikedPrice: {
+    ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
+    textAlign: 'left',
+    marginRight: 5,
+    textDecorationLine: 'line-through',
+  },
+  addToCartView: {
+    flexGrow: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+  strikedPrice: {
+    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+    textDecorationLine: 'line-through',
+  },
+  normalPrice: {
+    ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
+  },
+  featuredPackageImageView: { height: 80, width: 70 },
+  featuredPackageImageStyle: { height: 70, width: 70, resizeMode: 'contain' },
+  featuredPackageTextView: {
+    marginHorizontal: 10,
+    width: '63%',
+    justifyContent: 'center',
+  },
 });
 
 export interface TestsProps
@@ -229,36 +304,33 @@ export interface TestsProps
 
 export const Tests: React.FC<TestsProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const {
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    clearDiagnoticCartInfo,
+    isDiagnosticCircleSubscription,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const {
+    cartItems: shopCartItems,
+    setCircleSubscriptionId,
+    setCirclePlanSelected,
+    setIsCircleSubscription,
+    setCircleCashback,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
-  // const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  const [currentLocation, setcurrentLocation] = useState<string>('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
-  const [serviceabilityCity, setServiceabilityCity] = useState<string>('');
   const [optionSelected, setOptionSelected] = useState<string>('');
-  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
-    []
-  );
+
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
   );
 
-  const [ordersFetched, setOrdersFetched] = useState<
-    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
-  >([]);
-
-  const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
-    getDiagnosticsData
-  >(GET_DIAGNOSTIC_DATA, {
-    variables: {},
-    fetchPolicy: 'cache-first',
-  });
-
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const {
     locationDetails,
     setLocationDetails,
@@ -271,13 +343,32 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setDiagnosticServiceabilityData,
     isDiagnosticLocationServiceable,
     setDiagnosticLocationServiceable,
+    circleSubscription,
+    setCircleSubscription,
+    setBannerData,
+    bannerData,
   } = useAppCommonData();
+
+  const [ordersFetched, setOrdersFetched] = useState<
+    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
+  >([]);
+
+  const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
+    getDiagnosticsHomePageItems,
+    getDiagnosticsHomePageItemsVariables
+  >(GET_DIAGNOSTIC_HOME_PAGE_ITEMS, {
+    variables: { cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9 },
+    fetchPolicy: 'cache-first',
+  });
+
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
   const [showLocations, setshowLocations] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState({});
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
+  const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const hasLocation = locationDetails;
 
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -289,7 +380,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
   };
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+      ...patientAttributes,
+      Serviceability: isDiagnosticLocationServiceable == 'true' ? 'Yes' : 'No',
+    };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
   }, []);
 
@@ -306,7 +400,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     if (!!locationDetails || !!diagnosticLocation) {
-      if (isDiagnosticLocationServiceable) {
+      if (isDiagnosticLocationServiceable == 'true') {
         const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
         postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
       } else {
@@ -319,7 +413,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [diagnosticPincode]);
 
-  const setWebEngageEventOnSearchItem = (keyword: string, results: []) => {
+  const setWebEngageEventOnSearchItem = (keyword: string, results: any[]) => {
     if (keyword.length > 2) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
         ...patientAttributes,
@@ -381,6 +475,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           CommonBugFender('Tests_ordersRefetch_PATIENT_CHANGE', e);
         });
     }
+    if (currentPatient) {
+      getUserBanners();
+    }
   }, [currentPatient]);
 
   /**
@@ -389,6 +486,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     checkLocation();
   }, [locationDetails]);
+
+  useEffect(() => {
+    setBannerData && setBannerData([]); // default banners to be empty
+  }, []);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setBannerData && setBannerData([]);
+
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    return false;
+  };
 
   const checkLocation = () => {
     !locationDetails &&
@@ -488,8 +618,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   );
 
-  // let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
-
   useEffect(() => {
     if (!ordersLoading) {
       const orderData = g(orders, 'getDiagnosticOrdersList', 'ordersList') || [];
@@ -514,6 +642,36 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, []);
+
+  const getUserBanners = async () => {
+    const res: any = await getUserBannersList(
+      client,
+      currentPatient,
+      string.banner_context.DIAGNOSTIC_HOME
+    );
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+          from={string.banner_context.DIAGNOSTIC_HOME}
+          source={'Diagnostic'}
+        />
+      );
+    }
+  };
 
   const setWebEnageEventForItemViewedOnLanding = (name: string, id: string, type: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING] = {
@@ -556,15 +714,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      // 'Patient Gender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const postBrowsePackageEvent = (packageName: string) => {
@@ -617,12 +779,57 @@ export const Tests: React.FC<TestsProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          const addrComponents = data.results[0].address_components || [];
-          const latLang = data.results[0].geometry.location || {};
-          const response = getFormattedLocation(addrComponents, latLang, pincode);
-          setDiagnosticLocation!(response);
-          !locationDetails && setLocationDetails!(response);
+          if (data?.results?.length > 0) {
+            const addrComponents = data.results[0].address_components || [];
+            const latLang = data.results[0].geometry.location || {};
+            const response = getFormattedLocation(addrComponents, latLang, pincode);
+            let setCity, setState;
+            if (isDiagnosticLocationServiceable == 'true' && diagnosticServiceabilityData == null) {
+              setCity = diagnosticLocation?.city! || '';
+              setState = diagnosticLocation?.state! || '';
+            } else if (
+              isDiagnosticLocationServiceable == 'true' &&
+              diagnosticServiceabilityData?.city != ''
+            ) {
+              setCity = diagnosticServiceabilityData?.city! || '';
+              setState = diagnosticServiceabilityData?.state! || '';
+            } else {
+              setCity = response.city || '';
+              setState = response.state || '';
+            }
+            (response.city = setCity), (response.state = setState);
+            setDiagnosticLocation!(response);
+            !locationDetails && setLocationDetails!(response);
+          } else {
+            //serviceable but no response
+            let response = {
+              displayName: '',
+              area:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.city!
+                    : diagnosticServiceabilityData?.city!
+                  : '',
+              city:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.city!
+                    : diagnosticServiceabilityData?.city!
+                  : '',
+              state:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.state!
+                    : diagnosticServiceabilityData?.state!
+                  : '',
+              country: 'India',
+              pincode: String(pincode),
+            };
+            setDiagnosticLocation!(response);
+            !locationDetails && setLocationDetails!(response);
+          }
         } catch (e) {
+          console.log(e);
           handleUpdatePlaceInfoByPincodeError(e);
         }
       })
@@ -633,10 +840,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderPopup = () => {
     const onClose = (serviceable?: boolean, response?: LocationData) => {
       setshowLocationpopup(false);
-      // if (serviceable) {
-      //   setServiceabilityMsg('');
-      //   setPharmacyLocationServiceable!(true);
-      // }
     };
 
     return (
@@ -662,9 +865,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .then((response) => {
         setLoadingContext!(false);
         checkIsPinCodeServiceable(response.pincode);
-        response && setDiagnosticLocation!(response);
-        // response && WebEngageEventAutoDetectLocation(response.pincode, true);
-        response && !locationDetails && setLocationDetails!(response);
       })
       .catch((e) => {
         CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
@@ -698,16 +898,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
             let obj = {
-              cityId: serviceableData.cityID?.toString() || '',
-              stateId: serviceableData.stateID?.toString() || '',
+              cityId: serviceableData.cityID?.toString() || 0,
+              stateId: serviceableData.stateID?.toString() || 0,
               state: serviceableData.stateName || '',
               city: serviceableData.cityName || '',
             };
             setDiagnosticServiceabilityData!(obj);
-            setDiagnosticLocationServiceable!(true);
+            setDiagnosticLocationServiceable!('true');
             setServiceabilityMsg('');
           } else {
-            setDiagnosticLocationServiceable!(false);
+            setDiagnosticLocationServiceable!('false');
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
           }
@@ -757,7 +957,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             );
           }}
         >
-          {/* <HomeIcon /> */}
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
@@ -816,7 +1015,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         title={'My Orders'}
         leftIcon={<TestsIcon />}
       />
-      // )) || <View style={{ height: 24 }} />
     );
   };
 
@@ -867,22 +1065,38 @@ export const Tests: React.FC<TestsProps> = (props) => {
     imgUrl: string;
     price: number;
     specialPrice?: number;
+    circlePrice?: number;
+    circleSpecialPrice?: number;
     isAddedToCart: boolean;
     onAddOrRemoveCartItem: () => void;
     onPress: () => void;
     style?: ViewStyle;
+    discount: number | string;
+    circleDiscount: number | string;
   }) => {
-    const { name, imgUrl, price, specialPrice, style } = data;
+    const {
+      name,
+      imgUrl,
+      price,
+      specialPrice,
+      circlePrice,
+      circleSpecialPrice,
+      style,
+      discount,
+      circleDiscount,
+    } = data;
+
+    const promoteCircle = discount < circleDiscount;
 
     const renderDiscountedPrice = () => {
       const styles = StyleSheet.create({
         discountedPriceText: {
           ...theme.viewStyles.text('M', 14, '#02475b', 0.4, 24),
-          textAlign: 'center',
+          textAlign: 'left',
         },
         priceText: {
-          ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24),
-          textAlign: 'center',
+          ...theme.viewStyles.text('SB', 14, '#01475B', 1, 24),
+          textAlign: 'left',
         },
       });
       return (
@@ -890,12 +1104,47 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={[
             {
               flexDirection: 'row',
-              marginBottom: 8,
+              marginBottom: 4, //8
             },
           ]}
         >
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
-          {!!specialPrice && (
+          {/**
+           * if promote circle - sub/non-sub don't show top view price
+           */}
+          {promoteCircle ? null : (
+            <View style={{ flexDirection: 'row' }}>
+              {/**
+               * if special price exists
+               */}
+              {specialPrice != price && (
+                <Text
+                  style={{
+                    marginRight: 4,
+                    ...theme.viewStyles.text('SB', 12, '#01475B', 0.5, 24),
+                    textDecorationLine: 'line-through',
+                    marginTop: 15, //added
+                  }}
+                >
+                  {string.common.Rs} {price}
+                </Text>
+              )}
+
+              <Text
+                style={{
+                  marginRight: 4,
+                  ...theme.viewStyles.text('SB', 14, '#01475B', 1, 24),
+                  textDecorationLine: 'none',
+                  marginTop: 15, //added
+                }}
+              >
+                {string.common.Rs} {specialPrice || price}
+              </Text>
+            </View>
+          )}
+          {/**
+           * useless view..
+           */}
+          {promoteCircle && !!specialPrice && specialPrice != price && (
             <Text style={styles.discountedPriceText}>
               (
               <Text
@@ -905,7 +1154,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   },
                 ]}
               >
-                Rs. {price}
+                {string.common.Rs} {price}
               </Text>
               )
             </Text>
@@ -920,13 +1169,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={{
             ...theme.viewStyles.card(12, 0),
             elevation: 10,
-            height: 188,
-            width: 152,
+            height: 210, //220
+            width: 180, //152
             marginHorizontal: 4,
-            alignItems: 'center',
+            alignItems: 'flex-start', //center
             ...style,
           }}
         >
+          {renderDiscountTag(
+            promoteCircle && isDiagnosticCircleSubscription ? circleDiscount : discount,
+            'tests'
+          )}
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
@@ -940,7 +1193,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, '#01475b', 1, 20),
-                textAlign: 'center',
+                textAlign: 'left', //center
+                textTransform: 'capitalize',
               }}
               numberOfLines={2}
             >
@@ -949,6 +1203,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
+          {promoteCircle
+            ? renderCircleView(circleSpecialPrice!, specialPrice! || price!, promoteCircle)
+            : null}
+
           <Text
             style={{
               ...theme.viewStyles.text(
@@ -958,7 +1216,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 1,
                 24
               ),
-              textAlign: 'center',
+              textAlign: 'left',
+              position: 'absolute',
+              left: 16,
+              bottom: 10,
             }}
             onPress={data.onAddOrRemoveCartItem}
           >
@@ -969,73 +1230,212 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderCircleView = (circleSpecialPrice: number, price: number, promoteCircle: boolean) => {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row' }}>
+          <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
+          {!isDiagnosticCircleSubscription && (
+            <Text
+              style={{
+                ...theme.viewStyles.text(
+                  isDiagnosticCircleSubscription ? 'SB' : 'M',
+                  isDiagnosticCircleSubscription ? 14 : 12,
+                  colors.SHERPA_BLUE,
+                  1,
+                  15.6
+                ),
+                marginLeft: 15,
+                alignSelf: 'center',
+              }}
+            >
+              {' '}
+              {string.common.Rs} {circleSpecialPrice}
+            </Text>
+          )}
+        </View>
+        <View style={{ flexDirection: 'row' }}>
+          {isDiagnosticCircleSubscription && promoteCircle && (
+            <Text
+              style={{
+                marginVertical: 5,
+                marginHorizontal: 5,
+                textAlign: 'left',
+                ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 0.5, 15.6),
+                textDecorationLine: 'line-through',
+              }}
+            >
+              {string.common.Rs} {price}
+            </Text>
+          )}
+          <Text
+            style={{
+              marginVertical: 5,
+              marginHorizontal: 2,
+              textAlign: 'left',
+              ...theme.viewStyles.text(
+                // isDiagnosticCircleSubscription ? 'SB' : 'M',
+                // isDiagnosticCircleSubscription ? 14 : 12,
+                'B',
+                14,
+                colors.SHERPA_BLUE,
+                1,
+                15.6
+              ),
+            }}
+          >
+            {string.common.Rs} {isDiagnosticCircleSubscription ? circleSpecialPrice : price}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderDiscountTag = (discount: string | number, comingFrom: string) => {
+    return (
+      <>
+        {!!discount ? (
+          <View style={styles.discountTagView}>
+            <OfferIcon
+              style={{
+                height: comingFrom == 'tests' ? 36 : 45,
+                width: comingFrom == 'tests' ? 40 : 45,
+              }}
+            />
+            <Text
+              style={[
+                styles.discountTagText,
+                {
+                  ...theme.viewStyles.text('B', comingFrom == 'tests' ? 10 : 12, '#ffffff', 1, 24),
+                  top: comingFrom == 'tests' ? 0 : 5,
+                },
+              ]}
+            >
+              -{Number(discount).toFixed(0)}%
+            </Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const getActiveItems = (getDiagnosticPricingForItem: any) => {
+    const itemWithAll = getDiagnosticPricingForItem!.find(
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+    );
+    const itemWithSub = getDiagnosticPricingForItem!.find(
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+    );
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD');
+    const isItemActive =
+      isDiagnosticCircleSubscription && itemWithSub
+        ? itemWithSub!.status == 'active' &&
+          isItemPriceActive(itemWithSub?.startDate!, itemWithSub?.endDate!, currentDate)
+        : itemWithAll &&
+          itemWithAll!.status == 'active' &&
+          isItemPriceActive(itemWithAll?.startDate!, itemWithAll?.endDate!, currentDate);
+
+    const activeItemsObject = {
+      itemWithAll: itemWithAll,
+      itemWithSub: itemWithSub,
+      isItemActive: isItemActive,
+    };
+
+    return activeItemsObject;
+  };
+
   const renderHotSellerItem = (
-    data: ListRenderItemInfo<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers>
+    data: ListRenderItemInfo<
+      getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers
+    >
   ) => {
+    const getDiagnosticPricingForItem = g(data, 'item', 'diagnostics', 'diagnosticPricing');
+    const getActiveItemsObject = getActiveItems(getDiagnosticPricingForItem);
+    const itemWithAll = getActiveItemsObject?.itemWithAll;
+    const itemWithSub = getActiveItemsObject?.itemWithSub;
+
+    if (!getActiveItemsObject?.isItemActive) {
+      return null;
+    }
     const { packageImage, packageName, diagnostics } = data.item;
-    const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
-    const specialPrice = undefined;
+    const foundTestInCart = !!cartItems.find((item) => item.id == `${diagnostics?.itemId}`);
+
+    //check wrt to plan
+    const specialPrice = itemWithAll?.price!;
+    const price = itemWithAll?.mrp!; //more than price (black)
+    const circlePrice = itemWithSub?.mrp!;
+    const circleSpecialPrice = itemWithSub?.price!;
+
+    const discount = getDiscountPercentage(price, specialPrice);
+    const circleDiscount = getDiscountPercentage(circlePrice, circleSpecialPrice);
+    const promoteCircle = discount < circleDiscount;
+
     const addToCart = () => {
       if (!isDiagnosticLocationServiceable) {
         return;
       }
-      fetchPackageInclusion(`${diagnostics!.itemId}`, (tests) => {
-        postDiagnosticAddToCartEvent(
-          packageName!,
-          `${diagnostics!.itemId}`,
-          diagnostics!.rate,
-          diagnostics!.rate // since no special price
-        );
-        addCartItem!({
-          id: `${diagnostics!.itemId}`,
-          mou: tests.length,
-          name: packageName!,
-          price: diagnostics!.rate,
-          specialPrice: specialPrice,
-          thumbnail: packageImage,
-          collectionMethod: diagnostics!.collectionType!,
-        });
+      postDiagnosticAddToCartEvent(
+        diagnostics?.itemName!,
+        `${diagnostics!.itemId}`,
+        price,
+        diagnostics?.diagnosticPricing?.[0]?.price!
+      );
+      addCartItem!({
+        id: `${diagnostics!.itemId}`,
+        mou: diagnostics?.inclusions == null ? 1 : diagnostics?.inclusions.length,
+        name: diagnostics?.itemName!,
+        price: price,
+        specialPrice: specialPrice! | price,
+        circlePrice: circlePrice,
+        circleSpecialPrice: circleSpecialPrice,
+        thumbnail: packageImage,
+        collectionMethod: diagnostics?.collectionType!,
+        groupPlan: promoteCircle ? itemWithSub?.groupPlan : itemWithAll?.groupPlan,
       });
     };
     const removeFromCart = () => {
       if (!isDiagnosticLocationServiceable) {
         return;
       }
-      removeCartItem!(`${diagnostics!.itemId}`);
+      removeCartItem!(`${diagnostics?.itemId}`);
     };
-    // const specialPrice = special_price
-    //   ? typeof special_price == 'string'
-    //     ? parseInt(special_price)
-    //     : special_price
-    //   : price;
 
     return hotSellerCard({
-      name: packageName!,
+      name: diagnostics?.itemName!,
       imgUrl: packageImage!,
-      price: diagnostics!.rate,
-      specialPrice: undefined,
-      isAddedToCart: foundMedicineInCart,
-      onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
+      price: price,
+      specialPrice: specialPrice,
+      circlePrice: circlePrice,
+      circleSpecialPrice: circleSpecialPrice,
+      isAddedToCart: foundTestInCart,
+      discount: discount,
+      circleDiscount: circleDiscount,
+      onAddOrRemoveCartItem: foundTestInCart ? removeFromCart : addToCart,
       onPress: () => {
         if (!isDiagnosticLocationServiceable) {
           return;
         }
         setWebEnageEventForItemViewedOnLanding(
           packageName!,
-          `${diagnostics!.itemId}`,
-          `${diagnostics!.itemType}`
+          `${diagnostics?.itemId}`,
+          `${diagnostics?.itemType}`
         );
         postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
-            Rate: diagnostics!.rate,
+            Rate: price, //PASS the value
+            specialPrice: specialPrice! || price,
+            circleRate: circlePrice,
+            circleSpecialPrice: circleSpecialPrice,
             Gender: diagnostics!.gender,
             ItemID: `${diagnostics!.itemId}`,
-            ItemName: packageName,
-            collectionType: diagnostics!.collectionType,
-            FromAgeInDays: diagnostics!.fromAgeInDays,
-            ToAgeInDays: diagnostics!.toAgeInDays,
-            preparation: diagnostics!.testPreparationData,
+            ItemName: diagnostics?.itemName!,
+            collectionType: diagnostics?.collectionType,
+            FromAgeInDays: diagnostics?.fromAgeInDays,
+            ToAgeInDays: diagnostics?.toAgeInDays,
+            preparation: diagnostics?.testPreparationData,
+            testDescription: diagnostics?.testDescription,
             source: 'Landing Page',
             type: diagnostics!.itemType,
           } as TestPackageForDetails,
@@ -1051,13 +1451,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderHotSellers = () => {
-    const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
-      []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
+    const hotSellers = (g(diagnosticsData, 'getDiagnosticsHomePageItems', 'diagnosticHotSellers') ||
+      []) as getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers[];
 
-    if (!hLoading && hotSellers.length == 0) return null;
+    const hotSellersWithDiagnosticPricing = hotSellers!.filter(
+      (item) => item?.diagnostics!.diagnosticPricing!.length > 0
+    );
+
+    if (!hLoading && (hotSellers.length == 0 || hotSellersWithDiagnosticPricing.length == 0))
+      return null;
     return (
       <View>
-        <SectionHeader leftText={'FEATURED TESTS'} />
+        <SectionHeader leftText={'TOP TESTS'} />
         {hLoading ? (
           renderSectionLoader(188)
         ) : (
@@ -1066,7 +1471,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             keyExtractor={(_, index) => `${index}`}
             showsHorizontalScrollIndicator={false}
             horizontal
-            data={hotSellers}
+            data={hotSellersWithDiagnosticPricing}
             renderItem={renderHotSellerItem}
           />
         )}
@@ -1089,7 +1494,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //             item.title,
   //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
   //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //               props.navigation.navigate(AppRoutes.MedicineListing, {
   //                 category_id: item.category_id,
   //                 title: `${item.title || 'Products'}`.toUpperCase(),
   //                 isTest: true,
@@ -1113,6 +1518,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     desc: string,
     price: number,
     specialPrice: number | undefined,
+    discount: string | number,
+    circleDiscount: string | number,
+    circlePrice: number | undefined,
+    circleSpecialPrice: number | undefined,
+    promoteCircle: boolean,
+    numberOfInclusions: number,
+    imageUri: string,
     style: ViewStyle,
     isAddedToCart: boolean,
     onPress: () => void,
@@ -1131,47 +1543,78 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ]}
         onPress={onPress}
       >
+        {renderDiscountTag(
+          promoteCircle && isDiagnosticCircleSubscription ? circleDiscount : discount,
+          'packages'
+        )}
+
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
+          <View style={styles.featuredPackageImageView}>
+            <Image
+              style={styles.featuredPackageImageStyle}
+              source={{
+                uri: imageUri,
+              }}
+            />
+          </View>
+          <View style={styles.featuredPackageTextView}>
+            <Text
+              style={{ ...theme.viewStyles.text('SB', 16, '#02475b', 1, 24) }}
+              numberOfLines={2}
+            >
+              {title}
+            </Text>
+          </View>
+        </View>
         <View
           style={{
             flex: 1,
-            flexDirection: 'row',
           }}
         >
           <View
             style={{
               flexGrow: 1,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
             }}
           >
-            <View
-              style={{
-                width: Dimensions.get('window').width * 0.4,
-              }}
-            >
-              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)} numberOfLines={2}>
-                {title}
-              </Text>
-              <View style={{ height: 8 }} />
-              <Text style={theme.viewStyles.text('M', 10, '#02475b', 1, undefined, 0.25)}>
-                {subtitle}
-              </Text>
-              <View style={{ height: 16 }} />
-              <Text style={theme.viewStyles.text('M', 14, '#0087ba', 1, 22)}>{desc}</Text>
-            </View>
-            <View style={{}}>
-              <Image
-                source={{
-                  uri: '',
-                  height: 120,
-                  width: 120,
+            <View>
+              <Spearator style={{ marginTop: 4, marginBottom: 4 }} />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  width: Dimensions.get('window').width * 0.4,
+                  justifyContent: 'space-between',
                 }}
-                style={{ borderRadius: 5 }}
-              />
+              >
+                <View
+                  style={{
+                    width:
+                      numberOfInclusions > 1
+                        ? Dimensions.get('window').width * 0.53
+                        : Dimensions.get('window').width * 0.54,
+                  }}
+                >
+                  <Text style={theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22)}>
+                    {desc}
+                  </Text>
+                </View>
+                <View style={{ alignSelf: 'flex-end' }}>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22),
+                    }}
+                  >
+                    {numberOfInclusions} {numberOfInclusions > 1 ? 'TESTS' : 'TEST'} INCLUDED
+                  </Text>
+                </View>
+              </View>
+              <Spearator style={{ marginTop: 4, marginBottom: 4 }} />
             </View>
           </View>
         </View>
-        <Spearator style={{ marginVertical: 11.5 }} />
 
         <View
           style={{
@@ -1182,47 +1625,88 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <View
             style={{
               flexGrow: 1,
-              flexDirection: 'row',
             }}
           >
-            <Text
-              style={{
-                marginRight: 8,
-                ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
-              }}
-            >
-              Rs. {specialPrice || price}
-            </Text>
-            {!!specialPrice && (
+            {promoteCircle && (
+              <View style={{ flexDirection: 'row' }}>
+                <View style={{ alignSelf: 'flex-start', marginRight: 5 }}>
+                  <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
+                </View>
+                {!isDiagnosticCircleSubscription && (
+                  <Text style={styles.nonSubPrice}>
+                    {string.common.Rs}
+                    {promoteCircle ? circleSpecialPrice : specialPrice || price}
+                  </Text>
+                )}
+              </View>
+            )}
+            {/**
+             * original price (main price to be shown)
+             */}
+            <View style={{ flexDirection: 'row' }}>
+              {/**
+               *  not to promote + non sub + slashed
+               */}
+              {!promoteCircle &&
+                !!specialPrice &&
+                specialPrice != price &&
+                !isDiagnosticCircleSubscription && (
+                  <Text style={styles.nonSubStrikedPrice}>
+                    ({string.common.Rs} {price})
+                  </Text>
+                )}
+
+              {/**
+               * slashed price in case prmote circle + sub or slashed price
+               */}
+              {((!!specialPrice && specialPrice != price) || promoteCircle) &&
+                isDiagnosticCircleSubscription && (
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
+                      textAlign: 'left',
+                      marginRight: 5,
+                    }}
+                  >
+                    (
+                    <Text
+                      style={[
+                        {
+                          textDecorationLine:
+                            !isDiagnosticCircleSubscription && promoteCircle
+                              ? 'none'
+                              : 'line-through',
+                        },
+                      ]}
+                    >
+                      {string.common.Rs} {price}
+                    </Text>
+                    )
+                  </Text>
+                )}
               <Text
                 style={{
-                  ...theme.viewStyles.text('SB', 14, '#02475b', 0.6, 24),
-                  textAlign: 'center',
+                  marginRight: 8,
+                  ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
                 }}
               >
-                (
-                <Text
-                  style={[
-                    {
-                      textDecorationLine: 'line-through',
-                    },
-                  ]}
-                >
-                  Rs. {price}
-                </Text>
-                )
+                {string.common.Rs}
+                {promoteCircle && circleSpecialPrice! && isDiagnosticCircleSubscription
+                  ? circleSpecialPrice
+                  : specialPrice || price}
               </Text>
-            )}
-          </View>
-          <View
-            style={{
-              flexGrow: 1,
-              alignItems: 'flex-end',
-            }}
-          >
-            <Text style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)} onPress={onPressBookNow}>
-              {isAddedToCart ? 'ADDED TO CART' : 'BOOK NOW'}
-            </Text>
+              {/**
+               * add to cart
+               */}
+              <View style={styles.addToCartView}>
+                <Text
+                  style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)}
+                  onPress={onPressBookNow}
+                >
+                  {isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </TouchableOpacity>
@@ -1238,22 +1722,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const fetchPackageDetails = (
     itemIds: string,
-    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
+    func: (
+      product: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics
+    ) => void
   ) => {
+    const removeSpaces = itemIds.replace(/\s/g, '');
+    const arrayOfId = removeSpaces.split(',');
+    const listOfIds = arrayOfId.map((item) => parseInt(item!));
     {
       setLoadingContext!(true);
       client
-        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-          query: SEARCH_DIAGNOSTICS_BY_ID,
+        .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+          query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
           variables: {
-            itemIds: itemIds,
+            cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+            itemIDs: listOfIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           setLoadingContext!(false);
-          aphConsole.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
+          aphConsole.log('findDiagnosticsItemsForCityId\n', { data });
+          const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {
@@ -1297,10 +1787,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderTestPackages = () => {
-    if (!loading && testPackages.length == 0) return null;
+    const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsHomePageItems', 'diagnosticOrgans') ||
+      []) as getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans[];
+
+    const PackagesWithDiagnosticPricing = shopByOrgans!.filter(
+      (item) => item?.diagnostics!.diagnosticPricing!.length > 0
+    );
+    if (!loading && PackagesWithDiagnosticPricing.length == 0) return null;
+
     return (
       <View>
-        <SectionHeader leftText={'BROWSE PACKAGES'} />
+        <SectionHeader leftText={'FEATURED PACKAGES'} />
         {loading ? (
           renderSectionLoader(205)
         ) : (
@@ -1309,59 +1806,107 @@ export const Tests: React.FC<TestsProps> = (props) => {
             keyExtractor={(_, index) => `${index}`}
             showsHorizontalScrollIndicator={false}
             horizontal
-            data={testPackages}
+            data={PackagesWithDiagnosticPricing}
             renderItem={({ item, index }) => {
-              const inclusionCount = (item.PackageInClussion || []).length;
-              const desc = inclusionCount
-                ? `${inclusionCount} TEST${inclusionCount == 1 ? '' : 'S'} INCLUDED`
-                : '';
-              const applicableAge = `Ideal for individuals between ${(
-                item.FromAgeInDays / 365
-              ).toFixed(0)}-${(item.ToAgeInDays / 365).toFixed(0)} years.`;
+              const getDiagnosticPricingForItem = g(item, 'diagnostics', 'diagnosticPricing');
+              const getActiveItemsObject = getActiveItems(getDiagnosticPricingForItem);
+              const itemWithAll = getActiveItemsObject?.itemWithAll;
+              const itemWithSub = getActiveItemsObject?.itemWithSub;
+
+              if (!getActiveItemsObject?.isItemActive) {
+                return null;
+              }
+
+              const specialPrice = itemWithAll?.price!;
+              const price = itemWithAll?.mrp!;
+              const circlePrice = itemWithSub?.mrp!;
+              const circleSpecialPrice = itemWithSub?.price;
+
+              const discount = getDiscountPercentage(price!, specialPrice!);
+              const circleDiscount = getDiscountPercentage(circlePrice!, circleSpecialPrice!);
+              const promoteCircle = discount < circleDiscount;
+
+              const diagnosticItem = item?.diagnostics;
+              const fromAge = (diagnosticItem?.fromAgeInDays! / 365).toFixed(0);
+              const toAge = (diagnosticItem?.toAgeInDays! / 365).toFixed(0);
+
+              const desc = '';
+              const applicableAge = `For all Age Group`;
+              const numberOfInclusions = diagnosticItem?.inclusions?.length || 1;
+
               return renderPackageCard(
-                item.ItemName,
+                diagnosticItem?.itemName!,
                 desc,
                 applicableAge,
-                parseInt(item.Rate.toFixed(0)),
-                0,
+                price,
+                specialPrice,
+                discount,
+                circleDiscount,
+                circlePrice,
+                circleSpecialPrice,
+                promoteCircle,
+                numberOfInclusions,
+                item.organImage!,
                 {
                   marginHorizontal: 4,
                   marginTop: 16,
                   marginBottom: 20,
                   ...(index == 0 ? { marginLeft: 20 } : {}),
                 },
-                !!cartItems.find((_item) => _item.id == item.ItemID),
+                !!cartItems.find((_item) => _item.id == String(diagnosticItem?.itemId!)),
                 () => {
-                  fetchPackageDetails(item.ItemID, (product) => {
+                  fetchPackageDetails(String(diagnosticItem?.itemId!), (product) => {
                     if (!isDiagnosticLocationServiceable) {
                       return;
                     }
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
-                        ...item,
-                        collectionType: product.collectionType,
-                        preparation: product.testPreparationData,
+                        // ...item.diagnostics,
+                        Gender: product?.gender,
+                        ItemID: `${product?.itemId}`,
+                        ItemName: product?.itemName!,
+                        Rate: price,
+                        specialPrice: specialPrice! || price,
+                        circleRate: circlePrice,
+                        circleSpecialPrice: circleSpecialPrice,
+                        collectionType: product?.collectionType,
+                        preparation: product?.testPreparationData,
+                        testDescription: product?.testDescription,
                         source: 'Landing Page',
-                        type: product.itemType,
+                        type: product?.itemType,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
                   });
                 },
                 () => {
-                  fetchPackageDetails(item.ItemID, (product) => {
+                  const isAddedToCart = !!cartItems.find(
+                    (item) => item.id == String(diagnosticItem?.itemId!)
+                  );
+
+                  fetchPackageDetails(String(diagnosticItem?.itemId!), (product) => {
                     if (!isDiagnosticLocationServiceable) {
                       return;
                     }
-                    addCartItem!({
-                      id: item.ItemID,
-                      name: item.ItemName,
-                      mou: item.PackageInClussion.length,
-                      price: item.Rate,
-                      thumbnail: '',
-                      specialPrice: undefined,
-                      collectionMethod: product.collectionType!,
-                    });
+                    isAddedToCart
+                      ? removeCartItem!(`${diagnosticItem?.itemId}`)
+                      : addCartItem!({
+                          id: String(diagnosticItem?.itemId),
+                          name: diagnosticItem?.itemName!,
+                          mou:
+                            diagnosticItem?.inclusions == null
+                              ? 1
+                              : diagnosticItem?.inclusions.length,
+                          price: price,
+                          thumbnail: '',
+                          specialPrice: specialPrice! || price,
+                          circlePrice: circlePrice,
+                          circleSpecialPrice: circleSpecialPrice,
+                          collectionMethod: product?.collectionType!,
+                          groupPlan: promoteCircle
+                            ? itemWithSub?.groupPlan
+                            : itemWithAll?.groupPlan,
+                        });
                   });
                 }
               );
@@ -1386,7 +1931,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
-        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>Rs. {price}</Text>
+        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>
+          {string.common.Rs} {price}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -1422,13 +1969,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderTestsByOrgan = () => {
-    const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
-      []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
+    const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsHomePageItems', 'diagnosticOrgans') ||
+      []) as getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans[];
 
     if (!hLoading && shopByOrgans.length == 0) return null;
     return (
-      <View>
-        <SectionHeader leftText={'BROWSE PACKAGES'} />
+      <View style={{ marginTop: 10 }}>
+        <SectionHeader leftText={'FEATURED PACKAGES'} />
         {hLoading ? (
           renderSectionLoader()
         ) : (
@@ -1482,6 +2029,43 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const onAddCartItem = (
+    {
+      itemId,
+      itemName,
+      rate,
+      collectionType,
+      diagnosticPricing,
+    }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
+    testsIncluded: number,
+    pricesObject: any,
+    promoteCircle: boolean
+  ) => {
+    console.log({ diagnosticPricing });
+    savePastSearch(`${itemId}`, itemName).catch((e) => {
+      aphConsole.log({ e });
+    });
+    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate);
+    const itemWithAll = diagnosticPricing?.find(
+      (item) => item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+    );
+    const itemWithSub = diagnosticPricing?.find(
+      (item) => item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+    );
+    addCartItem!({
+      id: `${itemId}`,
+      name: stripHtml(itemName),
+      price: pricesObject?.rate,
+      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate,
+      circlePrice: pricesObject?.circlePrice,
+      circleSpecialPrice: pricesObject?.circleSpecialPrice,
+      mou: testsIncluded,
+      thumbnail: '',
+      collectionMethod: collectionType!,
+      groupPlan: promoteCircle ? itemWithSub?.groupPlan : itemWithAll?.groupPlan,
+    });
+  };
+
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
@@ -1490,31 +2074,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const client = useApolloClient();
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchTest = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
       if (!g(locationForDiagnostics, 'cityId')) {
         renderLocationNotServingPopup();
         return;
       }
-      setSearchText(_searchText);
       if (!(_searchText && _searchText.length > 2)) {
         setMedicineList([]);
         console.log('onSearchMedicine');
         return;
       }
+      setShowMatchingMedicines(true);
       setsearchSate('load');
+
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
-            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
             searchText: _searchText,
+            cityID: parseInt(locationForDiagnostics?.cityId!, 10),
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          // aphConsole.log({ data });
-          setSearchText(_searchText);
           const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
           setMedicineList(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
@@ -1524,22 +2107,54 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('Tests_onSearchMedicine', e);
-          // aphConsole.log({ e });
           setsearchSate('fail');
         });
     }
   };
 
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
+
   interface SuggestionType {
-    name: string;
-    price: number;
+    itemId: string | number;
+    itemName: string;
+    rate: number;
+    collectionType: string | null;
     type: 'TEST' | 'PACKAGE';
     imgUri?: string;
     onPress: () => void;
     showSeparator?: boolean;
+    specialPrice?: number;
+    circlePrice?: number;
+    circleSpecialPrice?: number;
+    diagnosticPricing?: any;
     style?: ViewStyle;
   }
-
   const renderSearchSuggestionItem = (data: SuggestionType) => {
     const localStyles = StyleSheet.create({
       containerStyle: {
@@ -1560,23 +2175,142 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
 
     const renderNamePriceAndInStockStatus = () => {
+      const discount = getDiscountPercentage(data.rate!, data.specialPrice!);
+      const circleDiscount = getDiscountPercentage(data.circlePrice!, data.circleSpecialPrice);
+
+      const promoteCircle = discount < circleDiscount;
+      const pricesObject = {
+        rate: data.rate,
+        specialPrice: data.specialPrice! | data.rate,
+        circlePrice: data.circlePrice,
+        circleSpecialPrice: data.circleSpecialPrice,
+      };
+      const isAddedToCart = !!cartItems.find((item) => item.id == data.itemId);
+
       return (
-        <View style={localStyles.nameAndPriceViewStyle}>
-          <Text
-            numberOfLines={1}
+        <View style={[localStyles.nameAndPriceViewStyle]}>
+          <View
             style={{
-              ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             }}
           >
-            {data.name}
-          </Text>
-          <Text
+            {<View style={{ marginLeft: -16 }}>{renderIconOrImage()}</View>}
+
+            <View style={{ flex: 0.9 }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
+                }}
+              >
+                {data.itemName}
+              </Text>
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={() =>
+                  isAddedToCart
+                    ? removeCartItem!(`${data.itemId}`)
+                    : fetchPackageInclusion(`${data.itemId}`, (tests) => {
+                        onAddCartItem(data, tests.length, pricesObject, promoteCircle);
+                      })
+                }
+              >
+                {isAddedToCart ? <RemoveIcon /> : <AddIcon />}
+              </TouchableOpacity>
+            </View>
+          </View>
+          {/* <Spearator style={{ marginTop: 6, marginBottom: 2 }} /> */}
+
+          {/**
+           * show special price only when do not promote circle ~~~ merge below two checks
+           */}
+          {!promoteCircle && data.specialPrice != data.rate && (
+            <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
+              <Text style={styles.strikedPrice}>
+                {string.common.Rs} {data.rate}
+              </Text>
+            </View>
+          )}
+          {isDiagnosticCircleSubscription && promoteCircle && (
+            <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
+              <Text style={styles.strikedPrice}>
+                {string.common.Rs} {data.specialPrice! || data.rate}
+              </Text>
+            </View>
+          )}
+
+          <View
             style={{
-              ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+              flexDirection: 'row',
+              alignSelf: 'flex-end',
+              marginTop: 4,
             }}
           >
-            Rs. {data.price}
-          </Text>
+            {/**
+             * non member with promote circle
+             */}
+
+            {!isDiagnosticCircleSubscription && promoteCircle && data.circleSpecialPrice! && (
+              <>
+                <View style={{ flexDirection: 'row' }}>
+                  <CircleHeading />
+                  <Text
+                    style={{
+                      marginLeft: 5,
+                      ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                    }}
+                  >
+                    {string.common.Rs} {data.circleSpecialPrice!}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    borderLeftWidth: 1,
+                    borderLeftColor: '#02475b',
+                    opacity: 0.3,
+                    marginLeft: 4,
+                    marginRight: 4,
+                    marginTop: 4,
+                  }}
+                />
+              </>
+            )}
+            {!isDiagnosticCircleSubscription && promoteCircle && (
+              <Text style={styles.normalPrice}>
+                {string.common.Rs} {data.specialPrice! || data.rate}
+              </Text>
+            )}
+            {!isDiagnosticCircleSubscription && !promoteCircle && (
+              <Text style={styles.normalPrice}>
+                {string.common.Rs} {data.specialPrice! || data.rate}
+              </Text>
+            )}
+            {isDiagnosticCircleSubscription && !promoteCircle && (
+              <Text style={styles.normalPrice}>
+                {string.common.Rs} {data.specialPrice! || data.rate}
+              </Text>
+            )}
+            {/**
+             * sub + promote
+             */}
+            {isDiagnosticCircleSubscription && promoteCircle && (
+              <View style={{ flexDirection: 'row' }}>
+                <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
+                <Text
+                  style={[
+                    styles.normalPrice,
+                    {
+                      marginLeft: 5,
+                    },
+                  ]}
+                >
+                  {string.common.Rs} {data.circleSpecialPrice!}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       );
     };
@@ -1605,9 +2339,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        <View style={localStyles.containerStyle} key={data.name}>
+        <View style={localStyles.containerStyle} key={data.itemName}>
           <View style={localStyles.iconAndDetailsContainerStyle}>
-            {renderIconOrImage()}
             <View style={{ width: 16 }} />
             {renderNamePriceAndInStockStatus()}
           </View>
@@ -1620,7 +2353,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
     setScrollOffset(event.nativeEvent.contentOffset.y);
   };
 
@@ -1634,17 +2366,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       inputContainerStyle: isFocusedStyle
         ? {
-            borderBottomColor: '#00b38e',
-            borderBottomWidth: 2,
+            borderRadius: 5,
+            backgroundColor: colors.WHITE,
             marginHorizontal: 10,
+            borderWidth: 1,
+            borderColor: colors.APP_GREEN,
           }
         : {
             borderRadius: 5,
-            backgroundColor: '#f7f8f5',
+            backgroundColor: colors.WHITE, //'#f7f8f5'
             marginHorizontal: 10,
             paddingHorizontal: 16,
-            borderBottomWidth: 0,
+            borderWidth: 1,
+            borderColor: colors.APP_GREEN,
           },
+      leftIconContainerStyle: scrollOffset > 10 ? { paddingLeft: isSearchFocused ? 0 : 16 } : {},
       rightIconContainerStyle: isFocusedStyle
         ? {
             height: 24,
@@ -1673,6 +2409,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         activeOpacity={1}
         style={{
           opacity: shouldEnableSearchSend ? 1 : 0.4,
+          marginRight: 5,
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
@@ -1685,6 +2422,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <SearchSendIcon />
       </TouchableOpacity>
+    );
+
+    const leftIconView = (
+      <SearchIcon
+        style={{
+          marginLeft: -16,
+          height: 21,
+          width: 21,
+          tintColor: colors.APP_GREEN,
+          marginRight: 5,
+        }}
+      />
     );
 
     const itemsNotFound =
@@ -1721,7 +2470,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 setMedicineList([]);
                 return;
               }
-              const search = _.debounce(onSearchMedicine, 300);
+              const search = _.debounce(onSearchTest, 300);
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
@@ -1731,6 +2480,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               search(value);
             }
           }}
+          leftIcon={isSearchFocused ? <View /> : leftIconView}
           autoCorrect={false}
           rightIcon={isSearchFocused ? rigthIconView : <View />}
           placeholder="Search tests &amp; packages"
@@ -1746,6 +2496,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }
               : {},
           ]}
+          leftIconContainerStyle={styles.leftIconContainerStyle}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
           containerStyle={styles.containerStyle}
@@ -1868,7 +2619,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const savePastSeacrh = (sku: string, name: string) =>
+  const savePastSearch = (sku: string, name: string) =>
     client.mutate({
       mutation: SAVE_SEARCH,
       variables: {
@@ -1881,6 +2632,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
     });
 
+  const isItemPriceActive = (from: string, to: string, check: string) => {
+    if (from == null || to == null) {
+      return true;
+    }
+    var fDate, lDate, cDate;
+    fDate = Date.parse(from);
+    lDate = Date.parse(to);
+    cDate = Date.parse(check);
+
+    if (cDate <= lDate && cDate >= fDate) {
+      return true;
+    }
+    return false;
+  };
+
+  /**
+   *
+   * search suggestions list
+   */
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics>
   ) => {
@@ -1895,15 +2665,34 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fromAgeInDays,
       toAgeInDays,
       testPreparationData,
+      testDescription,
       itemType,
+      diagnosticPricing,
     } = item;
+
+    const getActiveItemsObject = getActiveItems(diagnosticPricing);
+    const itemWithAll = getActiveItemsObject?.itemWithAll;
+    const itemWithSub = getActiveItemsObject?.itemWithSub;
+
+    if (!getActiveItemsObject.isItemActive) {
+      return null;
+    }
+
+    const specialPrice = itemWithAll?.price!;
+    const price = itemWithAll?.mrp!; //more than price (black)
+    const circlePrice = itemWithSub?.mrp!;
+    const circleSpecialPrice = itemWithSub?.price;
+
     return renderSearchSuggestionItem({
       onPress: () => {
-        savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
+        savePastSearch(`${itemId}`, itemName).catch((e) => {});
         setWebEngageEventOnSearchItemClicked(item);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
-            Rate: rate,
+            Rate: price,
+            specialPrice: specialPrice! || price,
+            circleRate: circlePrice,
+            circleSpecialPrice: circleSpecialPrice,
             Gender: gender,
             ItemID: `${itemId}`,
             ItemName: itemName,
@@ -1911,13 +2700,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
             FromAgeInDays: fromAgeInDays,
             ToAgeInDays: toAgeInDays,
             preparation: testPreparationData,
+            testDescription: testDescription,
             source: 'Landing Page',
             type: itemType,
           } as TestPackageForDetails,
         });
       },
-      name: item.itemName,
-      price: item.rate,
+      itemId: item.itemId,
+      itemName: item.itemName,
+      rate: price,
+      collectionType: item.collectionType,
       type: 'TEST',
       style: {
         marginHorizontal: 20,
@@ -1925,11 +2717,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       showSeparator: !(index == medicineList.length - 1),
       imgUri,
+      specialPrice: specialPrice! || price,
+      circlePrice: circlePrice,
+      circleSpecialPrice: circleSpecialPrice,
+      diagnosticPricing: diagnosticPricing!,
     });
   };
 
   const renderSearchSuggestions = () => {
     // if (medicineList.length == 0) return null;
+    const testResults = medicineList!.filter((item) => item?.diagnosticPricing!.length > 0);
     return (
       <View
         style={{
@@ -1955,11 +2752,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
               style={{
-                paddingTop: medicineList.length > 0 ? 10.5 : 0,
+                paddingTop: testResults.length > 0 ? 10.5 : 0,
                 maxHeight: 266,
                 backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               }}
-              data={medicineList}
+              data={testResults}
               renderItem={renderSearchSuggestionItemView}
             />
           )
@@ -2011,9 +2808,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderYourOrders()}
         <>
           {renderHotSellers()}
+          {renderCarouselBanners()}
+          <View style={{ marginTop: 20 }}></View>
           {/* {renderBrowseByCondition()} */}
           {renderTestPackages()}
-          {renderTestsByOrgan()}
+          {/* {renderTestsByOrgan()} */}
           {/* {renderPreventiveTests()} */}
         </>
         {/* {renderNeedHelp()} */}
@@ -2086,61 +2885,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <ProfileList
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                  backgroundColor: theme.colors.WHITE,
-                }}
-              >
-                <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View style={styles.nameTextContainerStyle}>
-                  <View style={{ flexDirection: 'row', flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.nameTextStyle,
-                        { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                      <LinkedUhidIcon
-                        style={{
-                          width: 22,
-                          height: 20,
-                          marginLeft: 5,
-                          marginTop: Platform.OS === 'ios' ? 16 : 20,
-                        }}
-                        resizeMode={'contain'}
-                      />
-                    ) : null}
-                    <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                      <DropdownGreen />
-                    </View>
-                  </View>
-                  {currentPatient && <View style={styles.seperatorStyle} />}
-                </View>
-              </View>
-            }
-            selectedProfile={profile}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-
-          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
+          <View style={{ height: 0, backgroundColor: theme.colors.WHITE }} />
+          <View style={{ flex: 1 }}>
             <View
               style={{
                 backgroundColor: 'white',

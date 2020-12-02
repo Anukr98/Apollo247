@@ -995,7 +995,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Speciality ID': specialityId,
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
-
+    postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.SPECIALITY_CLICKED] = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       PatientUHID: g(currentPatient, 'uhid'),
@@ -1017,13 +1017,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   ) => {
     const doctorDetails = _doctorDetails;
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
-      'Doctor Name': doctorDetails.fullName!,
+      'Doctor Name': doctorDetails.displayName!,
       Source: source,
       'Doctor ID': doctorDetails.id,
-      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
-      'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+      'Doctor Speciality': doctorDetails?.specialtydisplayName,
+      Rank: doctorDetails?.rowId,
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1211,7 +1211,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
-                postDoctorClickWEGEvent(rowData, 'Search');
+                postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search');
                 CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
                 const searchInput = {
                   type: SEARCH_TYPE.DOCTOR,
@@ -1233,7 +1233,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 });
               }}
               onPressConsultNowOrBookAppointment={(type) => {
-                postDoctorClickWEGEvent(rowData, 'Search', type);
+                postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search', type);
               }}
             ></DoctorCard>
           )}

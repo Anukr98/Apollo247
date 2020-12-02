@@ -818,7 +818,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   <Text style={styles.descriptionStyle}>
                     {g(data, 'appointmentPayments', '0' as any, 'amountPaid') ===
                     Number(doctorDetails.onlineConsultationFees) ? (
-                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                      <Text>{`${string.common.Rs} ${doctorDetails.onlineConsultationFees}`}</Text>
                     ) : (
                       <>
                         <Text
@@ -827,9 +827,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                             textDecorationStyle: 'solid',
                           }}
                         >
-                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                          {`(${string.common.Rs} ${doctorDetails.onlineConsultationFees})`}
                         </Text>
-                        <Text> Rs. {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}</Text>
+                        <Text>
+                          {' '}
+                          {string.common.Rs}{' '}
+                          {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}
+                        </Text>
                       </>
                     )}
                   </Text>

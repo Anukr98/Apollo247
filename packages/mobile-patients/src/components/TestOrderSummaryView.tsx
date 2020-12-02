@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   g,
   formatTestSlotWithBuffer,
@@ -12,6 +13,9 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 const { height } = Dimensions.get('window');
 
@@ -25,7 +29,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#02475b',
     borderBottomWidth: 2,
     marginVertical: 10,
-    marginTop: height * 0.22,
+    marginTop: height * 0.04, //0.22
   },
   hideText: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -93,6 +97,18 @@ const styles = StyleSheet.create({
     color: '#01475b',
     ...theme.fonts.IBMPlexSansBold(14),
   },
+  lineSeparator: {
+    borderBottomColor: '#02475b',
+    borderBottomWidth: 2,
+    marginVertical: 10,
+    marginTop: height * 0.1,
+  },
+  grossTotalView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
 });
 
 export interface TestOrderSummaryViewProps {
@@ -100,21 +116,20 @@ export interface TestOrderSummaryViewProps {
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orderDetails }) => {
+  const { currentPatient } = useAllCurrentPatients();
   const getFormattedDateTime = (time: string) => {
     return moment(time).format('D MMM YYYY | hh:mm A');
   };
 
-  //need to add
-  // useEffect(()=>{
-  //   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-  //     'Patient UHID': orderDetails.uhid, //should come in order details
-  //     'Patient Number': orderDetails.mobileNumber,
-  //     'OrderID:': orderDetails.id,
-  //     'Sample Collection Date': orderDetails.diagnosticDate ;
-  //   };
-  //   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
-
-  // },[])
+  useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Number': g(currentPatient, 'mobileNumber'),
+      'OrderID:': orderDetails.id,
+      'Sample Collection Date': orderDetails.diagnosticDate,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+  }, []);
 
   const formatSlot = (slot: string /*07:00-07:30 */) => {
     /**
@@ -129,11 +144,38 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
   };
 
+  const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+  );
+
+  const getAllObject = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  );
+
+  const allCirclePlanObjects =
+    getCircleObject?.map((item) =>
+      item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
+    ) || [];
+  const allNormalPlanObjects =
+    getAllObject?.map((item) =>
+      item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)
+    ) || [];
+  const discountCirclePrice =
+    allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
+  console.log({ discountCirclePrice });
+
+  const discountNormalPrice =
+    allNormalPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
+  console.log({ discountNormalPrice });
+
+  const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+  const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+
   /**
    * to handle the quantity
    */
   const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map(
-    (item) => item?.price * item?.quantity
+    (item) => item?.price! * item?.quantity!
   );
 
   const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
@@ -141,6 +183,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   );
 
   const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
+
+  const grossCharges = totalIndividualDiagonsticsCharges! + totalCartSaving! + totalCircleSaving!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
@@ -162,7 +206,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <Text style={styles.orderName}>Date/Time</Text>
           <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.createdDate)}</Text>
         </View>
-        {!!orderDetails.slotTimings && (
+        {/* {!!orderDetails.slotTimings && (
           <View style={styles.subView}>
             <Text style={styles.orderName}>Pickup Date</Text>
             <Text style={styles.hideText}>
@@ -177,7 +221,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
               orderDetails.slotTimings
             )}`}</Text>
           </View>
-        )}
+        )} */}
       </View>
       <View style={styles.horizontalline} />
       <View style={styles.headeingView}>
@@ -200,23 +244,116 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             <Text style={styles.commonText}>{g(item, 'quantity')}</Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>Rs.{g(item, 'price')}</Text>
+            <Text style={styles.commonText}>
+              {string.common.Rs}
+              {g(item, 'price')}
+            </Text>
           </View>
         </View>
       ))}
       {/**
        * HOME COLLECTION CHARGES
        */}
+      <View style={styles.lineSeparator} />
+      <View style={styles.commonTax}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.commonText}></Text>
+        </View>
+        <View style={{ width: '46%' }}>
+          <Text
+            style={[
+              styles.commonText,
+              { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+            ]}
+          >
+            GROSS CHARGES
+          </Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={styles.commonText}>
+            {string.common.Rs}
+            {/* {totalIndividalDiagonsticsCharges} */}
+            {grossCharges}
+          </Text>
+        </View>
+      </View>
       {!!HomeCollectionCharges && (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.commonText}>Home Collection Charges</Text>
+            <Text style={styles.commonText}></Text>
           </View>
-          <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <Text style={styles.commonText}>-</Text>
+          <View style={{ width: '46%' }}>
+            <Text
+              style={[
+                styles.commonText,
+                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+              ]}
+            >
+              HOME COLLECTION CHARGES
+            </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>Rs.{HomeCollectionCharges}</Text>
+            <Text style={styles.commonText}>
+              + {string.common.Rs}
+              {HomeCollectionCharges}
+            </Text>
+          </View>
+        </View>
+      )}
+      {/**
+       * check with home collection
+       */}
+      {!!totalCircleSaving && (
+        <View style={styles.commonTax}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.commonText}></Text>
+          </View>
+          <View style={{ width: '46%' }}>
+            <Text
+              style={[
+                styles.commonText,
+                {
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  textAlign: 'right',
+                  color: colors.APP_GREEN,
+                },
+              ]}
+            >
+              CIRCLE SAVING
+            </Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
+              - {string.common.Rs}
+              {totalCircleSaving}
+            </Text>
+          </View>
+        </View>
+      )}
+      {!!totalCartSaving && (
+        <View style={styles.commonTax}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.commonText}></Text>
+          </View>
+          <View style={{ width: '46%' }}>
+            <Text
+              style={[
+                styles.commonText,
+                {
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  textAlign: 'right',
+                  color: colors.APP_GREEN,
+                },
+              ]}
+            >
+              CART SAVING
+            </Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
+              - {string.common.Rs}
+              {totalCartSaving}
+            </Text>
           </View>
         </View>
       )}
@@ -224,7 +361,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       <View style={styles.horizontalline1} />
       <View style={styles.payment}>
         <Text style={styles.paymentText1}> Total </Text>
-        <Text style={styles.paymentText}> Rs. {orderDetails.totalPrice} </Text>
+        <Text style={[styles.paymentText, { marginHorizontal: 20 }]}>
+          {' '}
+          {string.common.Rs} {orderDetails.totalPrice}{' '}
+        </Text>
       </View>
       {false && (
         <Text style={[styles.deliveryText, { color: '#01475b', opacity: 0.6 }]}>

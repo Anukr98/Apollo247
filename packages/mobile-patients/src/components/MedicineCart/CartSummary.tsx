@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
-import { View, SafeAreaView, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, SafeAreaView, StyleSheet, ScrollView, AppState, AppStateStatus } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -25,7 +25,11 @@ import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/Medic
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
-import { g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  g,
+  formatAddress,
+  formatAddressToLocation,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
@@ -34,12 +38,27 @@ import {
   getDeliveryTAT247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { postwebEngageProceedToPayEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  postwebEngageProceedToPayEvent,
+  uploadPrescriptionClickedEvent,
+  postTatResponseFailureEvent,
+} from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { UPLOAD_DOCUMENT, SET_DEFAULT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { postPhamracyCartAddressSelectedFailure } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  postPhamracyCartAddressSelectedFailure,
+  postPharmacyAddNewAddressClick,
+  postPhamracyCartAddressSelectedSuccess,
+} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  makeAdressAsDefaultVariables,
+  makeAdressAsDefault,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import moment from 'moment';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -54,25 +73,56 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     ePrescriptions,
     setCartItems,
     setPhysicalPrescriptions,
+    setAddresses,
+    deliveryTime,
+    setdeliveryTime,
   } = useShoppingCart();
+  const { setPharmacyLocation, setAxdcCode } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
-  const [storeType, setStoreType] = useState<string | undefined>('');
-  const [shopId, setShopId] = useState<string | undefined>('');
-  const [deliveryTime, setdeliveryTime] = useState<string>(
-    props.navigation.getParam('deliveryTime')
+  const [storeType, setStoreType] = useState<string | undefined>(
+    props.navigation.getParam('tatType') || ''
   );
-  const orderType = props.navigation.getParam('orderType');
+  const [storeDistance, setStoreDistance] = useState(
+    props.navigation.getParam('storeDistance') || 0
+  );
+  const [shopId, setShopId] = useState<string | undefined>(
+    props.navigation.getParam('shopId') || ''
+  );
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
+  const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
+
+  useEffect(() => {
+    hasUnserviceableproduct();
+    AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      AppState.removeEventListener('change', handleAppStateChange);
+    };
+  }, []);
 
   useEffect(() => {
     onFinishUpload();
   }, [isPhysicalUploadComplete]);
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    setappState(nextAppState);
+  };
+
+  useEffect(() => {
+    if (appState == 'active') {
+      availabilityTat(deliveryAddressId);
+    }
+  }, [appState]);
+
+  function hasUnserviceableproduct() {
+    const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
+    unserviceableItems?.length && props.navigation.goBack();
+  }
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
     if (deliveryAddressId && deliveryAddressId == address.id) {
@@ -81,15 +131,39 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setloading(true);
     const response = await pinCodeServiceabilityApi247(address.zipcode!);
     const { data } = response;
-    if (data.response) {
+    setAxdcCode && setAxdcCode(data?.response?.axdcCode);
+    if (data?.response?.servicable) {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
+      setDefaultAddress(address);
       availabilityTat(address.id);
     } else {
       setDeliveryAddressId && setDeliveryAddressId('');
       setloading!(false);
       postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
       renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+    }
+  }
+
+  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
+    try {
+      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+        query: SET_DEFAULT_ADDRESS,
+        variables: { patientAddressId: address?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+      const updatedAddresses = addresses.map((item) => ({
+        ...item,
+        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+      }));
+      setAddresses!(updatedAddresses);
+      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
+    } catch (error) {
+      CommonBugFender('set_default_Address_on_Cart_Page', error);
     }
   }
 
@@ -121,35 +195,69 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           lng: selectedAddress?.longitude!,
           items: serviceableItems,
         };
-        const res = await getDeliveryTAT247(tatInput);
-        console.log('res >>', res.data);
-        setloading!(false);
-        const tatTimeStamp = g(res, 'data', 'response', 'tatU');
-        if (tatTimeStamp && tatTimeStamp !== -1) {
-          const deliveryDate = g(res, 'data', 'response', 'tat');
-          if (deliveryDate) {
-            const inventoryData = g(res, 'data', 'response', 'items') || [];
-            if (inventoryData && inventoryData.length) {
-              setStoreType(g(res, 'data', 'response', 'storeCode'));
-              setShopId(g(res, 'data', 'response', 'storeType'));
-              setdeliveryTime(deliveryDate);
-              updatePricesAfterTat(inventoryData, updatedCartItems);
-              if (unserviceableSkus.length) {
-                // showUnServiceableItemsAlert(updatedCartItems);
-                props.navigation.goBack();
+        try {
+          const res = await getDeliveryTAT247(tatInput);
+          setloading!(false);
+          const tatResponse = res?.data?.response;
+          const tatTimeStamp = tatResponse?.tatU;
+          if (tatTimeStamp && tatTimeStamp !== -1) {
+            const deliveryDate = tatResponse?.tat;
+            if (deliveryDate) {
+              const inventoryData = tatResponse?.items || [];
+              if (inventoryData && inventoryData.length) {
+                setStoreType(tatResponse?.storeType);
+                setShopId(tatResponse?.storeCode);
+                setStoreDistance(tatResponse?.distance);
+                setdeliveryTime?.(deliveryDate);
+                addressSelectedEvent(selectedAddress, deliveryDate);
+                updatePricesAfterTat(inventoryData, updatedCartItems);
+                if (unserviceableSkus.length) {
+                  props.navigation.goBack();
+                }
               }
+            } else {
+              handleTatApiFailure(selectedAddress, {});
             }
           } else {
-            setloading(false);
+            handleTatApiFailure(selectedAddress, {});
           }
-        } else {
-          setloading(false);
+        } catch (error) {
+          handleTatApiFailure(selectedAddress, error);
         }
       } catch (error) {
-        console.log(error);
-        setloading(false);
+        handleTatApiFailure(selectedAddress, error);
       }
     }
+  }
+
+  const genericServiceableDate = moment()
+    .add(2, 'days')
+    .set('hours', 20)
+    .set('minutes', 0)
+    .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+
+  function handleTatApiFailure(
+    selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
+    error: any
+  ) {
+    addressSelectedEvent(selectedAddress, genericServiceableDate);
+    setdeliveryTime?.(genericServiceableDate);
+    postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
+    setloading(false);
+  }
+
+  function addressSelectedEvent(
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    tatDate: string
+  ) {
+    const currentDate = moment();
+    postPhamracyCartAddressSelectedSuccess(
+      address?.zipcode!,
+      formatAddress(address),
+      'Yes',
+      new Date(tatDate),
+      moment(tatDate).diff(currentDate, 'd')
+    );
   }
 
   function updatePricesAfterTat(
@@ -243,6 +351,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       isChennaiOrder: isChennaiAddress ? true : false,
+      storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });
@@ -259,13 +368,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   function showAddressPopup() {
     showAphAlert!({
       title: string.common.selectAddress,
+      removeTopIcon: true,
       children: (
         <ChooseAddress
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
-          onPressAddAddress={() => {}}
+          onPressAddAddress={() => {
+            props.navigation.navigate(AppRoutes.AddAddress, {
+              source: 'Cart' as AddressSource,
+            });
+            postPharmacyAddNewAddressClick('Cart');
+            hideAphAlert!();
+          }}
           onPressEditAddress={(address) => {
-            console.log(address);
+            props.navigation.push(AppRoutes.AddAddress, {
+              KeyName: 'Update',
+              DataAddress: address,
+              ComingFrom: AppRoutes.MedicineCart,
+            });
+            hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
             checkServicability(address);
@@ -331,7 +452,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <Button
           disabled={false}
           title={'UPLOAD PRESCRIPTION'}
-          onPress={() => setshowPopUp(true)}
+          onPress={() => {
+            uploadPrescriptionClickedEvent(currentPatient?.id);
+            setshowPopUp(true);
+          }}
           titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
           style={{ borderRadius: 10 }}
         />

@@ -13,7 +13,6 @@ import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunction
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import {
-  CommonScreenLog,
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -44,7 +43,6 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [bottompopup, setBottompopup] = useState<boolean>(false);
 
   useEffect(() => {
-    CommonScreenLog('ReschedulePopUp', 'ReschedulePopUp');
     try {
       let count = 4 - props.rescheduleCount;
 

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType, Gender, DOCTOR_ONLINE_STATUS, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
@@ -23,13 +24,13 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
 
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_bankAccount {
   __typename: "BankAccount";
-  accountHolderName: string;
-  accountNumber: string;
-  accountType: AccountType;
-  bankName: string;
-  city: string;
-  id: string;
-  IFSCcode: string;
+  accountHolderName: string | null;
+  accountNumber: string | null;
+  accountType: AccountType | null;
+  bankName: string | null;
+  city: string | null;
+  id: string | null;
+  IFSCcode: string | null;
   state: string | null;
   streetLine1: string | null;
 }

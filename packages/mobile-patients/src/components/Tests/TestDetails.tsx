@@ -2,21 +2,36 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CartIcon,
+  CircleBannerNonMember,
+  Cross,
+  PendingIcon,
+  WhiteTickIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import {
+  DIAGNOSTIC_GROUP_PLAN,
+  getPackageData,
+  TestPackage,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   aphConsole,
   postWebEngageEvent,
   g,
+  getDiscountPercentage,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
+  Dimensions,
   SafeAreaView,
   ScrollView,
   StyleProp,
@@ -37,12 +52,28 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
-import { SEARCH_DIAGNOSTICS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  SEARCH_DIAGNOSTICS_BY_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  findDiagnosticsByItemIDsAndCityIDVariables,
+  findDiagnosticsByItemIDsAndCityID,
+} from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '../../strings/AppConfig';
+import { FirebaseEventName, FirebaseEvents } from '../../helpers/firebaseEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+const screenHeight = Dimensions.get('window').height;
+const screenWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -89,14 +120,21 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(14),
     color: '#02475b',
     letterSpacing: 0.35,
+    textAlign: 'center',
+  },
+  circlePriceText: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    letterSpacing: 0.35,
+    textAlign: 'center',
   },
   SeparatorStyle: {
     ...theme.viewStyles.lightSeparatorStyle,
-    opacity: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.5)',
     paddingLeft: 20,
     paddingRight: 20,
     marginBottom: 20,
   },
+  pendingIconStyle: { height: 15, width: 15, resizeMode: 'contain' },
   container: {
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -136,11 +174,33 @@ const styles = StyleSheet.create({
     margin: 10,
     textAlign: 'center',
     color: '#658F9B',
-    ...theme.fonts.IBMPlexSansMedium(12),
+    ...theme.fonts.IBMPlexSansMedium(11),
+    alignSelf: 'flex-end',
   },
+  notificationCard: {
+    ...theme.viewStyles.cardViewStyle,
+    flexDirection: 'row',
+    margin: 16,
+    padding: 16,
+  },
+  crossIconStyle: {
+    tintColor: colors.APP_YELLOW_COLOR,
+    height: 10,
+    width: 10,
+    marginHorizontal: 5,
+    resizeMode: 'contain',
+    justifyContent: 'center',
+  },
+  topPriceView: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    height: 50,
+  },
+  circlePriceView: { alignSelf: 'flex-start', marginTop: 5 },
 });
 
-const tabs = [
+var tabs = [
   {
     id: '1',
     title: 'Tests Included',
@@ -156,6 +216,9 @@ export interface TestPackageForDetails extends TestPackage {
   preparation: string;
   source: 'Landing Page' | 'Search Page' | 'Cart Page';
   type: string;
+  specialPrice?: string | number;
+  circleRate?: string | number;
+  circleSpecialPrice?: string | number;
 }
 
 export interface TestDetailsProps
@@ -165,15 +228,31 @@ export interface TestDetailsProps
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
 
+  const [showAddedView, setShowAddedView] = useState<boolean>(false);
+
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+
   const TestDetailsDiscription = testInfo.PackageInClussion;
-  const { locationDetails, diagnosticLocation } = useAppCommonData();
-  const { cartItems, addCartItem } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const { locationDetails, diagnosticLocation, diagnosticServiceabilityData } = useAppCommonData();
+  const {
+    cartItems,
+    addCartItem,
+    isDiagnosticCircleSubscription,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const {
+    cartItems: shopCartItems,
+    isCircleSubscription,
+    setIsCircleSubscription,
+    setCircleSubscriptionId,
+    setCirclePlanSelected,
+    setCircleCashback,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
   const [isItemAdded, setItemAdded] = useState<boolean>(false);
   const currentItemId = testInfo.ItemID;
@@ -181,6 +260,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+
+  const findItemFromCart = cartItems.find((item) => item.id == testInfo.ItemID);
+  console.log(findItemFromCart);
+
+  const discount =
+    testDetails.source == 'Cart Page'
+      ? getDiscountPercentage(findItemFromCart?.price!, findItemFromCart?.specialPrice!)
+      : getDiscountPercentage(testDetails?.Rate!, testDetails?.specialPrice!);
+  const circleDiscount =
+    testDetails.source == 'Cart Page'
+      ? getDiscountPercentage(findItemFromCart?.circlePrice!, findItemFromCart?.circleSpecialPrice!)
+      : getDiscountPercentage(testDetails?.circleRate!, testDetails?.circleSpecialPrice!);
+
+  const promoteCircle = discount! < circleDiscount!;
 
   useEffect(() => {
     if (itemId) {
@@ -202,6 +295,36 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    if (testInfo?.testDescription != null) {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+        {
+          id: '3',
+          title: 'Overview',
+        },
+      ];
+    } else {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+      ];
+    }
+  }, []);
+
+  useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -212,16 +335,36 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       'Item Price': testInfo.Rate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+
+    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
+      PatientUHID: g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      source: testInfo.source,
+      ItemName: testInfo.ItemName,
+      ItemType: testInfo.type,
+      ItemCode: testInfo.ItemID,
+      ItemPrice: testInfo.Rate,
+      LOB: 'Diagnostics',
+    };
+    postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
+    const removeSpaces = itemId.replace(/\s/g, '');
+    const arrayOfId = removeSpaces.split(',');
+    const listOfIds = arrayOfId.map((item) => parseInt(item!));
     try {
       const {
-        data: { searchDiagnosticsById },
-      } = await client.query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-        query: SEARCH_DIAGNOSTICS_BY_ID,
+        data: { findDiagnosticsByItemIDsAndCityID },
+      } = await client.query<
+        findDiagnosticsByItemIDsAndCityID,
+        findDiagnosticsByItemIDsAndCityIDVariables
+      >({
+        query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
         variables: {
-          itemIds: itemId,
+          cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+          itemIDs: listOfIds,
         },
         fetchPolicy: 'no-cache',
       });
@@ -233,7 +376,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         fromAgeInDays,
         toAgeInDays,
         testPreparationData,
-      } = g(searchDiagnosticsById, 'diagnostics', '0' as any)!;
+      } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
       const partialTestDetails = {
         Rate: rate,
         Gender: gender,
@@ -300,6 +443,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       M: 'MALE',
       F: 'FEMALE',
     };
+    const fromAge = (testInfo.FromAgeInDays / 365).toFixed(0);
+    const toAge = (testInfo.ToAgeInDays / 365).toFixed(0);
+
     return (
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
@@ -307,13 +453,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           {!!testInfo.ToAgeInDays && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
-              <Text style={styles.personDetailStyles}>
-                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO{' '}
-                {(testInfo.ToAgeInDays / 365).toFixed(0)} YEARS
-              </Text>
+              <Text style={styles.personDetailStyles}>For all age group</Text>
             </View>
           )}
-
           {!!testInfo.Gender && !!gender[testInfo.Gender] && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Gender</Text>
@@ -331,7 +473,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               </Text>
             </View>
           )}
-
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
             <Text style={styles.personDetailStyles}>
@@ -391,8 +532,89 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const renderTestDescription = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        <Text style={styles.descriptionTextStyles}>
+          {(testInfo && stripHtml(testInfo?.testDescription)) ||
+            string.diagnostics.noTestDescription}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderNotification = () => {
+    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
+      return null;
+    }
+    return (
+      <View style={styles.notificationCard}>
+        <PendingIcon style={styles.pendingIconStyle} />
+        <Text style={[styles.personDetailStyles, { marginTop: 0, marginLeft: 4, marginRight: 6 }]}>
+          {string.diagnostics.priceNotificationForCovidText}
+        </Text>
+      </View>
+    );
+  };
+
   const onProceedToCartCTA = () => {
     props.navigation.navigate(AppRoutes.MedAndTestCart);
+  };
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('Diagnositic_DetailsPage_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
+
+  setTimeout(() => isItemAdded && setItemAdded(false), 2000);
+
+  const renderItemAdded = () => {
+    return (
+      <View>
+        {isItemAdded && isAddedToCart && (
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              flexDirection: 'row',
+              marginTop: -10,
+            }}
+          >
+            <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
+              {string.diagnostics.itemsAddedSuccessfullyCTA}
+            </Text>
+            <TouchableOpacity
+              style={{ marginTop: 13, marginRight: 10 }}
+              onPress={() => setItemAdded(false)}
+            >
+              <Cross style={styles.crossIconStyle} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
   };
 
   const postDiagnosticAddToCartEvent = (
@@ -410,6 +632,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       Quantity: 1,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);
@@ -437,6 +669,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       </SafeAreaView>
     );
   } else {
+    console.log('iscircle ? ' + isDiagnosticCircleSubscription);
+    console.log('promote circle ? ' + promoteCircle);
+
     return (
       <SafeAreaView
         style={{
@@ -446,64 +681,221 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {renderHeader()}
         <ScrollView bounces={false} keyboardDismissMode="on-drag">
           <View>{renderTestDetails()}</View>
+          {renderNotification()}
           {renderTabsData()}
-          {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
-          <View style={{ height: 100 }} />
+          {selectedTab === tabs[0].title
+            ? renderTestsIncludedData()
+            : selectedTab === tabs[1].title
+            ? renderPreparation()
+            : renderTestDescription()}
+          {promoteCircle && <View style={{ marginBottom: 30 }}></View>}
+          <View style={{ height: screenHeight * 0.2 }} />
         </ScrollView>
+
         <StickyBottomComponent defaultBG style={styles.container}>
-          <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
-            <Text style={styles.priceText}>Rs. {testInfo.Rate}</Text>
-          </View>
+          {/**
+           * non-subscribed + promote circle
+           */}
 
-          <View style={styles.SeparatorStyle}></View>
-          {isItemAdded && (
-            <Text style={styles.successfulText}>
-              {string.diagnostics.itemsAddedSuccessfullyCTA}
-            </Text>
+          {!isDiagnosticCircleSubscription && promoteCircle && (
+            <View style={[styles.topPriceView, { height: 75 }]}>
+              <View>
+                <CircleHeading />
+                <View style={styles.circlePriceView}>
+                  <Text style={styles.priceText}>
+                    {string.common.Rs}{' '}
+                    {findItemFromCart?.circleSpecialPrice! || testInfo?.circleSpecialPrice}
+                  </Text>
+                </View>
+              </View>
+              {renderItemAdded()}
+            </View>
           )}
-
-          <View style={{ flex: 1, alignItems: 'center', marginHorizontal: 60 }}>
-            <Button
-              title={
-                !isAddedToCart
-                  ? 'ADD TO CART'
-                  : isItemAdded
-                  ? string.diagnostics.proceedToCartCTA
-                  : 'ITEM ADDED'
-              }
-              disabled={!isAddedToCart || isItemAdded ? false : true}
-              style={{ flex: 1, marginBottom: 16 }}
-              onPress={() => {
-                if (!isAddedToCart) {
-                  setItemAdded(true);
-                  postDiagnosticAddToCartEvent(
-                    testInfo.ItemName,
-                    testInfo.ItemID,
-                    testInfo.Rate,
-                    testInfo.Rate
-                  );
-                  addCartItem!({
-                    id: testInfo.ItemID,
-                    name: testInfo.ItemName,
-                    mou: testInfo.PackageInClussion.length,
-                    price: testInfo.Rate,
-                    thumbnail: '',
-                    specialPrice: undefined,
-                    collectionMethod: testInfo.collectionType,
-                  });
-                } else {
-                  setItemAdded(false);
-                  props.navigation.navigate(AppRoutes.MedAndTestCart);
-                }
-              }}
-            />
-            {isAddedToCart && !isItemAdded && (
-              <View style={{ height: 40 }}>
-                <Text onPress={onProceedToCartCTA} style={styles.proceedToCartText}>
-                  {string.diagnostics.proceedToCartCTA}
-                </Text>
+          {/**
+           * non-subscribed + special price + non-promote
+           */}
+          {!isDiagnosticCircleSubscription &&
+            !promoteCircle &&
+            (testDetails.source == 'Cart Page' && findItemFromCart!
+              ? findItemFromCart?.price != findItemFromCart?.specialPrice
+              : testDetails?.Rate != testDetails?.specialPrice) && (
+              <View style={[styles.topPriceView, { height: 60 }]}>
+                <View style={styles.circlePriceView}>
+                  <Text
+                    style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
+                  >
+                    {string.common.Rs} {findItemFromCart?.price! || testInfo?.Rate}
+                  </Text>
+                </View>
+                {renderItemAdded()}
               </View>
             )}
+          {/**
+           * subscribed + promote circle
+           */}
+          {isDiagnosticCircleSubscription && promoteCircle && (
+            <View style={[styles.topPriceView]}>
+              <View style={styles.circlePriceView}>
+                <Text
+                  style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
+                >
+                  {string.common.Rs} {testInfo?.specialPrice! || testInfo?.Rate}
+                </Text>
+              </View>
+              {renderItemAdded()}
+            </View>
+          )}
+
+          {/**
+           * subscribed + special
+           */}
+
+          {isDiagnosticCircleSubscription &&
+            !promoteCircle &&
+            (testDetails.source == 'Cart Page' && findItemFromCart!
+              ? findItemFromCart?.price != findItemFromCart?.specialPrice
+              : testDetails.Rate != testDetails.specialPrice) && (
+              <View style={[styles.topPriceView, { height: 60 }]}>
+                <View style={styles.circlePriceView}>
+                  <Text
+                    style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
+                  >
+                    {string.common.Rs} {findItemFromCart?.price || testInfo?.Rate}
+                  </Text>
+                </View>
+                {renderItemAdded()}
+              </View>
+            )}
+
+          {/**
+           * for normal cases where no special price + no circle price
+           */}
+          {!promoteCircle &&
+            (testDetails.source == 'Cart Page' && findItemFromCart!
+              ? findItemFromCart?.price == findItemFromCart?.specialPrice
+              : testDetails.Rate == testDetails.specialPrice) && (
+              <View
+                style={{
+                  height: isItemAdded ? 60 : 40,
+                  alignItems: 'flex-end',
+                }}
+              >
+                {renderItemAdded()}
+              </View>
+            )}
+
+          <View style={{ backgroundColor: 'white', margin: -16 }}>
+            <View style={{ margin: 16 }}>
+              <View
+                style={{
+                  justifyContent: 'space-between',
+                  flexDirection: 'row',
+                }}
+              >
+                {/**
+                 * default price. - on sticky bottom
+                 */}
+
+                <View
+                  style={{
+                    alignSelf: 'flex-start',
+                    marginTop: isDiagnosticCircleSubscription && promoteCircle ? 0 : 10,
+                  }}
+                >
+                  {/**
+                   * circle + promote
+                   */}
+                  {isDiagnosticCircleSubscription && promoteCircle ? (
+                    <View style={{ alignSelf: 'flex-start' }}>
+                      <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
+                    </View>
+                  ) : null}
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text
+                      style={[
+                        styles.priceText,
+                        {
+                          marginTop: isDiagnosticCircleSubscription && promoteCircle ? -2 : 0,
+                          textAlign: 'left',
+                        },
+                      ]}
+                    >
+                      {string.common.Rs}{' '}
+                      {isDiagnosticCircleSubscription && promoteCircle
+                        ? testInfo?.circleSpecialPrice
+                        : testInfo?.specialPrice || testInfo?.Rate}
+                    </Text>
+                    {isDiagnosticCircleSubscription && promoteCircle && (
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansMedium(11),
+                          color: colors.APP_GREEN,
+                          lineHeight: 16,
+                          marginHorizontal: 10,
+                        }}
+                      >
+                        {Number(circleDiscount!).toFixed(0)}%off
+                      </Text>
+                    )}
+                    {/**
+                     * circle + not to promote
+                     */}
+                    {isDiagnosticCircleSubscription &&
+                      !promoteCircle &&
+                      (testInfo.source == 'Cart Page'
+                        ? findItemFromCart?.price! != findItemFromCart?.specialPrice!
+                        : testInfo?.specialPrice! != testInfo?.Rate) && (
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(11),
+                            color: colors.APP_GREEN,
+                            lineHeight: 16,
+                            marginHorizontal: 10,
+                          }}
+                        >
+                          {Number(discount!).toFixed(0)}%off
+                        </Text>
+                      )}
+                  </View>
+                </View>
+
+                <View style={{ width: '50%', alignSelf: 'flex-end' }}>
+                  <Button
+                    title={!isAddedToCart ? 'ADD TO CART' : string.diagnostics.proceedToCartCTA}
+                    // disabled={!isAddedToCart}
+                    style={{ marginBottom: 20 }}
+                    onPress={() => {
+                      if (!isAddedToCart) {
+                        setItemAdded(true);
+                        postDiagnosticAddToCartEvent(
+                          testInfo.ItemName,
+                          testInfo.ItemID,
+                          testInfo.Rate,
+                          testInfo.Rate
+                        );
+                        addCartItem!({
+                          id: testInfo?.ItemID,
+                          name: testInfo?.ItemName,
+                          mou: testInfo?.PackageInClussion.length,
+                          price: testInfo?.Rate,
+                          specialPrice: Number(testInfo?.specialPrice!) || Number(testInfo?.Rate!),
+                          circlePrice: Number(testInfo?.circleRate!) || undefined,
+                          circleSpecialPrice: Number(testInfo?.circleSpecialPrice!) || undefined,
+                          thumbnail: '',
+                          collectionMethod: testInfo?.collectionType,
+                          groupPlan: promoteCircle
+                            ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
+                            : DIAGNOSTIC_GROUP_PLAN.ALL,
+                        });
+                      } else {
+                        setItemAdded(false);
+                        props.navigation.navigate(AppRoutes.MedAndTestCart);
+                      }
+                    }}
+                  />
+                </View>
+              </View>
+            </View>
           </View>
         </StickyBottomComponent>
       </SafeAreaView>

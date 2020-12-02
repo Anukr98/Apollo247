@@ -8,6 +8,7 @@ import {
   StatusBar,
   Dimensions,
   Clipboard,
+  SafeAreaView,
 } from 'react-native';
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -27,7 +28,11 @@ import { GET_PHARMA_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -37,6 +42,7 @@ import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { Snackbar } from 'react-native-paper';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -108,10 +114,12 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         const paymentEventAttributes = {
           order_Id: orderId,
           order_AutoId: orderAutoId,
-          Type: 'Pharmacy',
+          LOB: 'Pharmacy',
           Payment_Status: res.data.pharmaPaymentStatus.paymentStatus,
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
         setorderDateTime(res.data.pharmaPaymentStatus.orderDateTime);
         setrefNo(res.data.pharmaPaymentStatus.paymentRefId);
         setStatus(res.data.pharmaPaymentStatus.paymentStatus);
@@ -132,7 +140,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
             ],
           })
         );
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -213,7 +221,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const renderStatusCard = () => {
     const refNumberText = String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
-    const priceText = 'Rs. ' + String(totalAmount);
+    const priceText = `${string.common.Rs} ` + String(totalAmount);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
@@ -376,19 +384,20 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-
-      {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {orderCard()}
-          {renderNote()}
-          {renderButton()}
-        </ScrollView>
-      ) : (
-        <Spinner />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {appointmentHeader()}
+            {orderCard()}
+            {renderNote()}
+            {renderButton()}
+          </ScrollView>
+        ) : (
+          <Spinner />
+        )}
+      </SafeAreaView>
     </View>
   );
 };

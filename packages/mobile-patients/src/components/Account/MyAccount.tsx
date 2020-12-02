@@ -21,7 +21,13 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getNetStatus,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  statusBarHeight,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -30,6 +36,7 @@ import Moment from 'moment';
 import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   Dimensions,
   Image,
@@ -55,6 +62,9 @@ import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import codePush from 'react-native-code-push';
 import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 const { width } = Dimensions.get('window');
 
@@ -159,7 +169,20 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     hdfcUserSubscriptions,
     setHdfcUserSubscriptions,
     setBannerData,
+    setCircleSubscription,
   } = useAppCommonData();
+  const {
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
+  } = useDiagnosticsCart();
+  const {
+    setIsCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubscriptionId,
+    circleSubscriptionId,
+    clearCartInfo,
+  } = useShoppingCart();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -270,6 +293,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     try {
       const webengage = new WebEngage();
       webengage.user.logout();
+      postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_OUT, {});
+      postFirebaseEvent(FirebaseEventName.USER_LOGGED_OUT, {});
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
@@ -283,9 +308,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCircleSubscription && setCircleSubscription(null);
       signOut();
       setTagalysConfig(null);
-
+      setCircleSubscriptionId && setCircleSubscriptionId('');
+      AsyncStorage.removeItem('circlePlanSelected');
+      clearCartInfo && clearCartInfo();
+      clearDiagnoticCartInfo && clearDiagnoticCartInfo();
+      setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
       props.navigation.dispatch(
         StackActions.reset({
           index: 0,
@@ -425,6 +457,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
 
+  const fireProfileAccessedEvent = (type: string) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PROFILE_ACCESSED] = {
+      Type: type,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.PROFILE_ACCESSED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PROFILE_ACCESSED, eventAttributes);
+  };
+
   const renderRows = () => {
     return (
       <View>
@@ -432,17 +472,21 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           container={{ marginTop: 14 }}
           title={'Manage Family Members'}
           leftIcon={<ManageProfileIcon />}
-          onPress={() =>
+          onPress={() => {
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,
-            })
-          }
+            });
+            fireProfileAccessedEvent('Manage Family Members');
+          }}
         />
         <ListCard
           container={{ marginTop: 4 }}
           title={'Address Book'}
           leftIcon={<Location />}
-          onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.AddressBook);
+            fireProfileAccessedEvent('Address Book');
+          }}
         />
         <ListCard
           title={'My Orders'}
@@ -450,6 +494,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.YourOrdersScene);
+            fireProfileAccessedEvent('My Orders');
           }}
         />
         <ListCard
@@ -460,6 +505,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               patientId: currentPatient.id,
               fromNotification: false,
             });
+            fireProfileAccessedEvent('My Payments');
           }}
         />
         <ListCard
@@ -467,14 +513,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
+            fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id') && (
+        {!!(hdfcUserSubscriptions?._id || circleSubscriptionId) && (
           <ListCard
             title={'My Memberships'}
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
             onPress={() => {
               props.navigation.navigate(AppRoutes.MyMembership);
+              fireProfileAccessedEvent('My Memberships');
             }}
           />
         )}
@@ -483,6 +531,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<NeedHelpIcon />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.MobileHelp);
+            fireProfileAccessedEvent('Need Help');
           }}
         />
         {/* <ListCard

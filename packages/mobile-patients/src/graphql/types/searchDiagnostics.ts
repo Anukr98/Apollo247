@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
@@ -7,6 +8,16 @@ import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
 // ====================================================
 // GraphQL query operation: searchDiagnostics
 // ====================================================
+
+export interface searchDiagnostics_searchDiagnostics_diagnostics_diagnosticPricing {
+  __typename: "diagnosticPricing";
+  mrp: number;
+  price: number;
+  groupPlan: string;
+  status: string | null;
+  startDate: any | null;
+  endDate: any | null;
+}
 
 export interface searchDiagnostics_searchDiagnostics_diagnostics {
   __typename: "Diagnostics";
@@ -22,7 +33,9 @@ export interface searchDiagnostics_searchDiagnostics_diagnostics {
   collectionType: TEST_COLLECTION_TYPE | null;
   fromAgeInDays: number;
   toAgeInDays: number;
+  testDescription: string | null;
   testPreparationData: string;
+  diagnosticPricing: (searchDiagnostics_searchDiagnostics_diagnostics_diagnosticPricing | null)[] | null;
 }
 
 export interface searchDiagnostics_searchDiagnostics {

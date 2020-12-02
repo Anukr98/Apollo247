@@ -1,6 +1,12 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Failure, Pending, Success, Copy } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Failure,
+  Pending,
+  Success,
+  Copy,
+  CircleLogo,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -8,12 +14,14 @@ import {
   CONSULT_ORDER_INVOICE,
   GET_APPOINTMENT_DATA,
   GET_TRANSACTION_STATUS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
   overlyCallPermissions,
+  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -38,6 +46,8 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
+  TextInput,
+  SafeAreaView,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -47,13 +57,21 @@ import {
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import firebase from 'react-native-firebase';
+import messaging from '@react-native-firebase/messaging';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
-
+import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import AsyncStorage from '@react-native-community/async-storage';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
+import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -74,7 +92,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const coupon = props.navigation.getParam('coupon');
+  const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -82,6 +103,18 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
+  const [emailSent, setEmailSent] = useState<boolean>(false);
+  const [circlePlanDetails, setCirclePlanDetails] = useState();
+  const [
+    amountBreakup,
+    setAmountBreakup,
+  ] = useState<paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup | null>();
+  const circleSavings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
+
+  const { circleSubscriptionId } = useShoppingCart();
+
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -94,6 +127,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
+    clearCircleSubscriptionData();
+    getUserSubscriptionsByStatus();
   }, []);
 
   useEffect(() => {
@@ -111,23 +146,31 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         try {
           const paymentEventAttributes = {
             Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
-            Type: 'Consultation',
+            LOB: 'Consultation',
             Appointment_Id: orderId,
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+          postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
+          if (isCircleDoctor && amountBreakup?.slashed_price) {
+            setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
+          }
           fireBaseFCM();
           try {
             let eventAttributes = webEngageEventAttributes;
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent();
+            eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
+        } else {
+          fireOrderFailedEvent();
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
         setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
@@ -139,7 +182,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -147,25 +190,52 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
   }, []);
 
-  const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      setNotificationAlert(true);
-      try {
-        const authorized = await firebase.messaging().requestPermission();
-        console.log('authorized', authorized);
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      setCirclePlanDetails(data?.APOLLO?.[0]);
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
+    }
+  };
 
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
+  const clearCircleSubscriptionData = () => {
+    AsyncStorage.removeItem('circlePlanSelected');
+  };
+
+  const fireOrderFailedEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      Price: price,
+      CouponCode: coupon,
+      PaymentType: paymentTypeID,
+      LOB: 'Consultation',
+      Appointment_Id: orderId,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+  };
+
+  const fireBaseFCM = async () => {
+    try {
+      const authStatus = await messaging().hasPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      if (!enabled) {
+        setNotificationAlert(true);
+        await messaging().requestPermission();
       }
+    } catch (error) {
+      CommonBugFender('ConsultOverlay_FireBaseFCM_Error', error);
     }
   };
 
@@ -293,16 +363,104 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const renderViewInvoice = () => {
     if (status === success) {
       return (
-        <TouchableOpacity
-          style={{ justifyContent: 'flex-end' }}
-          onPress={() => {
-            requestStoragePermission();
-          }}
-        >
-          {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
-        </TouchableOpacity>
+        <View style={styles.viewInvoice}>
+          <TouchableOpacity onPress={() => requestStoragePermission()}>
+            {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setshowEmailInput(!showEmailInput)}>
+            {textComponent(
+              'EMAIL INVOICE',
+              undefined,
+              !showEmailInput ? theme.colors.APP_YELLOW : 'rgba(252, 153, 22, 0.5)',
+              false
+            )}
+          </TouchableOpacity>
+        </View>
       );
     }
+  };
+
+  const renderEmailInputContainer = () => {
+    return showEmailInput ? <View>{!emailSent ? renderInputEmail() : renderSentMsg()}</View> : null;
+  };
+
+  const renderInputEmail = () => {
+    return (
+      <View style={styles.inputContainer}>
+        <View style={{ flex: 0.85 }}>
+          <TextInput
+            value={`${email}`}
+            onChangeText={(email) => setEmail(email)}
+            style={styles.inputStyle}
+          />
+        </View>
+        <View style={styles.rightIcon}>{rightIconView()}</View>
+      </View>
+    );
+  };
+
+  const renderSentMsg = () => {
+    const length = email?.length || 0;
+    return (
+      <View
+        style={{ ...styles.inputContainer, justifyContent: length > 20 ? 'center' : undefined }}
+      >
+        <Text
+          style={{
+            lineHeight: length > 20 ? 18 : 30,
+            textAlign: length > 20 ? 'center' : 'auto',
+            ...styles.sentMsg,
+          }}
+        >
+          {length < 21
+            ? `Invoice has been sent to ${email}!`
+            : `Invoice has been sent to ${'\n'} ${email}!`}
+        </Text>
+      </View>
+    );
+  };
+
+  const rightIconView = () => {
+    console.log(isSatisfyingEmailRegex(email.trim()));
+    return (
+      <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          disabled={!isSatisfyingEmailRegex(email.trim())}
+          onPress={() => {
+            emailInvoice();
+            setEmailSent(true);
+          }}
+        >
+          <SearchSendIcon />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const isSatisfyingEmailRegex = (value: string) =>
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const emailInvoice = () => {
+    client
+      .query({
+        query: CONSULT_ORDER_INVOICE,
+        variables: {
+          patientId: currentPatient.id,
+          appointmentId: orderId,
+          emailId: email,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        CommonBugFender('Error while sending invoice on mail', error);
+      })
+      .finally(() => {});
   };
 
   const downloadInvoice = () => {
@@ -366,39 +524,19 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const renderStatusCard = () => {
     const refNumberText = String(paymentRefId != '' && paymentRefId != null ? paymentRefId : '--');
     const orderIdText = 'Order ID: ' + String(displayId);
-    const priceText = 'Rs. ' + String(price);
+    const priceText = `${string.common.Rs} ` + String(price);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
-        <View
-          style={{
-            flex: 0.15,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-          }}
-        >
-          {statusText()}
-        </View>
-        <View
-          style={{
-            flex: 0.12,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-          }}
-        >
+        <View style={{ alignItems: 'center' }}>{statusText()}</View>
+        <View style={styles.priceCont}>
           {textComponent(priceText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
-        <View
-          style={{
-            flex: 0.12,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-          }}
-        >
+        <View style={styles.priceCont}>
           {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
-        <View style={{ flex: 0.39, justifyContent: 'flex-start', alignItems: 'center' }}>
-          <View style={{ flex: 0.6, justifyContent: 'flex-start', alignItems: 'center' }}>
+        <View>
+          <View style={styles.paymentRef}>
             {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
             <TouchableOpacity
               style={styles.refStyles}
@@ -408,9 +546,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               <Copy style={styles.iconStyle} />
             </TouchableOpacity>
           </View>
-          <View style={{ flex: 0.4, justifyContent: 'flex-start', alignItems: 'center' }}>
-            {renderViewInvoice()}
-          </View>
+          <View style={{}}>{renderViewInvoice()}</View>
+          {renderEmailInputContainer()}
           <Snackbar
             style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
             visible={snackbarState}
@@ -598,31 +735,85 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     );
   };
 
+  const circleWebEngage = () => {
+    const eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_BUYS_SUBSCRIPTION, eventAttributes);
+  };
+
+  const renderAddedCirclePlanWithValidity = () => {
+    circleWebEngage();
+    return (
+      <AddedCirclePlanWithValidity
+        circleSavings={circleSavings}
+        circlePlanDetails={circlePlanDetails}
+        isConsult={true}
+      />
+    );
+  };
+
+  const renderCircleSavingsOnPurchase = () => {
+    return (
+      <View style={styles.circleSavingsContainer}>
+        <View style={styles.rowCenter}>
+          <CircleLogo style={styles.circleLogo} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 12),
+              marginTop: 5,
+            }}
+          >
+            You{' '}
+            <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
+              saved {string.common.Rs}
+              {circleSavings}{' '}
+            </Text>
+            on your purchase
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-      {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {appointmentCard()}
-          {renderNote()}
-          {renderButton()}
-        </ScrollView>
-      ) : (
-        <Spinner />
-      )}
-      {showSpinner && <Spinner />}
-      {notificationAlert && (
-        <NotificationPermissionAlert
-          onPressOutside={() => setNotificationAlert(false)}
-          onButtonPress={() => {
-            setNotificationAlert(false);
-            Linking.openSettings();
-          }}
-        />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <View style={styles.container}>
+            <ScrollView style={styles.container}>
+              {renderStatusCard()}
+              {circleSavings > 0 && !circleSubscriptionId
+                ? renderAddedCirclePlanWithValidity()
+                : null}
+              {circleSavings > 0 && circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
+              {appointmentHeader()}
+              {appointmentCard()}
+              {renderNote()}
+            </ScrollView>
+            {renderButton()}
+          </View>
+        ) : (
+          <Spinner />
+        )}
+        {showSpinner && <Spinner />}
+        {notificationAlert && (
+          <NotificationPermissionAlert
+            onPressOutside={() => setNotificationAlert(false)}
+            onButtonPress={() => {
+              setNotificationAlert(false);
+              Linking.openSettings();
+            }}
+          />
+        )}
+      </SafeAreaView>
     </View>
   );
 };
@@ -645,10 +836,10 @@ const styles = StyleSheet.create({
     height: 45,
   },
   statusCardStyle: {
-    height: 0.32 * windowHeight,
     margin: 0.06 * windowWidth,
     flex: 1,
     borderRadius: 10,
+    paddingBottom: 15,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
@@ -656,7 +847,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   statusCardSubContainerStyle: {
-    flex: 0.22,
     marginVertical: 18,
     justifyContent: 'center',
     alignItems: 'center',
@@ -704,5 +894,68 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 9,
     height: 10,
+  },
+  inputStyle: {
+    lineHeight: 18,
+    ...theme.fonts.IBMPlexSansMedium(11),
+    color: '#6D7278',
+    borderBottomWidth: 0,
+    justifyContent: 'center',
+  },
+  inputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    marginBottom: 12,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  viewInvoice: {
+    marginTop: 10,
+    marginBottom: 10,
+    paddingHorizontal: 40,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  rightIcon: {
+    flex: 0.15,
+    alignItems: 'flex-end',
+  },
+  sentMsg: {
+    color: 'rgba(74, 165, 74, 0.6)',
+    marginVertical: 4,
+    ...theme.fonts.IBMPlexSansMedium(11),
+  },
+  priceCont: {
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  paymentRef: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  circleSavingsContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    borderRadius: 5,
+    borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    paddingVertical: 8,
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  circleLogo: {
+    width: 45,
+    height: 27,
+    marginRight: 5,
   },
 });

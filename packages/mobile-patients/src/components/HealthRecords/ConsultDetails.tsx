@@ -117,6 +117,19 @@ const styles = StyleSheet.create({
     paddingTop: 7,
     paddingBottom: 12,
   },
+  orderMedicineMsg: {
+    textAlign: 'right',
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 14,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    paddingTop: 5,
+    paddingBottom: 10,
+  },
+  subDataTextStyle: {
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
   labelViewStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,

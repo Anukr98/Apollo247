@@ -2,20 +2,41 @@ import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 type YesOrNo = { value: 'Yes' | 'No' };
 
+export enum ProductPageViewedSource {
+  NOTIFICATION = 'notification',
+  DEEP_LINK = 'deeplink',
+  BANNER = 'banner',
+  REGISTRATION = 'registration',
+  CART = 'cart',
+  PARTIAL_SEARCH = 'partial search',
+  FULL_SEARCH = 'full search',
+  RECENT_SEARCH = 'recent search',
+  HOME_PAGE = 'home page',
+  CATEGORY_OR_LISTING = 'category or listing',
+  SUBSTITUTES = 'substitutes',
+  CROSS_SELLING_PRODUCTS = 'cross selling products',
+  SIMILAR_PRODUCTS = 'similar products',
+}
+
 export enum FirebaseEventName {
-  MOBILE_ENTRY = 'Mobile Entry',
+  MOBILE_ENTRY = 'LoginClicked',
+  OTP_DEMANDED = 'OTPDemanded',
   LOGIN = 'login',
-  OTP_ENTERED = 'OTP Entered',
+  OTP_ENTERED = 'OTPSubmitted',
+  USER_LOGGED_IN = 'UserLoggedIn',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
+  OTP_VALIDATION_FAILED = 'OTPValidationFailed',
+  USER_LOGGED_OUT = 'UserLoggedOut',
+  PROFILE_ACCESSED = 'ProfileAccessed',
   SIGN_UP = 'sign_up',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   NOTIFY_ME = 'Notify Me',
-  CATEGORY_CLICKED = 'Pharmacy Category Clicked',
-  PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
+  CATEGORY_CLICKED = 'PharmacyCategoryClicked',
+  PHARMACY_ADD_TO_CART = 'PharmacyAddtoCart',
+  DIAGNOSTIC_ADD_TO_CART = 'ItemAddedtoCart',
+  PHARMACY_CART_VIEWED = 'PharmacyCartViewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic Proceed To Pay Clicked',
@@ -37,6 +58,12 @@ export enum FirebaseEventName {
   PAY_BUTTON_CLICKED = 'PAY_BUTTON_CLICKED',
   CONSULTATION_BOOKED = 'CONSULTATION_BOOKED',
   RATING_GIVEN = 'Rating Given',
+  APP_OPENED = 'AppOpened',
+  CATEGORY_PAGE_VIEWED = 'CategoryPageViewed',
+  PRODUCT_PAGE_VIEWED = 'ItemViewed',
+  ITEMS_REMOVED_FROM_CART = 'ItemsRemovedFromCart',
+  PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
+  ORDER_FAILED = 'OrderFailed',
 
   // HomePageElements Events
   FIND_A_DOCTOR = 'FIND_A_DOCTOR',
@@ -52,6 +79,8 @@ export enum FirebaseEventName {
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
+  DIAGNOSTIC_ITEM_VIEWED = 'DiagnosticItemViewed',
+  DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
 
   // Health Records
   CONSULT_RX = 'Consult & RX',
@@ -70,7 +99,7 @@ export enum FirebaseEventName {
   CLINIC_VISIT_CLICKED = 'CLINIC_VISIT_CLICKED',
 
   // Payments Events
-  PAYMENT_INSTRUMENT = 'PAYMENT_INSTRUMENT',
+  PAYMENT_INSTRUMENT = 'PaymentModeSelected',
   PAYMENT_STATUS = 'PAYMENT_STATUS',
 
   PURCHASE = 'purchase',
@@ -126,12 +155,18 @@ export interface FirebaseEvents {
   // ********** AppEvents ********** \\
 
   [FirebaseEventName.MOBILE_ENTRY]: {};
+  [FirebaseEventName.OTP_DEMANDED]: { mobilenumber: string };
   [FirebaseEventName.LOGIN]: { mobilenumber: string };
   [FirebaseEventName.OTP_ENTERED]: YesOrNo;
   [FirebaseEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
   [FirebaseEventName.OTP_VERIFICATION_SUCCESS]: {
     Mobile_Number: string;
   };
+  [FirebaseEventName.USER_LOGGED_IN]: {
+    Type: 'Registration' | 'Login';
+    userId: string;
+  };
+  [FirebaseEventName.PROFILE_ACCESSED]: { Type: string };
   [FirebaseEventName.SIGN_UP]: {
     Customer_ID: string;
     Customer_First_Name: string;
@@ -142,6 +177,14 @@ export interface FirebaseEvents {
     Referral_Code?: string;
   };
   [FirebaseEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
+  [FirebaseEventName.APP_OPENED]: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+    referrer?: string;
+  };
 
   // ********** Home Screen Events ********** \\
 
@@ -183,20 +226,24 @@ export interface FirebaseEvents {
     productname: string;
     productid: string; // (SKUID)
     Price: number;
-    DiscountedPrice: number;
+    DiscountedPrice: number | undefined;
     Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
+    Source:
+      | 'Pharmacy Home'
+      | 'Pharmacy PDP'
+      | 'Pharmacy List'
+      | 'Pharmacy Partial Search'
+      | 'Pharmacy Full Search'
+      | 'Similar Widget'
+      | 'Pharmacy Cart';
     Brand?: string;
     BrandID?: string;
     categoryname?: string;
     categoryID?: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // Age: number;
-    // Gender: string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
+    Section?: string;
+    SectionName?: string;
+    af_revenue: number;
+    af_currency: string;
   };
   [FirebaseEventName.DIAGNOSTIC_ADD_TO_CART]: {
     productname: string;
@@ -217,14 +264,20 @@ export interface FirebaseEvents {
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
+  [FirebaseEventName.CATEGORY_PAGE_VIEWED]: {
+    source: 'home' | 'deeplink' | 'registration';
+    CategoryId: string;
+    CategoryName: string;
+  };
   [FirebaseEventName.PHARMACY_CART_VIEWED]: {
+    CustomerID: string;
     TotalItemsInCart: number;
     SubTotal: number;
     Deliverycharge: number;
     CouponCodeUsed?: string;
     TotalDiscount: number;
     NetAfterDiscount: number;
-    'PrescriptionNeeded?': boolean;
+    PrescriptionNeeded: boolean;
     CartID?: string;
     CartItems: object[];
     ServiceArea: 'Pharmacy' | 'Diagnostic';
@@ -323,6 +376,54 @@ export interface FirebaseEvents {
     Service_Area: 'Pharmacy' | 'Diagnostic';
   };
 
+  [FirebaseEventName.PRODUCT_PAGE_VIEWED]: {
+    source?: ProductPageViewedSource | string;
+    ProductId?: string;
+    ProductName?: string;
+    Stockavailability?: 'Yes' | 'No';
+    /**
+     * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
+     */
+    CategoryID?: string;
+    CategoryName?: string;
+    /**
+     * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
+     */
+    SectionName?: string;
+    PatientName?: string;
+    PatientUHID?: string;
+    ItemName?: string;
+    ItemType?: string;
+    ItemCode?: string;
+    ItemPrice?: number;
+    LOB?: string;
+  };
+
+  [FirebaseEventName.ITEMS_REMOVED_FROM_CART]: {
+    ProductID: string;
+    CustomerID: string;
+    ProductName: string;
+    'No.ofItems': number;
+  };
+
+  [FirebaseEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
+    TATDisplayed?: Date;
+    DeliverySuccessful?: 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    DeliveryAddress?: string;
+    Pincode?: string;
+    DeliveryTAT?: number;
+    LOB?: string;
+  };
+
+  [FirebaseEventName.ORDER_FAILED]: {
+    OrderID?: string;
+    Price: number;
+    CouponCode?: string | undefined;
+    CouponValue?: string | undefined;
+    PaymentType: string;
+    LOB: string;
+    Appointment_Id?: string;
+  };
   // ********** ConsultEvents ********** \\
 
   [FirebaseEventName.DOCTOR_SEARCH]: {
@@ -464,6 +565,17 @@ export interface FirebaseEvents {
     Gender: string;
     MobileNumber: string;
     CustomerID: string;
+  };
+
+  [FirebaseEventName.DIAGNOSTIC_ITEM_VIEWED]: {
+    PatientUHID: string;
+    PatientName: string;
+    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    ItemName: string;
+    ItemType: string;
+    ItemCode: string;
+    ItemPrice: number;
+    LOB: string;
   };
 
   [FirebaseEventName.BROWSE_PACKAGE]: {
