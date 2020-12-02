@@ -9,6 +9,7 @@ import {
   DropdownGreen,
   More,
   NotifySymbol,
+  NotifySymbolGreen,
   MedicalIcon,
   NotificationIcon,
   RetryButtonIcon,
@@ -189,6 +190,26 @@ const styles = StyleSheet.create({
   deliverySubText: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansRegular(12),
+  },
+  orderDelivered: {
+    ...theme.fonts.IBMPlexSansBold(16),
+    lineHeight: 24,
+    color: '#00B38E',
+  },
+  deliveryDate: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 17,
+    color: '#01475B',
+  },
+  notifySymbol: {
+    height: 21,
+    width: 18,
+    marginTop: 3,
+  },
+  deliveredHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
 });
 
@@ -647,6 +668,26 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       );
     };
 
+    const renderDelivered = () => {
+      return (
+        <View style={styles.deliveredHeader}>
+          <View style={{ flexDirection: 'row' }}>
+            <NotifySymbolGreen style={styles.notifySymbol} />
+            <View style={{ marginLeft: 7 }}>
+              <Text style={styles.orderDelivered}>Order Delivered!</Text>
+              <Text style={styles.deliveryDate}>{getFormattedDate(isDelivered?.statusDate)}</Text>
+            </View>
+          </View>
+          <Button
+            style={{ width: undefined }}
+            onPress={reOrder}
+            title={'RE ORDER'}
+            titleTextStyle={{ marginHorizontal: 35 }}
+          />
+        </View>
+      );
+    };
+
     return (
       <View>
         <View
@@ -709,66 +750,71 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               shadowRadius: 5,
               elevation: 5,
               paddingHorizontal: 20,
-              paddingTop: 14,
-              paddingBottom: 13,
+              paddingTop: 10,
+              paddingBottom: 10,
               flexDirection: 'row',
               height: showChangedBadge || showDeliveryBadge ? 80 : undefined,
             }}
           >
-            {/* <NotifySymbol /> */}
-            <View style={styles.deliveryOuterview}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.expectedDeliveryText}>
-                  {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-                    ? 'STORE PICKUP - '
-                    : isDelivered
-                    ? 'ORDER DELIVERED - '
-                    : 'EXPECTED DELIVERY - '}
-                </Text>
-                <Text style={styles.expectedDeliveryDateText}>
-                  {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-                    ? getFormattedDateTime(currentOrderStatus && currentOrderStatus.statusDate)
-                    : isDelivered
-                    ? getFormattedDate(isDelivered.statusDate)
-                    : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
-                    ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
-                      ? 'To be Updated'
-                      : 'Awaited' //do it bold
-                    : tatInfo
-                    ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
-                      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
-                      orderDetails?.medicineOrdersStatus!.find(
-                        (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
-                      )
-                      ? 'To be Updated'
-                      : getFormattedDateTimeWithBefore(tatInfo)
-                    : 'Awaited'}
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row', width: showBadge ? '82%' : '90%' }}>
-                <Text style={styles.deliverySubText}>
-                  {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
-                  orderDetails.oldOrderTat!
-                    ? diffInTat > 1
-                      ? `Delivery date extended by ${diffInTat} days.`
-                      : diffInTat == 1
-                      ? `Delivery date extended by a day.`
-                      : 'Delivery extended by few hours.'
-                    : orderDetails.orderTat!
-                    ? orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
-                      ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
-                      : orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
-                        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
-                        orderDetails?.medicineOrdersStatus!.find(
-                          (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
-                        )
-                      ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
-                      : ''
-                    : string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder}
-                </Text>
-              </View>
-            </View>
-            {renderBadge()}
+            {isDelivered ? (
+              renderDelivered()
+            ) : (
+              <>
+                <View style={styles.deliveryOuterview}>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={styles.expectedDeliveryText}>
+                      {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                        ? 'STORE PICKUP - '
+                        : isDelivered
+                        ? 'ORDER DELIVERED - '
+                        : 'EXPECTED DELIVERY - '}
+                    </Text>
+                    <Text style={styles.expectedDeliveryDateText}>
+                      {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                        ? getFormattedDateTime(currentOrderStatus && currentOrderStatus.statusDate)
+                        : isDelivered
+                        ? getFormattedDate(isDelivered.statusDate)
+                        : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                        ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
+                          ? 'To be Updated'
+                          : 'Awaited' //do it bold
+                        : tatInfo
+                        ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                          orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+                          orderDetails?.medicineOrdersStatus!.find(
+                            (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                          )
+                          ? 'To be Updated'
+                          : getFormattedDateTimeWithBefore(tatInfo)
+                        : 'Awaited'}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', width: showBadge ? '82%' : '90%' }}>
+                    <Text style={styles.deliverySubText}>
+                      {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                      orderDetails.oldOrderTat!
+                        ? diffInTat > 1
+                          ? `Delivery date extended by ${diffInTat} days.`
+                          : diffInTat == 1
+                          ? `Delivery date extended by a day.`
+                          : 'Delivery extended by few hours.'
+                        : orderDetails.orderTat!
+                        ? orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                          ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
+                          : orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                            orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+                            orderDetails?.medicineOrdersStatus!.find(
+                              (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                            )
+                          ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
+                          : ''
+                        : string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder}
+                    </Text>
+                  </View>
+                </View>
+                {renderBadge()}
+              </>
+            )}
           </View>
         )}
       </View>
@@ -2151,7 +2197,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 ? renderOrderHistory()
                 : !loading && renderOrderSummary()}
             </ScrollView>
-            {renderReOrderButton()}
+            {/* {renderReOrderButton()} */}
           </>
         )}
       </SafeAreaView>
