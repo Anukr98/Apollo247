@@ -61,6 +61,7 @@ import {
   Platform,
 } from 'react-native';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
@@ -420,6 +421,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [currentUpdatePopupId, setCurrentUpdatePopupId] = useState(0);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
+  const [errorPopupText, setErrorPopupText] = useState<string>(
+    string.common.error_enter_number_text
+  );
   const [selectedBloodGroupArray, setSelectedBloodGroupArray] = useState<BloodGroupArray[]>(
     bloodGroupArray
   );
@@ -1195,6 +1199,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           placeholder={'Enter Weight'}
           value={weight}
           numberOfLines={1}
+          maxLength={3}
           keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
           onChangeText={(text) => {
             setWeightValue(text);
@@ -1230,14 +1235,38 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const onPressUpdate = () => {
       if (currentUpdatePopupId === 1) {
-        if (parseFloat(height) <= 0 || !height || !/^[0-9\'’.]*$/.test(height)) {
-          setShowUpdateProfileErrorPopup(true);
+        if (heightArrayValue === HEIGHT_ARRAY.CM) {
+          if (
+            isNaN(Number(height)) ||
+            !height ||
+            !/^[0-9\.]*$/.test(height) ||
+            (heightArrayValue === HEIGHT_ARRAY.CM && Number(height) >= 400)
+          ) {
+            setShowUpdateProfileErrorPopup(true);
+            setErrorPopupText(string.common.error_enter_number_text);
+          } else {
+            updateMedicalParameters(
+              height,
+              currentPatient?.patientMedicalHistory?.weight,
+              currentPatient?.patientMedicalHistory?.bloodGroup
+            );
+          }
         } else {
-          updateMedicalParameters(
-            height,
-            currentPatient?.patientMedicalHistory?.weight,
-            currentPatient?.patientMedicalHistory?.bloodGroup
-          );
+          if (
+            parseFloat(height) <= 0 ||
+            !height ||
+            (heightArrayValue === HEIGHT_ARRAY.FT &&
+              !/^(\d{1,2})[\'’]?((\d)|([0-1][0-2]))?[\"”]?$/.test(height))
+          ) {
+            setShowUpdateProfileErrorPopup(true);
+            setErrorPopupText('Please enter correct height(ft)');
+          } else {
+            updateMedicalParameters(
+              height,
+              currentPatient?.patientMedicalHistory?.weight,
+              currentPatient?.patientMedicalHistory?.bloodGroup
+            );
+          }
         }
       } else if (currentUpdatePopupId === 2) {
         if (parseFloat(weight) <= 0 || !weight) {
@@ -1308,10 +1337,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <View style={styles.overlayViewStyle}>
           <View style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.errorPopupViewStyle}>
-              <Text style={styles.uhHoTextStyle}>{'Uh oh..:('}</Text>
-              <Text style={styles.validTextStyle}>
-                {'Please enter numeric values (eg. 0,1...)'}
-              </Text>
+              <Text style={styles.uhHoTextStyle}>{string.common.uhOh}</Text>
+              <Text style={styles.validTextStyle}>{errorPopupText}</Text>
               <Text
                 style={styles.errorOKTextStyle}
                 onPress={() => setShowUpdateProfileErrorPopup(false)}
