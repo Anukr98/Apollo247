@@ -437,13 +437,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const hdfc_values = string.Hdfc_values;
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
-  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
-    if (nextAppState === 'active') {
-      getUserSubscriptionsWithBenefits();
-      getUserBanners();
-    }
-  };
-
   useEffect(() => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
     // handleDeepLink(props.navigation);
@@ -813,14 +806,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setMenuViewOptions([1, 2, 3, 5]);
     }
   }, [enableCM]);
-
-  useEffect(() => {
-    // call hdfc apis on appstate change
-    AppState.addEventListener('change', _handleAppStateChange);
-    return () => {
-      AppState.removeEventListener('change', _handleAppStateChange);
-    };
-  }, []);
 
   useEffect(() => {
     AsyncStorage.removeItem('deeplink');
