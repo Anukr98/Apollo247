@@ -11,6 +11,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -70,6 +71,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const circleStaticMonthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
+  const { circleSubscription } = useAppCommonData();
   const {
     circlePlanSelected,
     setCirclePlanSelected,
@@ -95,6 +97,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     'Patient UHID': currentPatient?.uhid,
     'Mobile Number': currentPatient?.mobileNumber,
     'Customer ID': currentPatient?.id,
+    'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
   };
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {

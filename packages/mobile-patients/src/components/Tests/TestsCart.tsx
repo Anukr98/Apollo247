@@ -17,6 +17,7 @@ import {
   getDiscountPercentage,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  setCircleMembershipType,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   DiagnosticData,
@@ -385,6 +386,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationForDiagnostics,
     locationDetails,
     diagnosticServiceabilityData,
+    circleSubscription,
   } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -458,10 +460,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [deliveryAddressId]);
 
   const fireCircleBenifitAppliedEvent = () => {
+    const circleMembershipType = setCircleMembershipType(
+      circleSubscription?.startDate!,
+      circleSubscription?.endDate!
+    );
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Membership Type': circleMembershipType,
+      'Circle Membership Start Date': circleSubscription?.startDate!,
+      'Circle Membership End Date': circleSubscription?.endDate!,
     };
     isDiagnosticCircleSubscription &&
       postWebEngageEvent(
