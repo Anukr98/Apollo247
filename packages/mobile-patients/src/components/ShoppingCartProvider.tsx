@@ -432,7 +432,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
             : item.price
           : item.price;
         let cashback = 0;
-        const type_id = item.productType;
+        const type_id = item?.productType?.toUpperCase();
         if (!!circleCashback && !!circleCashback[type_id]) {
           cashback = finalPrice * item.quantity * (circleCashback[type_id] / 100);
         }

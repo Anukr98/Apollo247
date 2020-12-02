@@ -47,7 +47,8 @@ import {
   addDiabeticQuestionnaire,
   addDiabeticQuestionnaireVariables,
 } from '@aph/mobile-patients/src/graphql/types/addDiabeticQuestionnaire';
-import { ADD_DIABETIC_QUESTIONNAIRE } from '@aph/mobile-patients/src/graphql/profiles';
+import { ADD_DIABETIC_QUESTIONNAIRE, GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -170,9 +171,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     circleSubscription,
     hdfcUpgradeUserSubscriptions,
     totalCircleSavings,
+    setTotalCircleSavings,
   } = useAppCommonData();
   const { circlePlanSelected } = useShoppingCart();
-  const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
   const plan = planName?.substring(0, planName?.indexOf('+'));
@@ -198,7 +200,49 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [benefitId, setBenefitId] = useState<string>('');
   const [showUserConstentPopUp, setShowUserConsentPopup] = useState<boolean>(false);
   const [showDiabeticQuestionaire, setShowDiabeticQuestionaire] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
+
+  useEffect(() => {
+    fetchCircleSavings();
+  }, []);
+
+  const fetchCircleSavings = async () => {
+    setLoading(true);
+    try {
+      const res = await client.query({
+        query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+        variables: {
+          mobile_number: currentPatient?.mobileNumber,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
+      const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
+      const consultSavings = savings?.consult || 0;
+      const pharmaSavings = savings?.pharma || 0;
+      const diagnosticsSavings = savings?.diagnostics || 0;
+      const deliverySavings = savings?.delivery || 0;
+      const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      const docOnCallBenefit = circlebenefits?.filter(
+        (value) => value?.attribute === Circle.DOC_ON_CALL
+      );
+      setTotalCircleSavings &&
+        setTotalCircleSavings({
+          consultSavings,
+          pharmaSavings,
+          diagnosticsSavings,
+          deliverySavings,
+          totalSavings,
+          callsTotal: docOnCallBenefit?.[0]?.attribute_type?.total,
+          callsUsed: docOnCallBenefit?.[0]?.attribute_type?.used,
+        });
+        setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+    }
+  };
 
   const upgradeTransactionValue =
     membershipType === upgradePlanName
