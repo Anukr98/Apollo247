@@ -953,6 +953,26 @@ export const NeedHelp = [
       'Membership Downgrade',
     ],
   },
+  {
+    category: 'Circle Membership',
+    options: [
+      'Details about Circle Membership',
+      'Regarding Circle Benefits',
+      'Plans available for Circle Membership',
+      'Signing Up for Circle Membership',
+      'Buying Circle Membership using OneApollo Health Credits',
+      'About Circle Cashback',
+      'How to use Circle Cashback',
+      'Membership Cancellation',
+      'Changing Membership Plan',
+      'How to get free delivery with Circle',
+      'Covid Care Benefit with Circle',
+      'Regarding Digitization of Patient Health Records',
+      'Regarding Doctor on Call',
+      'Regarding Advanced Diabetes Management Program',
+      'Special Offers and Discounts with Circle Membership'
+    ],
+  },
 ];
 
 export const CancelConsultation = {
