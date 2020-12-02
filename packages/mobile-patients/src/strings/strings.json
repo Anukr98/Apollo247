@@ -679,6 +679,8 @@
   "Diagnostics_Feedback_Others": "Others (Please specify)",
   "Circle": {
     "planName": "CIRCLE PLAN",
+    "CARE_PLAN": "CARE_PLAN",
+    "CIRCLEPlan": "CIRCLEPlan",
     "DOC_ON_CALL": "Doc on Call",
     "TnC": [
       "Circle is the marketing program offered by Apollo 24/7, a digital platform managed by Apollo Hospitals Enterprise Limited (AHEL)",

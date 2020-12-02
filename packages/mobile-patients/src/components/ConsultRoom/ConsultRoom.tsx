@@ -395,12 +395,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
-  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
-    if (nextAppState === 'active') {
-      getUserSubscriptionsWithBenefits();
-      getUserBanners();
-    }
-  };
 
   useEffect(() => {
     const _willBlur = props.navigation.addListener('willBlur', (payload) => {
@@ -767,14 +761,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setMenuViewOptions([1, 2, 3, 5]);
     }
   }, [enableCM]);
-
-  useEffect(() => {
-    // call hdfc apis on appstate change
-    AppState.addEventListener('change', _handleAppStateChange);
-    return () => {
-      AppState.removeEventListener('change', _handleAppStateChange);
-    };
-  }, []);
 
   useEffect(() => {
     AsyncStorage.removeItem('deeplink');
