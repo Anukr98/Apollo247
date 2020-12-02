@@ -323,7 +323,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     })
       .then((response) => {
         const images = response as ImageCropPickerResponse[];
-        const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
+        const isGreaterThanSpecifiedSize = !props.isProfileImage
+          ? images.find(({ size }) => size > MAX_FILE_SIZE)
+          : Number(images['size']) > MAX_FILE_SIZE;
         setshowSpinner(false);
         if (isGreaterThanSpecifiedSize) {
           Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 2MB.`);
