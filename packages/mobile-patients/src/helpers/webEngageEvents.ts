@@ -337,7 +337,7 @@ export enum WebEngageEventName {
 
   //HOMEPAGE BANNER
   COVID_BANNER_CLICKED = 'Recovery Clinic Banner clicked',
-  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = "App non-cirlce -HomePage Banner clicked",
+  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = "App non-circle -HomePage Banner clicked",
   MEMBERSHIP_DETAILS_BANNER_CLICKED = 'App - circle - Membership Details Banner clicked',
   HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'App - circle - Doc on Call Banner Clicked'
 }
