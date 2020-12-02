@@ -323,7 +323,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
 
   //My Membership Circle Events
-  MY_MEMBERSHIP_VIEW_DETAILS_CLICKED = 'App - MyMembership - View Details',
+  MY_MEMBERSHIP_VIEW_DETAILS_CLICKED = 'App circle - MyMembership - View Details',
   MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED = 'App circle - MemDetails - Pharma cashback clicked',
   MY_MEMBERSHIP_FREE_DELIVERY_CLICKED = 'App circle - MemDetails -  Free delivery clicked',
   MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED = 'App circle - MemDetails - Doctor helpline clicked',
@@ -334,6 +334,12 @@ export enum WebEngageEventName {
   MY_MEMBERSHIP_COVID_CARE_CLICKED = 'App circle - MemDetails - Covid care clicked',
   MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED = 'App circle - MemDetails - Digitalization PHR clicked',
   MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED = 'App circle - MemDetails - Diag home sample clicked',
+
+  //HOMEPAGE BANNER
+  COVID_BANNER_CLICKED = 'Recovery Clinic Banner clicked',
+  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = "App non-circle -HomePage Banner clicked",
+  MEMBERSHIP_DETAILS_BANNER_CLICKED = 'App - circle - Membership Details Banner clicked',
+  HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'App - circle - Doc on Call Banner Clicked'
 }
 
 export interface PatientInfo {
@@ -357,6 +363,9 @@ export interface CircleUserInfo extends UserInfo{
   'Membership Type'?: string;
   'Circle Membership Start Date'?: Date;
   'Circle Membership End Date'?: Date;
+  'type'?: string; //landing page
+  'action'?: string; //landing page
+  'from'?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -612,6 +621,12 @@ export interface WebEngageEvents {
   [WebEngageEventName.MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED]: CircleUserInfo;
   [WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED]: CircleUserInfo;
 
+  // **** HOMEPAGE BANNER ******
+  [WebEngageEventName.COVID_BANNER_CLICKED]: UserInfo;
+  [WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MEMBERSHIP_DETAILS_BANNER_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED]: CircleUserInfo;
+  
   // ********** PharmacyEvents ********** \\
 
   [WebEngageEventName.SEARCH]: {
