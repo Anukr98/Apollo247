@@ -262,7 +262,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
                   : theme.viewStyles.text('SB', containsSubText ? 8 : 9, textColor)
               }
             >
-              {str}
+              {str}{' '}
             </Text>
           );
         }
@@ -278,7 +278,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             : theme.viewStyles.text('SB', containsSubText ? 8 : 9, textColor)
         }
       >
-        {str}
+        {str}{' '}
       </Text>
     );
   };

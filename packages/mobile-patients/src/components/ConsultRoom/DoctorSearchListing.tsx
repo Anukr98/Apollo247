@@ -1205,7 +1205,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     return (
       <View style={{ flex: 1 }}>
-        {doctorsType === 'APOLLO' && renderViewCareSwitch()}
+        {/* {doctorsType === 'APOLLO' && renderViewCareSwitch()} */}
         {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
@@ -1213,7 +1213,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               DoctorsflatListRef = ref;
             }}
             contentContainerStyle={{
-              marginTop: 10,
+              marginTop: 20,
               marginBottom: 8,
               paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
