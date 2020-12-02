@@ -983,6 +983,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       groupDetails: groupDetailsData,
       benefits: circleBenefits,
       endDate: plan?.subscriptionEndDate,
+      startDate: plan?.start_date,
     };
 
     return circleSubscptionData;

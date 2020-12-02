@@ -15,7 +15,11 @@ import {
   PlanBenefits,
   SubscriptionData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  setCircleMembershipType,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -28,6 +32,7 @@ import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { diff } from 'semver';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -246,6 +251,26 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
+  const fireCircleViewMoreWebengageEvent = () => {
+    const circleMembershipType = setCircleMembershipType(
+      circleSubscription?.startDate!,
+      circleSubscription?.endDate!
+    );
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.MY_MEMBERSHIP_VIEW_DETAILS_CLICKED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Membership Type': circleMembershipType,
+      'Circle Membership Start Date': circleSubscription?.startDate!,
+      'Circle Membership End Date': circleSubscription?.endDate!,
+    };
+    postWebEngageEvent(
+      WebEngageEventName.MY_MEMBERSHIP_VIEW_DETAILS_CLICKED,
+      CircleEventAttributes
+    );
+  };
+
   const renderBottomButtons = (
     isActive: boolean,
     subscriptionName: string,
@@ -278,6 +303,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
               };
               postWebEngageEvent(WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED, eventAttributes);
+            }
+            if (isCare) {
+              fireCircleViewMoreWebengageEvent();
             }
 
             props.navigation.navigate(AppRoutes.MembershipDetails, {

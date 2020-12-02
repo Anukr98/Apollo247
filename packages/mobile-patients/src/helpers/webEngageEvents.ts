@@ -87,20 +87,6 @@ export enum WebEngageEventName {
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
 
-  //Circle Plan event names
-  VC_NON_CIRCLE = 'VC Non Circle Clicks on Know More at Doctor Listing',
-  VC_NON_CIRCLE_ADD = 'VC Non Circle Adds Circle Plan at Doctor Listing',
-  VC_NON_CIRCLE_KNOWMORE_CONSULT = 'VC Non Circle Clicks on Know More at Choose Consult Type',
-  VC_NON_CIRCLE_KNOWMORE_PROFILE = 'VC Non Circle Clicks on Know More at Doctor Profile',
-  VC_NON_CIRCLE_ADDS_PROFILE = 'VC Non Circle Adds Circle Plan at Doctor Profile',
-  VC_CIRCLE_FILTER = 'VC Circle Filter Selected',
-  VC_NON_CIRCLE_PLAN_1 = 'VC Non Circle chooses Plan 1 in Consult Web View',
-  VC_NON_CIRCLE_PLAN_2 = 'VC Non Circle chooses Plan 2 in Consult Web View',
-  VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
-  VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
-  VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
-  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
-
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -296,6 +282,20 @@ export enum WebEngageEventName {
   SYMPTOM_TRACKER_RESTART_CLICKED = 'restart symptom checker clicked',
   SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom SC',
 
+    //Circle Plan event names
+    VC_NON_CIRCLE = 'VC Non Circle Clicks on Know More at Doctor Listing',
+    VC_NON_CIRCLE_ADD = 'VC Non Circle Adds Circle Plan at Doctor Listing',
+    VC_NON_CIRCLE_KNOWMORE_CONSULT = 'VC Non Circle Clicks on Know More at Choose Consult Type',
+    VC_NON_CIRCLE_KNOWMORE_PROFILE = 'VC Non Circle Clicks on Know More at Doctor Profile',
+    VC_NON_CIRCLE_ADDS_PROFILE = 'VC Non Circle Adds Circle Plan at Doctor Profile',
+    VC_CIRCLE_FILTER = 'VC Circle Filter Selected',
+    VC_NON_CIRCLE_PLAN_1 = 'VC Non Circle chooses Plan 1 in Consult Web View',
+    VC_NON_CIRCLE_PLAN_2 = 'VC Non Circle chooses Plan 2 in Consult Web View',
+    VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
+    VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
+    VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
+    VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
+
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
   PHARMA_HOME_UPGRADE_TO_CIRCLE = 'App Pharma Upgrade to Circle sticky Clicked',
@@ -319,7 +319,21 @@ export enum WebEngageEventName {
   DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP = 'App circle plan - other payment clicked - Diagnostics',
   DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED = 'App Circle activated - Diagnostics',
   DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
-}
+
+  //My Membership Circle Events
+  MY_MEMBERSHIP_VIEW_DETAILS_CLICKED = "MyMembership - View Details",
+  MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED = "Membership circle - Pharma cashback clicked",
+  MY_MEMBERSHIP_FREE_DELIVERY_CLICKED = "Membership circle -  Free delivery clicked",
+  MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED = "Membership circle - Doctor helpline clicked",
+  MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED = "Membership circle - Diag discount clicked",
+  MY_MEMBERSHIP_PRO_HEALTH_CLICKED  = "Membership circle - Pro Health clicked",
+  MY_MEMBERSHIP_DOC_ON_CALL_CLICKED = "Membership circle - Doc on call clicked",
+  MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED = "Membership circle - Advance Diabetes clicked",
+  MY_MEMBERSHIP_COVID_CARE_CLICKED = "Membership circle - Covid care clicked",
+  MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED = "Membership circle - Digitalization PHR clicked",
+  MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED = "Membership circle - Diag home sample clicked"
+
+ }
 
 export interface PatientInfo {
   'Patient Name': string;
@@ -335,6 +349,13 @@ export interface UserInfo {
   'Patient UHID': string;
   'Mobile Number': string;
   'Customer ID': string;
+}
+
+export interface CircleUserInfo extends UserInfo{
+  'Circle Member': 'Yes' | 'No';
+  'Membership Type': string;
+  'Circle Membership Start Date': Date;
+  'Circle Membership End Date': Date;
 }
 
 export interface DiagnosticUserInfo {
@@ -576,6 +597,19 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: UserInfo;
   [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: UserInfo;
   [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: UserInfo;
+
+  // ********** MY Membership circle events ********
+  [WebEngageEventName.MY_MEMBERSHIP_VIEW_DETAILS_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_FREE_DELIVERY_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_PRO_HEALTH_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DOC_ON_CALL_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_COVID_CARE_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED]: CircleUserInfo;
 
   // ********** PharmacyEvents ********** \\
 
