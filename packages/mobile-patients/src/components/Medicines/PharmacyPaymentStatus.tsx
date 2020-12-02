@@ -69,7 +69,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
   const circleSavings = cartTotalCashback;
-  console.log('isCircleSubscription: ', isCircleSubscription);
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
 
   const client = useApolloClient();
@@ -94,6 +93,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     client
       .query({
         query: GET_PHARMA_TRANSACTION_STATUS,
@@ -103,15 +103,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log('res.data.pharmaPaymentStatus: ', JSON.stringify(res.data.pharmaPaymentStatus));
-        setorderDateTime(res.data.pharmaPaymentStatus.orderDateTime);
-        setpaymentRefId(res.data.pharmaPaymentStatus.paymentRefId);
-        setStatus(res.data.pharmaPaymentStatus.paymentStatus);
-        setPaymentMode(res.data.pharmaPaymentStatus.paymentMode);
+        const pharmaPaymentStatus = res?.data?.pharmaPaymentStatus;
+        setorderDateTime(pharmaPaymentStatus?.orderDateTime);
+        setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
+        setStatus(pharmaPaymentStatus?.paymentStatus);
+        setPaymentMode(pharmaPaymentStatus?.paymentMode);
         setLoading(false);
         fireCirclePlanActivatedEvent();
       })
       .catch((error) => {
+        setLoading(false);
         CommonBugFender('fetchingTxnStutus', error);
         renderErrorPopup(`Something went wrong, please try again after sometime`);
       });
