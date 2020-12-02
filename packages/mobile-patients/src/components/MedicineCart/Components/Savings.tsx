@@ -101,7 +101,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
           <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
             <View style={{ flexDirection: 'row' }}>
               {renderCareLogo()}
-              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery</Text>
+              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery Savings</Text>
             </View>
             <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
               ₹{deliveryFee.toFixed(2)}
@@ -110,7 +110,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
         )}
         {!!productDiscount && (
           <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Cart Savings</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Product Discount</Text>
             <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
               ₹{productDiscount.toFixed(2)}
             </Text>
