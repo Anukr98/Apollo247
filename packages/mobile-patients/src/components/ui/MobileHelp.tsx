@@ -63,8 +63,10 @@ const styles = StyleSheet.create({
   dropdownOverlayStyle: {
     padding: 0,
     margin: 0,
-    // height: 'auto',
+    height: 'auto',
     borderRadius: 10,
+    marginTop: 40,
+    marginBottom: 40,
   },
   categoryItemStyle: {
     ...theme.viewStyles.cardViewStyle,
