@@ -368,8 +368,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     if (orderType == 'HCorder') {
       paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
-      paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal);
-      paymentInfo.medicinePaymentMqInput['healthCreditsSub'] = getFormattedAmount(grandTotal);
+      paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal - circleMembershipCharges);
+      if (circleMembershipCharges) {
+        paymentInfo.medicinePaymentMqInput['healthCreditsSub'] = circleMembershipCharges;
+      }
     }
     if (!circleSubscription?._id && !!circleMembershipCharges) {
       paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
