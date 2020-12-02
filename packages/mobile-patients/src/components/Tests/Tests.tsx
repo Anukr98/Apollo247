@@ -2848,7 +2848,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           text: 'GO TO HOMEPAGE',
           onPress: () => {
             hideAphAlert!();
-            props.navigation.navigate(AppRoutes.ConsultRoom, {});
+            setBannerData && setBannerData([]);
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            );
           },
           type: 'orange-link',
         },
