@@ -2566,7 +2566,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <View style={{ marginTop: -7.5, marginRight: 40 }}>
             <View style={{ flexDirection: 'row' }}>
               <View>
-                <Text style={styles.locationText}>{location}</Text>
+                <Text style={[styles.locationText, { textTransform: 'capitalize' }]}>
+                  {location}
+                </Text>
                 {!serviceabilityMsg ? null : ( // <Spearator style={styles.locationTextUnderline} />
                   <View style={{ height: 2 }} />
                 )}
