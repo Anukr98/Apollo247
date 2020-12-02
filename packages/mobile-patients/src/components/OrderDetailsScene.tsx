@@ -2072,15 +2072,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderReOrderButton = () => {
-    const isDelivered = orderStatusList.find(
-      (item) =>
-        item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PICKEDUP
-    );
-
+    const isCancelled = orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
     return (
-      !!isDelivered && (
+      !!isCancelled && (
         <View>
           {Array.from({ length: 10 })
             .reverse()
@@ -2090,7 +2084,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           <Button
             style={{ width: '74.16%', alignSelf: 'center', marginTop: 9, marginBottom: 17 }}
             onPress={reOrder}
-            title={'RE-ORDER'}
+            title={'RE ORDER'}
           />
         </View>
       )
@@ -2197,7 +2191,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 ? renderOrderHistory()
                 : !loading && renderOrderSummary()}
             </ScrollView>
-            {/* {renderReOrderButton()} */}
+            {renderReOrderButton()}
           </>
         )}
       </SafeAreaView>
