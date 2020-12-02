@@ -130,6 +130,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     cartTotalCashback,
     circleMembershipCharges,
     setIsFreeDelivery,
+    setCirclePlanSelected,
+    setDefaultCirclePlan,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -878,7 +880,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {circleSubscription?._id && renderApplyCircleBenefits()}
+        {(coupon || isCircleSubscription || circleSubscription?._id) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
@@ -894,6 +896,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           if (!coupon && isCircleSubscription) {
             if (!circleSubscription?._id || cartTotalCashback) {
               setIsCircleSubscription && setIsCircleSubscription(false);
+              setCirclePlanSelected && setCirclePlanSelected(null);
+              setDefaultCirclePlan && setDefaultCirclePlan(null);
             }
           } else {
             setCoupon && setCoupon(null);
@@ -903,7 +907,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       >
         {!coupon && isCircleSubscription ? (
           <View style={{ flexDirection: 'row' }}>
-            <CheckedIcon style={{ marginTop: 8 }} />
+            <CheckedIcon style={{ marginTop: 8, marginRight: 4, }} />
             <CareCashbackBanner
               bannerText={`benefits APPLIED!`}
               textStyle={styles.circleText}
@@ -915,7 +919,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <View style={styles.circleApplyContainer} />
               <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.applyText}>Apply</Text>
+                <Text style={styles.applyText}>Apply{' '}</Text>
                 <CareCashbackBanner
                   bannerText={`benefits instead`}
                   textStyle={styles.circleText}

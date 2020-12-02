@@ -2197,7 +2197,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
             {!circleSubscription?._id && !isCircleSubscription && cartTotalCashback > 1 && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-                {`Buy for ${string.common.Rs}${cartTotal}`}
+                {`Buy for ${string.common.Rs}${cartDiscountTotal}`}
               </Text>
             )}
           </TouchableOpacity>
