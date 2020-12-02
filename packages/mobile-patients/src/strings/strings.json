@@ -18,6 +18,7 @@
     "enter_additional_text":"Enter Additional Notes",
     "clicnical_document_text":"Self upload",
     "patient_uploaded_text":"Patient Uploaded",
+    "error_enter_number_text":"Please enter numeric values (eg. 0,1...)",
     "best_doctor_text": "Here are our best ",
     "all_consults": "All Consults",
     "distance": "Distance",
