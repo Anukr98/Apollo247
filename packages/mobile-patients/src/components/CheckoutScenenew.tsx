@@ -82,6 +82,7 @@ import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -130,6 +131,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     pinCode,
     circleMembershipCharges,
     circleSubPlanId,
+    cartTotalCashback,
   } = useShoppingCart();
   const { circleSubscription } = useAppCommonData();
 
@@ -402,7 +404,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           }
           clearCartInfo && clearCartInfo();
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-            status: 'PAYMENT_SUCCESS',
+            status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
             orderId: orderAutoId,
           });
@@ -544,6 +546,21 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         }),
         bookingSource: BOOKINGSOURCE.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+        healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
+        subscriptionDetails: circleSubscription?._id
+          ? { userSubscriptionId: circleSubscription?._id }
+          : null,
+        planPurchaseDetails: circleSubPlanId
+        ? {
+            TYPE: Circle.CARE_PLAN,
+            PlanAmount: circleMembershipCharges || 0,
+            planId: Circle.CIRCLEPlan,
+            subPlanId: circleSubPlanId || '',
+          }
+        : null,
+        totalCashBack: (cartTotalCashback || circleSubscription?._id)
+          ? Number(cartTotalCashback) || 0
+          : 0,
       },
     };
 

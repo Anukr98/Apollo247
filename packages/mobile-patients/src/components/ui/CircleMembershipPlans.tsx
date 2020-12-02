@@ -85,6 +85,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setAutoCirlcePlanAdded,
     autoCirlcePlanAdded,
     circleMembershipCharges,
+    setCircleSubPlanId,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -556,6 +557,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       const defaultPlan = plans?.filter((item: any) => item.defaultPack === true);
       if (defaultPlan?.length > 0) {
         setCirclePlanSelected && setCirclePlanSelected(defaultPlan[0]);
+        setCircleSubPlanId && setCircleSubPlanId(defaultPlan[0].subPlanId);
         setCircleMembershipCharges &&
           setCircleMembershipCharges(defaultPlan[0]?.currentSellingPrice);
       }
