@@ -6,6 +6,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 
 export interface LocationData {
   displayName: string;
@@ -136,6 +137,12 @@ export interface TotalCircleSavings {
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
+  phrNotificationData: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount | null;
+  setPhrNotificationData:
+    | ((
+        phrNotificationObj: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount | null
+      ) => void)
+    | null;
   totalCircleSavings: TotalCircleSavings | null;
   setTotalCircleSavings: ((items: TotalCircleSavings) => void) | null;
   hdfcUpgradeUserSubscriptions: SubscriptionData[] | [];
@@ -206,6 +213,8 @@ export interface AppCommonDataContextProps {
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   hdfcUserSubscriptions: null,
   setHdfcUserSubscriptions: null,
+  phrNotificationData: null,
+  setPhrNotificationData: null,
   totalCircleSavings: null,
   setTotalCircleSavings: null,
   hdfcUpgradeUserSubscriptions: [],
@@ -278,6 +287,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
 
+  const [phrNotificationData, setPhrNotificationData] = useState<
+    AppCommonDataContextProps['phrNotificationData']
+  >(null);
   const [totalCircleSavings, _setTotalCircleSavings] = useState<
     AppCommonDataContextProps['totalCircleSavings']
   >(null);
@@ -465,6 +477,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
       value={{
         isCurrentLocationFetched,
         setCurrentLocationFetched,
+        phrNotificationData,
+        setPhrNotificationData,
         locationDetails,
         setLocationDetails,
         hdfcUserSubscriptions,

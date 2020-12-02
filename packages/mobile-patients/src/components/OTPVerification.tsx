@@ -73,6 +73,12 @@ import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
 import SmsRetriever from 'react-native-sms-retriever';
+import {
+  saveTokenDevice,
+  phrNotificationCountApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { saveTokenDevice } from '../helpers/clientCalls';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 
@@ -201,6 +207,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
 
   const client = useApolloClient();
+  const { setPhrNotificationData } = useAppCommonData();
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -585,6 +592,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, appsflyerEventAttributes);
   };
 
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
   const fireUserLoggedInEvent = (mePatient: any, type: 'Registration' | 'Login') => {
     setFirebaseUserId(mePatient.id);
     setCrashlyticsAttributes(mePatient);
@@ -612,6 +633,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
         deviceTokenAPI(mePatient.id);
+        callPhrNotificationApi(mePatient?.id);
         fireUserLoggedInEvent(mePatient, 'Login');
         navigateTo(AppRoutes.ConsultRoom);
       }
@@ -626,6 +648,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
         deviceTokenAPI(mePatient.id);
+        callPhrNotificationApi(mePatient?.id);
         navigateTo(AppRoutes.ConsultRoom);
         fireUserLoggedInEvent(mePatient, 'Login');
       }

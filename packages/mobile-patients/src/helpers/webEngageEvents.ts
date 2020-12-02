@@ -1430,7 +1430,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.MEDICAL_RECORDS]: PatientInfo;
 
   [WebEngageEventName.ADD_RECORD]: {
-    Source: 'Consult & RX' | 'Medical Records'; // List/Profile
+    Source: 'Consult & RX' | 'Test Reports' | 'Hospitalization'; // List/Profile
   };
 
   [WebEngageEventName.UPLOAD_PRESCRIPTION]: PatientInfo;

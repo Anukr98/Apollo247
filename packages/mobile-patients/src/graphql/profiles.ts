@@ -32,6 +32,41 @@ export const GET_CURRENT_PATIENTS = gql`
         primaryPatientId
         whatsAppMedicine
         whatsAppConsult
+        familyHistory {
+          description
+          relation
+        }
+        lifeStyle {
+          description
+          occupationHistory
+        }
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          bloodGroup
+          weight
+        }
+      }
+    }
+  }
+`;
+
+export const UPDATE_PATIENT_MEDICAL_PARAMETERS = gql`
+  mutation updatePatientMedicalParameters($patientMedicalParameters: PatientMedicalParameters) {
+    updatePatientMedicalParameters(patientMedicalParameters: $patientMedicalParameters) {
+      patient {
+        id
+        patientMedicalHistory {
+          bloodGroup
+          height
+          weight
+        }
       }
     }
   }
@@ -705,6 +740,14 @@ export const GET_ALL_SPECIALTIES = gql`
       # displayOrder
       shortDescription
       symptoms
+    }
+  }
+`;
+
+export const ADD_PRESCRIPTION_RECORD = gql`
+  mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
+    addPatientPrescriptionRecord(addPrescriptionRecordInput: $AddPrescriptionRecordInput) {
+      status
     }
   }
 `;
@@ -2329,6 +2372,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             id
             fileName
             mimeType
+            content
+            # byteContent
           }
         }
         errorCode
@@ -2352,6 +2397,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             id
             fileName
             mimeType
+            content
+            # byteContent
           }
           hospital_name
           hospitalId
@@ -2378,8 +2425,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             fileName
             mimeType
             content
-            byteContent
-            dateCreated
+            # byteContent
+            # dateCreated
           }
           source
           healthCheckType
@@ -2411,10 +2458,178 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             fileName
             mimeType
             content
-            byteContent
-            dateCreated
+            # byteContent
+            # dateCreated
           }
           source
+        }
+      }
+      medicalBills {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          bill_no
+          hospitalName
+          billDate
+          source
+          notes
+          fileUrl
+          billDateTime
+          billFiles {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalInsurances {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          insuranceCompany
+          policyNumber
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          source
+          fileUrl
+          notes
+          sumInsured
+          insuranceFiles {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalConditions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicalConditionName
+          doctorTreated
+          startDate
+          source
+          endDate
+          notes
+          illnessType
+          fileUrl
+          startDateTime
+          endDateTime
+          medicationFiles {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medications {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicineName
+          medicalCondition
+          doctorName
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          morning
+          noon
+          evening
+          notes
+          source
+        }
+      }
+      healthRestrictions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          restrictionName
+          suggestedByDoctor
+          nature
+          source
+          notes
+        }
+      }
+      allergies {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          fileUrl
+          startDateTime
+          endDateTime
+          allergyName
+          severity
+          reactionToAllergy
+          doctorTreated
+          notes
+          source
+          attachmentList {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const DELETE_HEALTH_RECORD_FILES = gql`
+  mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
+    deleteHealthRecordFiles(deleteHealthRecordFilesInput: $deleteHealthRecordFilesInput) {
+      status
+    }
+  }
+`;
+
+export const GET_PHR_USER_NOTIFY_EVENTS = gql`
+  query getUserNotifyEvents($patientId: ID!) {
+    getUserNotifyEvents(patientId: $patientId) {
+      phr {
+        newRecordsCount {
+          LabTest
+          Allergy
+          Bill
+          HealthCheck
+          Hospitalization
+          Insurance
+          MedicalCondition
+          Medication
+          Prescription
+          Restriction
         }
       }
     }
@@ -2425,6 +2640,84 @@ export const GET_LAB_RESULT_PDF = gql`
   query getLabResultpdf($patientId: ID!, $recordId: String!) {
     getLabResultpdf(patientId: $patientId, recordId: $recordId) {
       url
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICAL_INSURANCE_RECORD = gql`
+  mutation addPatientMedicalInsuranceRecord(
+    $addPatientMedicalInsuranceRecordInput: AddPatientMedicalInsuranceRecordInput
+  ) {
+    addPatientMedicalInsuranceRecord(
+      addPatientMedicalInsuranceRecordInput: $addPatientMedicalInsuranceRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICAL_BILL_RECORD = gql`
+  mutation addPatientMedicalBillRecord(
+    $addPatientMedicalBillRecordInput: AddPatientMedicalBillRecordInput
+  ) {
+    addPatientMedicalBillRecord(
+      addPatientMedicalBillRecordInput: $addPatientMedicalBillRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_ALLERGY_RECORD = gql`
+  mutation addPatientAllergyRecord($addAllergyRecordInput: AddAllergyRecordInput) {
+    addPatientAllergyRecord(addAllergyRecordInput: $addAllergyRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_HEALTH_RESTRICTION_RECORD = gql`
+  mutation addPatientHealthRestrictionRecord(
+    $addPatientHealthRestrictionRecordInput: AddPatientHealthRestrictionRecordInput
+  ) {
+    addPatientHealthRestrictionRecord(
+      addPatientHealthRestrictionRecordInput: $addPatientHealthRestrictionRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICATION_RECORD = gql`
+  mutation addPatientMedicationRecord(
+    $addPatientMedicationRecordInput: AddPatientMedicationRecordInput
+  ) {
+    addPatientMedicationRecord(addPatientMedicationRecordInput: $addPatientMedicationRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICAL_CONDITION_RECORD = gql`
+  mutation addPatientMedicalConditionRecord(
+    $addMedicalConditionRecordInput: AddMedicalConditionRecordInput
+  ) {
+    addPatientMedicalConditionRecord(
+      addMedicalConditionRecordInput: $addMedicalConditionRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const DELETE_PATIENT_PRISM_MEDICAL_RECORD = gql`
+  mutation deletePatientPrismMedicalRecord(
+    $deletePatientPrismMedicalRecordInput: DeletePatientPrismMedicalRecordInput
+  ) {
+    deletePatientPrismMedicalRecord(
+      deletePatientPrismMedicalRecordInput: $deletePatientPrismMedicalRecordInput
+    ) {
+      status
     }
   }
 `;
@@ -3097,6 +3390,7 @@ export const GET_PATIENTS_MOBILE_WITH_HISTORY = gql`
           pastMedicalHistory
           pastSurgicalHistory
           temperature
+          bloodGroup
           weight
         }
         isLinked

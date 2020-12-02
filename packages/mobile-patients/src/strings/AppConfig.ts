@@ -8,6 +8,7 @@ export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   QA2 = 'QA2',
+  QA3 = 'QA3',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
@@ -428,6 +429,50 @@ const ConfigurationQA2 = {
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
+// QA3
+const ConfigurationQA3 = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'QEuQRL5_DKsdca021jR9bpVrQf9x3rF6hOADA',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '_9aJEBfuTc3Vki4DZUAbC3X0YEHff4D-lR28l',
+  PAYMENT_GATEWAY_BASE_URL: 'https://qathreepmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://qathreepmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  CONSULT_PG_PENDING_PATH: '/consultpg-pending',
+  CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://qathreepmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top6_specailties,
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  ...Apollo247Config.dev,
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://qathreepmt.apollo247.com/',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
+};
+
 // VAPT
 const ConfigurationVAPT = {
   TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
@@ -635,6 +680,8 @@ const Configuration =
     ? ConfigurationQA
     : APP_ENV == AppEnv.QA2
     ? ConfigurationQA2
+    : APP_ENV == AppEnv.QA3
+    ? ConfigurationQA3
     : APP_ENV == AppEnv.PERFORM
     ? ConfigurationPERFORM
     : APP_ENV == AppEnv.VAPT

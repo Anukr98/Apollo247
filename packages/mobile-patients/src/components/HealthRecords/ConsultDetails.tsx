@@ -11,24 +11,26 @@ import {
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   EPrescription,
-  ShoppingCartItem,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  MedicineRxIcon,
+  PHRFollowUpDarkIcon,
+  LabTestIcon,
+  PhrSymptomIcon,
+  PhrDiagnosisIcon,
+  PhrGeneralAdviceIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  CHECK_IF_FOLLOWUP_BOOKED,
-  GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import {
   getSDLatestCompletedCaseSheet,
@@ -47,7 +49,6 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
-  ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   addTestsToCart,
@@ -73,56 +74,25 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
-  Image,
   Platform,
   SafeAreaView,
+  BackHandler,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '../../helpers/mimeType';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { ListItem } from 'react-native-elements';
+import _ from 'lodash';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
-  imageView: {
-    width: 80,
-    marginLeft: 20,
-  },
-  doctorNameStyle: {
-    paddingTop: 8,
-    paddingBottom: 2,
-    textTransform: 'capitalize',
-    ...theme.fonts.IBMPlexSansSemiBold(23),
-    color: theme.colors.LIGHT_BLUE,
-  },
-  timeStyle: {
-    paddingBottom: 16,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SKY_BLUE,
-    letterSpacing: 0.04,
-  },
-  descriptionStyle: {
-    paddingTop: 7,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.TEXT_LIGHT_BLUE,
-  },
-  doctorDetailsStyle: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
   cardViewStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginTop: 16,
@@ -139,23 +109,6 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  skyBluelabelStyle: {
-    paddingBottom: 4,
-    color: theme.colors.SKY_BLUE,
-    lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  subLabelStyle: {
-    paddingBottom: 4,
-    color: 'rgba(0,0,0,0.4)',
-    ...theme.fonts.IBMPlexSansMedium(9),
-  },
-  prescDateTextStyle: {
-    marginTop: 7,
-    marginBottom: 10,
-    color: theme.colors.LIGHT_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(12),
   },
   dataTextStyle: {
     color: theme.colors.SKY_BLUE,
@@ -189,6 +142,47 @@ const styles = StyleSheet.create({
   gotItTextStyles: {
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
+  },
+  topCardViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    marginBottom: 15,
+    marginHorizontal: 8,
+    paddingHorizontal: 16,
+    paddingTop: 26,
+    paddingBottom: 29,
+  },
+  separatorLineStyle: {
+    backgroundColor: '#02475B',
+    opacity: 0.2,
+    height: 0.5,
+    marginBottom: 23,
+    marginTop: 16,
+  },
+  collapseCardLabelViewStyle: {
+    marginTop: 20,
+    marginLeft: 20,
+    marginRight: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 0,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  blueCirleViewStyle: {
+    backgroundColor: '#02475B',
+    opacity: 0.6,
+    width: 5,
+    marginTop: 7,
+    alignSelf: 'flex-start',
+    height: 5,
+    borderRadius: 2.5,
+    marginRight: 12,
+  },
+  listItemContainerStyle: {
+    paddingLeft: 18,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingTop: 0,
   },
 });
 
@@ -224,11 +218,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const { loading, setLoading } = useUIElements();
 
   const client = useApolloClient();
-  const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
-  const [showDiagnosis, setshowDiagnosis] = useState<boolean>(true);
-  const [showgeneral, setShowGeneral] = useState<boolean>(true);
-  const [showFollowUp, setshowFollowUpl] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails
   >();
@@ -240,7 +230,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     props.navigation.getParam('isFollowcount')
   );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
-  const [testShow, setTestShow] = useState<boolean>(true);
   const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
   const [APICalled, setAPICalled] = useState<boolean>(false);
   const [showReferral, setShowReferral] = useState<boolean>(true);
@@ -253,6 +242,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   useEffect(() => {
     setLoading && setLoading(true);
@@ -321,146 +323,96 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
 
-  const renderDoctorDetails = () => {
-    return (
-      <View style={styles.doctorDetailsStyle}>
-        {!g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(12),
-                  color: theme.colors.SEARCH_EDUCATION_COLOR,
-                  paddingBottom: 4,
-                }}
-              >
-                {'#' + g(caseSheetDetails, 'appointment', 'displayId')}
-              </Text>
-              <View style={theme.viewStyles.lightSeparatorStyle} />
-              <Text style={styles.doctorNameStyle}>
-                {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.timeStyle}>
-                  {caseSheetDetails &&
-                    moment(caseSheetDetails!.appointment!.appointmentDateTime).format(
-                      'DD MMM YYYY'
-                    )}
-                </Text>
-                <Text style={styles.timeStyle}>{','}</Text>
-
-                <Text style={styles.timeStyle}>
-                  {g(caseSheetDetails, 'appointment', 'appointmentType') == 'ONLINE'
-                    ? 'Online'
-                    : 'Physical'}{' '}
-                  Consult
-                </Text>
-              </View>
-              <View style={theme.viewStyles.lightSeparatorStyle} />
-            </View>
-            <View style={styles.imageView}>
-              {g(caseSheetDetails, 'appointment', 'doctorInfo', 'photoUrl') ? (
-                <Image
-                  source={{
-                    uri: g(caseSheetDetails, 'appointment', 'doctorInfo', 'photoUrl'),
-                  }}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
-                  }}
-                />
-              ) : null}
-            </View>
-          </View>
-        )}
-        {!!caseSheetDetails?.prescriptionGeneratedDate && (
-          <Text style={styles.prescDateTextStyle}>
-            Prescription generated on{' '}
-            {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-              AppConfig.Configuration.CASESHEET_PRESCRIPTION_DATE_FORMAT
-            )}{' '}
-            at{' '}
-            {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-              AppConfig.Configuration.CASESHEET_PRESCRIPTION_TIME_FORMAT
-            )}
+  const renderTopDetailsView = () => {
+    return !g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
+      <View style={styles.topCardViewStyle}>
+        <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+          {'Prescription'}
+        </Text>
+        <Text style={{ ...theme.viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
+        </Text>
+        <Text style={{ ...theme.viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 }}>
+          {g(caseSheetDetails, 'appointment', 'appointmentType') == 'ONLINE'
+            ? 'Online'
+            : 'Physical'}{' '}
+          Consult
+        </Text>
+        <View style={styles.separatorLineStyle} />
+        <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 21) }}>
+          {'Checkup Date'}
+        </Text>
+        <Text style={{ ...theme.viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
+          {'On '}
+          <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 18) }}>
+            {caseSheetDetails &&
+              moment(caseSheetDetails?.appointment?.appointmentDateTime).format('DD MMM, YYYY')}
           </Text>
-        )}
-        {caseSheetDetails && caseSheetDetails.followUp ? (
-          <View>
-            {/* <Text style={styles.descriptionStyle}>
-              This is a follow-up consult to the {props.navigation.state.params!.appointmentType}{' '}
-              Visit on{' '}
-              {caseSheetDetails && moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}
-            </Text> */}
-            <Text
-              style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
-              onPress={() => {
-                CommonLogEvent('CONSULT_DETAILS', 'Go back to tab bar'),
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                    })
-                  );
-              }}
-            >
-              {strings.health_records_home.view_consult}
-            </Text>
-          </View>
-        ) : null}
+        </Text>
       </View>
     );
   };
 
   const renderSymptoms = () => {
     return (
-      <View
-        style={{
-          marginTop: 24,
-        }}
-      >
-        <CollapseCard
-          heading="SYMPTOMS"
-          collapse={showsymptoms}
-          onPress={() => setshowsymptoms(!showsymptoms)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.symptoms && caseSheetDetails!.symptoms !== null ? (
-              <View>
-                {caseSheetDetails!.symptoms!.map((item) => {
-                  if (item && item.symptom)
-                    return (
-                      <View>
-                        <View style={styles.labelViewStyle}>
-                          <Text style={styles.labelStyle}>{item.symptom}</Text>
-                        </View>
-                        {!!item?.since && (
-                          <Text style={styles.dataTextStyle}>Since: {item.since}</Text>
-                        )}
-                        {!!item?.howOften && (
-                          <Text style={styles.subDataTextStyle}>How Often: {item.howOften}</Text>
-                        )}
-                        {!!item?.severity && (
-                          <Text style={styles.subDataTextStyle}>Severity: {item.severity}</Text>
-                        )}
+      <>
+        {renderHeadingView(
+          'Symptoms',
+          <PhrSymptomIcon style={{ width: 19.98, height: 20, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.symptoms !== null ? (
+          <View>
+            {caseSheetDetails?.symptoms?.map((item) => {
+              if (item?.symptom)
+                return (
+                  <View style={{ marginTop: 28 }}>
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('SB', 16, '#00B38E', 1, 20.8),
+                        marginLeft: 30,
+                        flex: 1,
+                      }}
+                    >
+                      {item.symptom}
+                    </Text>
+                    {!!item?.since ? (
+                      <View style={{ marginLeft: 0, marginTop: 20 }}>
+                        {renderListItem('Duration', 'Active')}
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                            paddingLeft: 35,
+                            flex: 1,
+                          }}
+                        >
+                          {item.since}
+                        </Text>
                       </View>
-                    );
-                })}
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No Symptoms</Text>
-              </View>
-            )}
+                    ) : null}
+                    {!!item?.howOften ? renderListItem(item?.howOften, 'Acute', 17) : null}
+                    {!!item?.severity ? (
+                      <View style={{ marginLeft: 0, marginTop: 20 }}>
+                        {renderListItem('Medically Relevant Details', '')}
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                            paddingLeft: 35,
+                            paddingRight: 14,
+                            flex: 1,
+                          }}
+                        >
+                          {item.severity}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+            })}
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No Symptoms')
+        )}
+      </>
     );
   };
   const { addMultipleCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
@@ -746,90 +698,79 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         .join(', ') + ' ')
                 : ''
             }`
-      }${
-        item.routeOfAdministration
-          ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
-          : ''
       }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
     }
   };
 
   const renderPrescriptions = () => {
     return (
-      <View>
-        <CollapseCard
-          heading="PRESCRIPTION"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.medicinePrescription &&
-            caseSheetDetails!.medicinePrescription.length !== 0 &&
-            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
-              <View>
-                {caseSheetDetails!.medicinePrescription.map((item) => {
-                  if (item)
-                    return (
+      <>
+        {renderHeadingView(
+          'Medicines',
+          <MedicineRxIcon style={{ width: 20, height: 20, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.medicinePrescription?.length !== 0 &&
+        caseSheetDetails?.doctorType !== 'JUNIOR' ? (
+          <View style={{ marginTop: 28 }}>
+            <View>
+              {caseSheetDetails?.medicinePrescription?.map((item) => {
+                if (item)
+                  return (
+                    <>
                       <View>
-                        <View style={styles.labelViewStyle}>
-                          <Text style={styles.labelStyle}>{item.medicineName}</Text>
-                          {!!item?.includeGenericNameInPrescription && (
-                            <Text style={styles.subLabelStyle}>{item.genericName}</Text>
-                          )}
-                        </View>
-                        <Text style={styles.dataTextStyle}>{medicineDescription(item)}</Text>
+                        {renderListItem(
+                          item?.medicineName!,
+                          _.capitalize(item?.routeOfAdministration!)
+                        )}
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                            paddingLeft: 35,
+                            paddingRight: 15,
+                            paddingBottom: 20,
+                            flex: 1,
+                          }}
+                        >
+                          {medicineDescription(item)}
+                        </Text>
                       </View>
-                    );
-                })}
-                <TouchableOpacity
-                  onPress={() => {
-                    postWEGEvent('medicine');
-                    onAddToCart();
-                  }}
-                >
-                  <Text style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right' }]}>
-                    {strings.health_records_home.order_medicine}
-                  </Text>
-                  <Text style={styles.orderMedicineMsg}>
-                    {strings.health_records_home.order_medicine_msg}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No Medicines</Text>
-              </View>
-            )}
+                    </>
+                  );
+              })}
+              <Button
+                style={{ alignSelf: 'flex-end', width: '40%', marginRight: 10 }}
+                title={`ORDER MEDICINE`}
+                onPress={() => {
+                  postWEGEvent('medicine');
+                  onAddToCart();
+                }}
+              />
+            </View>
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No Medicines')
+        )}
+      </>
     );
   };
 
   const renderDiagnosis = () => {
     return (
-      <View>
-        <CollapseCard
-          heading={`Diagnosis`}
-          collapse={showDiagnosis}
-          onPress={() => setshowDiagnosis(!showDiagnosis)}
-          // headingStyle={[{ ...theme.fonts.IBMPlexSansBold(12) }]}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! !== null ? (
-              <View>
-                <Text style={styles.labelStyle}>
-                  {caseSheetDetails!.diagnosis!.map((item) => item && item.name).join(', ')}
-                </Text>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No diagnosis</Text>
-              </View>
-            )}
+      <>
+        {renderHeadingView(
+          'Diagnosis',
+          <PhrDiagnosisIcon style={{ width: 20, height: 20, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.diagnosis !== null ? (
+          <View style={{ marginTop: 28 }}>
+            {caseSheetDetails?.diagnosis?.map((item) => {
+              return renderListItem(item?.name!, '');
+            })}
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No diagnosis')
+        )}
+      </>
     );
   };
 
@@ -876,186 +817,108 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderGenerealAdvice = () => {
-    // if (
-    //   caseSheetDetails &&
-    //   caseSheetDetails.otherInstructions &&
-    //   caseSheetDetails.otherInstructions.length > 0
-    // )
     return (
-      <View>
-        <CollapseCard
-          heading="GENERAL ADVICE"
-          collapse={showgeneral}
-          onPress={() => setShowGeneral(!showgeneral)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
-              <View>
-                <Text style={[styles.skyBluelabelStyle]}>
-                  {caseSheetDetails!
-                    .otherInstructions!.map((item, i) => {
-                      if (item && item.instruction !== '') {
-                        return `${i + 1}. ${item.instruction}`;
-                      }
-                    })
-                    .join('\n')}
-                </Text>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No advice</Text>
-              </View>
+      <>
+        {renderHeadingView(
+          'Genaral Advice',
+          <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.otherInstructions !== null ? (
+          <View style={{ marginTop: 28 }}>
+            {renderListItem(
+              caseSheetDetails?.otherInstructions
+                ?.map((item, i) => {
+                  if (item?.instruction !== '') {
+                    return `${item?.instruction}`;
+                  }
+                })
+                .join('\n') || '',
+              ''
             )}
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No advice')
+        )}
+      </>
     );
   };
 
   const renderFollowUp = () => {
     return (
-      <View>
-        <CollapseCard
-          heading="FOLLOW-UP"
-          collapse={showFollowUp}
-          onPress={() => setshowFollowUpl(!showFollowUp)}
-        >
-          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
-            {caseSheetDetails &&
-            caseSheetDetails!.followUp &&
-            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
-              <View>
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>
-                      {caseSheetDetails!.consultType === ConsultMode.PHYSICAL
-                        ? 'Clinic Visit'
-                        : 'Online Consult'}{' '}
-                      with {'\n'}
-                      {props.navigation.state.params!.DoctorInfo?.displayName}
-                    </Text>
-                  </View>
-                  {caseSheetDetails!.followUpAfterInDays! <= '7' ? (
-                    <Text style={styles.dataTextStyle}>
-                      Recommended after {caseSheetDetails!.followUpAfterInDays} days
-                    </Text>
-                  ) : (
-                    <Text style={styles.dataTextStyle}>
-                      Follow up on {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}{' '}
-                    </Text>
-                  )}
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    CommonLogEvent('CONSULT_DETAILS', 'Check if follow book api called');
-
-                    client
-                      .query<checkIfFollowUpBooked>({
-                        query: CHECK_IF_FOLLOWUP_BOOKED,
-                        variables: {
-                          appointmentId: props.navigation.state.params!.CaseSheet,
-                        },
-                        fetchPolicy: 'no-cache',
-                      })
-                      .then(({ data }) => {
-                        console.log('checkIfFollowUpBooked', data);
-                        console.log('checkIfFollowUpBookedcount', data.checkIfFollowUpBooked);
-                        setIsfollowucount(data.checkIfFollowUpBooked);
-
-                        setdisplayoverlay(true);
-                      })
-                      .catch((error) => {
-                        CommonBugFender('ConsultDetails_renderFollowUp', error);
-                        console.log('Error occured', { error });
-                      });
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.health_records_home.book_follow_up}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No followup</Text>
-              </View>
-            )}
+      <>
+        {renderHeadingView(
+          'Follow up',
+          <PHRFollowUpDarkIcon style={{ width: 20, height: 17.5, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.doctorType !== 'JUNIOR' ? (
+          <View>
+            {caseSheetDetails?.followUpAfterInDays
+              ? renderListItem(
+                  `Recommended after ${caseSheetDetails?.followUpAfterInDays} days`,
+                  '',
+                  28
+                )
+              : renderNoData('No followup')}
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No followup')
+        )}
+      </>
     );
   };
 
   const renderTestNotes = () => {
     return (
-      <View>
-        <CollapseCard
-          heading="PRESCRIBED TESTS"
-          collapse={testShow}
-          onPress={() => setTestShow(!testShow)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.diagnosticPrescription &&
-            caseSheetDetails!.diagnosticPrescription !== null ? (
-              <View>
-                {caseSheetDetails!.diagnosticPrescription.map((item, index, array) => {
-                  return (
-                    <>
-                      <Text style={styles.labelStyle}>{item!.itemname}</Text>
-                      <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
-                      {item!.testInstruction ? (
-                        <Text style={styles.dataTextStyle}>
-                          Instructions: {item!.testInstruction}
-                        </Text>
-                      ) : null}
-                    </>
-                  );
-                })}
-                <TouchableOpacity
-                  style={{ marginTop: 12 }}
-                  onPress={() => {
-                    postWEGEvent('test');
-                    onAddTestsToCart();
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.health_records_home.order_test}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No Tests</Text>
-              </View>
-            )}
+      <>
+        {renderHeadingView(
+          'Tests',
+          <LabTestIcon style={{ width: 20, height: 21.13, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.diagnosticPrescription !== null ? (
+          <View style={{ marginTop: 28 }}>
+            {caseSheetDetails?.diagnosticPrescription?.map((item, index, array) => {
+              return (
+                <>
+                  {renderListItem(item?.itemname!, '')}
+                  {item?.testInstruction ? (
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                        paddingLeft: 35,
+                        paddingRight: 15,
+                        paddingBottom: 20,
+                        flex: 1,
+                      }}
+                    >
+                      {item?.testInstruction}
+                    </Text>
+                  ) : null}
+                </>
+              );
+            })}
+            <Button
+              style={{ alignSelf: 'flex-end', width: '40%', marginRight: 10 }}
+              title={strings.health_records_home.order_test}
+              onPress={() => {
+                postWEGEvent('test');
+                onAddTestsToCart();
+              }}
+            />
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No Tests')
+        )}
+      </>
     );
   };
 
   const renderPlaceorder = () => {
-    if (
-      caseSheetDetails!.medicinePrescription &&
-      caseSheetDetails!.medicinePrescription.length !== 0 &&
-      caseSheetDetails!.doctorType !== 'JUNIOR' &&
-      g(caseSheetDetails, 'blobName')
-    ) {
+    if (caseSheetDetails!.doctorType !== 'JUNIOR' && g(caseSheetDetails, 'blobName')) {
       return (
         <View
           style={{
             height: 0.1 * windowHeight,
-            backgroundColor: theme.colors.HEX_WHITE,
+            backgroundColor: 'transparent',
             justifyContent: 'center',
             alignItems: 'center',
           }}
@@ -1069,10 +932,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            title={'ORDER MEDICINES NOW'}
+            title={'DOWNLOAD PRESCRIPTION'}
             onPress={() => {
-              postWEGEvent('medicine');
-              onAddToCart();
+              onPressDownloadPrescripiton();
             }}
           />
         </View>
@@ -1098,19 +960,133 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
   };
 
-  const renderData = () => {
+  const renderDetailsFinding = () => {
     if (caseSheetDetails)
       return (
-        <View>
-          {renderSymptoms()}
-          {renderPrescriptions()}
-          {renderTestNotes()}
-          {renderDiagnosis()}
-          {renderReferral()}
-          {renderGenerealAdvice()}
-          {renderFollowUp()}
+        <View style={{ marginBottom: 20 }}>
+          <CollapseCard
+            heading="DETAILED FINDINGS"
+            collapse={showPrescription}
+            containerStyle={
+              !showPrescription && {
+                ...theme.viewStyles.cardViewStyle,
+                marginHorizontal: 8,
+              }
+            }
+            headingStyle={{ ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23) }}
+            labelViewStyle={styles.collapseCardLabelViewStyle}
+            onPress={() => setshowPrescription(!showPrescription)}
+          >
+            <View style={{ marginTop: 11, marginBottom: 20 }}>
+              <View
+                style={[
+                  styles.topCardViewStyle,
+                  { marginTop: 4, marginBottom: 4, paddingTop: 16, paddingHorizontal: 0 },
+                ]}
+              >
+                {renderSymptoms()}
+                {renderPrescriptions()}
+                {renderTestNotes()}
+                {renderDiagnosis()}
+                {renderGenerealAdvice()}
+                {renderFollowUp()}
+              </View>
+            </View>
+          </CollapseCard>
         </View>
       );
+  };
+
+  const onPressDownloadPrescripiton = () => {
+    if (g(caseSheetDetails, 'blobName') == null) {
+      Alert.alert('No Image');
+      CommonLogEvent('CONSULT_DETAILS', 'No image');
+    } else {
+      postWEGEvent('download prescription');
+      postWebEngagePHR('Prescription', WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS);
+      const dirs = RNFetchBlob.fs.dirs;
+
+      const fileName: string = getFileName();
+
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Prescription.pdf')
+          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
+      setLoading && setLoading(true);
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: fileName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch(
+          'GET',
+          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!),
+          {
+            //some headers ..
+          }
+        )
+        .then((res) => {
+          setLoading && setLoading(false);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('ConsultDetails_renderFollowUp', err);
+          console.log('error ', err);
+          setLoading && setLoading(false);
+        });
+    }
+  };
+
+  const renderHeadingView = (title: string, icon: React.ReactNode) => {
+    return (
+      <View style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 22 }}>
+        {icon}
+        <Text style={{ ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20.8) }}>{title}</Text>
+      </View>
+    );
+  };
+
+  const renderNoData = (noDataText: string) => {
+    return (
+      <View style={{ marginLeft: 30, marginTop: 20 }}>
+        <Text style={styles.labelStyle}>{noDataText}</Text>
+      </View>
+    );
+  };
+
+  const renderListItem = (title: string, rightTitle: string, marginTop: number = 0) => {
+    const renderListItemRightComponent = () => {
+      return (
+        <Text
+          style={{
+            ...theme.viewStyles.text('SB', 14, '#0087BA', 1, 18.2),
+          }}
+        >
+          {rightTitle}
+        </Text>
+      );
+    };
+    return title ? (
+      <ListItem
+        title={title}
+        titleStyle={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}
+        pad={0}
+        containerStyle={[styles.listItemContainerStyle, { marginTop: marginTop }]}
+        underlayColor={'#FFFFFF'}
+        activeOpacity={1}
+        leftElement={<View style={styles.blueCirleViewStyle} />}
+        rightElement={renderListItemRightComponent()}
+      />
+    ) : null;
   };
 
   if (g(caseSheetDetails, 'appointment', 'doctorInfo')) {
@@ -1122,88 +1098,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Header
-            title="PRESCRIPTION DETAILS"
+            title={'CONSULT & RX DETAILS'}
             leftIcon="backArrow"
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={
-              <View style={{ flexDirection: 'row' }}>
-                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
-                  <ShareGreen />
-                </TouchableOpacity> */}
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    if (g(caseSheetDetails, 'blobName') == null) {
-                      Alert.alert('No Image');
-                      CommonLogEvent('CONSULT_DETAILS', 'No image');
-                    } else {
-                      postWEGEvent('download prescription');
-                      postWebEngagePHR(
-                        'Prescription',
-                        WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS
-                      );
-                      const dirs = RNFetchBlob.fs.dirs;
-
-                      const fileName: string = getFileName();
-
-                      const downloadPath =
-                        Platform.OS === 'ios'
-                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
-                            '/' +
-                            (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
-                      setLoading && setLoading(true);
-                      RNFetchBlob.config({
-                        fileCache: true,
-                        path: downloadPath,
-                        addAndroidDownloads: {
-                          title: fileName,
-                          useDownloadManager: true,
-                          notification: true,
-                          path: downloadPath,
-                          mime: mimeType(downloadPath),
-                          description: 'File downloaded by download manager.',
-                        },
-                      })
-                        .fetch(
-                          'GET',
-                          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
-                            caseSheetDetails!.blobName!
-                          ),
-                          {
-                            //some headers ..
-                          }
-                        )
-                        .then((res) => {
-                          setLoading && setLoading(false);
-                          // if (Platform.OS === 'android') {
-                          //   Alert.alert('Download Complete');
-                          // }
-                          Platform.OS === 'ios'
-                            ? RNFetchBlob.ios.previewDocument(res.path())
-                            : RNFetchBlob.android.actionViewIntent(
-                                res.path(),
-                                mimeType(res.path())
-                              );
-                        })
-                        .catch((err) => {
-                          CommonBugFender('ConsultDetails_renderFollowUp', err);
-                          console.log('error ', err);
-                          setLoading && setLoading(false);
-                          // ...
-                        });
-                    }
-                  }}
-                >
-                  {g(caseSheetDetails, 'blobName') ? <Download /> : null}
-                </TouchableOpacity>
-              </View>
+              <ProfileImageComponent
+                onPressProfileImage={() => props.navigation.pop(2)}
+                currentPatient={currentPatient}
+              />
             }
           />
 
           <ScrollView bounces={false}>
-            {caseSheetDetails && renderDoctorDetails()}
-            {renderData()}
+            {caseSheetDetails && renderTopDetailsView()}
+            {renderDetailsFinding()}
           </ScrollView>
           {caseSheetDetails && renderPlaceorder()}
           {displayoverlay && props.navigation.state.params!.DoctorInfo && (
@@ -1263,18 +1171,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   } else {
     return (
-      <SafeAreaView
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
+      <SafeAreaView style={{ ...theme.viewStyles.container }}>
         <Header
-          title="PRESCRIPTION DETAILS"
+          title={'DOCTOR CONSULTATIONS DETAILS'}
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
+          rightComponent={
+            <ProfileImageComponent
+              onPressProfileImage={() => props.navigation.pop(2)}
+              currentPatient={currentPatient}
+            />
+          }
         />
       </SafeAreaView>
     );
   }
-  return null;
 };
