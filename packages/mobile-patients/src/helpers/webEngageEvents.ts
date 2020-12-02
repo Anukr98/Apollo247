@@ -3,6 +3,7 @@ import {
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { SymptomsSpecialities } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { UserEvent } from 'pubnub';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -322,17 +323,17 @@ export enum WebEngageEventName {
   DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
 
   //My Membership Circle Events
-  MY_MEMBERSHIP_VIEW_DETAILS_CLICKED = 'MyMembership - View Details',
-  MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED = 'Membership circle - Pharma cashback clicked',
-  MY_MEMBERSHIP_FREE_DELIVERY_CLICKED = 'Membership circle -  Free delivery clicked',
-  MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED = 'Membership circle - Doctor helpline clicked',
-  MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED = 'Membership circle - Diag discount clicked',
-  MY_MEMBERSHIP_PRO_HEALTH_CLICKED = 'Membership circle - Pro Health clicked',
-  MY_MEMBERSHIP_DOC_ON_CALL_CLICKED = 'Membership circle - Doc on call clicked',
-  MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED = 'Membership circle - Advance Diabetes clicked',
-  MY_MEMBERSHIP_COVID_CARE_CLICKED = 'Membership circle - Covid care clicked',
-  MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED = 'Membership circle - Digitalization PHR clicked',
-  MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED = 'Membership circle - Diag home sample clicked',
+  MY_MEMBERSHIP_VIEW_DETAILS_CLICKED = 'App - MyMembership - View Details',
+  MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED = 'App circle - MemDetails - Pharma cashback clicked',
+  MY_MEMBERSHIP_FREE_DELIVERY_CLICKED = 'App circle - MemDetails -  Free delivery clicked',
+  MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED = 'App circle - MemDetails - Doctor helpline clicked',
+  MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED = 'App circle - MemDetails - Diag discount clicked',
+  MY_MEMBERSHIP_PRO_HEALTH_CLICKED = 'App circle - MemDetails - Pro Health clicked',
+  MY_MEMBERSHIP_DOC_ON_CALL_CLICKED = 'App circle - MemDetails - Doc on call clicked',
+  MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED = 'App circle - MemDetails - Advance Diabetes clicked',
+  MY_MEMBERSHIP_COVID_CARE_CLICKED = 'App circle - MemDetails - Covid care clicked',
+  MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED = 'App circle - MemDetails - Digitalization PHR clicked',
+  MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED = 'App circle - MemDetails - Diag home sample clicked',
 }
 
 export interface PatientInfo {
@@ -353,9 +354,9 @@ export interface UserInfo {
 
 export interface CircleUserInfo extends UserInfo {
   'Circle Member': 'Yes' | 'No';
-  'Membership Type': string;
-  'Circle Membership Start Date': Date;
-  'Circle Membership End Date': Date;
+  'Membership Type'?: string;
+  'Circle Membership Start Date'?: Date;
+  'Circle Membership End Date'?: Date;
 }
 
 export interface DiagnosticUserInfo {
