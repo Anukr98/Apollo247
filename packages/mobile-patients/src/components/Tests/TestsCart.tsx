@@ -1822,7 +1822,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </View>
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
-        {isDiagnosticCircleSubscription ? null : circleSaving > 0 && renderSavedBanner()}
+        {/* {isDiagnosticCircleSubscription ? null : circleSaving > 0 && renderSavedBanner()} */}
         {renderPaymentCard()}
       </View>
     );
