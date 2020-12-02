@@ -35,10 +35,12 @@ import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from './Spinner';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface props extends NavigationScreenProps {
@@ -65,7 +67,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   const planActivated = useRef<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [planValidity, setPlanValidity] = useState<string>(circlePlanValidity || '');
-
+  const { circleSubscription } = useAppCommonData();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const client = useApolloClient();
@@ -77,6 +79,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     'Patient UHID': currentPatient?.uhid,
     'Mobile Number': currentPatient?.mobileNumber,
     'Customer ID': currentPatient?.id,
+    'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
   };
 
   const fireCircleOtherPaymentEvent = () => {
