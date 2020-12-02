@@ -282,30 +282,36 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               {orderId}
             </Text>
           </View>
-          <View style={{ justifyContent: 'flex-start' }}>
-            <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>
-              Payment Reference Number :{' '}
-            </Text>
-            <TouchableOpacity
-              style={styles.refStyles}
-              onPress={() => copyToClipboard(refNumberText)}
-            >
-              <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
-                {paymentRefId}
-              </Text>
-              <Copy style={styles.iconStyle} />
-            </TouchableOpacity>
-          </View>
-          <Snackbar
-            style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
-            visible={snackbarState}
-            onDismiss={() => {
-              setSnackbarState(false);
-            }}
-            duration={1000}
-          >
-            Copied
-          </Snackbar>
+          {
+            paymentRefId && (
+              <>
+                <View style={{ justifyContent: 'flex-start' }}>
+                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>
+                    Payment Reference Number :{' '}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.refStyles}
+                    onPress={() => copyToClipboard(refNumberText)}
+                  >
+                    <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
+                      {paymentRefId}
+                    </Text>
+                    <Copy style={styles.iconStyle} />
+                  </TouchableOpacity>
+                </View>
+                <Snackbar
+                  style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
+                  visible={snackbarState}
+                  onDismiss={() => {
+                    setSnackbarState(false);
+                  }}
+                  duration={1000}
+                >
+                  Copied
+                </Snackbar>
+              </>
+            )
+          }
         </View>
         <View>
           <TouchableOpacity onPress={() => {}}></TouchableOpacity>
@@ -339,14 +345,18 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               )}
             </View>
           </View>
-          <View>
-            <View style={{ justifyContent: 'flex-start' }}>
-              {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
-            </View>
-            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-              {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
-            </View>
-          </View>
+          {
+            paymentMode && (
+              <View>
+                <View style={{ justifyContent: 'flex-start' }}>
+                  {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
+                </View>
+                <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
+                  {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+                </View>
+              </View>
+            )
+          }
         </View>
       </View>
     );
