@@ -106,7 +106,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
       type: type,
       action: action,
-      from: from == undefined ? 'HomePage' : from,
+      from: from || 'HomePage',
     };
     source == 'Pharma' &&
       postWebEngageEvent(WebEngageEventName.PHARMA_CIRCLE_BANNER_CLICKED, eventAttributes);
