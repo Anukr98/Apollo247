@@ -724,7 +724,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <Overlay
         onRequestClose={() => setShowInfo(false)}
         isVisible={showInfo}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
         containerStyle={styles.overlayContainerStyle}
         fullScreen
         transparent
@@ -813,7 +813,6 @@ const styles = StyleSheet.create({
   proceedBtn: {
     marginTop: 20,
     width: 155,
-    backgroundColor: colors.LIGHT_BLUE,
     alignSelf: 'center',
   },
   mainView: {
@@ -1006,7 +1005,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   restartBtnTxt: {
-    color: colors.SKY_BLUE,
+    color: colors.APP_YELLOW,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   infoIcon: {

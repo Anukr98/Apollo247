@@ -1,7 +1,7 @@
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
@@ -33,6 +33,7 @@ import {
 import {
   aphConsole,
   g,
+  getDiscountPercentage,
   isValidSearch,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
@@ -61,10 +62,15 @@ import stripHtml from 'string-strip-html';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  DIAGNOSTIC_GROUP_PLAN,
+  getPackageData,
+  PackageInclusion,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
+import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
@@ -171,8 +177,17 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, cartItems } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    cartItems,
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const {
+    cartItems: shopCartItems,
+    isCircleSubscription,
+    setIsCircleSubscription,
+  } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
@@ -269,6 +284,32 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       });
   };
 
+  const getActiveItems = (getDiagnosticPricingForItem: any) => {
+    const itemWithAll = getDiagnosticPricingForItem!.find(
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+    );
+    const itemWithSub = getDiagnosticPricingForItem!.find(
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+    );
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD');
+    const isItemActive =
+      isDiagnosticCircleSubscription && itemWithSub
+        ? itemWithSub!.status == 'active' &&
+          isItemPriceActive(itemWithSub?.startDate!, itemWithSub?.endDate!, currentDate)
+        : itemWithAll &&
+          itemWithAll!.status == 'active' &&
+          isItemPriceActive(itemWithAll?.startDate!, itemWithAll?.endDate!, currentDate);
+
+    const activeItemsObject = {
+      itemWithAll: itemWithAll,
+      itemWithSub: itemWithSub,
+      isItemActive: isItemActive,
+    };
+
+    return activeItemsObject;
+  };
+
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     aphConsole.log({ errorResponse: e.response, error }); //remove this line later
@@ -363,7 +404,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       rate,
       collectionType,
     }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-    testsIncluded: number
+    testsIncluded: number,
+    pricesObject: any,
+    promoteCircle: boolean
   ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
@@ -372,10 +415,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     addCartItem!({
       id: `${itemId}`,
       name: stripHtml(itemName),
-      price: rate,
+      price: pricesObject?.rate,
+      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate,
+      circlePrice: pricesObject?.circlePrice,
+      circleSpecialPrice: pricesObject?.circleSpecialPrice,
       mou: testsIncluded,
       thumbnail: '',
       collectionMethod: collectionType!,
+      groupPlan: promoteCircle ? DIAGNOSTIC_GROUP_PLAN.CIRCLE : DIAGNOSTIC_GROUP_PLAN.ALL,
     });
   };
 
@@ -413,9 +460,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
+            <TouchableOpacity
+              style={{ marginLeft: 10 }}
+              disabled={true}
+              activeOpacity={1}
+              onPress={() => setFilterVisible(true)}
+            >
               <Filter />
-            </TouchableOpacity> */}
+            </TouchableOpacity>
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -485,9 +537,25 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
           fetchPackageDetails(pastSeacrh.name!, (product) => {
+            const getActiveItemsObject = getActiveItems(product?.diagnosticPricing);
+            const itemWithAll = getActiveItemsObject?.itemWithAll;
+            const itemWithSub = getActiveItemsObject?.itemWithSub;
+
+            if (!getActiveItemsObject?.isItemActive) {
+              return null;
+            }
+
+            const specialPrice = itemWithAll?.price!;
+            const price = itemWithAll?.mrp!; //more than price (black)
+            const circlePrice = itemWithSub?.mrp!;
+            const circleSpecialPrice = itemWithSub?.price;
+
             props.navigation.navigate(AppRoutes.TestDetails, {
               testDetails: {
-                Rate: product?.rate,
+                Rate: price,
+                specialPrice: specialPrice! || price,
+                circleRate: circlePrice,
+                circleSpecialPrice: circleSpecialPrice,
                 Gender: product?.gender,
                 ItemID: `${product?.itemId}`,
                 ItemName: product?.itemName,
@@ -531,6 +599,20 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       </ScrollView>
     );
   };
+  const isItemPriceActive = (from: string, to: string, check: string) => {
+    if (from == null || to == null) {
+      return true;
+    }
+    var fDate, lDate, cDate;
+    fDate = Date.parse(from);
+    lDate = Date.parse(to);
+    cDate = Date.parse(check);
+
+    if (cDate <= lDate && cDate >= fDate) {
+      return true;
+    }
+    return false;
+  };
 
   const renderTestCard = (
     product: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
@@ -544,17 +626,45 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     ];
     const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
     const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
-    const price = product.rate;
+
+    const productWithDiagnosticPricing = product.diagnosticPricing;
+    const getActiveItemsObject = getActiveItems(productWithDiagnosticPricing);
+    const itemWithAll = getActiveItemsObject?.itemWithAll;
+    const itemWithSub = getActiveItemsObject?.itemWithSub;
+
+    if (!getActiveItemsObject?.isItemActive) {
+      return null;
+    }
+
+    const specialPrice = itemWithAll?.price!;
+    const price = itemWithAll?.mrp!; //more than price (black)
+    const circlePrice = itemWithSub?.mrp!;
+    const circleSpecialPrice = itemWithSub?.price;
+
+    const discount = getDiscountPercentage(price, specialPrice);
+    const circleDiscount = getDiscountPercentage(circlePrice!, circleSpecialPrice);
+
+    const promoteCircle = discount < circleDiscount;
+    const pricesObject = {
+      rate: price,
+      specialPrice: specialPrice! || price,
+      circlePrice: circlePrice,
+      circleSpecialPrice: circleSpecialPrice,
+    };
 
     return (
       <MedicineCard
         isTest={true}
+        isComingFrom={'testSearchResult'}
         containerStyle={[productCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(product.id, product.itemName).catch((e) => {});
           props.navigation.navigate(AppRoutes.TestDetails, {
             testDetails: {
               Rate: price,
+              specialPrice: specialPrice! || price,
+              circleRate: circlePrice,
+              circleSpecialPrice: circleSpecialPrice,
               Gender: product?.gender,
               ItemID: `${product?.itemId}`,
               ItemName: product?.itemName,
@@ -571,12 +681,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
         price={price}
-        specialPrice={undefined}
+        specialPrice={!promoteCircle && price != specialPrice ? specialPrice : undefined}
+        circlePrice={promoteCircle ? circleSpecialPrice : undefined}
+        isCareSubscribed={isDiagnosticCircleSubscription}
         unit={1}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Add item to cart');
-          fetchPackageInclusion(`${product?.itemId}`, (tests) => {
-            onAddCartItem(product, tests.length);
+          fetchPackageInclusion(`${product.itemId}`, (tests) => {
+            onAddCartItem(product, tests?.length, pricesObject, promoteCircle);
           });
         }}
         onPressRemove={() => {

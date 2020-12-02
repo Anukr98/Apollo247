@@ -1,6 +1,12 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Failure, Pending, Success, Copy } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Failure,
+  Pending,
+  Success,
+  Copy,
+  CircleLogo,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -8,12 +14,14 @@ import {
   CONSULT_ORDER_INVOICE,
   GET_APPOINTMENT_DATA,
   GET_TRANSACTION_STATUS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
   overlyCallPermissions,
+  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -54,9 +62,16 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
 import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-
+import AsyncStorage from '@react-native-community/async-storage';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
+import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -80,6 +95,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const coupon = props.navigation.getParam('coupon');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -90,6 +106,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
+  const [circlePlanDetails, setCirclePlanDetails] = useState();
+  const [
+    amountBreakup,
+    setAmountBreakup,
+  ] = useState<paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup | null>();
+  const circleSavings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
+
+  const { circleSubscriptionId } = useShoppingCart();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -103,6 +127,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
+    clearCircleSubscriptionData();
+    getUserSubscriptionsByStatus();
   }, []);
 
   useEffect(() => {
@@ -129,6 +155,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
+          if (isCircleDoctor && amountBreakup?.slashed_price) {
+            setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
+          }
           fireBaseFCM();
           try {
             let eventAttributes = webEngageEventAttributes;
@@ -152,13 +182,35 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      setCirclePlanDetails(data?.APOLLO?.[0]);
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
+    }
+  };
+
+  const clearCircleSubscriptionData = () => {
+    AsyncStorage.removeItem('circlePlanSelected');
+  };
 
   const fireOrderFailedEvent = () => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
@@ -472,7 +524,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const renderStatusCard = () => {
     const refNumberText = String(paymentRefId != '' && paymentRefId != null ? paymentRefId : '--');
     const orderIdText = 'Order ID: ' + String(displayId);
-    const priceText = 'Rs. ' + String(price);
+    const priceText = `${string.common.Rs} ` + String(price);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
@@ -683,19 +735,71 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     );
   };
 
+  const circleWebEngage = () => {
+    const eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_BUYS_SUBSCRIPTION, eventAttributes);
+  };
+
+  const renderAddedCirclePlanWithValidity = () => {
+    circleWebEngage();
+    return (
+      <AddedCirclePlanWithValidity
+        circleSavings={circleSavings}
+        circlePlanDetails={circlePlanDetails}
+        isConsult={true}
+      />
+    );
+  };
+
+  const renderCircleSavingsOnPurchase = () => {
+    return (
+      <View style={styles.circleSavingsContainer}>
+        <View style={styles.rowCenter}>
+          <CircleLogo style={styles.circleLogo} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 12),
+              marginTop: 5,
+            }}
+          >
+            You{' '}
+            <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
+              saved {string.common.Rs}
+              {circleSavings}{' '}
+            </Text>
+            on your purchase
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <SafeAreaView style={styles.container}>
         <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
         {!loading ? (
-          <ScrollView style={styles.container}>
-            {renderStatusCard()}
-            {appointmentHeader()}
-            {appointmentCard()}
-            {renderNote()}
+          <View style={styles.container}>
+            <ScrollView style={styles.container}>
+              {renderStatusCard()}
+              {circleSavings > 0 && !circleSubscriptionId
+                ? renderAddedCirclePlanWithValidity()
+                : null}
+              {circleSavings > 0 && circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
+              {appointmentHeader()}
+              {appointmentCard()}
+              {renderNote()}
+            </ScrollView>
             {renderButton()}
-          </ScrollView>
+          </View>
         ) : (
           <Spinner />
         )}
@@ -833,5 +937,25 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     marginTop: 8,
+  },
+  circleSavingsContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    borderRadius: 5,
+    borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    paddingVertical: 8,
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  circleLogo: {
+    width: 45,
+    height: 27,
+    marginRight: 5,
   },
 });

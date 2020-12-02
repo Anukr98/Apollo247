@@ -1,4 +1,7 @@
-import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPackageData,
@@ -77,6 +80,7 @@ import {
   ShoppingCartItem,
   ShoppingCartContextProps,
   EPrescription,
+  useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -85,8 +89,15 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
-import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
-import { getPincodeServiceability, getPincodeServiceabilityVariables } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
+import {
+  getPincodeServiceability,
+  getPincodeServiceabilityVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+const isRegExp = require('lodash/isRegExp');
+const escapeRegExp = require('lodash/escapeRegExp');
+const isString = require('lodash/isString');
+const flatten = require('lodash/flatten');
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -926,7 +937,7 @@ export const addTestsToCart = async (
 ) => {
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query:SEARCH_DIAGNOSTICS_BY_CITY_ID,
+      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
         cityID: parseInt(cityId, 10),
@@ -936,79 +947,73 @@ export const addTestsToCart = async (
   const detailQuery = (itemId: string) => getPackageData(itemId);
 
   const getPinCodeServiceable = (pincode: string) =>
-    apolloClient
-        .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
-          query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
-          variables: {
-            pincode: parseInt(pincode, 10),
-          },
-          fetchPolicy: 'no-cache',
-        });
+    apolloClient.query<getPincodeServiceability, getPincodeServiceabilityVariables>({
+      query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+      variables: {
+        pincode: parseInt(pincode, 10),
+      },
+      fetchPolicy: 'no-cache',
+    });
 
   try {
-
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
 
     console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
 
-    const checkIsPinCodeServiceable = await getPinCodeServiceable(pincode)
-    
-    const serviceableData = g(checkIsPinCodeServiceable,'data' ,'getPincodeServiceability');
-    console.log({serviceableData});
-    try{
+    const checkIsPinCodeServiceable = await getPinCodeServiceable(pincode);
 
+    const serviceableData = g(checkIsPinCodeServiceable, 'data', 'getPincodeServiceability');
+    console.log({ serviceableData });
+    try {
+      if (serviceableData && serviceableData?.cityName != '') {
+        let obj = {
+          cityId: serviceableData.cityID?.toString() || '',
+          stateId: serviceableData.stateID?.toString() || '',
+          state: serviceableData.stateName || '',
+          city: serviceableData.cityName || '',
+        };
 
-     if (serviceableData && serviceableData?.cityName != '') {
-      let obj = {
-        cityId: serviceableData.cityID?.toString() || '',
-        stateId: serviceableData.stateID?.toString() || '',
-        state: serviceableData.stateName || '',
-        city: serviceableData.cityName || '',
-      };
+        const searchQueries = Promise.all(items.map((item) => searchQuery(item!, obj.cityId)));
+        const searchQueriesData = (await searchQueries)
+          .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+          // .filter((item, index) => g(item, 'itemName')! == items[index])
+          .filter((item) => !!item);
+        const detailQueries = Promise.all(
+          searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+        );
+        const detailQueriesData = (await detailQueries).map(
+          (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+        );
 
-      const searchQueries = Promise.all(items.map((item) => searchQuery(item!, obj.cityId)));
-    const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-      // .filter((item, index) => g(item, 'itemName')! == items[index])
-      .filter((item) => !!item);
-    const detailQueries = Promise.all(
-      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
-    );
-    const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
-    );
+        const finalArray: DiagnosticsCartItem[] = Array.from({
+          length: searchQueriesData.length,
+        }).map((_, index) => {
+          const s = searchQueriesData[index];
+          const testIncludedCount = detailQueriesData[index];
+          return {
+            id: `${s.itemId}`,
+            name: s.itemName,
+            price: s.rate,
+            specialPrice: undefined,
+            mou: testIncludedCount,
+            thumbnail: '',
+            collectionMethod: s.collectionType,
+          } as DiagnosticsCartItem;
+        });
 
-    const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData.length,
-    }).map((_, index) => {
-      const s = searchQueriesData[index];
-      const testIncludedCount = detailQueriesData[index];
-      return {
-        id: `${s.itemId}`,
-        name: s.itemName,
-        price: s.rate,
-        specialPrice: undefined,
-        mou: testIncludedCount,
-        thumbnail: '',
-        collectionMethod: s.collectionType,
-      } as DiagnosticsCartItem;
-    });
-
-    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
-    return finalArray;
-    } 
-    else{
-      return [];
+        console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+        return finalArray;
+      } else {
+        return [];
+      }
+    } catch (error) {
+      CommonBugFender('helperFunctions_pincodeserviceable', error);
+      throw 'error';
     }
   } catch (error) {
-    CommonBugFender('helperFunctions_pincodeserviceable', error);
+    CommonBugFender('helperFunctions_addTestsToCart', error);
     throw 'error';
   }
-}
-catch (error) {
-  CommonBugFender('helperFunctions_addTestsToCart', error);
-  throw 'error';
-}
 };
 
 export const getDiscountPercentage = (price: number | string, specialPrice?: number | string) => {
@@ -2013,6 +2018,15 @@ export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
 };
 
+export const getCareCashback = (price: number, type_id: string | null | undefined) => {
+  const { circleCashback } = useShoppingCart();
+  let cashback = 0;
+  if (!!circleCashback && !!circleCashback[type_id]) {
+    cashback = price * (circleCashback[type_id] / 100);
+  }
+  return cashback;
+};
+
 export const readableParam = (param: string) => {
   const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
@@ -2028,4 +2042,46 @@ export const readableParam = (param: string) => {
     .replace(/\-\-+/g, '-') // Replace multiple - with single -
     .replace(/^-+/, '') // Trim - from start of text
     .replace(/-+$/, ''); // Trim - from end of text
+};
+
+const replaceString = (str: string, match: any, fn: any) => {
+  var curCharStart = 0;
+  var curCharLen = 0;
+  if (str === '') {
+    return str;
+  } else if (!str || !isString(str)) {
+    throw new TypeError('First argument to react-string-replace#replaceString must be a string');
+  }
+  var re = match;
+  if (!isRegExp(re)) {
+    re = new RegExp('(' + escapeRegExp(re) + ')', 'gi');
+  }
+  var result = str.split(re);
+  // Apply fn to all odd elements
+  for (var i = 1, length = result.length; i < length; i += 2) {
+    curCharLen = result[i].length;
+    curCharStart += result[i - 1].length;
+    result[i] = fn(result[i], i, curCharStart);
+    curCharStart += curCharLen;
+  }
+  return result;
+};
+
+export const monthDiff = (dateFrom: Date, dateTo: Date) => {
+  return (
+    dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
+  );
+};
+
+export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
+  const diffInMonth = monthDiff(new Date(fromDate!), new Date(toDate!));
+  let circleMembershipType;
+  if (diffInMonth < 6) {
+    circleMembershipType = 'Monthly';
+  } else if (diffInMonth == 6) {
+    circleMembershipType = 'Half Yearly';
+  } else {
+    circleMembershipType = 'Annual';
+  }
+  return circleMembershipType;
 };

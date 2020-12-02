@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -78,7 +79,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = (props) => {
   const renderStatusCard = () => {
     const refNumberText = String(refundId != '' && refundId != null ? refundId : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
-    const priceText = 'Rs. ' + String(refundAmount);
+    const priceText = `${string.common.Rs} ` + String(refundAmount);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>

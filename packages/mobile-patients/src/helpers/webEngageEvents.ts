@@ -223,9 +223,6 @@ export enum WebEngageEventName {
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
 
   // HDFC events
-  HDFC_OTP_GENERATE_CLICKED = 'HDFC Generate OTP Clicked',
-  HDFC_OTP_VERIFY_CLICKED = 'HDFC Verify OTP Clicked',
-  HDFC_EXPLORE_BENEFITS_CLICKED = 'HDFC Explore Benefits Clicked',
   HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
   HDFC_MY_MEMBERSHIP_VIEWED = 'HDFC My Membership Viewed',
   HDFC_PLAN_DETAILS_VIEWED = 'HDFC Plan Details Viewed',
@@ -285,6 +282,57 @@ export enum WebEngageEventName {
   SYMPTOM_TRACKER_RESTART_CLICKED = 'restart symptom checker clicked',
   SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom SC',
   SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN = 'Track symptoms in speciality screen clicked',
+
+  //Circle Plan event names
+  VC_NON_CIRCLE = 'VC Non Circle Clicks on Know More at Doctor Listing',
+  VC_NON_CIRCLE_ADD = 'VC Non Circle Adds Circle Plan at Doctor Listing',
+  VC_NON_CIRCLE_KNOWMORE_CONSULT = 'VC Non Circle Clicks on Know More at Choose Consult Type',
+  VC_NON_CIRCLE_KNOWMORE_PROFILE = 'VC Non Circle Clicks on Know More at Doctor Profile',
+  VC_NON_CIRCLE_ADDS_PROFILE = 'VC Non Circle Adds Circle Plan at Doctor Profile',
+  VC_CIRCLE_FILTER = 'VC Circle Filter Selected',
+  VC_NON_CIRCLE_PLAN_1 = 'VC Non Circle chooses Plan 1 in Consult Web View',
+  VC_NON_CIRCLE_PLAN_2 = 'VC Non Circle chooses Plan 2 in Consult Web View',
+  VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
+  VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
+  VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
+  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
+
+  // Pharma Circle Events
+  PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
+  PHARMA_HOME_UPGRADE_TO_CIRCLE = 'App Pharma Upgrade to Circle sticky Clicked',
+  PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Pharma Home PopUp Know More Clicked ',
+  PHARMA_PRODUCT_UPGRADE_TO_CIRCLE = 'App Pharma PDP Banner Upgrade to Circle',
+  PHARMA_PRODUCT_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Pharma PDP Popup Know More Clicked',
+  PHARMA_PRODUCT_ADD_TO_CART_CLICKED_CIRCLE_POPUP = 'App Pharma PDP Popup Add To Cart',
+  PHARMA_CART_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Pharma Cart PopUp Know More Clicked',
+  PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP = 'App Pharma Cart PopUp Add to Cart Clicked',
+  PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED = 'App Pharma Cart Circle Plan Removed',
+  PHARMA_WEBVIEW_PLAN1 = 'App Pharma Plan 1 in Pharmacy Web View',
+  PHARMA_WEBVIEW_PLAN2 = 'App Pharma Plan 2 in Pharmacy Web View',
+  PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
+  PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
+  PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE = 'App Pharma Non Circle buys Circle subscription',
+
+  //Diagnostic Circle Events
+  DIAGNOSTICS_CIRCLE_BANNER_CLICKED = 'App Non-circle banner clicked - Diagnostics',
+  DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP = 'App Non-circle Buy Now clicked - Diagnostics',
+  DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Non-circle Know more clicked - Diagnostics',
+  DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP = 'App circle plan - other payment clicked - Diagnostics',
+  DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED = 'App Circle activated - Diagnostics',
+  DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
+
+  //My Membership Circle Events
+  MY_MEMBERSHIP_VIEW_DETAILS_CLICKED = 'MyMembership - View Details',
+  MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED = 'Membership circle - Pharma cashback clicked',
+  MY_MEMBERSHIP_FREE_DELIVERY_CLICKED = 'Membership circle -  Free delivery clicked',
+  MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED = 'Membership circle - Doctor helpline clicked',
+  MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED = 'Membership circle - Diag discount clicked',
+  MY_MEMBERSHIP_PRO_HEALTH_CLICKED = 'Membership circle - Pro Health clicked',
+  MY_MEMBERSHIP_DOC_ON_CALL_CLICKED = 'Membership circle - Doc on call clicked',
+  MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED = 'Membership circle - Advance Diabetes clicked',
+  MY_MEMBERSHIP_COVID_CARE_CLICKED = 'Membership circle - Covid care clicked',
+  MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED = 'Membership circle - Digitalization PHR clicked',
+  MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED = 'Membership circle - Diag home sample clicked',
 }
 
 export interface PatientInfo {
@@ -301,6 +349,13 @@ export interface UserInfo {
   'Patient UHID': string;
   'Mobile Number': string;
   'Customer ID': string;
+}
+
+export interface CircleUserInfo extends UserInfo {
+  'Circle Member': 'Yes' | 'No';
+  'Membership Type': string;
+  'Circle Membership Start Date': Date;
+  'Circle Membership End Date': Date;
 }
 
 export interface DiagnosticUserInfo {
@@ -518,6 +573,43 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Past Searches': any;
   };
+
+  // ********** PharmaCircleEvents ********** \\
+  [WebEngageEventName.PHARMA_CIRCLE_BANNER_CLICKED]: UserInfo;
+  [WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE]: UserInfo;
+  [WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE]: UserInfo;
+  [WebEngageEventName.PHARMA_PRODUCT_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_PRODUCT_ADD_TO_CART_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_CART_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN1]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
+  [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
+
+  // ********** DiagnosticCircleEvents ********** \\
+  [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: UserInfo;
+  [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: UserInfo;
+  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: UserInfo;
+  [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: UserInfo;
+
+  // ********** MY Membership circle events ********
+  [WebEngageEventName.MY_MEMBERSHIP_VIEW_DETAILS_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_FREE_DELIVERY_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_PRO_HEALTH_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DOC_ON_CALL_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_COVID_CARE_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED]: CircleUserInfo;
 
   // ********** PharmacyEvents ********** \\
 
@@ -1761,9 +1853,6 @@ export interface WebEngageEvents {
     isMarkerModified: boolean;
     changedByInMeters: number;
   };
-  [WebEngageEventName.HDFC_OTP_GENERATE_CLICKED]: HdfcCustomerInfo;
-  [WebEngageEventName.HDFC_OTP_VERIFY_CLICKED]: HdfcCustomerInfo;
-  [WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED]: HdfcCustomerPlanInfo;
   [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
   [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: HdfcBenefitInfo;

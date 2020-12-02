@@ -7,6 +7,7 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -16,12 +17,11 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     ...theme.viewStyles.shadowStyle,
     padding: 16,
-    marginHorizontal: 20,
-    flexDirection: 'row',
     height: 56,
+    marginHorizontal: 20,
     marginTop: 4,
     marginBottom: 4,
-    alignItems: 'center',
+    justifyContent: 'center',
   },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,
@@ -36,19 +36,29 @@ export interface ListCardProps {
   rightIcon?: React.ReactNode;
   container?: StyleProp<ViewStyle>;
   onPress?: TouchableOpacityProps['onPress'];
+  titleStyle?: StyleProp<TextStyle>;
+  leftTitle?: string;
+  leftTitleStyle?: StyleProp<TextStyle>;
+  children?: React.ReactNode;
 }
 
 export const ListCard: React.FC<ListCardProps> = (props) => {
-  const { title, leftIcon, rightIcon } = props;
+  const { title, leftIcon, rightIcon, leftTitle, leftTitleStyle, titleStyle, children } = props;
 
   return (
     <TouchableOpacity activeOpacity={1} onPress={props.onPress}>
       <View style={[styles.container, props.container]}>
-        {leftIcon}
-        <View style={{ flex: 1 }}>
-          <Text style={styles.titleStyle}>{title}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {leftIcon}
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.titleStyle, leftTitleStyle]}>
+              {leftTitle}
+              <Text style={[styles.titleStyle, titleStyle]}>{title}</Text>
+            </Text>
+          </View>
+          {rightIcon ? rightIcon : <ArrowRight />}
         </View>
-        {rightIcon ? rightIcon : <ArrowRight />}
+        {children}
       </View>
     </TouchableOpacity>
   );

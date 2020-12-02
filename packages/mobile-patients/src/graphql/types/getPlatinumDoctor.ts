@@ -9,6 +9,13 @@ import { ConsultMode } from "./globalTypes";
 // GraphQL query operation: getPlatinumDoctor
 // ====================================================
 
+export interface getPlatinumDoctor_getPlatinumDoctor_doctors_availabilityTitle {
+  __typename: "AvailabilityTitle";
+  AVAILABLE_NOW: string | null;
+  CONSULT_NOW: string | null;
+  DOCTOR_OF_HOUR: string | null;
+}
+
 export interface getPlatinumDoctor_getPlatinumDoctor_doctors {
   __typename: "doctorCardDetail";
   id: string | null;
@@ -25,6 +32,7 @@ export interface getPlatinumDoctor_getPlatinumDoctor_doctors {
   photoUrl: string | null;
   slot: string | null;
   thumbnailUrl: string | null;
+  availabilityTitle: getPlatinumDoctor_getPlatinumDoctor_doctors_availabilityTitle | null;
 }
 
 export interface getPlatinumDoctor_getPlatinumDoctor {

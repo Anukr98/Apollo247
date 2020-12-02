@@ -69,6 +69,9 @@ const appStaticVariables = {
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
+  PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
+  CIRCLE_PLAN_ID: 'CIRCLEPlan',
+  CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
@@ -76,6 +79,7 @@ const appStaticVariables = {
     'https://api.whatsapp.com/send?phone=914041894343&text=On-hold%20order:%20I%20want%20to%20chat%20with%20the%20pharmacist',
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
+  SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
 };
 
 const DEV_top6_specailties = [
@@ -214,7 +218,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoriesScript.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
@@ -316,6 +320,10 @@ const ConfigurationDev = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL:
+    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -362,6 +370,10 @@ const ConfigurationQA = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL:
+    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -408,6 +420,10 @@ const ConfigurationQA2 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL:
+    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -454,6 +470,10 @@ const ConfigurationVAPT = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL:
+    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -498,6 +518,10 @@ const ConfigurationProd = {
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL:
+    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -545,6 +569,10 @@ const ConfigurationPERFORM = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL:
+    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -592,6 +620,10 @@ const ConfigurationDevReplica = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL:
+    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
