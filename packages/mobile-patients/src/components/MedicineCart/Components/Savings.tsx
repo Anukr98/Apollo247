@@ -26,7 +26,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   //   : Number(productDiscount);
 
   const careTotal = !!coupon
-    ? Number(cartTotal > 200 ? 0 : deliveryFee) + Number(productDiscount) + Number(couponDiscount)
+    ? Number(cartTotal < 200 ? 0 : deliveryFee) + Number(productDiscount) + Number(couponDiscount)
     : isCircleSubscription || circleMembershipCharges
     ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
     : Number(productDiscount);
