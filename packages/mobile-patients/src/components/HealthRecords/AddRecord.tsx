@@ -722,14 +722,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .map((item) => {
         return {
           ...item,
-          result: parseFloat(((item && item.result) || 0).toString()),
-          maximum: parseFloat(((item && item.maximum) || 0).toString()),
-          minimum: parseFloat(((item && item.minimum) || 0).toString()),
+          result: parseFloat((item?.result || 0).toString()),
+          maximum: parseFloat((item?.maximum || 0).toString()),
+          minimum: parseFloat((item?.minimum || 0).toString()),
         };
       })
       .filter((item) => item !== undefined) as LabTestParameters[];
 
-    if (testRecordsVaild.length > 0) {
+    if (testRecordsVaild?.length > 0) {
       setTestRecordParameters(testRecordsVaild);
       return testRecordsVaild;
     } else {
@@ -741,15 +741,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const validRecordDetails1 = recordType && dateOfTest && testName && docName;
     const valid = isTestRecordParameterFilled().map((item) => {
       return {
-        maxmin: item.maximum! > item.minimum!,
+        maxmin: item?.maximum! > item?.minimum!,
         changed: true,
-        noParameterName: item.parameterName || '',
-        noUnits: item.unit || '',
+        noParameterName: item?.parameterName || '',
+        noUnits: item?.unit || '',
         notinitial:
-          item.parameterName === '' &&
-          item.result === 0 &&
-          item.maximum === 0 &&
-          item.minimum === 0,
+          item?.parameterName === '' &&
+          item?.result === 0 &&
+          item?.maximum === 0 &&
+          item?.minimum === 0,
       };
     });
 
@@ -763,11 +763,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     message === '' &&
       valid.forEach((item) => {
-        if (!item.noParameterName) {
+        if (!item?.noParameterName) {
           message = 'Please enter parameter name';
-        } else if (!item.noUnits) {
+        } else if (!item?.noUnits) {
           message = 'Please enter units';
-        } else if (item.maxmin === false) {
+        } else if (item?.maxmin === false) {
           message = 'Please enter valid Maximum and Minimum';
         }
       });
@@ -776,8 +776,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return {
       isvalid: finval,
       isValidParameter:
-        valid.find((i) => i.maxmin === false || i.noParameterName === '' || !i.noUnits) !==
-        undefined,
+        valid.find((i) => i?.maxmin === false || !i?.noParameterName || !i?.noUnits) !== undefined,
       message: message,
     };
   };
