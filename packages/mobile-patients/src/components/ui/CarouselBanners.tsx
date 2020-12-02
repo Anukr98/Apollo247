@@ -19,7 +19,11 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  setCircleMembershipType,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -115,18 +119,36 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     source == 'Diagnostic' &&
       postWebEngageEvent(WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED, eventAttributes);
     source == undefined &&
-      postWebEngageEvent(WebEngageEventName.HOMEPAGE_BANNER_CLICKED, eventAttributes);
+      postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED, eventAttributes);
   };
 
-  const fireBannerClickedWebengageEvent = (from: string) => {
+  const fireBannerCovidClickedWebengageEvent = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.COVID_BANNER_CLICKED] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
     };
-    if (from == hdfc_values.COVID_RECOVER_CLINIC) {
-      postWebEngageEvent(WebEngageEventName.COVID_BANNER_CLICKED, eventAttributes);
-    } else if (from == hdfc_values.MEMBERSHIP_DETAIL_CIRCLE) {
+    postWebEngageEvent(WebEngageEventName.COVID_BANNER_CLICKED, eventAttributes);
+  };
+
+  const fireBannerClickedWebengageEvent = (from: string, type: string, action: string) => {
+    const circleMembershipType = setCircleMembershipType(
+      circleSubscription?.startDate!,
+      circleSubscription?.endDate!
+    );
+    const eventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Membership Type': circleMembershipType,
+      'Circle Membership Start Date': circleSubscription?.startDate!,
+      'Circle Membership End Date': circleSubscription?.endDate!,
+      type: type,
+      action: action,
+      from: from || 'HomePage',
+    };
+    if (from == hdfc_values.MEMBERSHIP_DETAIL_CIRCLE) {
       postWebEngageEvent(WebEngageEventName.MEMBERSHIP_DETAILS_BANNER_CLICKED, eventAttributes);
     } else {
       postWebEngageEvent(WebEngageEventName.HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED, eventAttributes);
@@ -388,7 +410,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
       } else if (type == hdfc_values.COVID_RECOVER_CLINIC) {
-        fireBannerClickedWebengageEvent(hdfc_values.COVID_RECOVER_CLINIC);
+        fireBannerCovidClickedWebengageEvent();
         props.navigation.navigate('DoctorSearchListing', {
           specialities: hdfc_values.COVID_RECOVER_CLINIC,
         });

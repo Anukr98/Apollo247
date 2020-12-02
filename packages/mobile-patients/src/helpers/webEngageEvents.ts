@@ -337,9 +337,9 @@ export enum WebEngageEventName {
 
   //HOMEPAGE BANNER
   COVID_BANNER_CLICKED = 'Recovery Clinic Banner clicked',
-  HOMEPAGE_BANNER_CLICKED = "HomePage Banner clicked",
-  MEMBERSHIP_DETAILS_BANNER_CLICKED = 'Circle - Membership Details Banner clicked',
-  HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'Circle - Doc on Call Banner Clicked'
+  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = "App non-cirlce -HomePage Banner clicked",
+  MEMBERSHIP_DETAILS_BANNER_CLICKED = 'App - circle - Membership Details Banner clicked',
+  HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'App - circle - Doc on Call Banner Clicked'
 }
 
 export interface PatientInfo {
@@ -623,9 +623,9 @@ export interface WebEngageEvents {
 
   // **** HOMEPAGE BANNER ******
   [WebEngageEventName.COVID_BANNER_CLICKED]: UserInfo;
-  [WebEngageEventName.HOMEPAGE_BANNER_CLICKED]: UserInfo;
-  [WebEngageEventName.MEMBERSHIP_DETAILS_BANNER_CLICKED]: UserInfo;
-  [WebEngageEventName.HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED]: UserInfo;
+  [WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.MEMBERSHIP_DETAILS_BANNER_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED]: CircleUserInfo;
   
   // ********** PharmacyEvents ********** \\
 

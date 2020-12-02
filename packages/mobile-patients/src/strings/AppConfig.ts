@@ -936,7 +936,7 @@ export const NeedHelp = [
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
   {
-    category: 'Membership',
+    category: 'HealthyLife (HDFC)',
     options: [
       'Coupon related',
       'Concierge Services',
