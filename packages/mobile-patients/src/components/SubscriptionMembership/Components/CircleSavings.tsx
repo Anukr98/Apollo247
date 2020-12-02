@@ -38,7 +38,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
   const renderCircleSavings = () => {
     const totalSavingsDone = totalCircleSavings?.totalSavings! + totalCircleSavings?.callsUsed!;
-    return totalSavingsDone ? (
+    return (
       <View
         style={{
           backgroundColor: 'rgba(0, 179, 142, 0.1)',
@@ -55,9 +55,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
         </Text>
         {renderSavingsCard()}
       </View>
-    ) : // next phase
-    // renderSaveFromCircle()
-    null;
+    );
   };
 
   const renderSaveFromCircle = () => {

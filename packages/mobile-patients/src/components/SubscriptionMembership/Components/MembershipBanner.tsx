@@ -6,11 +6,12 @@ import {
   HdfcBannerGold,
   HdfcBannerPlatinum,
   CircleMembershipBanner,
-  CircleLogo,
+  CircleLogoWhite,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface MembershipBannerProps {
   membershipType: string;
@@ -20,6 +21,7 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
   const { membershipType } = props;
   const { SILVER_PLAN, GOLD_PLAN, PLATINUM_PLAN } = Hdfc_values;
   const { totalCircleSavings } = useAppCommonData();
+  const circleStaticMonthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
 
   const renderCircleBanner = () => {
     const circleSavings = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
@@ -29,11 +31,12 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
         {circleSavings == 0 && (
           <View style={styles.circleSaving}>
             <View style={{ flexDirection: 'row' }}>
-              <CircleLogo style={styles.circleLogo} />
-              <Text style={styles.logoText}>members,</Text>
+              <CircleLogoWhite style={styles.circleLogo} />
+              <Text style={styles.logoText}>members</Text>
             </View>
             <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 15, 0.35)}>
-              save upto {string.common.Rs}848 on medicines
+              save upto {string.common.Rs}
+              {circleStaticMonthlySavings} on medicines
             </Text>
           </View>
         )}

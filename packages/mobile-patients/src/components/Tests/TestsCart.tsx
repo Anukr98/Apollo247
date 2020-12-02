@@ -2019,7 +2019,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           marginTop: 12,
         }}
       >
-        {renderLabel('YOU SHOULD ALSO ADD')}
+        {renderLabel('PEOPLE ALSO BOUGHT')}
 
         <FlatList
           contentContainerStyle={{
