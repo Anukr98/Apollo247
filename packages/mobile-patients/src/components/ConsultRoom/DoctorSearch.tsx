@@ -4,11 +4,8 @@ import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   ArrowRight,
-  Mascot,
   DropdownGreen,
-  PrimaryIcon,
   LinkedUhidIcon,
-  SympTrackerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
@@ -89,7 +86,7 @@ import { ProfileList } from '../ui/ProfileList';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import _ from 'lodash';
 import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
-
+import { SymptomTrackerCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/SymptomTrackerCard';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -156,16 +153,6 @@ const styles = StyleSheet.create({
     lineHeight: 12,
     letterSpacing: 0.04,
     textAlign: 'center',
-  },
-  whichSpecialityTxt: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginTop: 12,
-    color: theme.colors.SHERPA_BLUE,
-  },
-  TrackTxt: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    marginTop: 5,
-    color: theme.colors.APP_YELLOW,
   },
   bookConsultTxt: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -968,9 +955,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               bounces={false}
               data={SpecialitiesList}
               onEndReachedThreshold={0.5}
-              renderItem={({ item, index }) =>
-                renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
-              }
+              renderItem={({ item, index }) => {
+                return (
+                  <View>
+                    {index == 2 && renderTrackSymptoms()}
+                    {renderSpecialistRow(
+                      item,
+                      index,
+                      SpecialitiesList.length,
+                      searchText.length > 2
+                    )}
+                  </View>
+                );
+              }}
               keyExtractor={(_, index) => index.toString()}
               numColumns={1}
             />
@@ -978,6 +975,33 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         </View>
       );
     }
+  };
+
+  const renderTrackSymptoms = () => {
+    return (
+      <SymptomTrackerCard
+        onPressTrack={() => {
+          props.navigation.navigate(AppRoutes.SymptomTracker);
+          postSymptomTrackEvent();
+        }}
+      />
+    );
+  };
+
+  const postSymptomTrackEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient ID': g(currentPatient, 'id'),
+      'Patient Name': g(currentPatient, 'firstName'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Date of Birth': g(currentPatient, 'dateOfBirth'),
+      Email: g(currentPatient, 'emailAddress'),
+      Relation: g(currentPatient, 'relation'),
+    };
+    postWebEngageEvent(
+      WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN,
+      eventAttributes
+    );
   };
 
   const postSpecialityEvent = (speciality: string, specialityId: string) => {

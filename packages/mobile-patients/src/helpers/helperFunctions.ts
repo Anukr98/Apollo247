@@ -57,6 +57,7 @@ import {
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
+  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
@@ -88,12 +89,16 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
+import {
+  getPincodeServiceability,
+  getPincodeServiceabilityVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
 const flatten = require('lodash/flatten');
-
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -125,6 +130,21 @@ export interface TestSlotWithArea {
   date: Date;
   slotInfo: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots;
 }
+
+export enum EDIT_DELETE_TYPE {
+  EDIT = 'Edit Details',
+  DELETE = 'Delete Data',
+}
+
+type EditDeleteArray = {
+  key: EDIT_DELETE_TYPE;
+  title: string;
+};
+
+export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
+  { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+  { key: EDIT_DELETE_TYPE.DELETE, title: EDIT_DELETE_TYPE.DELETE },
+];
 
 const isDebugOn = __DEV__;
 
@@ -241,6 +261,156 @@ export const followUpChatDaysCaseSheet = (
   return case_sheet;
 };
 
+const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
+  return finalData?.findIndex((data: { key: string; data: any[] }) => data?.key === key);
+};
+
+const sortByDays = (
+  key: string,
+  finalData: { key: string; data: any[] }[],
+  dataExistsAt: number,
+  dataObject: any[]
+) => {
+  const dataArray = finalData;
+  if (dataArray.length === 0 || dataExistsAt === -1) {
+    dataArray.push({ key, data: [dataObject] });
+  } else {
+    const array = dataArray[dataExistsAt].data;
+    array.push(dataObject);
+    dataArray[dataExistsAt].data = array;
+  }
+  return dataArray;
+};
+
+export const editDeleteData = () => {
+  return ConsultRxEditDeleteArray.map((i) => {
+    return { key: i.key, value: i.title };
+  });
+};
+
+export const getPhrNotificationAllCount = (
+  phrNotificationData: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+) => {
+  return (
+    (phrNotificationData?.Prescription || 0) +
+    (phrNotificationData?.LabTest || 0) +
+    (phrNotificationData?.HealthCheck || 0) +
+    (phrNotificationData?.Hospitalization || 0) +
+    (phrNotificationData?.Allergy || 0) +
+    (phrNotificationData?.MedicalCondition || 0) +
+    (phrNotificationData?.Medication || 0) +
+    (phrNotificationData?.Restriction || 0) +
+    (phrNotificationData?.Bill || 0) +
+    (phrNotificationData?.Insurance || 0)
+  );
+};
+
+export const phrSortByDate = (array: { type: string; data: any }[]) => {
+  return array.sort(({ data: data1 }, { data: data2 }) => {
+    let date1 = new Date(data1.date || data1.bookingDate || data1.quoteDateTime);
+    let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
+    return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
+  });
+};
+
+export const phrSortWithDate = (array: any) => {
+  return array?.sort(
+    (a: any, b: any) =>
+      moment(b.date || b.billDateTime || b.startDateTime)
+        .toDate()
+        .getTime() -
+      moment(a.date || a.billDateTime || a.startDateTime)
+        .toDate()
+        .getTime()
+  );
+};
+
+export const getSourceName = (
+  labTestSource: string,
+  siteDisplayName: string = '',
+  healthCheckSource: string = ''
+) => {
+  if (
+    labTestSource === 'self' ||
+    labTestSource === '247self' ||
+    siteDisplayName === 'self' ||
+    siteDisplayName === '247self' ||
+    healthCheckSource === 'self' ||
+    healthCheckSource === '247self'
+  ) {
+    return string.common.clicnical_document_text;
+  }
+  return labTestSource || siteDisplayName || healthCheckSource;
+};
+
+const getConsiderDate = (type: string, dataObject: any) => {
+  switch (type) {
+    case 'consults':
+      return dataObject?.data?.patientId
+        ? dataObject?.data?.appointmentDateTime
+        : dataObject?.data?.date;
+    case 'lab-results':
+      return dataObject?.data?.date;
+    case 'hospitalizations':
+      return dataObject?.date;
+    case 'insurance':
+      return dataObject?.startDateTime;
+    case 'bills':
+      return dataObject?.billDateTime;
+    case 'health-conditions':
+      return dataObject?.startDateTime;
+  }
+};
+
+const getFinalSortData = (key: string, finalData: any[], dataObject: any) => {
+  const dataExistsAt = foundDataIndex(key, finalData);
+  return sortByDays(key, finalData, dataExistsAt, dataObject);
+};
+
+export const initialSortByDays = (
+  type: string,
+  filteredData: any[],
+  toBeFinalData: { key: string; data: any[] }[]
+) => {
+  let finalData = toBeFinalData;
+  filteredData?.forEach((dataObject: any) => {
+    const startDate = moment().set({
+      hour: 23,
+      minute: 59,
+    });
+    const dateToConsider = getConsiderDate(type, dataObject);
+    const dateDifferenceInDays = moment(startDate).diff(dateToConsider, 'days');
+    const dateDifferenceInMonths = moment(startDate).diff(dateToConsider, 'months');
+    const dateDifferenceInYears = moment(startDate).diff(dateToConsider, 'years');
+    if (dateDifferenceInYears !== 0) {
+      if (dateDifferenceInYears >= 5) {
+        finalData = getFinalSortData('More than 5 years', finalData, dataObject);
+      } else if (dateDifferenceInYears >= 2) {
+        finalData = getFinalSortData('Past 5 years', finalData, dataObject);
+      } else if (dateDifferenceInYears >= 1) {
+        finalData = getFinalSortData('Past 2 years', finalData, dataObject);
+      } else {
+        finalData = getFinalSortData('Past 12 months', finalData, dataObject);
+      }
+    } else if (dateDifferenceInMonths > 1) {
+      if (dateDifferenceInMonths >= 6) {
+        finalData = getFinalSortData('Past 12 months', finalData, dataObject);
+      } else if (dateDifferenceInMonths >= 2) {
+        finalData = getFinalSortData('Past 6 months', finalData, dataObject);
+      } else {
+        finalData = getFinalSortData('Past 2 months', finalData, dataObject);
+      }
+    } else {
+      if (dateDifferenceInDays > 30) {
+        finalData = getFinalSortData('Past 2 months', finalData, dataObject);
+      } else {
+        finalData = getFinalSortData('Past 30 days', finalData, dataObject);
+      }
+    }
+  });
+  return finalData;
+};
+
 export const formatOrderAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
@@ -271,6 +441,18 @@ export const formatSelectedAddress = (
   return formattedAddress;
 };
 
+export const getPrescriptionDate = (date: string) => {
+  let prev_date = new Date();
+  prev_date.setDate(prev_date.getDate() - 1);
+  if (moment(new Date()).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')) {
+    return 'Today';
+  } else if (
+    moment(prev_date).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')
+  ) {
+    return 'Yesterday';
+  }
+  return moment(new Date(date)).format('DD MMM');
+};
 export const formatAddressToLocation = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ): LocationData => ({
@@ -929,55 +1111,83 @@ export const reOrderMedicines = async (
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
-  city: string
+  pincode: string
 ) => {
-  const searchQuery = (name: string, city: string) =>
-    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
-      query: SEARCH_DIAGNOSTICS,
+  const searchQuery = (name: string, cityId: string) =>
+    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        city: city,
-        patientId: '',
+        cityID: parseInt(cityId, 10),
       },
       fetchPolicy: 'no-cache',
     });
   const detailQuery = (itemId: string) => getPackageData(itemId);
+
+  const getPinCodeServiceable = (pincode: string) =>
+    apolloClient.query<getPincodeServiceability, getPincodeServiceabilityVariables>({
+      query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+      variables: {
+        pincode: parseInt(pincode, 10),
+      },
+      fetchPolicy: 'no-cache',
+    });
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
 
     console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
 
-    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
-    const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
-      .filter((item, index) => g(item, 'itemName')! == items[index])
-      .filter((item) => !!item);
-    const detailQueries = Promise.all(
-      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
-    );
-    const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
-    );
+    const checkIsPinCodeServiceable = await getPinCodeServiceable(pincode);
 
-    const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData.length,
-    }).map((_, index) => {
-      const s = searchQueriesData[index];
-      const testIncludedCount = detailQueriesData[index];
-      return {
-        id: `${s.itemId}`,
-        name: s.itemName,
-        price: s.rate,
-        specialPrice: undefined,
-        mou: testIncludedCount,
-        thumbnail: '',
-        collectionMethod: s.collectionType,
-      } as DiagnosticsCartItem;
-    });
+    const serviceableData = g(checkIsPinCodeServiceable, 'data', 'getPincodeServiceability');
+    console.log({ serviceableData });
+    try {
+      if (serviceableData && serviceableData?.cityName != '') {
+        let obj = {
+          cityId: serviceableData.cityID?.toString() || '',
+          stateId: serviceableData.stateID?.toString() || '',
+          state: serviceableData.stateName || '',
+          city: serviceableData.cityName || '',
+        };
 
-    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
-    return finalArray;
+        const searchQueries = Promise.all(items.map((item) => searchQuery(item!, obj.cityId)));
+        const searchQueriesData = (await searchQueries)
+          .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+          // .filter((item, index) => g(item, 'itemName')! == items[index])
+          .filter((item) => !!item);
+        const detailQueries = Promise.all(
+          searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+        );
+        const detailQueriesData = (await detailQueries).map(
+          (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+        );
+
+        const finalArray: DiagnosticsCartItem[] = Array.from({
+          length: searchQueriesData.length,
+        }).map((_, index) => {
+          const s = searchQueriesData[index];
+          const testIncludedCount = detailQueriesData[index];
+          return {
+            id: `${s.itemId}`,
+            name: s.itemName,
+            price: s.rate,
+            specialPrice: undefined,
+            mou: testIncludedCount,
+            thumbnail: '',
+            collectionMethod: s.collectionType,
+          } as DiagnosticsCartItem;
+        });
+
+        console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+        return finalArray;
+      } else {
+        return [];
+      }
+    } catch (error) {
+      CommonBugFender('helperFunctions_pincodeserviceable', error);
+      throw 'error';
+    }
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
     throw 'error';
@@ -2012,7 +2222,7 @@ export const readableParam = (param: string) => {
     .replace(/-+$/, ''); // Trim - from end of text
 };
 
-const replaceString = (str: string, match:any, fn:any) => {
+const replaceString = (str: string, match: any, fn: any) => {
   var curCharStart = 0;
   var curCharLen = 0;
   if (str === '') {
@@ -2033,4 +2243,23 @@ const replaceString = (str: string, match:any, fn:any) => {
     curCharStart += curCharLen;
   }
   return result;
+};
+
+export const monthDiff = (dateFrom: Date, dateTo: Date) => {
+  return (
+    dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
+  );
+};
+
+export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
+  const diffInMonth = monthDiff(new Date(fromDate!), new Date(toDate!));
+  let circleMembershipType;
+  if (diffInMonth < 6) {
+    circleMembershipType = 'Monthly';
+  } else if (diffInMonth == 6) {
+    circleMembershipType = 'Half Yearly';
+  } else {
+    circleMembershipType = 'Annual';
+  }
+  return circleMembershipType;
 };

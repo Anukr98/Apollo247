@@ -17,6 +17,13 @@ import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { FilterHealthRecordScene } from '@aph/mobile-patients/src/components/FilterHealthRecordScene';
 import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
 import { AddRecord } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
+import { ConsultRxScreen } from '@aph/mobile-patients/src/components/HealthRecords/ConsultRxScreen';
+import { ClinicalDocumentScreen } from '@aph/mobile-patients/src/components/HealthRecords/ClinicalDocumentScreen';
+import { HealthConditionScreen } from '@aph/mobile-patients/src/components/HealthRecords/HealthConditionScreen';
+import { BillScreen } from '@aph/mobile-patients/src/components/HealthRecords/BillScreen';
+import { TestReportScreen } from '@aph/mobile-patients/src/components/HealthRecords/TestReportScreen';
+import { HospitalizationScreen } from '@aph/mobile-patients/src/components/HealthRecords/HospitalizationScreen';
+import { InsuranceScreen } from '@aph/mobile-patients/src/components/HealthRecords/InsuranceScreen';
 import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
@@ -161,6 +168,13 @@ export enum AppRoutes {
   AddressBook = 'AddressBook',
   NotificationSettings = 'NotificationSettings',
   AddRecord = 'AddRecord',
+  ClinicalDocumentScreen = 'ClinicalDocumentScreen',
+  HealthConditionScreen = 'HealthConditionScreen',
+  ConsultRxScreen = 'ConsultRxScreen',
+  BillScreen = 'BillScreen',
+  TestReportScreen = 'TestReportScreen',
+  HospitalizationScreen = 'HospitalizationScreen',
+  InsuranceScreen = 'InsuranceScreen',
   AzureUpload = 'AzureUpload',
   AppointmentOnlineDetails = 'AppointmentOnlineDetails',
   ChooseDoctor = 'ChooseDoctor',
@@ -389,6 +403,27 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AddRecord]: {
     screen: AddRecord,
+  },
+  [AppRoutes.ConsultRxScreen]: {
+    screen: ConsultRxScreen,
+  },
+  [AppRoutes.HealthConditionScreen]: {
+    screen: HealthConditionScreen,
+  },
+  [AppRoutes.ClinicalDocumentScreen]: {
+    screen: ClinicalDocumentScreen,
+  },
+  [AppRoutes.TestReportScreen]: {
+    screen: TestReportScreen,
+  },
+  [AppRoutes.HospitalizationScreen]: {
+    screen: HospitalizationScreen,
+  },
+  [AppRoutes.BillScreen]: {
+    screen: BillScreen,
+  },
+  [AppRoutes.InsuranceScreen]: {
+    screen: InsuranceScreen,
   },
   [AppRoutes.AzureUpload]: {
     screen: AzureUpload,

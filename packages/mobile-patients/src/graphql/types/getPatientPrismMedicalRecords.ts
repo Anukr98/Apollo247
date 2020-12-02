@@ -3,6 +3,8 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { MedicalConditionIllnessTypes, HealthRestrictionNature, AllergySeverity } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getPatientPrismMedicalRecords
 // ====================================================
@@ -73,6 +75,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response {
@@ -107,6 +110,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_pre
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response {
@@ -138,8 +142,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response {
@@ -172,8 +174,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response {
@@ -205,6 +205,179 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
   response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response | null)[] | null;
 }
 
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response_billFiles {
+  __typename: "MedicalBillFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response {
+  __typename: "MedicalBillsBaseResult";
+  id: string | null;
+  bill_no: string | null;
+  hospitalName: string | null;
+  billDate: number | null;
+  source: string | null;
+  notes: string | null;
+  fileUrl: string | null;
+  billDateTime: any | null;
+  billFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response_billFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills {
+  __typename: "MedicalBillsResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response_insuranceFiles {
+  __typename: "MedicalInsuranceFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response {
+  __typename: "MedicalInsurancesBaseResult";
+  id: string | null;
+  insuranceCompany: string | null;
+  policyNumber: string | null;
+  startDate: number | null;
+  endDate: number | null;
+  startDateTime: any | null;
+  endDateTime: any | null;
+  source: string | null;
+  fileUrl: string | null;
+  notes: string | null;
+  sumInsured: string | null;
+  insuranceFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response_insuranceFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances {
+  __typename: "MedicalInsurancesResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response_medicationFiles {
+  __typename: "MedicationFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response {
+  __typename: "MedicalConditionBaseResponse";
+  id: string | null;
+  medicalConditionName: string | null;
+  doctorTreated: string | null;
+  startDate: number | null;
+  source: string | null;
+  endDate: number | null;
+  notes: string | null;
+  illnessType: MedicalConditionIllnessTypes | null;
+  fileUrl: string | null;
+  startDateTime: any | null;
+  endDateTime: any | null;
+  medicationFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response_medicationFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions {
+  __typename: "MedicalConditionDownloadResponse";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response {
+  __typename: "MedicationsBaseResult";
+  id: string | null;
+  medicineName: string | null;
+  medicalCondition: string | null;
+  doctorName: string | null;
+  startDate: number | null;
+  endDate: number | null;
+  startDateTime: any | null;
+  endDateTime: any | null;
+  morning: boolean | null;
+  noon: boolean | null;
+  evening: boolean | null;
+  notes: string | null;
+  source: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications {
+  __typename: "MedicationsResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response {
+  __typename: "HealthRestrictionsBaseResult";
+  id: string | null;
+  startDate: number | null;
+  endDate: number | null;
+  startDateTime: any | null;
+  endDateTime: any | null;
+  restrictionName: string | null;
+  suggestedByDoctor: string | null;
+  nature: HealthRestrictionNature | null;
+  source: string | null;
+  notes: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions {
+  __typename: "HealthRestrictionsResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response_attachmentList {
+  __typename: "AllergyFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response {
+  __typename: "AllergiesBaseResult";
+  id: string | null;
+  startDate: number | null;
+  endDate: number | null;
+  fileUrl: string | null;
+  startDateTime: any | null;
+  endDateTime: any | null;
+  allergyName: string | null;
+  severity: AllergySeverity | null;
+  reactionToAllergy: string | null;
+  doctorTreated: string | null;
+  notes: string | null;
+  source: string | null;
+  attachmentList: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response_attachmentList | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies {
+  __typename: "AllergiesResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response | null)[] | null;
+}
+
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords {
   __typename: "PrismMedicalRecordsResult";
   labTests: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[] | null;
@@ -214,6 +387,12 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords {
   prescriptions: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions | null;
   healthChecksNew: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew | null;
   hospitalizationsNew: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew | null;
+  medicalBills: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills | null;
+  medicalInsurances: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances | null;
+  medicalConditions: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions | null;
+  medications: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications | null;
+  healthRestrictions: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions | null;
+  allergies: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies | null;
 }
 
 export interface getPatientPrismMedicalRecords {

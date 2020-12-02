@@ -86,6 +86,7 @@ import {
   setWebEngageScreenNames,
   overlyCallPermissions,
   checkPermissions,
+  getPhrNotificationAllCount,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -274,6 +275,44 @@ const styles = StyleSheet.create({
     height: 1,
     marginVertical: 16,
   },
+  badgelabelView: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    backgroundColor: '#E50000',
+    height: 15,
+    width: 15,
+    borderRadius: 7.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgelabelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
+  tabBarMainViewStyle: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    width: width,
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  tabBarViewStyle: {
+    width: width / 5,
+    height: 57,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBarTitleStyle: {
+    ...theme.fonts.IBMPlexSansSemiBold(7),
+    letterSpacing: 0.5,
+    textAlign: 'center',
+    marginTop: 8,
+    color: '#02475b',
+  },
   profileIcon: {
     width: 38,
     height: 38,
@@ -340,6 +379,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcUserSubscriptions,
     bannerData,
     setBannerData,
+    phrNotificationData,
     setCircleSubscription,
     hdfcUpgradeUserSubscriptions,
     setHdfcUpgradeUserSubscriptions,
@@ -395,15 +435,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
-
-  useEffect(() => {
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      setBannerData && setBannerData([]);
-    });
-    return () => {
-      _willBlur && _willBlur.remove();
-    };
-  });
+  const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   useEffect(() => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
@@ -674,6 +706,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const renderBadgeView = () => {
+    return phrNotificationCount ? (
+      <View style={[styles.badgelabelView]}>
+        <Text style={styles.badgelabelText}>{phrNotificationCount}</Text>
+      </View>
+    ) : null;
+  };
+
   const listValues: menuOptions[] = [
     {
       id: 1,
@@ -743,7 +783,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     {
       id: 6,
       title: 'View Health Records',
-      image: <PrescriptionMenu style={styles.menuOptionIconStyle} />,
+      image: (
+        <View>
+          <PrescriptionMenu style={styles.menuOptionIconStyle} />
+          {renderBadgeView()}
+        </View>
+      ),
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
@@ -978,6 +1023,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       groupDetails: groupDetailsData,
       benefits: circleBenefits,
       endDate: plan?.subscriptionEndDate,
+      startDate: plan?.start_date,
     };
 
     return circleSubscptionData;
@@ -1450,19 +1496,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderBottomTabBar = () => {
     return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          flexDirection: 'row',
-          width: width,
-          height: showPopUp ? 0 : isIphoneX() ? 87 : 57,
-          shadowColor: 'black',
-          shadowOffset: { width: 0, height: -10 },
-          shadowOpacity: 0.2,
-          shadowRadius: 10,
-          elevation: 10,
-        }}
-      >
+      <View style={[styles.tabBarMainViewStyle, { height: showPopUp ? 0 : isIphoneX() ? 87 : 57 }]}>
         {tabBarOptions.map((tabBarOptions, i) => (
           <View key={i}>
             <TouchableOpacity
@@ -1501,28 +1535,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }
               }}
             >
-              <View
-                style={{
-                  width: width / 5,
-                  height: 57,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                key={i}
-              >
-                {tabBarOptions.image}
-                <Text
-                  style={{
-                    fontFamily: 'IBMPlexSans-SemiBold',
-                    fontSize: 7,
-                    letterSpacing: 0.5,
-                    textAlign: 'center',
-                    marginTop: 8,
-                    color: '#02475b',
-                  }}
-                >
-                  {tabBarOptions.title}
-                </Text>
+              <View style={styles.tabBarViewStyle} key={i}>
+                <View>
+                  {tabBarOptions.image}
+                  {i === 1 && renderBadgeView()}
+                </View>
+                <Text style={styles.tabBarTitleStyle}>{tabBarOptions.title}</Text>
               </View>
             </TouchableOpacity>
           </View>

@@ -11,6 +11,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -70,6 +71,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const circleStaticMonthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
+  const { circleSubscription } = useAppCommonData();
   const {
     circlePlanSelected,
     setCirclePlanSelected,
@@ -96,6 +98,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     'Patient UHID': currentPatient?.uhid,
     'Mobile Number': currentPatient?.mobileNumber,
     'Customer ID': currentPatient?.id,
+    'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
   };
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
@@ -220,7 +223,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     const iconDimension = isPlanActive ? defaultPlanDimension : planDimension;
     return (
       <View>
-        <View style={{ paddingBottom: 30 }}>
+        <View style={{ paddingBottom: 20 }}>
           <TouchableOpacity
             key={index}
             activeOpacity={1}
@@ -284,7 +287,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               </Text>
             </ImageBackground>
           </TouchableOpacity>
-          {value?.saved_extra_on_lower_plan && (
+          {/* {value?.saved_extra_on_lower_plan && (
             <Text
               style={[
                 styles.savingsText,
@@ -295,7 +298,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             >
               Save {value?.saved_extra_on_lower_plan} extra
             </Text>
-          )}
+          )} */}
         </View>
         <TouchableOpacity onPress={() => onPressMembershipPlans(index)} style={styles.radioBtn}>
           <View
@@ -531,7 +534,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const renderAddToCart = () => {
     return (
       <Button
-        title={buyNow ? string.circleDoctors.buyNow : string.circleDoctors.addToCart}
+        title={buyNow ? string.circleDoctors.upgrade : string.circleDoctors.addToCart}
         style={styles.buyNowBtn}
         onPress={() => {
           fireCircleBuyNowEvent();

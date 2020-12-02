@@ -52,7 +52,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { bannerData, hdfcUserSubscriptions } = useAppCommonData();
+  const { bannerData, hdfcUserSubscriptions, circleSubscription } = useAppCommonData();
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(
     circleActivated || false
   );
@@ -103,11 +103,14 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
     };
     source == 'Pharma' &&
       postWebEngageEvent(WebEngageEventName.PHARMA_CIRCLE_BANNER_CLICKED, eventAttributes);
     source == 'Product Detail' &&
       postWebEngageEvent(WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE, eventAttributes);
+    source == 'Diagnostic' &&
+      postWebEngageEvent(WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED, eventAttributes);
   };
 
   const renderHdfcSliderItem = ({ item }) => {
@@ -262,7 +265,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
                   : theme.viewStyles.text('SB', containsSubText ? 8 : 9, textColor)
               }
             >
-              {str}
+              {str}{' '}
             </Text>
           );
         }
@@ -278,7 +281,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             : theme.viewStyles.text('SB', containsSubText ? 8 : 9, textColor)
         }
       >
-        {str}
+        {str}{' '}
       </Text>
     );
   };
@@ -355,6 +358,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         }
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
+      } else if (type == hdfc_values.COVID_RECOVER_CLINIC) {
+        props.navigation.navigate('DoctorSearchListing', {
+          specialities: hdfc_values.COVID_RECOVER_CLINIC,
+        });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }

@@ -2073,6 +2073,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       upgradeTo: {
         flexDirection: 'row',
         justifyContent: 'center',
+        alignItems: 'center',
       },
       circleLogo: {
         resizeMode: 'contain',
@@ -2147,7 +2148,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                       Effective price for you{' '}
                     </Text>
                     <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
-                      {string.common.Rs}{effectivePrice}
+                      {string.common.Rs}
+                      {effectivePrice}
                     </Text>
                   </View>
                 </View>
@@ -2161,14 +2163,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                       'Mobile Number': currentPatient?.mobileNumber,
                       'Customer ID': currentPatient?.id,
                     };
-                    postWebEngageEvent(WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE, eventAttributes);
+                    postWebEngageEvent(
+                      WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE,
+                      eventAttributes
+                    );
                   }}
                   style={circleStyles.upgrade}
                 >
                   <View style={circleStyles.upgradeTo}>
-                    <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>
-                      UPGRADE TO
-                    </Text>
+                    <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
                     <CircleLogo style={circleStyles.circleLogo} />
                   </View>
                   <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
