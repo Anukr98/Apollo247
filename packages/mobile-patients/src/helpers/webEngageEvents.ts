@@ -352,8 +352,8 @@ export interface UserInfo {
   'Customer ID': string;
 }
 
-export interface CircleUserInfo extends UserInfo {
-  'Circle Member': 'Yes' | 'No';
+export interface CircleUserInfo extends UserInfo{
+  'Circle Member'?: 'Yes' | 'No';
   'Membership Type'?: string;
   'Circle Membership Start Date'?: Date;
   'Circle Membership End Date'?: Date;
@@ -576,10 +576,10 @@ export interface WebEngageEvents {
   };
 
   // ********** PharmaCircleEvents ********** \\
-  [WebEngageEventName.PHARMA_CIRCLE_BANNER_CLICKED]: UserInfo;
+  [WebEngageEventName.PHARMA_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
   [WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE]: UserInfo;
-  [WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
-  [WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE]: UserInfo;
+  [WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
+  [WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE]: CircleUserInfo;
   [WebEngageEventName.PHARMA_PRODUCT_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
   [WebEngageEventName.PHARMA_PRODUCT_ADD_TO_CART_CLICKED_CIRCLE_POPUP]: UserInfo;
   [WebEngageEventName.PHARMA_CART_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
@@ -592,12 +592,12 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
-  [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: UserInfo;
-  [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: UserInfo;
-  [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
-  [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: UserInfo;
-  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: UserInfo;
-  [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: UserInfo;
+  [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
+  [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
+  [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: CircleUserInfo;
+  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: CircleUserInfo;
+  [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: CircleUserInfo;
 
   // ********** MY Membership circle events ********
   [WebEngageEventName.MY_MEMBERSHIP_VIEW_DETAILS_CLICKED]: CircleUserInfo;

@@ -57,6 +57,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
+      'Circle Member': 'Yes', //will always be true
     };
     from == string.banner_context.DIAGNOSTIC_HOME &&
       postWebEngageEvent(
