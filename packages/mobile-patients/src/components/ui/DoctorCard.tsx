@@ -390,7 +390,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             source={{
               uri: rowData.thumbnailUrl!,
             }}
-            resizeMode={'contain'}
+            resizeMode={'cover'}
           />
         ) : (
           <DoctorPlaceholderImage />
@@ -528,7 +528,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     styles.drImageMargins,
                     { marginBottom: isCircleDoctor ? 0 : 22 },
                   ]}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 >
                   {renderDoctorProfile()}
                 </ImageBackground>
