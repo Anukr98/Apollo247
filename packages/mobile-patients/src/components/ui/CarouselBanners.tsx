@@ -99,13 +99,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const fireCircleEvent = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
     };
     source == 'Pharma' &&
-      postWebEngageEvent(WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE, eventAttributes);
+      postWebEngageEvent(WebEngageEventName.PHARMA_CIRCLE_BANNER_CLICKED, eventAttributes);
     source == 'Product Detail' &&
       postWebEngageEvent(WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE, eventAttributes);
   };
@@ -284,20 +284,23 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const handleOnBannerClick = (type: any, action: any, message: any) => {
-    const subscription_name = hdfcUserSubscriptions?.name;
-    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Customer ID': g(currentPatient, 'id'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Date of Birth': g(currentPatient, 'dateOfBirth'),
-      Email: g(currentPatient, 'emailAddress'),
-      HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
-      'Partner ID': g(currentPatient, 'partnerId'),
-      HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
-    };
-    postWebEngageEvent(WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED, eventAttributes);
+    if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
+      const subscription_name = hdfcUserSubscriptions?.name;
+      const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED] = {
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Customer ID': g(currentPatient, 'id'),
+        'Patient Name': g(currentPatient, 'firstName'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Date of Birth': g(currentPatient, 'dateOfBirth'),
+        Email: g(currentPatient, 'emailAddress'),
+        HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
+        'Partner ID': g(currentPatient, 'partnerId'),
+        HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+      };
+      postWebEngageEvent(WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED, eventAttributes);
+    }
     if (action == hdfc_values.UPGRADE_CIRCLE) {
+      fireCircleEvent();
       planPurchased.current = false;
       setCirclePlanSelected && setCirclePlanSelected(null);
       if (type == hdfc_values.ONE_TOUCH) {
