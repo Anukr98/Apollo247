@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionChatPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionChatPopup';
@@ -49,6 +50,7 @@ import {
   UPLOAD_MEDIA_DOCUMENT_PRISM,
   SEND_PATIENT_WAIT_NOTIFICATION,
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
+  GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -62,7 +64,11 @@ import {
   updateHealthRecordNudgeStatus,
   updateHealthRecordNudgeStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
-import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+  getAppointmentData_getAppointmentData_appointmentsHistory,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   APPOINTMENT_STATE,
@@ -1013,13 +1019,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     joinCallHandler();
   };
 
+  const navigateToAnotherAppointment = async (appointmentId: string, callType: string) => {
+    try {
+      setLoading!(true);
+      const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId },
+        fetchPolicy: 'no-cache',
+      });
+      const appointmentData = response.data?.getAppointmentData?.appointmentsHistory?.[0];
+      if (appointmentData?.doctorInfo) {
+        setLoading!(false);
+        props.navigation.goBack();
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: appointmentData,
+          isCall: true,
+          callType,
+          prescription: '',
+        });
+      } else {
+        throw new Error('Doctor info is required to process the request.');
+      }
+    } catch (error) {
+      setLoading!(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: string.appointmentDataError,
+        CTAs: [
+          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'RETRY',
+            onPress: () => {
+              hideAphAlert!();
+              navigateToAnotherAppointment(appointmentId, callType);
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+      CommonBugFender(`${AppRoutes.ChatRoom}_Navigate_To_Another_Appointment`, error);
+    }
+  };
+
   const handleAndroidCallAcceptListeners = () => {
     Linking.addEventListener('url', (event) => {
       try {
-        const index = event.url.indexOf('apollopatients://DoctorCall?');
+        const deeplinkBaseUrl = 'apollopatients://DoctorCall?';
+        const index = event.url.indexOf(deeplinkBaseUrl);
         const isDoctorCall = index > -1;
+        const params = event.url?.substring(index + deeplinkBaseUrl.length)?.split('+');
+        const appointmentId = params[0];
+        const callType = params[1];
+        console.log('>>>params--', params);
+        console.log('>>>appointmentId--', appointmentId);
         if (isDoctorCall) {
-          joinCallHandler();
+          if (appointmentId === channel) {
+            joinCallHandler();
+          } else {
+            navigateToAnotherAppointment(appointmentId, callType);
+          }
         }
       } catch (e) {}
     });

@@ -672,7 +672,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setLoading!(false);
       showAphAlert!({
         title: string.common.uhOh,
-        description: 'An error occurred while processing the request, do you want to try again?',
+        description: string.appointmentDataError,
         CTAs: [
           { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
           {
