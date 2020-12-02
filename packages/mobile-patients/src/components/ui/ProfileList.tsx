@@ -71,6 +71,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const shopCart = useShoppingCart();
   const diagCart = useDiagnosticsCart();
+  const { setDoctorJoinedChat } = useAppCommonData();
   const {
     allCurrentPatients,
     setCurrentPatientId,
@@ -190,6 +191,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     diagCart.setDeliveryAddressId!('');
     shopCart.setAddresses!([]);
     diagCart.setAddresses!([]);
+    setDoctorJoinedChat!(false);
   };
 
   const isNewEntry = (
