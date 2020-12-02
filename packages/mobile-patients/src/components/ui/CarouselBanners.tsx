@@ -115,19 +115,21 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     source == 'Diagnostic' &&
       postWebEngageEvent(WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED, eventAttributes);
     source == undefined &&
-      postWebEngageEvent(WebEngageEventName.LANDING_PAGE_BANNER_CLICKED, eventAttributes);
+      postWebEngageEvent(WebEngageEventName.HOMEPAGE_BANNER_CLICKED, eventAttributes);
   };
 
-  const fireCovidClickedWebengageEvent = (from: string) => {
+  const fireBannerClickedWebengageEvent = (from: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.COVID_BANNER_CLICKED] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
     };
-    if (from == 'covid_banner') {
+    if (from == hdfc_values.COVID_RECOVER_CLINIC) {
       postWebEngageEvent(WebEngageEventName.COVID_BANNER_CLICKED, eventAttributes);
-    } else {
+    } else if (from == hdfc_values.MEMBERSHIP_DETAIL_CIRCLE) {
       postWebEngageEvent(WebEngageEventName.MEMBERSHIP_DETAILS_BANNER_CLICKED, eventAttributes);
+    } else {
+      postWebEngageEvent(WebEngageEventName.HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED, eventAttributes);
     }
   };
 
@@ -306,7 +308,12 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
 
   const handleOnBannerClick = (type: any, action: any, message: any) => {
     //if any only hdfc
-    if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
+    // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
+    if (
+      from === string.banner_context.HOME &&
+      type == hdfc_values.REDIRECT &&
+      action == hdfc_values.MEMBERSHIP_DETAIL
+    ) {
       const subscription_name = hdfcUserSubscriptions?.name;
       const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED] = {
         'Patient UHID': g(currentPatient, 'uhid'),
@@ -353,7 +360,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
           });
         } else if (action == hdfc_values.MEMBERSHIP_DETAIL_CIRCLE) {
-          fireCovidClickedWebengageEvent('membership_detail');
+          fireBannerClickedWebengageEvent(hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: Circle.planName,
           });
@@ -362,6 +369,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         }
       } else if (type == hdfc_values.CALL_API) {
         if (action == hdfc_values.CALL_EXOTEL_API) {
+          fireBannerClickedWebengageEvent(hdfc_values.CALL_EXOTEL_API);
           const benefits = g(hdfcUserSubscriptions, 'benefits');
           const currentBenefit = benefits?.filter((value) => {
             return g(value, 'benefitCtaAction', 'type') === type;
@@ -380,7 +388,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
       } else if (type == hdfc_values.COVID_RECOVER_CLINIC) {
-        fireCovidClickedWebengageEvent('covid_banner');
+        fireBannerClickedWebengageEvent(hdfc_values.COVID_RECOVER_CLINIC);
         props.navigation.navigate('DoctorSearchListing', {
           specialities: hdfc_values.COVID_RECOVER_CLINIC,
         });
