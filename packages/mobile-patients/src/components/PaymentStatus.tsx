@@ -77,8 +77,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
-  const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
-  const email = props.navigation.getParam('email');
   const orderInfo = props.navigation.getParam('orderInfo');
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
@@ -204,9 +202,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
-        // Values for chennai COD order
-        email: isChennaiOrder && email ? email.trim() : null,
-        CODCity: isChennaiOrder ? CODCity.CHENNAI : null,
       },
     };
     try {

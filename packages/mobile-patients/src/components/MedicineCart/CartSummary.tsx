@@ -343,13 +343,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }
 
   function onPressProceedtoPay() {
-    const zipcode = selectedAddress?.zipcode;
-    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
-      (addr) => addr == Number(zipcode)
-    );
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
-      isChennaiOrder: isChennaiAddress ? true : false,
       storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,

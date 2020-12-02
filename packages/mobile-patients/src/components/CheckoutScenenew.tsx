@@ -89,21 +89,13 @@ const windowHeight = Dimensions.get('window').height;
 
 export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
-  const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
   const tatType = props.navigation.getParam('tatType');
   const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
-  const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);
-  const [chennaiOrderFormInfo, setChennaiOrderFormInfo] = useState(['', '']); // storing paymentMode, bankCode for Chennai Order
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState<string>(g(currentPatient, 'emailAddress') || '');
-  const [emailIdCheckbox, setEmailIdCheckbox] = useState<boolean>(
-    !g(currentPatient, 'emailAddress')
-  );
-  const [agreementCheckbox, setAgreementCheckbox] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [showAmountCard, setShowAmountCard] = useState<boolean>(false);
   const {
@@ -154,17 +146,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const client = useApolloClient();
 
-  useEffect(() => {
-    if (email) {
-      setEmailIdCheckbox(false);
-    } else {
-      setEmailIdCheckbox(true);
-    }
-  }, [emailIdCheckbox, email]);
-
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
-
-  const handleBackPressFromChennaiOrderForm = () => setShowChennaiOrderForm(false);
 
   const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
     client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
@@ -353,9 +335,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
-        // Values for chennai COD order
-        email: isChennaiOrder && email ? email.trim() : null,
-        CODCity: isChennaiOrder ? CODCity.CHENNAI : null,
       },
     };
     if (orderType == 'HCorder') {
@@ -445,8 +424,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
-      isChennaiOrder: isChennaiOrder,
-      email: email,
       orderInfo: orderInfo,
     });
   };
@@ -457,11 +434,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     isCOD: boolean,
     hcOrder: boolean
   ) => {
-    if (isChennaiOrder && !showChennaiOrderForm) {
-      setChennaiOrderFormInfo([paymentMode, bankCode]);
-      setShowChennaiOrderForm(true);
-      return;
-    }
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
@@ -665,107 +637,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         title={'PAYMENT'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.CheckoutSceneNew, 'Go back clicked');
-          if (showChennaiOrderForm) {
-            handleBackPressFromChennaiOrderForm();
-          } else {
-            props.navigation.goBack();
-          }
+          props.navigation.goBack();
         }}
       />
-    );
-  };
-
-  const isSatisfyingEmailRegex = (value: string) =>
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-      value
-    );
-
-  const onPressChennaiOrderPayButton = () => {
-    if (!(email === '' || (email && isSatisfyingEmailRegex(email.trim())))) {
-      showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
-    } else {
-      try {
-        CommonLogEvent(AppRoutes.CheckoutSceneNew, `SUBMIT TO CONFIRM ORDER`);
-      } catch (error) {
-        CommonBugFender('CheckoutScene_renderPayButton_try', error);
-      }
-      initiateOrder(chennaiOrderFormInfo[0], chennaiOrderFormInfo[1], isCashOnDelivery, HCorder);
-    }
-  };
-
-  const renderChennaiOrderPayButton = () => {
-    const isPayDisabled = !agreementCheckbox;
-    return (
-      <StickyBottomComponent
-        style={[styles.stickyBottomComponentStyle, { paddingHorizontal: 0, paddingTop: 25 }]}
-      >
-        <Button
-          style={{ width: '100%' }}
-          title={`SUBMIT TO CONFIRM ORDER`}
-          onPress={onPressChennaiOrderPayButton}
-          disabled={isPayDisabled}
-        />
-      </StickyBottomComponent>
-    );
-  };
-
-  const renderChennaiOrderFormAndPayButton = () => {
-    const keyboardVerticalOffset =
-      Platform.OS === 'android' ? { keyboardVerticalOffset: 110 } : { keyboardVerticalOffset: 30 };
-
-    return (
-      <View style={{ ...theme.viewStyles.card(16, 20, 10, '#fff'), flex: 1 }}>
-        {/* <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'} {...keyboardVerticalOffset}> */}
-        <ScrollView contentContainerStyle={{ flex: 1 }} bounces={false}>
-          {renderChennaiOrderForm()}
-          {renderChennaiOrderPayButton()}
-        </ScrollView>
-        {/* </KeyboardAvoidingView> */}
-      </View>
-    );
-  };
-
-  const renderChennaiOrderForm = () => {
-    return (
-      <>
-        <Text style={styles.textStyle1}>
-          {`Dear ${g(currentPatient, 'firstName') ||
-            ''},\n\nSUPERB!\n\nYour order request is in process\n`}
-        </Text>
-        <Text style={styles.textStyle2}>
-          {'Just one more step. New Regulation in your region requires your email id.\n'}
-        </Text>
-        <Text style={styles.textStyle3}>{'Your email id please'}</Text>
-        <TextInputComponent
-          value={`${email}`}
-          onChangeText={(email) => setEmail(email)}
-          placeholder={'name@email.com'}
-          inputStyle={styles.inputStyle}
-        />
-        <TouchableOpacity
-          onPress={() => setEmailIdCheckbox(!emailIdCheckbox)}
-          activeOpacity={1}
-          style={styles.checkboxViewStyle}
-        >
-          {emailIdCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
-          <Text style={styles.checkboxTextStyle}>
-            {
-              'Check this box if you don’t have an Email Id & want us to share your order details over SMS.'
-            }
-          </Text>
-        </TouchableOpacity>
-        <Spearator style={styles.separatorStyle} />
-        <TouchableOpacity
-          onPress={() => setAgreementCheckbox(!agreementCheckbox)}
-          activeOpacity={1}
-          style={[styles.checkboxViewStyle, { marginTop: 0 }]}
-        >
-          {agreementCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
-          <Text style={styles.checkboxTextStyle}>
-            {'I agree to share my medicine requirements with Apollo Pharmacy for home delivery.'}
-          </Text>
-        </TouchableOpacity>
-      </>
     );
   };
 
@@ -1160,14 +1034,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {/* {renderOneApolloAndHealthCreditsCard()} */}
-        {showChennaiOrderForm ? (
-          !loading ? (
-            renderChennaiOrderFormAndPayButton()
-          ) : (
-            <Spinner />
-          )
-        ) : !loading ? (
+        {!loading ? (
           <ScrollView
             style={{ flex: 0.9 }}
             ref={(ref) => (ScrollViewRef = ref)}
