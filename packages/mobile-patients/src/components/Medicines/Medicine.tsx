@@ -274,6 +274,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setHdfcSubscriptionId,
     setHdfcPlanName,
     setIsFreeDelivery,
+    circleSubscriptionId,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -2126,13 +2127,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
-              {circleSubscription?._id || isCircleSubscription ? 'Items' : 'Total items'}
+              {circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
             </Text>
             <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
               {cartItems.length}
             </Text>
           </View>
-          {circleSubscription?._id || isCircleSubscription ? (
+          {circleSubscriptionId || isCircleSubscription ? (
             <View
               style={{
                 borderLeftWidth: 2,
@@ -2144,7 +2145,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ) : null}
           {cartTotalCashback > 1 ? (
             <>
-              {circleSubscription?._id || isCircleSubscription ? (
+              {circleSubscriptionId || isCircleSubscription ? (
                 <View style={{ width: '60%' }}>
                   <View style={{ flexDirection: 'row' }}>
                     <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
@@ -2216,7 +2217,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {!circleSubscription?._id && !isCircleSubscription && cartTotalCashback > 1 && (
+            {!circleSubscriptionId && !isCircleSubscription && cartTotalCashback > 1 && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
                 {`Buy for ${string.common.Rs}${cartDiscountTotal}`}
               </Text>

@@ -132,6 +132,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     circleMembershipCharges,
     circleSubPlanId,
     cartTotalCashback,
+    circleSubscriptionId,
   } = useShoppingCart();
   const { circleSubscription } = useAppCommonData();
 
@@ -373,7 +374,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paymentInfo.medicinePaymentMqInput['healthCreditsSub'] = circleMembershipCharges;
       }
     }
-    if (!circleSubscription?._id && !!circleMembershipCharges) {
+    if (!circleSubscriptionId && !!circleMembershipCharges) {
       paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
       paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
       paymentInfo.medicinePaymentMqInput['storeCode'] =
@@ -550,8 +551,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         bookingSource: BOOKINGSOURCE.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
-        subscriptionDetails: circleSubscription?._id
-          ? { userSubscriptionId: circleSubscription?._id }
+        subscriptionDetails: circleSubscriptionId
+          ? { userSubscriptionId: circleSubscriptionId }
           : null,
         planPurchaseDetails: circleSubPlanId
         ? {
@@ -561,7 +562,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             subPlanId: circleSubPlanId || '',
           }
         : null,
-        totalCashBack: (cartTotalCashback || circleSubscription?._id)
+        totalCashBack: (cartTotalCashback || circleSubscriptionId)
           ? Number(cartTotalCashback) || 0
           : 0,
       },

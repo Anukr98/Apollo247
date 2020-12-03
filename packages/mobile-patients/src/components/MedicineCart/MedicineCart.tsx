@@ -132,6 +132,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setIsFreeDelivery,
     setCirclePlanSelected,
     setDefaultCirclePlan,
+    circleSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -170,7 +171,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
     setCircleMembershipCharges && setCircleMembershipCharges(0);
-    if (!circleSubscription?._id && cartTotal > 400) {
+    if (!circleSubscriptionId && cartTotal > 400) {
       setShowCareSelectPlans(true);
     }
   }, []);
@@ -205,7 +206,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       availabilityTat(false);
     }
     // remove circle subscription applied(for non member) if cart items are empty
-    if (cartItems.length < 1 && !circleSubscription?._id) {
+    if (cartItems.length < 1 && !circleSubscriptionId) {
       setIsCircleSubscription && setIsCircleSubscription(false);
     }
   }, [cartItems]);
@@ -220,7 +221,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!!coupon) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     } else {
-      if (!circleSubscription?._id) {
+      if (!circleSubscriptionId) {
         setCircleMembershipCharges &&
           setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
       } else {
@@ -412,7 +413,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     error: any
   ) {
     // remove applied circle subscription if tat api returns error
-    if (!circleSubscription?._id) {
+    if (!circleSubscriptionId) {
       setIsCircleSubscription && setIsCircleSubscription(false);
     }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
@@ -880,7 +881,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {(coupon || isCircleSubscription || circleSubscription?._id) && renderApplyCircleBenefits()}
+        {(coupon || isCircleSubscription || circleSubscriptionId) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
@@ -894,7 +895,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         style={styles.applyBenefits}
         onPress={() => {
           if (!coupon && isCircleSubscription) {
-            if (!circleSubscription?._id || cartTotalCashback) {
+            if (!circleSubscriptionId || cartTotalCashback) {
               setIsCircleSubscription && setIsCircleSubscription(false);
               setCirclePlanSelected && setCirclePlanSelected(null);
               setDefaultCirclePlan && setDefaultCirclePlan(null);
@@ -1088,7 +1089,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderCartItems()}
           {(!isCircleSubscription || showCareSelectPlans) &&
             !coupon &&
-            !circleSubscription?._id &&
+            !circleSubscriptionId &&
             renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}

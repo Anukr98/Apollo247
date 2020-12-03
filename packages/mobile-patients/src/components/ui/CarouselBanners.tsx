@@ -61,7 +61,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     circleActivated || false
   );
   const planPurchased = useRef<boolean | undefined>(circleActivated);
-  const { setCirclePlanSelected, defaultCirclePlan, selectDefaultPlan } = useShoppingCart();
+  const { setCirclePlanSelected, defaultCirclePlan, selectDefaultPlan, circleSubscriptionId } = useShoppingCart();
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
@@ -107,7 +107,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
-      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
       type: type,
       action: action,
       from: from || 'HomePage',

@@ -481,7 +481,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
-      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
       'Membership Type': circleMembershipType,
       'Circle Membership Start Date': circleSubscription?.startDate!,
       'Circle Membership End Date': circleSubscription?.endDate!,
