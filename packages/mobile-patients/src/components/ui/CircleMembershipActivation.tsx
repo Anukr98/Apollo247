@@ -42,6 +42,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 
 interface props extends NavigationScreenProps {
   visible: boolean;
@@ -159,7 +160,14 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             <Text style={styles.mediumText}>{healthCredits - defaultPlanSellingPrice}</Text>
           </Text>
         ) : null}
-        <TouchableOpacity onPress={() => openCircleWebView()}>
+        <TouchableOpacity
+          onPress={() => {
+            closeModal && closeModal(true);
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: Circle.planName,
+            });
+          }}
+        >
           <Text style={styles.btnText}>{string.common.knowMore}</Text>
         </TouchableOpacity>
         <Button
@@ -172,18 +180,6 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         />
       </View>
     );
-  };
-
-  const openCircleWebView = () => {
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url:
-        from === string.banner_context.HOME
-          ? AppConfig.Configuration.CIRCLE_CONSULT_URL
-          : from === string.banner_context.DIAGNOSTIC_HOME
-          ? AppConfig.Configuration.CIRCLE_TEST_URL
-          : AppConfig.Configuration.CIRLCE_PHARMA_URL,
-      source: source,
-    });
   };
 
   const onPurchasePlan = async () => {

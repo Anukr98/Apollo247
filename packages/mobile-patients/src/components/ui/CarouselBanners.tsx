@@ -131,7 +131,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.COVID_BANNER_CLICKED, eventAttributes);
   };
 
-  const fireBannerClickedWebengageEvent = (from: string, type: string, action: string) => {
+  const fireBannerClickedWebengageEvent = (from: string, type?: string, action?: string) => {
     const circleMembershipType = setCircleMembershipType(
       circleSubscription?.startDate!,
       circleSubscription?.endDate!
