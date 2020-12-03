@@ -418,7 +418,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.COVID_RECOVER_CLINIC) {
         fireBannerCovidClickedWebengageEvent();
         props.navigation.navigate('DoctorSearchListing', {
-          specialities: hdfc_values.COVID_RECOVER_CLINIC,
+          specialities: [hdfc_values.COVID_RECOVER_CLINIC],
         });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
