@@ -3354,6 +3354,18 @@ export const GET_PATIENTS_MOBILE = gql`
         primaryUhid
         primaryPatientId
         partnerId
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          bloodGroup
+          weight
+        }
       }
     }
   }

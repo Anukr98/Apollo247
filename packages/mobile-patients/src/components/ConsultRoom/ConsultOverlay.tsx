@@ -53,7 +53,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-
+import moment from 'moment';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
