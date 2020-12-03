@@ -86,6 +86,7 @@ export enum WebEngageEventName {
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
+  DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -1755,6 +1756,17 @@ export interface WebEngageEvents {
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
     SectionName?: string;
+  };
+  [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor ID': string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
