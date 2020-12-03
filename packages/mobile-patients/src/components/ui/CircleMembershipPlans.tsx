@@ -499,12 +499,13 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const openCircleWebView = () => {
     console.log(isDiagnosticJourney);
     props.navigation.navigate(AppRoutes.CommonWebView, {
-      url:
-        isConsultJourney || from === string.banner_context.HOME
-          ? AppConfig.Configuration.CIRCLE_CONSULT_URL
-          : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
-          ? AppConfig.Configuration.CIRCLE_TEST_URL
-          : AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      url: isConsultJourney
+        ? AppConfig.Configuration.CIRCLE_CONSULT_URL
+        : from === string.banner_context.HOME
+        ? AppConfig.Configuration.CIRCLE_LANDING_URL
+        : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
+        ? AppConfig.Configuration.CIRCLE_TEST_URL
+        : AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: source,
     });
   };

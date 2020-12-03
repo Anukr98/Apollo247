@@ -9,11 +9,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface CirclePaymentProps extends NavigationScreenProps {
-  source?: string;
+  action?: string;
   selectedPlan?: any;
 }
 export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
-  const source = props.navigation.getParam('source');
+  const action = props.navigation.getParam('action');
   const from = props.navigation.getParam('from');
   const selectedPlan = props.navigation.getParam('selectedPlan');
   useEffect(() => {
@@ -29,7 +29,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
-          if (source === string.banner_context.DIAGNOSTIC_HOME) {
+          if (action === 'PAY') {
             props.navigation.dispatch(
               StackActions.reset({
                 index: 0,
@@ -37,7 +37,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
                 actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
               })
             );
-            props.navigation.navigate('TESTS');
+            // props.navigation.navigate('TESTS');
           } else {
             props.navigation.goBack();
           }
