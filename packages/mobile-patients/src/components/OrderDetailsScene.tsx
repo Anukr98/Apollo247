@@ -221,6 +221,7 @@ export interface OrderDetailsSceneProps
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
     refetchOrders?: () => void;
+    reOrder?: boolean;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
@@ -229,6 +230,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
+  const AutoreOrder = props.navigation.getParam('reOrder');
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
@@ -429,6 +431,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     selectedTab == string.orders.viewBill && setScrollYValue(0);
   }, [selectedTab]);
 
+  useEffect(() => {
+    !loading && orderDetails && AutoreOrder && reOrder();
+  }, [loading]);
+
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (goToHomeOnBack) {
@@ -539,7 +545,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
       };
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
-
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
       setLoading!(false);
@@ -2072,7 +2077,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderReOrderButton = () => {
-    const isCancelled = orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
+    const isCancelled =
+      orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED;
     return (
       !!isCancelled && (
         <View>
