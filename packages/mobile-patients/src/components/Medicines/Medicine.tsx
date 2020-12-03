@@ -2134,13 +2134,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
-              {circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
+              {!!circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
             </Text>
             <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
               {cartItems.length}
             </Text>
           </View>
-          {circleSubscriptionId || isCircleSubscription ? (
+          {!!circleSubscriptionId || isCircleSubscription ? (
             <View
               style={{
                 borderLeftWidth: 2,
@@ -2152,7 +2152,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ) : null}
           {cartTotalCashback > 1 ? (
             <>
-              {circleSubscriptionId || isCircleSubscription ? (
+              {!!circleSubscriptionId || isCircleSubscription ? (
                 <View style={{ width: '60%' }}>
                   <View style={{ flexDirection: 'row' }}>
                     <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>

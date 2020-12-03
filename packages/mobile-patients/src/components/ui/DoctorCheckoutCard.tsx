@@ -65,14 +65,14 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             {string.common.Rs}
             {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
           </Text>
-          {circleSubscriptionId || planSelected ? (
+          {!!circleSubscriptionId || planSelected ? (
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
               {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
             </Text>
           ) : null}
         </View>
-        {circleSubscriptionId || planSelected ? (
+        {!!circleSubscriptionId || planSelected ? (
           <Text style={styles.amountSavedTextStyle}>
             {string.circleDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
           </Text>

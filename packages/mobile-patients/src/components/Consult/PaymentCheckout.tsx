@@ -306,7 +306,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <ListCard
         container={[
           styles.couponContainer,
-          { marginTop: isCircleDoctor && circleSubscriptionId ? 0 : 20 },
+          { marginTop: isCircleDoctor && !!circleSubscriptionId ? 0 : 20 },
         ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
@@ -837,7 +837,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
-          {isCircleDoctor && circleSubscriptionId ? renderCareMembershipAddedCard() : null}
+          {isCircleDoctor && !!circleSubscriptionId ? renderCareMembershipAddedCard() : null}
           {isCircleDoctor && !circleSubscriptionId ? renderCircleSubscriptionPlans() : null}
           {renderApplyCoupon()}
           {renderPriceBreakup()}

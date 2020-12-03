@@ -74,7 +74,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         {showPriceBreakup ? (
           <View>
             <View style={styles.seperatorLine} />
-            {isCircleDoctor && (circleSubscriptionId || planSelected) ? (
+            {isCircleDoctor && (!!circleSubscriptionId || planSelected) ? (
               <View style={[styles.rowContainer, { marginTop: 10 }]}>
                 <View style={styles.row}>
                   <CircleLogo style={styles.careLogo} />

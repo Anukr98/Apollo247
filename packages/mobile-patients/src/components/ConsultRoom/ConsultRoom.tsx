@@ -1370,12 +1370,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
           >
             {currentPatient?.gender === Gender.MALE ? (
-              circleSubscriptionId ? (
+              !!circleSubscriptionId ? (
                 <MaleCircleIcon style={styles.profileIcon} />
               ) : (
                 <MaleIcon style={styles.profileIcon} />
               )
-            ) : circleSubscriptionId ? (
+            ) : !!circleSubscriptionId ? (
               <FemaleCircleIcon style={styles.profileIcon} />
             ) : (
               <FemaleIcon style={styles.profileIcon} />
