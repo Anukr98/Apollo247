@@ -204,37 +204,26 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         filteredData?.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
           if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
-            const labParametersLength = dataObject?.data?.labTestResults?.length;
-            for (let i = 0; i < labParametersLength; i++) {
-              const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
-                const foundObjectIndex = dataObject?.data?.labTestResults?.findIndex(
-                  (parameterObject: any) => parameterObject?.parameterName === data.key
-                );
-                return (
-                  foundObjectIndex > -1 &&
-                  data.key === dataObject?.data?.labTestResults[foundObjectIndex]?.parameterName
-                );
+            dataObject?.data?.labTestResults?.forEach((parameterObject: any) => {
+              const keyValue = parameterObject?.parameterName;
+              const dataExistsAt = finalData?.findIndex((data: { key: string; data: any[] }) => {
+                return data?.key === keyValue;
               });
-              const keyValue = dataObject?.data?.labTestResults[i]?.parameterName;
               if (keyValue) {
-                const modifiedData = {
-                  ...dataObject,
-                  paramObject: dataObject?.data?.labTestResults[i],
-                };
-                if (dateExistsAt === -1 || finalData.length === 0) {
-                  dataObjectArray.push(modifiedData);
+                const modifiedData = { ...dataObject, paramObject: parameterObject };
+                if (dataExistsAt === -1 || finalData?.length === 0) {
                   const obj = {
                     key: keyValue,
-                    data: dataObjectArray,
+                    data: [modifiedData],
                   };
-                  finalData.push(obj);
-                } else if (dateExistsAt > -1) {
-                  const array = finalData[dateExistsAt].data;
-                  array.push(modifiedData);
-                  finalData[dateExistsAt].data = array;
+                  finalData?.push(obj);
+                } else if (dataExistsAt > -1) {
+                  const array = finalData[dataExistsAt]?.data;
+                  array?.push(modifiedData);
+                  finalData[dataExistsAt].data = array;
                 }
               }
-            }
+            });
           } else {
             const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
               return (

@@ -492,7 +492,8 @@ export const searchMedicineApi = async (
   pageId: number = 1,
   sortBy: string | null,
   filters: { [key: string]: string[] } | null,
-  axdcCode?: string | null
+  axdcCode?: string | null,
+  pincode?: string | null,
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
@@ -502,7 +503,8 @@ export const searchMedicineApi = async (
       page_id: pageId,
       sort_by: sortBy,
       filters,
-      axdcCode,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
@@ -624,14 +626,16 @@ export const trackTagalysEvent = (
 
 export const getMedicineSearchSuggestionsApi = (
   searchText: string,
-  axdcCode?: string | null
+  axdcCode?: string | null,
+  pincode?: string | null,
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
     data: {
       params: searchText,
-      axdcCode,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
@@ -644,16 +648,18 @@ export const getProductsByCategoryApi = (
   pageId: number = 1,
   sortBy: string | null,
   filters: { [key: string]: string[] } | null,
-  axdcCode?: string | null
+  axdcCode?: string | null,
+  pincode?: string | null 
 ): Promise<AxiosResponse<CategoryProductsApiResponse>> => {
   return Axios.post(
     config.PRODUCTS_BY_CATEGORY[0],
     {
-      category_id: categoryId,
+      category_id: `${categoryId}`,
       page_id: pageId,
       sort_by: sortBy,
       filters,
-      axdcCode,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     {
       headers: {
@@ -682,11 +688,15 @@ export const getProductsByCategoryApi = (
 };
 
 export const getMedicinePageProducts = (
-  axdcCode?: string | null
+  axdcCode?: string | null,
+  pincode?: string | null,
 ): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
   let url = `${config.MEDICINE_PAGE[0]}`;
   if (axdcCode) {
     url += `&axdcCode=${axdcCode}`;
+  }
+  if (pincode) {
+    url += `&pincode=${pincode}`;
   }
   return Axios.get(url, {
     headers: {

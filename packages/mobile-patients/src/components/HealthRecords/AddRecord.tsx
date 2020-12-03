@@ -2000,7 +2000,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
 
     const rightElementParameter = (i: number) => {
-      return i > 0 ? (
+      return testRecordParameters?.length > 1 ? (
         <TouchableOpacity activeOpacity={1} onPress={() => onPressRemoveRecordParameter(i)}>
           <PhrRemoveTestDetailsIcon style={{ width: 20, height: 20 }} />
         </TouchableOpacity>

@@ -144,7 +144,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const { addCartItem, removeCartItem, updateCartItem, cartItems, pinCode } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
@@ -176,9 +176,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     if (products) {
       return;
     }
-    getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode)
+    getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode, pinCode)
       .then(({ data }) => {
-        console.log(data, 'getProductsByCategoryApi');
         const products = data.products || [];
         setProductsList(products);
         if (products.length < 10) {
@@ -766,7 +765,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           onEndReached={() => {
             if (!listFetching && !endReached) {
               setListFetching(true);
-              getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode)
+              getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode, pinCode)
                 .then(({ data }) => {
                   const products = data.products || [];
                   if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
@@ -865,7 +864,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
