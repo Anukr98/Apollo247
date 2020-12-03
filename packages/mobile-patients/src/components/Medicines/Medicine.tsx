@@ -275,6 +275,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setHdfcPlanName,
     setIsFreeDelivery,
     circleSubscriptionId,
+    pinCode,
+    setPinCode,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -504,6 +506,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
+      setPinCode && setPinCode(pharmacyPincode);
     }
   }, []);
 
@@ -766,7 +769,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
     try {
       setLoading(true);
-      const resonse = (await getMedicinePageProducts(axdcCode)).data;
+      const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
@@ -1724,7 +1727,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);

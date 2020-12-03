@@ -28,6 +28,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export type SortByOption = {
   id: string;
@@ -59,6 +60,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const filterByNavProp = navigation.getParam('filterBy') || {};
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
+
+  const { pinCode } = useShoppingCart();
 
   // states
   const [isLoading, setLoading] = useState(false);
@@ -120,7 +123,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         pageId,
         sortBy,
         _selectedFilters,
-        axdcCode
+        axdcCode,
+        pinCode,
       );
       updateProducts(pageId, products, data);
       setProductsTotal(data.product_count);
@@ -166,7 +170,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         pageId,
         sortBy,
         _selectedFilters,
-        axdcCode
+        axdcCode,
+        pinCode,
       );
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);

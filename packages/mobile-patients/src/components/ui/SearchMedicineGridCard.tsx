@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     color: 'white',
     position: 'absolute',
     left: 10,
-    ...theme.fonts.IBMPlexSansMedium(12),
+    ...theme.fonts.IBMPlexSansMedium(11),
   },
   discountBadgeIcon: { height: 15, width: 70 },
   discountBadgeView: { position: 'absolute', top: 0 },
@@ -164,6 +164,8 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     onPressAddQty,
     onPressSubtractQty,
   } = props;
+  const finalPrice = price - Number(special_price) ? Number(special_price) : price;
+  const cashback = getCareCashback(Number(finalPrice), type_id);
 
   const renderTitleAndIcon = () => {
     return (
@@ -277,18 +279,12 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   };
 
   const renderOfferTag = () => {
-    const finalPrice = price - Number(special_price) ? Number(special_price) : price;
-    const cashback = getCareCashback(Number(finalPrice), type_id);
-    if (!!cashback && type_id) {
-      return (
-        <View style={styles.discountBadgeView}>
-          <CircleDiscountBadge style={styles.discountBadgeIcon} />
-          <Text style={styles.discountBadgeText}>OFFER</Text>
-        </View>
-      );
-    } else {
-      return <></>;
-    }
+    return (
+      <View style={styles.discountBadgeView}>
+        <CircleDiscountBadge style={styles.discountBadgeIcon} />
+        <Text style={styles.discountBadgeText}>OFFER</Text>
+      </View>
+    );
   };
 
   const renderExpressFlag = () => {
@@ -305,9 +301,12 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
-      {renderOfferTag()}
+      {!!cashback && !!type_id && renderOfferTag()}
       {is_express === 'Yes' && renderExpressFlag()}
-      <View style={styles.medicineIconAndNameViewStyle}>
+      <View style={[
+        styles.medicineIconAndNameViewStyle,
+        {marginTop: !!cashback && !!type_id ? 10 : 0}
+      ]}>
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
       </View>
