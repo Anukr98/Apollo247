@@ -42,6 +42,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 interface props extends NavigationScreenProps {
   visible: boolean;
@@ -67,7 +68,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   const planActivated = useRef<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [planValidity, setPlanValidity] = useState<string>(circlePlanValidity || '');
-  const { circleSubscription } = useAppCommonData();
+  const { circleSubscriptionId } = useShoppingCart();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const client = useApolloClient();
@@ -79,7 +80,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     'Patient UHID': currentPatient?.uhid,
     'Mobile Number': currentPatient?.mobileNumber,
     'Customer ID': currentPatient?.id,
-    'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+    'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
   };
 
   const fireCircleOtherPaymentEvent = () => {

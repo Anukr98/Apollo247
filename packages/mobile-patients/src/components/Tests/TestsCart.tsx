@@ -355,8 +355,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
-    isCircleSubscription,
-    setIsCircleSubscription,
     circleSubscriptionId,
   } = useShoppingCart();
 
@@ -468,7 +466,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
-      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
       'Membership Type': circleMembershipType,
       'Circle Membership Start Date': circleSubscription?.startDate!,
       'Circle Membership End Date': circleSubscription?.endDate!,

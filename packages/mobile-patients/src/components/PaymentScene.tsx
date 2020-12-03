@@ -87,6 +87,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     circleMembershipCharges,
     setCircleMembershipCharges,
     isCircleSubscription,
+    circleSubscriptionId,
   } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
   const burnHC = props.navigation.getParam('burnHC');
@@ -466,7 +467,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       burnHC ? '&hc=' + burnHC : ''
     }${bankCode ? '&bankCode=' + bankCode : ''}`;
 
-    if (!circleSubscription?._id && isCircleSubscription) {
+    if (!circleSubscriptionId && isCircleSubscription) {
       url += `${planId ? '&planId=' + planId : ''}${
         subPlanId ? '&subPlanId=' + subPlanId : ''
       }${'&storeCode=' + storeCode}`;

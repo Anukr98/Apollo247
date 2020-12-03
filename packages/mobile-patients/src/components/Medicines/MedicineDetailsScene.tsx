@@ -379,6 +379,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     setHdfcSubscriptionId,
     setHdfcPlanName,
     setIsFreeDelivery,
+    circleSubscriptionId,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -838,7 +839,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
-                {circleSubscription?._id && renderCareCashback()}
+                {circleSubscriptionId && renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()
