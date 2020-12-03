@@ -372,7 +372,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const hasLocation = locationDetails;
-
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const patientAttributes = {
@@ -670,6 +669,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
           from={string.banner_context.DIAGNOSTIC_HOME}
           source={'Diagnostic'}
+          circleActivated={false}
         />
       );
     }

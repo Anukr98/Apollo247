@@ -37,9 +37,10 @@ type bankOptions = {
 
 interface PaymentOptionsProps extends NavigationScreenProps {
   from?: string;
+  selectedPlan?: any;
 }
 export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
-  const { from } = props;
+  const { from, selectedPlan } = props;
   const { setLoading, showAphAlert } = useUIElements();
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
 
@@ -80,7 +81,7 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.Consult);
+        setLoading && setLoading(false);
         renderErrorPopup(string.common.tryAgainLater);
       });
   }, []);
@@ -95,6 +96,7 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
     props.navigation.navigate(AppRoutes.SubscriptionPaymentGateway, {
       paymentTypeID: item?.paymentMode,
       from: from,
+      selectedPlan: selectedPlan,
     });
   };
 

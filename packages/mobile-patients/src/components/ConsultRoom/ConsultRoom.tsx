@@ -101,7 +101,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -432,7 +432,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [profileChange, setProfileChange] = useState<boolean>(false);
 
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
-  const circleActivated = props.navigation.getParam('circleActivated');
+  let circleActivated = props.navigation.getParam('circleActivated');
+  const circleActivatedRef = useRef<boolean>(circleActivated);
   const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
   const webengage = new WebEngage();
   const client = useApolloClient();
@@ -506,6 +507,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
     }
   }
+
+  useEffect(() => {
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      circleActivatedRef.current = false;
+    });
+    return () => {
+      didBlur && didBlur.remove();
+    };
+  });
 
   useEffect(() => {
     const params = props.navigation.state.params;
@@ -1531,8 +1541,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           planActivationCallback={() => {
             getUserSubscriptionsByStatus();
             getUserBanners();
+            circleActivatedRef.current = false;
           }}
-          circleActivated={circleActivated}
+          circleActivated={circleActivatedRef.current}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
         />
