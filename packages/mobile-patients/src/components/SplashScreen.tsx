@@ -253,9 +253,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     RNCallKeep.endAllCalls();
     pubnub.publish(
       {
-        message: '^^#PATIENT_REJECTED_CALL',
+        message: { message: '^^#PATIENT_REJECTED_CALL' },
         channel: voipAppointmentId.current,
         storeInHistory: true,
+        sendByPost: true,
       },
       (status, response) => {
         voipAppointmentId.current = '';
@@ -324,8 +325,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       let route;
 
       const a = event.indexOf('https://www.apollo247.com');
-
-      if (a != -1) {
+      if (a == 0) {
         handleDeeplinkFormatTwo(event);
       } else {
         route = event.replace('apollopatients://', '');
@@ -333,8 +333,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const data = route.split('?');
         setBugFenderLog('DEEP_LINK_DATA', data);
         route = data[0];
-
-        // console.log(data, 'data');
 
         let linkId = '';
 
@@ -535,7 +533,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       utm_content: 'not set',
       referrer: 'not set',
     };
-    if (a != -1) {
+    if (a == 0) {
       const route = event.replace('apollopatients://', '');
       const data = route.split('?');
       if (data.length >= 2) {
@@ -545,8 +543,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
-    }
-    if (b != -1) {
+    } else if (b == 0) {
       const route = event.replace('https://www.apollo247.com/', '');
       const data = route.split('?');
       if (data.length >= 2) {
@@ -561,8 +558,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
-    }
-    if (!event) {
+    } else {
       console.log('attributes >>>', attributes);
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }

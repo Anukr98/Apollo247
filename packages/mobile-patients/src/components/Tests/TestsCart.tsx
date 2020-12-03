@@ -356,6 +356,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const {
     setAddresses: setMedAddresses,
     circleSubscriptionId,
+    circlePlanValidity,
   } = useShoppingCart();
 
   const clinicHours: clinicHoursData[] = [
@@ -459,8 +460,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const fireCircleBenifitAppliedEvent = () => {
     const circleMembershipType = setCircleMembershipType(
-      circleSubscription?.startDate!,
-      circleSubscription?.endDate!
+      circlePlanValidity?.startDate!,
+      circlePlanValidity?.endDate!
     );
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED] = {
       'Patient UHID': currentPatient?.uhid,
@@ -468,8 +469,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       'Customer ID': currentPatient?.id,
       'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
       'Membership Type': circleMembershipType,
-      'Circle Membership Start Date': circleSubscription?.startDate!,
-      'Circle Membership End Date': circleSubscription?.endDate!,
+      'Circle Membership Start Date': circlePlanValidity?.startDate!,
+      'Circle Membership End Date': circlePlanValidity?.endDate!,
     };
     isDiagnosticCircleSubscription &&
       postWebEngageEvent(
