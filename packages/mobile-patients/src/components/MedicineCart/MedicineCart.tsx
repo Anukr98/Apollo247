@@ -232,7 +232,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     setIsFreeDelivery && setIsFreeDelivery(!!circleMembershipCharges);
-  }, [circleMembershipCharges])
+  }, [circleMembershipCharges]);
 
   useEffect(() => {
     onFinishUpload();
@@ -881,7 +881,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {(coupon || isCircleSubscription || circleSubscriptionId) && renderApplyCircleBenefits()}
+        {coupon || isCircleSubscription || circleSubscriptionId
+          ? renderApplyCircleBenefits()
+          : null}
         {renderCouponSection()}
         <AmountCard />
       </View>
@@ -908,7 +910,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       >
         {!coupon && isCircleSubscription ? (
           <View style={{ flexDirection: 'row' }}>
-            <CheckedIcon style={{ marginTop: 8, marginRight: 4, }} />
+            <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
             <CareCashbackBanner
               bannerText={`benefits APPLIED!`}
               textStyle={styles.circleText}
@@ -920,7 +922,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <View style={styles.circleApplyContainer} />
               <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.applyText}>Apply{' '}</Text>
+                <Text style={styles.applyText}>Apply </Text>
                 <CareCashbackBanner
                   bannerText={`benefits instead`}
                   textStyle={styles.circleText}
@@ -1083,8 +1085,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderScreen = () => {
     return (
       <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
-          {renderHeader()}
           {renderUnServiceable()}
           {renderCartItems()}
           {(!isCircleSubscription || showCareSelectPlans) &&
