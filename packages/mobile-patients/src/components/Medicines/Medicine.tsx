@@ -271,11 +271,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setIsCircleSubscription,
     productDiscount,
     cartDiscountTotal,
+    setHdfcSubscriptionId,
+    setHdfcPlanName,
+    setIsFreeDelivery,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
+  const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
@@ -1541,6 +1545,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
         }
       }
     } catch (error) {

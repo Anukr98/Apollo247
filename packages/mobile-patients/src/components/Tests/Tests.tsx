@@ -315,11 +315,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const {
     cartItems: shopCartItems,
     setCircleSubscriptionId,
-    setCirclePlanSelected,
+    setHdfcSubscriptionId,
     setIsCircleSubscription,
-    setCircleCashback,
-    circleSubscriptionId,
+    setHdfcPlanName,
+    setIsFreeDelivery,
   } = useShoppingCart();
+  const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems.length + shopCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState<boolean>(true);
@@ -2133,6 +2134,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
         }
       }
     } catch (error) {

@@ -283,7 +283,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             </Text>
           </View>
           {
-            paymentRefId && (
+            !!paymentRefId && (
               <>
                 <View style={{ justifyContent: 'flex-start' }}>
                   <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>
@@ -346,7 +346,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             </View>
           </View>
           {
-            paymentMode && (
+            !!paymentMode && (
               <View>
                 <View style={{ justifyContent: 'flex-start' }}>
                   {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}

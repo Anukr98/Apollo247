@@ -200,6 +200,8 @@ export interface ShoppingCartContextProps {
   autoCirlcePlanAdded: boolean;
   setAutoCirlcePlanAdded: ((planAdded: boolean) => void) | null;
   showCircleSubscribed: boolean;
+  hdfcSubscriptionId: string;
+  setHdfcSubscriptionId: ((id: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -292,6 +294,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   autoCirlcePlanAdded: false,
   setAutoCirlcePlanAdded: null,
   showCircleSubscribed: false,
+  hdfcSubscriptionId: '',
+  setHdfcSubscriptionId: null,
 });
 
 const AsyncStorageKeys = {
@@ -382,6 +386,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [ePrescriptions, _setEPrescriptions] = useState<ShoppingCartContextProps['ePrescriptions']>(
     []
   );
+
+  const [hdfcSubscriptionId, setHdfcSubscriptionId] = useState<
+    ShoppingCartContextProps['hdfcSubscriptionId']
+  >('');
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
@@ -901,6 +909,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         autoCirlcePlanAdded,
         setAutoCirlcePlanAdded,
         showCircleSubscribed,
+        hdfcSubscriptionId,
+        setHdfcSubscriptionId,
       }}
     >
       {props.children}

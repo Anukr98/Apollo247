@@ -376,11 +376,15 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     isCircleSubscription,
     setCircleSubscriptionId,
     setIsCircleSubscription,
+    setHdfcSubscriptionId,
+    setHdfcPlanName,
+    setIsFreeDelivery,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
+  const hdfc_values = string.Hdfc_values;
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
@@ -1002,6 +1006,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
         }
       }
     } catch (error) {
