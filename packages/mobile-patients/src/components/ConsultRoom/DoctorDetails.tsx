@@ -1028,6 +1028,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         navigation={props.navigation}
         membershipPlans={membershipPlans}
         closeModal={() => setShowCirclePlans(false)}
+        isConsultJourney={true}
       />
     );
   };

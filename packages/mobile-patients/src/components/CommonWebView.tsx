@@ -53,10 +53,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         onMessage={(event) => {
           const { data } = event.nativeEvent;
           const callBackData = data && JSON.parse(data); //gives entire result
-          const isSource = callBackData?.source;
-
+          const action = callBackData?.action;
           const selectedPlan =
-            isSource == 'Diagnostic'
+            action == 'PAY'
               ? callBackData?.selection && JSON.parse(callBackData.selection)
               : callBackData;
 
@@ -66,17 +65,17 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
           if (selectedPlan?.subPlanId) {
             const responseData = selectedPlan;
             fireCirclePlanSelectedEvent();
-            if (isSource == 'Diagnostic') {
+            if (action == 'PAY') {
               setTimeout(
                 () =>
                   props.navigation.navigate(AppRoutes.CircleSubscription, {
-                    source: string.banner_context.DIAGNOSTIC_HOME,
+                    // source: string.banner_context.DIAGNOSTIC_HOME,
                     selectedPlan: selectedPlan,
+                    action: 'PAY',
                   }),
                 0
               );
             } else {
-              console.log('responseData', responseData);
               setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
               setDefaultCirclePlan && setDefaultCirclePlan(null);
               setCirclePlanSelected && setCirclePlanSelected(responseData);

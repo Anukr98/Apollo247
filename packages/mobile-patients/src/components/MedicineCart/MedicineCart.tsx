@@ -11,7 +11,6 @@ import {
   AppStateStatus,
   BackHandler,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -674,7 +673,14 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
     const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
     try {
-      const response = await getProductsByCategoryApi(categoryId, pageCount, null, null, axdcCode, pinCode);
+      const response = await getProductsByCategoryApi(
+        categoryId,
+        pageCount,
+        null,
+        null,
+        axdcCode,
+        pinCode
+      );
       const products = response?.data?.products.slice(0, 15) || [];
       setsuggestedProducts(products);
     } catch (error) {
