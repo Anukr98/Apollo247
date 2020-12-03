@@ -262,10 +262,10 @@ const GenderOptions: genderOptions[] = [
     name: Gender.FEMALE,
     title: 'Female',
   },
-  {
-    name: Gender.OTHER,
-    title: 'Other',
-  },
+  // {
+  //   name: Gender.OTHER,
+  //   title: 'Other',
+  // },
 ];
 
 type RelationArray = {
@@ -1004,7 +1004,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <View style={{ marginTop: 21 }}>
         <Text style={styles.genderPreviewTextStyle}>{'Gender'}</Text>
         <Button
-          title={gender == Gender.MALE ? 'Male' : gender === Gender.FEMALE ? 'Female' : 'Other'}
+          title={gender == Gender.MALE ? 'Male' : 'Female'}
           style={[styles.buttonViewStyle, styles.selectedButtonViewStyle, { height: 44 }]}
           titleTextStyle={styles.selectedButtonTitleStyle}
         />
