@@ -441,7 +441,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length + shopCartItems.length;
+    const cartItemsCount = cartItems?.length + shopCartItems?.length;
     return (
       <Header
         container={{ borderBottomWidth: 0 }}
@@ -475,7 +475,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const isNoTestsFound = !isLoading && searchText.length > 2 && medicineList.length == 0;
+  const isNoTestsFound = !isLoading && searchText?.length > 2 && medicineList?.length == 0;
 
   const renderSorryMessage = isNoTestsFound ? (
     <Text style={styles.sorryTextStyle}>Sorry, we couldn’t find what you are looking for :(</Text>
@@ -579,14 +579,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const renderPastSearches = () => {
     return (
       <ScrollView bounces={false} onScroll={() => Keyboard.dismiss()}>
-        {pastSearches.length > 0 && (
+        {pastSearches?.length > 0 && (
           <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
         )}
         <View style={styles.pastSearchContainerStyle}>
           {pastSearches
             .slice(0, 5)
             .map((pastSearch, i, array) =>
-              renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
+              renderPastSearchItem(pastSearch!, i == array?.length - 1 ? { marginRight: 0 } : {})
             )}
         </View>
         {/* <NeedHelpAssistant
@@ -622,7 +622,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const productCardContainerStyle = [
       { marginBottom: 8, marginHorizontal: 20 },
       index == 0 ? { marginTop: 20 } : {},
-      index == array.length - 1 ? { marginBottom: 20 } : {},
+      index == array?.length - 1 ? { marginBottom: 20 } : {},
     ];
     const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
     const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
@@ -720,7 +720,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           />
         ) : (
           !!searchText &&
-          searchText.length > 2 && (
+          searchText?.length > 2 && (
             <FlatList
               onScroll={() => Keyboard.dismiss()}
               data={medicineList}
@@ -728,9 +728,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               bounces={false}
               ListHeaderComponent={
-                (medicineList.length > 0 && (
+                (medicineList?.length > 0 && (
                   <SectionHeaderComponent
-                    sectionTitle={`Matching Tests — ${medicineList.length}`}
+                    sectionTitle={`Matching Tests — ${medicineList?.length}`}
                     style={{ marginBottom: 0 }}
                   />
                 )) ||
