@@ -253,9 +253,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     RNCallKeep.endAllCalls();
     pubnub.publish(
       {
-        message: '^^#PATIENT_REJECTED_CALL',
+        message: { message: '^^#PATIENT_REJECTED_CALL' },
         channel: voipAppointmentId.current,
         storeInHistory: true,
+        sendByPost: true,
       },
       (status, response) => {
         voipAppointmentId.current = '';
