@@ -7,6 +7,7 @@ import {
   MedicineIcon,
   CheckedIcon,
   OneApollo,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -83,6 +84,7 @@ import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -108,7 +110,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   );
   const [agreementCheckbox, setAgreementCheckbox] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const [showAmountCard, setShowAmountCard] = useState<boolean>(false);
   const {
     deliveryAddressId,
     storeId,
@@ -133,8 +134,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     circleSubPlanId,
     cartTotalCashback,
     circleSubscriptionId,
+    isCircleSubscription,
   } = useShoppingCart();
-  const { circleSubscription } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -893,76 +894,164 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   };
 
   const rendertotalAmount = () => {
+    const careStyle = StyleSheet.create({
+      careSaving: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E5E5',
+        justifyContent: 'center',
+        paddingBottom: 10,
+      },
+      titleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 7,
+      },
+      totalContainer : {
+        borderTopWidth: 1,
+        borderTopColor: '#E5E5E5',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 10,
+      },
+      logoStyle: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 30,
+      },
+    });
     return (
-      <View>
-        <View
-          style={{
-            ...styles.amountCont,
-            borderBottomLeftRadius: showAmountCard ? 0 : 9,
-            borderBottomRightRadius: showAmountCard ? 0 : 9,
-          }}
-        >
-          <View style={styles.toPay}>
-            <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
-              Amount To Pay
-            </Text>
-          </View>
-          <View style={styles.total}>
-            <Text style={styles.grandTotalTxt}>
-              {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
-            </Text>
-          </View>
-          {(couponDiscount != 0 || burnHC != 0) && (
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.arrow}
-              onPress={() => setShowAmountCard(!showAmountCard)}
-            >
-              {showAmountCard ? <Up /> : <Down />}
-            </TouchableOpacity>
-          )}
-        </View>
-        {showAmountCard && AmountCard()}
-      </View>
-    );
-  };
-
-  const AmountCard = () => {
-    return (
-      <View style={styles.amountCard}>
-        <View style={styles.subCont}>
-          <Text style={styles.SubtotalTxt}>Subtotal</Text>
-          <Text style={styles.SubtotalTxt}>
-            {string.common.Rs}{' '}
-            {getFormattedAmount(cartTotal + deliveryCharges + packagingCharges - productDiscount)}
+      <View style={styles.amountCont}>
+        <View style={careStyle.careSaving}>
+          <Text style={theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+            BILL TOTAL
           </Text>
         </View>
-        {couponDiscount != 0 && (
-          <View style={{ ...styles.subCont, marginTop: 2 }}>
-            <View>
-              <Text style={styles.discountTxt}>Coupon Applied</Text>
-              <Text style={styles.discountTxt}>({coupon?.coupon})</Text>
+        <View style={careStyle.titleContainer}>
+          <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+            Bill Amount
+          </Text>
+          <Text style={styles.grandTotalTxt}>
+            {string.common.Rs} {getFormattedAmount(grandTotal - burnHC - circleMembershipCharges + couponDiscount)}
+          </Text>
+        </View>
+        {
+          couponDiscount != 0 && (
+            <View style={careStyle.titleContainer}>
+              <View style={{ ...styles.subCont, marginTop: 2 }}>
+                <View>
+                  <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                    Coupon Applied
+                  </Text>
+                  <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                    ({coupon?.coupon})
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.grandTotalTxt}>
+                - {string.common.Rs} {getFormattedAmount(couponDiscount)}
+              </Text>
             </View>
-            <Text style={styles.discountTxt}>
-              - {string.common.Rs} {getFormattedAmount(couponDiscount)}
-            </Text>
-          </View>
-        )}
-        {burnHC != 0 && (
-          <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
-            <Text style={styles.discountTxt}>OneApollo HC</Text>
-            <Text style={styles.discountTxt}>
-              - {string.common.Rs} {getFormattedAmount(burnHC)}
-            </Text>
-          </View>
-        )}
-        <View style={styles.toPayBorder}></View>
-        <View style={{ ...styles.subCont, marginTop: 0.02 * windowWidth }}>
-          <Text style={styles.SubtotalTxt}>To Pay</Text>
+          )
+        }
+        {
+          burnHC != 0 && (
+            <View style={careStyle.titleContainer}>
+              <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
+                <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                  OneApollo HC
+                </Text>
+              </View>
+              <Text style={styles.grandTotalTxt}>
+                - {string.common.Rs} {getFormattedAmount(burnHC)}
+              </Text>
+            </View>
+          )
+        }
+        {
+          !!circleMembershipCharges && (
+            <View style={careStyle.titleContainer}>
+              <CareCashbackBanner
+                bannerText={`Membership`}
+                textStyle={theme.viewStyles.text('M', 14, '#00B38E', 1, 18)}
+                logoStyle={careStyle.logoStyle}
+              />
+              <Text style={[styles.grandTotalTxt, {color: '#00B38E', lineHeight: 24,}]}>
+                {string.common.Rs} {circleMembershipCharges}
+              </Text>
+            </View>
+          )
+        }
+        <View style={careStyle.totalContainer}>
+          <Text style={theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+            TOTAL
+          </Text>
           <Text style={styles.grandTotalTxt}>
             {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
           </Text>
         </View>
+      </View>
+    );
+  };
+
+  const renderCareSavings = () => {
+    const careStyle = StyleSheet.create({
+      careSavingsContainer: {
+        ...theme.viewStyles.cardViewStyle,
+        borderRadius: 9,
+        paddingHorizontal: 10,
+        paddingVertical: 9,
+        borderColor: '#00B38E',
+        borderWidth: 3,
+        borderStyle: 'dashed',
+        margin: 0.05 * windowWidth,
+      },
+      rowSpaceBetween: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      circleLogo: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 20,
+      },
+      totalAmountContainer: {
+        borderTopColor: '#979797',
+        borderTopWidth: 0.5,
+        paddingTop: 5,
+        marginTop: 10,
+      },
+      totalAmount: {
+        ...theme.viewStyles.text('B', 14, '#02475B', 1, 20),
+        textAlign: 'right',
+      },
+    });
+    const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
+    return (
+      <View style={careStyle.careSavingsContainer}>
+        <View style={careStyle.rowSpaceBetween}>
+          <View
+            style={{
+              flexDirection: 'row',
+            }}
+          >
+            <CircleLogo style={careStyle.circleLogo} />
+            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+              Membership Cashback
+            </Text>
+          </View>
+          <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{cartTotalCashback}</Text>
+        </View>
+        {!!deliveryFee && (
+          <View style={[careStyle.rowSpaceBetween, { marginTop: 10 }]}>
+            <View style={{ flexDirection: 'row' }}>
+              <CircleLogo style={careStyle.circleLogo} />
+              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery Savings</Text>
+            </View>
+            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+              ₹{deliveryFee.toFixed(2)}
+            </Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -1305,6 +1394,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             onContentSizeChange={() => scrollToend && ScrollViewRef.scrollToEnd({ animated: true })}
           >
             {rendertotalAmount()}
+            {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
             {availableHC != 0 && renderOneApolloOption()}
             {renderPaymentOptions()}
             {bankOptions.length > 0 && renderNetBanking()}
@@ -1414,14 +1504,13 @@ const styles = StyleSheet.create({
     marginBottom: 0.03 * windowWidth,
   },
   amountCont: {
+    ...theme.viewStyles.cardContainer,
     flex: 1,
-    flexDirection: 'row',
     width: 0.9 * windowWidth,
-    height: 0.07 * windowHeight,
     borderRadius: 9,
-    backgroundColor: 'rgba(0, 135, 186, 0.15)',
     margin: 0.05 * windowWidth,
     marginBottom: 0,
+    padding: 10,
   },
   toPay: {
     flex: 0.45,
