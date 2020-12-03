@@ -8,13 +8,13 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -32,7 +32,6 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
   } = useShoppingCart();
-  const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const fireCirclePlanSelectedEvent = () => {
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED] = {
@@ -53,22 +52,41 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         renderError={(errorCode) => renderError(WebViewRef)}
         onMessage={(event) => {
           const { data } = event.nativeEvent;
-          if (data && JSON.parse(data) === 'back') {
+          const callBackData = data && JSON.parse(data); //gives entire result
+          const isSource = callBackData?.source;
+
+          const selectedPlan =
+            isSource == 'Diagnostic'
+              ? callBackData?.selection && JSON.parse(callBackData.selection)
+              : callBackData;
+
+          if (callBackData === 'back') {
             navigation.goBack();
           }
-          if (data && JSON.parse(data)?.subPlanId) {
-            const responseData = JSON.parse(data);
+          if (selectedPlan?.subPlanId) {
+            const responseData = selectedPlan;
             fireCirclePlanSelectedEvent();
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
-            setDefaultCirclePlan && setDefaultCirclePlan(null);
-            setCirclePlanSelected && setCirclePlanSelected(responseData);
-            setIsCircleSubscription && setIsCircleSubscription(true);
-            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
-            setCircleMembershipCharges &&
-              setCircleMembershipCharges(responseData?.currentSellingPrice);
-            setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
-            AsyncStorage.setItem('circlePlanSelected', data);
-            navigation.goBack();
+            if (isSource == 'Diagnostic') {
+              setTimeout(
+                () =>
+                  props.navigation.navigate(AppRoutes.CircleSubscription, {
+                    source: string.banner_context.DIAGNOSTIC_HOME,
+                    selectedPlan: selectedPlan,
+                  }),
+                0
+              );
+            } else {
+              console.log('responseData', responseData);
+              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+              setDefaultCirclePlan && setDefaultCirclePlan(null);
+              setCirclePlanSelected && setCirclePlanSelected(responseData);
+              setIsCircleSubscription && setIsCircleSubscription(true);
+              setCircleMembershipCharges &&
+                setCircleMembershipCharges(responseData?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
+              AsyncStorage.setItem('circlePlanSelected', data);
+              navigation.goBack();
+            }
             if (isCallback) {
               navigation?.state?.params?.onPlanSelected();
             }

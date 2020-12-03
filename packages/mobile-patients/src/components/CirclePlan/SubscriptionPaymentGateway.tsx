@@ -27,6 +27,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
+  selectedPlan?: any;
 }
 export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props) => {
   let WebViewRef: any;
@@ -34,14 +35,19 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
   const from = props.navigation.getParam('from');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const selectedPlan = props.navigation.getParam('selectedPlan');
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const { setLoading } = useUIElements();
-  const planSellingPrice = defaultCirclePlan
+  const planSellingPrice = selectedPlan
+    ? selectedPlan?.currentSellingPrice
+    : defaultCirclePlan
     ? defaultCirclePlan?.currentSellingPrice
     : circlePlanSelected?.currentSellingPrice;
-  const subPlanId = defaultCirclePlan
+  const subPlanId = selectedPlan
+    ? selectedPlan?.subPlanId
+    : defaultCirclePlan
     ? defaultCirclePlan?.subPlanId
     : circlePlanSelected?.subPlanId;
 
