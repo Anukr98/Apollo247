@@ -793,7 +793,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               {circleSavings > 0 && !circleSubscriptionId
                 ? renderAddedCirclePlanWithValidity()
                 : null}
-              {circleSavings > 0 && circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
+              {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
               {appointmentHeader()}
               {appointmentCard()}
               {renderNote()}

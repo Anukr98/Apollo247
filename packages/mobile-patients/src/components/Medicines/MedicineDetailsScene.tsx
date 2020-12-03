@@ -840,7 +840,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
-                {circleSubscriptionId && renderCareCashback()}
+                {!!circleSubscriptionId && renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()

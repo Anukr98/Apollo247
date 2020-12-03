@@ -622,7 +622,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <View>
               <View>
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
-                {circleSubscriptionId ? renderMembershipCard(circleSubscription, false) : null}
+                {!!circleSubscriptionId ? renderMembershipCard(circleSubscription, false) : null}
                 {hdfcUserSubscriptions?._id
                   ? renderMembershipCard(hdfcUserSubscriptions, false)
                   : null}
