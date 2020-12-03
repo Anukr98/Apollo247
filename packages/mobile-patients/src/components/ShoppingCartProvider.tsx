@@ -103,6 +103,11 @@ export interface onHold {
   itemName?: string;
 }
 
+export interface circleValidity {
+  startDate: Date;
+  endDate: Date;
+}
+
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface ShoppingCartContextProps {
@@ -202,6 +207,8 @@ export interface ShoppingCartContextProps {
   showCircleSubscribed: boolean;
   hdfcSubscriptionId: string;
   setHdfcSubscriptionId: ((id: string) => void) | null;
+  circlePlanValidity: circleValidity | null;
+  setCirclePlanValidity: ((validity: circleValidity) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -296,6 +303,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   showCircleSubscribed: false,
   hdfcSubscriptionId: '',
   setHdfcSubscriptionId: null,
+  circlePlanValidity: null,
+  setCirclePlanValidity: null,
 });
 
 const AsyncStorageKeys = {
@@ -347,6 +356,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [autoCirlcePlanAdded, setAutoCirlcePlanAdded] = useState<
     ShoppingCartContextProps['autoCirlcePlanAdded']
   >(false);
+  const [circlePlanValidity, setCirclePlanValidity] = useState<
+    ShoppingCartContextProps['circlePlanValidity']
+  >(null);
+
   const showCircleSubscribed =
     circleSubscriptionId || (!autoCirlcePlanAdded && circlePlanSelected && !defaultCirclePlan);
 
@@ -911,6 +924,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         showCircleSubscribed,
         hdfcSubscriptionId,
         setHdfcSubscriptionId,
+        circlePlanValidity,
+        setCirclePlanValidity,
       }}
     >
       {props.children}

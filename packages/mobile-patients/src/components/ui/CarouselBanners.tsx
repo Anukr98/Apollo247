@@ -51,7 +51,7 @@ interface CarouselProps extends NavigationScreenProps {
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
 }
 export const CarouselBanners: React.FC<CarouselProps> = (props) => {
-  const { circleActivated, planActivationCallback, circlePlanValidity, from, source } = props;
+  const { circleActivated, planActivationCallback, from, source } = props;
   const [slideIndex, setSlideIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
@@ -61,7 +61,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     circleActivated || false
   );
   const planPurchased = useRef<boolean | undefined>(circleActivated);
-  const { setCirclePlanSelected, defaultCirclePlan, selectDefaultPlan, circleSubscriptionId } = useShoppingCart();
+  const {
+    setCirclePlanSelected,
+    defaultCirclePlan,
+    selectDefaultPlan,
+    circleSubscriptionId,
+    circlePlanValidity,
+  } = useShoppingCart();
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
@@ -133,17 +139,17 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
 
   const fireBannerClickedWebengageEvent = (from: string, type?: string, action?: string) => {
     const circleMembershipType = setCircleMembershipType(
-      circleSubscription?.startDate!,
-      circleSubscription?.endDate!
+      circlePlanValidity?.startDate!,
+      circlePlanValidity?.endDate!
     );
     const eventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
-      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
       'Membership Type': circleMembershipType,
-      'Circle Membership Start Date': circleSubscription?.startDate!,
-      'Circle Membership End Date': circleSubscription?.endDate!,
+      'Circle Membership Start Date': circlePlanValidity?.startDate,
+      'Circle Membership End Date': circlePlanValidity?.endDate,
       type: type,
       action: action,
       from: from || 'HomePage',
@@ -442,7 +448,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       defaultCirclePlan={defaultCirclePlan}
       navigation={props.navigation}
       circlePaymentDone={planPurchased.current}
-      circlePlanValidity={circlePlanValidity}
+      circlePlanValidity={props.circlePlanValidity}
       from={from}
       source={source}
     />

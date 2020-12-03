@@ -380,6 +380,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     setHdfcPlanName,
     setIsFreeDelivery,
     circleSubscriptionId,
+    setCirclePlanValidity,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -1002,11 +1003,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: data?.APOLLO?.[0]?.start_date,
+            endDate: data?.APOLLO?.[0]?.end_date,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
         } else {
           setIsCircleSubscribed(false);
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
         }
 
         if (data?.HDFC?.[0]._id) {
