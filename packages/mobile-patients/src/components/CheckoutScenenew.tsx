@@ -919,6 +919,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         height: 30,
       },
     });
+    const membershipCharges = circleMembershipCharges || 0;
     return (
       <View style={styles.amountCont}>
         <View style={careStyle.careSaving}>
@@ -931,7 +932,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             Bill Amount
           </Text>
           <Text style={styles.grandTotalTxt}>
-            {string.common.Rs} {getFormattedAmount(grandTotal - circleMembershipCharges + couponDiscount)}
+            {string.common.Rs} {getFormattedAmount(grandTotal - membershipCharges + couponDiscount)}
           </Text>
         </View>
         {
