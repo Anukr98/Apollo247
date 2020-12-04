@@ -15,6 +15,12 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,9 +44,11 @@ type bankOptions = {
 interface PaymentOptionsProps extends NavigationScreenProps {
   from?: string;
   selectedPlan?: any;
+  comingFrom?: string;
 }
 export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
-  const { from, selectedPlan } = props;
+  const { currentPatient } = useAllCurrentPatients();
+  const { from, selectedPlan, comingFrom } = props;
   const { setLoading, showAphAlert } = useUIElements();
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
 
@@ -92,11 +100,23 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
       description: `${desc || ''}`.trim(),
     });
 
+  const firePaymentOptionSelected = (item: any) => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PAYMENT_MODE_SELECTED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': 'No',
+      type: item?.name,
+    };
+    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_PAYMENT_MODE_SELECTED, CircleEventAttributes);
+  };
+
   const initiatePayment = (item: paymentOptions) => {
     props.navigation.navigate(AppRoutes.SubscriptionPaymentGateway, {
       paymentTypeID: item?.paymentMode,
       from: from,
       selectedPlan: selectedPlan,
+      forCircle: true,
     });
   };
 
@@ -116,6 +136,7 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
+                comingFrom == 'circlePlanPurchase' ? firePaymentOptionSelected(item) : null;
                 initiatePayment(item);
               }}
               style={styles.paymentModeCard}

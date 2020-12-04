@@ -667,6 +667,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const fireFirstTimeLanded = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
+  };
+
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
     source?: PatientInfoWithSourceFirebase['Source']
@@ -859,7 +869,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
           setCirclePlanValidity && setCirclePlanValidity(null);
           setCirclePlanId && setCirclePlanId('');
-          setCircleStatus && setCircleStatus('')
+          fireFirstTimeLanded();
+          setCircleStatus && setCircleStatus('');
         }
 
         if (data?.HDFC?.[0]._id) {
