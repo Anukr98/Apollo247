@@ -895,6 +895,13 @@ export const GET_PLATINUM_DOCTOR = gql`
           CONSULT_NOW
           DOCTOR_OF_HOUR
         }
+        doctorPricing {
+          slashed_price
+          available_to
+          status
+          mrp
+          appointment_type
+        }
       }
     }
   }
