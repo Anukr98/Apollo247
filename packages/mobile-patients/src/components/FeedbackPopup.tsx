@@ -138,8 +138,23 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
   //   }
   // }, [props.isVisible, ratingStatus, ratingOption, ratingSuggestion]);
 
-  const feedbackOptions = ratingStatus! && TestsFeedBackData[ratingStatus!].options;
-  const feedbackQuestions = ratingStatus! && TestsFeedBackData[ratingStatus!].question;
+  // const feedbackOptions = ratingStatus! && TestsFeedBackData[ratingStatus!].options;
+  // const feedbackQuestions = ratingStatus! && TestsFeedBackData[ratingStatus!].question;
+
+  const feedbackQuestions = ratingStatus
+    ? props.type == FEEDBACKTYPE.CONSULT
+      ? ConsultFeedBackData[ratingStatus].question
+      : props.type == FEEDBACKTYPE.DIAGNOSTICS
+      ? TestsFeedBackData[ratingStatus].question
+      : MedicineFeedBackData[ratingStatus].question
+    : '';
+  const feedbackOptions = ratingStatus
+    ? props.type == FEEDBACKTYPE.CONSULT
+      ? ConsultFeedBackData[ratingStatus].options
+      : props.type == FEEDBACKTYPE.DIAGNOSTICS
+      ? TestsFeedBackData[ratingStatus].options
+      : MedicineFeedBackData[ratingStatus].options
+    : [];
 
   const optionsDropdown = overlayDropdown && (
     <Overlay
@@ -256,6 +271,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
         : MedicineFeedBackData[ratingStatus].options
       : [];
     console.log({ question, options });
+
     return (
       <View style={{}}>
         {props.info.title === '' ? null : (
