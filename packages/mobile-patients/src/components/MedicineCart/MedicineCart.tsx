@@ -142,6 +142,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     circleSubscription,
     axdcCode,
     setAxdcCode,
+    circlePlanId,
+    hdfcPlanId,
+    hdfcUserSubscriptions,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -545,6 +548,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
     console.log('inside validate');
     setloading!(true);
+    let packageId: string[] = [];
+    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleSubscription?.status === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`)
+    }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
@@ -557,6 +567,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
       })),
+      packageIds: packageId,
     };
     return new Promise(async (res, rej) => {
       try {
