@@ -2148,7 +2148,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
-      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+      bookDiagnosticOrder();
+      // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else if (
       physicalPrescriptions.length == 0 &&
       ePrescriptions.length > 0 &&
@@ -2156,7 +2157,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+      bookDiagnosticOrder();
+      // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length > 0 &&
@@ -2166,7 +2168,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+      bookDiagnosticOrder();
+      // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     }
   };
 
