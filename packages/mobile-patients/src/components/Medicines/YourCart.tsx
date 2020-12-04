@@ -222,6 +222,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setCouponProducts,
     addMultipleCartItems,
     circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
@@ -241,7 +242,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation, hdfcUserSubscriptions, hdfcPlanId, circlePlanId, circleSubscription } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
@@ -254,10 +255,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
   let packageId: string[] = [];
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleSubscription?.status === 'active') {
+  if (circleSubscriptionId && circleStatus === 'active') {
     packageId.push(`APOLLO:${circlePlanId}`)
   }
 

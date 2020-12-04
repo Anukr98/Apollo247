@@ -118,15 +118,15 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [loading, setLoading] = useState<boolean>(true);
   const [validating, setValidating] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
-  const { hdfcUserSubscriptions, hdfcPlanId, circlePlanId, circleSubscription } = useAppCommonData();
-  const { circleSubscriptionId } = useShoppingCart();
+  const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
+  const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
   let packageId: string[] = [];
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleSubscription?.status === 'active') {
+  if (circleSubscriptionId && circleStatus === 'active') {
     packageId.push(`APOLLO:${circlePlanId}`)
   }
 

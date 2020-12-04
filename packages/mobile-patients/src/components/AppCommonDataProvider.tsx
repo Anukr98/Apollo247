@@ -212,6 +212,10 @@ export interface AppCommonDataContextProps {
   setCirclePlanId: ((value: string) => void) | null;
   hdfcPlanId: string;
   setHdfcPlanId: ((value: string) => void) | null;
+  circleStatus: string;
+  setCircleStatus: ((value: string) => void) | null;
+  hdfcStatus: string;
+  setHdfcStatus: ((value: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -280,6 +284,10 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCirclePlanId: null,
   hdfcPlanId: '',
   setHdfcPlanId: null,
+  circleStatus: '',
+  setCircleStatus: null,
+  hdfcStatus: '',
+  setHdfcStatus: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -443,6 +451,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
+  const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
+  const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
@@ -550,6 +560,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCirclePlanId,
         hdfcPlanId,
         setHdfcPlanId,
+        circleStatus,
+        setCircleStatus,
+        hdfcStatus,
+        setHdfcStatus,
       }}
     >
       {props.children}

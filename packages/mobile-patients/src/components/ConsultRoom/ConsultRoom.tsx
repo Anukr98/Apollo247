@@ -387,6 +387,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAxdcCode,
     setCirclePlanId,
     setHdfcPlanId,
+    setCircleStatus,
+    setHdfcStatus,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -860,6 +862,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
+          setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
@@ -867,6 +870,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setCirclePlanValidity && setCirclePlanValidity(null);
           setCirclePlanId && setCirclePlanId('');
           fireFirstTimeLanded();
+          setCircleStatus && setCircleStatus('');
         }
 
         if (data?.HDFC?.[0]._id) {
@@ -875,6 +879,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const planName = data?.HDFC?.[0].name;
           setHdfcPlanName && setHdfcPlanName(planName);
           setHdfcPlanId && setHdfcPlanId(data?.HDFC?.[0].plan_id);
+          setHdfcStatus && setHdfcStatus(data?.HDFC?.[0].status);
 
           if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
             setIsFreeDelivery && setIsFreeDelivery(true);
@@ -882,6 +887,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         } else {
           setHdfcSubscriptionId && setHdfcSubscriptionId('');
           setHdfcPlanName && setHdfcPlanName('');
+          setHdfcStatus && setHdfcStatus('');
         }
       }
     } catch (error) {
