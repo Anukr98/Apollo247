@@ -221,6 +221,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     couponProducts,
     setCouponProducts,
     addMultipleCartItems,
+    circleSubscriptionId,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
@@ -240,7 +241,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation, hdfcUserSubscriptions } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, hdfcUserSubscriptions, hdfcPlanId, circlePlanId, circleSubscription } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
@@ -252,10 +253,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
-  let packageId = '';
+  let packageId: string[] = [];
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId =
-      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleSubscription?.status === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`)
   }
 
   // To remove applied coupon and selected storeId from cart when user goes back.
@@ -874,7 +877,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
-      packageId: packageId,
+      packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)

@@ -385,6 +385,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcUpgradeUserSubscriptions,
     circleSubscription,
     setAxdcCode,
+    setCirclePlanId,
+    setHdfcPlanId,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -847,11 +849,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             endDate: data?.APOLLO?.[0]?.end_date,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
           setCirclePlanValidity && setCirclePlanValidity(null);
+          setCirclePlanId && setCirclePlanId('');
         }
 
         if (data?.HDFC?.[0]._id) {
@@ -859,6 +863,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           const planName = data?.HDFC?.[0].name;
           setHdfcPlanName && setHdfcPlanName(planName);
+          setHdfcPlanId && setHdfcPlanId(data?.HDFC?.[0].plan_id);
 
           if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
             setIsFreeDelivery && setIsFreeDelivery(true);

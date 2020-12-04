@@ -234,7 +234,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const discount = getDiscountPercentage(price, special_price);
     const off_text = discount ? ' ' + discount + '%off' : '';
     return is_in_stock ? (
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{ flexDirection: 'row', marginBottom: 20, }}>
         {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>

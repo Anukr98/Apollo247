@@ -208,6 +208,10 @@ export interface AppCommonDataContextProps {
   setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
   axdcCode: string;
   setAxdcCode: ((value: string) => void) | null;
+  circlePlanId: string;
+  setCirclePlanId: ((value: string) => void) | null;
+  hdfcPlanId: string;
+  setHdfcPlanId: ((value: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -272,6 +276,10 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setDoctorJoinedChat: null,
   axdcCode: '',
   setAxdcCode: null,
+  circlePlanId: '',
+  setCirclePlanId: null,
+  hdfcPlanId: '',
+  setHdfcPlanId: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -433,6 +441,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
   };
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
+  const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
+  const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
@@ -536,6 +546,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setSavePatientDetailsWithHistory,
         axdcCode,
         setAxdcCode,
+        circlePlanId,
+        setCirclePlanId,
+        hdfcPlanId,
+        setHdfcPlanId,
       }}
     >
       {props.children}

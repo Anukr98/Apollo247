@@ -145,25 +145,28 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     isCircleSubscription,
     setIsCircleSubscription,
     circleMembershipCharges,
-    setCircleSubscriptionId,
+    circleSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, hdfcUserSubscriptions, pharmacyLocation, hdfcPlanId, circlePlanId, circleSubscription } = useAppCommonData();
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-  let packageId = '';
+
+  let packageId: string[] = [];
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId =
-      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleSubscription?.status === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`)
   }
 
   useEffect(() => {
     const data = {
-      packageId,
+      packageId: packageId.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
     };
@@ -199,7 +202,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageId: packageId,
+      packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)

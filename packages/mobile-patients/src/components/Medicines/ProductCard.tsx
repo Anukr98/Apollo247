@@ -195,6 +195,9 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   addToCart: {
+    position: 'absolute',
+    bottom: 15,
+    left: 10,
     ...text('B', 12, '#FC9916', 1, 18),
   },
   imagePlaceHolder: { backgroundColor: 'transparent' },
