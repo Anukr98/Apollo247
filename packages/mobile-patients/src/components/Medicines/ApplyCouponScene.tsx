@@ -205,9 +205,8 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setCircleSubscriptionId && setCircleSubscriptionId('');
           if (resp.data.response.valid) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
             console.log(g(resp.data, 'response'));
             setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
             props.navigation.goBack();

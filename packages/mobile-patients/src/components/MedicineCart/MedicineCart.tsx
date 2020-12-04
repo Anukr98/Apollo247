@@ -904,8 +904,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           if (!coupon && isCircleSubscription) {
             if (!circleSubscriptionId || cartTotalCashback) {
               setIsCircleSubscription && setIsCircleSubscription(false);
-              setCirclePlanSelected && setCirclePlanSelected(null);
-              setDefaultCirclePlan && setDefaultCirclePlan(null);
             }
           } else {
             setCoupon && setCoupon(null);
