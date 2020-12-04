@@ -931,7 +931,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             Bill Amount
           </Text>
           <Text style={styles.grandTotalTxt}>
-            {string.common.Rs} {getFormattedAmount(grandTotal - burnHC - circleMembershipCharges + couponDiscount)}
+            {string.common.Rs} {getFormattedAmount(grandTotal - circleMembershipCharges + couponDiscount)}
           </Text>
         </View>
         {
