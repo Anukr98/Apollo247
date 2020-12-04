@@ -993,6 +993,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
   };
 
+  const getTotalCashbackAmount = () => {
+    if (burnHC != 0) {
+      return getFormattedAmount((Number(cartTotalCashback) * Number(grandTotal))/(Number(grandTotal) + Number(burnHC)))
+    } else {
+      return cartTotalCashback;
+    }
+  };
+
   const renderCareSavings = () => {
     const careStyle = StyleSheet.create({
       careSavingsContainer: {
@@ -1028,21 +1036,25 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
     return (
       <View style={careStyle.careSavingsContainer}>
-        <View style={careStyle.rowSpaceBetween}>
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <CircleLogo style={careStyle.circleLogo} />
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
-              Membership Cashback
-            </Text>
-          </View>
-          <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{cartTotalCashback}</Text>
-        </View>
+        {
+          (Number(grandTotal) - Number(burnHC) > 1) && (
+            <View style={careStyle.rowSpaceBetween}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                }}
+              >
+                <CircleLogo style={careStyle.circleLogo} />
+                <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                  Membership Cashback
+                </Text>
+              </View>
+              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{getTotalCashbackAmount()}</Text>
+            </View>
+          )
+        }
         {!!deliveryFee && (
-          <View style={[careStyle.rowSpaceBetween, { marginTop: 10 }]}>
+          <View style={[careStyle.rowSpaceBetween, { marginTop: (Number(grandTotal) - Number(burnHC) > 1) ? 10 : 0 }]}>
             <View style={{ flexDirection: 'row' }}>
               <CircleLogo style={careStyle.circleLogo} />
               <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery Savings</Text>
