@@ -1086,7 +1086,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderScreen = () => {
-    console.log('circleSubscriptionId: ', circleSubscriptionId);
     return (
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
