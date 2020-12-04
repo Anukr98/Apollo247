@@ -102,8 +102,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   expressContainer: {
-    alignItems: 'flex-end',
-    marginBottom: 6,
+    position: 'absolute',
+    top: 5,
+    right: 10,
   },
   expressLogo: {
     resizeMode: 'contain',
@@ -305,7 +306,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
       {is_express === 'Yes' && renderExpressFlag()}
       <View style={[
         styles.medicineIconAndNameViewStyle,
-        {marginTop: !!cashback && !!type_id ? 10 : 0}
+        {marginTop: 10}
       ]}>
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
