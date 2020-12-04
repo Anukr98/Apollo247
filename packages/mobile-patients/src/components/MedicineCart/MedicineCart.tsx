@@ -132,6 +132,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setCirclePlanSelected,
     setDefaultCirclePlan,
     circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -139,12 +140,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     locationDetails,
     pharmacyLocation,
     setPharmacyLocation,
-    circleSubscription,
     axdcCode,
     setAxdcCode,
     circlePlanId,
     hdfcPlanId,
-    hdfcUserSubscriptions,
+    hdfcStatus,
+    circleStatus,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -549,10 +550,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     console.log('inside validate');
     setloading!(true);
     let packageId: string[] = [];
-    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
       packageId.push(`HDFC:${hdfcPlanId}`);
     }
-    if (circleSubscriptionId && circleSubscription?.status === 'active') {
+    if (circleSubscriptionId && circleStatus === 'active') {
       packageId.push(`APOLLO:${circlePlanId}`)
     }
     const data = {

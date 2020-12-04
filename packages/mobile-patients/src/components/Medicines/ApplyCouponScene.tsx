@@ -146,21 +146,29 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     setIsCircleSubscription,
     circleMembershipCharges,
     circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions, pharmacyLocation, hdfcPlanId, circlePlanId, circleSubscription } = useAppCommonData();
+  const { 
+    locationDetails, 
+    pharmacyLocation, 
+    hdfcPlanId, 
+    circlePlanId, 
+    hdfcStatus, 
+    circleStatus 
+  } = useAppCommonData();
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
   let packageId: string[] = [];
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleSubscription?.status === 'active') {
+  if (circleSubscriptionId && circleStatus === 'active') {
     packageId.push(`APOLLO:${circlePlanId}`)
   }
 

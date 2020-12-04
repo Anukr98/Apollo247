@@ -99,7 +99,7 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
-  const { locationDetails, hdfcUserSubscriptions, hdfcPlanId, circlePlanId, circleSubscription } = useAppCommonData();
+  const { locationDetails, hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -133,7 +133,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
   } = circleDoctorDetails;
-  const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
+  const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
     isCircleDoctor && !circleSubscriptionId
   );
@@ -352,10 +352,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         : Number(price);
 
     let packageId: string[] = [];
-    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
       packageId.push(`HDFC:${hdfcPlanId}`);
     }
-    if (circleSubscriptionId && circleSubscription?.status === 'active') {
+    if (circleSubscriptionId && circleStatus === 'active') {
       packageId.push(`APOLLO:${circlePlanId}`)
     }
     const timeSlot =
