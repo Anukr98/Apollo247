@@ -890,7 +890,7 @@ export const fetchConsultCoupons = (data: any): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   let url = `${baseUrl}/frontend?mobile=${mobile}&email=${email}`;
   if (!!packageId) {
-    url += `?packageId=${packageId}`;
+    url += `&packageId=${packageId}`;
   }
   return Axios.get(url);
 };
