@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4.5,
     marginLeft: 'auto',
     marginRight: 20,
-    marginTop: -44,
+    marginTop: -46,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 5,
   },

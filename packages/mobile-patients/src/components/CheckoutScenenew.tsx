@@ -1307,7 +1307,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           <Text style={styles.codAlertMsg}>
             {isOneApolloSelected
               ? '! COD option is not available along with OneApollo Health Credits.'
-              : '! COD option is not available for this transaction.'}
+              : '! COD option is not available for buying Circle Membership.'}
           </Text>
         )}
       </View>
