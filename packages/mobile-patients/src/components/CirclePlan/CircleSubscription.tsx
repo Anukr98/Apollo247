@@ -48,7 +48,12 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
   };
 
   const renderPaymentOptions = () => (
-    <PaymentOptions navigation={props.navigation} from={from} selectedPlan={selectedPlan} />
+    <PaymentOptions
+      navigation={props.navigation}
+      from={from}
+      selectedPlan={selectedPlan}
+      comingFrom={'circlePlanPurchase'}
+    />
   );
 
   const renderHeader = () => {

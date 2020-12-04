@@ -28,6 +28,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
   selectedPlan?: any;
+  forCircle?: boolean;
 }
 export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props) => {
   let WebViewRef: any;
@@ -36,6 +37,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   const from = props.navigation.getParam('from');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const selectedPlan = props.navigation.getParam('selectedPlan');
+  const forCircle = props.navigation.getParam('forCircle');
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -70,6 +72,15 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
         WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED,
         CircleEventAttributes
       );
+  };
+
+  const firePaymentDoneEvent = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PAYMENT_DONE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+    };
+    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_PAYMENT_DONE, CircleEventAttributes);
   };
 
   const handleBack = () => {
@@ -110,6 +121,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1
     ) {
+      forCircle ? firePaymentDoneEvent() : null;
       fireCircleActivatedEvent();
       navigatetoStatusScreen(redirectedUrl);
     }

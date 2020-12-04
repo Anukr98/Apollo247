@@ -110,6 +110,17 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   }, []);
 
+  const fireMembershipPlanSelected = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PLAN_SELECTED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
+      from: props.source || 'HomePage',
+    };
+    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_PLAN_SELECTED, CircleEventAttributes);
+  };
+
   const fetchCarePlans = async () => {
     try {
       const res = await client.query<GetPlanDetailsByPlanId>({
@@ -157,6 +168,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   };
   const onPressMembershipPlans = (index: number) => {
+    fireMembershipPlanSelected();
+
     const membershipPlan = membershipPlans?.[index];
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));

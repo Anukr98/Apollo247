@@ -339,7 +339,12 @@ export enum WebEngageEventName {
   COVID_BANNER_CLICKED = 'Recovery Clinic Banner clicked',
   NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = "App non-circle -HomePage Banner clicked",
   MEMBERSHIP_DETAILS_BANNER_CLICKED = 'App - circle - Membership Details Banner clicked',
-  HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'App - circle - Doc on Call Banner Clicked'
+  HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'App - circle - Doc on Call Banner Clicked',
+  NON_CIRCLE_HOMEPAGE_VIEWED = 'App - Circle Subscription Landing Page Entry',
+  NON_CIRCLE_PLAN_SELECTED = 'App - Circle Subscription Landing Plan selected',
+  NON_CIRCLE_BUY_NOW_CLICKED = 'App - Circle Subscription Landing Buy Now Clicked',
+  NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
+  NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done'
 }
 
 export interface PatientInfo {
@@ -626,6 +631,11 @@ export interface WebEngageEvents {
   [WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED]: CircleUserInfo;
   [WebEngageEventName.MEMBERSHIP_DETAILS_BANNER_CLICKED]: CircleUserInfo;
   [WebEngageEventName.HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED]: CircleUserInfo;
+  [WebEngageEventName.NON_CIRCLE_PLAN_SELECTED]: CircleUserInfo;
+  [WebEngageEventName.NON_CIRCLE_BUY_NOW_CLICKED]: CircleUserInfo;
+  [WebEngageEventName.NON_CIRCLE_PAYMENT_MODE_SELECTED]: CircleUserInfo;
+  [WebEngageEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
   
   // ********** PharmacyEvents ********** \\
 
