@@ -416,6 +416,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(true);
+  const [updatePatientDetailsApi, setUpdatePatientDetailsApi] = useState(true);
   const [showUpdateProfilePopup, setShowUpdateProfilePopup] = useState(false);
   const [showUpdateProfileErrorPopup, setShowUpdateProfileErrorPopup] = useState(false);
   const [currentUpdatePopupId, setCurrentUpdatePopupId] = useState(0);
@@ -647,11 +648,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setPastDataLoader(true);
-    setPrismdataLoader(true);
-    fetchPastData();
-    fetchTestData();
-  }, [currentPatient]);
+    if (updatePatientDetailsApi) {
+      setPastDataLoader(true);
+      setPrismdataLoader(true);
+      fetchPastData();
+      fetchTestData();
+    }
+  }, [currentPatient, updatePatientDetailsApi]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -713,18 +716,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         })
         .then(({ data }) => {
           getPatientApiCall();
+          setUpdatePatientDetailsApi(false);
           setTimeout(() => {
             setShowUpdateProfilePopup(false);
             setOverlaySpinner(false);
-          }, 1500);
+          }, 1800);
         })
         .catch((e) => {
           setShowUpdateProfilePopup(false);
           setOverlaySpinner(false);
+          loading && setLoading!(false);
           console.log(e);
-        })
-        .finally(() => {
-          setLoading!(true);
         });
     }
   };
@@ -763,6 +765,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             listContainerStyle={{ marginLeft: 6, marginTop: 44 }}
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            onProfileChange={() => setUpdatePatientDetailsApi(true)}
             unsetloaderDisplay={true}
           ></ProfileList>
         }
@@ -825,6 +828,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               listContainerStyle={{ marginLeft: 0, marginTop: 44 }}
               selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              onProfileChange={() => setUpdatePatientDetailsApi(true)}
               unsetloaderDisplay={true}
             ></ProfileList>
             <View>
