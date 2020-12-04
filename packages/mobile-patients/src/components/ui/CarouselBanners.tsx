@@ -128,6 +128,17 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED, eventAttributes);
   };
 
+  const fireHCActivatedEvent = (from: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.HC_1CLICK_ACTIVATION] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
+      from: from || 'HomePage',
+    };
+    postWebEngageEvent(WebEngageEventName.HC_1CLICK_ACTIVATION, eventAttributes);
+  };
+
   const fireBannerCovidClickedWebengageEvent = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.COVID_BANNER_CLICKED] = {
       'Patient UHID': currentPatient?.uhid,
@@ -358,7 +369,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     }
     //for only circle
     if (action == hdfc_values.UPGRADE_CIRCLE) {
-      fireCircleEvent(type, action);
+      type == hdfc_values.ONE_TOUCH ? null : fireCircleEvent(type, action);
       planPurchased.current = false;
       setCirclePlanSelected && setCirclePlanSelected(null);
       if (type == hdfc_values.ONE_TOUCH) {
@@ -366,6 +377,11 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else {
         setShowCirclePlans(true);
       }
+    } else if (action == hdfc_values.SPECIALITY_LISTING) {
+      fireBannerCovidClickedWebengageEvent();
+      props.navigation.navigate('DoctorSearchListing', {
+        specialities: [type],
+      });
     } else {
       if (type == hdfc_values.REDIRECT) {
         if (action == hdfc_values.SPECIALITY_LISTING) {
@@ -415,11 +431,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         }
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
-      } else if (type == hdfc_values.COVID_RECOVER_CLINIC) {
-        fireBannerCovidClickedWebengageEvent();
-        props.navigation.navigate('DoctorSearchListing', {
-          specialities: hdfc_values.COVID_RECOVER_CLINIC,
-        });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
@@ -443,6 +454,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         setShowCircleActivation(false);
         if (planActivated) {
           planActivationCallback && planActivationCallback();
+          fireHCActivatedEvent(from);
         }
       }}
       defaultCirclePlan={defaultCirclePlan}
