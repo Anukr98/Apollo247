@@ -370,7 +370,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     if (orderType == 'HCorder') {
       paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
-      paymentInfo.medicinePaymentMqInput['healthCredits'] = !!circleMembershipCharges ? getFormattedAmount(grandTotal - circleMembershipCharges) : getFormattedAmount(grandTotal);
+      paymentInfo.medicinePaymentMqInput['healthCredits'] = !!circleMembershipCharges
+        ? getFormattedAmount(grandTotal - circleMembershipCharges)
+        : getFormattedAmount(grandTotal);
       if (circleMembershipCharges) {
         paymentInfo.medicinePaymentMqInput['healthCreditsSub'] = circleMembershipCharges;
       }
@@ -556,16 +558,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           ? { userSubscriptionId: circleSubscriptionId }
           : null,
         planPurchaseDetails: circleSubPlanId
-        ? {
-            TYPE: Circle.CARE_PLAN,
-            PlanAmount: circleMembershipCharges || 0,
-            planId: Circle.CIRCLEPlan,
-            subPlanId: circleSubPlanId || '',
-          }
-        : null,
-        totalCashBack: (cartTotalCashback || circleSubscriptionId)
-          ? Number(cartTotalCashback) || 0
-          : 0,
+          ? {
+              TYPE: Circle.CARE_PLAN,
+              PlanAmount: circleMembershipCharges || 0,
+              planId: Circle.CIRCLEPlan,
+              subPlanId: circleSubPlanId || '',
+            }
+          : null,
+        totalCashBack:
+          cartTotalCashback || circleSubscriptionId ? Number(cartTotalCashback) || 0 : 0,
       },
     };
 
@@ -906,7 +907,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         justifyContent: 'space-between',
         paddingVertical: 7,
       },
-      totalContainer : {
+      totalContainer: {
         borderTopWidth: 1,
         borderTopColor: '#E5E5E5',
         flexDirection: 'row',
@@ -935,53 +936,47 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {string.common.Rs} {getFormattedAmount(grandTotal - membershipCharges + couponDiscount)}
           </Text>
         </View>
-        {
-          couponDiscount != 0 && (
-            <View style={careStyle.titleContainer}>
-              <View style={{ ...styles.subCont, marginTop: 2 }}>
-                <View>
-                  <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
-                    Coupon Applied
-                  </Text>
-                  <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
-                    ({coupon?.coupon})
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.grandTotalTxt}>
-                - {string.common.Rs} {getFormattedAmount(couponDiscount)}
-              </Text>
-            </View>
-          )
-        }
-        {
-          burnHC != 0 && (
-            <View style={careStyle.titleContainer}>
-              <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
+        {couponDiscount != 0 && (
+          <View style={careStyle.titleContainer}>
+            <View style={{ ...styles.subCont, marginTop: 2 }}>
+              <View>
                 <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
-                  OneApollo HC
+                  Coupon Applied
+                </Text>
+                <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                  ({coupon?.coupon})
                 </Text>
               </View>
-              <Text style={styles.grandTotalTxt}>
-                - {string.common.Rs} {getFormattedAmount(burnHC)}
+            </View>
+            <Text style={styles.grandTotalTxt}>
+              - {string.common.Rs} {getFormattedAmount(couponDiscount)}
+            </Text>
+          </View>
+        )}
+        {burnHC != 0 && (
+          <View style={careStyle.titleContainer}>
+            <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
+              <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                OneApollo HC
               </Text>
             </View>
-          )
-        }
-        {
-          !!circleMembershipCharges && (
-            <View style={careStyle.titleContainer}>
-              <CareCashbackBanner
-                bannerText={`Membership`}
-                textStyle={theme.viewStyles.text('M', 14, '#00B38E', 1, 18)}
-                logoStyle={careStyle.logoStyle}
-              />
-              <Text style={[styles.grandTotalTxt, {color: '#00B38E', lineHeight: 24,}]}>
-                {string.common.Rs} {circleMembershipCharges}
-              </Text>
-            </View>
-          )
-        }
+            <Text style={styles.grandTotalTxt}>
+              - {string.common.Rs} {getFormattedAmount(burnHC)}
+            </Text>
+          </View>
+        )}
+        {!!circleMembershipCharges && (
+          <View style={careStyle.titleContainer}>
+            <CareCashbackBanner
+              bannerText={`Membership`}
+              textStyle={theme.viewStyles.text('M', 14, '#00B38E', 1, 18)}
+              logoStyle={careStyle.logoStyle}
+            />
+            <Text style={[styles.grandTotalTxt, { color: '#00B38E', lineHeight: 24 }]}>
+              {string.common.Rs} {circleMembershipCharges}
+            </Text>
+          </View>
+        )}
         <View style={careStyle.totalContainer}>
           <Text style={theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
             TOTAL
@@ -996,7 +991,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
 
   const getTotalCashbackAmount = () => {
     if (burnHC != 0) {
-      return getFormattedAmount((Number(cartTotalCashback) * Number(grandTotal))/(Number(grandTotal) + Number(burnHC)))
+      return getFormattedAmount(
+        (Number(cartTotalCashback) * Number(grandTotal)) / (Number(grandTotal) + Number(burnHC))
+      );
     } else {
       return cartTotalCashback;
     }
@@ -1037,25 +1034,30 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
     return (
       <View style={careStyle.careSavingsContainer}>
-        {
-          (Number(grandTotal) - Number(burnHC) > 1) && (
-            <View style={careStyle.rowSpaceBetween}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                }}
-              >
-                <CircleLogo style={careStyle.circleLogo} />
-                <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
-                  Membership Cashback
-                </Text>
-              </View>
-              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{getTotalCashbackAmount()}</Text>
+        {Number(grandTotal) - Number(burnHC) > 1 && (
+          <View style={careStyle.rowSpaceBetween}>
+            <View
+              style={{
+                flexDirection: 'row',
+              }}
+            >
+              <CircleLogo style={careStyle.circleLogo} />
+              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                Membership Cashback
+              </Text>
             </View>
-          )
-        }
+            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+              ₹{getTotalCashbackAmount()}
+            </Text>
+          </View>
+        )}
         {!!deliveryFee && (
-          <View style={[careStyle.rowSpaceBetween, { marginTop: (Number(grandTotal) - Number(burnHC) > 1) ? 10 : 0 }]}>
+          <View
+            style={[
+              careStyle.rowSpaceBetween,
+              { marginTop: Number(grandTotal) - Number(burnHC) > 1 ? 10 : 0 },
+            ]}
+          >
             <View style={{ flexDirection: 'row' }}>
               <CircleLogo style={careStyle.circleLogo} />
               <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery Savings</Text>
@@ -1292,6 +1294,25 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       </View>
     );
   };
+  const renderNewCOD = () => {
+    return (
+      <View>
+        <Button
+          disabled={isOneApolloSelected || !!circleMembershipCharges}
+          style={styles.CODoption}
+          title={'CASH ON DELIVERY'}
+          onPress={() => initiateOrder('', '', true, false)}
+        />
+        {(!!isOneApolloSelected || !!circleMembershipCharges) && (
+          <Text style={styles.codAlertMsg}>
+            {isOneApolloSelected
+              ? '! COD option is not available along with OneApollo Health Credits.'
+              : '! COD option is not available for this transaction.'}
+          </Text>
+        )}
+      </View>
+    );
+  };
   const renderCOD = () => {
     return (
       <View>
@@ -1409,9 +1430,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {rendertotalAmount()}
             {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
             {availableHC != 0 && renderOneApolloOption()}
+            {renderNewCOD()}
             {renderPaymentOptions()}
             {bankOptions.length > 0 && renderNetBanking()}
-            {!circleMembershipCharges && renderCOD()}
+            {/* {!circleMembershipCharges && renderCOD()} */}
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (
@@ -1589,5 +1611,16 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: 'rgba(2, 71, 91, 0.6)',
     lineHeight: 20,
+  },
+  CODoption: {
+    marginTop: 0.05 * windowWidth,
+    height: 0.06 * windowHeight,
+    width: 0.9 * windowWidth,
+    marginHorizontal: 0.05 * windowWidth,
+  },
+  codAlertMsg: {
+    ...theme.viewStyles.text('M', 11, theme.colors.LIGHT_BLUE, 1, 18),
+    marginTop: 6,
+    marginHorizontal: 25,
   },
 });
