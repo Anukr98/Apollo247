@@ -99,7 +99,13 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
-  const { locationDetails, hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
+  const {
+    locationDetails,
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+  } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -125,7 +131,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
     isCircleDoctor,
-    minDiscountedPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
@@ -137,6 +142,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
     isCircleDoctor && !circleSubscriptionId
   );
+  const discountedPrice = isOnlineConsult
+    ? onlineConsultDiscountedPrice
+    : physicalConsultDiscountedPrice;
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
@@ -240,7 +248,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const renderCareMembershipAddedCard = () => {
-    return <CareMembershipAdded doctor={doctor} />;
+    return <CareMembershipAdded doctor={doctor} isOnlineConsult={isOnlineConsult} />;
   };
 
   const renderPriceBreakup = () => {
@@ -265,8 +273,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return (
       <ConsultDiscountCard
         style={{
-          marginBottom:
-            notSubscriberUserForCareDoctor && amountToPay >= minDiscountedPrice ? 0 : 20,
+          marginBottom: notSubscriberUserForCareDoctor && amountToPay >= discountedPrice ? 0 : 20,
         }}
         coupon={coupon}
         couponDiscountFees={couponDiscountFees}
@@ -289,7 +296,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         isConsultJourney={true}
         style={styles.careSelectContainer}
         navigation={props.navigation}
-        careDiscountPrice={minDiscountedPrice}
+        careDiscountPrice={discountedPrice}
         doctorFees={isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         onSelectMembershipPlan={() => {
           setTimeout(() => {
@@ -356,7 +363,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       packageId.push(`HDFC:${hdfcPlanId}`);
     }
     if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`)
+      packageId.push(`APOLLO:${circlePlanId}`);
     }
     const timeSlot =
       tabs[0].title === selectedTab &&
@@ -814,7 +821,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           You could have{' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             saved {string.common.Rs}
-            {minDiscountedPrice}
+            {discountedPrice}
           </Text>{' '}
           on this purchase with
         </Text>
@@ -845,7 +852,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           {renderPriceBreakup()}
           {renderDiscountView()}
           {notSubscriberUserForCareDoctor &&
-            amountToPay >= minDiscountedPrice &&
+            amountToPay >= discountedPrice &&
             renderSaveWithCarePlanView()}
         </ScrollView>
         {renderBottomButton()}

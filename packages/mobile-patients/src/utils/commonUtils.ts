@@ -194,20 +194,16 @@ export const calculateCircleDoctorPricing = (data: any) => {
   const onlineConsultDiscountedPrice = onlineConsultMRPPrice - onlineConsultSlashedPrice;
 
   const minMrp =
-    physicalConsultMRPPrice && onlineConsultMRPPrice
+    physicalConsultMRPPrice > 0 && onlineConsultMRPPrice > 0
       ? Math.min(Number(physicalConsultMRPPrice), Number(onlineConsultMRPPrice))
       : onlineConsultMRPPrice
       ? onlineConsultMRPPrice
       : physicalConsultMRPPrice;
 
-  // discount % will be same on both consult
-  const minSlashedPrice =
-    physicalConsultSlashedPrice && onlineConsultSlashedPrice
-      ? Math.min(Number(physicalConsultSlashedPrice), Number(onlineConsultSlashedPrice))
-      : onlineConsultSlashedPrice
-      ? onlineConsultSlashedPrice
-      : physicalConsultSlashedPrice;
+  const slashedPriceArr = circleDoctors?.filter((item: any) => minMrp === item.mrp);
 
+  // discount % will be same on both consult
+  const minSlashedPrice = slashedPriceArr?.[0]?.slashed_price;
   const minDiscountedPrice = minMrp - minSlashedPrice;
   return {
     isCircleDoctor,

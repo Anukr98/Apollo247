@@ -206,6 +206,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     minMrp,
     minSlashedPrice,
     minDiscountedPrice,
+    onlineConsultDiscountedPrice,
   } = circleDoctorDetails;
 
   const { showCircleSubscribed } = useShoppingCart();
@@ -439,6 +440,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(props.availableModes)
       : false;
     const isBoth = props.availableModes ? [ConsultMode.BOTH].includes(props.availableModes) : false;
+    const discountedPrice =
+      physicalConsultMRPPrice === onlineConsultMRPPrice
+        ? onlineConsultDiscountedPrice
+        : minDiscountedPrice;
     return (
       <TouchableOpacity
         key={rowData.id}
@@ -588,14 +593,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {renderSpecialities()}
               {isCircleDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {isCircleDoctor && minDiscountedPrice > -1 && showCircleSubscribed ? (
+              {isCircleDoctor && discountedPrice > -1 && showCircleSubscribed ? (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
                     marginTop: 2,
                   }}
                 >
-                  {string.circleDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
+                  {string.circleDoctors.circleSavings.replace('{amount}', `${discountedPrice}`)}
                 </Text>
               ) : null}
               <Text
