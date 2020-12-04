@@ -99,7 +99,7 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
+  const { locationDetails, hdfcUserSubscriptions, hdfcPlanId, circlePlanId, circleSubscription } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -344,7 +344,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
-    let packageId = '';
     const billAmount =
       circlePlanSelected && isCircleDoctor
         ? isOnlineConsult
@@ -352,9 +351,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           : physicalConsultSlashedPrice
         : Number(price);
 
+    let packageId: string[] = [];
     if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-      packageId =
-        g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleSubscription?.status === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`)
     }
     const timeSlot =
       tabs[0].title === selectedTab &&
@@ -382,7 +384,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           rescheduling: false,
         },
       ],
-      packageId: packageId,
+      packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
     console.log('datadata', data);

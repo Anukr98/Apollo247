@@ -192,13 +192,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   circleView: {
-    backgroundColor: theme.colors.APP_YELLOW,
+    backgroundColor: theme.colors.WHITE,
     paddingHorizontal: 12,
-    paddingVertical: 2,
+    paddingVertical: 4.5,
     marginLeft: 'auto',
     marginRight: 20,
-    marginTop: -40,
-    borderRadius: 2,
+    marginTop: -46,
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 5,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 11, 'white'),

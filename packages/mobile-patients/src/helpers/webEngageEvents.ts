@@ -344,7 +344,8 @@ export enum WebEngageEventName {
   NON_CIRCLE_PLAN_SELECTED = 'App - Circle Subscription Landing Plan selected',
   NON_CIRCLE_BUY_NOW_CLICKED = 'App - Circle Subscription Landing Buy Now Clicked',
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
-  NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done'
+  NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
+  HC_1CLICK_ACTIVATION = "App - HC - 1ClickActivation",
 }
 
 export interface PatientInfo {
@@ -636,6 +637,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NON_CIRCLE_BUY_NOW_CLICKED]: CircleUserInfo;
   [WebEngageEventName.NON_CIRCLE_PAYMENT_MODE_SELECTED]: CircleUserInfo;
   [WebEngageEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
+  [WebEngageEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
   
   // ********** PharmacyEvents ********** \\
 
