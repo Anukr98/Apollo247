@@ -15,14 +15,14 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { HdfcConnectPopup } from './HdfcConnectPopup';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 import {
-  useAppCommonData, 
-  CirclePlanSummary, 
-  CircleGroup, 
-  PlanBenefits, 
-  BenefitCtaAction, 
-  CicleSubscriptionData, 
-  GroupPlan, 
-  SubscriptionData 
+  useAppCommonData,
+  CirclePlanSummary,
+  CircleGroup,
+  PlanBenefits,
+  BenefitCtaAction,
+  CicleSubscriptionData,
+  GroupPlan,
+  SubscriptionData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   g,
@@ -56,15 +56,15 @@ import {
   addDiabeticQuestionnaire,
   addDiabeticQuestionnaireVariables,
 } from '@aph/mobile-patients/src/graphql/types/addDiabeticQuestionnaire';
-import { 
-  ADD_DIABETIC_QUESTIONNAIRE, 
-  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE, 
-  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS 
+import {
+  ADD_DIABETIC_QUESTIONNAIRE,
+  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { 
-  GetAllUserSubscriptionsWithPlanBenefitsV2, 
-  GetAllUserSubscriptionsWithPlanBenefitsV2Variables 
+import {
+  GetAllUserSubscriptionsWithPlanBenefitsV2,
+  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 
 const styles = StyleSheet.create({
@@ -193,12 +193,12 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     setCircleSubscription,
     setHdfcUpgradeUserSubscriptions,
   } = useAppCommonData();
-  const { 
+  const {
     setHdfcPlanName,
     setIsFreeDelivery,
     setIsCircleSubscription,
     circleSubscriptionId,
-   } = useShoppingCart();
+  } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
@@ -468,7 +468,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           callsTotal: docOnCallBenefit?.[0]?.attribute_type?.total,
           callsUsed: docOnCallBenefit?.[0]?.attribute_type?.used,
         });
-        setLoading(false);
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       CommonBugFender('MyMembership_fetchCircleSavings', error);
@@ -1052,6 +1052,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
           benefitId={benefitId || ''}
+          successCallback={() => {
+            getUserSubscriptionsWithBenefits();
+          }}
         />
       )}
       {showAvailPopup && (

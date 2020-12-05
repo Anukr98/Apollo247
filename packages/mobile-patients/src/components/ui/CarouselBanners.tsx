@@ -49,9 +49,10 @@ interface CarouselProps extends NavigationScreenProps {
   circlePlanValidity?: string;
   from: string;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
+  successCallback: () => void;
 }
 export const CarouselBanners: React.FC<CarouselProps> = (props) => {
-  const { circleActivated, planActivationCallback, from, source } = props;
+  const { circleActivated, planActivationCallback, from, source, successCallback } = props;
   const [slideIndex, setSlideIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
@@ -511,6 +512,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           <HdfcConnectPopup
             onClose={() => setShowHdfcConnectPopup(false)}
             benefitId={benefitId || ''}
+            successCallback={() => successCallback()}
           />
         </Overlay>
       </View>
