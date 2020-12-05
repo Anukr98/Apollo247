@@ -563,6 +563,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setWEGUserAttributes();
       }
       getUserBanners();
+      getUserSubscriptionsWithBenefits();
     } catch (e) {}
   }, [currentPatient]);
 
@@ -1767,6 +1768,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           navigation={props.navigation}
           planActivationCallback={() => {
             getUserSubscriptionsByStatus();
+            getUserSubscriptionsWithBenefits();
             getUserBanners();
             circleActivatedRef.current = false;
           }}

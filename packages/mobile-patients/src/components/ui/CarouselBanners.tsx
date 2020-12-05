@@ -414,7 +414,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.CALL_API) {
         if (action == hdfc_values.CALL_EXOTEL_API) {
           fireBannerClickedWebengageEvent(hdfc_values.CALL_EXOTEL_API);
-          const benefits = g(hdfcUserSubscriptions, 'benefits');
+          const benefits = g(circleSubscription, 'benefits');
           const currentBenefit = benefits?.filter((value) => {
             return g(value, 'benefitCtaAction', 'type') === type;
           });

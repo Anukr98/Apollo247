@@ -102,7 +102,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
         query: INITIATE_CALL_FOR_PARTNER,
         variables: {
           mobileNumber,
-          benefitId: props.benefitId,
+          benefitId: `${props.benefitId}`,
         },
         fetchPolicy: 'no-cache',
       })
