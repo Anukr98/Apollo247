@@ -403,7 +403,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     (
       cartTotal +
       deliveryCharges +
-      (ppeKitCharges ? 500 : 0) -
+      (ppeKitCharges ? 0 : 0) -
       couponDiscount -
       cartSaving -
       (isDiagnosticCircleSubscription ? circleSaving : 0)
