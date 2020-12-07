@@ -276,6 +276,17 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     }
   };
 
+  const navigationToPaymentStatus = (status: string) => {
+    props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+      status: status,
+      price: totalAmount,
+      orderId: orderAutoId,
+      orderInfo: orderInfo,
+      checkoutEventAttributes: checkoutEventAttributes,
+      appsflyerEventAttributes: appsflyerEventAttributes,
+    });
+  };
+
   const onWebViewStateChange = (data: NavState, WebViewRef: any) => {
     const redirectedUrl = data.url;
     console.log({ redirectedUrl, data });
@@ -287,11 +298,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       // handleOrderSuccess();
       clearCartInfo && clearCartInfo();
       fireOrderEvent(true);
-      props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-        status: 'PAYMENT_SUCCESS',
-        price: totalAmount,
-        orderId: orderAutoId,
-      });
+      navigationToPaymentStatus('PAYMENT_SUCCESS');
     } else if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
@@ -299,18 +306,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       WebViewRef.stopLoading();
       fireOrderFailedEvent();
       if (!!circleMembershipCharges) {
-        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-          status: 'PAYMENT_FAILED',
-          price: totalAmount,
-          orderId: orderAutoId,
-        });
+        navigationToPaymentStatus('PAYMENT_FAILED');
       } else {
         fireOrderEvent(false);
-        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-          status: 'PAYMENT_PENDING',
-          price: totalAmount,
-          orderId: orderAutoId,
-        });
+        navigationToPaymentStatus('PAYMENT_PENDING');
       }
     }
   };
