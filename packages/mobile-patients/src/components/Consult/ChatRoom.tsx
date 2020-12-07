@@ -1077,30 +1077,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
   };
 
-  const playSound = () => {
-    try {
-      maxVolume();
-      if (audioTrack) {
-        audioTrack.play();
-        audioTrack.setNumberOfLoops(15);
-        console.log('call audioTrack');
-      }
-    } catch (e) {
-      CommonBugFender('playing_callertune__failed', e);
-    }
-  };
-
-  const stopSound = () => {
-    try {
-      setPrevVolume();
-      if (audioTrack) {
-        audioTrack.stop();
-      }
-    } catch (e) {
-      CommonBugFender('playing_callertune__failed', e);
-    }
-  };
-
   useEffect(() => {
     console.log('callType', callType);
     if (callType) {
@@ -1115,7 +1091,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isAudio.current = true;
           callhandelBack = false;
         }
-        isVoipCall || fromIncomingCall ? null : playSound();
       });
     }
     if (prescription) {
@@ -1596,7 +1571,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               isAudio.current = true;
               callhandelBack = false;
             }
-            playSound();
             !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
@@ -1607,7 +1581,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setHideStatusBar(true);
               setChatReceived(false);
               Keyboard.dismiss();
-              stopSound();
               changeAudioStyles();
               setConvertVideo(false);
               setDowngradeToAudio(false);
@@ -1872,7 +1845,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED,
         JSON.stringify(event)
       );
-      stopSound();
     },
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
@@ -1919,7 +1891,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
       subscriberConnected.current = true;
-      stopSound();
     },
     disconnected: (event: string) => {
       callEndWebengageEvent('Network');
@@ -2904,7 +2875,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setOnSubscribe(true);
         callhandelBack = false;
         // stopCallAbondmentTimer();
-        playSound();
         !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
@@ -2912,7 +2882,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         isAudio.current = false;
         // stopCallAbondmentTimer();
-        playSound();
         !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
         jrDoctorJoined.current = false;
@@ -2954,7 +2923,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
-        stopSound();
         addMessages(message);
       } else if (message.message.message === covertVideoMsg) {
         console.log('covertVideoMsg', covertVideoMsg);
@@ -6128,114 +6096,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const IncomingCallView = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          top: 88,
-          right: 8,
-          width: 155,
-          height: 205,
-          borderRadius: 30,
-          backgroundColor: 'black',
-        }}
-      >
-        {appointmentData.doctorInfo.photoUrl &&
-        appointmentData.doctorInfo.photoUrl.match(urlRegEx) ? (
-          <Image
-            source={{ uri: appointmentData.doctorInfo.photoUrl }}
-            resizeMode={'contain'}
-            style={{
-              width: 155,
-              height: 205,
-              opacity: 0.8,
-              borderRadius: 30,
-            }}
-          />
-        ) : (
-          <DoctorPlaceholderImage
-            style={{
-              width: 155,
-              height: 205,
-              opacity: 0.8,
-              borderRadius: 30,
-            }}
-          />
-        )}
-        {/* <DoctorCall
-          style={{
-            width: 155,
-            height: 205,
-            opacity: 0.5,
-            borderRadius: 30,
-          }}
-        /> */}
-        <Text
-          style={{
-            position: 'absolute',
-            marginLeft: 0,
-            marginTop: 16,
-            width: 155,
-            color: 'white',
-            ...theme.fonts.IBMPlexSansMedium(14),
-            textAlign: 'center',
-            letterSpacing: 0,
-          }}
-        >
-          Incoming Call
-        </Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={{
-            width: 40,
-            height: 40,
-            bottom: 16,
-            left: 58,
-            position: 'absolute',
-          }}
-          onPress={() => {
-            callPermissions(() => {
-              AsyncStorage.setItem('callDisconnected', 'false');
-              setOnSubscribe(false);
-              stopTimer();
-              startTimer(0);
-              setCallAccepted(true);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              Keyboard.dismiss();
-              stopSound();
-              changeAudioStyles();
-              setConvertVideo(false);
-              setDowngradeToAudio(false);
-              changeVideoStyles();
-              setDropdownVisible(false);
-              setCallerAudio(true);
-              setCallerVideo(true);
-              if (token) {
-                PublishAudioVideo();
-              } else {
-                APICallAgain();
-              }
-            });
-            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
-            fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
-          }}
-        >
-          <PickCallIcon
-            style={{
-              width: 40,
-              height: 40,
-              top: 0,
-              left: 0,
-              // position: 'absolute',
-            }}
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   const APICallAgain = () => {
     const input = {
       appointmentId: appointmentData.id,
@@ -7016,7 +6876,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           />
         )}
       </SafeAreaView>
-      {onSubscribe && IncomingCallView()}
       {isCall && VideoCall()}
       {isAudioCall && AudioCall()}
       {transferAccept && (
