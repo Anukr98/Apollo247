@@ -48,6 +48,8 @@ import {
   getAppointmentData as getAppointmentDataQuery,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import {
   GET_APPOINTMENT_DATA,
   GET_ALL_SPECIALTIES,
@@ -140,7 +142,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
   const pubnub = new Pubnub(config);
 
-  // const { setVirtualConsultationFee } = useAppCommonData();
+  const { setPhrNotificationData } = useAppCommonData();
 
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
@@ -325,8 +327,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       let route;
 
       const a = event.indexOf('https://www.apollo247.com');
-
-      if (a != -1) {
+      if (a == 0) {
         handleDeeplinkFormatTwo(event);
       } else {
         route = event.replace('apollopatients://', '');
@@ -334,8 +335,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const data = route.split('?');
         setBugFenderLog('DEEP_LINK_DATA', data);
         route = data[0];
-
-        // console.log(data, 'data');
 
         let linkId = '';
 
@@ -533,6 +532,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient?.id || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
+
   async function fireAppOpenedEvent(event: any) {
     const a = event.indexOf('apollopatients://');
     const b = event.indexOf('https://www.apollo247.com');
@@ -544,7 +558,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       utm_content: 'not set',
       referrer: 'not set',
     };
-    if (a != -1) {
+    if (a == 0) {
       const route = event.replace('apollopatients://', '');
       const data = route.split('?');
       if (data.length >= 2) {
@@ -554,8 +568,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
-    }
-    if (b != -1) {
+    } else if (b == 0) {
       const route = event.replace('https://www.apollo247.com/', '');
       const data = route.split('?');
       if (data.length >= 2) {
@@ -570,8 +583,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
-    }
-    if (!event) {
+    } else {
       console.log('attributes >>>', attributes);
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }
@@ -586,6 +598,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
       const item = JSON.parse(retrievedItem || 'null');
+      const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
       let allPatients;
@@ -608,7 +621,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const mePatient = allPatients
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
-
+      const currentPatient = allPatients
+        ? allPatients?.find((patient: any) => patient?.id === currentPatientId) ||
+          allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
+        : null;
       setAllPatients(allPatients);
 
       setTimeout(
@@ -618,6 +634,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
             if (mePatient) {
               if (mePatient.firstName !== '') {
+                callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
                 pushTheView(routeName, id ? id : undefined, isCall);
               } else {
@@ -765,6 +782,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
+          fromDeeplink: true,
         });
         break;
 
@@ -1008,7 +1026,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2
+      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2 || currentEnv === AppEnv.QA3
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
