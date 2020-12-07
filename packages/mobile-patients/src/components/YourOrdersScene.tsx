@@ -208,6 +208,14 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           statusToShowNewItems.includes(order.currentStatus!) && order.oldOrderTat! ? true : false
         }
         dateTime={getFormattedTime(order?.createdDate)}
+        reOrder={() =>
+          props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+            orderAutoId: order.orderAutoId,
+            billNumber: order.billNumber,
+            refetchOrders: refetchOrders,
+            reOrder: true,
+          })
+        }
       />
     );
   };

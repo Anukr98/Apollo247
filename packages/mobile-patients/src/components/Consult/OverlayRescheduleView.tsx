@@ -49,6 +49,7 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -201,12 +202,12 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               title={
                 props.KeyFollow == 'RESCHEDULE'
                   ? props.rescheduleCount.isPaid === 1
-                    ? `PAY Rs. ${props.data.doctorInfo &&
+                    ? `PAY ${string.common.Rs} ${props.data.doctorInfo &&
                         props.data.doctorInfo.onlineConsultationFees &&
                         props.data.doctorInfo.onlineConsultationFees}`
                     : `CONFIRM RESCHEDULE`
                   : props.isfollowupcount === 1
-                  ? `PAY Rs. ${props.doctor &&
+                  ? `PAY ${string.common.Rs} ${props.doctor &&
                       props.doctor.onlineConsultationFees &&
                       props.doctor.onlineConsultationFees}`
                   : `BOOK FOLLOWUP`

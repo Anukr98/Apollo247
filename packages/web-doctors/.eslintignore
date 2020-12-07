@@ -1,6 +1,0 @@
-dist
-node_modules
-.npm-cache
-package-lock.json
-src/graphql/schema.json
-src/graphql/types

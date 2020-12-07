@@ -35,7 +35,6 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   };
 
   const onPressDelete = (item: ShoppingCartItem) => {
-    setloading?.(true);
     removeCartItem && removeCartItem(item.id);
     postwebEngageProductRemovedEvent(item, currentPatient && currentPatient!.id);
   };

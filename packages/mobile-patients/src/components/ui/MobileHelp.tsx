@@ -65,6 +65,8 @@ const styles = StyleSheet.create({
     margin: 0,
     height: 'auto',
     borderRadius: 10,
+    marginTop: 40,
+    marginBottom: 40,
   },
   categoryItemStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -242,7 +244,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
           isVisible={isDropdownOpen}
           overlayStyle={styles.dropdownOverlayStyle}
         >
-          <View>
+          <ScrollView>
             {options.length > 0 && (
               <DropDown
                 cardContainer={{
@@ -260,7 +262,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
                 )}
               />
             )}
-          </View>
+          </ScrollView>
         </Overlay>
       );
   };

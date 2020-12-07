@@ -9,6 +9,16 @@ import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
 // GraphQL query operation: getDiagnosticsHomePageItems
 // ====================================================
 
+export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans_diagnostics_diagnosticPricing {
+  __typename: "diagnosticPricing";
+  mrp: number;
+  price: number;
+  groupPlan: string;
+  status: string | null;
+  startDate: any | null;
+  endDate: any | null;
+}
+
 export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans_diagnostics {
   __typename: "Diagnostics";
   id: string;
@@ -25,6 +35,8 @@ export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnos
   testPreparationData: string;
   testDescription: string | null;
   collectionType: TEST_COLLECTION_TYPE | null;
+  inclusions: (number | null)[] | null;
+  diagnosticPricing: (getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans_diagnostics_diagnosticPricing | null)[] | null;
 }
 
 export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans {
@@ -33,6 +45,16 @@ export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnos
   organName: string | null;
   organImage: string | null;
   diagnostics: getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans_diagnostics | null;
+}
+
+export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers_diagnostics_diagnosticPricing {
+  __typename: "diagnosticPricing";
+  mrp: number;
+  price: number;
+  groupPlan: string;
+  status: string | null;
+  startDate: any | null;
+  endDate: any | null;
 }
 
 export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers_diagnostics {
@@ -51,6 +73,8 @@ export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnos
   testPreparationData: string;
   testDescription: string | null;
   collectionType: TEST_COLLECTION_TYPE | null;
+  inclusions: (number | null)[] | null;
+  diagnosticPricing: (getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers_diagnostics_diagnosticPricing | null)[] | null;
 }
 
 export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers {

@@ -27,6 +27,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export type SortByOption = {
   id: string;
@@ -59,6 +61,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
 
+  const { pinCode } = useShoppingCart();
+
   // states
   const [isLoading, setLoading] = useState(false);
   const [isLoadingMore, setLoadingMore] = useState(false);
@@ -77,6 +81,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
+  const { axdcCode } = useAppCommonData();
 
   useEffect(() => {
     if (categoryId && !searchText) {
@@ -113,7 +118,14 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     try {
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
-      const { data } = await searchMedicineApi(searchText, pageId, sortBy, _selectedFilters);
+      const { data } = await searchMedicineApi(
+        searchText,
+        pageId,
+        sortBy,
+        _selectedFilters,
+        axdcCode,
+        pinCode,
+      );
       updateProducts(pageId, products, data);
       setProductsTotal(data.product_count);
       updateLoading(pageId, false);
@@ -153,7 +165,14 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     try {
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
-      const { data } = await getProductsByCategoryApi(categoryId, pageId, sortBy, _selectedFilters);
+      const { data } = await getProductsByCategoryApi(
+        categoryId,
+        pageId,
+        sortBy,
+        _selectedFilters,
+        axdcCode,
+        pinCode,
+      );
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);

@@ -5,6 +5,7 @@ import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
+  getCareCashback,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -17,6 +18,8 @@ import {
   View,
 } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -45,8 +48,23 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   onPressNotify,
   onPressAddQty,
   onPressSubtractQty,
+  type_id,
 }) => {
   const isPrescriptionRequired = is_prescription_required == 1;
+
+  const renderCareCashback = () => {
+    const finalPrice = Number(special_price) || price;
+    const cashback = getCareCashback(Number(finalPrice), type_id);
+    if (!!cashback && type_id) {
+      return (
+        <CareCashbackBanner
+          bannerText={`extra ${string.common.Rs}${cashback.toFixed(2)} cashback`}
+        />
+      );
+    } else {
+      return <></>;
+    }
+  };
 
   const renderImageAndTitle = () => (
     <View style={styles.imageAndTitle}>
@@ -69,10 +87,14 @@ export const ProductUpSellingCard: React.FC<Props> = ({
     const mrp = 'MRP  ';
     return (
       <View style={styles.priceAndAddToCartContainer}>
+        {!!type_id && renderCareCashback()}
         {!!discount && (
           <Text>
             <Text style={styles.mrp}>{mrp}</Text>
-            <Text style={styles.priceStrikeOff}>(₹{price})</Text>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {price})
+            </Text>
             <Text style={styles.discountPercentage}>{`  ${discount}% off`}</Text>
           </Text>
         )}
@@ -146,7 +168,7 @@ const styles = StyleSheet.create({
   },
   priceAndAddToCartContainer: {
     justifyContent: 'center',
-    height: 50,
+    height: 60,
   },
   priceAndAddToCartButton: {
     flex: 1,

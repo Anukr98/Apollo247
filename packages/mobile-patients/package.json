@@ -15,7 +15,7 @@
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
     "jetify": "jetify",
-    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec && npx jetify"
+    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
@@ -59,6 +59,9 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
+    "@aph/mobile-ui-components": "file:../mobile-ui-components",
+    "@aph/shared-ui-components": "file:../shared-ui-components",
+    "@aph/universal": "file:../universal",
     "@bugfender/rn-bugfender": "1.1.0",
     "@praktice/navigator-react-native-sdk": "0.0.2",
     "@react-native-community/async-storage": "1.7.1",
@@ -109,6 +112,7 @@
     "react-native-code-push": "^6.2.1",
     "react-native-device-info": "^5.4.0",
     "react-native-document-picker": "^3.5.4",
+    "react-native-easy-content-loader": "^0.3.2",
     "react-native-elements": "^1.1.0",
     "react-native-exception-handler": "^2.10.8",
     "react-native-fbsdk": "^1.1.2",

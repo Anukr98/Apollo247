@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -17,6 +17,7 @@ import {
   productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface CartItemCardProps {
   item: ShoppingCartItem;
@@ -27,7 +28,12 @@ export interface CartItemCardProps {
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon, isProuctFreeCouponApplied } = useShoppingCart();
+  const {
+    coupon,
+    isProuctFreeCouponApplied,
+    isCircleSubscription,
+    circleMembershipCharges,
+  } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -94,11 +100,16 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderLowerCont = () => {
+    const { width } = Dimensions.get('window');
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={{ 
+        flexDirection: 'row', 
+        justifyContent: width <= 360 ? 'space-around' : 'space-between' 
+      }}>
         <View>
           {renderQuantity()}
           {itemAvailable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
+          {(isCircleSubscription || !!circleMembershipCharges) && renderCareCashback()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
@@ -109,6 +120,24 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           : renderFree()}
       </View>
     );
+  };
+
+  const renderCareCashback = () => {
+    if (!!item.circleCashbackAmt && !coupon) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${item.circleCashbackAmt.toFixed(2)} Cashback`}
+          textStyle={styles.careText}
+          logoStyle={{
+            resizeMode: 'contain',
+            width: 40,
+            height: 30,
+          }}
+        />
+      );
+    } else {
+      return <></>;
+    }
   };
 
   const renderFree = () => {
@@ -337,5 +366,9 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     height: 18,
     justifyContent: 'center',
+  },
+  careText: {
+    ...theme.viewStyles.text('M', 10, '#00A0E3', 1, 15),
+    paddingVertical: 7,
   },
 });

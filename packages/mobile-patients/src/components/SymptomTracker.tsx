@@ -79,7 +79,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>();
-  const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
+  const [showHowItWorks, setShowHowItWorks] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [symptoms, setSymptoms] = useState<Symptoms[]>([]);
   const [specialities, setSpecialities] = useState<SymptomsSpecialities[]>([]);
@@ -114,26 +114,17 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         setSelectedPatient(currentPatient);
       }
       initializeChat(currentPatient);
-      setShowHowItWorks(false);
+    } else {
+      setShowHowItWorks(true);
+      AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));
     }
-    AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));
   };
 
   const backDataFunctionality = async () => {
     try {
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       CommonLogEvent(AppRoutes.SymptomTracker, 'Go back clicked');
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      props.navigation.goBack();
     } catch (error) {}
     return false;
   };
@@ -143,7 +134,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <View>
         <Header
           container={{ borderBottomWidth: 0 }}
-          title={'SYMPTOM TRACKER'}
+          title={'SYMPTOM CHECKER'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
           rightComponent={
@@ -733,7 +724,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <Overlay
         onRequestClose={() => setShowInfo(false)}
         isVisible={showInfo}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
         containerStyle={styles.overlayContainerStyle}
         fullScreen
         transparent
@@ -822,7 +813,6 @@ const styles = StyleSheet.create({
   proceedBtn: {
     marginTop: 20,
     width: 155,
-    backgroundColor: colors.LIGHT_BLUE,
     alignSelf: 'center',
   },
   mainView: {
@@ -1015,7 +1005,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   restartBtnTxt: {
-    color: colors.SKY_BLUE,
+    color: colors.APP_YELLOW,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   infoIcon: {
