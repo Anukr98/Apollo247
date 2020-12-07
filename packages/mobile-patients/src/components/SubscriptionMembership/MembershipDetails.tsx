@@ -198,6 +198,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     setIsFreeDelivery,
     setIsCircleSubscription,
     circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -1055,6 +1056,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
+          userSubscriptionId={hdfcSubscriptionId}
         />
       )}
       {showAvailPopup && (
