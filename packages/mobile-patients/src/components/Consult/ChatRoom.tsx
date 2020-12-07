@@ -979,7 +979,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     console.log('didmout');
-    Platform.OS === 'android' && requestReadSmsPermission();
     Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_RESIZE);
     KeepAwake.activate();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -1638,33 +1637,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           });
         }
       });
-  };
-
-  const requestReadSmsPermission = async () => {
-    try {
-      const resuts = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
-      }
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
-      }
-      if (resuts) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
-      }
-    } catch (error) {
-      CommonBugFender('ChatRoom_requestReadSmsPermission_try', error);
-      console.log('error', error);
-    }
   };
 
   const updateSessionAPI = () => {
