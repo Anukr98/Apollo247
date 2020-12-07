@@ -282,6 +282,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       price: totalAmount,
       orderId: orderAutoId,
       orderInfo: orderInfo,
+      deliveryTime: deliveryTime,
       checkoutEventAttributes: checkoutEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
     });
