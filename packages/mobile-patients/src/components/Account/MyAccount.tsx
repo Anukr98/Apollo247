@@ -36,6 +36,7 @@ import Moment from 'moment';
 import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   Dimensions,
   Image,
@@ -61,6 +62,7 @@ import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import codePush from 'react-native-code-push';
 import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
@@ -167,7 +169,21 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     hdfcUserSubscriptions,
     setHdfcUserSubscriptions,
     setBannerData,
+    setCircleSubscription,
   } = useAppCommonData();
+  const {
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
+  } = useDiagnosticsCart();
+  const {
+    setIsCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubscriptionId,
+    circleSubscriptionId,
+    hdfcSubscriptionId,
+    clearCartInfo,
+  } = useShoppingCart();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -293,9 +309,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCircleSubscription && setCircleSubscription(null);
       signOut();
       setTagalysConfig(null);
-
+      setCircleSubscriptionId && setCircleSubscriptionId('');
+      AsyncStorage.removeItem('circlePlanSelected');
+      clearCartInfo && clearCartInfo();
+      clearDiagnoticCartInfo && clearDiagnoticCartInfo();
+      setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
       props.navigation.dispatch(
         StackActions.reset({
           index: 0,
@@ -494,7 +517,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id') && (
+        {!!(hdfcSubscriptionId || circleSubscriptionId) && (
           <ListCard
             title={'My Memberships'}
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}

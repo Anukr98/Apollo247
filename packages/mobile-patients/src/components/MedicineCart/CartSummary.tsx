@@ -77,7 +77,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     deliveryTime,
     setdeliveryTime,
   } = useShoppingCart();
-  const { setPharmacyLocation } = useAppCommonData();
+  const { setPharmacyLocation, setAxdcCode } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -131,7 +131,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setloading(true);
     const response = await pinCodeServiceabilityApi247(address.zipcode!);
     const { data } = response;
-    if (data.response) {
+    setAxdcCode && setAxdcCode(data?.response?.axdcCode);
+    if (data?.response?.servicable) {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
       setDefaultAddress(address);

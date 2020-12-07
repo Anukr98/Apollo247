@@ -8,6 +8,10 @@ import {
   GalleryIcon,
   Path,
   PrescriptionIcon,
+  PhrCloseIcon,
+  PhrFileIcon,
+  PhrGalleryIcon,
+  PhrCameraIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -24,7 +28,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Platform,
@@ -38,7 +42,7 @@ import {
 } from 'react-native';
 import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
-import { Overlay } from 'react-native-elements';
+import { Overlay, ListItem } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import ImageResizer from 'react-native-image-resizer';
 import { ScrollView } from 'react-navigation';
@@ -93,6 +97,46 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(9),
     textAlign: 'center',
   },
+  listItemContainerStyle: {
+    paddingLeft: 3,
+    paddingRight: 10,
+    paddingTop: 25,
+    backgroundColor: '#F7F8F5',
+  },
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
+  },
+  phrUploadOptionsViewStyle: {
+    backgroundColor: '#F7F8F5',
+    paddingHorizontal: 29,
+    borderRadius: 10,
+    paddingVertical: 34,
+  },
+  overlayViewStyle: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    bottom: 0,
+    position: 'absolute',
+  },
+  overlayViewStyle1: {
+    flexGrow: 1,
+    backgroundColor: 'transparent',
+  },
+  overlaySafeAreaViewStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
 });
 
 export interface UploadPrescriprionPopupProps {
@@ -117,6 +161,8 @@ export interface UploadPrescriprionPopupProps {
     type?: 'Camera' | 'Gallery'
   ) => void;
   isProfileImage?: boolean;
+  phrUpload?: boolean;
+  openCamera?: boolean;
 }
 
 const MAX_FILE_SIZE = 2000000; // 2MB
@@ -140,6 +186,12 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     if (!!uploadSource) eventAttributes['Upload Source'] = uploadSource;
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
+
+  useEffect(() => {
+    if (props.openCamera) {
+      onClickTakePhoto();
+    }
+  }, [props.openCamera]);
 
   const formatResponse = (response: ImageCropPickerResponse[]) => {
     console.log('response Img', response);
@@ -401,11 +453,15 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         style={{
           alignSelf: 'flex-end',
           backgroundColor: 'transparent',
-          marginBottom: 16,
+          marginBottom: props.phrUpload ? 5 : 16,
         }}
       >
         <TouchableOpacity onPress={() => props.onClickClose()}>
-          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+          {props.phrUpload ? (
+            <PhrCloseIcon style={{ marginRight: 4, width: 28, height: 28 }} />
+          ) : (
+            <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+          )}
         </TouchableOpacity>
       </View>
     );
@@ -545,13 +601,99 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     );
   };
 
+  const renderUploadListItems = (id: number) => {
+    let title = id === 1 ? 'Take A Photo' : id === 2 ? 'Upload From Gallery' : 'Upload Files';
+    const renderLeftElement = () => {
+      switch (id) {
+        case 1:
+          return <PhrCameraIcon style={{ width: 16, height: 16, marginRight: 33 }} />;
+        case 2:
+          return <PhrGalleryIcon style={{ width: 16, height: 16, marginRight: 33 }} />;
+        case 3:
+          return <PhrFileIcon style={{ width: 13.24, height: 16, marginRight: 35.76 }} />;
+      }
+    };
+
+    const onPressListItem = () => {
+      switch (id) {
+        case 1:
+          onClickTakePhoto();
+          break;
+        case 2:
+          setTimeout(() => {
+            openGallery();
+          }, 100);
+          break;
+        case 3:
+          setTimeout(() => {
+            if (Platform.OS === 'android') {
+              storagePermissions(() => {
+                onBrowseClicked();
+              });
+            } else {
+              onBrowseClicked();
+            }
+          }, 100);
+          break;
+      }
+    };
+
+    return (
+      <ListItem
+        title={title}
+        titleStyle={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 15.6) }}
+        pad={0}
+        containerStyle={styles.listItemContainerStyle}
+        underlayColor={'#F7F8F5'}
+        activeOpacity={1}
+        leftElement={renderLeftElement()}
+        onPress={onPressListItem}
+      />
+    );
+  };
+
+  const renderPhrUploadOptions = () => {
+    return (
+      <View style={styles.phrUploadOptionsViewStyle}>
+        <Text style={{ ...theme.viewStyles.text('M', 16, '#AFC3C9', 1, 20.8) }}>
+          {'Add a record'}
+        </Text>
+        <View style={{ marginTop: 10 }}>
+          {renderUploadListItems(1)}
+          {renderUploadListItems(2)}
+          {renderUploadListItems(3)}
+        </View>
+      </View>
+    );
+  };
+
   const options = [
     <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Photo Library</Text>,
     <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Upload Pdf</Text>,
     <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Cancel</Text>,
   ];
 
-  return (
+  return props.phrUpload ? (
+    <Overlay
+      onRequestClose={() => props.onClickClose()}
+      isVisible={props.isVisible}
+      windowBackgroundColor={'rgba(0, 0, 0, 0.2)'}
+      containerStyle={{ marginBottom: 0 }}
+      fullScreen
+      transparent
+      overlayStyle={styles.phrOverlayStyle}
+    >
+      <>
+        <View style={styles.overlayViewStyle}>
+          <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+            {renderCloseIcon()}
+            {renderPhrUploadOptions()}
+          </SafeAreaView>
+        </View>
+        {showSpinner && <Spinner />}
+      </>
+    </Overlay>
+  ) : (
     <Overlay
       onRequestClose={() => props.onClickClose()}
       isVisible={props.isVisible}
@@ -574,18 +716,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         elevation: 0,
       }}
     >
-      <View
-        style={{
-          flexGrow: 1,
-          backgroundColor: 'transparent',
-        }}
-      >
-        <SafeAreaView
-          style={{
-            flex: 1,
-            backgroundColor: 'transparent',
-          }}
-        >
+      <View style={styles.overlayViewStyle1}>
+        <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
           {renderCloseIcon()}
           {renderHeader()}
           <ScrollView

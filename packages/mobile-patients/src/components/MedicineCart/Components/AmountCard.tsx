@@ -13,6 +13,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     couponDiscount,
     productDiscount,
     grandTotal,
+    circleMembershipCharges,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const renderCartTotal = () => {
@@ -27,7 +28,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
   const renderProductDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={styles.text}>Cart savings</Text>
+        <Text style={styles.text}>Product Discount</Text>
         <Text style={styles.discount}>-₹{productDiscount.toFixed(2)}</Text>
       </View>
     );
@@ -73,11 +74,18 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     );
   };
 
+  const renderCircleMembershipCharges = () => 
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <Text style={styles.text}>Circle Membership</Text>
+      <Text style={styles.text}>₹{circleMembershipCharges}</Text>
+    </View>
+
   return (
     <View style={styles.card}>
       {renderCartTotal()}
       {productDiscount > 0 && renderProductDiscount()}
       {couponDiscount > 0 && renderCouponDiscount()}
+      {!!circleMembershipCharges && renderCircleMembershipCharges()}
       {renderDeliveryCharges()}
       {renderSeparator()}
       {renderToPay()}

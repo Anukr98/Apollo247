@@ -50,9 +50,14 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const [itemsAddingToCart, setItemsAddingToCart] = useState<{ [key: string]: boolean }>({});
 
   const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    isPharmacyLocationServiceable,
+    axdcCode,
+  } = useAppCommonData();
   const { showAphAlert } = useUIElements();
-  const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { getCartItemQty, addCartItem, updateCartItem, removeCartItem, pinCode } = useShoppingCart();
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,
@@ -101,7 +106,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       setLoading(true);
       const {
         data: { products },
-      } = await getMedicineSearchSuggestionsApi(searchText);
+      } = await getMedicineSearchSuggestionsApi(searchText, axdcCode, pinCode);
       fireSearchEvent(searchText, products.length);
       setSearchResults(products || []);
       setLoading(false);

@@ -9,6 +9,16 @@ import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
 // GraphQL query operation: getDiagnosticOrderItem
 // ====================================================
 
+export interface getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics_diagnosticPricing {
+  __typename: "diagnosticPricing";
+  mrp: number;
+  price: number;
+  groupPlan: string;
+  status: string | null;
+  startDate: any | null;
+  endDate: any | null;
+}
+
 export interface getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics {
   __typename: "Diagnostics";
   itemName: string;
@@ -22,6 +32,7 @@ export interface getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics {
   fromAgeInDays: number;
   toAgeInDays: number;
   testPreparationData: string;
+  diagnosticPricing: (getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics_diagnosticPricing | null)[] | null;
   testDescription: string | null;
 }
 

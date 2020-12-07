@@ -7,6 +7,7 @@ import { Image } from 'react-native-elements';
 import { MedicineProduct } from '../../helpers/apiCalls';
 import { QuantityButton } from '../ui/QuantityButton';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
@@ -63,7 +64,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
               <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>{'MRP '}</Text>
             )}
             <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>
-              Rs. {specialPrice || data.price}
+              {string.common.Rs} {specialPrice || data.price}
             </Text>
             {specialPrice ? (
               <Text
@@ -71,7 +72,9 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
               >
                 <Text style={theme.viewStyles.text('M', 12, '#02475b')}>{' MRP '}</Text>
                 {'('}
-                <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${data.price}`}</Text>
+                <Text
+                  style={{ textDecorationLine: 'line-through' }}
+                >{`${string.common.Rs} ${data.price}`}</Text>
                 {')'}
               </Text>
             ) : null}

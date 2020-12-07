@@ -40,6 +40,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { saveSearchDoctor, saveSearchSpeciality } from '../../helpers/clientCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -64,6 +65,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const couponApplied = props.navigation.getParam('couponApplied');
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const patientId = props.navigation.getParam('patientId');
+  const planSelected = props.navigation.getParam('planSelected');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
 
   type bankOptions = {
@@ -130,7 +132,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -295,6 +297,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
               isDoctorsOfTheHourStatus,
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
@@ -318,6 +321,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
               isDoctorsOfTheHourStatus,
             });
         setLoading && setLoading(false);
@@ -390,7 +394,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            Rs. {price}
+            {string.common.Rs} {price}
           </Text>
         </View>
       </View>

@@ -6,6 +6,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export const handleDeepLink = (navigationProps: any) => {
   try {
@@ -170,4 +171,50 @@ export const getValuesArray = (arr: any) => {
 
 export const isUpperCase = (str: string) => {
   return str === str.toUpperCase();
+};
+
+export const calculateCircleDoctorPricing = (data: any) => {
+  const circleDoctors = data?.doctorPricing?.filter(
+    (item: any) => item.available_to === PLAN.CARE_PLAN
+  );
+  const isCircleDoctor = circleDoctors?.length > 0;
+  const physicalConsult = circleDoctors?.filter(
+    (item: any) => item.appointment_type === ConsultMode.PHYSICAL
+  );
+  const onlineConsult = circleDoctors?.filter(
+    (item: any) => item.appointment_type === ConsultMode.ONLINE
+  );
+
+  const physicalConsultMRPPrice = physicalConsult?.[0]?.mrp;
+  const physicalConsultSlashedPrice = physicalConsult?.[0]?.slashed_price;
+  const physicalConsultDiscountedPrice = physicalConsultMRPPrice - physicalConsultSlashedPrice;
+
+  const onlineConsultMRPPrice = onlineConsult?.[0]?.mrp;
+  const onlineConsultSlashedPrice = onlineConsult?.[0]?.slashed_price;
+  const onlineConsultDiscountedPrice = onlineConsultMRPPrice - onlineConsultSlashedPrice;
+
+  const minMrp =
+    physicalConsultMRPPrice > 0 && onlineConsultMRPPrice > 0
+      ? Math.min(Number(physicalConsultMRPPrice), Number(onlineConsultMRPPrice))
+      : onlineConsultMRPPrice
+      ? onlineConsultMRPPrice
+      : physicalConsultMRPPrice;
+
+  const slashedPriceArr = circleDoctors?.filter((item: any) => minMrp === item.mrp);
+
+  // discount % will be same on both consult
+  const minSlashedPrice = slashedPriceArr?.[0]?.slashed_price;
+  const minDiscountedPrice = minMrp - minSlashedPrice;
+  return {
+    isCircleDoctor,
+    physicalConsultMRPPrice,
+    physicalConsultSlashedPrice,
+    physicalConsultDiscountedPrice,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    onlineConsultDiscountedPrice,
+    minMrp,
+    minSlashedPrice,
+    minDiscountedPrice,
+  };
 };

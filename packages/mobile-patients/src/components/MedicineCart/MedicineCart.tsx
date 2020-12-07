@@ -79,6 +79,7 @@ import {
   applyCouponClickedEvent,
   selectDeliveryAddressClickedEvent,
   uploadPrescriptionClickedEvent,
+  fireCircleBuyNowEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -94,6 +95,9 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -115,12 +119,34 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
+    setCircleMembershipCharges,
+    isCircleSubscription,
+    circlePlanSelected,
+    setCircleSubPlanId,
+    setIsCircleSubscription,
     deliveryTime,
     setdeliveryTime,
+    cartTotalCashback,
+    circleMembershipCharges,
+    setIsFreeDelivery,
+    setCirclePlanSelected,
+    setDefaultCirclePlan,
+    circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    setPharmacyLocation,
+    axdcCode,
+    setAxdcCode,
+    circlePlanId,
+    hdfcPlanId,
+    hdfcStatus,
+    circleStatus,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
@@ -138,6 +164,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+  const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
 
   useEffect(() => {
     fetchAddress();
@@ -146,6 +173,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
+    setCircleMembershipCharges && setCircleMembershipCharges(0);
+    if (!circleSubscriptionId && cartTotal > 400) {
+      setShowCareSelectPlans(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -177,6 +208,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (isfocused) {
       availabilityTat(false);
     }
+    // remove circle subscription applied(for non member) if cart items are empty
+    if (cartItems.length < 1 && !circleSubscriptionId) {
+      setIsCircleSubscription && setIsCircleSubscription(false);
+    }
   }, [cartItems]);
 
   useEffect(() => {
@@ -184,6 +219,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       getMedicineDetailsOfCouponProducts();
     }
   }, [couponProducts]);
+
+  useEffect(() => {
+    if (!!coupon) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+    } else {
+      if (!circleSubscriptionId) {
+        setCircleMembershipCharges &&
+          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      } else {
+        setIsCircleSubscription && setIsCircleSubscription(true);
+      }
+    }
+  }, [coupon]);
+
+  useEffect(() => {
+    setIsFreeDelivery && setIsFreeDelivery(!!circleMembershipCharges);
+  }, [circleMembershipCharges]);
 
   useEffect(() => {
     onFinishUpload();
@@ -257,8 +309,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setloading(true);
       const response = await pinCodeServiceabilityApi247(address.zipcode!);
       const { data } = response;
-      console.log(data);
-      if (data.response) {
+      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
+      if (data?.response?.servicable) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
@@ -363,6 +415,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
     error: any
   ) {
+    // remove applied circle subscription if tat api returns error
+    if (!circleSubscriptionId) {
+      setIsCircleSubscription && setIsCircleSubscription(false);
+    }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
     setdeliveryTime?.(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
@@ -493,6 +549,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
     console.log('inside validate');
     setloading!(true);
+    let packageId: string[] = [];
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleStatus === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`)
+    }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
@@ -505,6 +568,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
       })),
+      packageIds: packageId,
     };
     return new Promise(async (res, rej) => {
       try {
@@ -621,7 +685,14 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
     const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
     try {
-      const response = await getProductsByCategoryApi(categoryId, pageCount);
+      const response = await getProductsByCategoryApi(
+        categoryId,
+        pageCount,
+        null,
+        null,
+        axdcCode,
+        pinCode
+      );
       const products = response?.data?.products.slice(0, 15) || [];
       setsuggestedProducts(products);
     } catch (error) {
@@ -823,10 +894,115 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
+        {(!!coupon || isCircleSubscription || !!circleSubscriptionId) &&
+          renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
     );
+  };
+
+  const renderApplyCircleBenefits = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={styles.applyBenefits}
+        onPress={() => {
+          if (!coupon && isCircleSubscription) {
+            if (!circleSubscriptionId || cartTotalCashback) {
+              setIsCircleSubscription && setIsCircleSubscription(false);
+            }
+          } else {
+            setCoupon && setCoupon(null);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+          }
+        }}
+      >
+        {!coupon && isCircleSubscription ? (
+          <View style={{ flexDirection: 'row' }}>
+            <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
+            <CareCashbackBanner
+              bannerText={`benefits APPLIED!`}
+              textStyle={styles.circleText}
+              logoStyle={styles.circleLogo}
+            />
+          </View>
+        ) : (
+          <View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={styles.circleApplyContainer} />
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.applyText}>Apply </Text>
+                <CareCashbackBanner
+                  bannerText={`benefits instead`}
+                  textStyle={styles.circleText}
+                  logoStyle={styles.circleLogo}
+                />
+              </View>
+            </View>
+            <Text style={styles.useCircleText}>
+              {`Use your Circle membership instead & get `}
+              <Text
+                style={{ ...theme.viewStyles.text('SB', 12, '#02475B', 1, 17) }}
+              >{`₹${cartTotalCashback} Cashback and Free delivery `}</Text>
+              <Text>on this order</Text>
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCareSubscriptionOptions = () => {
+    if (showCareSelectPlans) {
+      return (
+        <CircleMembershipPlans
+          navigation={props.navigation}
+          isConsultJourney={false}
+          onSelectMembershipPlan={(plan) => {
+            if (plan && !coupon) {
+              // if plan is selected
+              fireCircleBuyNowEvent(currentPatient);
+              setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+            } else {
+              // if plan is removed
+              setShowCareSelectPlans(false);
+              setCircleMembershipCharges && setCircleMembershipCharges(0);
+            }
+          }}
+          source={'Pharma Cart'}
+        />
+      );
+    } else {
+      return (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.viewPlanContainer}
+          onPress={() => {
+            setShowCareSelectPlans(true);
+          }}
+        >
+          <View style={{ flexDirection: 'row' }}>
+            <View style={styles.viewPlan} />
+            <View>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.viewText}>View</Text>
+                <CareCashbackBanner
+                  bannerText={`plans`}
+                  textStyle={styles.viewText}
+                  logoStyle={styles.circleLogo}
+                />
+              </View>
+              <Text style={styles.viewSubText}>
+                Viewing and/or selecting plans will remove any applied coupon. You can apply the
+                coupon again later.
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    }
   };
 
   const renderSavings = () => {
@@ -919,10 +1095,14 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderScreen = () => {
     return (
       <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
-          {renderHeader()}
           {renderUnServiceable()}
           {renderCartItems()}
+          {(!isCircleSubscription || showCareSelectPlans) &&
+            !coupon &&
+            !circleSubscriptionId &&
+            renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
@@ -969,5 +1149,67 @@ const styles = StyleSheet.create({
   amountHeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
+  },
+  applyBenefits: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 15,
+    marginTop: 10,
+    padding: 10,
+  },
+  circleText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 40,
+  },
+  circleApplyContainer: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#00B38E',
+    borderRadius: 5,
+    marginTop: 9,
+    marginRight: 10,
+  },
+  applyText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  useCircleText: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 17),
+    marginLeft: 25,
+  },
+  viewPlanContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    marginHorizontal: 13,
+    borderRadius: 5,
+    marginBottom: 0,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    borderStyle: 'dashed',
+  },
+  viewPlan: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    marginRight: 10,
+    marginTop: 10,
+  },
+  viewText: {
+    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+    marginRight: 5,
+  },
+  viewSubText: {
+    ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
+    width: '50%',
   },
 });

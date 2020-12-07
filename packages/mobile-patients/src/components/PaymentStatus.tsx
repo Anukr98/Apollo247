@@ -58,6 +58,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -157,7 +158,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
             ],
           })
         );
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -375,7 +376,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const renderStatusCard = () => {
     const refNumberText = String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
-    const priceText = 'Rs. ' + String(totalAmount);
+    const priceText = `${string.common.Rs} ` + String(totalAmount);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>

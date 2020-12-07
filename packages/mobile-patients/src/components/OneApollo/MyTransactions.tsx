@@ -9,6 +9,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { format } from 'date-fns';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -109,7 +110,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
             {format(item.transactionDate, 'DD MMM YYYY')}
           </Text>
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), color: '#666666', marginTop: 12 }}>
-            Billing Rs. {item.netAmount + item.redeemedHC}
+            Billing {string.common.Rs} {item.netAmount + item.redeemedHC}
           </Text>
         </View>
         <View style={{ flex: 0.25, alignItems: 'flex-end' }}>

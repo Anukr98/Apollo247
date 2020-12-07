@@ -59,7 +59,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { cartItems, clearCartInfo, coupon } = useDiagnosticsCart();
+  const { cartItems, clearDiagnoticCartInfo, coupon } = useDiagnosticsCart();
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Do you want to go back?', [
@@ -111,7 +111,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
     }
     CommonLogEvent(AppRoutes.TestPayment, 'handleOrderSuccess');
     setLoading!(false);
-    clearCartInfo!();
+    clearDiagnoticCartInfo && clearDiagnoticCartInfo!();
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
