@@ -82,6 +82,7 @@ import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
@@ -93,7 +94,6 @@ const windowHeight = Dimensions.get('window').height;
 
 export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
-  const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
   const tatType = props.navigation.getParam('tatType');
   const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
@@ -101,14 +101,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const circlePlanId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
-  const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);
-  const [chennaiOrderFormInfo, setChennaiOrderFormInfo] = useState(['', '']); // storing paymentMode, bankCode for Chennai Order
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState<string>(g(currentPatient, 'emailAddress') || '');
-  const [emailIdCheckbox, setEmailIdCheckbox] = useState<boolean>(
-    !g(currentPatient, 'emailAddress')
-  );
-  const [agreementCheckbox, setAgreementCheckbox] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
     deliveryAddressId,
@@ -163,17 +156,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const client = useApolloClient();
 
-  useEffect(() => {
-    if (email) {
-      setEmailIdCheckbox(false);
-    } else {
-      setEmailIdCheckbox(true);
-    }
-  }, [emailIdCheckbox, email]);
-
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
-
-  const handleBackPressFromChennaiOrderForm = () => setShowChennaiOrderForm(false);
 
   const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
     client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
@@ -362,9 +345,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
-        // Values for chennai COD order
-        email: isChennaiOrder && email ? email.trim() : null,
-        CODCity: isChennaiOrder ? CODCity.CHENNAI : null,
       },
     };
     if (orderType == 'HCorder') {
@@ -432,7 +412,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orderId: string,
     orderAutoId: number,
     paymentMode: string,
-    bankCode: string
+    bankCode: string,
+    orderInfo: saveMedicineOrderOMSVariables
   ) => {
     try {
       const paymentEventAttributes = {
@@ -467,6 +448,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
+      orderInfo: orderInfo,
       planId: circlePlanId || '',
       subPlanId: circleSubPlanId || '',
     });
@@ -478,11 +460,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     isCOD: boolean,
     hcOrder: boolean
   ) => {
-    if (isChennaiOrder && !showChennaiOrderForm) {
-      setChennaiOrderFormInfo([paymentMode, bankCode]);
-      setShowChennaiOrderForm(true);
-      return;
-    }
     const estimatedAmount = !!circleMembershipCharges
       ? getFormattedAmount(grandTotal - circleMembershipCharges)
       : getFormattedAmount(grandTotal);
@@ -602,7 +579,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             placeOrder(orderId, orderAutoId, 'HCorder', false);
           } else {
             console.log('Redirect To Payment Gateway');
-            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode)
+            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode, orderInfo)
               .catch((e) => {
                 CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
               })
@@ -671,104 +648,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    const deliveryTimeMomentFormat = moment(
-      deliveryTime,
-      AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
-    );
     showAphAlert!({
-      // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
         'Your order has been placed successfully. We will confirm the order in a few minutes.',
       children: (
-        <View
-          style={{
-            margin: 20,
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: '#f7f8f5',
-            borderRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <MedicineIcon />
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
-              }}
-            >
-              Medicines
-            </Text>
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 24,
-                color: '#01475b',
-                textAlign: 'right',
-              }}
-            >
-              {`#${orderAutoId}`}
-            </Text>
-          </View>
-          {deliveryTimeMomentFormat.isValid() && (
-            <>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: '#02475b',
-                  opacity: 0.1,
-                  marginBottom: 7.5,
-                  marginTop: 15.5,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                  }}
-                >
-                  {deliveryTime &&
-                    `Delivery By: ${deliveryTimeMomentFormat.format(
-                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
-                    )}`}
-                </Text>
-              </View>
-            </>
-          )}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 15.5,
-              marginTop: 7.5,
-            }}
-          />
-          <View style={styles.popupButtonStyle}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() => navigateToOrderDetails(true, orderAutoId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false, orderAutoId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <OrderPlacedPopUp
+          deliveryTime={deliveryTime}
+          orderAutoId={orderAutoId}
+          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
+          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
+        />
       ),
     });
   };
@@ -790,107 +680,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         title={'PAYMENT'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.CheckoutSceneNew, 'Go back clicked');
-          if (showChennaiOrderForm) {
-            handleBackPressFromChennaiOrderForm();
-          } else {
-            props.navigation.goBack();
-          }
+          props.navigation.goBack();
         }}
       />
-    );
-  };
-
-  const isSatisfyingEmailRegex = (value: string) =>
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-      value
-    );
-
-  const onPressChennaiOrderPayButton = () => {
-    if (!(email === '' || (email && isSatisfyingEmailRegex(email.trim())))) {
-      showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
-    } else {
-      try {
-        CommonLogEvent(AppRoutes.CheckoutSceneNew, `SUBMIT TO CONFIRM ORDER`);
-      } catch (error) {
-        CommonBugFender('CheckoutScene_renderPayButton_try', error);
-      }
-      initiateOrder(chennaiOrderFormInfo[0], chennaiOrderFormInfo[1], isCashOnDelivery, HCorder);
-    }
-  };
-
-  const renderChennaiOrderPayButton = () => {
-    const isPayDisabled = !agreementCheckbox;
-    return (
-      <StickyBottomComponent
-        style={[styles.stickyBottomComponentStyle, { paddingHorizontal: 0, paddingTop: 25 }]}
-      >
-        <Button
-          style={{ width: '100%' }}
-          title={`SUBMIT TO CONFIRM ORDER`}
-          onPress={onPressChennaiOrderPayButton}
-          disabled={isPayDisabled}
-        />
-      </StickyBottomComponent>
-    );
-  };
-
-  const renderChennaiOrderFormAndPayButton = () => {
-    const keyboardVerticalOffset =
-      Platform.OS === 'android' ? { keyboardVerticalOffset: 110 } : { keyboardVerticalOffset: 30 };
-
-    return (
-      <View style={{ ...theme.viewStyles.card(16, 20, 10, '#fff'), flex: 1 }}>
-        {/* <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'} {...keyboardVerticalOffset}> */}
-        <ScrollView contentContainerStyle={{ flex: 1 }} bounces={false}>
-          {renderChennaiOrderForm()}
-          {renderChennaiOrderPayButton()}
-        </ScrollView>
-        {/* </KeyboardAvoidingView> */}
-      </View>
-    );
-  };
-
-  const renderChennaiOrderForm = () => {
-    return (
-      <>
-        <Text style={styles.textStyle1}>
-          {`Dear ${g(currentPatient, 'firstName') ||
-            ''},\n\nSUPERB!\n\nYour order request is in process\n`}
-        </Text>
-        <Text style={styles.textStyle2}>
-          {'Just one more step. New Regulation in your region requires your email id.\n'}
-        </Text>
-        <Text style={styles.textStyle3}>{'Your email id please'}</Text>
-        <TextInputComponent
-          value={`${email}`}
-          onChangeText={(email) => setEmail(email)}
-          placeholder={'name@email.com'}
-          inputStyle={styles.inputStyle}
-        />
-        <TouchableOpacity
-          onPress={() => setEmailIdCheckbox(!emailIdCheckbox)}
-          activeOpacity={1}
-          style={styles.checkboxViewStyle}
-        >
-          {emailIdCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
-          <Text style={styles.checkboxTextStyle}>
-            {
-              'Check this box if you don’t have an Email Id & want us to share your order details over SMS.'
-            }
-          </Text>
-        </TouchableOpacity>
-        <Spearator style={styles.separatorStyle} />
-        <TouchableOpacity
-          onPress={() => setAgreementCheckbox(!agreementCheckbox)}
-          activeOpacity={1}
-          style={[styles.checkboxViewStyle, { marginTop: 0 }]}
-        >
-          {agreementCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
-          <Text style={styles.checkboxTextStyle}>
-            {'I agree to share my medicine requirements with Apollo Pharmacy for home delivery.'}
-          </Text>
-        </TouchableOpacity>
-      </>
     );
   };
 
@@ -1414,14 +1206,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {/* {renderOneApolloAndHealthCreditsCard()} */}
-        {showChennaiOrderForm ? (
-          !loading ? (
-            renderChennaiOrderFormAndPayButton()
-          ) : (
-            <Spinner />
-          )
-        ) : !loading ? (
+        {!loading ? (
           <ScrollView
             style={{ flex: 0.9 }}
             ref={(ref) => (ScrollViewRef = ref)}
@@ -1488,15 +1273,6 @@ const styles = StyleSheet.create({
   stickyBottomComponentStyle: {
     justifyContent: 'center',
     backgroundColor: 'transparent',
-  },
-  popupButtonStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  popupButtonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.APP_YELLOW,
-    lineHeight: 24,
   },
   textStyle1: {
     ...theme.viewStyles.text('R', 13, '#02475b'),

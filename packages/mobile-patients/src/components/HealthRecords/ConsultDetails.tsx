@@ -718,7 +718,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Medicines',
           <MedicineRxIcon style={{ width: 20, height: 20, marginRight: 12 }} />
         )}
-        {caseSheetDetails?.medicinePrescription?.length !== 0 &&
+        {caseSheetDetails?.medicinePrescription &&
+        caseSheetDetails?.medicinePrescription?.length !== 0 &&
         caseSheetDetails?.doctorType !== 'JUNIOR' ? (
           <View style={{ marginTop: 28 }}>
             <View>

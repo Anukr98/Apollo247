@@ -1,31 +1,37 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
-  LocationData,
-  useAppCommonData,
-  SubscriptionData,
+  BenefitCtaAction,
+  CicleSubscriptionData,
+  CircleGroup,
+  CirclePlanSummary,
   GroupPlan,
   PlanBenefits,
-  BenefitCtaAction,
-  CirclePlanSummary,
-  CircleGroup,
-  CicleSubscriptionData,
+  SubscriptionData,
+  useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
+  ApolloHealthProIcon,
   CartIcon,
   ConsultationRoom,
+  CovidOrange,
   CovidRiskLevel,
+  DashedLine,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  FemaleCircleIcon,
+  FemaleIcon,
   KavachIcon,
   LatestArticle,
   LinkedUhidIcon,
-  Mascot,
+  MaleCircleIcon,
+  MaleIcon,
   MedicineCartIcon,
   MedicineIcon,
   MyHealth,
@@ -36,13 +42,6 @@ import {
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
-  CovidOrange,
-  DashedLine,
-  ApolloHealthProIcon,
-  FemaleIcon,
-  MaleIcon,
-  FemaleCircleIcon,
-  MaleCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -54,39 +53,58 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
   DeviceHelper,
-  setBugFenderLog,
   isIos,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-  SAVE_VOIP_DEVICE_TOKEN,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_CASHBACK_DETAILS_OF_PLAN_ID,
+  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  SAVE_VOIP_DEVICE_TOKEN,
+  UPDATE_PATIENT_APP_VERSION,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
-import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { DEVICETYPE, Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  UpdatePatientAppVersion,
+  UpdatePatientAppVersionVariables,
+} from '@aph/mobile-patients/src/graphql/types/UpdatePatientAppVersion';
+import {
+  GenerateTokenforCM,
+  notifcationsApi,
+  pinCodeServiceabilityApi247,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import {
+  getPatientPersonalizedAppointmentList,
+  getUserBannersList,
+  saveTokenDevice,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
   PatientInfoFirebase,
   PatientInfoWithSourceFirebase,
 } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  distanceBwTwoLatLng,
+  checkPermissions,
   doRequestAndAccessLocationModified,
   g,
-  getlocationDataFromLatLang,
+  getPhrNotificationAllCount,
+  overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
   setWebEngageScreenNames,
-  overlyCallPermissions,
-  checkPermissions,
-  getPhrNotificationAllCount,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -100,8 +118,9 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
+import messaging from '@react-native-firebase/messaging';
 import moment from 'moment';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -117,34 +136,15 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
-  TextInput,
-  Image,
-  AppState,
-  AppStateStatus,
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import { ScrollView } from 'react-native-gesture-handler';
+import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
-import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
-import {
-  getPatientPersonalizedAppointmentList,
-  getUserBannersList,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
-import VoipPushNotification from 'react-native-voip-push-notification';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
-import {
-  GetSubscriptionsOfUserByStatus,
-  GetSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
-import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
-import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import {
-  GenerateTokenforCM,
-  notifcationsApi,
-  pinCodeServiceabilityApi247,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
+import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 
 const { Vitals } = NativeModules;
 
@@ -397,6 +397,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
+  const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
 
   const {
     cartItems,
@@ -442,6 +443,43 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+
+  const saveDeviceNotificationToken = async (id: string) => {
+    try {
+      const savedToken = await AsyncStorage.getItem('deviceToken');
+      const token = await messaging().getToken();
+      if (savedToken !== token) {
+        saveTokenDevice(client, token, id);
+      }
+    } catch (error) {}
+  };
+
+  const notifyAppVersion = async (patientId: string) => {
+    try {
+      const key = `${patientId}-appVersion`;
+      const savedAppVersion = await AsyncStorage.getItem(key);
+      const appVersion = DeviceInfo.getVersion();
+      if (savedAppVersion !== appVersion) {
+        await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
+          mutation: UPDATE_PATIENT_APP_VERSION,
+          variables: {
+            appVersion,
+            patientId,
+            osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        await AsyncStorage.setItem(key, appVersion);
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    if (currentPatient?.id) {
+      saveDeviceNotificationToken(currentPatient.id);
+      notifyAppVersion(currentPatient.id);
+    }
+  }, [currentPatient]);
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   useEffect(() => {
@@ -562,8 +600,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setWEGUserAttributes();
       }
       getUserBanners();
+      getUserSubscriptionsWithBenefits();
     } catch (e) {}
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (upgradePlans.length) {
+      setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
+    }
+  }, [upgradePlans]);
 
   const fetchInProgressAppointments = async () => {
     setLoading && setLoading(true);
@@ -769,7 +814,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 5,
-      title: 'Track Symptoms',
+      title: 'Symptom Checker',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
@@ -831,6 +876,204 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setCirclePlanSelected && setCirclePlanSelected(JSON.parse(plan));
     } else {
       setCirclePlanSelected && setCirclePlanSelected(null);
+    }
+  };
+
+  const getUserSubscriptionsWithBenefits = () => {
+    setHdfcLoading(true);
+    const mobile_number = g(currentPatient, 'mobileNumber');
+    mobile_number &&
+      client
+        .query<
+          GetAllUserSubscriptionsWithPlanBenefitsV2,
+          GetAllUserSubscriptionsWithPlanBenefitsV2Variables
+        >({
+          query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+          variables: { mobile_number },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          setHdfcLoading(false);
+          const groupPlans = g(
+            data,
+            'data',
+            'GetAllUserSubscriptionsWithPlanBenefitsV2',
+            'response'
+          );
+          if (groupPlans) {
+            const hdfcPlan = groupPlans?.HDFC;
+            const circlePlan = groupPlans?.APOLLO;
+
+            if (hdfcPlan) {
+              const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
+              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription);
+
+              const subscriptionName = g(hdfcSubscription, 'name')
+                ? g(hdfcSubscription, 'name')
+                : '';
+              if (g(hdfcSubscription, 'isActive')) {
+                setHdfcPlanName && setHdfcPlanName(subscriptionName);
+              }
+              if (
+                subscriptionName === hdfc_values.PLATINUM_PLAN &&
+                !!g(hdfcSubscription, 'isActive')
+              ) {
+                setIsFreeDelivery && setIsFreeDelivery(true);
+              }
+            }
+
+            if (circlePlan) {
+              const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
+              if (!!circlePlan[0]?._id) {
+                setIsCircleSubscription && setIsCircleSubscription(true);
+              }
+              setCircleSubscription && setCircleSubscription(circleSubscription);
+            }
+          }
+        })
+        .catch((e) => {
+          setHdfcLoading(false);
+          CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
+        });
+  };
+
+  const setCircleSubscriptionData = (plan: any) => {
+    const planSummary: CirclePlanSummary[] = [];
+    const summary = plan?.plan_summary;
+    if (summary && summary.length) {
+      summary.forEach((value) => {
+        const plan_summary: CirclePlanSummary = {
+          price: value?.price,
+          renewMode: value?.renew_mode,
+          starterPack: !!value?.starter_pack,
+          benefitsWorth: value?.benefits_worth,
+          availableForTrial: !!value?.available_for_trial,
+          specialPriceEnabled: value?.special_price_enabled,
+          subPlanId: value?.subPlanId,
+          durationInMonth: value?.durationInMonth,
+          currentSellingPrice: value?.currentSellingPrice,
+          icon: value?.icon,
+        };
+        planSummary.push(plan_summary);
+      });
+    }
+
+    const group = plan?.group;
+    const groupDetailsData: CircleGroup = {
+      _id: group?._id,
+      name: group?.name,
+      isActive: group?.is_active,
+    };
+
+    const benefits = plan.benefits;
+    const circleBenefits: PlanBenefits[] = [];
+    if (benefits && benefits.length) {
+      benefits.forEach((item) => {
+        const ctaAction = item?.cta_action;
+        const benefitCtaAction: BenefitCtaAction = {
+          type: ctaAction?.type,
+          action: ctaAction?.meta?.action,
+          message: ctaAction?.meta?.message,
+          webEngageEvent: ctaAction?.meta?.webEngage,
+        };
+        const benefit: PlanBenefits = {
+          _id: item?._id,
+          attribute: item?.attribute,
+          headerContent: item?.header_content,
+          description: item?.description,
+          ctaLabel: item?.cta_label,
+          ctaAction: item?.cta_action?.cta_action,
+          benefitCtaAction,
+          attributeType: item?.attribute_type,
+          availableCount: item?.available_count,
+          refreshFrequency: item?.refresh_frequency,
+          icon: item?.icon,
+        };
+        circleBenefits.push(benefit);
+      });
+    }
+
+    const circleSubscptionData: CicleSubscriptionData = {
+      _id: plan?._id,
+      name: plan?.name,
+      planId: plan?.plan_id,
+      activationModes: plan?.activation_modes,
+      status: plan?.status,
+      subscriptionStatus: plan?.subscriptionStatus,
+      subPlanIds: plan?.sub_plan_ids,
+      planSummary: planSummary,
+      groupDetails: groupDetailsData,
+      benefits: circleBenefits,
+      endDate: plan?.subscriptionEndDate,
+      startDate: plan?.start_date,
+    };
+
+    return circleSubscptionData;
+  };
+
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean) => {
+    try {
+      const group = plan.group;
+      const groupData: GroupPlan = {
+        _id: group!._id || '',
+        name: group!.name || '',
+        isActive: group!.is_active,
+      };
+      const benefits = plan.benefits;
+      const planBenefits: PlanBenefits[] = [];
+      if (benefits && benefits.length) {
+        benefits.forEach((item) => {
+          const ctaAction = g(item, 'cta_action');
+          const benefitCtaAction: BenefitCtaAction = {
+            type: g(ctaAction, 'type'),
+            action: g(ctaAction, 'meta', 'action'),
+            message: g(ctaAction, 'meta', 'message'),
+            webEngageEvent: g(ctaAction, 'meta', 'webEngage'),
+          };
+          const benefit: PlanBenefits = {
+            _id: item!._id,
+            attribute: item!.attribute,
+            headerContent: item!.header_content,
+            description: item!.description,
+            ctaLabel: item!.cta_label,
+            ctaAction: g(item, 'cta_action', 'cta_action'),
+            benefitCtaAction,
+            attributeType: item!.attribute_type,
+            availableCount: item!.available_count,
+            refreshFrequency: item!.refresh_frequency,
+            icon: item!.icon,
+          };
+          planBenefits.push(benefit);
+        });
+      }
+      const isActive = plan!.subscriptionStatus === hdfc_values.ACTIVE_STATUS;
+      const subscription: SubscriptionData = {
+        _id: plan!._id || '',
+        name: plan!.name || '',
+        planId: plan!.plan_id || '',
+        benefitsWorth: plan!.benefits_worth || '',
+        activationModes: plan!.activation_modes,
+        price: plan!.price,
+        minTransactionValue: plan?.plan_summary?.[0]?.min_transaction_value,
+        status: plan!.status || '',
+        subscriptionStatus: plan!.subscriptionStatus || '',
+        isActive,
+        group: groupData,
+        benefits: planBenefits,
+        coupons: plan!.coupons ? plan!.coupons : [],
+        upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
+      };
+      const upgradeToPlan = g(plan, 'can_upgrade_to');
+      if (g(upgradeToPlan, '_id')) {
+        setSubscriptionData(upgradeToPlan, true);
+      }
+
+      if (!!isUpgradePlan) {
+        setUpgradePlans([...upgradePlans, subscription]);
+      }
+      return subscription;
+    } catch (e) {
+      console.log('ERROR: ', e);
     }
   };
 
@@ -1562,12 +1805,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           navigation={props.navigation}
           planActivationCallback={() => {
             getUserSubscriptionsByStatus();
+            getUserSubscriptionsWithBenefits();
             getUserBanners();
             circleActivatedRef.current = false;
           }}
           circleActivated={circleActivatedRef.current}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
+          successCallback={() => {
+            getUserSubscriptionsWithBenefits();
+          }}
         />
       );
     }
@@ -1807,7 +2054,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );
-
     postHomeWEGEvent(WebEngageEventName.APOLLO_PRO_HEALTH);
 
     try {

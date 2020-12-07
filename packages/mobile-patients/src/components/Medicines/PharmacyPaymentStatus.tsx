@@ -13,6 +13,8 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_PHARMA_TRANSACTION_STATUS,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+  SAVE_MEDICINE_ORDER_OMS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -48,7 +50,24 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
+import {
+  SaveMedicineOrderPaymentMq,
+  SaveMedicineOrderPaymentMqVariables,
+} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -59,13 +78,18 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     cartTotalCashback,
     isCircleSubscription,
     setIsCircleSubscription,
+    cartItems,
+    coupon,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
-
+  const deliveryTime = props.navigation.getParam('deliveryTime');
+  const orderInfo = props.navigation.getParam('orderInfo');
+  const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
   const circleSavings = cartTotalCashback;
@@ -77,6 +101,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const { currentPatient } = useAllCurrentPatients();
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
+  const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -177,6 +202,153 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE,
         CircleEventAttributes
       );
+  };
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
+    client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS,
+      variables: orderInfo,
+    });
+
+  const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
+    client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+      variables: paymentInfo,
+    });
+
+  const handleOrderSuccess = (orderAutoId: string) => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    fireOrderSuccessEvent(orderAutoId);
+    showAphAlert!({
+      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+      description:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
+      children: (
+        <OrderPlacedPopUp
+          deliveryTime={deliveryTime}
+          orderAutoId={orderAutoId}
+          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
+          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
+        />
+      ),
+    });
+  };
+
+  const placeOrder = async (orderAutoId: number) => {
+    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+      medicinePaymentMqInput: {
+        orderAutoId: orderAutoId,
+        amountPaid: getFormattedAmount(price),
+        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+    try {
+      const response = await savePayment(paymentInfo);
+      const { data } = response;
+      const { errorCode, errorMessage } = data?.SaveMedicineOrderPaymentMq || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+      } else {
+        console.log('inside success');
+        handleOrderSuccess(`${orderAutoId}`);
+        clearCartInfo?.();
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_savePayment', error);
+      errorPopUp();
+    }
+  };
+
+  const initiateOrder = async () => {
+    setcodOrderProcessing(true);
+    try {
+      const response = await saveOrder(orderInfo);
+      const { data } = response;
+      const { orderId, orderAutoId, errorCode, errorMessage } = data?.saveMedicineOrderOMS || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+        setcodOrderProcessing(false);
+        return;
+      } else {
+        placeOrder(orderAutoId!);
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_saveOrder', error);
+      setcodOrderProcessing(false);
+      errorPopUp();
+    }
+  };
+
+  const errorPopUp = () => {
+    fireOrderFailedEvent();
+    showAphAlert!({
+      title: `Hi ${currentPatient?.firstName || ''}!`,
+      description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+    });
+  };
+
+  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderAutoId: string) => {
+    hideAphAlert!();
+    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      goToHomeOnBack: true,
+      showOrderSummaryTab,
+      orderAutoId: orderAutoId,
+    });
+  };
+
+  const fireOrderSuccessEvent = (newOrderId: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+      'Payment failed order id': orderId,
+      'Payment Success Order Id': newOrderId,
+      status: true,
+    };
+    postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
+    firePurchaseEvent();
+  };
+
+  const fireOrderFailedEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+      'Payment failed order id': orderId,
+      status: false,
+    };
+    postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
+  };
+
+  const firePurchaseEvent = () => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = item.quantity; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: coupon?.coupon,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: price,
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const statusIcon = () => {
@@ -282,36 +454,34 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               {orderId}
             </Text>
           </View>
-          {
-            !!paymentRefId && (
-              <>
-                <View style={{ justifyContent: 'flex-start' }}>
-                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>
-                    Payment Reference Number :{' '}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.refStyles}
-                    onPress={() => copyToClipboard(refNumberText)}
-                  >
-                    <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
-                      {paymentRefId}
-                    </Text>
-                    <Copy style={styles.iconStyle} />
-                  </TouchableOpacity>
-                </View>
-                <Snackbar
-                  style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
-                  visible={snackbarState}
-                  onDismiss={() => {
-                    setSnackbarState(false);
-                  }}
-                  duration={1000}
+          {!!paymentRefId && (
+            <>
+              <View style={{ justifyContent: 'flex-start' }}>
+                <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>
+                  Payment Reference Number :{' '}
+                </Text>
+                <TouchableOpacity
+                  style={styles.refStyles}
+                  onPress={() => copyToClipboard(refNumberText)}
                 >
-                  Copied
-                </Snackbar>
-              </>
-            )
-          }
+                  <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
+                    {paymentRefId}
+                  </Text>
+                  <Copy style={styles.iconStyle} />
+                </TouchableOpacity>
+              </View>
+              <Snackbar
+                style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
+                visible={snackbarState}
+                onDismiss={() => {
+                  setSnackbarState(false);
+                }}
+                duration={1000}
+              >
+                Copied
+              </Snackbar>
+            </>
+          )}
         </View>
         <View>
           <TouchableOpacity onPress={() => {}}></TouchableOpacity>
@@ -345,18 +515,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               )}
             </View>
           </View>
-          {
-            !!paymentMode && (
-              <View>
-                <View style={{ justifyContent: 'flex-start' }}>
-                  {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
-                </View>
-                <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-                  {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
-                </View>
+          {!!paymentMode && (
+            <View>
+              <View style={{ justifyContent: 'flex-start' }}>
+                {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
               </View>
-            )
-          }
+              <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
+                {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+              </View>
+            </View>
+          )}
         </View>
       </View>
     );
@@ -367,7 +535,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 10-14 business days.';
-    } else if(paymentMode === 'COD') {
+    } else if (paymentMode === 'COD') {
       noteText = 'Note - Your order is confirmed and has been placed successfully.';
     } else if (status != success && status != failure && status != aborted) {
       noteText =
@@ -384,6 +552,35 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     } else {
       return 'GO TO HOMEPAGE';
     }
+  };
+
+  const renderCODNote = () => {
+    let noteText = "Your order wasn't placed as payment could not be processed. Please try again";
+    return status == failure ? <Text style={styles.codText}>{noteText}</Text> : null;
+  };
+
+  const renderCODButton = () => {
+    return status == failure ? (
+      <View style={{ marginHorizontal: 0.06 * windowWidth, marginBottom: 0.06 * windowWidth }}>
+        <Button
+          style={{ height: 0.06 * windowHeight }}
+          title={`PAY CASH ON DELIVERY`}
+          onPress={() => initiateOrder()}
+          disabled={false}
+        />
+      </View>
+    ) : null;
+  };
+
+  const renderRetryPayment = () => {
+    return (
+      <View style={styles.retryPayment}>
+        <TouchableOpacity onPress={() => handleButton()}>
+          <Text style={styles.clickText}>Click here</Text>
+        </TouchableOpacity>
+        <Text style={styles.retryText}>{' to retry your payment'}</Text>
+      </View>
+    );
   };
 
   const handleButton = () => {
@@ -498,15 +695,18 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             isCircleSubscription
               ? renderCircleSavingsOnPurchase()
               : null}
+            {renderCODNote()}
+            {renderCODButton()}
             {appointmentHeader()}
             {appointmentCard()}
             {renderNote()}
-            {renderButton()}
+            {status == failure ? renderRetryPayment() : renderButton()}
           </ScrollView>
         </View>
       ) : (
         <Spinner />
       )}
+      {codOrderProcessing && <Spinner />}
     </View>
   );
 };
@@ -654,5 +854,23 @@ const styles = StyleSheet.create({
     width: 50,
     height: 32,
     marginRight: 5,
+  },
+  codText: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.SHADE_GREY, 1, 17),
+    textAlign: 'center',
+    marginHorizontal: 0.1 * windowWidth,
+    marginBottom: 8,
+  },
+  retryPayment: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 13,
+  },
+  clickText: {
+    ...theme.viewStyles.text('SB', 13, '#fcb716', 1, 17, 0.04),
+  },
+  retryText: {
+    ...theme.viewStyles.text('R', 13, '#02475b', 1, 17, 0.04),
   },
 });

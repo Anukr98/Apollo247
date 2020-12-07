@@ -549,11 +549,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const renderAddToCart = () => {
     return (
       <Button
-        title={
-          buyNow && from !== string.banner_context.PHARMACY_HOME
-            ? string.circleDoctors.upgrade
-            : string.circleDoctors.addToCart
-        }
+        title={buyNow ? string.circleDoctors.upgrade : string.circleDoctors.addToCart}
         style={styles.buyNowBtn}
         onPress={() => {
           fireCircleBuyNowEvent();

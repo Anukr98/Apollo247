@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
 export interface HdfcConnectPopupProps {
   onClose: () => void;
   benefitId: string;
+  successCallback: () => void;
 }
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
@@ -102,7 +103,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
         query: INITIATE_CALL_FOR_PARTNER,
         variables: {
           mobileNumber,
-          benefitId: props.benefitId,
+          benefitId: `${props.benefitId}`,
         },
         fetchPolicy: 'no-cache',
       })
@@ -112,6 +113,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
         setTimeout(() => {
           props.onClose();
         }, 2000);
+        props.successCallback();
         console.log('initiateCallForPartner response', data);
       })
       .catch((e) => {

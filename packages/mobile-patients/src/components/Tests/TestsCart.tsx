@@ -1870,12 +1870,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </Text>
             </View>
           )}
-          {selectedTab == tabs[0].title && ppeKitCharges && (
+          {/* {selectedTab == tabs[0].title && ppeKitCharges && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.blueTextStyle}>PPE kit charges</Text>
               <Text style={styles.blueTextStyle}>{string.common.Rs} 500.00</Text>
             </View>
-          )}
+          )} */}
           {selectedTab == tabs[0].title && cartSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>

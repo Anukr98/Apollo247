@@ -40,9 +40,12 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
-    minDiscountedPrice,
+    onlineConsultDiscountedPrice,
+    physicalConsultDiscountedPrice,
   } = circleDoctorDetails;
-
+  const discountedPrice = isOnlineConsult
+    ? onlineConsultDiscountedPrice
+    : physicalConsultDiscountedPrice;
   const renderCareDoctorPricing = () => {
     return (
       <View>
@@ -74,7 +77,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         </View>
         {!!circleSubscriptionId || planSelected ? (
           <Text style={styles.amountSavedTextStyle}>
-            {string.circleDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
+            {string.circleDoctors.circleSavings.replace('{amount}', `${discountedPrice}`)}
           </Text>
         ) : null}
       </View>

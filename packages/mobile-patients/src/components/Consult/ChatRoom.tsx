@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionChatPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionChatPopup';
@@ -49,6 +50,7 @@ import {
   UPLOAD_MEDIA_DOCUMENT_PRISM,
   SEND_PATIENT_WAIT_NOTIFICATION,
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
+  GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -62,7 +64,11 @@ import {
   updateHealthRecordNudgeStatus,
   updateHealthRecordNudgeStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
-import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+  getAppointmentData_getAppointmentData_appointmentsHistory,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   APPOINTMENT_STATE,
@@ -878,6 +884,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (Platform.OS === 'android') {
+      handleAndroidCallAcceptListeners();
+    } else if (Platform.OS === 'ios') {
+      handleCallkitEventListeners();
+      handleVoipEventListeners();
+    }
+  }, []);
+
+  useEffect(() => {
     if (!currentPatientWithHistory) {
       getPatientApiCallWithHistory();
     }
@@ -971,15 +986,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getSecretaryData();
     // requestToJrDoctor();
     // updateSessionAPI();
-    if (isIos()) {
-      handleCallkitEventListeners();
-      handleVoipEventListeners();
-    }
   }, []);
 
   useEffect(() => {
     console.log('didmout');
-    Platform.OS === 'android' && requestReadSmsPermission();
     Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_RESIZE);
     KeepAwake.activate();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -1003,28 +1013,68 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     joinCallHandler();
   };
 
-  const playSound = () => {
+  const navigateToAnotherAppointment = async (appointmentId: string, callType: string) => {
     try {
-      maxVolume();
-      if (audioTrack) {
-        audioTrack.play();
-        audioTrack.setNumberOfLoops(15);
-        console.log('call audioTrack');
+      setLoading!(true);
+      const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId },
+        fetchPolicy: 'no-cache',
+      });
+      const appointmentData = response.data?.getAppointmentData?.appointmentsHistory?.[0];
+      if (appointmentData?.doctorInfo) {
+        setLoading!(false);
+        props.navigation.goBack();
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: appointmentData,
+          isCall: true,
+          callType,
+          prescription: '',
+        });
+      } else {
+        throw new Error('Doctor info is required to process the request.');
       }
-    } catch (e) {
-      CommonBugFender('playing_callertune__failed', e);
+    } catch (error) {
+      setLoading!(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: string.appointmentDataError,
+        CTAs: [
+          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'RETRY',
+            onPress: () => {
+              hideAphAlert!();
+              navigateToAnotherAppointment(appointmentId, callType);
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+      CommonBugFender(`${AppRoutes.ChatRoom}_Navigate_To_Another_Appointment`, error);
     }
   };
 
-  const stopSound = () => {
-    try {
-      setPrevVolume();
-      if (audioTrack) {
-        audioTrack.stop();
-      }
-    } catch (e) {
-      CommonBugFender('playing_callertune__failed', e);
-    }
+  const handleAndroidCallAcceptListeners = () => {
+    Linking.addEventListener('url', (event) => {
+      try {
+        const deeplinkBaseUrl = 'apollopatients://DoctorCall?';
+        const index = event.url.indexOf(deeplinkBaseUrl);
+        const isDoctorCall = index > -1;
+        const params = event.url?.substring(index + deeplinkBaseUrl.length)?.split('+');
+        const appointmentId = params[0];
+        const callType = params[1];
+        console.log('>>>params--', params);
+        console.log('>>>appointmentId--', appointmentId);
+        if (isDoctorCall) {
+          if (appointmentId === channel) {
+            joinCallHandler();
+          } else {
+            navigateToAnotherAppointment(appointmentId, callType);
+          }
+        }
+      } catch (e) {}
+    });
   };
 
   useEffect(() => {
@@ -1041,7 +1091,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isAudio.current = true;
           callhandelBack = false;
         }
-        isVoipCall || fromIncomingCall ? null : playSound();
       });
     }
     if (prescription) {
@@ -1522,7 +1571,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               isAudio.current = true;
               callhandelBack = false;
             }
-            playSound();
             !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
@@ -1533,7 +1581,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setHideStatusBar(true);
               setChatReceived(false);
               Keyboard.dismiss();
-              stopSound();
               changeAudioStyles();
               setConvertVideo(false);
               setDowngradeToAudio(false);
@@ -1638,33 +1685,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           });
         }
       });
-  };
-
-  const requestReadSmsPermission = async () => {
-    try {
-      const resuts = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
-      }
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
-      }
-      if (resuts) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
-      }
-    } catch (error) {
-      CommonBugFender('ChatRoom_requestReadSmsPermission_try', error);
-      console.log('error', error);
-    }
   };
 
   const updateSessionAPI = () => {
@@ -1825,7 +1845,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED,
         JSON.stringify(event)
       );
-      stopSound();
     },
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
@@ -1872,7 +1891,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
       subscriberConnected.current = true;
-      stopSound();
     },
     disconnected: (event: string) => {
       callEndWebengageEvent('Network');
@@ -2857,7 +2875,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setOnSubscribe(true);
         callhandelBack = false;
         // stopCallAbondmentTimer();
-        playSound();
         !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
@@ -2865,7 +2882,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         isAudio.current = false;
         // stopCallAbondmentTimer();
-        playSound();
         !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
         jrDoctorJoined.current = false;
@@ -2907,7 +2923,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
-        stopSound();
         addMessages(message);
       } else if (message.message.message === covertVideoMsg) {
         console.log('covertVideoMsg', covertVideoMsg);
@@ -6081,114 +6096,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const IncomingCallView = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          top: 88,
-          right: 8,
-          width: 155,
-          height: 205,
-          borderRadius: 30,
-          backgroundColor: 'black',
-        }}
-      >
-        {appointmentData.doctorInfo.photoUrl &&
-        appointmentData.doctorInfo.photoUrl.match(urlRegEx) ? (
-          <Image
-            source={{ uri: appointmentData.doctorInfo.photoUrl }}
-            resizeMode={'contain'}
-            style={{
-              width: 155,
-              height: 205,
-              opacity: 0.8,
-              borderRadius: 30,
-            }}
-          />
-        ) : (
-          <DoctorPlaceholderImage
-            style={{
-              width: 155,
-              height: 205,
-              opacity: 0.8,
-              borderRadius: 30,
-            }}
-          />
-        )}
-        {/* <DoctorCall
-          style={{
-            width: 155,
-            height: 205,
-            opacity: 0.5,
-            borderRadius: 30,
-          }}
-        /> */}
-        <Text
-          style={{
-            position: 'absolute',
-            marginLeft: 0,
-            marginTop: 16,
-            width: 155,
-            color: 'white',
-            ...theme.fonts.IBMPlexSansMedium(14),
-            textAlign: 'center',
-            letterSpacing: 0,
-          }}
-        >
-          Incoming Call
-        </Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={{
-            width: 40,
-            height: 40,
-            bottom: 16,
-            left: 58,
-            position: 'absolute',
-          }}
-          onPress={() => {
-            callPermissions(() => {
-              AsyncStorage.setItem('callDisconnected', 'false');
-              setOnSubscribe(false);
-              stopTimer();
-              startTimer(0);
-              setCallAccepted(true);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              Keyboard.dismiss();
-              stopSound();
-              changeAudioStyles();
-              setConvertVideo(false);
-              setDowngradeToAudio(false);
-              changeVideoStyles();
-              setDropdownVisible(false);
-              setCallerAudio(true);
-              setCallerVideo(true);
-              if (token) {
-                PublishAudioVideo();
-              } else {
-                APICallAgain();
-              }
-            });
-            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
-            fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
-          }}
-        >
-          <PickCallIcon
-            style={{
-              width: 40,
-              height: 40,
-              top: 0,
-              left: 0,
-              // position: 'absolute',
-            }}
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   const APICallAgain = () => {
     const input = {
       appointmentId: appointmentData.id,
@@ -6969,7 +6876,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           />
         )}
       </SafeAreaView>
-      {onSubscribe && IncomingCallView()}
       {isCall && VideoCall()}
       {isAudioCall && AudioCall()}
       {transferAccept && (

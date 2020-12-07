@@ -573,9 +573,13 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         <View style={styles.healthyLifeContainer}>
-          <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
-            #ApolloHealthyLife
-          </Text>
+          {
+            !isCare && (
+              <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
+                #ApolloHealthyLife
+              </Text>
+            )
+          }
           {isCare ? (
             <CircleLogo style={styles.circleLogo} />
           ) : (
