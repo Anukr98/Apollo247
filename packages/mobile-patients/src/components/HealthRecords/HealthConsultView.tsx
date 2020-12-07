@@ -129,7 +129,12 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { locationDetails, setLocationDetails, diagnosticLocation } = useAppCommonData();
+  const {
+    locationDetails,
+    setLocationDetails,
+    diagnosticLocation,
+    pharmacyLocation,
+  } = useAppCommonData();
   const { setLoading: setGlobalLoading } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
@@ -515,7 +520,10 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     testPrescription,
                                     client,
                                     g(
-                                      diagnosticLocation || locationDetails || location,
+                                      diagnosticLocation ||
+                                        pharmacyLocation ||
+                                        locationDetails ||
+                                        location,
                                       'pincode'
                                     ) || ''
                                   );
