@@ -184,6 +184,7 @@ public class MyFirebaseMessagingService
                         .addAction(acceptCall)
                         .addAction(rejectCall)
                         .setFullScreenIntent(fullScreenIntent, true)
+                        .setOngoing(true)
                         .setDeleteIntent(deleteIntent)
                         .setContentIntent(pendingIntent);
 
