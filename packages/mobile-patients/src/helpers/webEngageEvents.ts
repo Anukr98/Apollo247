@@ -338,7 +338,7 @@ export enum WebEngageEventName {
 
   //HOMEPAGE BANNER
   COVID_BANNER_CLICKED = 'Recovery Clinic Banner clicked',
-  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = "App non-circle -HomePage Banner clicked",
+  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = 'App non-circle -HomePage Banner clicked',
   MEMBERSHIP_DETAILS_BANNER_CLICKED = 'App - circle - Membership Details Banner clicked',
   HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'App - circle - Doc on Call Banner Clicked',
   NON_CIRCLE_HOMEPAGE_VIEWED = 'App - Circle Subscription Landing Page Entry',
@@ -346,7 +346,7 @@ export enum WebEngageEventName {
   NON_CIRCLE_BUY_NOW_CLICKED = 'App - Circle Subscription Landing Buy Now Clicked',
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
   NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
-  HC_1CLICK_ACTIVATION = "App - HC - 1ClickActivation",
+  HC_1CLICK_ACTIVATION = 'App - HC - 1ClickActivation',
 }
 
 export interface PatientInfo {
@@ -365,14 +365,14 @@ export interface UserInfo {
   'Customer ID': string;
 }
 
-export interface CircleUserInfo extends UserInfo{
+export interface CircleUserInfo extends UserInfo {
   'Circle Member'?: 'Yes' | 'No';
   'Membership Type'?: string;
   'Circle Membership Start Date'?: Date;
   'Circle Membership End Date'?: Date;
-  'type'?: string; //landing page
-  'action'?: string; //landing page
-  'from'?: string;
+  type?: string; //landing page
+  action?: string; //landing page
+  from?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -639,7 +639,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NON_CIRCLE_PAYMENT_MODE_SELECTED]: CircleUserInfo;
   [WebEngageEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
   [WebEngageEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
-  
+
   // ********** PharmacyEvents ********** \\
 
   [WebEngageEventName.SEARCH]: {
@@ -1079,7 +1079,8 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD]: {
     'Payment failed order id': string;
-    'Payment Success Order Id': string;
+    'Payment Success Order Id'?: string;
+    status: boolean;
   };
   [WebEngageEventName.DOCTOR_SEARCH]: {
     'Search Text': string;
