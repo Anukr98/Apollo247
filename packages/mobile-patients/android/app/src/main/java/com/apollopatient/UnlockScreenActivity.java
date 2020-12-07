@@ -214,10 +214,8 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
     private void onDisconnected(String appointmentID) {
         String notifyMessage="^^#PATIENT_REJECTED_CALL";
-        JsonObject entryUpdate = new JsonObject();
-        entryUpdate.addProperty("message", notifyMessage);
         pubnub.publish()
-                .message(entryUpdate)
+                .message(notifyMessage)
                 .channel(appointmentID)
                 .shouldStore(true)
                 .usePOST(true)
