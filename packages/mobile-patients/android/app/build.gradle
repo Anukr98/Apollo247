@@ -195,12 +195,17 @@ android {
         }
     }
     packagingOptions {
-        pickFirst '**/libc++_shared.so'
+        pickFirst '**/armeabi-v7a/libc++_shared.so'
+        pickFirst '**/x86/libc++_shared.so'
+        pickFirst '**/x86_64/libc++_shared.so'
+        pickFirst '**/arm64-v8a/libc++_shared.so'
+        pickFirst '**/libjsc.so'
     }
 
 }
 
 dependencies {
+    implementation 'org.webkit:android-jsc:+'
     implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation project(':@react-native-community_progress-bar-android')
     implementation project(':@react-native-community_progress-view')
