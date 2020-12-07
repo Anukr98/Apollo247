@@ -9,6 +9,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchSendIcon,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -101,6 +102,22 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     letterSpacing: 0.04,
   },
+  careMessageContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginTop: 20,
+    padding: 10,
+    flexDirection: 'row',
+  },
+  pendingIconStyle: {
+    marginRight: 10,
+    marginTop: 5,
+  },
+  careMessage: {
+    ...theme.viewStyles.text('R', 13, '#01475B', 1, 20),
+    width: '90%',
+  },
 });
 export interface pharma_coupon {
   coupon: string;
@@ -125,26 +142,41 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     pinCode,
     addresses,
     deliveryAddressId,
+    isCircleSubscription,
+    setIsCircleSubscription,
+    circleMembershipCharges,
+    circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions, pharmacyLocation } = useAppCommonData();
+  const { 
+    locationDetails, 
+    pharmacyLocation, 
+    hdfcPlanId, 
+    circlePlanId, 
+    hdfcStatus, 
+    circleStatus 
+  } = useAppCommonData();
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-  let packageId = '';
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId =
-      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`)
   }
 
   useEffect(() => {
     const data = {
-      packageId,
+      packageId: packageId.join(),
       mobile: g(currentPatient, 'mobileNumber'),
-      email: g(currentPatient, 'emailAddress')
+      email: g(currentPatient, 'emailAddress'),
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
@@ -178,13 +210,14 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageId: packageId,
+      packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
             console.log(g(resp.data, 'response'));
             setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
             props.navigation.goBack();
@@ -337,6 +370,15 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     );
   };
 
+  const renderCareDiscountBanner = () => (
+    <View style={styles.careMessageContainer}>
+      <PendingIcon style={styles.pendingIconStyle} />
+      <Text style={styles.careMessage}>
+        You can either use CIRCLE discount or apply a Coupon code
+      </Text>
+    </View>
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -347,6 +389,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView style={{ marginBottom: 80 }} bounces={false}>
+          {(isCircleSubscription || !!circleMembershipCharges) && renderCareDiscountBanner()}
           {renderCouponCard()}
         </ScrollView>
         {renderBottomButtons()}

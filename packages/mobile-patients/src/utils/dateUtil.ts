@@ -39,3 +39,16 @@ export const convertMinsToHrsMins = (min: number) => {
     }`
   );
 };
+
+export const dateFormatter = (dateTime: Date) => {
+  let tommorowDate = new Date();
+  tommorowDate.setDate(tommorowDate.getDate() + 1);
+
+  if (new Date(dateTime).toLocaleDateString() == new Date().toLocaleDateString()) {
+    return `Today, ${format(dateTime, 'h:mm A')}`;
+  } else if (new Date(dateTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
+    return `Tomorrow, ${format(dateTime, 'h:mm A')}`;
+  } else {
+    return `${format(dateTime, 'DD MMM YYYY, h:mm A')}`;
+  }
+};

@@ -78,7 +78,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
   const [pincode, setPincode] = useState<string>('');
   const [error, setError] = useState<string>('');
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { setPharmacyLocation, setLocationDetails, locationDetails } = useAppCommonData();
+  const { setPharmacyLocation, setLocationDetails, locationDetails, setAxdcCode } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [showCallToPharmacy, setShowCallToPharmacy] = useState<boolean>(false);
   const [pharmacyPhoneNumber, setPharmacyPhoneNumber] = useState<string>('');
@@ -91,11 +91,13 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
     globalLoading!(true);
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
+        const { servicable, axdcCode } = response;
+        setAxdcCode && setAxdcCode(axdcCode);
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED] = {
           'Patient UHID': currentPatient.uhid,
           'Mobile Number': currentPatient.mobileNumber,
           'Customer ID': currentPatient.id,
-          Serviceable: response ? 'Yes' : 'No',
+          Serviceable: servicable ? 'Yes' : 'No',
           Keyword: pincode,
           Source: 'Pharmacy Home',
         };
@@ -103,7 +105,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED,
           eventAttributes
         );
-        if (!response) {
+        if (!servicable) {
           const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
             'Mobile Number': currentPatient.mobileNumber,
             Pincode: pincode,

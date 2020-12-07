@@ -221,6 +221,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     couponProducts,
     setCouponProducts,
     addMultipleCartItems,
+    circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
@@ -240,7 +242,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation, hdfcUserSubscriptions } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
@@ -252,10 +254,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
-  let packageId = '';
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId =
-      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`)
   }
 
   // To remove applied coupon and selected storeId from cart when user goes back.
@@ -874,8 +878,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
-      packageId: packageId,
-      email: g(currentPatient, 'emailAddress')
+      packageIds: packageId,
+      email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
@@ -1142,8 +1146,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 alignSelf: 'center',
               }}
             >
-              Add <Text style={{ color: '#fc9916' }}>Rs. {FreeShipping.toFixed(2)}</Text> worth more
-              of product for FREE Delivery
+              Add{' '}
+              <Text style={{ color: '#fc9916' }}>
+                {string.common.Rs} {FreeShipping.toFixed(2)}
+              </Text>{' '}
+              worth more of product for FREE Delivery
             </Text>
           </View>
         ) : null}
@@ -1163,7 +1170,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setLoading!(true);
     pinCodeServiceabilityApi247(address.zipcode!)
       .then(({ data }) => {
-        if (g(data, 'response')) {
+        if (g(data, 'response', 'servicable')) {
           // Not stopping checkingServicability spinner here, it'll be stopped in useEffect that triggers when change in DeliveryAddressId
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
@@ -1602,7 +1609,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 }}
               >
                 {couponDiscount > 0
-                  ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
+                  ? `Savings of ${string.common.Rs} ${couponDiscount.toFixed(2)} on the bill`
                   : 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'}
               </Text>
             </View>
@@ -1628,21 +1635,29 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>MRP Total</Text>
-            <Text style={styles.blueTextStyle}>Rs. {cartTotal.toFixed(2)}</Text>
+            <Text style={styles.blueTextStyle}>
+              {string.common.Rs} {cartTotal.toFixed(2)}
+            </Text>
           </View>
           {productDiscount > 0 && (
             <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
               <Text style={styles.blueTextStyle}>Product Discount</Text>
-              <Text style={styles.blueTextStyle}>- Rs. {productDiscount.toFixed(2)}</Text>
+              <Text style={styles.blueTextStyle}>
+                - {string.common.Rs} {productDiscount.toFixed(2)}
+              </Text>
             </View>
           )}
           <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
             <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
+            <Text style={styles.blueTextStyle}>
+              + {string.common.Rs} {deliveryCharges.toFixed(2)}
+            </Text>
           </View>
           <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
             <Text style={styles.blueTextStyle}>Packaging Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {packagingCharges.toFixed(2)}</Text>
+            <Text style={styles.blueTextStyle}>
+              + {string.common.Rs} {packagingCharges.toFixed(2)}
+            </Text>
           </View>
           {/* <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
               <Text style={styles.blueTextStyle}>Packaging Charges</Text>
@@ -1654,12 +1669,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
                 <Text style={styles.blueTextStyle}>Total</Text>
                 <Text style={styles.blueTextStyle}>
-                  Rs. {(cartTotal - productDiscount + deliveryCharges).toFixed(2)}
+                  {string.common.Rs} {(cartTotal - productDiscount + deliveryCharges).toFixed(2)}
                 </Text>
               </View>
               <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
                 <Text style={styles.blueTextStyle}>Discount({coupon.coupon})</Text>
-                <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
+                <Text style={styles.blueTextStyle}>
+                  - {string.common.Rs} {couponDiscount.toFixed(2)}
+                </Text>
               </View>
               <View
                 style={[
@@ -1674,86 +1691,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               TO PAY
             </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold(16) }]}>
-              Rs. {grandTotal.toFixed(2)}
+              {string.common.Rs} {grandTotal.toFixed(2)}
             </Text>
           </View>
         </View>
       </View>
     );
   };
-
-  /*
-  const medicineSuggestions = [
-    {
-      name: 'Metformin 500mg',
-      requirePrescription: false,
-      cost: 'Rs. 120',
-    },
-    {
-      name: 'Metformin 500mg',
-      requirePrescription: false,
-      cost: 'Rs. 120',
-    },
-    {
-      name: 'Metformin 500mg',
-      requirePrescription: false,
-      cost: 'Rs. 120',
-    },
-  ];
-  const renderMedicineItem = (
-    item: { name: string; cost: string },
-    index: number,
-    length: number
-  ) => {
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          shadowRadius: 4,
-          marginBottom: 20,
-          marginTop: 11,
-          marginHorizontal: 6,
-          paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: 8,
-        }}
-      >
-        <MedicineIcon />
-        <Text style={[styles.blueTextStyle, { paddingTop: 4 }]}>{item.name}</Text>
-        <View style={[styles.separatorStyle, { marginTop: 3, marginBottom: 5 }]} />
-        <Text style={styles.medicineCostStyle}>
-          {item.cost} <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>/strip</Text>
-        </Text>
-      </View>
-    );
-  };
-  const renderMedicineSuggestions = () => {
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          paddingTop: 16,
-          marginTop: 12,
-        }}
-      >
-        {renderLabel('YOU SHOULD ALSO ADD')}
-        <FlatList
-          contentContainerStyle={{
-            marginHorizontal: 14,
-          }}
-          horizontal={true}
-          bounces={false}
-          data={medicineSuggestions}
-          renderItem={({ item, index }) =>
-            renderMedicineItem(item, index, medicineSuggestions.length)
-          }
-          keyExtractor={(_, index) => index.toString()}
-          showsHorizontalScrollIndicator={false}
-        />
-      </View>
-    );
-  };
-  */
 
   const isPrescriptionRequired = cartItems.find(({ prescriptionRequired }) => prescriptionRequired)
     ? !(showPrescriptionAtStore || physicalPrescriptions.length > 0 || ePrescriptions.length > 0)
@@ -2169,7 +2113,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
+            title={`PROCEED TO PAY ${string.common.Rs} ${grandTotal.toFixed(2)}`}
             onPress={() => {
               CommonLogEvent(AppRoutes.YourCart, 'PROCEED TO PAY');
               onPressProceedToPay();

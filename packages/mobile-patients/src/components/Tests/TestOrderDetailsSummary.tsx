@@ -45,10 +45,16 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { BackHandler, SafeAreaView, StyleSheet, View } from 'react-native';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
 import { OrderCancelOverlay } from './OrderCancelOverlay';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -90,6 +96,7 @@ export interface TestOrderDetailsSummaryProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
   goToHomeOnBack: boolean;
+  comingFrom?: string;
 }
 {
 }
@@ -99,6 +106,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
+  const isComingFrom = props.navigation.getParam('comingFrom');
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -141,7 +149,15 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   //   setRescheduleVisible(true);
   // }, []);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
   const handleBack = () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (!goToHomeOnBack) {
       refetchOrders()
         .then((data: any) => {
@@ -152,8 +168,18 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
           CommonBugFender('TestOrderDetails_refetchOrders', e);
         });
     }
-    props.navigation.goBack();
-    return false;
+    if (isComingFrom == AppRoutes.TestsCart) {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        })
+      );
+    } else {
+      props.navigation.goBack();
+    }
+    return true;
   };
 
   const getFormattedDate = (time: string) => {

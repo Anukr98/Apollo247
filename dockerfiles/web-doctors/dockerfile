@@ -1,6 +1,0 @@
-FROM nginx:1.16.0-alpine
-ENV GOOGLE_APPLICATION_CREDENTIALS="/apollo-hospitals/packages/api/firebase-secrets.json"
-ADD aks.conf etc/nginx/conf.d/
-RUN mkdir -p /apollo-hospitals/packages/web-doctors
-WORKDIR /apollo-hospitals/packages/web-doctors
-ADD aph-webd-aks.tar.gz  /

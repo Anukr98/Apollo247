@@ -23,7 +23,15 @@ import {
   SAVE_DEVICE_TOKEN,
   GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
   GET_PARTICIPANTS_LIVE_STATUS,
+  DELETE_PATIENT_PRISM_MEDICAL_RECORD,
+  GET_PHR_USER_NOTIFY_EVENTS,
+  GET_MEDICAL_PRISM_RECORD,
+  GET_ALL_GROUP_BANNERS_OF_USER,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getUserNotifyEvents as getUserNotifyEventsQuery,
+  getUserNotifyEventsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
 import ApolloClient from 'apollo-client';
@@ -32,6 +40,7 @@ import { addToConsultQueueVariables } from '@aph/mobile-patients/src/graphql/typ
 import { addToConsultQueueWithAutomatedQuestionsVariables } from '@aph/mobile-patients/src/graphql/types/addToConsultQueueWithAutomatedQuestions';
 import { checkIfRescheduleVariables } from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
 import { downloadDocuments } from '@aph/mobile-patients/src/graphql/types/downloadDocuments';
+import { deletePatientPrismMedicalRecord } from '@aph/mobile-patients/src/graphql/types/deletePatientPrismMedicalRecord';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
@@ -68,6 +77,8 @@ import {
   BOOKINGSOURCE,
   USER_STATUS,
   DEVICETYPE,
+  MedicalRecordType,
+  UserState,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -94,6 +105,13 @@ import {
   setAndGetNumberOfParticipants,
   setAndGetNumberOfParticipantsVariables,
 } from '@aph/mobile-patients/src/graphql/types/setAndGetNumberOfParticipants';
+import { getPatientPrismMedicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  GetAllGroupBannersOfUser,
+  GetAllGroupBannersOfUserVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
+import { bannerType } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -275,6 +293,85 @@ export const getPrismUrls = (
         CommonBugFender('clientCalls_getPrismUrls', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
+      });
+  });
+};
+
+export const deletePatientPrismMedicalRecords = (
+  client: ApolloClient<object>,
+  id: string,
+  patientId: string,
+  recordType: MedicalRecordType
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<deletePatientPrismMedicalRecord>({
+        query: DELETE_PATIENT_PRISM_MEDICAL_RECORD,
+        fetchPolicy: 'no-cache',
+        variables: {
+          deletePatientPrismMedicalRecordInput: {
+            id: id,
+            patientId: patientId,
+            recordType: recordType,
+          },
+        },
+      })
+      .then(({ data }) => {
+        res({ status: data?.deletePatientPrismMedicalRecord?.status });
+      })
+      .catch((e: any) => {
+        CommonBugFender('clientCalls_deletePatientPrismMedicalRecords', e);
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const phrNotificationCountApi = (client: ApolloClient<object>, patientId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getUserNotifyEventsQuery, getUserNotifyEventsVariables>({
+        query: GET_PHR_USER_NOTIFY_EVENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: patientId,
+        },
+      })
+      .then(({ data }) => {
+        res(data?.getUserNotifyEvents?.phr?.newRecordsCount);
+      })
+      .catch((e: any) => {
+        CommonBugFender('clientCalls_phrNotificationCountApi', e);
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const getPatientPrismMedicalRecordsApi = (
+  client: ApolloClient<object>,
+  patientId: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientPrismMedicalRecords>({
+        query: GET_MEDICAL_PRISM_RECORD,
+        context: {
+          headers: {
+            callingsource: 'healthRecords',
+          },
+        },
+        variables: {
+          patientId: patientId || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        res(data);
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getPatientPrismMedicalRecordsApi', e);
+        rej(e);
       });
   });
 };
@@ -664,5 +761,50 @@ export const getParticipantsLiveStatus = (
       .catch((e) => {
         rej(e);
       });
+  });
+};
+
+export const getUserBannersList = (
+  client: ApolloClient<object>,
+  currentPatient: any,
+  banner_context: string
+) => {
+  return new Promise((res, rej) => {
+    const mobile_number = g(currentPatient, 'mobileNumber');
+    mobile_number &&
+      client
+        .query<GetAllGroupBannersOfUser, GetAllGroupBannersOfUserVariables>({
+          query: GET_ALL_GROUP_BANNERS_OF_USER,
+          variables: {
+            mobile_number,
+            banner_context: banner_context,
+            user_state: UserState.LOGGED_IN,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const bannersData = g(data, 'data', 'GetAllGroupBannersOfUser', 'response');
+          const banners: bannerType[] = [];
+          if (bannersData && bannersData.length) {
+            bannersData.forEach((value) => {
+              const { _id, is_active, banner, cta_action, meta } = value;
+              banners.push({
+                _id,
+                is_active: !!is_active,
+                banner,
+                cta_action,
+                meta,
+                ...value,
+              });
+            });
+            res(banners);
+          } else {
+            res(null);
+          }
+        })
+        .catch((e) => {
+          rej(e);
+          CommonBugFender('ConsultRoom_GetAllGroupBannersOfUser', e);
+        });
   });
 };

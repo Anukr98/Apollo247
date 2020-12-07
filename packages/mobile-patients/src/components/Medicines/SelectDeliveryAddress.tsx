@@ -82,7 +82,8 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             } else {
               pinCodeServiceabilityApi247(selectedPinCode)
                 .then(({ data: { response } }) => {
-                  if (response) {
+                  const { servicable } = response;
+                  if (servicable) {
                     reArrangeAddresses();
                     setSelectedAddressId && setSelectedAddressId(selectedId);
                     props.navigation.goBack();

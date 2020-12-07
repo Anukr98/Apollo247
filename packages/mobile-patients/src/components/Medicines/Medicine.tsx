@@ -26,6 +26,8 @@ import {
   ArrowRight,
   ShoppingBasketIcon,
   LocationOff,
+  CircleBannerNonMember,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
@@ -40,6 +42,7 @@ import {
   GET_LATEST_MEDICINE_ORDER,
   GET_PATIENT_ADDRESS_LIST,
   SET_DEFAULT_ADDRESS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -68,6 +71,7 @@ import {
   setWebEngageScreenNames,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -98,6 +102,7 @@ import {
   ViewStyle,
   Platform,
   FlatList,
+  BackHandler,
 } from 'react-native';
 import { Image, ListItem } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -139,8 +144,16 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import {
+  GetSubscriptionsOfUserByStatusVariables,
+  GetSubscriptionsOfUserByStatus,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 
 const { width: winWidth } = Dimensions.get('window');
 
@@ -179,6 +192,22 @@ const styles = StyleSheet.create({
     width: winWidth,
     backgroundColor: 'rgba(0,0,0,0.31)',
   },
+  circleBanner: {
+    resizeMode: 'contain',
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -213,11 +242,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
     setLocationDetails,
+    setAxdcCode,
+    axdcCode,
+    circleSubscription,
+    setBannerData,
+    bannerData,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
+    setCartItems,
     addCartItem,
     removeCartItem,
     updateCartItem,
@@ -227,8 +262,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAddresses,
     deliveryAddressId,
     setDeliveryAddressId,
+    cartTotalCashback,
+    cartTotal,
+    isCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
+    setCircleSubscriptionId,
+    setIsCircleSubscription,
+    productDiscount,
+    cartDiscountTotal,
+    setHdfcSubscriptionId,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    circleSubscriptionId,
+    pinCode,
+    setPinCode,
+    setCirclePlanValidity
   } = useShoppingCart();
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const {
+    cartItems: diagnosticCartItems,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
@@ -237,6 +292,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [latestMedicineOrder, setLatestMedicineOrder] = useState<
     getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
   >();
+  const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -343,13 +399,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     globalLoading!(true);
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
-        setServiceabilityMsg(response ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(response ? true : false);
-        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, response ? true : false);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, response ? true : false);
-        console.log(pincode, response);
+        const { servicable, axdcCode } = response;
+        setAxdcCode && setAxdcCode(axdcCode);
+        setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(!!servicable);
+        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
+        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
-        if (!response) {
+        if (!servicable) {
           globalLoading!(true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
@@ -450,24 +507,101 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
+      setPinCode && setPinCode(pharmacyPincode);
     }
   }, []);
 
   useEffect(() => {
+    // set cart items again to set item cashbacks and total cashback
+    if (cartItems.length) {
+      setCartItems && setCartItems(cartItems);
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setBannerData && setBannerData([]);
+
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    return false;
+  };
+
+  useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
-    fetchMedicinePageProducts();
+    fetchMedicinePageProducts(false);
   }, []);
+
+  useEffect(() => {
+    if (axdcCode) {
+      fetchMedicinePageProducts(true);
+    }
+  }, [axdcCode]);
 
   useEffect(() => {
     if (g(currentPatient, 'uhid')) {
       fetchRecommendedProducts();
       fetchLatestMedicineOrder();
     }
+    if (currentPatient) {
+      getUserBanners();
+    }
   }, [currentPatient]);
 
   useEffect(() => {
+    setBannerData && setBannerData([]); // default banners to be empty
     fetchAddress();
   }, []);
+
+  const getUserBanners = async () => {
+    const res: any = await getUserBannersList(
+      client,
+      currentPatient,
+      string.banner_context.PHARMACY_HOME
+    );
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+          from={string.banner_context.PHARMACY_HOME}
+          source={'Pharma'}
+        />
+      );
+    }
+  };
 
   const formatAddressToLocation = (address: Address): LocationData => ({
     displayName: address.city!,
@@ -630,13 +764,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .map((v) => `/catalog/product${v}`)[0];
   };
 
-  const fetchMedicinePageProducts = async () => {
-    if (medicinePageAPiResponse) {
+  const fetchMedicinePageProducts = async (callApiAgain?: boolean) => {
+    if (medicinePageAPiResponse && !callApiAgain) {
       return;
     }
     try {
       setLoading(true);
-      const resonse = (await getMedicinePageProducts()).data;
+      const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
@@ -1395,10 +1529,60 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: data?.APOLLO?.[0]?.start_date,
+            endDate: data?.APOLLO?.[0]?.end_date,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
+        }
+      }
+    } catch (error) {
+      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
+
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
+        {renderCarouselBanners()}
+        <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
@@ -1550,7 +1734,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -1687,6 +1871,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
+        circleCashbackAmt: 0,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1877,6 +2062,206 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCartDiscount = () => {
+    const cartDiscountPercent = getDiscountPercentage(cartTotal, cartTotal - productDiscount);
+    return (
+      <>
+        {cartDiscountPercent ? (
+          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {cartTotal})
+            </Text>
+            <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderCircleCartDetails = () => {
+    const circleStyles = StyleSheet.create({
+      container: {
+        position: 'absolute',
+        bottom: 0,
+        ...theme.viewStyles.cardContainer,
+        width: '100%',
+        padding: 10,
+      },
+      content: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      upgrade: {
+        borderWidth: 2,
+        borderColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        backgroundColor: '#FFFFFF',
+      },
+      upgradeTo: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      circleLogo: {
+        resizeMode: 'contain',
+        width: 35,
+        height: 23,
+        marginLeft: 5,
+      },
+      cartButton: {
+        backgroundColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        paddingHorizontal: 10,
+        alignItems: 'center',
+        alignSelf: 'center',
+      },
+      circleLogoTwo: {
+        resizeMode: 'contain',
+        width: 35,
+        height: 25,
+        marginRight: 4,
+      },
+    });
+    const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+
+    return (
+      <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
+        <View style={circleStyles.content}>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
+              {!!circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
+            </Text>
+            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+              {cartItems.length}
+            </Text>
+          </View>
+          {!!circleSubscriptionId || isCircleSubscription ? (
+            <View
+              style={{
+                borderLeftWidth: 2,
+                borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
+                marginTop: 6,
+                marginBottom: 6,
+              }}
+            ></View>
+          ) : null}
+          {cartTotalCashback > 1 ? (
+            <>
+              {!!circleSubscriptionId || isCircleSubscription ? (
+                <View style={{ width: '60%' }}>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
+                      MRP{'  '}
+                      {string.common.Rs}
+                      {(cartTotal - productDiscount).toFixed(2)}
+                    </Text>
+                    {renderCartDiscount()}
+                  </View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <CircleLogo style={circleStyles.circleLogoTwo} />
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      cashback {string.common.Rs}
+                      {cartTotalCashback.toFixed(2)}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      Effective price for you{' '}
+                    </Text>
+                    <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
+                      {string.common.Rs}
+                      {effectivePrice}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setShowCirclePopup(true);
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+                      'Patient UHID': currentPatient?.uhid,
+                      'Mobile Number': currentPatient?.mobileNumber,
+                      'Customer ID': currentPatient?.id,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE,
+                      eventAttributes
+                    );
+                  }}
+                  style={circleStyles.upgrade}
+                >
+                  <View style={circleStyles.upgradeTo}>
+                    <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
+                    <CircleLogo style={circleStyles.circleLogo} />
+                  </View>
+                  <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
+                    {`Get Circle Cashback of ₹${cartTotalCashback.toFixed(2)}`}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            <View
+              style={{
+                marginTop: 13,
+              }}
+            >
+              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+                ₹{cartTotal - productDiscount}
+              </Text>
+            </View>
+          )}
+          <TouchableOpacity
+            style={circleStyles.cartButton}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.MedicineCart);
+            }}
+          >
+            <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
+            {!circleSubscriptionId && !isCircleSubscription && cartTotalCashback > 1 && (
+              <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
+                {`Buy for ${string.common.Rs}${cartDiscountTotal}`}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderCircleMembershipPopup = () => {
+    return (
+      <CircleMembershipPlans
+        isModal={true}
+        closeModal={() => setShowCirclePopup(false)}
+        navigation={props.navigation}
+        isConsultJourney={false}
+        from={string.banner_context.PHARMACY_HOME}
+        source={'Pharma'}
+        onSelectMembershipPlan={(plan) => {
+          if (plan) {
+            // if plan is selected
+            setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+            setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+          } else {
+            // if plan is removed
+            // setShowCareSelectPlans(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+          }
+        }}
+      />
+    );
+  };
+
   const renderCategoryTree = () => {
     const onPressCategory: MedicineCategoryTreeProps['onPressCategory'] = (category, tree) => {
       setCategoryTreeVisible(false);
@@ -1919,14 +2304,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 80 : 0 }}>
           {renderSections()}
           {renderOverlay()}
+          {!!cartItems.length && renderCircleCartDetails()}
           {renderCategoryTree()}
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
+      {showCirclePopup && renderCircleMembershipPopup()}
       {renderMedicineReOrderOverlay()}
     </View>
   );

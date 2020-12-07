@@ -21,6 +21,8 @@ export interface MedicineProduct {
   thumbnail: string;
   type_id: 'FMCG' | 'Pharma' | 'PL';
   url_key: string;
+  careCashback?: number | null;
+  is_express?: 'Yes' | 'No';
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -32,6 +34,10 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
+export enum DIAGNOSTIC_GROUP_PLAN {
+  ALL = 'ALL',
+  CIRCLE = 'CIRCLE',
+}
 
 interface PharmaOverview {
   generic: string;
@@ -362,7 +368,7 @@ export interface TestPackage {
   ToAgeInDays: number;
   Gender: string;
   PackageInClussion: PackageInclusion[];
-  testDescription: string
+  testDescription: string;
 }
 
 export interface TestsPackageResponse {
@@ -485,7 +491,9 @@ export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1,
   sortBy: string | null,
-  filters: { [key: string]: string[] } | null
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null,
+  pincode?: string | null,
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
@@ -495,6 +503,8 @@ export const searchMedicineApi = async (
       page_id: pageId,
       sort_by: sortBy,
       filters,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
@@ -564,7 +574,7 @@ export const getStoreInventoryApi = (
 export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
+  const url = `${config.UATTAT_CONFIG[0]}/v2/serviceable?pincode=${pincode}`;
   return Axios.get(url, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -615,13 +625,17 @@ export const trackTagalysEvent = (
 };
 
 export const getMedicineSearchSuggestionsApi = (
-  searchText: string
+  searchText: string,
+  axdcCode?: string | null,
+  pincode?: string | null,
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
     data: {
       params: searchText,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
@@ -633,15 +647,19 @@ export const getProductsByCategoryApi = (
   categoryId: string,
   pageId: number = 1,
   sortBy: string | null,
-  filters: { [key: string]: string[] } | null
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null,
+  pincode?: string | null 
 ): Promise<AxiosResponse<CategoryProductsApiResponse>> => {
   return Axios.post(
     config.PRODUCTS_BY_CATEGORY[0],
     {
-      category_id: categoryId,
+      category_id: `${categoryId}`,
       page_id: pageId,
       sort_by: sortBy,
       filters,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     {
       headers: {
@@ -669,16 +687,22 @@ export const getProductsByCategoryApi = (
   );
 };
 
-export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
-  return Axios.post(
-    `${config.MEDICINE_PAGE[0]}`,
-    {},
-    {
-      headers: {
-        Authorization: config.MEDICINE_PAGE[1],
-      },
-    }
-  );
+export const getMedicinePageProducts = (
+  axdcCode?: string | null,
+  pincode?: string | null,
+): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
+  let url = `${config.MEDICINE_PAGE[0]}`;
+  if (axdcCode) {
+    url += `&axdcCode=${axdcCode}`;
+  }
+  if (pincode) {
+    url += `&pincode=${pincode}`;
+  }
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.MEDICINE_PAGE[1],
+    },
+  });
 };
 
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -866,18 +890,15 @@ export const fetchConsultCoupons = (data: any): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   let url = `${baseUrl}/frontend?mobile=${mobile}&email=${email}`;
   if (!!packageId) {
-    url += `?packageId=${packageId}`;
+    url += `&packageId=${packageId}`;
   }
   return Axios.get(url);
 };
 
 export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
-  const { mobile, packageId, email } = data;
+  const { mobile, email } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   let url = `${baseUrl}/validate?mobile=${mobile}&email=${email}`;
-  if (!!packageId) {
-    url += `&packageId=${packageId}`;
-  }
   return Axios.post(url, data);
 };
 

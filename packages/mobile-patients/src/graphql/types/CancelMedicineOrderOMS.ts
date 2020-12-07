@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { MedicineOrderCancelOMSInput, MEDICINE_ORDER_STATUS } from "./globalTypes";

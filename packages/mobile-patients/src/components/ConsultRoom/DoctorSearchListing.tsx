@@ -21,6 +21,8 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
+  TickIcon,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -107,6 +109,8 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
+import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -187,6 +191,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 4,
   },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  careLogo: {
+    width: 45,
+    height: 27,
+    marginHorizontal: 3,
+  },
+  careHeadingText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
+  },
   linearGradient: {
     flex: 1,
     paddingTop: 16,
@@ -221,6 +240,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
+  const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
+
   const [
     platinumDoctor,
     setPlatinumDoctor,
@@ -240,7 +261,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     []
   );
   const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
-  const { clearCartInfo } = useDiagnosticsCart();
+  const { clearDiagnoticCartInfo } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [
@@ -261,6 +282,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
+  const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
+  const [filterActionTaken, setFilterActionTaken] = useState<boolean>(false);
+
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
     let preFilters = filters;
@@ -325,6 +349,28 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (filterActionTaken) {
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        sortValue,
+        undefined,
+        false,
+        doctorSearch
+      );
+    }
+  }, [careDoctorsSwitch]);
+
+  useEffect(() => {
+    if (showCarePlanNotification) {
+      setTimeout(() => {
+        setShowCarePlanNotification(false);
+      }, 10 * 1000);
+    }
+  }, [showCarePlanNotification]);
 
   useEffect(() => {
     client
@@ -648,6 +694,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
+      isCare: careDoctorsSwitch,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
@@ -756,7 +803,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           city.toLowerCase() !=
           ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
         ) {
-          clearCartInfo && clearCartInfo();
+          clearDiagnoticCartInfo && clearDiagnoticCartInfo();
         }
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);
@@ -1053,6 +1100,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         onPressConsultNowOrBookAppointment={(type) => {
           postDoctorClickWEGEvent(rowData, 'List', type);
         }}
+        onPlanSelected={() => setShowCarePlanNotification(true)}
       />
     ) : null;
   };
@@ -1152,15 +1200,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </View>
       );
     }
+
+    const renderCirclePlanAddedToCartView = () => <CirclePlanAddedToCart />;
+
     return (
       <View style={{ flex: 1 }}>
+        {/* {doctorsType === 'APOLLO' && renderViewCareSwitch()} */}
+        {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
             ref={(ref) => {
               DoctorsflatListRef = ref;
             }}
             contentContainerStyle={{
-              marginTop: 10,
+              marginTop: 20,
               marginBottom: 8,
               paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
@@ -1401,7 +1454,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const buttonTextStyle = {
       color: theme.colors.BUTTON_TEXT,
     };
-    const doctorOfHourText = platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
+    const doctorOfHourText =
+      platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
     return (
       <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
@@ -1430,6 +1484,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPressConsultNowOrBookAppointment={(type) => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
           }}
+          onPlanSelected={() => setShowCarePlanNotification(true)}
         />
       </LinearGradientComponent>
     );
@@ -1540,7 +1595,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'pincode': g(locationDetails, 'pincode') || '',
+      pincode: g(locationDetails, 'pincode') || '',
       'Filter Applied': filterApplied,
       'Filter Value': filterValue,
     };
@@ -1557,7 +1612,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                fireFilterWebengageEvent(string.doctor_search_listing.near, nearyByFlag ? 'True' : 'False');
+                fireFilterWebengageEvent(
+                  string.doctor_search_listing.near,
+                  nearyByFlag ? 'True' : 'False'
+                );
                 onPressNearByRadioButton(doctors_partners);
               }}
             >
@@ -1585,7 +1643,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               activeOpacity={1}
               style={{ marginLeft: 8 }}
               onPress={() => {
-                fireFilterWebengageEvent(string.doctor_search_listing.avaliablity, availabilityFlag ? 'True' : 'False');
+                fireFilterWebengageEvent(
+                  string.doctor_search_listing.avaliablity,
+                  availabilityFlag ? 'True' : 'False'
+                );
                 onPressAvailabiltyRadioButton(doctors_partners);
               }}
             >
@@ -1619,7 +1680,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  fireFilterWebengageEvent(string.doctor_search_listing.online, onlineCheckBox ? 'True' : 'False');
+                  fireFilterWebengageEvent(
+                    string.doctor_search_listing.online,
+                    onlineCheckBox ? 'True' : 'False'
+                  );
                   setOnlineCheckbox(!onlineCheckBox);
                   if (!physicalCheckBox) {
                     setPhysicalCheckbox(!physicalCheckBox);
@@ -1654,7 +1718,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  fireFilterWebengageEvent(string.doctor_search_listing.inperson, physicalCheckBox ? 'True' : 'False');
+                  fireFilterWebengageEvent(
+                    string.doctor_search_listing.inperson,
+                    physicalCheckBox ? 'True' : 'False'
+                  );
                   setPhysicalCheckbox(!physicalCheckBox);
                   if (!onlineCheckBox) {
                     setOnlineCheckbox(!onlineCheckBox);
@@ -1771,6 +1838,34 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
   };
+
+  const filterCircleWebEngage = () => {
+    const eventAttributes = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
+  };
+
+  const renderViewCareSwitch = () => {
+    return (
+      <View style={styles.rowContainer}>
+        <Text style={styles.careHeadingText}>View</Text>
+        <CircleLogo style={styles.careLogo} />
+        <Text style={[styles.careHeadingText, { marginLeft: 0 }]}>Doctors</Text>
+        <Switch
+          onChange={(value) => {
+            setCareDoctorsSwitch(value);
+            setFilterActionTaken(true);
+            filterCircleWebEngage();
+          }}
+          value={careDoctorsSwitch}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1782,12 +1877,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             renderSearchLoadingView()
           ) : (
             <View style={{ flex: 1 }}>
-              <Text style={styles.consultHeadingText}>
+              {/* <Text style={styles.consultHeadingText}>
                 {string.doctor_search_listing.consultBest.replace(
                   '{0}',
                   specialistPluralTerm || 'Doctors'
                 )}
-              </Text>
+              </Text> */}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox
@@ -1809,8 +1904,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
-            selecteddata.forEach(value => {
-              const {label, selectedOptions} = value;
+            selecteddata.forEach((value) => {
+              const { label, selectedOptions } = value;
               if (selectedOptions.length) {
                 fireFilterWebengageEvent(label, selectedOptions.join());
               }

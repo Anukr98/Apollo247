@@ -75,7 +75,12 @@ import {
   Linking,
   Dimensions,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  ScrollView,
+  NavigationActions,
+  StackActions,
+} from 'react-navigation';
 import { OrderCancelOverlay } from '@aph/mobile-patients/src/components/Tests/OrderCancelOverlay';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -239,6 +244,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
   goToHomeOnBack: boolean;
+  comingFrom?: string;
   selectedTest: any;
   individualTestStatus: any;
 }
