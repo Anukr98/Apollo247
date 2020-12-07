@@ -1,5 +1,4 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
 import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
@@ -61,7 +60,6 @@ const appStaticVariables = {
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
-  CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart

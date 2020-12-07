@@ -41,6 +41,7 @@ import {
   statusBarHeight,
   timeDiffFromNow,
   setWebEngageScreenNames,
+  nextAvailability,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -80,6 +81,9 @@ import {
   InfoBlue,
   CircleLogo,
 } from '../ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import moment from 'moment';
 // import { NotificationListener } from '../NotificationListener';
 import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -273,6 +277,15 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingLeft: 20,
   },
+  stickyBottomComponentStyle: {
+    paddingTop: 0,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  buttonTextStyle: {
+    ...theme.viewStyles.text('B', 13, theme.colors.WHITE, 1, 24),
+    textTransform: 'uppercase',
+  },
 });
 type Appointments = {
   date: string;
@@ -326,6 +339,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
+  const fromDeeplink = props.navigation.getParam('fromDeeplink');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const {
@@ -552,6 +566,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
+            fromDeeplink && fireDeepLinkTriggeredEvent(data.getDoctorDetailsById);
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
             setCtaBannerText(data?.getDoctorDetailsById?.availabilityTitle);
@@ -574,6 +589,23 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         setshowSpinner(false);
         console.log('Error occured', e);
       });
+  };
+
+  const fireDeepLinkTriggeredEvent = (doctorDetails: getDoctorDetailsById_getDoctorDetailsById) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+    };
+    postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
   };
 
   const setAvailableModes = (availabilityMode: any) => {
@@ -623,12 +655,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <ConsultTypeCard
         isOnlineSelected={onlineSelected}
-        onPhysicalPress={() => {
-          openConsultPopup(ConsultMode.PHYSICAL);
-        }}
-        onOnlinePress={() => {
-          openConsultPopup(ConsultMode.ONLINE);
-        }}
         DoctorId={doctorId}
         chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
@@ -1422,6 +1448,46 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     } catch (error) {}
   };
 
+  const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
+      'Consult Type': consultType,
+      'Doctor ID': doctorId,
+      'Doctor Name': doctorDetails?.fullName || '',
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULT_TYPE_SELECTION, eventAttributes);
+  };
+
+  const renderConsultNow = () => {
+    return (
+      <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
+        <Button
+          style={{}}
+          titleTextStyle={styles.buttonTextStyle}
+          title={getTitle()}
+          onPress={() => onPressConsultNow()}
+        />
+      </StickyBottomComponent>
+    );
+  };
+
+  const onPressConsultNow = () => {
+    onlineSelected
+      ? (postWebengaegConsultType('Online'), openConsultPopup(ConsultMode.ONLINE))
+      : (postWebengaegConsultType('In Person'), openConsultPopup(ConsultMode.PHYSICAL));
+  };
+
+  const getTitle = () => {
+    const consultNowText = ctaBannerText?.CONSULT_NOW || '';
+    const time = onlineSelected ? availableTime : physicalAvailableTime;
+    return consultNowText || (time && moment(time).isValid())
+      ? nextAvailability(time, 'Consult')
+      : string.common.book_apointment;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -1453,6 +1519,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <View style={{ height: 92 }} />
           {/* </ScrollView> */}
         </Animated.ScrollView>
+        {doctorDetails && renderConsultNow()}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (

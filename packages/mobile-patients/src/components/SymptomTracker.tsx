@@ -134,7 +134,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <View>
         <Header
           container={{ borderBottomWidth: 0 }}
-          title={'SYMPTOM TRACKER'}
+          title={'SYMPTOM CHECKER'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
           rightComponent={

@@ -741,6 +741,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
+          fromDeeplink: true,
         });
         break;
 

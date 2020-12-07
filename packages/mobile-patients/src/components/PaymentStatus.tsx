@@ -21,10 +21,10 @@ import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import { GET_PHARMA_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
+  GET_PHARMA_TRANSACTION_STATUS,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+  SAVE_MEDICINE_ORDER_OMS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -42,6 +42,22 @@ import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { Snackbar } from 'react-native-paper';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import {
+  SaveMedicineOrderPaymentMq,
+  SaveMedicineOrderPaymentMqVariables,
+} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  CODCity,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
@@ -55,19 +71,22 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const [refNo, setrefNo] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState<string>('');
-  // const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
-  // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
-
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const totalAmount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const orderInfo = props.navigation.getParam('orderInfo');
+  const deliveryTime = props.navigation.getParam('deliveryTime');
+  const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
+  const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const { clearCartInfo, cartItems, coupon } = useShoppingCart();
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -100,7 +119,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     });
 
   useEffect(() => {
-    // getTxnStatus(orderId)
     client
       .query({
         query: GET_PHARMA_TRANSACTION_STATUS,
@@ -161,6 +179,143 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       })
     );
     return true;
+  };
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
+    client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS,
+      variables: orderInfo,
+    });
+
+  const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
+    client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+      variables: paymentInfo,
+    });
+
+  const placeOrder = async (orderAutoId: number) => {
+    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+      medicinePaymentMqInput: {
+        orderAutoId: orderAutoId,
+        amountPaid: getFormattedAmount(totalAmount),
+        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+    try {
+      const response = await savePayment(paymentInfo);
+      const { data } = response;
+      const { errorCode, errorMessage } = data?.SaveMedicineOrderPaymentMq || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+      } else {
+        console.log('inside success');
+        handleOrderSuccess(`${orderAutoId}`);
+        clearCartInfo?.();
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_savePayment', error);
+      errorPopUp();
+    }
+  };
+
+  const initiateOrder = async () => {
+    setcodOrderProcessing(true);
+    try {
+      const response = await saveOrder(orderInfo);
+      const { data } = response;
+      const { orderId, orderAutoId, errorCode, errorMessage } = data?.saveMedicineOrderOMS || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+        setcodOrderProcessing(false);
+        return;
+      } else {
+        placeOrder(orderAutoId!);
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_saveOrder', error);
+      setcodOrderProcessing(false);
+      errorPopUp();
+    }
+  };
+
+  const errorPopUp = () => {
+    showAphAlert!({
+      title: `Hi ${currentPatient?.firstName || ''}!`,
+      description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+    });
+  };
+
+  const handleOrderSuccess = (orderAutoId: string) => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    fireOrderSuccessEvent(orderAutoId);
+    showAphAlert!({
+      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+      description:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
+      children: (
+        <OrderPlacedPopUp
+          deliveryTime={deliveryTime}
+          orderAutoId={orderAutoId}
+          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
+          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
+        />
+      ),
+    });
+  };
+
+  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderAutoId: string) => {
+    hideAphAlert!();
+    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      goToHomeOnBack: true,
+      showOrderSummaryTab,
+      orderAutoId: orderAutoId,
+    });
+  };
+
+  const fireOrderSuccessEvent = (newOrderId: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+      'Payment failed order id': orderAutoId,
+      'Payment Success Order Id': newOrderId,
+    };
+    postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
+    firePurchaseEvent();
+  };
+
+  const firePurchaseEvent = () => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = item.quantity; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: coupon?.coupon,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: totalAmount,
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const statusIcon = () => {
@@ -281,14 +436,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     );
   };
 
-  const getdateTime = () => {
-    const newdate = new Date(orderDateTime);
-    newdate.setHours(newdate.getHours() - 5);
-    newdate.setMinutes(newdate.getMinutes() - 30);
-    return getDate(String(newdate));
-    // return newdate.toDateString() + '  ' + newdate.toLocaleTimeString();
-  };
-
   const orderCard = () => {
     const date = String(
       orderDateTime != '' && orderDateTime != null ? getDate(String(orderDateTime)) : '--'
@@ -368,16 +515,40 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
 
   const renderButton = () => {
     return (
-      <TouchableOpacity
-        style={styles.buttonStyle}
-        onPress={() => {
-          handleButton();
-        }}
-      >
+      <TouchableOpacity style={styles.buttonStyle} onPress={() => handleButton()}>
         <Text style={{ ...theme.viewStyles.text('SB', 13, '#ffffff', 1, 24) }}>
           {getButtonText()}
         </Text>
       </TouchableOpacity>
+    );
+  };
+
+  const renderCODNote = () => {
+    let noteText = "Your order wasn't placed as payment could not be processed. Please try again";
+    return status == failure ? <Text style={styles.codText}>{noteText}</Text> : null;
+  };
+
+  const renderCODButton = () => {
+    return status == failure ? (
+      <View style={{ marginHorizontal: 0.06 * windowWidth, marginBottom: 0.06 * windowWidth }}>
+        <Button
+          style={{ height: 0.06 * windowHeight }}
+          title={`PAY CASH ON DELIVERY`}
+          onPress={() => initiateOrder()}
+          disabled={false}
+        />
+      </View>
+    ) : null;
+  };
+
+  const renderRetryPayment = () => {
+    return (
+      <View style={styles.retryPayment}>
+        <TouchableOpacity onPress={() => handleButton()}>
+          <Text style={styles.clickText}>Click here</Text>
+        </TouchableOpacity>
+        <Text style={styles.retryText}>{' to retry your payment'}</Text>
+      </View>
     );
   };
 
@@ -389,14 +560,17 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         {!loading ? (
           <ScrollView style={styles.container}>
             {renderStatusCard()}
+            {renderCODNote()}
+            {renderCODButton()}
             {appointmentHeader()}
             {orderCard()}
             {renderNote()}
-            {renderButton()}
+            {status == failure ? renderRetryPayment() : renderButton()}
           </ScrollView>
         ) : (
           <Spinner />
         )}
+        {codOrderProcessing && <Spinner />}
       </SafeAreaView>
     </View>
   );
@@ -481,5 +655,23 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 9,
     height: 10,
+  },
+  codText: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.SHADE_GREY, 1, 17),
+    textAlign: 'center',
+    marginHorizontal: 0.1 * windowWidth,
+    marginBottom: 8,
+  },
+  retryPayment: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 13,
+  },
+  clickText: {
+    ...theme.viewStyles.text('SB', 13, '#fcb716', 1, 17, 0.04),
+  },
+  retryText: {
+    ...theme.viewStyles.text('R', 13, '#02475b', 1, 17, 0.04),
   },
 });

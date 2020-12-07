@@ -777,7 +777,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 5,
-      title: 'Track Symptoms',
+      title: 'Symptom Checker',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
@@ -2017,7 +2017,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );
-
     postHomeWEGEvent(WebEngageEventName.APOLLO_PRO_HEALTH);
 
     try {
