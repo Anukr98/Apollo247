@@ -559,10 +559,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   })
                   .catch((e) => {
                     CommonBugFender('DoctorSearchListing_ALLOW_AUTO_DETECT', e);
-                    showAphAlert!({
-                      title: 'Uh oh! :(',
-                      description: 'Unable to access location.',
-                    });
+                    setSortValue('availability');
+                    fetchSpecialityFilterData(
+                      filterMode,
+                      FilterData,
+                      latlng,
+                      'availability',
+                      undefined,
+                      false,
+                      doctorSearch
+                    );
                   })
                   .finally(() => {
                     setLoadingContext!(false);
@@ -1295,7 +1301,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             elevation: 15,
           }}
           onPress={() => {
-            setshowLocationpopup(false), !locationDetails && checkLocation();
+            setshowLocationpopup(false);
+            setshowSpinner(false);
+            !doctorsList?.length &&
+              fetchSpecialityFilterData(
+                filterMode,
+                FilterData,
+                latlng,
+                'availability',
+                undefined,
+                false,
+                doctorSearch
+              );
+            // !locationDetails && checkLocation();
           }}
         >
           <View
@@ -1564,6 +1582,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           doctorSearch
         );
       } else {
+        setDoctorsList([]);
         checkLocation(doctorTabsSelected);
       }
     }
