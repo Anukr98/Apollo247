@@ -516,7 +516,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (comingFrom == AppRoutes.MembershipDetails) {
       props.navigation.navigate(AppRoutes.MembershipDetails, {
         membershipType: string.Circle.planName,
-        comingFrom: AppRoutes.Tests,
+        source: AppRoutes.Tests,
       });
     } else {
       props.navigation.dispatch(

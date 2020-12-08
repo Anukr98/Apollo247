@@ -542,7 +542,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (comingFrom == AppRoutes.MembershipDetails) {
       props.navigation.navigate(AppRoutes.MembershipDetails, {
         membershipType: string.Circle.planName,
-        comingFrom: AppRoutes.Medicine,
+        source: AppRoutes.Medicine,
       });
     } else {
       props.navigation.dispatch(
