@@ -566,7 +566,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           : null,
         totalCashBack:
           cartTotalCashback || circleSubscriptionId ? Number(cartTotalCashback) || 0 : 0,
-        savedDeliveryCharge: !!isFreeDelivery ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
+        savedDeliveryCharge:
+          !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
       },
     };
 
