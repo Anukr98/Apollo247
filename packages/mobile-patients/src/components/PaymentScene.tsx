@@ -182,189 +182,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
-  const handleOrderSuccess = async () => {
-    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    try {
-      if (checkoutEventAttributes) {
-        const paymentEventAttributes = {
-          order_Id: orderId,
-          order_AutoId: orderAutoId,
-          LOB: 'Pharmacy',
-          Payment_Status: 'PAYMENT_SUCCESS',
-        };
-        postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
-        postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
-        postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
-        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
-        postAppsFlyerEvent(
-          AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
-          appsflyerEventAttributes
-        );
-        firePurchaseEvent();
-        try {
-          Promise.all(
-            cartItems.map((cartItem) =>
-              trackTagalysEvent(
-                {
-                  event_type: 'product_action',
-                  details: {
-                    sku: cartItem.id,
-                    action: 'buy',
-                    quantity: cartItem.quantity,
-                    order_id: `${orderAutoId}`,
-                  } as Tagalys.ProductAction,
-                },
-                g(currentPatient, 'id')!
-              )
-            )
-          );
-        } catch (error) {
-          CommonBugFender(`${AppRoutes.PaymentScene}_trackTagalysEvent`, error);
-        }
-      }
-    } catch (error) {}
-
-    if (!!circleMembershipCharges) {
-      setCircleMembershipCharges && setCircleMembershipCharges(0);
-      AsyncStorage.removeItem('circlePlanSelected');
-    }
-    setLoading!(false);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
-    const deliveryTimeMomentFormat = moment(
-      deliveryTime,
-      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
-    );
-    showAphAlert!({
-      // unDismissable: true,
-      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-      description:
-        'Your order has been placed successfully. We will confirm the order in a few minutes.',
-      children: (
-        <View
-          style={{
-            margin: 20,
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: '#f7f8f5',
-            borderRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <MedicineIcon />
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
-              }}
-            >
-              Medicines
-            </Text>
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 24,
-                color: '#01475b',
-                textAlign: 'right',
-              }}
-            >
-              {`#${orderAutoId}`}
-            </Text>
-          </View>
-          {deliveryTimeMomentFormat.isValid() && (
-            <>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: '#02475b',
-                  opacity: 0.1,
-                  marginBottom: 7.5,
-                  marginTop: 15.5,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                  }}
-                >
-                  {deliveryTime &&
-                    `Delivery By: ${deliveryTimeMomentFormat.format(
-                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
-                    )}`}
-                </Text>
-              </View>
-            </>
-          )}
-          {/* <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: 7.5
-              }}
-            >
-              <Text
-                style={{
-                  // flex: 1,
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  lineHeight: 24,
-                  color: '#01475b',
-                }}
-              >
-                Remind me to take medicines
-              </Text>
-              <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
-                {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
-              </TouchableOpacity>
-            </View> */}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 15.5,
-              marginTop: 7.5,
-            }}
-          />
-          <View style={styles.popupButtonStyle}>
-            <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateToOrderDetails(true)}>
-              <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false)}
-            >
-              <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ),
-    });
-  };
-
-  const handleOrderFailure = () => {
-    props.navigation.goBack();
-    showAphAlert!({
-      title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
-      description: `We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.`,
-    });
-  };
-
   const fireOrderFailedEvent = () => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
       OrderID: orderId,
@@ -398,10 +215,12 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
+    const loading = data.loading;
     console.log({ redirectedUrl, data });
     if (
       redirectedUrl &&
-      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1 &&
+      loading
     ) {
       fireOrderEvent(true);
       props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
@@ -411,7 +230,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       });
     } else if (
       redirectedUrl &&
-      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1 &&
+      loading
     ) {
       fireOrderFailedEvent();
       if (!!circleMembershipCharges) {
@@ -429,34 +249,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         });
       }
     }
-
-    // const isMatchesSuccessUrl =
-    //   (redirectedUrl &&
-    //     redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1) ||
-    //   false;
-    // const isMatchesFailUrl =
-    //   (redirectedUrl &&
-    //     redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1) ||
-    //   false;
-
-    // if (isMatchesSuccessUrl) {
-    //   const tk = getParameterByName('tk', redirectedUrl!);
-    //   const status = getParameterByName('status', redirectedUrl!);
-    //   console.log('Consult PG isMatchesSuccessUrl:\n', { tk, status });
-    //   handleOrderSuccess();
-    //   clearCartInfo && clearCartInfo();
-    // }
-    // if (isMatchesFailUrl) {
-    //   const responseMessage = getParameterByName('responseMessage', redirectedUrl!);
-    //   const responseCode = getParameterByName('responseCode', redirectedUrl!);
-    //   console.log({ responseMessage, responseCode });
-    //   if (responseCode == '141' && responseMessage == 'User has not completed transaction.') {
-    //     // To handle Paytm PG page back button
-    //     props.navigation.goBack();
-    //   } else {
-    //     handleOrderFailure();
-    //   }
-    // }
   };
 
   const renderWebView = () => {
