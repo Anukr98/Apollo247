@@ -43,10 +43,8 @@ export const Coupon: React.FC<CouponProps> = (props) => {
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <View style={styles.careMessage}>
-        <Text style={styles.removeCircleText}>Remove Circle membership to apply coupon</Text>
         <Text style={[styles.removeCircleText, { marginTop: 5 }]}>
-          You can either use CIRCLE benefits or apply coupon. Remove CIRCLE membership from CART to
-          avail coupon discount.
+          Want to use a Coupon Code instead of Circle Benefits? Uncheck the box above to avail Coupon Discount.
         </Text>
       </View>
     </View>

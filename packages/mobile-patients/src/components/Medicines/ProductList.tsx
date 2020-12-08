@@ -25,6 +25,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
@@ -91,6 +92,13 @@ export const ProductList: React.FC<Props> = ({
     );
   };
 
+  const onPressCareCashback = () => {
+    navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      source: 'Pharma',
+    });
+  };
+
   const renderItem = (info: ListRenderItemInfo<MedicineProduct>) => {
     const { item, index } = info;
     const id = item.sku;
@@ -112,6 +120,7 @@ export const ProductList: React.FC<Props> = ({
       onPressAddQty: onPressAddQty,
       onPressSubtractQty: onPressSubtractQty,
       onPressNotify: () => onPressNotify(item.name),
+      onPressCashback: () => onPressCareCashback(),
       containerStyle:
         index === 0
           ? styles.itemStartContainer
