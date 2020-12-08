@@ -300,10 +300,12 @@ const styles = StyleSheet.create({
 export interface TestsProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
+    comingFrom?: string;
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     cartItems,
     addCartItem,
@@ -511,13 +513,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     setBannerData && setBannerData([]);
 
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    if (comingFrom == AppRoutes.MembershipDetails) {
+      props.navigation.navigate(AppRoutes.MembershipDetails, {
+        membershipType: string.Circle.planName,
+        comingFrom: AppRoutes.Tests,
+      });
+    } else {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        })
+      );
+    }
+
     return false;
   };
 

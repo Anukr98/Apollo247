@@ -576,7 +576,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
             onPress={() => {
-              handleCtaClick(type, action, message, availableCount, id, webengageevent);
+              handleCtaClick(type, action, message, availableCount, id, webengageevent, '');
             }}
           >
             <Text style={styles.redeemButtonText}>{ctaLabel}</Text>
@@ -718,13 +718,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.PHARMACY_LANDING) {
-        props.navigation.navigate('MEDICINES');
+        props.navigation.navigate('MEDICINES', { comingFrom: AppRoutes.MembershipDetails });
       } else if (action == Hdfc_values.PHR) {
         props.navigation.navigate('HEALTH RECORDS');
       } else if (action == Hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.DIAGNOSTICS_LANDING) {
-        props.navigation.navigate('TESTS');
+        props.navigation.navigate('TESTS', { comingFrom: AppRoutes.MembershipDetails });
       } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
           specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
