@@ -1,7 +1,15 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Linking,
+  BackHandler,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -177,11 +185,13 @@ const styles = StyleSheet.create({
 export interface MembershipDetailsProps extends NavigationScreenProps {
   membershipType: string;
   isActive: boolean;
+  source?: string;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
   const isCirclePlan = membershipType === Circle.planName;
+  const source = props.navigation.getParam('source');
 
   const {
     hdfcUserSubscriptions,
@@ -239,6 +249,29 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
     }
   }, [upgradePlans]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    if (source) {
+      props.navigation.navigate(AppRoutes.MyMembership, { source: source });
+    } else {
+      props.navigation.goBack();
+    }
+    return false;
+  };
 
   const getUserSubscriptionsWithBenefits = () => {
     setLoading(true);
@@ -576,7 +609,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
             onPress={() => {
-              handleCtaClick(type, action, message, availableCount, id, webengageevent);
+              handleCtaClick(type, action, message, availableCount, id, webengageevent, '');
             }}
           >
             <Text style={styles.redeemButtonText}>{ctaLabel}</Text>
@@ -718,13 +751,19 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.PHARMACY_LANDING) {
-        props.navigation.navigate('MEDICINES');
+        props.navigation.navigate(
+          'MEDICINES',
+          isCirclePlan ? { comingFrom: AppRoutes.MembershipDetails } : {}
+        );
       } else if (action == Hdfc_values.PHR) {
         props.navigation.navigate('HEALTH RECORDS');
       } else if (action == Hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.DIAGNOSTICS_LANDING) {
-        props.navigation.navigate('TESTS');
+        props.navigation.navigate(
+          'TESTS',
+          isCirclePlan ? { comingFrom: AppRoutes.MembershipDetails } : {}
+        );
       } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
           specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
@@ -876,7 +915,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           ...theme.viewStyles.cardViewStyle,
           borderRadius: 0,
         }}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
