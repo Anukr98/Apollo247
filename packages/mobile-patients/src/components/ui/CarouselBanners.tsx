@@ -92,7 +92,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (membershipPlans) {
         setMembershipPlans(membershipPlans);
-        selectDefaultPlan && selectDefaultPlan(membershipPlans);
       }
     } catch (error) {
       CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);

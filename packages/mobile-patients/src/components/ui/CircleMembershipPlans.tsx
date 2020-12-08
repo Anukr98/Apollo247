@@ -108,6 +108,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setLoading(false);
       onEndApiCall && onEndApiCall();
     }
+    if (buyNow && props.membershipPlans?.length > 0) {
+      selectDefaultPlan && selectDefaultPlan(props.membershipPlans);
+      setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
+    }
   }, []);
 
   const fireMembershipPlanSelected = () => {
@@ -151,7 +155,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             const planSelected = circlePlans.filter(
               (value) => value?.currentSellingPrice == circleMembershipCharges
             );
-            setCirclePlanSelected && setCirclePlanSelected(planSelected[0]);
             setIsCircleSubscription && setIsCircleSubscription(true);
             onSelectMembershipPlan && onSelectMembershipPlan(planSelected[0]);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
@@ -176,7 +179,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     if (isConsultJourney) {
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
-      setIsCircleSubscription && setIsCircleSubscription(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
@@ -352,12 +354,17 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     return (
       <TouchableOpacity
         onPress={() => {
-          setCirclePlanSelected && setCirclePlanSelected(null);
-          setIsCircleSubscription && setIsCircleSubscription(false);
+          if (!buyNow && from !== string.banner_context.PHARMACY_HOME) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+            selectDefaultPlan && selectDefaultPlan(membershipPlans);
+          } else {
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          }
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCircleMembershipCharges && setCircleMembershipCharges(0);
+          setCirclePlanSelected && setCirclePlanSelected(null);
           AsyncStorage.removeItem('circlePlanSelected');
-          selectDefaultPlan && selectDefaultPlan(membershipPlans);
           closeModal && closeModal();
         }}
         style={styles.closeIcon}
@@ -549,7 +556,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const renderAddToCart = () => {
     return (
       <Button
-        title={buyNow ? string.circleDoctors.upgrade : string.circleDoctors.addToCart}
+        title={
+          buyNow && from !== string.banner_context.PHARMACY_HOME
+            ? string.circleDoctors.upgrade
+            : string.circleDoctors.addToCart
+        }
         style={styles.buyNowBtn}
         onPress={() => {
           fireCircleBuyNowEvent();
@@ -557,11 +568,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           setIsCircleSubscription && setIsCircleSubscription(true);
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
-          if (buyNow) {
+          if (buyNow && from !== string.banner_context.PHARMACY_HOME) {
             props.navigation.navigate(AppRoutes.CircleSubscription);
           } else {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
           }
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
         }}
       />
     );
@@ -572,6 +584,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       const defaultPlan = plans?.filter((item: any) => item.defaultPack === true);
       if (defaultPlan?.length > 0) {
         setCirclePlanSelected && setCirclePlanSelected(defaultPlan[0]);
+        AsyncStorage.setItem('circlePlanSelected', JSON.stringify(defaultPlan[0]));
         setCircleSubPlanId && setCircleSubPlanId(defaultPlan[0].subPlanId);
         setCircleMembershipCharges &&
           setCircleMembershipCharges(defaultPlan[0]?.currentSellingPrice);
@@ -635,7 +648,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       </View>
     );
   };
-
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
       {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !loading && !defaultCirclePlan
