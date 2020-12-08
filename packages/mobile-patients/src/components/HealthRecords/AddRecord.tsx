@@ -920,6 +920,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         description: 'Please enter record name',
       });
       return false;
+    } else if (!locationName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please enter record insurance amount',
+      });
+      return false;
     } else {
       return true;
     }
@@ -2333,24 +2339,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           />
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record ID number', true)}
-          <TextInput
-            placeholder={'Enter Record ID number'}
-            style={styles.textInputStyle}
-            selectionColor={theme.colors.SKY_BLUE}
-            numberOfLines={1}
-            value={docName}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(docName) => {
-              if (isValidText(docName)) {
-                setDocName(docName);
-              }
-            }}
-          />
-        </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Record insurance amount ', true)}
+          {renderListItem('Record insurance amount ', true, true)}
           {renderDoctorPrefixListItem(
             <TextInput
               placeholder={'Enter Record insurance amount '}
@@ -2370,6 +2359,23 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {},
             'Rs'
           )}
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record ID number', true)}
+          <TextInput
+            placeholder={'Enter Record ID number'}
+            style={styles.textInputStyle}
+            selectionColor={theme.colors.SKY_BLUE}
+            numberOfLines={1}
+            value={docName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(docName) => {
+              if (isValidText(docName)) {
+                setDocName(docName);
+              }
+            }}
+          />
         </View>
         {renderAdditionalTextInputView()}
       </>
