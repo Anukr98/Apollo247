@@ -511,6 +511,14 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'hospitalizationFiles', '0', 'fileName')
       : g(data, 'prescriptionFiles', '0', 'fileName')
       ? g(data, 'prescriptionFiles', '0', 'fileName')
+      : g(data, 'insuranceFiles', '0', 'fileName')
+      ? g(data, 'insuranceFiles', '0', 'fileName')
+      : g(data, 'billFiles', '0', 'fileName')
+      ? g(data, 'billFiles', '0', 'fileName')
+      : g(data, 'medicationFiles', '0', 'fileName')
+      ? g(data, 'medicationFiles', '0', 'fileName')
+      : g(data, 'attachmentList', '0', 'fileName')
+      ? g(data, 'attachmentList', '0', 'fileName')
       : '';
     return (
       <View
@@ -770,6 +778,14 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'hospitalizationFiles', '0', 'fileName')
       : g(data, 'prescriptionFiles', '0', 'fileName')
       ? g(data, 'prescriptionFiles', '0', 'fileName')
+      : g(data, 'insuranceFiles', '0', 'fileName')
+      ? g(data, 'insuranceFiles', '0', 'fileName')
+      : g(data, 'billFiles', '0', 'fileName')
+      ? g(data, 'billFiles', '0', 'fileName')
+      : g(data, 'medicationFiles', '0', 'fileName')
+      ? g(data, 'medicationFiles', '0', 'fileName')
+      : g(data, 'attachmentList', '0', 'fileName')
+      ? g(data, 'attachmentList', '0', 'fileName')
       : '';
     const dirs = RNFetchBlob.fs.dirs;
 

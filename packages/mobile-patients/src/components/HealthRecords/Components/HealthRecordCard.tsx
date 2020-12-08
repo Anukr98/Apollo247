@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 20.8),
   },
   doctorTextStyle: { ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) },
-  sourceNameTextStyle: { ...theme.viewStyles.text('R', 12, '#67909C', 1, 15.8) },
+  sourceNameTextStyle: { ...theme.viewStyles.text('R', 12, '#67909C', 1, 15.8), paddingRight: 16 },
 });
 
 export interface HealthRecordCardProps {
