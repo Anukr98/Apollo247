@@ -65,6 +65,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
+  const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
+  const [totalCashBack, setTotalCashBack] = useState<number>(0);
 
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
@@ -108,6 +110,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
+        setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        setTotalCashBack(!!pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
         fireCirclePlanActivatedEvent();
       })
@@ -466,7 +470,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               left: -5,
             }}
           >
-            You{' '}
+            {' '}You{' '}
             <Text style={theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
               {circleSavings}{' '}
@@ -487,15 +491,11 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           <ScrollView style={styles.container}>
             {renderStatusCard()}
             {status === 'PAYMENT_SUCCESS' &&
-            circleSavings > 0 &&
-            !circleSubscriptionID &&
-            isCircleSubscription
+            isCircleBought
               ? renderAddedCirclePlanWithValidity()
               : null}
-            {status === 'PAYMENT_SUCCESS' &&
-            circleSavings > 0 &&
-            circleSubscriptionID &&
-            isCircleSubscription
+            {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') &&
+            totalCashBack
               ? renderCircleSavingsOnPurchase()
               : null}
             {appointmentHeader()}
