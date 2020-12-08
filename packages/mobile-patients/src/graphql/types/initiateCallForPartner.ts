@@ -19,4 +19,5 @@ export interface initiateCallForPartner {
 export interface initiateCallForPartnerVariables {
   mobileNumber: string;
   benefitId: string;
+  userSubscriptionId?: string | null;
 }

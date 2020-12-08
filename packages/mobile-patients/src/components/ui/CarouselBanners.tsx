@@ -513,6 +513,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             onClose={() => setShowHdfcConnectPopup(false)}
             benefitId={benefitId || ''}
             successCallback={() => successCallback()}
+            userSubscriptionId={circleSubscriptionId}
           />
         </Overlay>
       </View>
