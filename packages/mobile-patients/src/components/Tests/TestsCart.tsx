@@ -659,7 +659,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           slotInfo: {
             __typename: 'SlotInfo',
             endTime: diagnosticSlot.slotEndTime,
-            slot: diagnosticSlot.employeeSlotId,
+            slot: String(diagnosticSlot.employeeSlotId),
             startTime: diagnosticSlot.slotStartTime,
             status: 'empty',
           },
@@ -3025,8 +3025,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               slotStartTime: slotInfo.slotInfo.startTime!,
               slotEndTime: slotInfo.slotInfo.endTime!,
               date: date.getTime(),
-              // employeeSlotId: parseInt(slotInfo.slotInfo.slot!),
-              employeeSlotId: slotInfo.slotInfo.slot!,
+              employeeSlotId: parseInt(slotInfo.slotInfo.slot!),
               diagnosticBranchCode: slotInfo.diagnosticBranchCode,
               diagnosticEmployeeCode: slotInfo.employeeCode,
               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
