@@ -1118,7 +1118,7 @@ export const addTestsToCart = async (
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        cityID: 9 //will always check for hyderabad, so that items gets added to cart
+        cityID: parseInt(cityId, 10),
       },
       fetchPolicy: 'no-cache',
     });

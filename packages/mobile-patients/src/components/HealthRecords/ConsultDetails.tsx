@@ -420,12 +420,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const {
-    locationDetails,
-    setLocationDetails,
-    diagnosticLocation,
-    pharmacyLocation,
-  } = useAppCommonData();
+  const { locationDetails, setLocationDetails, diagnosticLocation } = useAppCommonData();
 
   const onAddTestsToCart = async () => {
     let location: LocationData | null = null;
@@ -467,7 +462,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     addTestsToCart(
       testPrescription,
       client,
-      g(diagnosticLocation || pharmacyLocation || locationDetails || location, 'pincode') || ''
+      g(diagnosticLocation || locationDetails || location, 'pincode') || ''
     )
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
