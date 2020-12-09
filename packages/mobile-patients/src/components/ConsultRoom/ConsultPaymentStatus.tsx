@@ -72,6 +72,7 @@ import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import moment from 'moment';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -283,6 +284,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     circleSavings > 0 &&
       !circleSubscriptionId &&
       postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+
+    circleSavings > 0 &&
+      !circleSubscriptionId &&
+      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes) &&
+      circleWebEngage();
+
     console.log('eventAttributes >>>>', eventAttributes);
     clearCircleSubscriptionData();
   };
@@ -760,18 +767,21 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const circleWebEngage = () => {
     const eventAttributes = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Membership Type': String(circlePlanSelected?.valid_duration) + 'days',
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Consult',
+      Source: 'Consult',
     };
-    postWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_BUYS_SUBSCRIPTION, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, eventAttributes);
   };
 
   const renderAddedCirclePlanWithValidity = () => {
-    circleWebEngage();
     return (
       <AddedCirclePlanWithValidity
         circleSavings={circleSavings}
