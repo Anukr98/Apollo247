@@ -469,6 +469,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isCall, setIsCall] = useState<boolean>(false);
   const [onSubscribe, setOnSubscribe] = useState<boolean>(false);
   const isAudio = useRef<boolean>(false);
+  const callKitAppointmentId = useRef<string>('');
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
@@ -1005,12 +1006,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
         isAudio.current = notification.getData().isVideo ? false : true;
+        callKitAppointmentId.current = payload.appointmentId;
       }
     });
   };
 
   const onAnswerCallAction = () => {
-    joinCallHandler();
+    if (callKitAppointmentId.current === channel) {
+      joinCallHandler();
+    } else {
+      navigateToAnotherAppointment(
+        callKitAppointmentId.current,
+        isAudio.current ? 'AUDIO' : 'VIDEO'
+      );
+    }
   };
 
   const navigateToAnotherAppointment = async (appointmentId: string, callType: string) => {

@@ -635,6 +635,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: getFormattedAmount(grandTotal),
+      LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };

@@ -99,6 +99,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: Number(price),
+      LOB: 'Diagnostics',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
