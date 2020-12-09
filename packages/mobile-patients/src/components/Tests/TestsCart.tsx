@@ -4,10 +4,7 @@ import {
   formatAddressWithLandmark,
   formatNameNumber,
   g,
-  isValidTestSlot,
   TestSlot,
-  TestSlotWithArea,
-  formatTestSlot,
   formatTestSlotWithBuffer,
   getUniqueTestSlots,
   getTestSlotDetailsByTime,
@@ -19,10 +16,7 @@ import {
   postFirebaseEvent,
   setCircleMembershipType,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import {
-  DiagnosticData,
-  useAppCommonData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -76,7 +70,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
-  getDiagnosticsHCCharges_getDiagnosticsHCCharges,
   getDiagnosticsHCChargesVariables,
   getDiagnosticsHCCharges,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHCCharges';
@@ -164,11 +157,9 @@ import {
   DiagnosticBookHomeCollection,
   DiagnosticBookHomeCollectionVariables,
 } from '@aph/mobile-patients/src/graphql/types/DiagnosticBookHomeCollection';
-const { width: screenWidth } = Dimensions.get('window');
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-
-const { width: winWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
   labelView: {
@@ -294,8 +285,8 @@ type clinicHoursData = {
 };
 
 export interface areaObject {
-  key: string;
-  value: string;
+  key: string | number;
+  value: string | number;
 }
 export interface orderDetails {
   orderId: string | null;
@@ -307,7 +298,9 @@ export interface orderDetails {
   cartHasAll?: boolean;
 }
 
-export interface TestsCartProps extends NavigationScreenProps {}
+export interface TestsCartProps extends NavigationScreenProps {
+  comingFrom?: string;
+}
 
 export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const {
@@ -335,6 +328,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     forPatientId,
     setPatientId,
     diagnosticSlot,
+    setUniqueId,
+    getUniqueId,
 
     setDiagnosticClinic,
     diagnosticClinic,
@@ -374,6 +369,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     // { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
   ];
 
+  const sourceScreen = props.navigation.getParam('comingFrom');
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
 
@@ -404,15 +400,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [addressCityId, setAddressCityId] = useState<string>('');
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
   const [isCashOnDelivery, setCashOnDelivery] = useState(true);
-  const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>('');
+  const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
 
-  const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
-  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id!));
+  const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
+  const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id!));
+  const cartItemsWithId = cartItems?.map((item) => parseInt(item.id!));
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -442,7 +438,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         selectedTimeSlot?.slotInfo?.slot! &&
         areaSelected &&
         deliveryAddressId != '' &&
-        cartItems.length > 0
+        cartItems?.length > 0
       ) {
         validateDiagnosticCoupon();
         fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
@@ -525,7 +521,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
       'Pin Code': pinCode,
       'Service Area': 'Diagnostic',
-      'Area Name': areaSelected.value,
+      'Area Name': String((areaSelected as areaObject).value),
       'No of Days ahead of Order Date selected': diffInDays,
       'Home collection charges': hcCharges,
       'Collection Time Slot': selectedTimeSlot?.slotInfo?.startTime!,
@@ -582,7 +578,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const setWebEngageEventForAreaSelection = (item: areaObject) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
       'Address Pincode': parseInt(selectedAddr?.zipcode!),
-      'Area Selected': item.value,
+      'Area Selected': String(item?.value),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
   };
@@ -591,7 +587,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const diffInDays = date.getDate() - new Date().getDate();
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
       'Address Pincode': parseInt(selectedAddr?.zipcode!),
-      'Area Selected': areaSelected.value,
+      'Area Selected': (areaSelected as any).value,
       'Time Selected': selectedTimeSlot?.slotInfo?.startTime!,
       'No of Days ahead of Order Date selected': diffInDays,
     };
@@ -671,7 +667,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             status: 'empty',
           },
         });
-        // setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
       } else {
         setDate(new Date());
         setselectedTimeSlot(undefined);
@@ -680,10 +675,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
-        fetchAreasForAddress(
-          addresses[selectedAddressIndex].id,
-          addresses[selectedAddressIndex].zipcode!
-        );
+        // fetchAreasForAddress(
+        //   addresses[selectedAddressIndex].id,
+        //   addresses[selectedAddressIndex].zipcode!
+        // );
       }
     }
   }, [deliveryAddressId, diagnosticSlot, cartItems]);
@@ -707,7 +702,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     obj.data.results[0].address_components.length > 0
                   ) {
                     const address = obj.data.results[0].address_components[0].short_name;
-                    console.log(address, 'address obj');
                     const addrComponents = obj.data.results[0].address_components || [];
                     const _pincode = (
                       addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
@@ -770,19 +764,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
-  };
-
-  const getHomeVisitTime = () => {
-    return '';
-    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'slotStartTime')) {
-      const _date = moment(g(diagnosticSlot, 'date')).format('D MMM YYYY');
-      const _time = moment(g(diagnosticSlot, 'slotStartTime')!.trim(), 'hh:mm').format('hh:mm A');
-      return `${_date}, ${_time}`;
-    } else {
-      return '';
+    if (deliveryAddressId != '') {
+      const selectedAddressIndex = addresses.findIndex(
+        (address) => address.id == deliveryAddressId
+      );
+      fetchAreasForAddress(
+        addresses[selectedAddressIndex].id,
+        addresses[selectedAddressIndex].zipcode!
+      );
     }
   };
-  const homeVisitTime = getHomeVisitTime();
 
   const getPinCodeServiceability = async () => {
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
@@ -800,12 +791,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .then(({ data }) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData.cityName != '') {
-            setAddressCityId!(serviceableData?.cityID?.toString() || '');
+            setAddressCityId!(String(serviceableData?.cityID!) || '');
+            getDiagnosticsAvailability(serviceableData?.cityID!, cartItems)
+              .then(({ data }) => {
+                const diagnosticItems =
+                  g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+                updatePricesInCart(diagnosticItems, selectedAddressIndex);
+              })
+              .catch((e) => {
+                CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
+                setLoading!(false);
+                errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+              });
           } else {
             showAphAlert!({
               unDismissable: true,
-              title: 'Uh oh! :(',
-              description: 'We are not servicing in this area.',
+              title: string.common.uhOh,
+              description: string.diagnostics.nonServiceableConfigPinCodeMsg,
             });
           }
         })
@@ -814,6 +816,97 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading!(false);
           console.log('getDiagnosticsPincode serviceability Error\n', { e });
         });
+    }
+  };
+
+  const updatePricesInCart = (results: any, selectedAddressIndex: any) => {
+    const disabledCartItems = cartItems?.filter(
+      (cartItem) =>
+        !results?.find(
+          (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
+            `${d!.itemId}` == cartItem.id
+        )
+    );
+    let isItemDisable = false,
+      isPriceChange = false;
+    if (cartItems.length > 0) {
+      cartItems.map((cartItem) => {
+        const isItemInCart = results?.findIndex(
+          (item: any) => String(item.itemId) === String(cartItem.id)
+        );
+
+        if (isItemInCart !== -1) {
+          const getActiveItemsObject = getActiveItems(results?.[isItemInCart]?.diagnosticPricing);
+          const itemWithAll = getActiveItemsObject?.itemWithAll;
+          const itemWithSub = getActiveItemsObject?.itemWithSub;
+
+          const discount = getDiscountPercentage(itemWithAll?.mrp!, itemWithAll?.price!);
+          const circleDiscount = getDiscountPercentage(itemWithSub?.mrp!, itemWithSub?.price!);
+
+          const promoteCircle = discount < circleDiscount;
+          const priceToCompare = promoteCircle ? itemWithSub : itemWithAll;
+          const cartPriceToCompare = promoteCircle ? cartItem.circlePrice : cartItem.price;
+          if (priceToCompare.mrp !== cartPriceToCompare) {
+            //show the prices changed pop-over
+            isPriceChange = true;
+            showAphAlert!({
+              unDismissable: true,
+              title: string.common.uhOh,
+              description: string.diagnostics.pricesChangedMessage,
+              onPressOk: () => {
+                hideAphAlert!();
+                fetchAreasForAddress(
+                  addresses[selectedAddressIndex].id,
+                  addresses[selectedAddressIndex].zipcode!
+                );
+              },
+            });
+            updateCartItem!({
+              id: results[isItemInCart]
+                ? String(results[isItemInCart].itemId)
+                : String(cartItem.id),
+              name: results[isItemInCart].itemName || '',
+              price: itemWithAll.mrp,
+              specialPrice: itemWithAll?.price! || itemWithAll?.mrp!,
+              circlePrice: itemWithSub?.mrp!,
+              circleSpecialPrice: itemWithSub?.price,
+              mou:
+                results[isItemInCart].inclusions !== null
+                  ? results[isItemInCart].inclusions.length
+                  : 1,
+              thumbnail: cartItem.thumbnail,
+              groupPlan: promoteCircle ? itemWithSub?.groupPlan : itemWithAll?.groupPlan,
+            });
+          }
+        }
+        //if items not available
+        if (disabledCartItems.length) {
+          isItemDisable = true;
+          const disabledCartItemIds = disabledCartItems.map((item) => item.id);
+          setLoading!(false);
+          removeDisabledCartItems(disabledCartItemIds);
+
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: string.diagnostics.pricesChangedMessage,
+            onPressOk: () => {
+              hideAphAlert!();
+              fetchAreasForAddress(
+                addresses[selectedAddressIndex].id,
+                addresses[selectedAddressIndex].zipcode!
+              );
+            },
+          });
+        }
+      });
+      if (!isItemDisable && !isPriceChange) {
+        isPriceChange = false;
+        isItemDisable = false;
+        fetchAreasForAddress(
+          addresses[selectedAddressIndex].id,
+          addresses[selectedAddressIndex].zipcode!
+        );
+      }
     }
   };
 
@@ -902,15 +995,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     const listOfIds =
       typeof itemIds == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : itemIds;
-    console.log({ listOfIds });
+
+    console.log('address city id' + addressCityId);
     {
       setLoading!(true);
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
           variables: {
-            cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
-            itemIDs: listOfIds,
+            //if address is not selected then from pincode bar otherwise from address
+            cityID:
+              deliveryAddressId != ''
+                ? parseInt(addressCityId)
+                : sourceScreen!
+                ? 9
+                : parseInt(diagnosticServiceabilityData?.cityId!),
+            itemIDs: listOfIds!,
           },
           fetchPolicy: 'no-cache',
         })
@@ -941,9 +1041,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 updateCartItem!({
                   id: item?.itemId!.toString() || product[0]?.id!,
                   name: item?.itemName,
-                  price: itemWithAll?.mrp!,
+                  price: itemWithAll?.mrp! || item?.rate,
                   thumbnail: '',
-                  specialPrice: itemWithAll?.price! || itemWithAll?.mrp!,
+                  specialPrice: itemWithAll?.price! || itemWithAll?.mrp! || item?.rate!,
                   circlePrice: itemWithSub?.mrp!,
                   circleSpecialPrice: itemWithSub?.price,
                   collectionMethod: item?.collectionType!,
@@ -951,8 +1051,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 });
               });
             }
-
-            //update the ui
           } else {
             errorAlert();
           }
@@ -967,10 +1065,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         });
     }
   };
-
-  /**
-   * fetching the areas
-   */
 
   const isItemPriceActive = (from: string, to: string, check: string) => {
     if (from == null || to == null) {
@@ -988,6 +1082,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchAreasForAddress = (id: string, pincode: string) => {
+    //wrt to address
     if (cartItems.length == 0) {
       return;
     }
@@ -1014,9 +1109,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading!(false);
           setWebEngageEventForAddressNonServiceable(pincode);
           showAphAlert!({
-            title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+            title: string.common.uhOh,
+            description: string.diagnostics.areaNotAvailableMessage,
           });
         }
       })
@@ -1029,9 +1123,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         CommonBugFender('TestsCart_getArea selection', e);
         console.log('error' + e);
         showAphAlert!({
-          title: 'Uh oh.. :(',
-          description:
-            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          title: string.common.uhOh,
+          description: string.diagnostics.areaNotAvailableMessage,
         });
       })
       .finally(() => {
@@ -1062,7 +1155,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </Text>
         )}
         {cartItems.map((test, index, array) => {
-          console.log({ test });
           const specialPrice = test?.specialPrice!;
           const price = test?.price!; //more than price (black)
           const circlePrice = test?.circlePrice!;
@@ -1147,8 +1239,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const [checkingServicability, setCheckingServicability] = useState(false);
-
   const checkSlotSelection = (item: areaObject) => {
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
 
@@ -1158,7 +1248,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(date).format('YYYY-MM-DD'),
-          areaID: parseInt(item.key!),
+          areaID: parseInt((item as any).key!),
         },
       })
       .then(({ data }) => {
@@ -1218,11 +1308,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           });
         } else {
           setDeliveryAddressId && setDeliveryAddressId('');
-          // setPinCode && setPinCode('');
           showAphAlert!({
-            title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+            title: string.common.uhOh,
+            description: string.diagnostics.bookingOrderFailedMessage,
           });
         }
       });
@@ -1264,7 +1352,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
-        pointerEvents={cartItems.length > 0 ? 'auto' : 'none'}
+        pointerEvents={cartItems?.length > 0 ? 'auto' : 'none'}
       >
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
@@ -1620,7 +1708,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   marginBottom: 5,
                 }}
               >
-                {isAreaSelectable ? ' Select area' : areaSelected.value}
+                {isAreaSelectable ? ' Select area' : (areaSelected as areaObject).value}
               </Text>
               <Spearator style={[styles.locationTextUnderline]} />
             </View>
@@ -2049,7 +2137,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const disableProceedToPay = !(
-    cartItems.length > 0 &&
+    cartItems?.length > 0 &&
     forPatientId &&
     !!((deliveryAddressId && selectedTimeSlot) || clinicId) &&
     (uploadPrescriptionRequired
@@ -2126,7 +2214,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           aphConsole.log({ e });
           setLoading!(false);
           showAphAlert!({
-            title: 'Uh oh.. :(',
+            title: string.common.uhOh,
             description: 'Error occurred while uploading prescriptions.',
           });
         });
@@ -2149,7 +2237,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
       bookDiagnosticOrder();
-      // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else if (
       physicalPrescriptions.length == 0 &&
       ePrescriptions.length > 0 &&
@@ -2158,7 +2245,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setLoading!(false);
       setisEPrescriptionUploadComplete(false);
       bookDiagnosticOrder();
-      // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length > 0 &&
@@ -2169,18 +2255,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setisPhysicalUploadComplete(false);
       setisEPrescriptionUploadComplete(false);
       bookDiagnosticOrder();
-      // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     }
   };
 
-  const getDiagnosticsAvailability = (cartItems: DiagnosticsCartItem[]) => {
+  const getDiagnosticsAvailability = (
+    cityIdForAddress: number,
+    cartItems: DiagnosticsCartItem[]
+  ) => {
     const itemIds = cartItems.map((item) => parseInt(item.id));
     return client.query<
       findDiagnosticsByItemIDsAndCityID,
       findDiagnosticsByItemIDsAndCityIDVariables
     >({
       query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-      variables: { cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9, itemIDs: itemIds },
+      variables: { cityID: cityIdForAddress, itemIDs: itemIds },
       fetchPolicy: 'no-cache',
     });
   };
@@ -2193,28 +2281,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
-  const moveForward = () => {
-    console.log('inside move forward');
-    const prescriptions = physicalPrescriptions;
-    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      bookDiagnosticOrder();
-    } else {
-      if (prescriptions.length > 0) {
-        physicalPrescriptionUpload();
-      }
-      if (ePrescriptions.length > 0) {
-        ePrescriptionUpload();
-      }
-    }
-  };
-
   const bookDiagnosticOrder = async () => {
     setshowSpinner(true);
-    const { CentreCode, CentreName } = diagnosticClinic || {};
-    /**
-     * check is home collection or clinic visit ~~ change the logic
-     */
-
     if (selectedTab == tabs[0].title) {
       saveHomeCollectionOrder();
     } else {
@@ -2259,7 +2327,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       state: (locationForDiagnostics || {}).state!,
       stateId: `${(locationForDiagnostics || {}).stateId!}`,
       cityId: `${(locationForDiagnostics || {}).cityId!}`,
-      areaId: (areaSelected || {}).key!,
+      areaId: (areaSelected || ({} as any)).key!,
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
@@ -2288,7 +2356,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     };
 
     postPaymentInitiatedWebengage();
-
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     saveOrder(orderInfo)
       .then(({ data }) => {
@@ -2300,8 +2367,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading!(false);
           showAphAlert!({
             unDismissable: true,
-            title: `Uh oh.. :(`,
-            description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+            title: string.common.uhOh,
+            description: string.diagnostics.bookingOrderFailedMessage,
           });
           fireOrderFailedEvent(orderId);
         } else {
@@ -2335,7 +2402,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         showAphAlert!({
           unDismissable: true,
           title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
-          description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+          description: string.diagnostics.bookingOrderFailedMessage,
         });
       })
       .finally(() => {
@@ -2354,7 +2421,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
 
-    console.log(physicalPrescriptions, 'physical prescriptions');
     console.log('unique id' + validateCouponUniqueId);
     const allItems = cartItems.find((item) => item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
     const totalPriceWithoutAnyDiscount = cartItems.reduce(
@@ -2392,7 +2458,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           } as DiagnosticLineItem)
       ),
       slotId: employeeSlotId?.toString() || '0',
-      areaId: (areaSelected || {}).key!,
+      areaId: (areaSelected || ({} as any)).key!,
       homeCollectionCharges: hcCharges,
       totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
       subscriptionInclusionId: null,
@@ -2407,10 +2473,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     postPaymentInitiatedWebengage();
     saveHomeCollectionBookingOrder(bookingOrderInfo)
       .then(({ data }) => {
+        console.log({ data });
         const { orderId, displayId, errorCode, errorMessage } =
           g(data, 'DiagnosticBookHomeCollection')! || {};
+        console.log({ errorMessage });
         if (errorCode || errorMessage) {
-          console.log('error in booking' + errorCode + 'message' + errorMessage);
           setLoading!(false);
           setshowSpinner!(false);
           let descriptionText = string.diagnostics.bookingOrderFailedMessage;
@@ -2420,7 +2487,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           // Order-failed
           showAphAlert!({
             unDismissable: true,
-            title: `Uh oh.. :(`,
+            title: string.common.uhOh,
             description: descriptionText,
           });
           fireOrderFailedEvent(orderId);
@@ -2455,7 +2522,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         showAphAlert!({
           unDismissable: true,
           title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
-          description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+          description: string.diagnostics.bookingOrderFailedMessage,
         });
       })
       .finally(() => {
@@ -2806,214 +2873,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const onPressProceedToPay = () => {
-    try {
-      postwebEngageProceedToPayEvent();
-      setLoading!(true);
-      getDiagnosticsAvailability(cartItems)
-        .then(({ data }) => {
-          const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-          const disabledCartItems = cartItems.filter(
-            (cartItem) => !diagnosticItems.find((d) => `${d!.itemId}` == cartItem.id)
-          );
-          if (disabledCartItems.length) {
-            const disabledCartItemNames = disabledCartItems.map((item) => item.name).join(', ');
-            const disabledCartItemIds = disabledCartItems.map((item) => item.id);
-            setLoading!(false);
-            showAphAlert!({
-              title: string.common.uhOh,
-              description: string.diagnostics.disabledDiagnosticsMsg.replace(
-                '{{testNames}}',
-                disabledCartItemNames
-              ),
-              CTAs: [
-                {
-                  text: (disabledCartItems.length == 1
-                    ? string.diagnostics.removeThisTestCTA
-                    : string.diagnostics.removeTheseTestsCTA
-                  ).toUpperCase(),
-                  onPress: () => removeDisabledCartItems(disabledCartItemIds),
-                  type: 'orange-button',
-                },
-              ],
-            });
-          } else {
-            moveForward();
-          }
-        })
-        .catch((e) => {
-          CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-          setLoading!(false);
-          errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
-        });
-    } catch (error) {
-      CommonBugFender('TestsCart_getDiagnosticsAvailability_try_catch', error);
-      errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+    postwebEngageProceedToPayEvent();
+    const prescriptions = physicalPrescriptions;
+    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+      bookDiagnosticOrder();
+    } else {
+      if (prescriptions.length > 0) {
+        physicalPrescriptionUpload();
+      }
+      if (ePrescriptions.length > 0) {
+        ePrescriptionUpload();
+      }
     }
   };
-
-  // const onPressProceedToPay = () => {
-  //   const prescriptions = physicalPrescriptions;
-  //   console.log(ePrescriptions, 'ePrescriptions');
-
-  //   if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-  //     console.log('withoutdocumnets');
-
-  //     props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-  //   } else {
-  //     if (prescriptions.length > 0) {
-  //       setLoading!(true);
-  //       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-  //       console.log('unUploadedPres', unUploadedPres);
-  //       multiplePhysicalPrescriptionUpload(unUploadedPres)
-  //         .then((data) => {
-  //           setLoading!(false);
-
-  //           const uploadUrlscheck = data.map((item) =>
-  //             item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
-  //           );
-  //           console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-  //           var filtered = uploadUrlscheck.filter(function(el) {
-  //             return el != null;
-  //           });
-  //           console.log('filtered', filtered);
-
-  //           if (filtered.length > 0) {
-  //             client
-  //               .query<downloadDocuments>({
-  //                 query: DOWNLOAD_DOCUMENT,
-  //                 fetchPolicy: 'no-cache',
-  //                 variables: {
-  //                   downloadDocumentsInput: {
-  //                     patientId: currentPatient && currentPatient.id,
-  //                     fileIds: uploadUrlscheck,
-  //                   },
-  //                 },
-  //               })
-  //               .then(({ data }) => {
-  //                 console.log(data, 'DOWNLOAD_DOCUMENT');
-  //                 const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-  //                 console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-  //                 const uploadUrls = uploadUrlscheck!.map((item) => item);
-  //                 console.log(uploadUrls, 'uploadUrls');
-  //                 const newuploadedPrescriptions = unUploadedPres.map(
-  //                   (item, index) =>
-  //                     ({
-  //                       ...item,
-  //                       uploadedUrl: uploadUrls[index],
-  //                     } as PhysicalPrescription)
-  //                 );
-  //                 console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
-  //                 setPhysicalPrescriptions &&
-  //                   setPhysicalPrescriptions([
-  //                     ...newuploadedPrescriptions,
-  //                     ...prescriptions.filter((item) => item.uploadedUrl),
-  //                   ]);
-  //                 setLoading!(false);
-  //                 ePrescriptions.length == 0 &&
-  //                   props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-  //               })
-  //               .catch((e: string) => {
-  //                 console.log('Error occured', e);
-  //               })
-  //               .finally(() => {
-  //                 setshowSpinner(false);
-  //               });
-  //           } else {
-  //             Alert.alert('your uploaded images are failed');
-  //           }
-  //           // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-  //           // const newuploadedPrescriptions = unUploadedPres.map(
-  //           //   (item, index) =>
-  //           //     ({
-  //           //       ...item,
-  //           //       uploadedUrl: uploadUrls[index],
-  //           //     } as PhysicalPrescription)
-  //           // );
-  //           // setPhysicalPrescriptions &&
-  //           //   setPhysicalPrescriptions([
-  //           //     ...newuploadedPrescriptions,
-  //           //     ...prescriptions.filter((item) => item.uploadedUrl),
-  //           //   ]);
-  //           // setLoading!(false);
-  //           // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-  //         })
-  //         .catch((e) => {
-  //           aphConsole.log({ e });
-  //           setLoading!(false);
-  //           showAphAlert!({
-  //             title: 'Uh oh.. :(',
-  //             description: 'Error occurred while uploading prescriptions.',
-  //           });
-  //         });
-  //     }
-  //     if (ePrescriptions.length > 0) {
-  //       const ePresUrls = ePrescriptions.map((item) => {
-  //         console.log('item', item.prismPrescriptionFileId);
-
-  //         return item!.prismPrescriptionFileId;
-  //       });
-
-  //       console.log('ePresUrls', ePresUrls);
-  //       let ePresAndPhysicalPresUrls = [...ePresUrls];
-  //       console.log(
-  //         'ePresAndPhysicalPresUrls',
-  //         ePresAndPhysicalPresUrls
-  //           .join(',')
-  //           .split(',')
-  //           .map((item) => item.trim())
-  //           .filter((i) => i)
-  //       );
-  //       if (ePresAndPhysicalPresUrls.length > 0) {
-  //         client
-  //           .query<downloadDocuments>({
-  //             query: DOWNLOAD_DOCUMENT,
-  //             fetchPolicy: 'no-cache',
-  //             variables: {
-  //               downloadDocumentsInput: {
-  //                 patientId: currentPatient && currentPatient.id,
-  //                 fileIds: ePresAndPhysicalPresUrls
-  //                   .join(',')
-  //                   .split(',')
-  //                   .map((item) => item.trim())
-  //                   .filter((i) => i),
-  //               },
-  //             },
-  //           })
-  //           .then(({ data }) => {
-  //             console.log(data, 'DOWNLOAD_DOCUMENT');
-  //             const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-  //             console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-  //             if (uploadUrlscheck!.length > 0) {
-  //               const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-  //               console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-  //               const uploadUrls = uploadUrlscheck!.map((item) => item);
-  //               console.log(uploadUrls, 'uploadUrls');
-  //               const newuploadedPrescriptions = uploadUrls.map(
-  //                 (item, index) =>
-  //                   ({
-  //                     uploadedUrl: uploadUrls[index],
-  //                   } as EPrescription)
-  //               );
-  //               console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
-  //               setEPrescriptions && setEPrescriptions([...ePrescriptions.filter((item) => item)]);
-  //               setLoading!(false);
-  //               console.log(ePrescriptions, 'setEPrescriptions');
-
-  //               props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-  //             } else {
-  //               Alert.alert('Images are not uploaded');
-  //             }
-  //           })
-  //           .catch((e: string) => {
-  //             console.log('Error occured', e);
-  //           })
-  //           .finally(() => {
-  //             setLoading!(false);
-  //           });
-  //       }
-  //     }
-  //   }
-  // };
 
   const validateDiagnosticCoupon = async () => {
     if (addressCityId != '') {
@@ -3057,6 +2929,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           'vaidateDiagnosticCoupon'
         );
         if (validateApiResponse?.message == 'success') {
+          setUniqueId!(validateApiResponse?.uniqueid!);
           setValidateCouponUniqueId(validateApiResponse?.uniqueid!);
         }
         setLoading!(false);
@@ -3139,7 +3012,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <TestSlotSelectionOverlay
           heading="Schedule Appointment"
           date={date}
-          areaId={areaSelected?.key!}
+          areaId={(areaSelected as any)?.key!}
           maxDate={moment()
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
@@ -3155,6 +3028,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               slotStartTime: slotInfo.slotInfo.startTime!,
               slotEndTime: slotInfo.slotInfo.endTime!,
               date: date.getTime(),
+              // employeeSlotId: parseInt(slotInfo.slotInfo.slot!),
               employeeSlotId: slotInfo.slotInfo.slot!,
               diagnosticBranchCode: slotInfo.diagnosticBranchCode,
               diagnosticEmployeeCode: slotInfo.employeeCode,
