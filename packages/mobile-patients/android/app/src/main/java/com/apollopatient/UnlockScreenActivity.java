@@ -188,7 +188,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     private void removeNotification(Boolean fallBack, Integer notifID) {
         if (fallBack) {
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            manager.cancel(notifID);
+            manager.cancelAll();
         }
     }
 
