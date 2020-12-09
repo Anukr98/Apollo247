@@ -86,6 +86,7 @@ import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPl
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import DeviceInfo from 'react-native-device-info';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -544,6 +545,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           : null,
         totalCashBack:
           cartTotalCashback || circleSubscriptionId ? Number(cartTotalCashback) || 0 : 0,
+        deviceVersion: DeviceInfo.getVersion(),
       },
     };
 
@@ -590,6 +592,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         }
       })
       .catch((error) => {
+        console.log('error >>>>>>>>>>>>>>>>>>', error);
         CommonBugFender('CheckoutScene_saveOrder', error);
         setLoading && setLoading(false);
 

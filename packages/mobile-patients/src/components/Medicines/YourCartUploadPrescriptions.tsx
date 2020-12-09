@@ -70,6 +70,7 @@ import { TextInputComponent } from '../ui/TextInputComponent';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Spinner } from '../ui/Spinner';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import DeviceInfo from 'react-native-device-info';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -390,6 +391,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
           prescriptionOptionSelected: prescriptionOption,
           durationDays: durationDay,
+          deviceVersion: DeviceInfo.getVersion(),
         },
       };
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
