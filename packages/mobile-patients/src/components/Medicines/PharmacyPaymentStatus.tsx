@@ -80,6 +80,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     setIsCircleSubscription,
     cartItems,
     coupon,
+    circlePlanSelected,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
@@ -135,6 +136,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
         setLoading(false);
         fireCirclePlanActivatedEvent();
+        fireCirclePurchaseEvent();
       })
       .catch((error) => {
         setLoading(false);
@@ -349,6 +351,28 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       value: price,
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
+  const fireCirclePurchaseEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      currency: 'INR',
+      items: [
+        {
+          item_name: 'Circle Plan',
+          item_id: circlePlanSelected?.subPlanId,
+          price: Number(circlePlanSelected?.price),
+          item_category: 'Circle',
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      transaction_id: orderId,
+      value: Number(circlePlanSelected?.price),
+    };
+    circleSavings > 0 &&
+      !circleSubscriptionID &&
+      isCircleSubscription &&
+      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const statusIcon = () => {

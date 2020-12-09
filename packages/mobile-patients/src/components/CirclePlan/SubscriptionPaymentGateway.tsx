@@ -22,8 +22,12 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
@@ -72,6 +76,25 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
         WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED,
         CircleEventAttributes
       );
+  };
+
+  const fireCirclePurchaseEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      currency: 'INR',
+      items: [
+        {
+          item_name: 'Circle Plan',
+          item_id: circlePlanSelected?.subPlanId,
+          price: Number(circlePlanSelected?.price),
+          item_category: 'Circle',
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      transaction_id: '',
+      value: Number(circlePlanSelected?.price),
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const firePaymentDoneEvent = () => {
@@ -123,6 +146,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
     ) {
       forCircle ? firePaymentDoneEvent() : null;
       fireCircleActivatedEvent();
+      fireCirclePurchaseEvent();
       navigatetoStatusScreen(redirectedUrl);
     }
   };
