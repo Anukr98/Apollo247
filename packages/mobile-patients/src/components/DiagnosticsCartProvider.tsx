@@ -127,6 +127,9 @@ export interface DiagnosticsCartContextProps {
 
   isDiagnosticCircleSubscription: boolean;
   setIsDiagnosticCircleSubscription: ((value: boolean) => void) | null;
+
+  getUniqueId: string;
+  setUniqueId: ((value: string) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -194,6 +197,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setDiagnosticAreas: null,
   isDiagnosticCircleSubscription: false,
   setIsDiagnosticCircleSubscription: null,
+  getUniqueId: '',
+  setUniqueId: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -256,6 +261,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [diagnosticAreas, setDiagnosticAreas] = useState<
     DiagnosticsCartContextProps['diagnosticAreas']
   >([]);
+  const [getUniqueId, setUniqueId] = useState<DiagnosticsCartContextProps['getUniqueId']>('');
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -581,6 +587,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setDiagnosticSlot,
         isDiagnosticCircleSubscription,
         setIsDiagnosticCircleSubscription,
+
+        getUniqueId,
+        setUniqueId,
       }}
     >
       {props.children}

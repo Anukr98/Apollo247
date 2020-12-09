@@ -355,14 +355,16 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                   },
                 ]}
               >
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('SB', 13, '#02475b', 0.7, undefined, 0.33),
-                    textDecorationLine: 'line-through',
-                  }}
-                >
-                  {`${strings.common.Rs} ${price.toFixed(2)}`}
-                </Text>
+                {!!price && (
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('SB', 13, '#02475b', 0.7, undefined, 0.33),
+                      textDecorationLine: 'line-through',
+                    }}
+                  >
+                    {`${strings.common.Rs} ${price!.toFixed(2)}`}
+                  </Text>
+                )}
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, '#02475b', 0.7, undefined, 0.25),
@@ -457,7 +459,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
               {'('}
               <Text style={{ textDecorationLine: 'line-through' }}>
-                {`${strings.common.Rs} ${price.toFixed(2)}`}
+                {`${strings.common.Rs} ${price!.toFixed(2)}`}
               </Text>
               {')'}
             </Text>
@@ -514,7 +516,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             <Text
               style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04), marginTop: 4 }}
             >
-              {strings.common.Rs} {(specialPrice! || price).toFixed(2)}
+              {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
             </Text>
           )}
         </View>
@@ -532,13 +534,13 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     ) : !isCardExpanded ? (
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.priceTextCollapseStyle}>
-          {strings.common.Rs} {(specialPrice || price).toFixed(2)}
+          {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
         </Text>
         {specialPrice && (
           <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
             {'('}
             <Text style={{ textDecorationLine: 'line-through' }}>
-              {`${strings.common.Rs} ${price.toFixed(2)}`}
+              {`${strings.common.Rs} ${price!.toFixed(2)}`}
             </Text>
             {')'}
           </Text>
@@ -583,9 +585,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                   {Number(props.discount!).toFixed(0)}%off
                 </Text>
               )}
-              <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04) }}>
-                {strings.common.Rs} {(specialPrice! || price).toFixed(2)}
-              </Text>
+              {(!!price || !!specialPrice) && (
+                <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04) }}>
+                  {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
+                </Text>
+              )}
             </View>
           </View>
         )}
@@ -614,14 +618,16 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
               </Text> */}
             </View>
             <View style={{ alignSelf: 'flex-end' }}>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
-                  marginLeft: 5,
-                }}
-              >
-                {strings.common.Rs} {(specialPrice! || price).toFixed(2)}
-              </Text>
+              {(!!price || !!specialPrice) && (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
+                    marginLeft: 5,
+                  }}
+                >
+                  {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
+                </Text>
+              )}
             </View>
           </View>
         )}
@@ -636,7 +642,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
               marginLeft: -32,
             }}
           >
-            {props.price && (
+            {props.price! && (
               <View style={{ alignSelf: 'flex-end' }}>
                 <Text
                   style={{
@@ -644,7 +650,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                     textDecorationLine: 'line-through',
                   }}
                 >
-                  {strings.common.Rs} {price.toFixed(2)}
+                  {strings.common.Rs} {price!.toFixed(2)}
                 </Text>
               </View>
             )}
@@ -657,7 +663,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                     marginRight: 5,
                   }}
                 >
-                  {Number(props.discount).toFixed(0)}% off
+                  {Number(props.discount!).toFixed(0)}% off
                 </Text>
                 <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04) }}>
                   {strings.common.Rs} {props.circlePrice!.toFixed(2)}
