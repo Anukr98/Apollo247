@@ -91,7 +91,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
           quantity: 1, // "1" or actual quantity
         },
       ],
-      transaction_id: '',
+      transaction_id: currentPatient?.mobileNumber,
       value: Number(circlePlanSelected?.currentSellingPrice),
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
