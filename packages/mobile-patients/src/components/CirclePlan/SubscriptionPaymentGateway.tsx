@@ -66,20 +66,6 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
     };
   }, []);
 
-  const fireCircleActivatedEvent = () => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED] = {
-      'Patient UHID': currentPatient?.uhid,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer ID': currentPatient?.id,
-      'Circle Member': 'Yes', //will always be true
-    };
-    from == string.banner_context.DIAGNOSTIC_HOME &&
-      postWebEngageEvent(
-        WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED,
-        CircleEventAttributes
-      );
-  };
-
   const fireCirclePurchaseEvent = () => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       currency: 'INR',
@@ -154,7 +140,6 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1
     ) {
       forCircle ? firePaymentDoneEvent() : null;
-      fireCircleActivatedEvent();
       fireCirclePurchaseEvent();
       navigatetoStatusScreen(redirectedUrl);
     }

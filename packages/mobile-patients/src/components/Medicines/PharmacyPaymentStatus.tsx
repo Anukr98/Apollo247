@@ -202,7 +202,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         .add(circlePlanSelected?.valid_duration, 'days')
         .format('DD-MMM-YYYY'),
       'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
-      Type: 'Direct Payment',
+      Type: 'Pharmacy',
       Source: 'Pharma',
     };
     circleSavings > 0 &&

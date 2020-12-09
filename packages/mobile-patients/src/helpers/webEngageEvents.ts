@@ -319,7 +319,6 @@ export enum WebEngageEventName {
   DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP = 'App Non-circle Buy Now clicked - Diagnostics',
   DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Non-circle Know more clicked - Diagnostics',
   DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP = 'App circle plan - other payment clicked - Diagnostics',
-  DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED = 'App Circle activated - Diagnostics',
   DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
 
   //My Membership Circle Events
@@ -619,7 +618,6 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: CircleUserInfo;
-  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: CircleUserInfo;
 
   // ********** MY Membership circle events ********

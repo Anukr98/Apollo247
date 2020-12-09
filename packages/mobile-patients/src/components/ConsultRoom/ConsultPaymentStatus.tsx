@@ -775,8 +775,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         .add(circlePlanSelected?.valid_duration, 'days')
         .format('DD-MMM-YYYY'),
       'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
-      Type: 'Direct Payment',
-      Source: 'Pharma',
+      Type: 'Consult',
+      Source: 'Consult',
     };
     postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, eventAttributes);
   };
