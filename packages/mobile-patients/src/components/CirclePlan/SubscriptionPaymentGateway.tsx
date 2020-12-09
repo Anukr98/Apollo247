@@ -90,7 +90,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
-      'Membership Type': circlePlanSelected?.valid_duration,
+      'Membership Type': String(circlePlanSelected?.valid_duration) + 'days',
       'Membership End Date': moment(new Date())
         .add(circlePlanSelected?.valid_duration, 'days')
         .format('DD-MMM-YYYY'),
