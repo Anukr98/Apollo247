@@ -167,6 +167,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [medicineList, setMedicineList] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
+  const [searchResult, setSearchResult] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
@@ -347,6 +348,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         setMedicineList(
           products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
         );
+        setSearchResult(products?.length == 0);
         setIsLoading(false);
       })
       .catch((e) => {
@@ -475,7 +477,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const isNoTestsFound = !isLoading && searchText?.length > 2 && medicineList?.length == 0;
+  const isNoTestsFound = !isLoading && searchText?.length > 2 && searchResult;
 
   const renderSorryMessage = isNoTestsFound ? (
     <Text style={styles.sorryTextStyle}>Sorry, we couldn’t find what you are looking for :(</Text>

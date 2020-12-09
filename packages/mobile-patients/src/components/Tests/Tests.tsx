@@ -373,6 +373,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState({});
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
+  const [searchResult, setSearchResults] = useState<boolean>(false);
   const hasLocation = locationDetails;
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -2114,6 +2115,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setMedicineList(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
           );
+          setSearchResults(products.length == 0);
           setsearchSate('success');
           setWebEngageEventOnSearchItem(_searchText, products);
         })
@@ -2468,8 +2470,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       />
     );
 
-    const itemsNotFound =
-      searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
+    const itemsNotFound = searchSate == 'success' && searchText.length > 2 && searchResult;
     return (
       <View pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}>
         <Input
