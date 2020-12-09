@@ -28,11 +28,13 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import moment from 'moment';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
   selectedPlan?: any;
   forCircle?: boolean;
+  from?: string;
 }
 export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props) => {
   let WebViewRef: any;
@@ -98,12 +100,19 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   };
 
   const firePaymentDoneEvent = () => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PAYMENT_DONE] = {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
+      'Membership Type': circlePlanSelected?.valid_duration,
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Direct Payment',
+      Source: from,
     };
-    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_PAYMENT_DONE, CircleEventAttributes);
+    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const handleBack = () => {

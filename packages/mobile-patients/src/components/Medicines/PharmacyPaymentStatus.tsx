@@ -68,6 +68,7 @@ import {
 import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import moment from 'moment';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -192,18 +193,22 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const fireCirclePlanActivatedEvent = () => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE] = {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
+      'Membership Type': circlePlanSelected?.valid_duration,
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Direct Payment',
+      Source: 'Pharma',
     };
     circleSavings > 0 &&
       !circleSubscriptionID &&
       isCircleSubscription &&
-      postWebEngageEvent(
-        WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE,
-        CircleEventAttributes
-      );
+      postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 

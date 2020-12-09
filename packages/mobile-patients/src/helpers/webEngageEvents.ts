@@ -297,7 +297,6 @@ export enum WebEngageEventName {
   VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
   VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
   VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
-  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -313,7 +312,7 @@ export enum WebEngageEventName {
   PHARMA_WEBVIEW_PLAN2 = 'App Pharma Plan 2 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
-  PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE = 'App Pharma Non Circle buys Circle subscription',
+  PURCHASE_CIRCLE = 'Circle Plan Purchased',
 
   //Diagnostic Circle Events
   DIAGNOSTICS_CIRCLE_BANNER_CLICKED = 'App Non-circle banner clicked - Diagnostics',
@@ -373,6 +372,14 @@ export interface CircleUserInfo extends UserInfo {
   type?: string; //landing page
   action?: string; //landing page
   from?: string;
+}
+
+export interface CirclePurchaseInfo extends UserInfo {
+  'Membership Type'?: string;
+  'Membership End Date'?: string;
+  'Circle Plan Price'?: string;
+  'Type': string;
+  'Source'?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -605,7 +612,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
-  [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
+  [WebEngageEventName.PURCHASE_CIRCLE] : CirclePurchaseInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
   [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
