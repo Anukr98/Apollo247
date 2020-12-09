@@ -590,6 +590,7 @@ const logRouteChange = (route: string, routeIndex: number | undefined) => {
 };
 
 let prevRoute = '';
+export const getCurrentRoute = () => prevRoute;
 
 const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,

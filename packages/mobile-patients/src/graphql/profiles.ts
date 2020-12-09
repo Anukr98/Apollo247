@@ -1298,6 +1298,14 @@ export const SAVE_DEVICE_TOKEN = gql`
   }
 `;
 
+export const UPDATE_PATIENT_APP_VERSION = gql`
+  mutation UpdatePatientAppVersion($patientId: String!, $appVersion: String!, $osType: DEVICETYPE) {
+    updatePatientAppVersion(patientId: $patientId, appVersion: $appVersion, osType: $osType) {
+      status
+    }
+  }
+`;
+
 export const END_APPOINTMENT_SESSION = gql`
   mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)

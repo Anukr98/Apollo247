@@ -1,31 +1,37 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
-  LocationData,
-  useAppCommonData,
-  SubscriptionData,
+  BenefitCtaAction,
+  CicleSubscriptionData,
+  CircleGroup,
+  CirclePlanSummary,
   GroupPlan,
   PlanBenefits,
-  BenefitCtaAction,
-  CirclePlanSummary,
-  CircleGroup,
-  CicleSubscriptionData,
+  SubscriptionData,
+  useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
+  ApolloHealthProIcon,
   CartIcon,
   ConsultationRoom,
+  CovidOrange,
   CovidRiskLevel,
+  DashedLine,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  FemaleCircleIcon,
+  FemaleIcon,
   KavachIcon,
   LatestArticle,
   LinkedUhidIcon,
-  Mascot,
+  MaleCircleIcon,
+  MaleIcon,
   MedicineCartIcon,
   MedicineIcon,
   MyHealth,
@@ -36,13 +42,6 @@ import {
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
-  CovidOrange,
-  DashedLine,
-  ApolloHealthProIcon,
-  FemaleIcon,
-  MaleIcon,
-  FemaleCircleIcon,
-  MaleCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -54,39 +53,58 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
   DeviceHelper,
-  setBugFenderLog,
   isIos,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-  SAVE_VOIP_DEVICE_TOKEN,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_CASHBACK_DETAILS_OF_PLAN_ID,
+  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  SAVE_VOIP_DEVICE_TOKEN,
+  UPDATE_PATIENT_APP_VERSION,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
-import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { DEVICETYPE, Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  UpdatePatientAppVersion,
+  UpdatePatientAppVersionVariables,
+} from '@aph/mobile-patients/src/graphql/types/UpdatePatientAppVersion';
+import {
+  GenerateTokenforCM,
+  notifcationsApi,
+  pinCodeServiceabilityApi247,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import {
+  getPatientPersonalizedAppointmentList,
+  getUserBannersList,
+  saveTokenDevice,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
   PatientInfoFirebase,
   PatientInfoWithSourceFirebase,
 } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  distanceBwTwoLatLng,
+  checkPermissions,
   doRequestAndAccessLocationModified,
   g,
-  getlocationDataFromLatLang,
+  getPhrNotificationAllCount,
+  overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
   setWebEngageScreenNames,
-  overlyCallPermissions,
-  checkPermissions,
-  getPhrNotificationAllCount,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -100,8 +118,9 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
+import messaging from '@react-native-firebase/messaging';
 import moment from 'moment';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -117,34 +136,15 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
-  TextInput,
-  Image,
-  AppState,
-  AppStateStatus,
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import { ScrollView } from 'react-native-gesture-handler';
+import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
-import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
-import {
-  getPatientPersonalizedAppointmentList,
-  getUserBannersList,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
-import VoipPushNotification from 'react-native-voip-push-notification';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
-import {
-  GetSubscriptionsOfUserByStatus,
-  GetSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
-import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
-import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import {
-  GenerateTokenforCM,
-  notifcationsApi,
-  pinCodeServiceabilityApi247,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
+import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 
 const { Vitals } = NativeModules;
 
@@ -443,6 +443,43 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+
+  const saveDeviceNotificationToken = async (id: string) => {
+    try {
+      const savedToken = await AsyncStorage.getItem('deviceToken');
+      const token = await messaging().getToken();
+      if (savedToken !== token) {
+        saveTokenDevice(client, token, id);
+      }
+    } catch (error) {}
+  };
+
+  const notifyAppVersion = async (patientId: string) => {
+    try {
+      const key = `${patientId}-appVersion`;
+      const savedAppVersion = await AsyncStorage.getItem(key);
+      const appVersion = DeviceInfo.getVersion();
+      if (savedAppVersion !== appVersion) {
+        await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
+          mutation: UPDATE_PATIENT_APP_VERSION,
+          variables: {
+            appVersion,
+            patientId,
+            osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        await AsyncStorage.setItem(key, appVersion);
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    if (currentPatient?.id) {
+      saveDeviceNotificationToken(currentPatient.id);
+      notifyAppVersion(currentPatient.id);
+    }
+  }, [currentPatient]);
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   useEffect(() => {
