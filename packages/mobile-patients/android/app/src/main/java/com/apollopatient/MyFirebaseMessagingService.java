@@ -66,6 +66,8 @@ public class MyFirebaseMessagingService
                         notificationManager.cancelAll();
                         Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
                         vibrator.cancel();
+                        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
+                        localBroadcastManager.sendBroadcast(new Intent("com.unlockscreenactivity.action.close"));
                     }
                 } else {
                     showUnlockScreen(remoteMessage, !isAppRunning());
