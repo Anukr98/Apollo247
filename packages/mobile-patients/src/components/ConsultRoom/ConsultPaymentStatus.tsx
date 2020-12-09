@@ -285,14 +285,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       value: Number(circlePlanSelected?.currentSellingPrice),
       LOB: 'Circle',
     };
-    console.log(circleSavings > 0 && !circleSubscriptionId);
-    console.log('circleSavings >>>', circleSavings);
-    console.log('circleSubscriptionId >>>>', circleSubscriptionId);
     Savings > 0 &&
-      !circleSubscriptionId &&
-      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-
-    circleSavings > 0 &&
       !circleSubscriptionId &&
       postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes) &&
       circleWebEngage();
