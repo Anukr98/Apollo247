@@ -285,10 +285,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       !circleSubscriptionId &&
       postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
 
-    circleSavings > 0 &&
-      !circleSubscriptionId &&
-      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes) &&
-      circleWebEngage();
+    circleWebEngage();
 
     console.log('eventAttributes >>>>', eventAttributes);
     clearCircleSubscriptionData();
