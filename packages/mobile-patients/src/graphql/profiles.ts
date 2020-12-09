@@ -3491,6 +3491,11 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       paymentDateTime
       orderDateTime
       paymentMode
+      planPurchaseDetails {
+        planPurchased
+        totalCashBack
+        planValidity
+      }
     }
   }
 `;

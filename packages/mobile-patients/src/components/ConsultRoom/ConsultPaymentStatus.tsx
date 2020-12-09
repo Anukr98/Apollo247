@@ -165,7 +165,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
-            firePurchaseEvent();
+            firePurchaseEvent(amountBreakup);
             eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
@@ -239,7 +239,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
-  const firePurchaseEvent = () => {
+  const firePurchaseEvent = (amountBreakup: any) => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       coupon: coupon,
       currency: 'INR',
@@ -259,13 +259,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ],
       transaction_id: orderId,
       value: Number(price),
+      LOB: 'Consult',
     };
     console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-    fireCirclePurchaseEvent();
+    fireCirclePurchaseEvent(amountBreakup);
   };
 
-  const fireCirclePurchaseEvent = () => {
+  const fireCirclePurchaseEvent = (amountBreakup: any) => {
+    const Savings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
+
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       currency: 'INR',
       items: [
@@ -280,12 +283,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ],
       transaction_id: orderId,
       value: Number(circlePlanSelected?.currentSellingPrice),
+      LOB: 'Circle',
     };
-    circleSavings > 0 &&
-      !circleSubscriptionId &&
-      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-
-    circleSavings > 0 &&
+    Savings > 0 &&
       !circleSubscriptionId &&
       postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes) &&
       circleWebEngage();

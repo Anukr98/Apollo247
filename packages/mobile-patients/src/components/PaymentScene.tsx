@@ -172,6 +172,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: totalAmount,
+      LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
