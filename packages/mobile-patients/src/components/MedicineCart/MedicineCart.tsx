@@ -174,7 +174,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
     setCircleMembershipCharges && setCircleMembershipCharges(0);
-    if (!circleSubscriptionId && cartTotal > 400) {
+    if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
     }
   }, []);
@@ -554,7 +554,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       packageId.push(`HDFC:${hdfcPlanId}`);
     }
     if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`)
+      packageId.push(`APOLLO:${circlePlanId}`);
     }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
