@@ -403,12 +403,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
 
-  const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
-  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id!));
+  const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
+  const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id!));
+  const cartItemsWithId = cartItems?.map((item) => parseInt(item.id!));
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -438,7 +438,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         selectedTimeSlot?.slotInfo?.slot! &&
         areaSelected &&
         deliveryAddressId != '' &&
-        cartItems.length > 0
+        cartItems?.length > 0
       ) {
         validateDiagnosticCoupon();
         fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
@@ -820,9 +820,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const updatePricesInCart = (results: any, selectedAddressIndex: any) => {
-    const disabledCartItems = cartItems.filter(
+    const disabledCartItems = cartItems?.filter(
       (cartItem) =>
-        !results.find(
+        !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
             `${d!.itemId}` == cartItem.id
         )
@@ -836,7 +836,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         );
 
         if (isItemInCart !== -1) {
-          const getActiveItemsObject = getActiveItems(results[isItemInCart].diagnosticPricing);
+          const getActiveItemsObject = getActiveItems(results?.[isItemInCart]?.diagnosticPricing);
           const itemWithAll = getActiveItemsObject?.itemWithAll;
           const itemWithSub = getActiveItemsObject?.itemWithSub;
 
@@ -1352,7 +1352,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
-        pointerEvents={cartItems.length > 0 ? 'auto' : 'none'}
+        pointerEvents={cartItems?.length > 0 ? 'auto' : 'none'}
       >
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
@@ -2137,7 +2137,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const disableProceedToPay = !(
-    cartItems.length > 0 &&
+    cartItems?.length > 0 &&
     forPatientId &&
     !!((deliveryAddressId && selectedTimeSlot) || clinicId) &&
     (uploadPrescriptionRequired
