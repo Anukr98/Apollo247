@@ -113,7 +113,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   ] = useState<paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup | null>();
   const circleSavings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
 
-  const { circleSubscriptionId } = useShoppingCart();
+  const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -127,7 +127,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
-    clearCircleSubscriptionData();
     getUserSubscriptionsByStatus();
   }, []);
 
@@ -262,6 +261,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
     console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+    fireCirclePurchaseEvent();
+  };
+
+  const fireCirclePurchaseEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      currency: 'INR',
+      items: [
+        {
+          item_name: 'Circle Plan',
+          item_id: circlePlanSelected?.subPlanId,
+          price: Number(circlePlanSelected?.price),
+          item_category: 'Circle',
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      transaction_id: orderId,
+      value: Number(circlePlanSelected?.price),
+    };
+    circleSavings > 0 &&
+      !circleSubscriptionId &&
+      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+    console.log('eventAttributes >>>>', eventAttributes);
+    clearCircleSubscriptionData();
   };
 
   const requestStoragePermission = async () => {
