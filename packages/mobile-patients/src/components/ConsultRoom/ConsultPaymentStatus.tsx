@@ -271,14 +271,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         {
           item_name: 'Circle Plan',
           item_id: circlePlanSelected?.subPlanId,
-          price: Number(circlePlanSelected?.price),
+          price: Number(circlePlanSelected?.currentSellingPrice),
           item_category: 'Circle',
           index: 1, // Item sequence number in the list
           quantity: 1, // "1" or actual quantity
         },
       ],
       transaction_id: orderId,
-      value: Number(circlePlanSelected?.price),
+      value: Number(circlePlanSelected?.currentSellingPrice),
     };
     circleSavings > 0 &&
       !circleSubscriptionId &&
