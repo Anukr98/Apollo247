@@ -11,10 +11,11 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
   selectedPlan?: any;
+  from?: string;
 }
 export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
   const action = props.navigation.getParam('action');
-  const from = props.navigation.getParam('from');
+  const from = props?.navigation?.state?.params?.from;
   const selectedPlan = props.navigation.getParam('selectedPlan');
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);

@@ -558,7 +558,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
           if (buyNow) {
-            props.navigation.navigate(AppRoutes.CircleSubscription);
+            props.navigation.navigate(AppRoutes.CircleSubscription, { from: from, soruce: source });
           } else {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
           }

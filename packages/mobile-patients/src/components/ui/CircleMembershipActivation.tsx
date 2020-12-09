@@ -92,12 +92,20 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       );
   };
 
-  const fireCircleActivatedEvent = () => {
-    source == 'Diagnostic' &&
-      postWebEngageEvent(
-        WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED,
-        CircleEventAttributes
-      );
+  const fireCirclePurchaseEvent = (endDate: string) => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Membership End Date': endDate
+        ?.split('T')[0]
+        .split('-')
+        .reverse()
+        .join('-'),
+      Type: 'From HC',
+      Source: 'from banner',
+    };
+    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const renderCloseIcon = () => {
@@ -209,7 +217,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       });
       setLoading && setLoading(false);
       if (res?.data?.CreateUserSubscription?.success) {
-        fireCircleActivatedEvent();
+        fireCirclePurchaseEvent(res?.data?.CreateUserSubscription?.response?.end_date);
         planActivated.current = true;
         setPlanValidity(res?.data?.CreateUserSubscription?.response?.end_date);
       } else {
