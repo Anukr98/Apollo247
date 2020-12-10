@@ -381,7 +381,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
-      Source: 'Diagnostic',
+      Source: 'Search',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 

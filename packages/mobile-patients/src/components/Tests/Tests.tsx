@@ -128,7 +128,6 @@ import {
   getDiagnosticsHomePageItems,
   getDiagnosticsHomePageItemsVariables,
   getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers,
-  getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers_diagnostics,
   getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHomePageItems';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -367,9 +366,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
-  const [showLocations, setshowLocations] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState({});
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
+
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const hasLocation = locationDetails;
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -388,32 +387,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
   }, []);
 
-  /**
-   * for serviceable - non-serviceable tracking
-   */
-
-  const serviceableAttributes = {
-    'Patient UHID': g(currentPatient, 'uhid'),
-    State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
-    City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
-    'PinCode Entered': parseInt(diagnosticPincode!),
-  };
-
-  useEffect(() => {
-    if (!!locationDetails || !!diagnosticLocation) {
-      if (isDiagnosticLocationServiceable == 'true') {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
-        postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
-      } else {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE] = serviceableAttributes;
-        postWebEngageEvent(
-          WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE,
-          eventAttributes
-        );
-      }
-    }
-  }, [diagnosticPincode]);
-
   const setWebEngageEventOnSearchItem = (keyword: string, results: any[]) => {
     if (keyword.length > 2) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
@@ -426,25 +399,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  const setWebEngageEventOnSearchItemClicked = (item: object) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH] = {
+  const setWebEnageEventForPinCodeClicked = (
+    mode: string,
+    pincode: string,
+    serviceable: boolean
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR] = {
       ...patientAttributes,
-      'Item Clicked': item,
+      Mode: mode,
+      Pincode: parseInt(pincode!),
+      Serviceability: serviceable ? 'Yes' : 'No',
     };
+    console.log({ eventAttributes });
     postWebEngageEvent(
-      WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH,
-      eventAttributes
-    );
-  };
-
-  const setWebEnageEventForPinCodeClicked = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
-      ...patientAttributes,
-      Method: !optionSelected ? 'Enter Manually' : optionSelected,
-      Pincode: parseInt(diagnosticPincode!),
-    };
-    postWebEngageEvent(
-      WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
+      WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
       eventAttributes
     );
   };
@@ -455,7 +423,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (diagnosticPincode) {
       checkIsPinCodeServiceable(diagnosticPincode);
-      setWebEnageEventForPinCodeClicked();
     }
   }, [diagnosticPincode]);
 
@@ -558,7 +525,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 doRequestAndAccessLocation()
                   .then((response) => {
                     setLoadingContext!(false);
-                    checkIsPinCodeServiceable(response.pincode);
+                    checkIsPinCodeServiceable(response.pincode, 'Automatically');
                     response && setDiagnosticLocation!(response);
                     response && !locationDetails && setLocationDetails!(response);
                   })
@@ -675,18 +642,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  const setWebEnageEventForItemViewedOnLanding = (name: string, id: string, type: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING] = {
-      ...patientAttributes,
-      'Item Name': name,
-      'Item ID': id,
-      Type: type,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING, eventAttributes);
-  };
-
-  const postFeaturedTestEvent = (name: string, id: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.FEATURED_TEST_CLICKED] = {
+  const postHomePageWidgetClicked = (name: string, id: string, section: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED] = {
       'Product name': name,
       'Product id (SKUID)': id,
       Source: 'Home',
@@ -699,8 +656,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      Section: section,
     };
-    postWebEngageEvent(WebEngageEventName.FEATURED_TEST_CLICKED, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED, eventAttributes);
   };
 
   const postDiagnosticAddToCartEvent = (
@@ -712,7 +670,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'product name': name,
       'product id': id,
-      Source: 'Diagnostic',
+      Source: 'Home page',
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
@@ -731,26 +689,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
-  const postBrowsePackageEvent = (packageName: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.BROWSE_PACKAGE] = {
-      'Package Name': packageName,
-      // Category: '',
-      Source: 'Home',
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-    };
-    postWebEngageEvent(WebEngageEventName.BROWSE_PACKAGE, eventAttributes);
-  };
-
   // Common Views
-
   const renderSectionLoader = (height: number = 100) => {
     return (
       <Spinner
@@ -853,7 +792,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
           toBeShownOn={'Diagnostics'}
           onComplete={onClose}
-          onPressSubmit={(pincode) => checkIsPinCodeServiceable(pincode)}
+          onPressSubmit={(pincode) => checkIsPinCodeServiceable(pincode, 'Manually')}
           subText={'Allow us to serve you better by entering your area pincode below.'}
         />
       )
@@ -866,7 +805,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         setLoadingContext!(false);
-        checkIsPinCodeServiceable(response.pincode);
+        checkIsPinCodeServiceable(response.pincode, 'Automatically');
       })
       .catch((e) => {
         CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
@@ -884,7 +823,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   /**
    * check for the pincode serviceability
    */
-  const checkIsPinCodeServiceable = async (pincode: string) => {
+  const checkIsPinCodeServiceable = async (pincode: string, mode?: string) => {
     if (!!pincode) {
       setLoadingContext!(true);
       client
@@ -900,18 +839,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
             let obj = {
-              cityId: serviceableData.cityID?.toString() || 0,
-              stateId: serviceableData.stateID?.toString() || 0,
+              cityId: serviceableData.cityID?.toString() || '0',
+              stateId: serviceableData.stateID?.toString() || '0',
               state: serviceableData.stateName || '',
               city: serviceableData.cityName || '',
             };
             setDiagnosticServiceabilityData!(obj);
             setDiagnosticLocationServiceable!('true');
             setServiceabilityMsg('');
+            mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
           } else {
             setDiagnosticLocationServiceable!('false');
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
+            mode && setWebEnageEventForPinCodeClicked(mode, pincode, false);
           }
           setshowLocationpopup(false);
           updatePlaceInfoByPincode(pincode);
@@ -1418,12 +1359,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (!isDiagnosticLocationServiceable) {
           return;
         }
-        setWebEnageEventForItemViewedOnLanding(
-          packageName!,
-          `${diagnostics?.itemId}`,
-          `${diagnostics?.itemType}`
-        );
-        postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
+        postHomePageWidgetClicked(packageName!, `${diagnostics!.itemId}`, 'Featured Tests');
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: price, //PASS the value
@@ -1989,14 +1925,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             data={shopByOrgans}
             renderItem={({ item, index }) => {
               return renderCatalogCard(
-                item.organName!,
-                item.organImage!,
+                item?.organName!,
+                item?.organImage!,
                 () => {
                   if (!isDiagnosticLocationServiceable) {
                     return;
                   }
-                  setWebEnageEventForItemViewedOnLanding(item.organName!, item.id!, 'Package');
-                  postBrowsePackageEvent(item.organName!);
+                  postHomePageWidgetClicked(item?.organName!, item?.id!, 'Browse Package');
                   props.navigation.navigate(AppRoutes.TestsByCategory, {
                     title: `${item.organName || 'Products'}`.toUpperCase(),
                     products: [item.diagnostics],
@@ -2043,7 +1978,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     pricesObject: any,
     promoteCircle: boolean
   ) => {
-    console.log({ diagnosticPricing });
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
@@ -2054,6 +1988,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const itemWithSub = diagnosticPricing?.find(
       (item) => item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
     );
+
     addCartItem!({
       id: `${itemId}`,
       name: stripHtml(itemName),
@@ -2710,7 +2645,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return renderSearchSuggestionItem({
       onPress: () => {
         savePastSearch(`${itemId}`, itemName).catch((e) => {});
-        setWebEngageEventOnSearchItemClicked(item);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: price,
