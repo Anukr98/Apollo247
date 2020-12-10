@@ -418,6 +418,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'DoctorCallRejected':
             {
+              setLoading!(true);
               const appointmentId = linkId?.split('+')?.[0];
               const config: Pubnub.PubnubConfig = {
                 origin: 'apollo.pubnubapi.com',
@@ -434,7 +435,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   storeInHistory: true,
                   sendByPost: true,
                 },
-                (status, response) => {}
+                (status, response) => {
+                  setLoading!(false);
+                }
               );
             }
             break;

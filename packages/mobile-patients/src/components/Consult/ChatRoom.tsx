@@ -124,7 +124,6 @@ import {
   Alert,
   AppState,
   AppStateStatus,
-  BackHandler,
   Dimensions,
   FlatList,
   Image as ImageReact,
@@ -900,20 +899,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
-    });
-
-    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    });
     if (!disableChat && status !== STATUS.COMPLETED) {
       callPermissions();
     }
-    return () => {
-      didFocusSubscription && didFocusSubscription.remove();
-      willBlurSubscription && willBlurSubscription.remove();
-    };
   }, []);
 
   useEffect(() => {
@@ -951,28 +939,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else {
         setTextChange(false);
       }
-    }
-  };
-
-  const backDataFunctionality = () => {
-    try {
-      console.log(callhandelBack, 'is back called');
-      if (callhandelBack) {
-        // handleCallTheEdSessionAPI();
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          })
-        );
-        return true;
-      } else {
-        return true;
-      }
-    } catch (error) {
-      CommonBugFender('ChatRoom_backDataFunctionality_try', error);
-      console.log(error, 'error');
     }
   };
 
@@ -2283,7 +2249,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       updateNumberOfParticipants(USER_STATUS.LEAVING);
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
-        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       } catch (error) {
         CommonBugFender('ChatRoom_cleanup_try', error);
       }
@@ -6641,21 +6606,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            if (fromSearchAppointmentScreen) {
-              props.navigation.goBack();
-            } else if (callhandelBack) {
-              // handleCallTheEdSessionAPI();
+            props.navigation.goBack();
+            if (!fromSearchAppointmentScreen && callhandelBack) {
               setDoctorJoinedChat && setDoctorJoinedChat(false);
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                })
-              );
             }
           }}
-          // onPressLeftIcon={() => props.navigation.goBack()}
         />
         {renderChatHeader()}
         {doctorJoinedChat && renderJoinCallHeader()}
