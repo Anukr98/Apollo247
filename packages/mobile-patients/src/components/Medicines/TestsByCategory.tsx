@@ -156,7 +156,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'product name': name,
       'product id': id,
-      Source: 'Diagnostic',
+      Source: 'Search',
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
