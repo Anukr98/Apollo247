@@ -152,7 +152,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       ? isOnlineConsult
         ? onlineConsultSlashedPrice -
           couponDiscountFees +
-          Number(circlePlanSelected?.currentSellingPrice)
+          (circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0)
         : physicalConsultSlashedPrice -
           couponDiscountFees +
           Number(circlePlanSelected?.currentSellingPrice)

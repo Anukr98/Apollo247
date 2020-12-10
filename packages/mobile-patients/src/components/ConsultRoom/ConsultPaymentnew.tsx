@@ -12,6 +12,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { WebView } from 'react-native-webview';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -51,6 +52,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const { isCircleDoctor } = circleDoctorDetails;
+  const { circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -116,7 +118,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
     }`;
-    if (planSelected && isCircleDoctor) {
+    if (planSelected && isCircleDoctor && circleSubscriptionId == '') {
       url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
     }
     console.log(url);
