@@ -956,7 +956,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         case 2:
           setCallApi(true);
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_LAB_TESTS);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CHECKS);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
             testReportsData: testAndHealthCheck,
             onPressBack: onBackArrowPressed,
@@ -972,6 +971,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 4:
           setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CONDITIONS);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
             allergyArray: medicalAllergies,
             medicalConditionArray: medicalConditions,
@@ -982,6 +982,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 5:
           setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_BILLS);
           props.navigation.navigate(AppRoutes.BillScreen, {
             medicalBillsData: medicalBills,
             onPressBack: onBackArrowPressed,
@@ -989,6 +990,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 6:
           setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_INSURANCE);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
             medicalInsuranceData: medicalInsurance,
             onPressBack: onBackArrowPressed,
