@@ -16,6 +16,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     circleMembershipCharges,
     coupon,
     cartTotal,
+    couponProducts,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const [showCareDetails, setShowCareDetails] = useState(true);
@@ -59,7 +60,10 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   }
 
   function careSubscribeMessage() {
-    const circleSaving = (cartTotalCashback + deliveryFee + Number(productDiscount)).toFixed(2);
+    let circleSaving = (cartTotalCashback + deliveryFee + Number(productDiscount)).toFixed(2);
+    if (couponProducts.length) {
+      circleSaving = (cartTotalCashback + deliveryFee).toFixed(2);
+    }
     if (cartTotalCashback > 1 && showCareDetails && Number(couponDiscount) < Number(circleSaving)) {
       return (
         <View style={styles.careMessageCard}>
