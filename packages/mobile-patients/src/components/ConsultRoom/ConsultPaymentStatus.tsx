@@ -24,7 +24,10 @@ import {
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -268,6 +271,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const fireCirclePurchaseEvent = (amountBreakup: any) => {
     const Savings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
+    Savings > 0 && !circleSubscriptionId && circleWebEngage();
 
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       currency: 'INR',
@@ -287,8 +291,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
     Savings > 0 &&
       !circleSubscriptionId &&
-      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes) &&
-      circleWebEngage();
+      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
 
     console.log('eventAttributes >>>>', eventAttributes);
     clearCircleSubscriptionData();
@@ -766,11 +769,11 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const circleWebEngage = () => {
-    const eventAttributes = {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
-      'Membership Type': String(circlePlanSelected?.valid_duration) + 'days',
+      'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
       'Membership End Date': moment(new Date())
         .add(circlePlanSelected?.valid_duration, 'days')
         .format('DD-MMM-YYYY'),
@@ -778,7 +781,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       Type: 'Consult',
       Source: 'Consult',
     };
-    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const renderAddedCirclePlanWithValidity = () => {
