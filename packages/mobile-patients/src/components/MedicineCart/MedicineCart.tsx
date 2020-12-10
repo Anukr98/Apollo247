@@ -174,7 +174,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
     setCircleMembershipCharges && setCircleMembershipCharges(0);
-    if (!circleSubscriptionId && cartTotal > 400) {
+    if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
     }
   }, []);
