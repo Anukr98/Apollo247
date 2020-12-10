@@ -198,7 +198,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
-      'Membership Type': String(circlePlanSelected?.valid_duration) + 'days',
+      'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
       'Membership End Date': moment(new Date())
         .add(circlePlanSelected?.valid_duration, 'days')
         .format('DD-MMM-YYYY'),
