@@ -66,7 +66,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   // states
   const [isLoading, setLoading] = useState(false);
   const [isLoadingMore, setLoadingMore] = useState(false);
-  const [showListView, setShowListView] = useState<boolean>(false);
+  const [showListView, setShowListView] = useState<boolean>(true);
   const [products, setProducts] = useState<MedicineProduct[]>(productsNavProp);
   const [productsTotal, setProductsTotal] = useState<number>(productsNavProp.length);
   const [pageId, setPageId] = useState(1);
@@ -124,7 +124,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         sortBy,
         _selectedFilters,
         axdcCode,
-        pinCode,
+        pinCode
       );
       updateProducts(pageId, products, data);
       setProductsTotal(data.product_count);
@@ -171,7 +171,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         sortBy,
         _selectedFilters,
         axdcCode,
-        pinCode,
+        pinCode
       );
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
