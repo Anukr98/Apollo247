@@ -489,7 +489,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Dispatched';
+      statusString = 'Out for Delivery';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
