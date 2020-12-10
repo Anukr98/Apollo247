@@ -160,14 +160,52 @@ export enum WebEngageEventName {
   PHR_VIEW_LAB_TESTS = 'PHR View Lab Tests - app',
   PHR_VIEW_HEALTH_CHECKS = 'PHR View Health Checks - app',
   PHR_VIEW_HOSPITALIZATIONS = 'PHR View Hospitalizations - app',
+  PHR_VIEW_HEALTH_CONDITIONS = 'PHR View Health Conditions - app',
+  PHR_VIEW_BILLS = 'PHR View Bills - app',
+  PHR_VIEW_INSURANCE = 'PHR View Insurance - app',
   PHR_ADD_PRESCRIPTIONS = 'PHR Add Prescriptions - app',
   PHR_ADD_LAB_TESTS = 'PHR Add Lab Tests - app',
   PHR_ADD_HEALTH_CHECKS = 'PHR Add Health Checks - app',
   PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalizations - app',
+  PHR_ADD_ALLERGY = 'PHR Add Allergy - app',
+  PHR_ADD_MEDICATION = 'PHR Add Medication - app',
+  PHR_ADD_HEALTH_RESTRICTIONS = 'PHR Add Health Restrictions - app',
+  PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition - app',
+  PHR_ADD_BILLS = 'PHR Add Bills - app',
+  PHR_ADD_INSURANCE = 'PHR Add Insurance - app',
+  PHR_ADD_HEIGHT = 'PHR Add Height - app',
+  PHR_ADD_WEIGHT = 'PHR Add Weight - app',
+  PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup - app',
   PHR_DOWNLOAD_PRESCRIPTIONS = 'PHR Download Prescriptions - app',
   PHR_DOWNLOAD_LAB_TESTS = 'PHR Download Lab Tests - app',
   PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Checks - app',
   PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalizations - app',
+  PHR_DOWNLOAD_ALLERGY = 'PHR Download Allergy - app',
+  PHR_DOWNLOAD_MEDICAL_CONDITION = 'PHR Download Medical Condition - app',
+  PHR_DOWNLOAD_BILLS = 'PHR Download Bills - app',
+  PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance - app',
+  PHR_UPDATE_PRESCRIPTIONS = 'PHR Update Prescriptions - app',
+  PHR_UPDATE_LAB_TESTS = 'PHR Update Lab Tests - app',
+  PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalizations - app',
+  PHR_UPDATE_ALLERGY = 'PHR Update Allergy - app',
+  PHR_UPDATE_MEDICATION = 'PHR Update Medication - app',
+  PHR_UPDATE_HEALTH_RESTRICTIONS = 'PHR Update Health Restrictions - app',
+  PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition - app',
+  PHR_UPDATE_BILLS = 'PHR Update Bills - app',
+  PHR_UPDATE_INSURANCE = 'PHR Update Insurance - app',
+  PHR_UPDATE_HEIGHT = 'PHR Update Height - app',
+  PHR_UPDATE_WEIGHT = 'PHR Update Weight - app',
+  PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup - app',
+  PHR_DELETE_PRESCRIPTIONS = 'PHR Delete Prescriptions - app',
+  PHR_DELETE_LAB_TESTS = 'PHR Delete Lab Tests - app',
+  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalizations - app',
+  PHR_DELETE_ALLERGY = 'PHR Delete Allergy - app',
+  PHR_DELETE_MEDICATION = 'PHR Delete Medication - app',
+  PHR_DELETE_HEALTH_RESTRICTIONS = 'PHR Delete Health Restrictions - app',
+  PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition - app',
+  PHR_DELETE_BILLS = 'PHR Delete Bills - app',
+  PHR_DELETE_INSURANCE = 'PHR Delete Insurance - app',
+
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
@@ -377,8 +415,8 @@ export interface CirclePurchaseInfo extends UserInfo {
   'Membership Type'?: string;
   'Membership End Date'?: string;
   'Circle Plan Price'?: string;
-  'Type': string;
-  'Source'?: string;
+  Type: string;
+  Source?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -611,7 +649,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
-  [WebEngageEventName.PURCHASE_CIRCLE] : CirclePurchaseInfo;
+  [WebEngageEventName.PURCHASE_CIRCLE]: CirclePurchaseInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
   [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
