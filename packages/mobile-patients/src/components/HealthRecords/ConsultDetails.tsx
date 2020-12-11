@@ -1103,7 +1103,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Header
-            title={'CONSULT & RX DETAILS'}
+            title={'DOCTOR CONSULTATIONS DETAILS'}
             leftIcon="backArrow"
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={

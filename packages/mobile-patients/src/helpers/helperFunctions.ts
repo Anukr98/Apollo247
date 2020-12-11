@@ -141,6 +141,13 @@ type EditDeleteArray = {
   title: string;
 };
 
+export enum HEALTH_CONDITIONS_TITLE {
+  ALLERGY = 'ALLERGIES DETAIL',
+  MEDICATION = 'MEDICATION',
+  HEALTH_RESTRICTION = 'RESTRICTION',
+  MEDICAL_CONDITION = 'MEDICAL CONDITION',
+}
+
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
   { key: EDIT_DELETE_TYPE.DELETE, title: EDIT_DELETE_TYPE.DELETE },

@@ -424,6 +424,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           const status = g(data, 'addPatientLabTestRecord', 'status');
           if (status) {
             getLatestLabAndHealthCheckRecords();
+            postWebEngagePHR('Test Report', WebEngageEventName.PHR_DELETE_TEST_REPORT);
           } else {
             setShowSpinner(false);
           }
@@ -555,7 +556,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
-              Source: 'Test Reports',
+              Source: 'Test Report',
             };
             postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {

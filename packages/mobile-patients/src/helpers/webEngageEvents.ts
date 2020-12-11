@@ -164,7 +164,7 @@ export enum WebEngageEventName {
   PHR_CLICK_INSURANCES = 'PHR Click Insurances - app',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation - app',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report - app',
-  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalizations - app',
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization - app',
   PHR_ADD_ALLERGY = 'PHR Add Allergy - app',
   PHR_ADD_MEDICATION = 'PHR Add Medication - app',
   PHR_ADD_HEALTH_RESTRICTIONS = 'PHR Add Health Restriction - app',
@@ -176,7 +176,7 @@ export enum WebEngageEventName {
   PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup - app',
   PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation - app',
   PHR_DOWNLOAD_TEST_REPORT = 'PHR Download Test Report - app',
-  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Checks - app',
+  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Check - app',
   PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalization - app',
   PHR_DOWNLOAD_ALLERGY = 'PHR Download Allergy - app',
   PHR_DOWNLOAD_MEDICAL_CONDITION = 'PHR Download Medical Condition - app',
@@ -196,7 +196,7 @@ export enum WebEngageEventName {
   PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup - app',
   PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation - app',
   PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report - app',
-  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalizations - app',
+  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization - app',
   PHR_DELETE_ALLERGY = 'PHR Delete Allergy - app',
   PHR_DELETE_MEDICATION = 'PHR Delete Medication - app',
   PHR_DELETE_HEALTH_RESTRICTIONS = 'PHR Delete Health Restriction - app',
@@ -1505,7 +1505,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.MEDICAL_RECORDS]: PatientInfo;
 
   [WebEngageEventName.ADD_RECORD]: {
-    Source: 'Consult & RX' | 'Test Reports' | 'Hospitalization'; // List/Profile
+    Source:
+      | 'Doctor Consultation'
+      | 'Test Report'
+      | 'Hospitalization'
+      | 'Health Condition'
+      | 'Bill'
+      | 'Insurance'; // List/Profile
   };
 
   [WebEngageEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
