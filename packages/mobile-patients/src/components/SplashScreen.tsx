@@ -249,23 +249,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
-    if (getCurrentRoute() !== AppRoutes.ChatRoom) {
-      fireWebengageEventForCallDecline();
-      RNCallKeep.endAllCalls();
-      pubnub.publish(
-        {
-          message: { message: '^^#PATIENT_REJECTED_CALL' },
-          channel: voipAppointmentId.current,
-          storeInHistory: true,
-          sendByPost: true,
-        },
-        (status, response) => {
-          voipAppointmentId.current = '';
-          voipPatientId.current = '';
-          voipCallType.current = '';
-        }
-      );
-    }
+    fireWebengageEventForCallDecline();
+    RNCallKeep.endAllCalls();
+    pubnub.publish(
+      {
+        message: { message: '^^#PATIENT_REJECTED_CALL' },
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        voipAppointmentId.current = '';
+        voipPatientId.current = '';
+        voipCallType.current = '';
+      }
+    );
   };
 
   const fireWebengageEventForCallDecline = () => {
