@@ -497,6 +497,7 @@
     ]
   },
   "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "appointmentDataError": "An error occurred while processing the request, do you want to try again?",
   "Hdfc_values": {
     "TnC": [
       "The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.",

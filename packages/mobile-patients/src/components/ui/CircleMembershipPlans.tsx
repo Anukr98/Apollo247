@@ -91,7 +91,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
 
-  const isCartTotalLimit = cartTotal > 400;
   const planDimension = isModal ? 100 : 120;
   const defaultPlanDimension = isModal ? 130 : 120;
   const isIos = Platform.OS === 'ios';
@@ -133,7 +132,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       const circlePlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (circlePlans) {
         setMembershipPlans(circlePlans);
-        if ((doctorFees && doctorFees >= 400) || isCartTotalLimit || isModal) {
+        if ((doctorFees && doctorFees >= 400) || isModal) {
           autoSelectDefaultPlan(circlePlans);
           if (!circlePlanSelected) {
             selectDefaultPlan && selectDefaultPlan(circlePlans);
@@ -398,9 +397,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 </Text>
               ) : (
                 <Text style={styles.getCareText}>
-                  {isCartTotalLimit
-                    ? string.circlePharmacy.enabledCircleMembership
-                    : string.circlePharmacy.enableCircleToGetBestOffers}
+                  {string.circlePharmacy.enableCircleToGetBestOffers}
                 </Text>
               )}
             </View>
@@ -558,7 +555,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
           if (buyNow) {
-            props.navigation.navigate(AppRoutes.CircleSubscription);
+            props.navigation.navigate(AppRoutes.CircleSubscription, { from: from, soruce: source });
           } else {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
           }

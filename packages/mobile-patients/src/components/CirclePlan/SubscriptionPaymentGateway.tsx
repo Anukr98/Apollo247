@@ -22,13 +22,19 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import moment from 'moment';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
   selectedPlan?: any;
   forCircle?: boolean;
+  from?: string;
 }
 export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props) => {
   let WebViewRef: any;
@@ -60,27 +66,40 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
     };
   }, []);
 
-  const fireCircleActivatedEvent = () => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED] = {
-      'Patient UHID': currentPatient?.uhid,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer ID': currentPatient?.id,
-      'Circle Member': 'Yes', //will always be true
+  const fireCirclePurchaseEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      currency: 'INR',
+      items: [
+        {
+          item_name: 'Circle Plan',
+          item_id: circlePlanSelected?.subPlanId,
+          price: Number(circlePlanSelected?.currentSellingPrice),
+          item_category: 'Circle',
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      transaction_id: currentPatient?.mobileNumber,
+      value: Number(circlePlanSelected?.currentSellingPrice),
+      LOB: 'Circle',
     };
-    from == string.banner_context.DIAGNOSTIC_HOME &&
-      postWebEngageEvent(
-        WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED,
-        CircleEventAttributes
-      );
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const firePaymentDoneEvent = () => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PAYMENT_DONE] = {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
+      'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Direct Payment',
+      Source: from,
     };
-    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_PAYMENT_DONE, CircleEventAttributes);
+    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const handleBack = () => {
@@ -122,7 +141,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1
     ) {
       forCircle ? firePaymentDoneEvent() : null;
-      fireCircleActivatedEvent();
+      fireCirclePurchaseEvent();
       navigatetoStatusScreen(redirectedUrl);
     }
   };

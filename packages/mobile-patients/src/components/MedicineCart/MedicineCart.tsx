@@ -174,7 +174,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
     setCircleMembershipCharges && setCircleMembershipCharges(0);
-    if (!circleSubscriptionId && cartTotal > 400) {
+    if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
     }
   }, []);
@@ -554,7 +554,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       packageId.push(`HDFC:${hdfcPlanId}`);
     }
     if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`)
+      packageId.push(`APOLLO:${circlePlanId}`);
     }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
@@ -794,13 +794,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         return;
       }
     }
-    const zipcode = g(selectedAddress, 'zipcode');
-    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
-      (addr) => addr == Number(zipcode)
-    );
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
-      isChennaiOrder: isChennaiAddress ? true : false,
       storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
@@ -916,6 +911,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           if (!coupon && isCircleSubscription) {
             if (!circleSubscriptionId || cartTotalCashback) {
               setIsCircleSubscription && setIsCircleSubscription(false);
+              setDefaultCirclePlan && setDefaultCirclePlan(null);
+              setCirclePlanSelected && setCirclePlanSelected(null);
+              setCircleMembershipCharges && setCircleMembershipCharges(0);
             }
           } else {
             setCoupon && setCoupon(null);

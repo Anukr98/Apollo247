@@ -331,16 +331,8 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     setLoading!(true);
     const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');
-    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
-      (addr) => addr == Number(zipcode)
-    );
     const proceed = () => {
-      if (isChennaiAddress) {
-        setLoading!(false);
-        props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder: placeOrder });
-      } else {
-        placeOrder(false);
-      }
+      placeOrder();
     };
 
     if (
@@ -354,13 +346,9 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     }
   };
 
-  const placeOrder = async (isChennaiOrder: boolean, email?: string) => {
+  const placeOrder = async () => {
     setLoading!(true);
     const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
-    const zipcode = g(selectedAddress, 'zipcode');
-    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
-      (addr) => addr == Number(zipcode)
-    );
 
     CommonLogEvent(
       AppRoutes.UploadPrescription,
@@ -398,8 +386,6 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
           isEprescription: ePrescription.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           // Values for chennai order
-          email: isChennaiAddress && email ? email.trim() : null,
-          NonCartOrderCity: isChennaiAddress ? NonCartOrderOMSCity.CHENNAI : null,
           bookingSource: BOOKING_SOURCE.MOBILE,
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
           prescriptionOptionSelected: prescriptionOption,
