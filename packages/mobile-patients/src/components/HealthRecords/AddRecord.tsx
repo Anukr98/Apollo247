@@ -1006,9 +1006,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientPrescriptionRecord', 'status');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR('Prescription', WebEngageEventName.PHR_UPDATE_PRESCRIPTIONS);
+            postWebEngagePHR(
+              'Doctor Consultation',
+              WebEngageEventName.PHR_UPDATE_DOCTOR_CONSULTATION
+            );
           } else {
-            postWebEngagePHR('Prescription', WebEngageEventName.PHR_ADD_PRESCRIPTIONS);
+            postWebEngagePHR(
+              'Doctor Consultation',
+              WebEngageEventName.PHR_ADD_DOCTOR_CONSULTATIONS
+            );
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1230,9 +1236,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientLabTestRecord', 'status');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR('Lab Test', WebEngageEventName.PHR_UPDATE_LAB_TESTS);
+            postWebEngagePHR('Test Report', WebEngageEventName.PHR_UPDATE_TEST_REPORT);
           } else {
-            postWebEngagePHR('Lab Test', WebEngageEventName.PHR_ADD_LAB_TESTS);
+            postWebEngagePHR('Test Report', WebEngageEventName.PHR_ADD_TEST_REPORT);
           }
           gotoHealthRecordsHomeScreen();
         }

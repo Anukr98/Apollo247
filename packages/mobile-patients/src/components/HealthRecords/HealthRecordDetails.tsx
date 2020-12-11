@@ -772,12 +772,12 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
       : prescriptions
-      ? WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS
+      ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
       : medicalBill
       ? WebEngageEventName.PHR_DOWNLOAD_BILLS
       : medicalInsurance
       ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
-      : WebEngageEventName.PHR_DOWNLOAD_LAB_TESTS;
+      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : g(data, 'healthCheckFiles', '0', 'fileName')

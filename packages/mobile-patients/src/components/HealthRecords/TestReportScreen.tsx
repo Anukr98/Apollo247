@@ -423,7 +423,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           setShowSpinner(false);
           const status = g(data, 'addPatientLabTestRecord', 'status');
           if (status) {
-            postWebEngagePHR('Lab Test', WebEngageEventName.PHR_ADD_LAB_TESTS);
             getLatestLabAndHealthCheckRecords();
           } else {
             setShowSpinner(false);

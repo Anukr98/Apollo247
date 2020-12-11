@@ -1008,7 +1008,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       CommonLogEvent('CONSULT_DETAILS', 'No image');
     } else {
       postWEGEvent('download prescription');
-      postWebEngagePHR('Prescription', WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS);
+      postWebEngagePHR('Doctor Consultation', WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION);
       const dirs = RNFetchBlob.fs.dirs;
 
       const fileName: string = getFileName();
