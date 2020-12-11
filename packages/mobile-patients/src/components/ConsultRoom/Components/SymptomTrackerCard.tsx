@@ -11,15 +11,13 @@ export const SymptomTrackerCard: React.FC<SymptomTrackerProps> = (props) => {
   const { onPressTrack } = props;
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPressTrack}>
       <SympTrackerIcon style={styles.symptomIcon} />
       <View>
         <Text style={styles.whichSpecialityTxt}>Not sure about which speciality to choose?</Text>
-        <TouchableOpacity onPress={onPressTrack}>
-          <Text style={styles.TrackTxt}>TRACK YOUR SYMPTOMS</Text>
-        </TouchableOpacity>
+        <Text style={styles.TrackTxt}>BOOK DOCTOR BY SYMPTOMS</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

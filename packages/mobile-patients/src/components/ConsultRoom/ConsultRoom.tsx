@@ -864,7 +864,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     {
       id: 5,
-      title: 'Symptom Checker',
+      title: 'Book Doctor by Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
