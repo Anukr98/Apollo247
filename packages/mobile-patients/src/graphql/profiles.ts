@@ -92,8 +92,16 @@ export const UPDATE_PATIENT = gql`
 `;
 
 export const INITIATE_CALL_FOR_PARTNER = gql`
-  query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
-    initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
+  query initiateCallForPartner(
+    $mobileNumber: String!
+    $benefitId: String!
+    $userSubscriptionId: String
+  ) {
+    initiateCallForPartner(
+      mobileNumber: $mobileNumber
+      benefitId: $benefitId
+      userSubscriptionId: $userSubscriptionId
+    ) {
       success
     }
   }

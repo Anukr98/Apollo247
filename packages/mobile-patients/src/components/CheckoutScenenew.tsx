@@ -112,7 +112,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
-    clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -128,6 +127,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     cartTotalCashback,
     circleSubscriptionId,
     isCircleSubscription,
+    isFreeDelivery,
     setIsCircleSubscription,
     setDefaultCirclePlan,
     setCirclePlanSelected,
@@ -399,7 +399,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } catch (error) {
             console.log(error);
           }
-          clearCartInfo && clearCartInfo();
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
@@ -554,6 +553,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           : null,
         totalCashBack:
           cartTotalCashback || circleSubscriptionId ? Number(cartTotalCashback) || 0 : 0,
+        savedDeliveryCharge:
+          !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
       },
     };
 

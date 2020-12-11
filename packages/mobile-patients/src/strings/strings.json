@@ -354,7 +354,9 @@
     "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
     "cashOnDeliverySubText": "Currently we have Cash on delivery as a payment option.",
     "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
-    "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order"
+    "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
+    "pricesChangedMessage":"Few tests prices might have updated or are not available for this address",
+    "areaNotAvailableMessage":"Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address."
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -670,6 +672,7 @@
     "total": "TOTAL",
     "greatChoice": "Great choice!",
     "upgradingWithHealthCredits": "We are upgrading you to Circle with your Health Credits to the amount of {credits}HC",
+    "upgradingWithHealthCreditsDesc": "We are upgrading you to Circle with your Health Credits",
     "goAhead": "SURE! GO AHEAD",
     "useAnotherPaymentMethod": "USE ANOTHER PAYMENT METHOD",
     "membershipActivated": "Circle Membership Activated!",

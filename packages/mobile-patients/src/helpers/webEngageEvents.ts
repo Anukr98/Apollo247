@@ -121,29 +121,23 @@ export enum WebEngageEventName {
   READ_ARTICLES = 'Read Articles',
 
   // Diagnostics Events
-  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic Landing Page Viewed',
-  DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Item searched in diagnsotic landing page',
-  DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH = 'Item clicked in diagnostic landing page after search',
+  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'iagnostic landing page viewed',
+  DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
-  DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE = 'Diagnostic Landing Page Non Serviceable',
-  DIAGNOSTIC_LANDING_PAGE_SERVICEABLE = 'Diagnostic Landing Page - Serviceable',
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order Summary Viewed',
-  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED = 'Diagnostic Pincode Entered on Location Bar',
-  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Diagnostic Enter Delivery Pincode Submitted ',
-  FEATURED_TEST_CLICKED = 'Featured Test Clicked',
-  BROWSE_PACKAGE = 'Browse Package',
-  DIAGNOSTIC_ITEM_CLICKED_ON_LANDING = 'Item Clicked on Diagnostic Landing Page',
-  DIAGNOSTIC_TEST_DESCRIPTION = 'Test Description Page Viewed',
-  DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Page Viewed',
+  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
+  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic Enter Delivery on location bar',
+  DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
+  DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
+  DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment Time Slot Selected',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic Proceed To Pay Clicked',
-  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic Track Order Viewed',
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic View Report Clicked',
-  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic Feedback Given By Customer',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
+  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
+  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
+  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to Cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
 
   // Health Records
@@ -510,8 +504,9 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 }
 
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
-  Method: string;
+  Mode: string;
   Pincode: number | string;
+  Serviceability: 'Yes' | 'No';
 }
 
 export interface DoctorFilterClick {
@@ -909,15 +904,12 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
-  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH]: ItemClickedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]: {
     //comment
     'Patient UHID': string;
     'Active Orders': number;
     'Past Orders': number;
   };
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE]: DiagnosticServiceble;
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE]: DiagnosticServiceble;
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE]: {
     'Patient UHID': string;
     State: string;
@@ -932,8 +924,8 @@ export interface WebEngageEvents {
     'OrderID:': string;
     'Sample Collection Date': string; //Date
   };
-  [WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED]: DiagnosticPinCode;
-  [WebEngageEventName.FEATURED_TEST_CLICKED]: {
+  [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
+  [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
     'Product name': string;
     'Product id (SKUID)': string;
     Source: 'Home' | 'List';
@@ -944,28 +936,9 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    'Section': string;
   };
-  [WebEngageEventName.BROWSE_PACKAGE]: {
-    'Package Name': string;
-    // Category: string; we don't have category for test
-    Source: 'Home' | 'List';
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-  };
-  [WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING]: {
-    'Patient UHID': string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Patient Name': string;
-    'Item Name': string;
-    'Item ID': string;
-    Type: string;
-  };
+
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
     'Patient UHID': string;
     'Patient Name': string;
@@ -1046,7 +1019,7 @@ export interface WebEngageEvents {
     Price: number;
     'Discounted Price': number;
     Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
+    Source: 'Home page' | 'Search' | 'Test detail page';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
