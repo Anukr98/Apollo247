@@ -130,7 +130,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
     getUserSubscriptionsByStatus();
   }, []);
 
@@ -172,6 +171,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
+          overlyCallPermissions(
+            currentPatient.firstName,
+            doctorName,
+            showAphAlert,
+            hideAphAlert,
+            true
+          );
         } else {
           fireOrderFailedEvent();
         }

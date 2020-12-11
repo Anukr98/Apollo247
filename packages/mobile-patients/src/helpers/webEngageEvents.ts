@@ -345,6 +345,10 @@ export enum WebEngageEventName {
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
   NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
   HC_1CLICK_ACTIVATION = 'App - HC - 1ClickActivation',
+
+  //Permissioon Events
+  USER_ALLOWED_PERMISSION = 'User clicked on Allow for permissions',
+  USER_DENIED_PERMISSION = 'User clicked on Not now for permissions',
 }
 
 export interface PatientInfo {
@@ -377,8 +381,8 @@ export interface CirclePurchaseInfo extends UserInfo {
   'Membership Type'?: string;
   'Membership End Date'?: string;
   'Circle Plan Price'?: string;
-  'Type': string;
-  'Source'?: string;
+  Type: string;
+  Source?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -611,7 +615,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
-  [WebEngageEventName.PURCHASE_CIRCLE] : CirclePurchaseInfo;
+  [WebEngageEventName.PURCHASE_CIRCLE]: CirclePurchaseInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
   [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
@@ -645,6 +649,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
   [WebEngageEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
 
+  // ********** PermissionEvents ********** \\
+  [WebEngageEventName.USER_ALLOWED_PERMISSION]: {
+    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
+  };
+  [WebEngageEventName.USER_DENIED_PERMISSION]: {
+    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
+  };
   // ********** PharmacyEvents ********** \\
 
   [WebEngageEventName.SEARCH]: {
