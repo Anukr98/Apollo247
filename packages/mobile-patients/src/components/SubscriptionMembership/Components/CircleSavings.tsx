@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
+  DownOrange,
+  UpOrange,
   CircleLogo,
   HealthLogo,
   DoctorIcon,
   EmergencyCall,
-  ExpressDeliveryLogo,
+  ExpressDelivery,
+  OneApolloLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
@@ -167,7 +170,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
-            <ExpressDeliveryLogo style={styles.savingsIcon} />
+            <ExpressDelivery style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Delivery Charges Saved</Text>
           </View>
           <View style={styles.priceView}>
