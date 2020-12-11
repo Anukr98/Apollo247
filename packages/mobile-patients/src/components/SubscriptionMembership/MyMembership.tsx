@@ -2,7 +2,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
   EllipseBulletPoint,
@@ -35,14 +35,14 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
-import { 
-  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE, 
-  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS 
+import {
+  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { 
+import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
-  GetAllUserSubscriptionsWithPlanBenefitsV2Variables 
+  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 
@@ -152,7 +152,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface MyMembershipProps extends NavigationScreenProps {}
+export interface MyMembershipProps extends NavigationScreenProps {
+  source?: string;
+}
 
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const {
@@ -164,15 +166,17 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     setHdfcUserSubscriptions,
     setCircleSubscription,
   } = useAppCommonData();
-  const { 
+  const {
     circleSubscriptionId,
     setHdfcPlanName,
     setIsFreeDelivery,
     setIsCircleSubscription,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
+
   const showHdfcSubscriptions = !!hdfcUserSubscriptions?.name;
   const canUpgradeMultiplePlans = !!(hdfcUpgradeUserSubscriptions.length > 1);
+  const source = props.navigation.getParam('source');
   const premiumPlan = canUpgradeMultiplePlans ? hdfcUpgradeUserSubscriptions[1] : {};
   const canUpgrade = !!hdfcUpgradeUserSubscriptions.length;
   const isActive = !!hdfcUserSubscriptions?.isActive;
@@ -188,7 +192,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     if (showHdfcSubscriptions) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED] = {
         'User ID': g(currentPatient, 'id'),
-        Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
+        Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
       };
       postWebEngageEvent(WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED, eventAttributes);
     }
@@ -237,6 +241,29 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     }
   }, [upgradePlans]);
 
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    if (source) {
+      props.navigation.navigate('MY ACCOUNT');
+    } else {
+      props.navigation.goBack();
+    }
+    return false;
+  };
+
   const getUserSubscriptionsWithBenefits = () => {
     setshowSpinner(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
@@ -270,7 +297,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 ? g(hdfcSubscription, 'name')
                 : '';
               if (g(hdfcSubscription, 'isActive')) {
-                setHdfcPlanName && setHdfcPlanName(subscriptionName);
+                setHdfcPlanName && setHdfcPlanName(subscriptionName!);
               }
               if (
                 subscriptionName === Hdfc_values.PLATINUM_PLAN &&
@@ -573,13 +600,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         <View style={styles.healthyLifeContainer}>
-          {
-            !isCare && (
-              <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
-                #ApolloHealthyLife
-              </Text>
-            )
-          }
+          {!isCare && (
+            <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
+              #ApolloHealthyLife
+            </Text>
+          )}
           {isCare ? (
             <CircleLogo style={styles.circleLogo} />
           ) : (
@@ -619,7 +644,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           leftIcon="backArrow"
           title={'MY MEMBERSHIP'}
           container={styles.headerContainer}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => handleBack()}
         />
         {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
           <ScrollView bounces={false}>

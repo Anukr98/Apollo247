@@ -98,7 +98,6 @@ import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@ap
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
-const flatten = require('lodash/flatten');
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -1118,40 +1117,18 @@ export const addTestsToCart = async (
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        cityID: parseInt(cityId, 10),
+        cityID: 9 //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });
   const detailQuery = (itemId: string) => getPackageData(itemId);
-
-  const getPinCodeServiceable = (pincode: string) =>
-    apolloClient.query<getPincodeServiceability, getPincodeServiceabilityVariables>({
-      query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
-      variables: {
-        pincode: parseInt(pincode, 10),
-      },
-      fetchPolicy: 'no-cache',
-    });
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
 
     console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
 
-    const checkIsPinCodeServiceable = await getPinCodeServiceable(pincode);
-
-    const serviceableData = g(checkIsPinCodeServiceable, 'data', 'getPincodeServiceability');
-    console.log({ serviceableData });
-    try {
-      if (serviceableData && serviceableData?.cityName != '') {
-        let obj = {
-          cityId: serviceableData.cityID?.toString() || '',
-          stateId: serviceableData.stateID?.toString() || '',
-          state: serviceableData.stateName || '',
-          city: serviceableData.cityName || '',
-        };
-
-        const searchQueries = Promise.all(items.map((item) => searchQuery(item!, obj.cityId)));
+        const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
         const searchQueriesData = (await searchQueries)
           .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
           // .filter((item, index) => g(item, 'itemName')! == items[index])
@@ -1181,13 +1158,7 @@ export const addTestsToCart = async (
 
         console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
         return finalArray;
-      } else {
-        return [];
-      }
-    } catch (error) {
-      CommonBugFender('helperFunctions_pincodeserviceable', error);
-      throw 'error';
-    }
+     
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
     throw 'error';

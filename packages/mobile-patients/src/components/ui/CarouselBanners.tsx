@@ -62,15 +62,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     circleActivated || false
   );
   const planPurchased = useRef<boolean | undefined>(circleActivated);
-  const {
-    setCirclePlanSelected,
-    defaultCirclePlan,
-    selectDefaultPlan,
-    circleSubscriptionId,
-    circlePlanValidity,
-  } = useShoppingCart();
+  const { setCirclePlanSelected, circleSubscriptionId, circlePlanValidity } = useShoppingCart();
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
+  const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [benefitId, setbenefitId] = useState<string>('');
 
@@ -92,7 +87,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (membershipPlans) {
         setMembershipPlans(membershipPlans);
-        selectDefaultPlan && selectDefaultPlan(membershipPlans);
+        const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
+        if (defaultPlan?.length > 0) {
+          setDefaultCirclePlan(defaultPlan[0]);
+        }
       }
     } catch (error) {
       CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
@@ -513,6 +511,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             onClose={() => setShowHdfcConnectPopup(false)}
             benefitId={benefitId || ''}
             successCallback={() => successCallback()}
+            userSubscriptionId={circleSubscriptionId}
           />
         </Overlay>
       </View>

@@ -84,9 +84,11 @@ export interface HdfcConnectPopupProps {
   onClose: () => void;
   benefitId: string;
   successCallback: () => void;
+  userSubscriptionId: string;
 }
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
+  const { userSubscriptionId } = props;
   const { currentPatient } = useAllCurrentPatients();
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const { showAphAlert } = useUIElements();
@@ -104,6 +106,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
         variables: {
           mobileNumber,
           benefitId: `${props.benefitId}`,
+          userSubscriptionId,
         },
         fetchPolicy: 'no-cache',
       })
