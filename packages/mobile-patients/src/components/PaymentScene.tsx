@@ -43,20 +43,13 @@ import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCa
 import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { saveMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
-  popupButtonStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  popupButtonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.APP_YELLOW,
-    lineHeight: 24,
-  },
   container: {
     flex: 1,
     backgroundColor: '#f0f1ec',
@@ -77,6 +70,7 @@ export interface PaymentSceneProps
     appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED];
     coupon: any;
     cartItems: ShoppingCartItem[];
+    orderInfo: saveMedicineOrderOMSVariables;
     planId?: string;
     subPlanId?: string;
   }> {}
@@ -101,6 +95,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const coupon = props.navigation.getParam('coupon');
   const cartItems = props.navigation.getParam('cartItems');
+  const orderInfo = props.navigation.getParam('orderInfo');
   const planId = props.navigation.getParam('planId');
   const subPlanId = props.navigation.getParam('subPlanId');
   const { currentPatient } = useAllCurrentPatients();
@@ -109,6 +104,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [isfocused, setisfocused] = useState<boolean>(false);
   const { circleSubscription } = useAppCommonData();
 
   const handleBack = async () => {
@@ -119,20 +115,18 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     return true;
   };
 
-  // useEffect(() => {
-  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-  //     BackHandler.addEventListener('hardwareBackPress', handleBack);
-  //   });
-
-  //   const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-  //     BackHandler.removeEventListener('hardwareBackPress', handleBack);
-  //   });
-
-  //   return () => {
-  //     _didFocusSubscription && _didFocusSubscription.remove();
-  //     _willBlurSubscription && _willBlurSubscription.remove();
-  //   };
-  // }, []);
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setisfocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setisfocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, []);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -178,6 +172,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: totalAmount,
+      LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
@@ -213,7 +208,19 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     }
   };
 
-  const onWebViewStateChange = (data: NavState) => {
+  const navigationToPaymentStatus = (status: string) => {
+    props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+      status: status,
+      price: totalAmount,
+      orderId: orderAutoId,
+      orderInfo: orderInfo,
+      deliveryTime: deliveryTime,
+      checkoutEventAttributes: checkoutEventAttributes,
+      appsflyerEventAttributes: appsflyerEventAttributes,
+    });
+  };
+
+  const onWebViewStateChange = (data: NavState, WebViewRef: any) => {
     const redirectedUrl = data.url;
     const loading = data.loading;
     console.log({ redirectedUrl, data });
@@ -222,31 +229,23 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1 &&
       loading
     ) {
+      WebViewRef.stopLoading();
+      // handleOrderSuccess();
+      clearCartInfo && clearCartInfo();
       fireOrderEvent(true);
-      props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-        status: 'PAYMENT_SUCCESS',
-        price: totalAmount,
-        orderId: orderAutoId,
-      });
+      navigationToPaymentStatus('PAYMENT_SUCCESS');
     } else if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1 &&
       loading
     ) {
+      WebViewRef.stopLoading();
       fireOrderFailedEvent();
       if (!!circleMembershipCharges) {
-        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-          status: 'PAYMENT_FAILED',
-          price: totalAmount,
-          orderId: orderAutoId,
-        });
+        navigationToPaymentStatus('PAYMENT_FAILED');
       } else {
         fireOrderEvent(false);
-        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-          status: 'PAYMENT_PENDING',
-          price: totalAmount,
-          orderId: orderAutoId,
-        });
+        navigationToPaymentStatus('PAYMENT_PENDING');
       }
     }
   };
@@ -270,14 +269,16 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     console.log({ totalAmount, orderAutoId, authToken, url });
     console.log(`%cMEDICINE_PG_URL:\t${url}`, 'color: #bada55');
 
+    let WebViewRef: any;
     return (
       <WebView
+        ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         bounces={false}
         useWebKit={true}
         source={{ uri: url }}
-        onNavigationStateChange={onWebViewStateChange}
+        onNavigationStateChange={(data) => onWebViewStateChange(data, WebViewRef)}
       />
     );
   };
@@ -288,10 +289,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
         {Platform.OS == 'android' ? (
           <KeyboardAvoidingView style={styles.container} behavior={'height'}>
-            {renderWebView()}
+            {isfocused && renderWebView()}
           </KeyboardAvoidingView>
         ) : (
-          renderWebView()
+          isfocused && renderWebView()
         )}
       </SafeAreaView>
       {loading && <Spinner />}

@@ -87,6 +87,7 @@ export enum WebEngageEventName {
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
+  DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -211,7 +212,7 @@ export enum WebEngageEventName {
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
-
+  PAYMENT_FAILED_AND_CONVERTED_TO_COD = 'Payment Failed & Converted to COD',
   // Deeplink Events
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
@@ -290,7 +291,6 @@ export enum WebEngageEventName {
   VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
   VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
   VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
-  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -306,14 +306,13 @@ export enum WebEngageEventName {
   PHARMA_WEBVIEW_PLAN2 = 'App Pharma Plan 2 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
-  PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE = 'App Pharma Non Circle buys Circle subscription',
+  PURCHASE_CIRCLE = 'Circle Plan Purchased',
 
   //Diagnostic Circle Events
   DIAGNOSTICS_CIRCLE_BANNER_CLICKED = 'App Non-circle banner clicked - Diagnostics',
   DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP = 'App Non-circle Buy Now clicked - Diagnostics',
   DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Non-circle Know more clicked - Diagnostics',
   DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP = 'App circle plan - other payment clicked - Diagnostics',
-  DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED = 'App Circle activated - Diagnostics',
   DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
 
   //My Membership Circle Events
@@ -331,7 +330,7 @@ export enum WebEngageEventName {
 
   //HOMEPAGE BANNER
   COVID_BANNER_CLICKED = 'Recovery Clinic Banner clicked',
-  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = "App non-circle -HomePage Banner clicked",
+  NON_CIRCLE_HOMEPAGE_BANNER_CLICKED = 'App non-circle -HomePage Banner clicked',
   MEMBERSHIP_DETAILS_BANNER_CLICKED = 'App - circle - Membership Details Banner clicked',
   HOMEPAGE_DOC_ON_CALL_BANNER_CLICKED = 'App - circle - Doc on Call Banner Clicked',
   NON_CIRCLE_HOMEPAGE_VIEWED = 'App - Circle Subscription Landing Page Entry',
@@ -339,7 +338,7 @@ export enum WebEngageEventName {
   NON_CIRCLE_BUY_NOW_CLICKED = 'App - Circle Subscription Landing Buy Now Clicked',
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
   NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
-  HC_1CLICK_ACTIVATION = "App - HC - 1ClickActivation",
+  HC_1CLICK_ACTIVATION = 'App - HC - 1ClickActivation',
 }
 
 export interface PatientInfo {
@@ -358,14 +357,22 @@ export interface UserInfo {
   'Customer ID': string;
 }
 
-export interface CircleUserInfo extends UserInfo{
+export interface CircleUserInfo extends UserInfo {
   'Circle Member'?: 'Yes' | 'No';
   'Membership Type'?: string;
   'Circle Membership Start Date'?: Date;
   'Circle Membership End Date'?: Date;
-  'type'?: string; //landing page
-  'action'?: string; //landing page
-  'from'?: string;
+  type?: string; //landing page
+  action?: string; //landing page
+  from?: string;
+}
+
+export interface CirclePurchaseInfo extends UserInfo {
+  'Membership Type'?: string;
+  'Membership End Date'?: string;
+  'Circle Plan Price'?: string;
+  'Type': string;
+  'Source'?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -599,14 +606,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
-  [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
+  [WebEngageEventName.PURCHASE_CIRCLE] : CirclePurchaseInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
   [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: CircleUserInfo;
-  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: CircleUserInfo;
 
   // ********** MY Membership circle events ********
@@ -633,7 +639,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NON_CIRCLE_PAYMENT_MODE_SELECTED]: CircleUserInfo;
   [WebEngageEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
   [WebEngageEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
-  
+
   // ********** PharmacyEvents ********** \\
 
   [WebEngageEventName.SEARCH]: {
@@ -1048,6 +1054,11 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
+  };
+  [WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD]: {
+    'Payment failed order id': string;
+    'Payment Success Order Id'?: string;
+    status: boolean;
   };
   [WebEngageEventName.DOCTOR_SEARCH]: {
     'Search Text': string;
@@ -1844,6 +1855,17 @@ export interface WebEngageEvents {
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
     SectionName?: string;
+  };
+  [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor ID': string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';

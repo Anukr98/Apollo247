@@ -16,6 +16,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     circleMembershipCharges,
     coupon,
     cartTotal,
+    couponProducts,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const [showCareDetails, setShowCareDetails] = useState(true);
@@ -59,15 +60,16 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   }
 
   function careSubscribeMessage() {
-    if (cartTotalCashback > 1 && showCareDetails) {
+    let circleSaving = (cartTotalCashback + deliveryFee + Number(productDiscount)).toFixed(2);
+    if (couponProducts.length) {
+      circleSaving = (cartTotalCashback + deliveryFee).toFixed(2);
+    }
+    if (cartTotalCashback > 1 && showCareDetails && Number(couponDiscount) < Number(circleSaving)) {
       return (
         <View style={styles.careMessageCard}>
           <Text style={styles.youText}>
-            You could{' '}
-            <Text style={styles.saveText}>
-              save ₹{(cartTotalCashback + deliveryFee + Number(productDiscount)).toFixed(2)}
-            </Text>{' '}
-            on your purchase with
+            You could <Text style={styles.saveText}>save ₹{circleSaving}</Text> on your purchase
+            with
           </Text>
           <CircleLogo style={styles.circleLogo} />
         </View>

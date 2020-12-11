@@ -656,5 +656,6 @@ export interface FirebaseEvents {
     items: any;
     transaction_id: string;
     value: number;
+    LOB: string;
   };
 }

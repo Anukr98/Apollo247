@@ -44,7 +44,8 @@ export const Coupon: React.FC<CouponProps> = (props) => {
       <PendingIcon style={styles.pendingIconStyle} />
       <View style={styles.careMessage}>
         <Text style={[styles.removeCircleText, { marginTop: 5 }]}>
-          Want to use a Coupon Code instead of Circle Benefits? Uncheck the box above to avail Coupon Discount.
+          Want to use a Coupon Code instead of Circle Benefits? Uncheck the box above to avail
+          Coupon Discount.
         </Text>
       </View>
     </View>

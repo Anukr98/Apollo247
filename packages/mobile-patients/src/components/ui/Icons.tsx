@@ -49,6 +49,10 @@ export const NotifySymbol: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/notify_symbol.png')} />
 );
 
+export const NotifySymbolGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/notify_symbolGreen.png')} />
+);
+
 export const CovidHealthScan: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_ic_psychologist.png')} />
 );

@@ -637,6 +637,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: Number(grandTotal),
+      LOB: 'Diagnostics',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, eventAttributes);

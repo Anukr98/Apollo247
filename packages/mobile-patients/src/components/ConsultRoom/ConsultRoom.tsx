@@ -1,31 +1,37 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
-  LocationData,
-  useAppCommonData,
-  SubscriptionData,
+  BenefitCtaAction,
+  CicleSubscriptionData,
+  CircleGroup,
+  CirclePlanSummary,
   GroupPlan,
   PlanBenefits,
-  BenefitCtaAction,
-  CirclePlanSummary,
-  CircleGroup,
-  CicleSubscriptionData,
+  SubscriptionData,
+  useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
+  ApolloHealthProIcon,
   CartIcon,
   ConsultationRoom,
+  CovidOrange,
   CovidRiskLevel,
+  DashedLine,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  FemaleCircleIcon,
+  FemaleIcon,
   KavachIcon,
   LatestArticle,
   LinkedUhidIcon,
-  Mascot,
+  MaleCircleIcon,
+  MaleIcon,
   MedicineCartIcon,
   MedicineIcon,
   MyHealth,
@@ -36,13 +42,7 @@ import {
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
-  CovidOrange,
-  DashedLine,
-  ApolloHealthProIcon,
-  FemaleIcon,
-  MaleIcon,
-  FemaleCircleIcon,
-  MaleCircleIcon,
+  WhiteArrowRightIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -54,39 +54,58 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
   DeviceHelper,
-  setBugFenderLog,
   isIos,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-  SAVE_VOIP_DEVICE_TOKEN,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_CASHBACK_DETAILS_OF_PLAN_ID,
+  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  SAVE_VOIP_DEVICE_TOKEN,
+  UPDATE_PATIENT_APP_VERSION,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
-import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { DEVICETYPE, Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  UpdatePatientAppVersion,
+  UpdatePatientAppVersionVariables,
+} from '@aph/mobile-patients/src/graphql/types/UpdatePatientAppVersion';
+import {
+  GenerateTokenforCM,
+  notifcationsApi,
+  pinCodeServiceabilityApi247,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import {
+  getPatientPersonalizedAppointmentList,
+  getUserBannersList,
+  saveTokenDevice,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
   PatientInfoFirebase,
   PatientInfoWithSourceFirebase,
 } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  distanceBwTwoLatLng,
+  checkPermissions,
   doRequestAndAccessLocationModified,
   g,
-  getlocationDataFromLatLang,
+  getPhrNotificationAllCount,
+  overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
   setWebEngageScreenNames,
-  overlyCallPermissions,
-  checkPermissions,
-  getPhrNotificationAllCount,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -100,8 +119,9 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
+import messaging from '@react-native-firebase/messaging';
 import moment from 'moment';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -117,34 +137,16 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
-  TextInput,
-  Image,
-  AppState,
-  AppStateStatus,
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import { ScrollView } from 'react-native-gesture-handler';
+import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
-import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
-import {
-  getPatientPersonalizedAppointmentList,
-  getUserBannersList,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
-import VoipPushNotification from 'react-native-voip-push-notification';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
-import {
-  GetSubscriptionsOfUserByStatus,
-  GetSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
-import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
-import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import {
-  GenerateTokenforCM,
-  notifcationsApi,
-  pinCodeServiceabilityApi247,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
+import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 const { Vitals } = NativeModules;
 
@@ -318,6 +320,48 @@ const styles = StyleSheet.create({
     height: 38,
     marginLeft: 16,
   },
+  linearGradientView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: width - 32,
+    marginBottom: 12,
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'yellow',
+  },
+  topImageView: {
+    paddingLeft: 16,
+    flexDirection: 'row',
+    flex: 1,
+  },
+  topTextStyle: {
+    ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
+    textAlign: 'center',
+    alignSelf: 'center',
+    marginHorizontal: 10,
+  },
+  bottomCardView: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
+    flexDirection: 'row',
+    minHeight: 59,
+    width: width / 2 - 22,
+    marginRight: 12,
+    marginBottom: 12,
+  },
+  bottomImageView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+    flex: 0.5,
+  },
+  bottomTextView: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    marginRight: 6,
+    flex: 1,
+  },
 });
 
 type menuOptions = {
@@ -443,6 +487,43 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+
+  const saveDeviceNotificationToken = async (id: string) => {
+    try {
+      const savedToken = await AsyncStorage.getItem('deviceToken');
+      const token = await messaging().getToken();
+      if (savedToken !== token) {
+        saveTokenDevice(client, token, id);
+      }
+    } catch (error) {}
+  };
+
+  const notifyAppVersion = async (patientId: string) => {
+    try {
+      const key = `${patientId}-appVersion`;
+      const savedAppVersion = await AsyncStorage.getItem(key);
+      const appVersion = DeviceInfo.getVersion();
+      if (savedAppVersion !== appVersion) {
+        await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
+          mutation: UPDATE_PATIENT_APP_VERSION,
+          variables: {
+            appVersion,
+            patientId,
+            osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        await AsyncStorage.setItem(key, appVersion);
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    if (currentPatient?.id) {
+      saveDeviceNotificationToken(currentPatient.id);
+      notifyAppVersion(currentPatient.id);
+    }
+  }, [currentPatient]);
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   useEffect(() => {
@@ -732,8 +813,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const listValues: menuOptions[] = [
     {
       id: 1,
-      title: 'Book Doctor Appointment',
-      image: <DoctorIcon style={styles.menuOptionIconStyle} />,
+      title: 'Book Apollo Doctor Appointment',
+      image: <DoctorIcon style={[styles.menuOptionIconStyle]} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
@@ -743,8 +824,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 2,
-      title: 'Medicines & Essentials',
-      image: <MedicineCartIcon style={styles.menuOptionIconStyle} />,
+      title: 'Buy Medicines & Essentials',
+      image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
@@ -767,17 +848,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 4,
-      title: 'Manage Diabetes',
-      image: <Diabetes style={styles.menuOptionIconStyle} />,
+      title: 'View Health Records',
+      image: (
+        <View>
+          <PrescriptionMenu style={styles.menuOptionIconStyle} />
+          {renderBadgeView()}
+        </View>
+      ),
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
-        getTokenforCM();
+        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        props.navigation.navigate('HEALTH RECORDS');
       },
     },
+
     {
       id: 5,
-      title: 'Track Symptoms',
+      title: 'Symptom Checker',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
@@ -797,17 +884,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 6,
-      title: 'View Health Records',
-      image: (
-        <View>
-          <PrescriptionMenu style={styles.menuOptionIconStyle} />
-          {renderBadgeView()}
-        </View>
-      ),
+      title: 'Manage Diabetes',
+      image: <Diabetes style={styles.menuOptionIconStyle} />,
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        props.navigation.navigate('HEALTH RECORDS');
+        postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
+        getTokenforCM();
       },
     },
   ];
@@ -1715,45 +1797,41 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         {listValues.map((item) => {
           if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
-            return (
-              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                <View
-                  style={{
-                    ...theme.viewStyles.cardViewStyle,
-                    shadowOffset: { width: 0, height: 5 },
-                    elevation: 15,
-                    flexDirection: 'row',
-                    minHeight: 59,
-                    width: width / 2 - 22,
-                    marginRight: 12,
-                    marginBottom: 12,
-                  }}
-                >
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginHorizontal: 10,
-                      flex: 0.5,
-                    }}
+            if (item?.id < 3) {
+              return (
+                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                  <LinearGradientComponent
+                    style={[
+                      styles.linearGradientView,
+                      { shadowOffset: { width: 0, height: 5 }, elevation: 15 },
+                    ]}
                   >
-                    {item.image}
+                    <View style={styles.topImageView}>
+                      {item.image}
+                      <Text style={styles.topTextStyle}>{item.title}</Text>
+                    </View>
+                    <View style={{ marginRight: 10 }}>
+                      <WhiteArrowRightIcon />
+                    </View>
+                  </LinearGradientComponent>
+                </TouchableOpacity>
+              );
+            } else {
+              return (
+                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                  <View style={styles.bottomCardView}>
+                    <View style={styles.bottomImageView}>{item.image}</View>
+                    <View style={styles.bottomTextView}>
+                      <Text
+                        style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}
+                      >
+                        {item.title}
+                      </Text>
+                    </View>
                   </View>
-                  <View
-                    style={{
-                      alignItems: 'flex-start',
-                      justifyContent: 'center',
-                      marginRight: 6,
-                      flex: 1,
-                    }}
-                  >
-                    <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
-                      {item.title}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
+                </TouchableOpacity>
+              );
+            }
           }
         })}
       </View>
@@ -2017,7 +2095,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );
-
     postHomeWEGEvent(WebEngageEventName.APOLLO_PRO_HEALTH);
 
     try {
