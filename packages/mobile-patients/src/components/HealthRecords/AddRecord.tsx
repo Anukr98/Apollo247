@@ -1064,6 +1064,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
+          if (selectedRecord) {
+            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_ALLERGY);
+          } else {
+            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_ALLERGY);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1111,6 +1116,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
+          if (selectedRecord) {
+            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_MEDICATION);
+          } else {
+            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_MEDICATION);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1155,6 +1165,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
+          if (selectedRecord) {
+            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_HEALTH_RESTRICTIONS);
+          } else {
+            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_HEALTH_RESTRICTIONS);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1197,6 +1212,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
+        if (selectedRecord) {
+          postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION);
+        } else {
+          postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_MEDICAL_CONDITION);
+        }
         gotoHealthRecordsHomeScreen();
       })
       .catch((e) => {
@@ -1279,15 +1299,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR(
-              'Discharge Summary Record',
-              WebEngageEventName.PHR_UPDATE_HOSPITALIZATIONS
-            );
+            postWebEngagePHR('Hospitalization', WebEngageEventName.PHR_UPDATE_HOSPITALIZATIONS);
           } else {
-            postWebEngagePHR(
-              'Discharge Summary Record',
-              WebEngageEventName.PHR_ADD_HOSPITALIZATIONS
-            );
+            postWebEngagePHR('Hospitalization', WebEngageEventName.PHR_ADD_HOSPITALIZATIONS);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1327,9 +1341,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientMedicalBillRecord', 'status');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR('Bills', WebEngageEventName.PHR_UPDATE_BILLS);
+            postWebEngagePHR('Bill', WebEngageEventName.PHR_UPDATE_BILLS);
           } else {
-            postWebEngagePHR('Bills', WebEngageEventName.PHR_ADD_BILLS);
+            postWebEngagePHR('Bill', WebEngageEventName.PHR_ADD_BILLS);
           }
           gotoHealthRecordsHomeScreen();
         }
