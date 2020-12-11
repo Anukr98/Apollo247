@@ -119,10 +119,12 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       <View>
         <Text style={styles.bigTitle}>{string.circleDoctors.greatChoice}</Text>
         <Text style={styles.description}>
-          {string.circleDoctors.upgradingWithHealthCredits.replace(
-            '{credits}',
-            `${defaultPlanSellingPrice}`
-          )}
+          {defaultPlanSellingPrice
+            ? string.circleDoctors.upgradingWithHealthCredits.replace(
+                '{credits}',
+                `${defaultPlanSellingPrice}`
+              )
+            : string.circleDoctors.upgradingWithHealthCreditsDesc}
         </Text>
         <Button
           title={string.circleDoctors.goAhead}
