@@ -18,6 +18,7 @@ export enum ProductPageViewedSource {
   FULL_SEARCH = 'full search',
   RECENT_SEARCH = 'recent search',
   HOME_PAGE = 'home page',
+  BUY_AGAIN = 'buy again',
   CATEGORY_OR_LISTING = 'category or listing',
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
@@ -936,7 +937,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
-    'Section': string;
+    Section: string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
