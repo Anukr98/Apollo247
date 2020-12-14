@@ -63,7 +63,7 @@ public class MainActivity extends ReactActivity {
         try {
             //start
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-                Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
+                Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
                 ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
                 Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
                 NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -85,7 +85,7 @@ public class MainActivity extends ReactActivity {
             // to close notification when activity is brought front 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-                Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
+                Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
                 ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
                 Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
                 KeyguardManager myKM = (KeyguardManager) this.getSystemService(Context.KEYGUARD_SERVICE);
