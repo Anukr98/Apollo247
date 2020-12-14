@@ -796,7 +796,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const getTotalCashbackAmount = () => {
     if (burnHC != 0) {
       return getFormattedAmount(
-        (Number(cartTotalCashback) * Number(grandTotal)) / (Number(grandTotal) + Number(burnHC))
+        Number((cartTotalCashback * Number(grandTotal - burnHC)) / Number(grandTotal))
       );
     } else {
       return cartTotalCashback;
