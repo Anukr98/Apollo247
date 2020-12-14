@@ -161,7 +161,7 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
 
-const { width: winWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
   labelView: {
