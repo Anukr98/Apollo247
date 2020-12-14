@@ -597,6 +597,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         {/**
          * non - sub + promote circle
          */}
+
         {!props.isCareSubscribed && props.circlePrice! && (
           <View
             style={{
@@ -607,7 +608,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             }}
           >
             <View style={{ flexDirection: 'row' }}>
-              {/* <CircleHeading />
+              {/**check why this till text was commented */}
+              <CircleHeading />
               <Text
                 style={{
                   ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.04),
@@ -615,7 +617,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 }}
               >
                 {strings.common.Rs} {props.circlePrice!.toFixed(2)}
-              </Text> */}
+              </Text>
             </View>
             <View style={{ alignSelf: 'flex-end' }}>
               {(!!price || !!specialPrice) && (

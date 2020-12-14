@@ -46,10 +46,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
-import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   searchDiagnosticsByCityID,
@@ -59,7 +55,6 @@ import {
 import {
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {

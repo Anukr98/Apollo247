@@ -37,6 +37,7 @@ export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
 export enum DIAGNOSTIC_GROUP_PLAN {
   ALL = 'ALL',
   CIRCLE = 'CIRCLE',
+  SPECIAL_DISCOUNT = 'SPECIALDISCOUNTS'
 }
 
 interface PharmaOverview {
