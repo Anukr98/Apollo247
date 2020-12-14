@@ -1813,7 +1813,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             paddingHorizontal: 16,
             alignItems: 'center',
           }}
-          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isTest: true })}
+          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isDiag: true })}
         >
           <CouponIcon style={{ opacity: isCouponEnable ? 1 : 0.5 }} />
           <Text
