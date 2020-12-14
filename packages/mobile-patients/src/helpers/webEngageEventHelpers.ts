@@ -13,7 +13,7 @@ import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from './AppsFlyerEvents';
-
+import { PharmacyCircleEvent } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 type MyOrdersClicked = WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED];
 
 export const postMyOrdersClicked = (
@@ -87,7 +87,8 @@ export const postPhamracyCartAddressSelectedSuccess = (
   deliveryAddress: PhamracyCartAddressSelectedSuccess['Delivery Address'],
   success: PhamracyCartAddressSelectedSuccess['Delivery Successful'],
   tatDisplayed: PhamracyCartAddressSelectedSuccess['TAT Displayed'],
-  deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT']
+  deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
+  pharmacyCircleEvent: PharmacyCircleEvent
 ) => {
   const eventAttributes: PhamracyCartAddressSelectedSuccess = {
     'TAT Displayed': tatDisplayed,
@@ -95,6 +96,7 @@ export const postPhamracyCartAddressSelectedSuccess = (
     'Delivery Address': deliveryAddress,
     Pincode: pincode,
     'Delivery TAT': deliveryTat,
+    ...pharmacyCircleEvent,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
 
@@ -105,6 +107,7 @@ export const postPhamracyCartAddressSelectedSuccess = (
     Pincode: pincode,
     DeliveryTAT: deliveryTat,
     LOB: 'Pharmacy',
+    ...pharmacyCircleEvent,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, firebaseAttributes);
   postFirebaseEvent(FirebaseEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, firebaseAttributes);

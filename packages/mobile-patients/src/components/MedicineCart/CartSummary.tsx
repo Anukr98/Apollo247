@@ -12,6 +12,7 @@ import {
   PhysicalPrescription,
   useShoppingCart,
   ShoppingCartItem,
+  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SelectedAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/SelectedAddress';
@@ -76,8 +77,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setAddresses,
     deliveryTime,
     setdeliveryTime,
+    circleSubscriptionId,
+    circleMembershipCharges,
+    circlePlanSelected,
   } = useShoppingCart();
-  const { setPharmacyLocation, setAxdcCode } = useAppCommonData();
+  const { setPharmacyLocation, setAxdcCode, circlePaymentReference } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -96,6 +100,19 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
+
+  const pharmacyCircleAttributes: PharmacyCircleEvent = {
+    'Circle Membership Added': circleSubscriptionId
+      ? 'Existing'
+      : !!circleMembershipCharges
+      ? 'Yes'
+      : 'No',
+    'Circle Membership Value': circleSubscriptionId
+      ? circlePaymentReference?.amount_paid
+      : !!circleMembershipCharges
+      ? circlePlanSelected?.currentSellingPrice
+      : null,
+  };
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -256,7 +273,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       formatAddress(address),
       'Yes',
       new Date(tatDate),
-      moment(tatDate).diff(currentDate, 'd')
+      moment(tatDate).diff(currentDate, 'd'),
+      pharmacyCircleAttributes!
     );
   }
 
@@ -350,7 +368,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       tatType: storeType,
       shopId: shopId,
     });
-    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime);
+    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime, pharmacyCircleAttributes!);
   }
 
   const renderAlert = (message: string) => {

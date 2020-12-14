@@ -433,6 +433,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcPlanId,
     setCircleStatus,
     setHdfcStatus,
+    setCirclePaymentReference,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -1141,6 +1142,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          * data?.APOLLO ----> Circle data
          */
         if (data?.APOLLO?.[0]._id) {
+          const paymentRef = data?.APOLLO?.[0]?.payment_reference;
+          const paymentStoredVal =
+            typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1151,11 +1155,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
           setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
+          paymentStoredVal &&
+            setCirclePaymentReference &&
+            setCirclePaymentReference(paymentStoredVal);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
           setCirclePlanValidity && setCirclePlanValidity(null);
+          setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
           fireFirstTimeLanded();
           setCircleStatus && setCircleStatus('');
