@@ -349,6 +349,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
         );
         setSearchResult(products?.length == 0);
+        setWebEngageEventOnSearchItem(_searchText, products);
         setIsLoading(false);
       })
       .catch((e) => {
@@ -371,6 +372,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       },
     });
 
+  const patientAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+  };
+
   const postDiagnosticAddToCartEvent = (
     name: string,
     id: string,
@@ -378,12 +386,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     discountedPrice: number
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      'product name': name,
-      'product id': id,
-      Price: price,
-      'Discounted Price': discountedPrice,
-      Quantity: 1,
-      Source: 'Search',
+      'Item Name': name,
+      'Item ID': id,
+      Source: 'Full search',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
@@ -397,6 +402,20 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     };
     postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+  };
+
+  const setWebEngageEventOnSearchItem = (
+    keyword: string,
+    results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+  ) => {
+    if (keyword.length > 2) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED] = {
+        ...patientAttributes,
+        'Keyword Entered': keyword,
+        '# Results appeared': results.length,
+      };
+      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
+    }
   };
 
   const onAddCartItem = (
@@ -566,7 +585,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                 collectionType: product?.collectionType,
                 preparation: product?.testPreparationData,
                 testDescription: product?.testPreparationData,
-                source: 'Search Page',
+                source: 'Full Search',
                 type: product?.itemType,
               } as TestPackageForDetails,
             });

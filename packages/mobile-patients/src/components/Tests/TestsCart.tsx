@@ -478,14 +478,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
-        'Patient UHID': g(currentPatient, 'uhid'),
-        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Total items in cart': cartItems.length,
-        'Sub Total': cartTotal,
-        'Delivery charge': deliveryCharges,
+        // 'Delivery charge': deliveryCharges,
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
-        'Prescription Needed?': uploadPrescriptionRequired ? 'Mandatory' : 'Optional',
+        'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
         'Cart Items': cartItems.map(
           (item) =>
             (({
@@ -495,10 +492,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               specialPrice: item.specialPrice || item.price,
             } as unknown) as DiagnosticsCartItem)
         ),
-        'Service Area': 'Diagnostic',
       };
       if (diagnosticSlot) {
-        eventAttributes['Home Collection'] = hcCharges;
+        eventAttributes['Delivery charge'] = hcCharges;
       }
       if (coupon) {
         eventAttributes['Coupon code used'] = coupon.code;
@@ -556,21 +552,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : store
       ? `${store.CentreName}\n${store.Locality},${store.City},${store.State}`
       : '';
+
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
       'Order ID': orderAutoId,
-      'Order Type': 'Cart',
-      'Prescription Required': uploadPrescriptionRequired,
-      'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
-      'Shipping information': shippingInformation, // (Home/Store address)
+      Pincode: parseInt(selectedAddr?.zipcode!),
+      'Patient UHID': g(currentPatient, 'id'),
       'Total items in cart': cartItems.length,
-      'Grand Total': cartTotal + deliveryCharges,
-      'Total Discount %': coupon ? Number(((couponDiscount / cartTotal) * 100).toFixed(2)) : 0,
-      'Discount Amount': couponDiscount,
-      'Delivery charge': deliveryCharges,
-      'Net after discount': grandTotal,
-      'Payment status': 1,
-      'Payment Type': isCashOnDelivery ? 'COD' : 'Prepaid',
-      'Service Area': 'Diagnostic',
+      'Order Amount': grandTotal,
+      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, eventAttributes);
   };
@@ -579,6 +568,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
       'Address Pincode': parseInt(selectedAddr?.zipcode!),
       'Area Selected': String(item?.value),
+      Servicability: 'Yes',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
   };
