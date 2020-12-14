@@ -627,7 +627,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'allergies',
           'response'
         );
-        console.log('data', data);
+        tabsClickedWebEngageEvent(WebEngageEventName.PHR_LOAD_HEALTH_RECORDS);
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
         setHealthChecksNew(healthChecksNewData);
@@ -686,6 +686,25 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(webEngageEventName, eventAttributes);
+  };
+
+  const updateMedicalParametersWebEngageEvents = (
+    webEngageEventName: WebEngageEventName,
+    type: string,
+    value: string
+  ) => {
+    const eventAttributes = {
+      type,
+      value,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -1103,7 +1122,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const bloodGroupData = selectedBloodGroupArray.map((i) => {
       return { key: i.key, value: i.title };
     });
-
+    console.log(
+      'bloodGroup !== undefined ? bloodGroup.title :',
+      bloodGroup !== undefined ? bloodGroup.title : 'Select'
+    );
     return (
       <MaterialMenu
         options={bloodGroupData}
@@ -1257,8 +1279,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
             isHeightAvailable
-              ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_HEIGHT)
-              : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_HEIGHT);
+              ? updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_UPDATE_HEIGHT,
+                  'Height',
+                  height
+                )
+              : updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_ADD_HEIGHT,
+                  'Height',
+                  height
+                );
           }
         } else {
           if (
@@ -1276,8 +1306,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
             isHeightAvailable
-              ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_HEIGHT)
-              : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_HEIGHT);
+              ? updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_UPDATE_HEIGHT,
+                  'Height',
+                  height
+                )
+              : updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_ADD_HEIGHT,
+                  'Height',
+                  height
+                );
           }
         }
       } else if (currentUpdatePopupId === 2) {
@@ -1290,8 +1328,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             currentPatient?.patientMedicalHistory?.bloodGroup
           );
           isWeightAvailable
-            ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_WEIGHT)
-            : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_WEIGHT);
+            ? updateMedicalParametersWebEngageEvents(
+                WebEngageEventName.PHR_UPDATE_WEIGHT,
+                'Weight',
+                weight
+              )
+            : updateMedicalParametersWebEngageEvents(
+                WebEngageEventName.PHR_ADD_WEIGHT,
+                'Weight',
+                weight
+              );
         }
       } else {
         updateMedicalParameters(
@@ -1300,8 +1346,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           bloodGroup?.key?.toString() || ''
         );
         currentPatient?.patientMedicalHistory?.bloodGroup
-          ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_BLOOD_GROUP)
-          : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_BLOOD_GROUP);
+          ? updateMedicalParametersWebEngageEvents(
+              WebEngageEventName.PHR_UPDATE_BLOOD_GROUP,
+              'BloodGroup',
+              bloodGroup?.title || ''
+            )
+          : updateMedicalParametersWebEngageEvents(
+              WebEngageEventName.PHR_ADD_BLOOD_GROUP,
+              'BloodGroup',
+              bloodGroup?.title || ''
+            );
       }
     };
 

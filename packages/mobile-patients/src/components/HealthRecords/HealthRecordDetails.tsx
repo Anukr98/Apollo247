@@ -828,7 +828,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .then((res) => {
         setLoading && setLoading(false);
         (!medicalBill || !medicalInsurance || !healthCondition) &&
-          postWebEngagePHR(webEngageSource, webEngageEventName);
+          postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));

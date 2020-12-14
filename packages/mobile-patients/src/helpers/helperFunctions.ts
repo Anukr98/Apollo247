@@ -1405,9 +1405,22 @@ export const postwebEngageAddToCartEvent = (
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
 
-export const postWebEngagePHR = (source: string, webEngageEventName: WebEngageEventName) => {
-  const eventAttributes = {
+export const postWebEngagePHR = (
+  currentPatient: any,
+  webEngageEventName: WebEngageEventName,
+  source: string = '',
+  data: any = {}
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+    ...data,
     Source: source,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
   };
   postWebEngageEvent(webEngageEventName, eventAttributes);
 };

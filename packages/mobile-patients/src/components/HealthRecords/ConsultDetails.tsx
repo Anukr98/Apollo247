@@ -284,10 +284,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   }, []);
 
   const postWEGEvent = (type: 'medicine' | 'test' | 'download prescription') => {
+    const requireCasesheetDetails =
+      caseSheetDetails?.doctorType !== 'JUNIOR' ? caseSheetDetails : {};
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
       | WebEngageEvents[WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
       | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION] = {
+      ...requireCasesheetDetails,
       'Doctor Name': g(data, 'fullName')!,
       'Speciality ID': g(data, 'specialty', 'id')!,
       'Speciality Name': g(data, 'specialty', 'name')!,
@@ -1008,7 +1011,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       CommonLogEvent('CONSULT_DETAILS', 'No image');
     } else {
       postWEGEvent('download prescription');
-      postWebEngagePHR('Doctor Consultation', WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION);
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
+        'Doctor Consultation',
+        caseSheetDetails
+      );
       const dirs = RNFetchBlob.fs.dirs;
 
       const fileName: string = getFileName();

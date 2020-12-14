@@ -200,7 +200,12 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHospitalizationRecords();
-          postWebEngagePHR('Hospitalization', WebEngageEventName.PHR_DELETE_HOSPITALIZATIONS);
+          postWebEngagePHR(
+            currentPatient,
+            WebEngageEventName.PHR_DELETE_HOSPITALIZATIONS,
+            'Hospitalization',
+            selectedItem
+          );
         } else {
           setShowSpinner(false);
         }

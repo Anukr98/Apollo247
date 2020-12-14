@@ -257,15 +257,38 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     });
   };
 
-  const healthConditionDeleteWebEngageEvents = (recordType: MedicalRecordType) => {
+  const healthConditionDeleteWebEngageEvents = (
+    recordType: MedicalRecordType,
+    selectedItem: any
+  ) => {
     if (recordType === MedicalRecordType.ALLERGY) {
-      postWebEngagePHR('Allergy', WebEngageEventName.PHR_DELETE_ALLERGY);
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_ALLERGY,
+        'Allergy',
+        selectedItem
+      );
     } else if (recordType === MedicalRecordType.MEDICATION) {
-      postWebEngagePHR('Medication', WebEngageEventName.PHR_DELETE_MEDICATION);
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_MEDICATION,
+        'Medication',
+        selectedItem
+      );
     } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
-      postWebEngagePHR('Health Restriction', WebEngageEventName.PHR_DELETE_HEALTH_RESTRICTIONS);
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_HEALTH_RESTRICTIONS,
+        'Health Restriction',
+        selectedItem
+      );
     } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
-      postWebEngagePHR('Medical Condition', WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION);
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION,
+        'Medical Condition',
+        selectedItem
+      );
     }
   };
 
@@ -282,7 +305,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHealthConditionRecords();
-          healthConditionDeleteWebEngageEvents(recordType);
+          healthConditionDeleteWebEngageEvents(recordType, selectedItem);
         } else {
           setShowSpinner(false);
         }
