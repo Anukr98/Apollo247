@@ -1122,10 +1122,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const bloodGroupData = selectedBloodGroupArray.map((i) => {
       return { key: i.key, value: i.title };
     });
-    console.log(
-      'bloodGroup !== undefined ? bloodGroup.title :',
-      bloodGroup !== undefined ? bloodGroup.title : 'Select'
-    );
     return (
       <MaterialMenu
         options={bloodGroupData}
