@@ -199,6 +199,8 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
@@ -228,6 +230,8 @@ export interface AppsFlyerEvents {
     'Delivery Date Time'?: string; // Optional (only if Home)
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
@@ -271,6 +275,8 @@ export interface AppsFlyerEvents {
     af_currency: string;
     'order id': string;
     'coupon applied': boolean;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -326,6 +332,8 @@ export interface AppsFlyerEvents {
     Pincode?: string;
     DeliveryTAT?: number;
     LOB?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [AppsFlyerEventName.ORDER_FAILED]: {
