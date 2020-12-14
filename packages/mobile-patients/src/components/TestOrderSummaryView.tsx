@@ -123,10 +123,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Number': g(currentPatient, 'mobileNumber'),
-      'OrderID:': orderDetails.id,
-      'Sample Collection Date': orderDetails.diagnosticDate,
+      'Order id:': orderDetails?.id,
+      'Order Amount': grossCharges!,
+      'Sample Collection Date': orderDetails?.diagnosticDate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
   }, []);

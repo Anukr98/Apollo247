@@ -123,10 +123,11 @@ export enum WebEngageEventName {
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
+  DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic Enter Delivery on location bar',
+  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
   DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
@@ -496,7 +497,7 @@ export interface ReorderMedicine extends PatientInfo {
 export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
-  'Item in Results': object[];
+  'Item in Results'?: object[];
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -904,6 +905,7 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
+  [WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]: {
     //comment
     'Patient UHID': string;
@@ -919,53 +921,39 @@ export interface WebEngageEvents {
     'Items in cart': object[];
   };
   [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
-    'Patient UHID': string;
-    'Patient Number': string;
-    'OrderID:': string;
+    'Order Amount': string | number;
+    'Order id:': string;
+    'Order status'?: string;
     'Sample Collection Date': string; //Date
   };
   [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
-    'Product name': string;
-    'Product id (SKUID)': string;
-    Source: 'Home' | 'List';
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-    'Section': string;
+    'Item Name': string;
+    'Item ID': string;
+    Source: 'Home Page';
+    'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    'Patient UHID': string;
-    'Patient Name': string;
-    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search';
     'Item Name': string;
     'Item Type': string;
     'Item Code': string;
-    'Item Price': number;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
     //this is already done
-    'Patient UHID': string;
-    'Patient Name': string;
     'Total items in cart': number;
-    'Prescription Needed?': 'Mandatory' | 'Optional';
-    'Sub Total': number;
-    'Delivery charge': number;
+    'Prescription Needed?': 'Yes' | 'No';
+    'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Total Discount': number;
     'Net after discount': number; //item total
-    'Home Collection'?: number; //after adding the slot
     'Cart Items': object[];
-    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
+    'Servicability': 'Yes' | 'No'
   };
   [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Address Pincode': number;
@@ -1013,40 +1001,18 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-    Source: 'Home page' | 'Search' | 'Test detail page';
-    Brand?: string;
-    'Brand ID'?: string;
-    'category name'?: string;
-    'category ID'?: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
+    'Item Name': string;
+    'Item ID': string; // (SKUID)
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search';
+    Section?: 'Featured tests' | 'Browse packages'
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
-    'Prescription Added': boolean;
-    'Shipping information': string; // (Home/Store address)
+    'Pincode': string | number;
+    'Patient UHID': string;
     'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
-    'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
-    'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Order Amount': number; // Optional
+    'Payment mode'?: 'COD' | 'Online'; // Optional
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode: 'Online' | 'COD';

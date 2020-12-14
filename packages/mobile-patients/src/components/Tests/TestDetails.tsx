@@ -214,7 +214,7 @@ var tabs = [
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source: 'Landing Page' | 'Search Page' | 'Cart Page';
+  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search';
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
@@ -327,13 +327,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       Source: testInfo.source,
       'Item Name': testInfo.ItemName,
       'Item Type': testInfo.type,
       'Item Code': testInfo.ItemID,
-      'Item Price': testInfo.Rate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
 
@@ -645,12 +642,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     discountedPrice: number
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      'product name': name,
-      'product id': id,
-      Source: 'Test detail page',
-      Price: price,
-      'Discounted Price': discountedPrice,
-      Quantity: 1,
+      'Item Name': name,
+      'Item ID': id,
+      Source: 'Details page',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
     const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {

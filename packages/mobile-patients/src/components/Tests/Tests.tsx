@@ -393,7 +393,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ...patientAttributes,
         'Keyword Entered': keyword,
         '# Results appeared': results.length,
-        'Item in Results': results,
       };
       postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
     }
@@ -533,7 +532,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 doRequestAndAccessLocation()
                   .then((response) => {
                     setLoadingContext!(false);
-                    checkIsPinCodeServiceable(response.pincode, 'Automatically');
+                    checkIsPinCodeServiceable(response.pincode, 'Auto-select');
                     response && setDiagnosticLocation!(response);
                     response && !locationDetails && setLocationDetails!(response);
                   })
@@ -652,19 +651,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const postHomePageWidgetClicked = (name: string, id: string, section: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED] = {
-      'Product name': name,
-      'Product id (SKUID)': id,
-      Source: 'Home',
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-      Section: section,
+      'Item Name': name,
+      'Item ID': id,
+      Source: 'Home Page',
+      'Section Name': section,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED, eventAttributes);
   };
@@ -676,12 +666,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     discountedPrice: number
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      'product name': name,
-      'product id': id,
+      'Item Name': name,
+      'Item ID': id,
       Source: 'Home page',
-      Price: price,
-      'Discounted Price': discountedPrice,
-      Quantity: 1,
+      Section: 'Featured tests',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
@@ -813,7 +801,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         setLoadingContext!(false);
-        checkIsPinCodeServiceable(response.pincode, 'Automatically');
+        checkIsPinCodeServiceable(response.pincode, 'Auto-select');
       })
       .catch((e) => {
         CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
@@ -1382,7 +1370,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ToAgeInDays: diagnostics?.toAgeInDays,
             preparation: diagnostics?.testPreparationData,
             testDescription: diagnostics?.testDescription,
-            source: 'Landing Page',
+            source: 'Home Page',
             type: diagnostics!.itemType,
           } as TestPackageForDetails,
         });
@@ -1805,6 +1793,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     if (!isDiagnosticLocationServiceable) {
                       return;
                     }
+                    postHomePageWidgetClicked(item?.organName!, item?.id!, 'Browse packages');
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
                         // ...item.diagnostics,
@@ -1818,7 +1807,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         collectionType: product?.collectionType,
                         preparation: product?.testPreparationData,
                         testDescription: product?.testDescription,
-                        source: 'Landing Page',
+                        source: 'Home Page',
                         type: product?.itemType,
                       } as TestPackageForDetails,
                       type: 'Package',
@@ -1939,7 +1928,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   if (!isDiagnosticLocationServiceable) {
                     return;
                   }
-                  postHomePageWidgetClicked(item?.organName!, item?.id!, 'Browse Package');
                   props.navigation.navigate(AppRoutes.TestsByCategory, {
                     title: `${item.organName || 'Products'}`.toUpperCase(),
                     products: [item.diagnostics],
@@ -2667,7 +2655,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ToAgeInDays: toAgeInDays,
             preparation: testPreparationData,
             testDescription: testDescription,
-            source: 'Landing Page',
+            source: 'Partial Search',
             type: itemType,
           } as TestPackageForDetails,
         });
