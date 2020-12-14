@@ -672,6 +672,7 @@
     "total": "TOTAL",
     "greatChoice": "Great choice!",
     "upgradingWithHealthCredits": "We are upgrading you to Circle with your Health Credits to the amount of {credits}HC",
+    "upgradingWithHealthCreditsDesc": "We are upgrading you to Circle with your Health Credits",
     "goAhead": "SURE! GO AHEAD",
     "useAnotherPaymentMethod": "USE ANOTHER PAYMENT METHOD",
     "membershipActivated": "Circle Membership Activated!",

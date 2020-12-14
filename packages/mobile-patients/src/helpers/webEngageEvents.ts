@@ -121,24 +121,24 @@ export enum WebEngageEventName {
   READ_ARTICLES = 'Read Articles',
 
   // Diagnostics Events
-  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed', 
-  DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search', 
+  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
+  DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed', 
+  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic Enter Delivery on location bar',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
-  DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed', 
+  DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
-  DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart', 
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected', 
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked', 
-  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed', 
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked', 
+  DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
+  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
+  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed', 
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to Cart',
-  DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated', 
+  DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -291,7 +291,6 @@ export enum WebEngageEventName {
   VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
   VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
   VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
-  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -307,14 +306,13 @@ export enum WebEngageEventName {
   PHARMA_WEBVIEW_PLAN2 = 'App Pharma Plan 2 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
-  PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE = 'App Pharma Non Circle buys Circle subscription',
+  PURCHASE_CIRCLE = 'Circle Plan Purchased',
 
   //Diagnostic Circle Events
   DIAGNOSTICS_CIRCLE_BANNER_CLICKED = 'App Non-circle banner clicked - Diagnostics',
   DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP = 'App Non-circle Buy Now clicked - Diagnostics',
   DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Non-circle Know more clicked - Diagnostics',
   DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP = 'App circle plan - other payment clicked - Diagnostics',
-  DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED = 'App Circle activated - Diagnostics',
   DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
 
   //My Membership Circle Events
@@ -341,6 +339,10 @@ export enum WebEngageEventName {
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
   NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
   HC_1CLICK_ACTIVATION = 'App - HC - 1ClickActivation',
+
+  //Permissioon Events
+  USER_ALLOWED_PERMISSION = 'User clicked on Allow for permissions',
+  USER_DENIED_PERMISSION = 'User clicked on Not now for permissions',
 }
 
 export interface PatientInfo {
@@ -367,6 +369,14 @@ export interface CircleUserInfo extends UserInfo {
   type?: string; //landing page
   action?: string; //landing page
   from?: string;
+}
+
+export interface CirclePurchaseInfo extends UserInfo {
+  'Membership Type'?: string;
+  'Membership End Date'?: string;
+  'Circle Plan Price'?: string;
+  Type: string;
+  Source?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -600,14 +610,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
-  [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
+  [WebEngageEventName.PURCHASE_CIRCLE]: CirclePurchaseInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
   [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: CircleUserInfo;
-  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: CircleUserInfo;
 
   // ********** MY Membership circle events ********
@@ -635,6 +644,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
   [WebEngageEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
 
+  // ********** PermissionEvents ********** \\
+  [WebEngageEventName.USER_ALLOWED_PERMISSION]: {
+    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
+  };
+  [WebEngageEventName.USER_DENIED_PERMISSION]: {
+    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
+  };
   // ********** PharmacyEvents ********** \\
 
   [WebEngageEventName.SEARCH]: {
@@ -908,7 +924,6 @@ export interface WebEngageEvents {
     'OrderID:': string;
     'Sample Collection Date': string; //Date
   };
-  [WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED]: DiagnosticPinCode;
   [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
     'Product name': string;

@@ -69,6 +69,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
               setTimeout(
                 () =>
                   props.navigation.navigate(AppRoutes.CircleSubscription, {
+                    from: 'Diagnostics',
                     // source: string.banner_context.DIAGNOSTIC_HOME,
                     selectedPlan: selectedPlan,
                     action: 'PAY',

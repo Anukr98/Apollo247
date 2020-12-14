@@ -124,7 +124,6 @@ import {
   Alert,
   AppState,
   AppStateStatus,
-  BackHandler,
   Dimensions,
   FlatList,
   Image as ImageReact,
@@ -469,6 +468,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isCall, setIsCall] = useState<boolean>(false);
   const [onSubscribe, setOnSubscribe] = useState<boolean>(false);
   const isAudio = useRef<boolean>(false);
+  const callKitAppointmentId = useRef<string>('');
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
@@ -899,20 +899,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
-    });
-
-    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    });
     if (!disableChat && status !== STATUS.COMPLETED) {
       callPermissions();
     }
-    return () => {
-      didFocusSubscription && didFocusSubscription.remove();
-      willBlurSubscription && willBlurSubscription.remove();
-    };
   }, []);
 
   useEffect(() => {
@@ -953,28 +942,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const backDataFunctionality = () => {
-    try {
-      console.log(callhandelBack, 'is back called');
-      if (callhandelBack) {
-        // handleCallTheEdSessionAPI();
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          })
-        );
-        return true;
-      } else {
-        return true;
-      }
-    } catch (error) {
-      CommonBugFender('ChatRoom_backDataFunctionality_try', error);
-      console.log(error, 'error');
-    }
-  };
-
   useEffect(() => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
@@ -1005,12 +972,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
         isAudio.current = notification.getData().isVideo ? false : true;
+        callKitAppointmentId.current = payload.appointmentId;
       }
     });
   };
 
   const onAnswerCallAction = () => {
-    joinCallHandler();
+    if (callKitAppointmentId.current === channel) {
+      joinCallHandler();
+    } else {
+      navigateToAnotherAppointment(
+        callKitAppointmentId.current,
+        isAudio.current ? 'AUDIO' : 'VIDEO'
+      );
+    }
   };
 
   const navigateToAnotherAppointment = async (appointmentId: string, callType: string) => {
@@ -2274,7 +2249,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       updateNumberOfParticipants(USER_STATUS.LEAVING);
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
-        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       } catch (error) {
         CommonBugFender('ChatRoom_cleanup_try', error);
       }
@@ -6632,21 +6606,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            if (fromSearchAppointmentScreen) {
-              props.navigation.goBack();
-            } else if (callhandelBack) {
-              // handleCallTheEdSessionAPI();
+            props.navigation.goBack();
+            if (!fromSearchAppointmentScreen && callhandelBack) {
               setDoctorJoinedChat && setDoctorJoinedChat(false);
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                })
-              );
             }
           }}
-          // onPressLeftIcon={() => props.navigation.goBack()}
         />
         {renderChatHeader()}
         {doctorJoinedChat && renderJoinCallHeader()}

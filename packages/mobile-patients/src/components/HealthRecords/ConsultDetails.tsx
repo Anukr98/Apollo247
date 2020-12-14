@@ -498,7 +498,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           );
         }
         setLoading!(false);
-        props.navigation.push(AppRoutes.TestsCart);
+        props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
       })
       .catch((e) => {
         setLoading!(false);

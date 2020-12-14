@@ -225,6 +225,7 @@ export interface MedicineProps
     focusSearch?: boolean;
     showUploadPrescriptionPopup?: boolean; // using for deeplink
     showRecommendedSection?: boolean; // using for deeplink
+    comingFrom?: string;
   }> {}
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
@@ -233,6 +234,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
   const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     locationDetails,
     pharmacyLocation,
@@ -277,7 +279,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     circleSubscriptionId,
     pinCode,
     setPinCode,
-    setCirclePlanValidity
+    setCirclePlanValidity,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -537,13 +539,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     setBannerData && setBannerData([]);
 
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    if (comingFrom == AppRoutes.MembershipDetails) {
+      props.navigation.navigate(AppRoutes.MembershipDetails, {
+        membershipType: string.Circle.planName,
+        source: AppRoutes.Medicine,
+      });
+    } else {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        })
+      );
+    }
+
     return false;
   };
 

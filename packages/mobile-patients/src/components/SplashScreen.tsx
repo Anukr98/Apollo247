@@ -249,23 +249,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
-    if (getCurrentRoute() !== AppRoutes.ChatRoom) {
-      fireWebengageEventForCallDecline();
-      RNCallKeep.endAllCalls();
-      pubnub.publish(
-        {
-          message: { message: '^^#PATIENT_REJECTED_CALL' },
-          channel: voipAppointmentId.current,
-          storeInHistory: true,
-          sendByPost: true,
-        },
-        (status, response) => {
-          voipAppointmentId.current = '';
-          voipPatientId.current = '';
-          voipCallType.current = '';
-        }
-      );
-    }
+    fireWebengageEventForCallDecline();
+    RNCallKeep.endAllCalls();
+    pubnub.publish(
+      {
+        message: { message: '^^#PATIENT_REJECTED_CALL' },
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        voipAppointmentId.current = '';
+        voipPatientId.current = '';
+        voipCallType.current = '';
+      }
+    );
   };
 
   const fireWebengageEventForCallDecline = () => {
@@ -418,6 +416,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'DoctorCallRejected':
             {
+              setLoading!(true);
               const appointmentId = linkId?.split('+')?.[0];
               const config: Pubnub.PubnubConfig = {
                 origin: 'apollo.pubnubapi.com',
@@ -434,7 +433,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   storeInHistory: true,
                   sendByPost: true,
                 },
-                (status, response) => {}
+                (status, response) => {
+                  setLoading!(false);
+                }
               );
             }
             break;

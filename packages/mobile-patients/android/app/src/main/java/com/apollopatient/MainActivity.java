@@ -1,5 +1,6 @@
 package com.apollopatient;
 
+import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -84,12 +85,16 @@ public class MainActivity extends ReactActivity {
             // to close notification when activity is brought front 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancelAll();
                 Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
                 ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
-                ringtone.stop();
                 Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-                vibrator.cancel();
+                KeyguardManager myKM = (KeyguardManager) this.getSystemService(Context.KEYGUARD_SERVICE);
+                if (!myKM.inKeyguardRestrictedInputMode()) {
+                    // device is not locked
+                    notificationManager.cancelAll();
+                    ringtone.stop();
+                    vibrator.cancel();
+                }
             }
         } catch (Exception e) {
             Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());

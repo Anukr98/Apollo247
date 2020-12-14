@@ -32,7 +32,6 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -98,8 +97,6 @@ import {
   ViewStyle,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  Platform,
-  Alert,
   BackHandler,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
@@ -299,10 +296,12 @@ const styles = StyleSheet.create({
 export interface TestsProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
+    comingFrom?: string;
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     cartItems,
     addCartItem,
@@ -370,6 +369,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
+  const [searchResult, setSearchResults] = useState<boolean>(false);
   const hasLocation = locationDetails;
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -478,13 +478,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     setBannerData && setBannerData([]);
 
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    if (comingFrom == AppRoutes.MembershipDetails) {
+      props.navigation.navigate(AppRoutes.MembershipDetails, {
+        membershipType: string.Circle.planName,
+        source: AppRoutes.Tests,
+      });
+    } else {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        })
+      );
+    }
+
     return false;
   };
 
@@ -2039,6 +2047,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setMedicineList(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
           );
+          setSearchResults(products.length == 0);
           setsearchSate('success');
           setWebEngageEventOnSearchItem(_searchText, products);
         })
@@ -2393,8 +2402,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       />
     );
 
-    const itemsNotFound =
-      searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
+    const itemsNotFound = searchSate == 'success' && searchText.length > 2 && searchResult;
     return (
       <View pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}>
         <Input
