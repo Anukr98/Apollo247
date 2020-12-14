@@ -20,12 +20,14 @@ export interface DiagnosticsCartItem {
   id: string;
   name: string;
   mou: number; // package of how many tests (eg. 10)
-  price: number;
+  price: number; //mrp
   thumbnail: string | null;
-  specialPrice?: number | null;
-  circlePrice?: number | null;
-  circleSpecialPrice?: number | null;
-  collectionMethod: TEST_COLLECTION_TYPE; // Home or Clinic (most probably `H` will not be an option)
+  specialPrice?: number | null; //price
+  circlePrice?: number | null; //mrp
+  circleSpecialPrice?: number | null; //price
+  discountPrice?: number | null; //mrp
+  discountSpecialPrice?: number | null; //price
+  collectionMethod: TEST_COLLECTION_TYPE;
   groupPlan?: string;
 }
 
@@ -365,7 +367,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems?.findIndex((item) => item?.id == itemUpdates?.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
       setCartItems([...cartItems]);
@@ -373,24 +375,29 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
-    cartItems.reduce((currTotal, currItem) => currTotal + currItem.price, 0).toFixed(2)
+    cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
   );
 
   const cartSaving: DiagnosticsCartContextProps['cartSaving'] =
     cartTotal -
     parseFloat(
       cartItems
-        .reduce((currTotal, currItem) => currTotal + (currItem.specialPrice || currItem.price), 0)
+        ?.reduce(
+          (currTotal, currItem) =>
+            currTotal +
+            (currItem?.discountSpecialPrice || currItem?.specialPrice || currItem?.price),
+          0
+        )
         .toFixed(2)
     );
 
   const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
     cartItems
-      .reduce(
+      ?.reduce(
         (currTotal, currItem) =>
           currTotal +
-          (currItem.groupPlan == 'CIRCLE'
-            ? currItem.circlePrice! - currItem.circleSpecialPrice!
+          (currItem?.groupPlan == 'CIRCLE'
+            ? currItem?.circlePrice! - currItem?.circleSpecialPrice!
             : 0 || 0),
         0
       )

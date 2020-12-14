@@ -176,6 +176,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
           actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
         })
       );
+      props.navigation.navigate('TESTS', { focusSearch: false });
     } else {
       props.navigation.goBack();
     }
