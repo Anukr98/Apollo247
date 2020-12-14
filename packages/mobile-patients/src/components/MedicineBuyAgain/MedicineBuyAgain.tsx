@@ -2,24 +2,35 @@ import { MedicineListingHeader } from '@aph/mobile-patients/src/components/Medic
 import { MedicineListingProducts } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { GET_PREVIOUS_ORDERS_SKUS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPreviousOrdersSkus,
+  getPreviousOrdersSkusVariables,
+  getPreviousOrdersSkus_getPreviousOrdersSkus_SkuDetails,
+} from '@aph/mobile-patients/src/graphql/types/getPreviousOrdersSkus';
 import { medCartItemsDetailsApi, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-
 export interface Props
   extends NavigationScreenProps<{
     movedFrom?: AppRoutes;
   }> {}
+type SkuDetails = getPreviousOrdersSkus_getPreviousOrdersSkus_SkuDetails;
 
 export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
   const [products, setProducts] = useState<MedicineProduct[]>([]);
   const [isLoading, setLoading] = useState(true);
 
   const { showAphAlert } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
   useEffect(() => {
     fetchProducts();
@@ -27,9 +38,27 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
 
   const fetchProducts = async () => {
     try {
-      const ids = ['DOV0236', 'DOL0026', 'ALL0206'];
-      const response = await medCartItemsDetailsApi(ids);
-      setProducts(response?.data?.productdp || []);
+      const skuResponse = await client.mutate<
+        getPreviousOrdersSkus,
+        getPreviousOrdersSkusVariables
+      >({
+        mutation: GET_PREVIOUS_ORDERS_SKUS,
+        variables: {
+          previousOrdersSkus: {
+            patientId: currentPatient?.id,
+            fromDate: moment()
+              .subtract(6, 'months')
+              .toDate()
+              .getTime(),
+            toDate: new Date().getTime(),
+          },
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const skuDetails = skuResponse?.data?.getPreviousOrdersSkus?.SkuDetails as SkuDetails[];
+      const skuArray = skuDetails?.map(({ sku }) => sku!) || [];
+      const productsResponse = await medCartItemsDetailsApi(skuArray);
+      setProducts(productsResponse?.data?.productdp || []);
       setLoading(false);
     } catch (error) {
       setLoading(false);
