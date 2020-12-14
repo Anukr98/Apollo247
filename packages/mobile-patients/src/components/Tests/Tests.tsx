@@ -13,6 +13,8 @@ import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import DeviceInfo from 'react-native-device-info';
+
 import {
   CartIcon,
   LocationOff,
@@ -93,6 +95,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   BackHandler,
+  Platform,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -841,6 +844,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          context: {
+            headers: {
+              source: Platform.OS,
+              source_version: DeviceInfo.getVersion(),
+            },
+          },
           variables: {
             pincode: parseInt(pincode, 10),
           },
@@ -1638,6 +1647,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+          context: {
+            headers: {
+              source: Platform.OS,
+              source_version: DeviceInfo.getVersion(),
+            },
+          },
           variables: {
             cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
             itemIDs: listOfIds,
@@ -2002,6 +2017,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+          context: {
+            headers: {
+              source: Platform.OS,
+              source_version: DeviceInfo.getVersion(),
+            },
+          },
           variables: {
             searchText: _searchText,
             cityID: parseInt(locationForDiagnostics?.cityId!, 10),

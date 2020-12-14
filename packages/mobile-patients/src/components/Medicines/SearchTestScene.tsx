@@ -7,6 +7,7 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import DeviceInfo from 'react-native-device-info';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -203,6 +204,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     client
       .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
         query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
+        context: {
+          headers: {
+            source: Platform.OS,
+            source_version: DeviceInfo.getVersion(),
+          },
+        },
         variables: {
           patientId: g(currentPatient, 'id') || '',
           type: SEARCH_TYPE.TEST,
@@ -234,6 +241,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+          context: {
+            headers: {
+              source: Platform.OS,
+              source_version: DeviceInfo.getVersion(),
+            },
+          },
           variables: {
             searchText: name,
             cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
@@ -308,6 +321,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     client
       .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
         query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+        context: {
+          headers: {
+            source: Platform.OS,
+            source_version: DeviceInfo.getVersion(),
+          },
+        },
         variables: {
           searchText: _searchText,
           cityID: parseInt(locationForDiagnostics?.cityId!, 10),

@@ -16,6 +16,7 @@ import {
   postFirebaseEvent,
   setCircleMembershipType,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -740,6 +741,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         getPatientAddressListVariables
       >({
         query: GET_PATIENT_ADDRESS_LIST,
+        context: {
+          headers: {
+            source: Platform.OS,
+            source_version: DeviceInfo.getVersion(),
+          },
+        },
         variables: { patientId: userId },
         fetchPolicy: 'no-cache',
       });
@@ -776,6 +783,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          context: {
+            headers: {
+              source: Platform.OS,
+              source_version: DeviceInfo.getVersion(),
+            },
+          },
           variables: {
             pincode: parseInt(pinCodeFromAddress, 10),
           },
@@ -1001,6 +1014,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+          context: {
+            headers: {
+              source: Platform.OS,
+              source_version: DeviceInfo.getVersion(),
+            },
+          },
           variables: {
             //if address is not selected then from pincode bar otherwise from address
             cityID:
@@ -1080,6 +1099,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setLoading!(true);
     client
       .query<getAreas, getAreasVariables>({
+        context: {
+          headers: {
+            source: Platform.OS,
+            source_version: DeviceInfo.getVersion(),
+          },
+        },
         query: GET_DIAGNOSTIC_AREAS,
         fetchPolicy: 'no-cache',
         variables: {
@@ -1251,6 +1276,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
         query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+        context: {
+          headers: {
+            source: Platform.OS,
+            source_version: DeviceInfo.getVersion(),
+          },
+        },
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(date).format('YYYY-MM-DD'),
@@ -2274,6 +2305,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       findDiagnosticsByItemIDsAndCityIDVariables
     >({
       query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+      context: {
+        headers: {
+          source: Platform.OS,
+          source_version: DeviceInfo.getVersion(),
+        },
+      },
       variables: { cityID: cityIdForAddress, itemIDs: itemIds },
       fetchPolicy: 'no-cache',
     });
@@ -2930,6 +2967,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           vaidateDiagnosticCouponVariables
         >({
           query: VALIDATE_DIAGNOSTIC_COUPON,
+          context: {
+            headers: {
+              source: Platform.OS,
+              source_version: DeviceInfo.getVersion(),
+            },
+          },
           variables: {
             couponInput: CouponInput,
           },
@@ -2962,6 +3005,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         getDiagnosticsHCChargesVariables
       >({
         query: GET_DIAGNOSTICS_HC_CHARGES,
+        context: {
+          headers: {
+            source: Platform.OS,
+            source_version: DeviceInfo.getVersion(),
+          },
+        },
         variables: {
           itemIDs: itemWithId,
           totalCharges: cartTotal,

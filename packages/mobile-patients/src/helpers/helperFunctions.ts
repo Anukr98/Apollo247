@@ -2,6 +2,7 @@ import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPackageData,
@@ -1117,6 +1118,12 @@ export const addTestsToCart = async (
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+      context: {
+        headers: {
+          source: Platform.OS,
+          source_version: DeviceInfo.getVersion(),
+        },
+      },
       variables: {
         searchText: name,
         cityID: 9 //will always check for hyderabad, so that items gets added to cart
