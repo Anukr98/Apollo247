@@ -203,6 +203,8 @@ export enum WebEngageEventName {
   PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition - app',
   PHR_DELETE_BILLS = 'PHR Delete Bill - app',
   PHR_DELETE_INSURANCE = 'PHR Delete Insurance - app',
+  PHR_USER_LINKING = 'PHR User Linking - app',
+  PHR_USER_DELINKING = 'PHR User DeLinking -app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
