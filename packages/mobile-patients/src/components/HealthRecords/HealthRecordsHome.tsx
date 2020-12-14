@@ -1256,6 +1256,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.weight,
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
+            isHeightAvailable
+              ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_HEIGHT)
+              : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_HEIGHT);
           }
         } else {
           if (
@@ -1272,6 +1275,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.weight,
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
+            isHeightAvailable
+              ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_HEIGHT)
+              : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_HEIGHT);
           }
         }
       } else if (currentUpdatePopupId === 2) {
@@ -1283,6 +1289,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             weight,
             currentPatient?.patientMedicalHistory?.bloodGroup
           );
+          isWeightAvailable
+            ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_WEIGHT)
+            : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_WEIGHT);
         }
       } else {
         updateMedicalParameters(
@@ -1290,6 +1299,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           currentPatient?.patientMedicalHistory?.weight,
           bloodGroup?.key?.toString() || ''
         );
+        currentPatient?.patientMedicalHistory?.bloodGroup
+          ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_BLOOD_GROUP)
+          : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_BLOOD_GROUP);
       }
     };
 

@@ -1065,9 +1065,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_ALLERGY);
+            postWebEngagePHR('Allergy', WebEngageEventName.PHR_UPDATE_ALLERGY);
           } else {
-            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_ALLERGY);
+            postWebEngagePHR('Allergy', WebEngageEventName.PHR_ADD_ALLERGY);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1117,9 +1117,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_MEDICATION);
+            postWebEngagePHR('Medication', WebEngageEventName.PHR_UPDATE_MEDICATION);
           } else {
-            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_MEDICATION);
+            postWebEngagePHR('Medication', WebEngageEventName.PHR_ADD_MEDICATION);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1166,9 +1166,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_HEALTH_RESTRICTIONS);
+            postWebEngagePHR(
+              'Health Restriction',
+              WebEngageEventName.PHR_UPDATE_HEALTH_RESTRICTIONS
+            );
           } else {
-            postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_HEALTH_RESTRICTIONS);
+            postWebEngagePHR('Health Restriction', WebEngageEventName.PHR_ADD_HEALTH_RESTRICTIONS);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1213,9 +1216,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         if (selectedRecord) {
-          postWebEngagePHR('Health Condition', WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION);
+          postWebEngagePHR('Medical Condition', WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION);
         } else {
-          postWebEngagePHR('Health Condition', WebEngageEventName.PHR_ADD_MEDICAL_CONDITION);
+          postWebEngagePHR('Medical Condition', WebEngageEventName.PHR_ADD_MEDICAL_CONDITION);
         }
         gotoHealthRecordsHomeScreen();
       })

@@ -259,13 +259,13 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   const healthConditionDeleteWebEngageEvents = (recordType: MedicalRecordType) => {
     if (recordType === MedicalRecordType.ALLERGY) {
-      postWebEngagePHR('Health Condition', WebEngageEventName.PHR_DELETE_ALLERGY);
+      postWebEngagePHR('Allergy', WebEngageEventName.PHR_DELETE_ALLERGY);
     } else if (recordType === MedicalRecordType.MEDICATION) {
-      postWebEngagePHR('Health Condition', WebEngageEventName.PHR_DELETE_MEDICATION);
+      postWebEngagePHR('Medication', WebEngageEventName.PHR_DELETE_MEDICATION);
     } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
-      postWebEngagePHR('Health Condition', WebEngageEventName.PHR_DELETE_HEALTH_RESTRICTIONS);
+      postWebEngagePHR('Health Restriction', WebEngageEventName.PHR_DELETE_HEALTH_RESTRICTIONS);
     } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
-      postWebEngagePHR('Health Condition', WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION);
+      postWebEngagePHR('Medical Condition', WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION);
     }
   };
 
