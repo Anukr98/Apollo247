@@ -203,7 +203,12 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
-          postWebEngagePHR('Insurance', WebEngageEventName.PHR_DELETE_INSURANCE);
+          postWebEngagePHR(
+            currentPatient,
+            WebEngageEventName.PHR_DELETE_INSURANCE,
+            'Insurance',
+            selectedItem
+          );
         } else {
           setShowSpinner(false);
         }

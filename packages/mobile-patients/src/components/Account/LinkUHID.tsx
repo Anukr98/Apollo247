@@ -227,7 +227,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
     linkUHIDs(client, selectedPrimary, selectedSecondary)
       .then((data) => {
         setLoading && setLoading(false);
-        postWebEngagePHR('LINK UHID', WebEngageEventName.PHR_USER_LINKING);
+        postWebEngagePHR(currentPatient, WebEngageEventName.PHR_USER_LINKING, 'LINK UHID');
         getPatientApiCall();
         props.navigation.navigate(AppRoutes.ManageProfile);
       })
@@ -243,7 +243,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
     deLinkUHIDs(client, selectedPrimary, delinkSecondaryUHIDs)
       .then((data) => {
         setLoading && setLoading(false);
-        postWebEngagePHR('DELINK UHID', WebEngageEventName.PHR_USER_DELINKING);
+        postWebEngagePHR(currentPatient, WebEngageEventName.PHR_USER_DELINKING, 'DELINK UHID');
         getPatientApiCall();
         props.navigation.navigate(AppRoutes.ManageProfile);
       })
