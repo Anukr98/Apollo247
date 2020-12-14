@@ -128,12 +128,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     circleSubscriptionId,
     isCircleSubscription,
     isFreeDelivery,
-    setIsCircleSubscription,
-    setDefaultCirclePlan,
-    setCirclePlanSelected,
-    setCircleMembershipCharges,
-    defaultCirclePlan,
-    circlePlanSelected,
   } = useShoppingCart();
 
   type bankOptions = {
@@ -161,10 +155,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const client = useApolloClient();
-  const [showApplyBenefits, setShowApplyBenefits] = useState<boolean>(false);
-  const [defaultPlan, setDefaultPlan] = useState(defaultCirclePlan);
-  const [planSelected, setPlanSelected] = useState(circlePlanSelected);
-  const [planCharges, setPlanCharges] = useState(circleMembershipCharges);
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
@@ -1213,64 +1203,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
   };
 
-  const renderApplyCircleBenefits = () => {
-    return (
-      <TouchableOpacity
-        style={{
-          flexDirection: 'row',
-          ...theme.viewStyles.cardViewStyle,
-          marginHorizontal: 15,
-          padding: 10,
-        }}
-        activeOpacity={0.7}
-        onPress={() => {
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setDefaultCirclePlan && setDefaultCirclePlan(null);
-          setCirclePlanSelected && setCirclePlanSelected(null);
-          setCircleMembershipCharges && setCircleMembershipCharges(0);
-          setShowApplyBenefits(true);
-        }}
-      >
-        <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
-        <CareCashbackBanner
-          bannerText={`benefits APPLIED!`}
-          textStyle={styles.circleText}
-          logoStyle={styles.circleLogo}
-        />
-      </TouchableOpacity>
-    );
-  };
-
-  const renderApplyCircleBenefitsAgain = () => {
-    return (
-      <TouchableOpacity
-        style={{
-          flexDirection: 'row',
-          ...theme.viewStyles.cardViewStyle,
-          marginHorizontal: 15,
-          padding: 10,
-          marginTop: 15,
-        }}
-        activeOpacity={0.7}
-        onPress={() => {
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setDefaultCirclePlan && setDefaultCirclePlan(defaultPlan);
-          setCirclePlanSelected && setCirclePlanSelected(planSelected);
-          setCircleMembershipCharges && setCircleMembershipCharges(planCharges);
-          setShowApplyBenefits(false);
-        }}
-      >
-        <CheckUnselectedIcon style={{ marginTop: 8, marginRight: 4 }} />
-        <Text style={styles.circleText}>Apply </Text>
-        <CareCashbackBanner
-          bannerText={`benefits instead.`}
-          textStyle={styles.circleText}
-          logoStyle={styles.circleLogo}
-        />
-      </TouchableOpacity>
-    );
-  };
-
   let ScrollViewRef: any;
   return (
     <View style={{ flex: 1 }}>
@@ -1284,8 +1216,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           >
             {rendertotalAmount()}
             {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
-            {!!cartTotalCashback && isCircleSubscription && renderApplyCircleBenefits()}
-            {showApplyBenefits && renderApplyCircleBenefitsAgain()}
             {availableHC != 0 && renderOneApolloOption()}
             {renderNewCOD()}
             {renderPaymentOptions()}
@@ -1470,14 +1400,5 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 11, theme.colors.LIGHT_BLUE, 1, 18),
     marginTop: 6,
     marginHorizontal: 25,
-  },
-  circleText: {
-    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
-    paddingTop: 12,
-  },
-  circleLogo: {
-    resizeMode: 'contain',
-    width: 50,
-    height: 40,
   },
 });
