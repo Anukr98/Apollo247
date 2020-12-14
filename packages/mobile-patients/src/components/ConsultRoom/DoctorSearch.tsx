@@ -329,6 +329,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
   const [Specialities, setSpecialities] = useState<getAllSpecialties_getAllSpecialties[]>([]);
+  const [AllSpecialities, setAllSpecialities] = useState<getAllSpecialties_getAllSpecialties[]>([]);
   const [TopSpecialities, setTopSpecialities] = useState<getAllSpecialties_getAllSpecialties[]>([]);
   const [searchSpecialities, setsearchSpecialities] = useState<
     (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null)[] | null
@@ -343,11 +344,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [isSearching, setisSearching] = useState<boolean>(false);
   const [showPastSearchSpinner, setshowPastSearchSpinner] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState({});
-
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const [showList, setShowList] = useState<boolean>(false);
-  const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(true);
+  const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
+  const [gender, setGender] = useState<string>(currentPatient?.gender);
 
   useEffect(() => {
     newUserPastSearch();
@@ -481,6 +482,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             data.getAllSpecialties.length
           ) {
             sortSpecialities(data.getAllSpecialties);
+            setShowProfilePopUp(true);
           }
         } catch (e) {
           CommonBugFender('DoctorSearch_fetchSpecialities_try', e);
@@ -503,6 +505,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       }
       return 0;
     });
+    setAllSpecialities(specialities);
     setSpecialities(specialities);
     setshowSpinner(false);
     AsyncStorage.setItem('SpecialistData', JSON.stringify(specialities));
@@ -510,9 +513,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     fetchTopSpecialities(specialities);
   };
 
+  useEffect(() => {
+    AllSpecialities?.length && fetchTopSpecialities(AllSpecialities);
+  }, [gender]);
+
   const fetchTopSpecialities = (data: getAllSpecialties_getAllSpecialties[]) => {
     const topSpecialityIDs = AppConfig.Configuration.TOP_SPECIALITIES;
-    topSpecialityIDs.sort(function(a, b) {
+    const specialities = topSpecialityIDs?.filter(
+      (item) => item.gender == 'UNISEX' || item.gender == gender
+    );
+    specialities?.sort(function(a, b) {
       if (a.speciality_order < b.speciality_order) {
         return -1;
       }
@@ -522,7 +532,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       return 0;
     });
     const topSpecialities: any = [];
-    topSpecialityIDs.forEach((ids) => {
+    specialities?.forEach((ids) => {
       let array = data.filter((item) => {
         return ids.speciality_id == item.id;
       });
@@ -560,7 +570,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               'Past Searches': data.getPatientPastSearches,
             };
             postWebEngageEvent(WebEngageEventName.PAST_DOCTOR_SEARCH, eventAttributes);
-            console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }
           !!searchText && fetchSearchData();
@@ -1267,6 +1276,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const selectUser = (selectedUser: any) => {
+    setGender(selectedUser?.gender);
+    setCurrentPatientId(selectedUser?.id);
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
     AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
     AsyncStorage.setItem('isNewProfile', 'yes');

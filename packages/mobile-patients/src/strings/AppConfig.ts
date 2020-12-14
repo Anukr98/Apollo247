@@ -81,102 +81,138 @@ const appStaticVariables = {
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
 };
 
-const DEV_top6_specailties = [
+const DEV_top_specialties = [
   {
     speciality_id: '4145727e-e3a4-4219-814b-d0f10df9b2f1',
     speciality_order: '1',
     speciality_name: 'General Physician/ Internal Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'bf0cc02f-1422-45e6-86ee-4ab2b35ffc02',
-    speciality_order: '5',
+    speciality_order: '6',
     speciality_name: 'Cardiology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '3ea4faf5-05b2-4c58-8e00-f6ee71f4eb7d',
-    speciality_order: '6',
+    speciality_order: '7',
     speciality_name: 'Gastroenterology/ GI Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'e3ede210-b0bb-4100-919d-2086afdbe89e',
-    speciality_order: '3',
+    speciality_order: '4',
     speciality_name: 'Dermatology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '22bd8220-327c-433f-a112-2a2f89216859',
     speciality_order: '2',
     speciality_name: 'Obstetrics & Gynaecology',
+    gender: 'FEMALE',
   },
   {
     speciality_id: '0735146e-bd51-4b7c-b7a1-234efc1b259d',
-    speciality_order: '4',
+    speciality_order: '5',
     speciality_name: 'Paediatrics',
+    gender: 'UNISEX',
+  },
+  {
+    speciality_id: '03457e8f-d8e2-4647-ae7a-16028f754df8',
+    speciality_order: '3',
+    speciality_name: 'Urology',
+    gender: 'MALE',
   },
 ];
 
-const QA_top6_specailties = [
+const QA_top_specialties = [
   {
     speciality_id: '4145727e-e3a4-4219-814b-d0f10df9b2f1',
     speciality_order: '1',
     speciality_name: 'General Physician/ Internal Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'bf0cc02f-1422-45e6-86ee-4ab2b35ffc02',
-    speciality_order: '5',
+    speciality_order: '6',
     speciality_name: 'Cardiology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '3ea4faf5-05b2-4c58-8e00-f6ee71f4eb7d',
-    speciality_order: '6',
+    speciality_order: '7',
     speciality_name: 'Gastroenterology/ GI Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'e3ede210-b0bb-4100-919d-2086afdbe89e',
-    speciality_order: '3',
+    speciality_order: '5',
     speciality_name: 'Dermatology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '22bd8220-327c-433f-a112-2a2f89216859',
     speciality_order: '2',
     speciality_name: 'Obstetrics & Gynaecology',
+    gender: 'FEMALE',
   },
   {
     speciality_id: '0735146e-bd51-4b7c-b7a1-234efc1b259d',
     speciality_order: '4',
     speciality_name: 'Paediatrics',
+    gender: 'UNISEX',
+  },
+  {
+    speciality_id: '03457e8f-d8e2-4647-ae7a-16028f754df8',
+    speciality_order: '3',
+    speciality_name: 'Urology',
+    gender: 'MALE',
   },
 ];
 
-const top6_specailties = [
+const top_specialties = [
   {
     speciality_id: '615ebc75-4172-4f46-9ba0-b3688c053fcc',
     speciality_order: '1',
     speciality_name: 'General Physician/ Internal Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'f325ede7-8710-49a6-b0ea-32ddc06f2b4c',
-    speciality_order: '5',
+    speciality_order: '6',
     speciality_name: 'Cardiology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '789b2a65-1d81-4023-92c8-39959ca8a7ed',
-    speciality_order: '6',
+    speciality_order: '7',
     speciality_name: 'Gastroenterology/ GI Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '73dae7a6-ec1f-45c4-98bd-0c8acb6e4eca',
-    speciality_order: '3',
+    speciality_order: '4',
     speciality_name: 'Dermatology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'd67d4978-a14a-46c8-8af8-697823bfcadf',
     speciality_order: '2',
     speciality_name: 'Obstetrics & Gynaecology',
+    gender: 'FEMALE',
   },
   {
     speciality_id: '1f110338-87d5-430c-b10a-8b3eddd54732',
-    speciality_order: '4',
+    speciality_order: '5',
     speciality_name: 'Paediatrics',
+    gender: 'UNISEX',
+  },
+  {
+    speciality_id: 'd188a910-996b-4478-b014-72a8ec54312e',
+    speciality_order: '3',
+    speciality_name: 'Urology',
+    gender: 'MALE',
   },
 ];
 
@@ -304,7 +340,7 @@ const ConfigurationDev = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: DEV_top6_specailties,
+  TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -355,7 +391,7 @@ const ConfigurationQA = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -406,7 +442,7 @@ const ConfigurationQA2 = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -457,7 +493,7 @@ const ConfigurationQA3 = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -501,7 +537,7 @@ const ConfigurationVAPT = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -551,7 +587,7 @@ const ConfigurationProd = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: top6_specailties,
+  TOP_SPECIALITIES: top_specialties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   ...Apollo247Config.prod,
@@ -600,7 +636,7 @@ const ConfigurationPERFORM = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: DEV_top6_specailties,
+  TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -652,7 +688,7 @@ const ConfigurationDevReplica = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
