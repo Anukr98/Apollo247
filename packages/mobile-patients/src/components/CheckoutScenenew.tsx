@@ -892,10 +892,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 setBurnHC(getFormattedAmount(grandTotal - deliveryCharges - packagingCharges));
                 if (deliveryCharges + packagingCharges == 0) {
                   setHCorder(true);
-                  setScrollToend(true);
-                  setTimeout(() => {
-                    setScrollToend(false);
-                  }, 500);
                 }
               } else {
                 setBurnHC(availableHC);
