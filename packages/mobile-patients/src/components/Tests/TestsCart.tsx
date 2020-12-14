@@ -797,10 +797,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
               });
           } else {
+            setLoading!(false);
             showAphAlert!({
               unDismissable: true,
               title: string.common.uhOh,
-              description: string.diagnostics.nonServiceableConfigPinCodeMsg,
+              description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
+                '{{pincode}}',
+                pinCodeFromAddress
+              ),
+              onPressOk: () => {
+                hideAphAlert!();
+              },
             });
           }
         })
