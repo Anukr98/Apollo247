@@ -27,8 +27,6 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  ADD_MEDICAL_RECORD,
-  ADD_PATIENT_HEALTH_CHECK_RECORD,
   ADD_PATIENT_HOSPITALIZATION_RECORD,
   ADD_PATIENT_LAB_TEST_RECORD,
   ADD_PATIENT_MEDICAL_BILL_RECORD,
@@ -41,7 +39,6 @@ import {
   DELETE_HEALTH_RECORD_FILES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
-import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
 import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
 import { addPatientMedicalBillRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalBillRecord';
 import { addPatientMedicalInsuranceRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalInsuranceRecord';
@@ -102,10 +99,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { Overlay, ListItem } from 'react-native-elements';
 import _ from 'lodash';
 const { width } = Dimensions.get('window');
@@ -1011,7 +1005,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientPrescriptionRecord', 'status');
         if (status) {
-          postWebEngagePHR('Prescription', WebEngageEventName.PHR_ADD_PRESCRIPTIONS);
+          if (selectedRecord) {
+            postWebEngagePHR(
+              'Doctor Consultation',
+              WebEngageEventName.PHR_UPDATE_DOCTOR_CONSULTATION
+            );
+          } else {
+            postWebEngagePHR(
+              'Doctor Consultation',
+              WebEngageEventName.PHR_ADD_DOCTOR_CONSULTATIONS
+            );
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1060,6 +1064,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
+          if (selectedRecord) {
+            postWebEngagePHR('Allergy', WebEngageEventName.PHR_UPDATE_ALLERGY);
+          } else {
+            postWebEngagePHR('Allergy', WebEngageEventName.PHR_ADD_ALLERGY);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1107,6 +1116,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
+          if (selectedRecord) {
+            postWebEngagePHR('Medication', WebEngageEventName.PHR_UPDATE_MEDICATION);
+          } else {
+            postWebEngagePHR('Medication', WebEngageEventName.PHR_ADD_MEDICATION);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1151,6 +1165,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
+          if (selectedRecord) {
+            postWebEngagePHR(
+              'Health Restriction',
+              WebEngageEventName.PHR_UPDATE_HEALTH_RESTRICTIONS
+            );
+          } else {
+            postWebEngagePHR('Health Restriction', WebEngageEventName.PHR_ADD_HEALTH_RESTRICTIONS);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1193,6 +1215,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
+        if (selectedRecord) {
+          postWebEngagePHR('Medical Condition', WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION);
+        } else {
+          postWebEngagePHR('Medical Condition', WebEngageEventName.PHR_ADD_MEDICAL_CONDITION);
+        }
         gotoHealthRecordsHomeScreen();
       })
       .catch((e) => {
@@ -1231,7 +1258,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientLabTestRecord', 'status');
         if (status) {
-          postWebEngagePHR('Lab Test', WebEngageEventName.PHR_ADD_LAB_TESTS);
+          if (selectedRecord) {
+            postWebEngagePHR('Test Report', WebEngageEventName.PHR_UPDATE_TEST_REPORT);
+          } else {
+            postWebEngagePHR('Test Report', WebEngageEventName.PHR_ADD_TEST_REPORT);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1240,57 +1271,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
-      });
-  };
-
-  const addPatientHealthCheckRecords = () => {
-    let inputData =
-      Images.length > 0
-        ? {
-            patientId: currentPatient ? currentPatient.id : '',
-            healthCheckName: testName,
-            healthCheckDate:
-              dateOfTest !== ''
-                ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
-                : '',
-            recordType: typeofRecord,
-            healthCheckFiles: {
-              fileName: Images[0].title + '.' + Images[0].fileType,
-              mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
-              content: Images[0].base64,
-            },
-          }
-        : {
-            patientId: currentPatient ? currentPatient.id : '',
-            healthCheckName: testName,
-            healthCheckDate:
-              dateOfTest !== ''
-                ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
-                : '',
-            recordType: typeofRecord,
-          };
-    client
-      .mutate<addPatientHealthCheckRecord>({
-        mutation: ADD_PATIENT_HEALTH_CHECK_RECORD,
-        variables: {
-          AddHealthCheckRecordInput: inputData,
-        },
-      })
-      .then(({ data }) => {
-        setshowSpinner(false);
-        const status = g(data, 'addPatientHealthCheckRecord', 'status');
-        if (status) {
-          postWebEngagePHR('Health Check Record', WebEngageEventName.PHR_ADD_HEALTH_CHECKS);
-          props.navigation.goBack();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PATIENT_HEALTH_CHECK_RECORD', e);
-        setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
-        Alert.alert('Alert', 'Please fill all the details', [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ]);
       });
   };
 
@@ -1321,7 +1301,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
         if (status) {
-          postWebEngagePHR('Discharge Summary Record', WebEngageEventName.PHR_ADD_HOSPITALIZATIONS);
+          if (selectedRecord) {
+            postWebEngagePHR('Hospitalization', WebEngageEventName.PHR_UPDATE_HOSPITALIZATIONS);
+          } else {
+            postWebEngagePHR('Hospitalization', WebEngageEventName.PHR_ADD_HOSPITALIZATIONS);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1359,6 +1343,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalBillRecord', 'status');
         if (status) {
+          if (selectedRecord) {
+            postWebEngagePHR('Bill', WebEngageEventName.PHR_UPDATE_BILLS);
+          } else {
+            postWebEngagePHR('Bill', WebEngageEventName.PHR_ADD_BILLS);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1402,6 +1391,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalInsuranceRecord', 'status');
         if (status) {
+          if (selectedRecord) {
+            postWebEngagePHR('Insurance', WebEngageEventName.PHR_UPDATE_INSURANCE);
+          } else {
+            postWebEngagePHR('Insurance', WebEngageEventName.PHR_ADD_INSURANCE);
+          }
           gotoHealthRecordsHomeScreen();
         }
       })

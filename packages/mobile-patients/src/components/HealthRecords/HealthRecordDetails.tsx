@@ -42,6 +42,7 @@ import {
   handleGraphQlError,
   postWebEngagePHR,
   getSourceName,
+  HEALTH_CONDITIONS_TITLE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -762,14 +763,28 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'Discharge Summary'
       : prescriptions
       ? 'Prescription'
+      : medicalBill
+      ? 'Bills'
+      : medicalInsurance
+      ? 'Insurance'
       : 'Lab Test';
     const webEngageEventName: WebEngageEventName = healthCheck
       ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
       : hospitalization
       ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
       : prescriptions
-      ? WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS
-      : WebEngageEventName.PHR_DOWNLOAD_LAB_TESTS;
+      ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
+      : medicalBill
+      ? WebEngageEventName.PHR_DOWNLOAD_BILLS
+      : medicalInsurance
+      ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
+      : healthCondition
+      ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
+        ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
+        : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
+        ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
+        : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
+      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : g(data, 'healthCheckFiles', '0', 'fileName')

@@ -946,7 +946,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       switch (id) {
         case 1:
           setCallApi(true);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_PRESCRIPTIONS);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_DOCTOR_CONSULTATIONS);
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
             consultArray: arrayValues,
             prescriptionArray: prescriptions,
@@ -955,8 +955,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 2:
           setCallApi(true);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_LAB_TESTS);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CHECKS);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_TEST_REPORTS);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
             testReportsData: testAndHealthCheck,
             onPressBack: onBackArrowPressed,
@@ -964,7 +963,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 3:
           setCallApi(true);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HOSPITALIZATIONS);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HOSPITALIZATIONS);
           props.navigation.navigate(AppRoutes.HospitalizationScreen, {
             hospitalizationData: hospitalizationsNew,
             onPressBack: onBackArrowPressed,
@@ -972,6 +971,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 4:
           setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HEALTH_CONDITIONS);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
             allergyArray: medicalAllergies,
             medicalConditionArray: medicalConditions,
@@ -982,6 +982,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 5:
           setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_BILLS);
           props.navigation.navigate(AppRoutes.BillScreen, {
             medicalBillsData: medicalBills,
             onPressBack: onBackArrowPressed,
@@ -989,6 +990,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 6:
           setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_INSURANCES);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
             medicalInsuranceData: medicalInsurance,
             onPressBack: onBackArrowPressed,
@@ -1254,6 +1256,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.weight,
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
+            isHeightAvailable
+              ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_HEIGHT)
+              : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_HEIGHT);
           }
         } else {
           if (
@@ -1270,6 +1275,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.weight,
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
+            isHeightAvailable
+              ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_HEIGHT)
+              : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_HEIGHT);
           }
         }
       } else if (currentUpdatePopupId === 2) {
@@ -1281,6 +1289,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             weight,
             currentPatient?.patientMedicalHistory?.bloodGroup
           );
+          isWeightAvailable
+            ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_WEIGHT)
+            : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_WEIGHT);
         }
       } else {
         updateMedicalParameters(
@@ -1288,6 +1299,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           currentPatient?.patientMedicalHistory?.weight,
           bloodGroup?.key?.toString() || ''
         );
+        currentPatient?.patientMedicalHistory?.bloodGroup
+          ? tabsClickedWebEngageEvent(WebEngageEventName.PHR_UPDATE_BLOOD_GROUP)
+          : tabsClickedWebEngageEvent(WebEngageEventName.PHR_ADD_BLOOD_GROUP);
       }
     };
 

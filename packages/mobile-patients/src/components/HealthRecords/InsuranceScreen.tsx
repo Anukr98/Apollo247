@@ -25,6 +25,8 @@ import {
   editDeleteData,
   handleGraphQlError,
   phrSortWithDate,
+  postWebEngagePHR,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -37,6 +39,10 @@ import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsu
 import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -197,6 +203,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
+          postWebEngagePHR('Insurance', WebEngageEventName.PHR_DELETE_INSURANCE);
         } else {
           setShowSpinner(false);
         }
@@ -273,6 +280,10 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
           title={`ADD DATA`}
           onPress={() => {
             setCallApi(false);
+            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+              Source: 'Insurance',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'MedicalInsurance',
               recordType: MedicalRecordType.MEDICALINSURANCE,

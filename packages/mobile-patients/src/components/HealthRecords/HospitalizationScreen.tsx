@@ -31,6 +31,7 @@ import {
   editDeleteData,
   handleGraphQlError,
   phrSortWithDate,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -199,6 +200,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHospitalizationRecords();
+          postWebEngagePHR('Hospitalization', WebEngageEventName.PHR_DELETE_HOSPITALIZATIONS);
         } else {
           setShowSpinner(false);
         }

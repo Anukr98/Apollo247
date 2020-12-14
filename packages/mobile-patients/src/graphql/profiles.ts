@@ -2287,22 +2287,6 @@ export const SAVE_NOTIFICATION_SETTINGS = gql`
 //   }
 // `;
 
-export const ADD_MEDICAL_RECORD = gql`
-  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
-    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
-      status
-    }
-  }
-`;
-
-export const ADD_PATIENT_HEALTH_CHECK_RECORD = gql`
-  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
-    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
-      status
-    }
-  }
-`;
-
 export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
   mutation addPatientHospitalizationRecord(
     $AddHospitalizationRecordInput: AddHospitalizationRecordInput
@@ -2324,49 +2308,6 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
 export const GET_MEDICAL_PRISM_RECORD = gql`
   query getPatientPrismMedicalRecords($patientId: ID!) {
     getPatientPrismMedicalRecords(patientId: $patientId) {
-      labTests {
-        id
-        labTestName
-        labTestSource
-        labTestDate
-        labTestReferredBy
-        additionalNotes
-        testResultPrismFileIds
-        observation
-        labTestResultParameters {
-          parameterName
-          unit
-          result
-          range
-          setOutOfRange
-          setResultDate
-          setUnit
-          setParameterName
-          setRange
-          setResult
-        }
-        departmentName
-        signingDocName
-      }
-      healthChecks {
-        id
-        healthCheckName
-        healthCheckDate
-        healthCheckPrismFileIds
-        healthCheckSummary
-        source
-        appointmentDate
-        followupDate
-      }
-      hospitalizations {
-        id
-        diagnosisNotes
-        dateOfDischarge
-        dateOfHospitalization
-        dateOfNextVisit
-        hospitalizationPrismFileIds
-        source
-      }
       labResults {
         response {
           id

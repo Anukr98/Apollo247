@@ -42,6 +42,7 @@ import {
   editDeleteData,
   getSourceName,
   phrSortByDate,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -647,6 +648,10 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestPrescriptionRecords();
+          postWebEngagePHR(
+            'Doctor Consultation',
+            WebEngageEventName.PHR_DELETE_DOCTOR_CONSULTATION
+          );
         } else {
           setShowSpinner(false);
         }
@@ -759,7 +764,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
-              Source: 'Consult & RX',
+              Source: 'Doctor Consultation',
             };
             postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {

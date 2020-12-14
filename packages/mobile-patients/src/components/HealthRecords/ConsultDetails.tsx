@@ -1013,7 +1013,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       CommonLogEvent('CONSULT_DETAILS', 'No image');
     } else {
       postWEGEvent('download prescription');
-      postWebEngagePHR('Prescription', WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS);
+      postWebEngagePHR('Doctor Consultation', WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION);
       const dirs = RNFetchBlob.fs.dirs;
 
       const fileName: string = getFileName();
@@ -1108,7 +1108,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Header
-            title={'CONSULT & RX DETAILS'}
+            title={'DOCTOR CONSULTATIONS DETAILS'}
             leftIcon="backArrow"
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={
