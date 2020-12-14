@@ -151,6 +151,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
 
+  const getDiscountObject = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+  );
+
   const allCirclePlanObjects =
     getCircleObject?.map((item) =>
       item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
@@ -159,6 +163,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     getAllObject?.map((item) =>
       item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)
     ) || [];
+
+  const allSpecialPlanObjects =
+    getDiscountObject?.map((item) =>
+      item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT)
+    ) || [];
+
   const discountCirclePrice =
     allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountCirclePrice });
@@ -167,8 +177,16 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     allNormalPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountNormalPrice });
 
+  const discountSpecialPrice =
+    allSpecialPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
+  console.log({ discountSpecialPrice });
+
   const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
   const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+  const totalDiscountSaving = discountSpecialPrice?.reduce(
+    (prevVal, currVal) => prevVal + currVal,
+    0
+  );
 
   /**
    * to handle the quantity
@@ -183,7 +201,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
 
   const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
 
-  const grossCharges = totalIndividualDiagonsticsCharges! + totalCartSaving! + totalCircleSaving!;
+  const grossCharges =
+    totalIndividualDiagonsticsCharges! +
+    totalCartSaving! +
+    totalCircleSaving! +
+    totalDiscountSaving!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
