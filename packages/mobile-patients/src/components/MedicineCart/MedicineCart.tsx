@@ -279,7 +279,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }
 
   const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
+    userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Pharmacy')
       .then(async (resp: any) => {
         console.log(resp.data);
         if (resp.data.errorCode == 0) {

@@ -127,7 +127,7 @@ export interface pharma_coupon {
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
-  // const isTest = props.navigation.getParam('isTest');
+  const isDiag = props.navigation.getParam('isDiag');
   const [couponText, setCouponText] = useState<string>('');
   const [couponMsg, setcouponMsg] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
@@ -152,13 +152,13 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { 
-    locationDetails, 
-    pharmacyLocation, 
-    hdfcPlanId, 
-    circlePlanId, 
-    hdfcStatus, 
-    circleStatus 
+  const {
+    locationDetails,
+    pharmacyLocation,
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
   } = useAppCommonData();
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
@@ -169,7 +169,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
   if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`)
+    packageId.push(`APOLLO:${circlePlanId}`);
   }
 
   useEffect(() => {
@@ -177,6 +177,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       packageId: packageId.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
+      type: isDiag ? 'Diag' : 'Pharmacy',
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
