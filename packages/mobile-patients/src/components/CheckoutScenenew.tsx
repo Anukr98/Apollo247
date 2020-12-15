@@ -566,7 +566,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         subscriptionDetails: circleSubscriptionId
           ? { userSubscriptionId: circleSubscriptionId }
           : null,
-        planPurchaseDetails: circleSubPlanId
+        planPurchaseDetails: !!circleMembershipCharges
           ? {
               TYPE: Circle.CARE_PLAN,
               PlanAmount: circleMembershipCharges || 0,
