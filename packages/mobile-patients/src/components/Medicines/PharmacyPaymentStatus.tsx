@@ -381,7 +381,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusIcon = () => {
-    if (status === success) {
+    if (status === success || paymentMode === 'COD') {
       return <Success style={styles.statusIconStyles} />;
     } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
@@ -410,7 +410,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusCardColour = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       return colors.SUCCESS;
     } else if (status == failure || status == aborted) {
       return colors.FAILURE;
@@ -422,7 +422,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const statusText = () => {
     let message = 'PAYMENT PENDING';
     let textColor = theme.colors.PENDING_TEXT;
-    if (status === success) {
+    if (paymentMode === 'COD') {
+      message = ' ORDER CONFIRMED';
+      textColor = theme.colors.SUCCESS_TEXT;
+    } else if (status === success) {
       message = ' PAYMENT SUCCESSFUL';
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
@@ -574,7 +577,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const getButtonText = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       return 'TRACK ORDER';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
@@ -613,7 +616,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const handleButton = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       clearCircleSubscriptionData();
       props.navigation.navigate(AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
@@ -653,7 +656,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             {getButtonText()}
           </Text>
         </TouchableOpacity>
-        {status === success && (
+        {(status === success || paymentMode === 'COD') && (
           <TouchableOpacity
             style={styles.textButtonStyle}
             onPress={() => {

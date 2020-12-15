@@ -127,7 +127,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
   if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`)
+    packageId.push(`APOLLO:${circlePlanId}`);
   }
 
   const renderErrorPopup = (desc: string) =>
@@ -141,6 +141,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
       packageId: packageId.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
+      type: 'Consult',
     };
     fetchConsultCoupons(data)
       .then((res: any) => {

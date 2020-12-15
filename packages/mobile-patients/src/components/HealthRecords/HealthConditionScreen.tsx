@@ -32,6 +32,9 @@ import {
   getSourceName,
   handleGraphQlError,
   phrSortWithDate,
+  postWebEngagePHR,
+  postWebEngageEvent,
+  HEALTH_CONDITIONS_TITLE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -48,6 +51,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -235,19 +242,54 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   const onHealthCardItemPress = (selectedItem: any) => {
     const headerTitle = selectedItem?.allergyName
-      ? 'ALLERGIES DETAIL'
+      ? HEALTH_CONDITIONS_TITLE.ALLERGY
       : selectedItem?.medicineName
-      ? 'MEDICATION'
+      ? HEALTH_CONDITIONS_TITLE.MEDICATION
       : selectedItem?.restrictionName
-      ? 'RESTRICTION'
+      ? HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION
       : selectedItem?.medicalConditionName
-      ? 'MEDICAL CONDITION'
+      ? HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
       : '';
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       healthCondition: true,
       healthHeaderTitle: headerTitle,
     });
+  };
+
+  const healthConditionDeleteWebEngageEvents = (
+    recordType: MedicalRecordType,
+    selectedItem: any
+  ) => {
+    if (recordType === MedicalRecordType.ALLERGY) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_ALLERGY,
+        'Allergy',
+        selectedItem
+      );
+    } else if (recordType === MedicalRecordType.MEDICATION) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_MEDICATION,
+        'Medication',
+        selectedItem
+      );
+    } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_HEALTH_RESTRICTIONS,
+        'Health Restriction',
+        selectedItem
+      );
+    } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION,
+        'Medical Condition',
+        selectedItem
+      );
+    }
   };
 
   const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
@@ -263,6 +305,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHealthConditionRecords();
+          healthConditionDeleteWebEngageEvents(recordType, selectedItem);
         } else {
           setShowSpinner(false);
         }
@@ -378,6 +421,10 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           title={`ADD DATA`}
           onPress={() => {
             setCallApi(false);
+            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+              Source: 'Health Condition',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'HealthCondition',
               recordType: MedicalRecordType.MEDICALCONDITION,

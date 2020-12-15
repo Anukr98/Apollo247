@@ -46,10 +46,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
-import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   searchDiagnosticsByCityID,
@@ -59,7 +55,6 @@ import {
 import {
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -139,6 +134,13 @@ type EditDeleteArray = {
   key: EDIT_DELETE_TYPE;
   title: string;
 };
+
+export enum HEALTH_CONDITIONS_TITLE {
+  ALLERGY = 'ALLERGIES DETAIL',
+  MEDICATION = 'MEDICATION',
+  HEALTH_RESTRICTION = 'RESTRICTION',
+  MEDICAL_CONDITION = 'MEDICAL CONDITION',
+}
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
@@ -1117,7 +1119,7 @@ export const addTestsToCart = async (
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        cityID: 9 //will always check for hyderabad, so that items gets added to cart
+        cityID: 9, //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });
@@ -1128,37 +1130,36 @@ export const addTestsToCart = async (
 
     console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
 
-        const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
-        const searchQueriesData = (await searchQueries)
-          .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-          // .filter((item, index) => g(item, 'itemName')! == items[index])
-          .filter((item) => !!item);
-        const detailQueries = Promise.all(
-          searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
-        );
-        const detailQueriesData = (await detailQueries).map(
-          (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
-        );
+    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
+    const searchQueriesData = (await searchQueries)
+      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      // .filter((item, index) => g(item, 'itemName')! == items[index])
+      .filter((item) => !!item);
+    const detailQueries = Promise.all(
+      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+    );
+    const detailQueriesData = (await detailQueries).map(
+      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+    );
 
-        const finalArray: DiagnosticsCartItem[] = Array.from({
-          length: searchQueriesData.length,
-        }).map((_, index) => {
-          const s = searchQueriesData[index];
-          const testIncludedCount = detailQueriesData[index];
-          return {
-            id: `${s.itemId}`,
-            name: s.itemName,
-            price: s.rate,
-            specialPrice: undefined,
-            mou: testIncludedCount,
-            thumbnail: '',
-            collectionMethod: s.collectionType,
-          } as DiagnosticsCartItem;
-        });
+    const finalArray: DiagnosticsCartItem[] = Array.from({
+      length: searchQueriesData.length,
+    }).map((_, index) => {
+      const s = searchQueriesData[index];
+      const testIncludedCount = detailQueriesData[index];
+      return {
+        id: `${s.itemId}`,
+        name: s.itemName,
+        price: s.rate,
+        specialPrice: undefined,
+        mou: testIncludedCount,
+        thumbnail: '',
+        collectionMethod: s.collectionType,
+      } as DiagnosticsCartItem;
+    });
 
-        console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
-        return finalArray;
-     
+    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+    return finalArray;
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
     throw 'error';
@@ -1369,9 +1370,22 @@ export const postwebEngageAddToCartEvent = (
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
 
-export const postWebEngagePHR = (source: string, webEngageEventName: WebEngageEventName) => {
-  const eventAttributes = {
+export const postWebEngagePHR = (
+  currentPatient: any,
+  webEngageEventName: WebEngageEventName,
+  source: string = '',
+  data: any = {}
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+    ...data,
     Source: source,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
   };
   postWebEngageEvent(webEngageEventName, eventAttributes);
 };
@@ -2102,9 +2116,10 @@ export const removeConsecutiveComma = (value: string) => {
 
 export const getCareCashback = (price: number, type_id: string | null | undefined) => {
   const { circleCashback } = useShoppingCart();
+  let typeId = !!type_id ? type_id.toUpperCase() : '';
   let cashback = 0;
-  if (!!circleCashback && !!circleCashback[type_id]) {
-    cashback = price * (circleCashback[type_id] / 100);
+  if (!!circleCashback && !!circleCashback[typeId]) {
+    cashback = price * (circleCashback[typeId] / 100);
   }
   return cashback;
 };
