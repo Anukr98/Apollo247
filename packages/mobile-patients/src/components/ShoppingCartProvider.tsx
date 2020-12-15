@@ -582,8 +582,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isCircleSubscription || circleMembershipCharges
       ? parseFloat(
           cartItems
-            .reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0)
-            .toFixed(2)
+            ?.reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0)
+            ?.toFixed(2)
         )
       : 0;
 
