@@ -23,6 +23,7 @@ import {
   PhrSymptomIcon,
   PhrDiagnosisIcon,
   PhrGeneralAdviceIcon,
+  Download,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -184,6 +185,46 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     paddingTop: 0,
   },
+  topViewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  quickActionButtons: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 24,
+    color: '#FC9916',
+    alignSelf: 'flex-end',
+    marginRight: 10,
+  },
+  orderMedicinesButton: {
+    backgroundColor: theme.colors.BUTTON_BG,
+    borderRadius: 10,
+    marginVertical: 13,
+    alignItems: 'center',
+    paddingHorizontal: 65,
+    paddingVertical: 6,
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  orderMedicineText: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 24,
+    color: '#fff',
+  },
+  etaMsg: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 16,
+    color: '#fff',
+  },
+  bottomButtonContainer: {
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export interface ConsultDetailsProps
@@ -329,9 +370,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const renderTopDetailsView = () => {
     return !g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
       <View style={styles.topCardViewStyle}>
-        <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
-          {'Prescription'}
-        </Text>
+        <View style={styles.topViewHeader}>
+          <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+            {'Prescription'}
+          </Text>
+          <TouchableOpacity onPress={() => onPressDownloadPrescripiton()}>
+            <Download />
+          </TouchableOpacity>
+        </View>
         <Text style={{ ...theme.viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
           {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
         </Text>
@@ -750,14 +796,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
               })}
-              <Button
-                style={{ alignSelf: 'flex-end', width: '40%', marginRight: 10 }}
-                title={`ORDER MEDICINE`}
+              <TouchableOpacity
                 onPress={() => {
                   postWEGEvent('medicine');
                   onAddToCart();
                 }}
-              />
+              >
+                <Text style={styles.quickActionButtons}>ORDER MEDICINES</Text>
+              </TouchableOpacity>
             </View>
           </View>
         ) : (
@@ -909,14 +955,16 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </>
               );
             })}
-            <Button
-              style={{ alignSelf: 'flex-end', width: '40%', marginRight: 10 }}
-              title={strings.health_records_home.order_test}
+            <TouchableOpacity
               onPress={() => {
                 postWEGEvent('test');
                 onAddTestsToCart();
               }}
-            />
+            >
+              <Text style={styles.quickActionButtons}>
+                {strings.health_records_home.order_test}
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : (
           renderNoData('No Tests')
@@ -928,28 +976,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const renderPlaceorder = () => {
     if (caseSheetDetails!.doctorType !== 'JUNIOR' && g(caseSheetDetails, 'blobName')) {
       return (
-        <View
-          style={{
-            height: 0.1 * windowHeight,
-            backgroundColor: 'transparent',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Button
-            style={{
-              height: 0.06 * windowHeight,
-              width: 0.75 * windowWidth,
-              backgroundColor: theme.colors.BUTTON_BG,
-              borderRadius: 10,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            title={'DOWNLOAD PRESCRIPTION'}
+        <View style={styles.bottomButtonContainer}>
+          <TouchableOpacity
+            style={styles.orderMedicinesButton}
             onPress={() => {
-              onPressDownloadPrescripiton();
+              postWEGEvent('medicine');
+              onAddToCart();
             }}
-          />
+          >
+            <Text style={styles.orderMedicineText}>ORDER MEDICINES NOW</Text>
+            <Text style={styles.etaMsg}>(Delivery in 2-4 hours)</Text>
+          </TouchableOpacity>
         </View>
       );
     }
