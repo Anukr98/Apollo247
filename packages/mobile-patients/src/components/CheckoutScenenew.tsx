@@ -29,7 +29,7 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   CODCity,
   BOOKINGSOURCE,
-  DEVICETYPE,
+  DEVICE_TYPE,
   ONE_APOLLO_STORE_CODE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -548,7 +548,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } as MedicineCartOMSItem;
         }),
         bookingSource: BOOKINGSOURCE.MOBILE,
-        deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+        deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
         subscriptionDetails: circleSubscriptionId
           ? { userSubscriptionId: circleSubscriptionId }
@@ -563,7 +563,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           : null,
         totalCashBack:
           cartTotalCashback || circleSubscriptionId ? Number(cartTotalCashback) || 0 : 0,
-        deviceVersion: DeviceInfo.getVersion(),
+        appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
       },
