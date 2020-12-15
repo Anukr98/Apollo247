@@ -131,6 +131,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     circleSubscriptionId,
     isCircleSubscription,
     isFreeDelivery,
+    setIsCircleSubscription,
+    setDefaultCirclePlan,
+    setCirclePlanSelected,
+    setCircleMembershipCharges,
+    defaultCirclePlan,
     circlePlanSelected,
   } = useShoppingCart();
   const { circlePaymentReference } = useAppCommonData();
@@ -159,6 +164,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [burnHC, setBurnHC] = useState<number>(0);
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
+  const [showCareDetails, setShowCareDetails] = useState(true);
+  const [defaultPlan, setDefaultPlan] = useState(defaultCirclePlan);
+  const [planSelected, setPlanSelected] = useState(circlePlanSelected);
+  const [planCharges, setPlanCharges] = useState(circleMembershipCharges);
+  const [showRemoveMembership, setShowRemoveMembership] = useState<boolean>(
+    !!circleMembershipCharges
+  );
+
   const client = useApolloClient();
   const pharmacyCircleAttributes: PharmacyCircleEvent = {
     'Circle Membership Added': circleSubscriptionId
@@ -780,12 +793,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         )}
         {!!circleMembershipCharges && (
           <View style={careStyle.titleContainer}>
-            <CareCashbackBanner
-              bannerText={`Membership`}
-              textStyle={theme.viewStyles.text('M', 14, '#00B38E', 1, 18)}
-              logoStyle={careStyle.logoStyle}
-            />
-            <Text style={[styles.grandTotalTxt, { color: '#00B38E', lineHeight: 24 }]}>
+            <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+              Circle Membership
+            </Text>
+            <Text style={styles.grandTotalTxt}>
               {string.common.Rs} {circleMembershipCharges}
             </Text>
           </View>
@@ -831,7 +842,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       circleLogo: {
         resizeMode: 'contain',
         width: 40,
-        height: 20,
+        height: 25,
       },
       totalAmountContainer: {
         borderTopColor: '#979797',
@@ -843,44 +854,126 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         ...theme.viewStyles.text('B', 14, '#02475B', 1, 20),
         textAlign: 'right',
       },
+      youText: {
+        ...theme.fonts.IBMPlexSansRegular(13),
+        lineHeight: 25,
+        color: '#02475B',
+      },
     });
     const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
     return (
       <View style={careStyle.careSavingsContainer}>
-        {Number(grandTotal) - Number(burnHC) > 1 && (
-          <View style={careStyle.rowSpaceBetween}>
-            <View
-              style={{
-                flexDirection: 'row',
-              }}
-            >
-              <CircleLogo style={careStyle.circleLogo} />
-              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
-                Membership Cashback
-              </Text>
-            </View>
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
-              ₹{getTotalCashbackAmount()}
-            </Text>
-          </View>
-        )}
-        {!!deliveryFee && (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setShowCareDetails(!showCareDetails);
+          }}
+        >
           <View
             style={[
               careStyle.rowSpaceBetween,
-              { marginTop: Number(grandTotal) - Number(burnHC) > 1 ? 10 : 0 },
+              {
+                paddingBottom: 7,
+                borderBottomWidth: showCareDetails ? 0.8 : 0,
+                borderBottomColor: '#E5E5E5',
+              },
             ]}
           >
             <View style={{ flexDirection: 'row' }}>
               <CircleLogo style={careStyle.circleLogo} />
-              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery Savings</Text>
+              <Text style={careStyle.youText}> helped you save</Text>
             </View>
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
-              ₹{deliveryFee.toFixed(2)}
-            </Text>
+            <Down
+              style={{
+                height: 15,
+                transform: [{ rotate: showCareDetails ? '180deg' : '0deg' }],
+                marginTop: 5,
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+        {showCareDetails && (
+          <View>
+            {Number(grandTotal) - Number(burnHC) > 1 && (
+              <View style={[careStyle.rowSpaceBetween, { marginTop: 7 }]}>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                    Membership Cashback
+                  </Text>
+                </View>
+                <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                  ₹{getTotalCashbackAmount()}
+                </Text>
+              </View>
+            )}
+            {!!deliveryFee && (
+              <View style={[careStyle.rowSpaceBetween, { marginTop: 10 }]}>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                    Delivery Savings
+                  </Text>
+                </View>
+                <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                  ₹{deliveryFee.toFixed(2)}
+                </Text>
+              </View>
+            )}
           </View>
         )}
       </View>
+    );
+  };
+
+  const renderRemoveMembershipSection = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          if (circleMembershipCharges) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            setCirclePlanSelected && setCirclePlanSelected(null);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+          } else {
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            setDefaultCirclePlan && setDefaultCirclePlan(defaultPlan);
+            setCirclePlanSelected && setCirclePlanSelected(planSelected);
+            setCircleMembershipCharges && setCircleMembershipCharges(planCharges);
+          }
+        }}
+        activeOpacity={1}
+        style={{
+          backgroundColor: '#E8F5FF',
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          flexDirection: 'row',
+          marginTop: 20,
+        }}
+      >
+        {!!circleMembershipCharges ? (
+          <CheckUnselectedIcon style={{ marginRight: 10, marginTop: 4 }} />
+        ) : (
+          <CheckedIcon style={{ marginRight: 10, marginTop: 4 }} />
+        )}
+        <View style={{ width: '85%' }}>
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, '#02475B', 1, 20),
+              opacity: !!circleMembershipCharges ? 1 : 0.4,
+              marginBottom: 4,
+            }}
+          >
+            Remove Circle membership to avail COD
+          </Text>
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 12, '#02475B', 1, 17),
+              opacity: !!circleMembershipCharges ? 1 : 0.4,
+            }}
+          >
+            COD option is not available for current order as Circle is a prepaid membership
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -1112,75 +1205,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           title={'CASH ON DELIVERY'}
           onPress={() => initiateOrder('', '', true, false)}
         />
-        {(!!isOneApolloSelected || !!circleMembershipCharges) && (
+        {!!isOneApolloSelected && (
           <Text style={styles.codAlertMsg}>
-            {isOneApolloSelected
-              ? '! COD option is not available along with OneApollo Health Credits.'
-              : '! COD option is not available for buying Circle Membership.'}
+            {'! COD option is not available along with OneApollo Health Credits.'}
           </Text>
         )}
-      </View>
-    );
-  };
-  const renderCOD = () => {
-    return (
-      <View>
-        <TouchableOpacity
-          onPress={() => {
-            if (!isOneApolloSelected) {
-              setCashOnDelivery(!isCashOnDelivery);
-              setScrollToend(true);
-              setTimeout(() => {
-                setScrollToend(false);
-              }, 500);
-            }
-          }}
-          disabled={!!isOneApolloSelected}
-          style={{
-            ...styles.paymentModeCard,
-            marginBottom: 10,
-            flexDirection: 'column',
-            justifyContent: 'center',
-            height: isOneApolloSelected ? 'auto' : 0.08 * windowHeight,
-            paddingVertical: 20,
-          }}
-        >
-          <View style={{ flexDirection: 'row' }}>
-            <View
-              style={{
-                opacity: isOneApolloSelected ? 0.5 : 1,
-                flex: 0.16,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
-            </View>
-            <View
-              style={{
-                opacity: isOneApolloSelected ? 0.5 : 1,
-                flex: 0.84,
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
-            >
-              <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
-                CASH ON DELIVERY
-              </Text>
-            </View>
-          </View>
-          {!!isOneApolloSelected && (
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18),
-                marginTop: 10,
-                marginHorizontal: 25,
-              }}
-            >
-              ! COD option is not available along with OneApollo Health Credits.
-            </Text>
-          )}
-        </TouchableOpacity>
       </View>
     );
   };
@@ -1233,9 +1262,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
             {availableHC != 0 && renderOneApolloOption()}
             {renderNewCOD()}
+            {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()}
             {renderPaymentOptions()}
             {bankOptions.length > 0 && renderNetBanking()}
-            {/* {!circleMembershipCharges && renderCOD()} */}
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (
