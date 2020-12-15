@@ -679,14 +679,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     name: string,
     id: string,
     price: number,
-    discountedPrice: number
+    discountedPrice: number,
+    source: 'Home page' | 'Full search' | 'Details page' | 'Partial search',
+    section?: 'Featured tests' | 'Browse packages'
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'Item Name': name,
       'Item ID': id,
-      Source: 'Home page',
-      Section: 'Featured tests',
+      Source: source,
     };
+    if (section) {
+      eventAttributes['Section'] = section;
+    }
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
     const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
@@ -1265,7 +1269,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         diagnostics?.itemName!,
         `${diagnostics!.itemId}`,
         mrpToDisplay,
-        discountToDisplay
+        discountToDisplay,
+        'Home page',
+        'Featured tests'
       );
       addCartItem!({
         id: `${diagnostics!.itemId}`,
@@ -1735,6 +1741,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
               const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
               const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
 
+              const mrpToDisplay = pricesForItem?.mrpToDisplay;
+              const discountToDisplay = pricesForItem?.discountToDisplay;
+
               const diagnosticItem = item?.diagnostics;
               const fromAge = (diagnosticItem?.fromAgeInDays! / 365).toFixed(0);
               const toAge = (diagnosticItem?.toAgeInDays! / 365).toFixed(0);
@@ -1805,23 +1814,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     }
                     isAddedToCart
                       ? removeCartItem!(`${diagnosticItem?.itemId}`)
-                      : addCartItem!({
-                          id: String(diagnosticItem?.itemId),
-                          name: diagnosticItem?.itemName!,
-                          mou:
-                            diagnosticItem?.inclusions == null
-                              ? 1
-                              : diagnosticItem?.inclusions.length,
-                          price: price,
-                          thumbnail: '',
-                          specialPrice: specialPrice! || price,
-                          circlePrice: circlePrice,
-                          circleSpecialPrice: circleSpecialPrice,
-                          discountPrice: discountPrice,
-                          discountSpecialPrice: discountSpecialPrice,
-                          collectionMethod: product?.collectionType!,
-                          groupPlan: planToConsider?.groupPlan,
-                        });
+                      : postDiagnosticAddToCartEvent(
+                          item?.organName!,
+                          item?.id!,
+                          mrpToDisplay,
+                          discountToDisplay,
+                          'Home page',
+                          'Browse packages'
+                        );
+                    addCartItem!({
+                      id: String(diagnosticItem?.itemId),
+                      name: diagnosticItem?.itemName!,
+                      mou:
+                        diagnosticItem?.inclusions == null ? 1 : diagnosticItem?.inclusions.length,
+                      price: price,
+                      thumbnail: '',
+                      specialPrice: specialPrice! || price,
+                      circlePrice: circlePrice,
+                      circleSpecialPrice: circleSpecialPrice,
+                      discountPrice: discountPrice,
+                      discountSpecialPrice: discountSpecialPrice,
+                      collectionMethod: product?.collectionType!,
+                      groupPlan: planToConsider?.groupPlan,
+                    });
                   });
                 }
               );
@@ -1959,7 +1974,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
-    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate);
+    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate, 'Partial search');
 
     addCartItem!({
       id: `${itemId}`,

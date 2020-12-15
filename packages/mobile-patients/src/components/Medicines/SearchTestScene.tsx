@@ -666,7 +666,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               collectionType: product?.collectionType,
               preparation: product?.testPreparationData,
               testDescription: product?.testPreparationData,
-              source: 'Search Page',
+              source: 'Full Search',
               type: product?.itemType,
             } as TestPackageForDetails,
           });
