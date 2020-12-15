@@ -577,7 +577,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const getButtonText = () => {
-    if (status == success || paymentMode === 'COD') {
+    if (paymentMode === 'COD') {
+      return 'VIEW ORDER';
+    } else if (status == success) {
       return 'TRACK ORDER';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
