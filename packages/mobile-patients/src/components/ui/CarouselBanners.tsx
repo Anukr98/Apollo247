@@ -182,22 +182,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const subHeaderText1 = item?.banner_template_info?.subHeaderText1;
     const subHeaderText2 = item?.banner_template_info?.subHeaderText2;
     const btnTxt = item?.banner_template_info?.Button;
-    let imageHeight = 180;
+    let imageHeight = 160;
 
-    if (!subHeaderText2 || !btnTxt || !headerText3) {
-      imageHeight = isDynamicBanner ? 160 : 144;
-      Image.getSize(
-        bannerUri,
-        (width, height) => {
-          imageHeight = height;
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    } else {
-      imageHeight = 180;
-    }
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -208,7 +194,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           styles.hdfcBanner,
           {
             height: imageHeight,
-            width: isDynamicBanner ? width - 30 : 320,
+            width: width - 30,
           },
         ]}
       >
@@ -378,9 +364,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       }
     } else if (action == hdfc_values.SPECIALITY_LISTING) {
       fireBannerCovidClickedWebengageEvent();
-      props.navigation.navigate('DoctorSearchListing', {
-        specialities: [type],
-      });
+      if (type) {
+        props.navigation.navigate('DoctorSearchListing', {
+          specialities: [type],
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      }
     } else {
       if (type == hdfc_values.REDIRECT) {
         if (action == hdfc_values.SPECIALITY_LISTING) {
