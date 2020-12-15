@@ -183,11 +183,11 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const subHeaderText2 = item?.banner_template_info?.subHeaderText2;
     const btnTxt = item?.banner_template_info?.Button;
     let imageHeight = 160;
-
-    if (subHeaderText2 || btnTxt || headerText3) {
-      imageHeight = 180;
-    } else {
+    if (!subHeaderText2?.trim() || !btnTxt?.trim() || !headerText3?.trim()) {
+      // str is empty or contains only spaces
       imageHeight = 160;
+    } else {
+      imageHeight = 180;
     }
 
     return (
@@ -210,12 +210,12 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             width: '100%',
           }}
           imageStyle={{
-            borderRadius: isDynamicBanner ? 7 : 0,
+            borderRadius: !isDynamicBanner?.trim() ? 0 : 7,
           }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={isDynamicBanner ? 'cover' : 'contain'}
+          resizeMode={!isDynamicBanner?.trim() ? 'contain' : 'cover'}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
