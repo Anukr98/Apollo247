@@ -391,7 +391,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
           prescriptionOptionSelected: prescriptionOption,
           durationDays: durationDay,
-          deviceVersion: DeviceInfo.getVersion(),
+          appVersion: DeviceInfo.getVersion(),
         },
       };
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
