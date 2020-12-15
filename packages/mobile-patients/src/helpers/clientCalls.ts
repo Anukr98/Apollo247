@@ -25,7 +25,7 @@ import {
   GET_PARTICIPANTS_LIVE_STATUS,
   DELETE_PATIENT_PRISM_MEDICAL_RECORD,
   GET_PHR_USER_NOTIFY_EVENTS,
-  GET_MEDICAL_PRISM_RECORD,
+  GET_MEDICAL_PRISM_RECORD_V2,
   GET_ALL_GROUP_BANNERS_OF_USER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -105,7 +105,10 @@ import {
   setAndGetNumberOfParticipants,
   setAndGetNumberOfParticipantsVariables,
 } from '@aph/mobile-patients/src/graphql/types/setAndGetNumberOfParticipants';
-import { getPatientPrismMedicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import {
+  getPatientPrismMedicalRecords_V2,
+  getPatientPrismMedicalRecords_V2Variables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   GetAllGroupBannersOfUser,
@@ -350,12 +353,13 @@ export const phrNotificationCountApi = (client: ApolloClient<object>, patientId:
 
 export const getPatientPrismMedicalRecordsApi = (
   client: ApolloClient<object>,
-  patientId: string
+  patientId: string,
+  records: MedicalRecordType[]
 ) => {
   return new Promise((res, rej) => {
     client
-      .query<getPatientPrismMedicalRecords>({
-        query: GET_MEDICAL_PRISM_RECORD,
+      .query<getPatientPrismMedicalRecords_V2, getPatientPrismMedicalRecords_V2Variables>({
+        query: GET_MEDICAL_PRISM_RECORD_V2,
         context: {
           headers: {
             callingsource: 'healthRecords',
@@ -363,6 +367,7 @@ export const getPatientPrismMedicalRecordsApi = (
         },
         variables: {
           patientId: patientId || '',
+          records: records,
         },
         fetchPolicy: 'no-cache',
       })
