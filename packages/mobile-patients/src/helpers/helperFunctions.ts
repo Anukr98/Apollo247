@@ -1119,7 +1119,7 @@ export const addTestsToCart = async (
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        cityID: 9 //will always check for hyderabad, so that items gets added to cart
+        cityID: 9, //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });
@@ -1130,37 +1130,36 @@ export const addTestsToCart = async (
 
     console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
 
-        const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
-        const searchQueriesData = (await searchQueries)
-          .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-          // .filter((item, index) => g(item, 'itemName')! == items[index])
-          .filter((item) => !!item);
-        const detailQueries = Promise.all(
-          searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
-        );
-        const detailQueriesData = (await detailQueries).map(
-          (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
-        );
+    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
+    const searchQueriesData = (await searchQueries)
+      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      // .filter((item, index) => g(item, 'itemName')! == items[index])
+      .filter((item) => !!item);
+    const detailQueries = Promise.all(
+      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+    );
+    const detailQueriesData = (await detailQueries).map(
+      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+    );
 
-        const finalArray: DiagnosticsCartItem[] = Array.from({
-          length: searchQueriesData.length,
-        }).map((_, index) => {
-          const s = searchQueriesData[index];
-          const testIncludedCount = detailQueriesData[index];
-          return {
-            id: `${s.itemId}`,
-            name: s.itemName,
-            price: s.rate,
-            specialPrice: undefined,
-            mou: testIncludedCount,
-            thumbnail: '',
-            collectionMethod: s.collectionType,
-          } as DiagnosticsCartItem;
-        });
+    const finalArray: DiagnosticsCartItem[] = Array.from({
+      length: searchQueriesData.length,
+    }).map((_, index) => {
+      const s = searchQueriesData[index];
+      const testIncludedCount = detailQueriesData[index];
+      return {
+        id: `${s.itemId}`,
+        name: s.itemName,
+        price: s.rate,
+        specialPrice: undefined,
+        mou: testIncludedCount,
+        thumbnail: '',
+        collectionMethod: s.collectionType,
+      } as DiagnosticsCartItem;
+    });
 
-        console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
-        return finalArray;
-     
+    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+    return finalArray;
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
     throw 'error';
@@ -2117,9 +2116,10 @@ export const removeConsecutiveComma = (value: string) => {
 
 export const getCareCashback = (price: number, type_id: string | null | undefined) => {
   const { circleCashback } = useShoppingCart();
+  let typeId = !!type_id ? type_id.toUpperCase() : '';
   let cashback = 0;
-  if (!!circleCashback && !!circleCashback[type_id]) {
-    cashback = price * (circleCashback[type_id] / 100);
+  if (!!circleCashback && !!circleCashback[typeId]) {
+    cashback = price * (circleCashback[typeId] / 100);
   }
   return cashback;
 };
