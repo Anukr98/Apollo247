@@ -612,7 +612,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('error >>>>>>>>>>>>>>>>>>', error);
         CommonBugFender('CheckoutScene_saveOrder', error);
         setLoading && setLoading(false);
 
