@@ -9,14 +9,9 @@ import { PreviousOrdersSkus } from "./globalTypes";
 // GraphQL mutation operation: getPreviousOrdersSkus
 // ====================================================
 
-export interface getPreviousOrdersSkus_getPreviousOrdersSkus_SkuDetails {
-  __typename: "SkuDetails";
-  sku: string | null;
-}
-
 export interface getPreviousOrdersSkus_getPreviousOrdersSkus {
   __typename: "SkuDetailsResult";
-  SkuDetails: (getPreviousOrdersSkus_getPreviousOrdersSkus_SkuDetails | null)[] | null;
+  SkuDetails: (string | null)[] | null;
 }
 
 export interface getPreviousOrdersSkus {

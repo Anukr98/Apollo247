@@ -98,6 +98,8 @@
   },
   "lookingForBoughtPreviously": "Looking for an item you bought previously?",
   "buyAgain": "Buy Again",
+  "sorryNoProductsHere": "Sorry, no products available here.",
+  "genericError": "Oops! seems like we are having an issue. Please try again.",
   "selectFromOrderedItems": "Select from your previously ordered items",
   "specialOffers": "Special Offers",
   "notInStockInYourArea": "Not in stock in your area",

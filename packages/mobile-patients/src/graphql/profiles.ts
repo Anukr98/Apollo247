@@ -3078,9 +3078,7 @@ export const ADD_CHAT_DOCUMENTS = gql`
 export const GET_PREVIOUS_ORDERS_SKUS = gql`
   mutation getPreviousOrdersSkus($previousOrdersSkus: PreviousOrdersSkus) {
     getPreviousOrdersSkus(previousOrdersSkus: $previousOrdersSkus) {
-      SkuDetails {
-        sku
-      }
+      SkuDetails
     }
   }
 `;
