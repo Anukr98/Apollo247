@@ -189,7 +189,12 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalBillRecords();
-          postWebEngagePHR('Bill', WebEngageEventName.PHR_DELETE_BILLS);
+          postWebEngagePHR(
+            currentPatient,
+            WebEngageEventName.PHR_DELETE_BILLS,
+            'Bill',
+            selectedItem
+          );
         } else {
           setShowSpinner(false);
         }

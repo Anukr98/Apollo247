@@ -23,6 +23,7 @@ import {
   useShoppingCart,
   ShoppingCartItem,
   PhysicalPrescription,
+  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { FreeDelivery } from '@aph/mobile-patients/src/components/MedicineCart/Components/FreeDelivery';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
@@ -146,6 +147,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     hdfcPlanId,
     hdfcStatus,
     circleStatus,
+    circlePaymentReference,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -166,13 +168,26 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
 
+  const pharmacyCircleAttributes: PharmacyCircleEvent = {
+    'Circle Membership Added': circleSubscriptionId
+      ? 'Existing'
+      : !!circleMembershipCharges
+      ? 'Yes'
+      : 'No',
+    'Circle Membership Value': circleSubscriptionId
+      ? circlePaymentReference?.amount_paid
+      : !!circleMembershipCharges
+      ? circlePlanSelected?.currentSellingPrice
+      : null,
+  };
   useEffect(() => {
     fetchAddress();
     availabilityTat(false);
     fetchUserSpecificCoupon();
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
-    cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
+    cartItems.length &&
+      PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'), pharmacyCircleAttributes!);
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
@@ -279,7 +294,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }
 
   const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
+    userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Pharmacy')
       .then(async (resp: any) => {
         console.log(resp.data);
         if (resp.data.errorCode == 0) {
@@ -436,7 +451,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       formatAddress(address),
       'Yes',
       new Date(tatDate),
-      moment(tatDate).diff(currentDate, 'd')
+      moment(tatDate).diff(currentDate, 'd'),
+      pharmacyCircleAttributes!
     );
   }
 
@@ -800,7 +816,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       tatType: storeType,
       shopId: shopId,
     });
-    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime);
+    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime, pharmacyCircleAttributes!);
   }
 
   const headerRightComponent = () => {

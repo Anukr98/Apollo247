@@ -161,7 +161,7 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
 
-const { width: winWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
   labelView: {
@@ -797,10 +797,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
               });
           } else {
+            setLoading!(false);
             showAphAlert!({
               unDismissable: true,
               title: string.common.uhOh,
-              description: string.diagnostics.nonServiceableConfigPinCodeMsg,
+              description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
+                '{{pincode}}',
+                pinCodeFromAddress
+              ),
+              onPressOk: () => {
+                hideAphAlert!();
+              },
             });
           }
         })
@@ -1806,7 +1813,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             paddingHorizontal: 16,
             alignItems: 'center',
           }}
-          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isTest: true })}
+          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isDiag: true })}
         >
           <CouponIcon style={{ opacity: isCouponEnable ? 1 : 0.5 }} />
           <Text

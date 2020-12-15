@@ -198,6 +198,7 @@ export enum WebEngageEventName {
   PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition - app',
   PHR_DELETE_BILLS = 'PHR Delete Bill - app',
   PHR_DELETE_INSURANCE = 'PHR Delete Insurance - app',
+  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records - app',
   PHR_USER_LINKING = 'PHR User Linking - app',
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
 
@@ -806,6 +807,8 @@ export interface WebEngageEvents {
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.SKU_PRICE_MISMATCH]: {
     'Mobile Number': string;
@@ -836,6 +839,8 @@ export interface WebEngageEvents {
     'Store Name'?: string;
     'Popup Shown'?: boolean;
     'No. of out of stock items'?: number;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -911,6 +916,8 @@ export interface WebEngageEvents {
     'Store Address'?: string;
     af_revenue: number;
     af_currency: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -991,7 +998,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
-    'Servicability': 'Yes' | 'No'
+    Servicability: 'Yes' | 'No';
   };
   [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Address Pincode': number;
@@ -1042,11 +1049,11 @@ export interface WebEngageEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search';
-    Section?: 'Featured tests' | 'Browse packages'
+    Section?: 'Featured tests' | 'Browse packages';
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
-    'Pincode': string | number;
+    Pincode: string | number;
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
     'Order Amount': number; // Optional
@@ -1399,6 +1406,8 @@ export interface WebEngageEvents {
     'Delivery Address': string;
     Pincode: string;
     'Delivery TAT': number;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
