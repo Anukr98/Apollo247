@@ -14,6 +14,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     productDiscount,
     grandTotal,
     circleMembershipCharges,
+    isCircleSubscription,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const renderCartTotal = () => {
@@ -51,8 +52,20 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
           <Text style={styles.text}>+₹{deliveryCharges.toFixed(2)}</Text>
         ) : (
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-            <Text style={styles.free}>Free</Text>
-            <Text style={{ ...styles.text, textDecorationLine: 'line-through' }}>
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={styles.free}>Free</Text>
+              {(isCircleSubscription || !!circleMembershipCharges) && (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 13, '#02475B', 1, 26),
+                    marginLeft: 5,
+                  }}
+                >
+                  for Circle Members
+                </Text>
+              )}
+            </View>
+            <Text style={{ ...styles.text, textDecorationLine: 'line-through', marginLeft: 5 }}>
               +₹{deliveryFee.toFixed(2)}
             </Text>
           </View>
@@ -74,11 +87,12 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     );
   };
 
-  const renderCircleMembershipCharges = () => 
+  const renderCircleMembershipCharges = () => (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
       <Text style={styles.text}>Circle Membership</Text>
       <Text style={styles.text}>₹{circleMembershipCharges}</Text>
     </View>
+  );
 
   return (
     <View style={styles.card}>
@@ -116,7 +130,6 @@ const styles = StyleSheet.create({
   free: {
     ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 24,
-    marginRight: 10,
     color: '#00B38E',
   },
   separator: {

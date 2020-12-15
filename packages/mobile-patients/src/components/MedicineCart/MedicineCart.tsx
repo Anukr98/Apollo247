@@ -99,6 +99,7 @@ import {
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -1118,11 +1119,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           {renderUnServiceable()}
           {renderCartItems()}
+          {!!circleMembershipCharges && <CircleCartItem />}
           {(!isCircleSubscription || showCareSelectPlans) &&
             !coupon &&
             !circleSubscriptionId &&
+            !circleMembershipCharges &&
             renderCareSubscriptionOptions()}
-          {renderAvailFreeDelivery()}
+          {!circleMembershipCharges && renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
           {renderSuggestProducts()}
