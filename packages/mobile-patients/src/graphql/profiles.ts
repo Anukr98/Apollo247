@@ -3016,6 +3016,14 @@ export const ADD_CHAT_DOCUMENTS = gql`
   }
 `;
 
+export const GET_PREVIOUS_ORDERS_SKUS = gql`
+  mutation getPreviousOrdersSkus($previousOrdersSkus: PreviousOrdersSkus) {
+    getPreviousOrdersSkus(previousOrdersSkus: $previousOrdersSkus) {
+      SkuDetails
+    }
+  }
+`;
+
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {

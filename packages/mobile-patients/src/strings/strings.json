@@ -96,6 +96,11 @@
       }
     }
   },
+  "lookingForBoughtPreviously": "Looking for an item you bought previously?",
+  "buyAgain": "Buy Again",
+  "sorryNoProductsHere": "Sorry, no products available here.",
+  "genericError": "Oops! seems like we are having an issue. Please try again.",
+  "selectFromOrderedItems": "Select from your previously ordered items",
   "specialOffers": "Special Offers",
   "notInStockInYourArea": "Not in stock in your area",
   "notForSale": "Not for sale",
@@ -298,27 +303,51 @@
     "filter_data": [
       {
         "label": "City",
-        "options": ["Hyderabad", "Chennai"]
+        "options": [
+          "Hyderabad",
+          "Chennai"
+        ]
       },
       {
         "label": "Experience In Years",
-        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
+        "options": [
+          "0 - 5",
+          "6 - 10",
+          "11 - 15",
+          "15+"
+        ]
       },
       {
         "label": "Availability",
-        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
+        "options": [
+          "Now",
+          "Today",
+          "Tomorrow",
+          "Next 3 Days"
+        ]
       },
       {
         "label": "Fees In Rupees",
-        "options": ["100 - 500", "501 - 1000", "1000+"]
+        "options": [
+          "100 - 500",
+          "501 - 1000",
+          "1000+"
+        ]
       },
       {
         "label": "Gender",
-        "options": ["Male", "Female"]
+        "options": [
+          "Male",
+          "Female"
+        ]
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu"
+        ]
       }
     ]
   },
@@ -355,8 +384,8 @@
     "cashOnDeliverySubText": "Currently we have Cash on delivery as a payment option.",
     "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
     "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
-    "pricesChangedMessage":"Few tests prices might have updated or are not available for this address",
-    "areaNotAvailableMessage":"Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address."
+    "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
+    "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address."
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -488,7 +517,12 @@
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar",
-    "availabilityList": ["Now", "Today", "Tomorrow", "Next 3 days"],
+    "availabilityList": [
+      "Now",
+      "Today",
+      "Tomorrow",
+      "Next 3 days"
+    ],
     "appointmentStatus": [
       "Active",
       "Completed",
@@ -573,7 +607,10 @@
         {
           "QUESTION": "Q1. Which type of diabetes are you living with?",
           "OPTIONS": [
-            { "key": "Pre-Diabetes", "value": "Pre-Diabetes" },
+            {
+              "key": "Pre-Diabetes",
+              "value": "Pre-Diabetes"
+            },
             {
               "key": "Type-1-Diabetes",
               "value": "Type 1 Diabetes"
