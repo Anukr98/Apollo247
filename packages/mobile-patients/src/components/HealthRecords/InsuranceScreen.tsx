@@ -35,7 +35,7 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response as MedicalInsuranceType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response as MedicalInsuranceType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -77,15 +77,11 @@ const styles = StyleSheet.create({
 
 export interface InsuranceScreenProps
   extends NavigationScreenProps<{
-    medicalInsuranceData: MedicalInsuranceType[];
     onPressBack: () => void;
   }> {}
 
 export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
-  const medicalInsuranceData = props.navigation.getParam('medicalInsuranceData') || [];
-  const [medicalInsuranceMainData, setMedicalInsuranceMainData] = useState<any>(
-    medicalInsuranceData
-  );
+  const [medicalInsuranceMainData, setMedicalInsuranceMainData] = useState<any>([]);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
@@ -94,7 +90,10 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     data: MedicalInsuranceType[];
   }> | null>(null);
   const [callApi, setCallApi] = useState(false);
-  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
+
+  useEffect(() => {
+    getLatestMedicalInsuranceRecords();
+  }, []);
 
   useEffect(() => {
     let finalData: { key: string; data: MedicalInsuranceType[] }[] = [];
@@ -113,7 +112,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, [callApi, callPhrMainApi]);
+  }, [callApi]);
 
   useEffect(() => {
     if (callApi) {
@@ -122,25 +121,24 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   }, [callApi]);
 
   const gotoPHRHomeScreen = () => {
-    if (!callApi && !callPhrMainApi) {
-      props.navigation.state.params?.onPressBack();
-    }
+    props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
   };
 
   const getLatestMedicalInsuranceRecords = () => {
     setShowSpinner(true);
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.MEDICALINSURANCE,
+    ])
       .then((data: any) => {
         const medicalInsurance = g(
           data,
-          'getPatientPrismMedicalRecords',
+          'getPatientPrismMedicalRecords_V2',
           'medicalInsurances',
           'response'
         );
         setMedicalInsuranceMainData(phrSortWithDate(medicalInsurance));
         setShowSpinner(false);
-        setCallPhrMainApi(true);
       })
       .catch((error) => {
         setShowSpinner(false);
