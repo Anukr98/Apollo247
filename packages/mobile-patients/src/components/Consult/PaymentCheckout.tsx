@@ -152,7 +152,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       ? isOnlineConsult
         ? onlineConsultSlashedPrice -
           couponDiscountFees +
-          Number(circlePlanSelected?.currentSellingPrice)
+          (circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0)
         : physicalConsultSlashedPrice -
           couponDiscountFees +
           Number(circlePlanSelected?.currentSellingPrice)
@@ -195,7 +195,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   }, []);
 
   const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
+    userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Consult')
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
           let couponList = resp?.data?.response;

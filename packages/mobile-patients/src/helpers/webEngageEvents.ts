@@ -105,7 +105,7 @@ export enum WebEngageEventName {
   ORDER_TESTS = 'Order Tests',
   MANAGE_DIABETES = 'Manage Diabetes',
   TRACK_SYMPTOMS = 'Track Symptoms',
-  VIEW_HELATH_RECORDS = 'View Helath Records',
+  VIEW_HELATH_RECORDS = 'PHR Click Health records - app',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   APOLLO_PRO_HEALTH = 'Apollo pro health',
@@ -121,29 +121,24 @@ export enum WebEngageEventName {
   READ_ARTICLES = 'Read Articles',
 
   // Diagnostics Events
-  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic Landing Page Viewed',
-  DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Item searched in diagnsotic landing page',
-  DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH = 'Item clicked in diagnostic landing page after search',
+  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
+  DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
+  DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
-  DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE = 'Diagnostic Landing Page Non Serviceable',
-  DIAGNOSTIC_LANDING_PAGE_SERVICEABLE = 'Diagnostic Landing Page - Serviceable',
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order Summary Viewed',
-  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED = 'Diagnostic Pincode Entered on Location Bar',
-  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Diagnostic Enter Delivery Pincode Submitted ',
-  FEATURED_TEST_CLICKED = 'Featured Test Clicked',
-  BROWSE_PACKAGE = 'Browse Package',
-  DIAGNOSTIC_ITEM_CLICKED_ON_LANDING = 'Item Clicked on Diagnostic Landing Page',
-  DIAGNOSTIC_TEST_DESCRIPTION = 'Test Description Page Viewed',
-  DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Page Viewed',
+  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
+  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
+  DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
+  DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
+  DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment Time Slot Selected',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic Proceed To Pay Clicked',
-  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic Track Order Viewed',
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic View Report Clicked',
-  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic Feedback Given By Customer',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
+  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
+  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
+  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to Cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
 
   // Health Records
@@ -153,21 +148,60 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
-  PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
+  PHR_ORDER_MEDS_TESTS = 'PHR Order Tests and Meds Prescription - app',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
-  PHR_VIEW_PRESCRIPTIONS = 'PHR View Prescriptions - app',
-  PHR_VIEW_LAB_TESTS = 'PHR View Lab Tests - app',
-  PHR_VIEW_HEALTH_CHECKS = 'PHR View Health Checks - app',
-  PHR_VIEW_HOSPITALIZATIONS = 'PHR View Hospitalizations - app',
-  PHR_ADD_PRESCRIPTIONS = 'PHR Add Prescriptions - app',
-  PHR_ADD_LAB_TESTS = 'PHR Add Lab Tests - app',
-  PHR_ADD_HEALTH_CHECKS = 'PHR Add Health Checks - app',
-  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalizations - app',
-  PHR_DOWNLOAD_PRESCRIPTIONS = 'PHR Download Prescriptions - app',
-  PHR_DOWNLOAD_LAB_TESTS = 'PHR Download Lab Tests - app',
-  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Checks - app',
-  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalizations - app',
+  PHR_CLICK_DOCTOR_CONSULTATIONS = 'PHR Click Doctor Consultations - app',
+  PHR_CLICK_TEST_REPORTS = 'PHR Click Test Reports - app',
+  PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations - app',
+  PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions - app',
+  PHR_CLICK_BILLS = 'PHR Click Bills - app',
+  PHR_CLICK_INSURANCES = 'PHR Click Insurances - app',
+  PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation - app',
+  PHR_ADD_TEST_REPORT = 'PHR Add Test Report - app',
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization - app',
+  PHR_ADD_ALLERGY = 'PHR Add Allergy - app',
+  PHR_ADD_MEDICATION = 'PHR Add Medication - app',
+  PHR_ADD_HEALTH_RESTRICTIONS = 'PHR Add Health Restriction - app',
+  PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition - app',
+  PHR_ADD_BILLS = 'PHR Add Bills - app',
+  PHR_ADD_INSURANCE = 'PHR Add Insurance - app',
+  PHR_ADD_HEIGHT = 'PHR Add Height - app',
+  PHR_ADD_WEIGHT = 'PHR Add Weight - app',
+  PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup - app',
+  PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation - app',
+  PHR_DOWNLOAD_TEST_REPORT = 'PHR Download Test Report - app',
+  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Check - app',
+  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalization - app',
+  PHR_DOWNLOAD_ALLERGY = 'PHR Download Allergy - app',
+  PHR_DOWNLOAD_MEDICAL_CONDITION = 'PHR Download Medical Condition - app',
+  PHR_DOWNLOAD_BILLS = 'PHR Download Bill - app',
+  PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance - app',
+  PHR_UPDATE_DOCTOR_CONSULTATION = 'PHR Update Doctor Consultation - app',
+  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report - app',
+  PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalization - app',
+  PHR_UPDATE_ALLERGY = 'PHR Update Allergy - app',
+  PHR_UPDATE_MEDICATION = 'PHR Update Medication - app',
+  PHR_UPDATE_HEALTH_RESTRICTIONS = 'PHR Update Health Restriction - app',
+  PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition - app',
+  PHR_UPDATE_BILLS = 'PHR Update Bill - app',
+  PHR_UPDATE_INSURANCE = 'PHR Update Insurance - app',
+  PHR_UPDATE_HEIGHT = 'PHR Update Height - app',
+  PHR_UPDATE_WEIGHT = 'PHR Update Weight - app',
+  PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup - app',
+  PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation - app',
+  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report - app',
+  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization - app',
+  PHR_DELETE_ALLERGY = 'PHR Delete Allergy - app',
+  PHR_DELETE_MEDICATION = 'PHR Delete Medication - app',
+  PHR_DELETE_HEALTH_RESTRICTIONS = 'PHR Delete Health Restriction - app',
+  PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition - app',
+  PHR_DELETE_BILLS = 'PHR Delete Bill - app',
+  PHR_DELETE_INSURANCE = 'PHR Delete Insurance - app',
+  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records - app',
+  PHR_USER_LINKING = 'PHR User Linking - app',
+  PHR_USER_DELINKING = 'PHR User DeLinking -app',
+
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
@@ -179,8 +213,8 @@ export enum WebEngageEventName {
   CONSULT_FEEDBACK_GIVEN = 'Consult feedback Given',
   DOWNLOAD_PRESCRIPTION = 'Download Prescription',
   VIEW_PRESCRIPTION_IN_CONSULT_DETAILS = 'View Prescription in Consult Details',
-  ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'Order Medicines from Prescription details',
-  ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'Order Tests from Prescription details',
+  ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'PHR Order Meds Prescription Detail - app',
+  ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail - app',
   CONSULT_CARD_CLICKED = 'Consult Card Clicked',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
@@ -297,7 +331,6 @@ export enum WebEngageEventName {
   VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
   VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
   VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
-  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -313,14 +346,13 @@ export enum WebEngageEventName {
   PHARMA_WEBVIEW_PLAN2 = 'App Pharma Plan 2 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
-  PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE = 'App Pharma Non Circle buys Circle subscription',
+  PURCHASE_CIRCLE = 'Circle Plan Purchased',
 
   //Diagnostic Circle Events
   DIAGNOSTICS_CIRCLE_BANNER_CLICKED = 'App Non-circle banner clicked - Diagnostics',
   DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP = 'App Non-circle Buy Now clicked - Diagnostics',
   DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Non-circle Know more clicked - Diagnostics',
   DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP = 'App circle plan - other payment clicked - Diagnostics',
-  DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED = 'App Circle activated - Diagnostics',
   DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
 
   //My Membership Circle Events
@@ -347,6 +379,10 @@ export enum WebEngageEventName {
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
   NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
   HC_1CLICK_ACTIVATION = 'App - HC - 1ClickActivation',
+
+  //Permissioon Events
+  USER_ALLOWED_PERMISSION = 'User clicked on Allow for permissions',
+  USER_DENIED_PERMISSION = 'User clicked on Not now for permissions',
 }
 
 export interface PatientInfo {
@@ -373,6 +409,14 @@ export interface CircleUserInfo extends UserInfo {
   type?: string; //landing page
   action?: string; //landing page
   from?: string;
+}
+
+export interface CirclePurchaseInfo extends UserInfo {
+  'Membership Type'?: string;
+  'Membership End Date'?: string;
+  'Circle Plan Price'?: string;
+  Type: string;
+  Source?: string;
 }
 
 export interface DiagnosticUserInfo {
@@ -492,7 +536,7 @@ export interface ReorderMedicine extends PatientInfo {
 export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
-  'Item in Results': object[];
+  'Item in Results'?: object[];
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -500,8 +544,9 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 }
 
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
-  Method: string;
+  Mode: string;
   Pincode: number | string;
+  Serviceability: 'Yes' | 'No';
 }
 
 export interface DoctorFilterClick {
@@ -605,14 +650,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
-  [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
+  [WebEngageEventName.PURCHASE_CIRCLE]: CirclePurchaseInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
   [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: CircleUserInfo;
-  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: CircleUserInfo;
   [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: CircleUserInfo;
 
   // ********** MY Membership circle events ********
@@ -640,6 +684,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
   [WebEngageEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
 
+  // ********** PermissionEvents ********** \\
+  [WebEngageEventName.USER_ALLOWED_PERMISSION]: {
+    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
+  };
+  [WebEngageEventName.USER_DENIED_PERMISSION]: {
+    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
+  };
   // ********** PharmacyEvents ********** \\
 
   [WebEngageEventName.SEARCH]: {
@@ -756,6 +807,8 @@ export interface WebEngageEvents {
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.SKU_PRICE_MISMATCH]: {
     'Mobile Number': string;
@@ -786,6 +839,8 @@ export interface WebEngageEvents {
     'Store Name'?: string;
     'Popup Shown'?: boolean;
     'No. of out of stock items'?: number;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -861,6 +916,8 @@ export interface WebEngageEvents {
     'Store Address'?: string;
     af_revenue: number;
     af_currency: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -893,15 +950,13 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
-  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH]: ItemClickedOnLanding;
+  [WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]: {
     //comment
     'Patient UHID': string;
     'Active Orders': number;
     'Past Orders': number;
   };
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE]: DiagnosticServiceble;
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE]: DiagnosticServiceble;
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE]: {
     'Patient UHID': string;
     State: string;
@@ -911,73 +966,39 @@ export interface WebEngageEvents {
     'Items in cart': object[];
   };
   [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
-    'Patient UHID': string;
-    'Patient Number': string;
-    'OrderID:': string;
+    'Order Amount': string | number;
+    'Order id:': string;
+    'Order status'?: string;
     'Sample Collection Date': string; //Date
   };
-  [WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED]: DiagnosticPinCode;
-  [WebEngageEventName.FEATURED_TEST_CLICKED]: {
-    'Product name': string;
-    'Product id (SKUID)': string;
-    Source: 'Home' | 'List';
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-  };
-  [WebEngageEventName.BROWSE_PACKAGE]: {
-    'Package Name': string;
-    // Category: string; we don't have category for test
-    Source: 'Home' | 'List';
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-  };
-  [WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING]: {
-    'Patient UHID': string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Patient Name': string;
+  [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
+  [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
     'Item Name': string;
     'Item ID': string;
-    Type: string;
+    Source: 'Home Page';
+    'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    'Patient UHID': string;
-    'Patient Name': string;
-    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search';
     'Item Name': string;
     'Item Type': string;
     'Item Code': string;
-    'Item Price': number;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
     //this is already done
-    'Patient UHID': string;
-    'Patient Name': string;
     'Total items in cart': number;
-    'Prescription Needed?': 'Mandatory' | 'Optional';
-    'Sub Total': number;
-    'Delivery charge': number;
+    'Prescription Needed?': 'Yes' | 'No';
+    'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Total Discount': number;
     'Net after discount': number; //item total
-    'Home Collection'?: number; //after adding the slot
     'Cart Items': object[];
-    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
+    Servicability: 'Yes' | 'No';
   };
   [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Address Pincode': number;
@@ -1025,40 +1046,18 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
-    Brand?: string;
-    'Brand ID'?: string;
-    'category name'?: string;
-    'category ID'?: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
+    'Item Name': string;
+    'Item ID': string; // (SKUID)
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search';
+    Section?: 'Featured tests' | 'Browse packages';
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
-    'Prescription Added': boolean;
-    'Shipping information': string; // (Home/Store address)
+    Pincode: string | number;
+    'Patient UHID': string;
     'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
-    'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
-    'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Order Amount': number; // Optional
+    'Payment mode'?: 'COD' | 'Online'; // Optional
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode: 'Online' | 'COD';
@@ -1407,6 +1406,8 @@ export interface WebEngageEvents {
     'Delivery Address': string;
     Pincode: string;
     'Delivery TAT': number;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
@@ -1464,7 +1465,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.MEDICAL_RECORDS]: PatientInfo;
 
   [WebEngageEventName.ADD_RECORD]: {
-    Source: 'Consult & RX' | 'Test Reports' | 'Hospitalization'; // List/Profile
+    Source:
+      | 'Doctor Consultation'
+      | 'Test Report'
+      | 'Hospitalization'
+      | 'Health Condition'
+      | 'Bill'
+      | 'Insurance'; // List/Profile
   };
 
   [WebEngageEventName.UPLOAD_PRESCRIPTION]: PatientInfo;

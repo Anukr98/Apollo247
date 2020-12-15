@@ -2,13 +2,14 @@ package com.apollopatient;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
-import android.media.AudioManager;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
@@ -160,7 +161,7 @@ public class MyFirebaseMessagingService
         //channel info start
         String channelId = "fcm_call_channel";
         String channelName = "Incoming Call";
-        Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
+        Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
 
         // notification action buttons start
         int notificationId = new Random().nextInt();
@@ -194,10 +195,10 @@ public class MyFirebaseMessagingService
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        int importance = NotificationManager.IMPORTANCE_MAX;
+        int importance = NotificationManager.IMPORTANCE_HIGH;
 
         //channel creation start
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel mChannel = new NotificationChannel(channelId, channelName, importance);
             AudioAttributes attributes = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -210,18 +211,9 @@ public class MyFirebaseMessagingService
         }
         //end
 
-        try {
-            Boolean isVibrationOn = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
-                    (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1);
-            if (isVibrationOn) {
-                Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-                vibrator.vibrate(pattern, 0);
-            }
-        } catch (Exception e) {
-            Log.e("vibration error", e.getMessage() + "\n" + e.toString());
-        }
-
-        notificationManager.notify(oneTimeID, notificationBuilder.build());
+        Notification notification = notificationBuilder.build();
+        notification.flags |= Notification.FLAG_INSISTENT;
+        notificationManager.notify(oneTimeID, notification);
     }
 
 

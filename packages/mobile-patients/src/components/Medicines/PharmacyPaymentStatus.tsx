@@ -30,6 +30,7 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  SafeAreaView,
   Text,
   TouchableOpacity,
   View,
@@ -68,6 +69,7 @@ import {
 import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import moment from 'moment';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -75,7 +77,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const {
     clearCartInfo,
     setCircleMembershipCharges,
-    cartTotalCashback,
     isCircleSubscription,
     setIsCircleSubscription,
     cartItems,
@@ -93,9 +94,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
-  const circleSavings = cartTotalCashback;
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
-
+  const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
+  const [totalCashBack, setTotalCashBack] = useState<number>(0);
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -103,7 +104,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
-
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -134,9 +134,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
+        setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        setTotalCashBack(!!pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
-        fireCirclePlanActivatedEvent();
-        fireCirclePurchaseEvent();
+        fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
+        fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
       .catch((error) => {
         setLoading(false);
@@ -191,19 +195,20 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     return true;
   };
 
-  const fireCirclePlanActivatedEvent = () => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE] = {
+  const fireCirclePlanActivatedEvent = (planPurchased: boolean) => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
+      'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Pharmacy',
+      Source: 'Pharma',
     };
-    circleSavings > 0 &&
-      !circleSubscriptionID &&
-      isCircleSubscription &&
-      postWebEngageEvent(
-        WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE,
-        CircleEventAttributes
-      );
+    planPurchased && postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
@@ -349,11 +354,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       items: items,
       transaction_id: orderId,
       value: price,
+      LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
-  const fireCirclePurchaseEvent = () => {
+  const fireCirclePurchaseEvent = (planPurchased: boolean) => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       currency: 'INR',
       items: [
@@ -368,15 +374,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       ],
       transaction_id: orderId,
       value: Number(circlePlanSelected?.currentSellingPrice),
+      LOB: 'Circle',
     };
-    circleSavings > 0 &&
-      !circleSubscriptionID &&
-      isCircleSubscription &&
-      postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+    console.log('eventAttributes >>>>', eventAttributes);
+    planPurchased && postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const statusIcon = () => {
-    if (status === success) {
+    if (status === success || paymentMode === 'COD') {
       return <Success style={styles.statusIconStyles} />;
     } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
@@ -405,7 +410,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusCardColour = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       return colors.SUCCESS;
     } else if (status == failure || status == aborted) {
       return colors.FAILURE;
@@ -417,7 +422,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const statusText = () => {
     let message = 'PAYMENT PENDING';
     let textColor = theme.colors.PENDING_TEXT;
-    if (status === success) {
+    if (paymentMode === 'COD') {
+      message = ' ORDER CONFIRMED';
+      textColor = theme.colors.SUCCESS_TEXT;
+    } else if (status === success) {
       message = ' PAYMENT SUCCESSFUL';
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
@@ -569,7 +577,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const getButtonText = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       return 'TRACK ORDER';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
@@ -608,7 +616,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const handleButton = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       clearCircleSubscriptionData();
       props.navigation.navigate(AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
@@ -648,7 +656,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             {getButtonText()}
           </Text>
         </TouchableOpacity>
-        {status === success && (
+        {(status === success || paymentMode === 'COD') && (
           <TouchableOpacity
             style={styles.textButtonStyle}
             onPress={() => {
@@ -668,7 +676,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const renderAddedCirclePlanWithValidity = () => {
     return (
       <AddedCirclePlanWithValidity
-        circleSavings={circleSavings}
+        circleSavings={totalCashBack}
         circlePlanDetails={circlePlanDetails}
         isConsult={false}
       />
@@ -687,10 +695,11 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               left: -5,
             }}
           >
+            {' '}
             You{' '}
             <Text style={theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {circleSavings}{' '}
+              {totalCashBack}{' '}
             </Text>
             on your purchase
           </Text>
@@ -702,35 +711,31 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-      {!loading ? (
-        <View style={styles.container}>
-          <ScrollView style={styles.container}>
-            {renderStatusCard()}
-            {status === 'PAYMENT_SUCCESS' &&
-            circleSavings > 0 &&
-            !circleSubscriptionID &&
-            isCircleSubscription
-              ? renderAddedCirclePlanWithValidity()
-              : null}
-            {status === 'PAYMENT_SUCCESS' &&
-            circleSavings > 0 &&
-            circleSubscriptionID &&
-            isCircleSubscription
-              ? renderCircleSavingsOnPurchase()
-              : null}
-            {renderCODNote()}
-            {renderCODButton()}
-            {appointmentHeader()}
-            {appointmentCard()}
-            {renderNote()}
-            {status == failure ? renderRetryPayment() : renderButton()}
-          </ScrollView>
-        </View>
-      ) : (
-        <Spinner />
-      )}
-      {codOrderProcessing && <Spinner />}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <View style={styles.container}>
+            <ScrollView style={styles.container}>
+              {renderStatusCard()}
+              {status === 'PAYMENT_SUCCESS' && isCircleBought
+                ? renderAddedCirclePlanWithValidity()
+                : null}
+              {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') && totalCashBack
+                ? renderCircleSavingsOnPurchase()
+                : null}
+              {renderCODNote()}
+              {renderCODButton()}
+              {appointmentHeader()}
+              {appointmentCard()}
+              {renderNote()}
+              {status == failure ? renderRetryPayment() : renderButton()}
+            </ScrollView>
+          </View>
+        ) : (
+          <Spinner />
+        )}
+        {codOrderProcessing && <Spinner />}
+      </SafeAreaView>
     </View>
   );
 };

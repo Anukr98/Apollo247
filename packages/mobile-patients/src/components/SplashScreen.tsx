@@ -249,23 +249,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
-    if (getCurrentRoute() !== AppRoutes.ChatRoom) {
-      fireWebengageEventForCallDecline();
-      RNCallKeep.endAllCalls();
-      pubnub.publish(
-        {
-          message: { message: '^^#PATIENT_REJECTED_CALL' },
-          channel: voipAppointmentId.current,
-          storeInHistory: true,
-          sendByPost: true,
-        },
-        (status, response) => {
-          voipAppointmentId.current = '';
-          voipPatientId.current = '';
-          voipCallType.current = '';
-        }
-      );
-    }
+    fireWebengageEventForCallDecline();
+    RNCallKeep.endAllCalls();
+    pubnub.publish(
+      {
+        message: { message: '^^#PATIENT_REJECTED_CALL' },
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        voipAppointmentId.current = '';
+        voipPatientId.current = '';
+        voipCallType.current = '';
+      }
+    );
   };
 
   const fireWebengageEventForCallDecline = () => {
@@ -418,6 +416,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'DoctorCallRejected':
             {
+              setLoading!(true);
               const appointmentId = linkId?.split('+')?.[0];
               const config: Pubnub.PubnubConfig = {
                 origin: 'apollo.pubnubapi.com',
@@ -434,7 +433,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   storeInHistory: true,
                   sendByPost: true,
                 },
-                (status, response) => {}
+                (status, response) => {
+                  setLoading!(false);
+                }
               );
             }
             break;
@@ -1001,9 +1002,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Pharmacy_Delivery_Charges',
     },
     top6_specailties: {
-      QA: 'QA_top6_specailties',
-      DEV: 'DEV_top6_specailties',
-      PROD: 'top6_specailties',
+      QA: 'QA_top_specialties',
+      DEV: 'DEV_top_specialties',
+      PROD: 'top_specialties',
     },
     min_value_to_nudge_users_to_avail_free_delivery: {
       QA: 'QA_min_value_to_nudge_users_to_avail_free_delivery',
@@ -1080,8 +1081,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', (key) => config.getNumber(key));
 
-      setAppConfig('top6_specailties', 'TOP_SPECIALITIES', (key) =>
-        JSON.parse(config.getString(key) || 'null')
+      setAppConfig(
+        'top6_specailties',
+        'TOP_SPECIALITIES',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
       );
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>

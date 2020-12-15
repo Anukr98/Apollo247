@@ -109,6 +109,10 @@ export interface circleValidity {
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
+export interface PharmacyCircleEvent {
+  'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+  'Circle Membership Value': number | null;
+}
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
@@ -833,6 +837,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setDefaultCirclePlan(defaultPlan[0]);
     }
   };
+
   return (
     <ShoppingCartContext.Provider
       value={{

@@ -1,5 +1,8 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  useShoppingCart,
+  PharmacyCircleEvent,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -113,7 +116,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
-    clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -129,7 +131,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     cartTotalCashback,
     circleSubscriptionId,
     isCircleSubscription,
+    isFreeDelivery,
+    circlePlanSelected,
   } = useShoppingCart();
+  const { circlePaymentReference } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -156,6 +161,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const client = useApolloClient();
+  const pharmacyCircleAttributes: PharmacyCircleEvent = {
+    'Circle Membership Added': circleSubscriptionId
+      ? 'Existing'
+      : !!circleMembershipCharges
+      ? 'Yes'
+      : 'No',
+    'Circle Membership Value': circleSubscriptionId
+      ? circlePaymentReference?.amount_paid
+      : !!circleMembershipCharges
+      ? circlePlanSelected?.currentSellingPrice
+      : null,
+  };
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
@@ -270,6 +287,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
         af_currency: 'INR',
+        ...pharmacyCircleAttributes!,
       };
       if (store) {
         eventAttributes['Store Id'] = store.storeid;
@@ -291,6 +309,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       af_currency: 'INR',
       'order id': orderId,
       'coupon applied': coupon ? true : false,
+      ...pharmacyCircleAttributes!,
     };
     return appsflyerEventAttributes;
   };
@@ -390,7 +409,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } catch (error) {
             console.log(error);
           }
-          clearCartInfo && clearCartInfo();
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
@@ -546,6 +564,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         totalCashBack:
           cartTotalCashback || circleSubscriptionId ? Number(cartTotalCashback) || 0 : 0,
         deviceVersion: DeviceInfo.getVersion(),
+        savedDeliveryCharge:
+          !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
       },
     };
 
@@ -638,6 +658,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: getFormattedAmount(grandTotal),
+      LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
@@ -787,7 +808,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const getTotalCashbackAmount = () => {
     if (burnHC != 0) {
       return getFormattedAmount(
-        (Number(cartTotalCashback) * Number(grandTotal)) / (Number(grandTotal) + Number(burnHC))
+        (Number(cartTotalCashback) * Number(grandTotal - burnHC)) / Number(grandTotal)
       );
     } else {
       return cartTotalCashback;
@@ -893,10 +914,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 setBurnHC(getFormattedAmount(grandTotal - deliveryCharges - packagingCharges));
                 if (deliveryCharges + packagingCharges == 0) {
                   setHCorder(true);
-                  setScrollToend(true);
-                  setTimeout(() => {
-                    setScrollToend(false);
-                  }, 500);
                 }
               } else {
                 setBurnHC(availableHC);

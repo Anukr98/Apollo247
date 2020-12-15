@@ -42,6 +42,7 @@ import {
   editDeleteData,
   getSourceName,
   phrSortByDate,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -394,8 +395,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     );
   };
 
-  const postOrderMedsAndTestsEvent = (id: any) => {
+  const postOrderMedsAndTestsEvent = (id: any, caseSheetDetails: any) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_ORDER_MEDS_TESTS] = {
+      ...caseSheetDetails,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -408,8 +410,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
   };
 
-  const onOrderTestMedPress = async (selectedItem: any) => {
-    postOrderMedsAndTestsEvent(selectedItem?.id);
+  const onOrderTestMedPress = async (selectedItem: any, caseSheetDetails: any) => {
+    postOrderMedsAndTestsEvent(selectedItem?.id, caseSheetDetails);
     let item =
       selectedItem?.caseSheet &&
       selectedItem?.caseSheet.find((obj: any) => {
@@ -619,6 +621,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   const onHealthCardItemPress = (selectedItem: any) => {
     if (selectedItem?.patientId) {
+      console.log('onHealthCardItemPress', selectedItem);
       postConsultCardClickEvent(selectedItem?.id);
       props.navigation.navigate(AppRoutes.ConsultDetails, {
         CaseSheet: selectedItem?.id,
@@ -647,6 +650,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestPrescriptionRecords();
+          postWebEngagePHR(
+            currentPatient,
+            WebEngageEventName.PHR_DELETE_DOCTOR_CONSULTATION,
+            'Doctor Consultation',
+            selectedItem
+          );
         } else {
           setShowSpinner(false);
         }
@@ -723,7 +732,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         sourceName={soureName || ''}
         showFollowUp={caseSheetFollowUp}
         onFollowUpPress={(selectedItem) => onFollowUpButtonPress(selectedItem)}
-        onOrderTestAndMedicinePress={(selectedItem) => onOrderTestMedPress(selectedItem)}
+        onOrderTestAndMedicinePress={(selectedItem) =>
+          onOrderTestMedPress(selectedItem, caseSheetDetails)
+        }
       />
     );
   };
@@ -759,7 +770,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
-              Source: 'Consult & RX',
+              Source: 'Doctor Consultation',
             };
             postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {

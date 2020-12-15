@@ -347,13 +347,6 @@ export enum MedicalRecordType {
   TEST_REPORT = "TEST_REPORT",
 }
 
-export enum MedicalTestUnit {
-  GM = "GM",
-  GM_SLASH_DL = "GM_SLASH_DL",
-  NONE = "NONE",
-  _PERCENT_ = "_PERCENT_",
-}
-
 export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
@@ -614,15 +607,6 @@ export interface AddDiabeticQuestionnaireInput {
   diabetic_year?: string | null;
 }
 
-export interface AddHealthCheckRecordInput {
-  id?: string | null;
-  patientId: string;
-  recordType: MedicalRecordType;
-  healthCheckName: string;
-  healthCheckDate: any;
-  healthCheckFiles?: (HealthCheckFileProperties | null)[] | null;
-}
-
 export interface AddHospitalizationRecordInput {
   id?: string | null;
   patientId: string;
@@ -658,31 +642,6 @@ export interface AddMedicalConditionRecordInput {
   notes?: string | null;
   illnessType: MedicalConditionIllnessTypes;
   medicationFiles?: (MedicalConditionFileProperties | null)[] | null;
-}
-
-export interface AddMedicalRecordInput {
-  additionalNotes?: string | null;
-  documentURLs?: string | null;
-  issuingDoctor?: string | null;
-  location?: string | null;
-  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
-  observations?: string | null;
-  patientId: string;
-  prismFileIds?: string | null;
-  recordType?: MedicalRecordType | null;
-  referringDoctor?: string | null;
-  sourceName?: string | null;
-  testDate?: any | null;
-  testName: string;
-  testResultFiles?: LabResultFileProperties | null;
-}
-
-export interface AddMedicalRecordParametersInput {
-  maximum?: number | null;
-  minimum?: number | null;
-  parameterName?: string | null;
-  result?: number | null;
-  unit?: MedicalTestUnit | null;
 }
 
 export interface AddPatientHealthRestrictionRecordInput {
@@ -1034,12 +993,6 @@ export interface Geolocation {
   longitude: number;
 }
 
-export interface HealthCheckFileProperties {
-  fileName?: string | null;
-  mimeType?: string | null;
-  content?: string | null;
-}
-
 export interface HelpEmailInput {
   category?: string | null;
   reason?: string | null;
@@ -1052,12 +1005,6 @@ export interface HospitalizationFileProperties {
   fileName?: string | null;
   mimeType?: string | null;
   content?: string | null;
-}
-
-export interface LabResultFileProperties {
-  fileName: string;
-  mimeType: string;
-  content: string;
 }
 
 export interface LabTestFileProperties {

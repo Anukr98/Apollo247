@@ -1,6 +1,7 @@
 import {
   ShoppingCartItem,
   ShoppingCartContextProps,
+  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   WebEngageEventName,
@@ -21,8 +22,9 @@ import {
 
 export function postwebEngageProceedToPayEvent(
   shoppingCart: ShoppingCartContextProps,
-  isStorePickup?: boolean,
-  deliveryTime?: string
+  isStorePickup: boolean,
+  deliveryTime: string,
+  pharmacyCircleEvent: PharmacyCircleEvent
 ) {
   const {
     cartTotal,
@@ -50,6 +52,7 @@ export function postwebEngageProceedToPayEvent(
     'Pin Code': pinCode,
     'Service Area': 'Pharmacy',
     'No. of out of stock items': numberOfOutOfStockItems,
+    ...pharmacyCircleEvent,
   };
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
@@ -58,7 +61,11 @@ export function postwebEngageProceedToPayEvent(
   postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
 }
 
-export function PharmacyCartViewedEvent(shoppingCart: ShoppingCartContextProps, id: string) {
+export function PharmacyCartViewedEvent(
+  shoppingCart: ShoppingCartContextProps,
+  id: string,
+  pharmacyCircleEvent: PharmacyCircleEvent
+) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart.cartItems.length,
     'Sub Total': shoppingCart.cartTotal,
@@ -80,6 +87,7 @@ export function PharmacyCartViewedEvent(shoppingCart: ShoppingCartContextProps, 
     ),
     'Service Area': 'Pharmacy',
     'Customer ID': id,
+    ...pharmacyCircleEvent,
   };
   if (shoppingCart.coupon) {
     eventAttributes['Coupon code used'] = shoppingCart.coupon.coupon;
@@ -106,7 +114,9 @@ export function PharmacyCartViewedEvent(shoppingCart: ShoppingCartContextProps, 
     ),
     ServiceArea: 'Pharmacy',
     CustomerID: id,
+    ...pharmacyCircleEvent,
   };
+
   if (shoppingCart.coupon) {
     firebaseAttributes['CouponCodeUsed'] = shoppingCart.coupon.coupon;
   }

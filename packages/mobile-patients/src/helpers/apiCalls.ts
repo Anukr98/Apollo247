@@ -37,6 +37,7 @@ export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
 export enum DIAGNOSTIC_GROUP_PLAN {
   ALL = 'ALL',
   CIRCLE = 'CIRCLE',
+  SPECIAL_DISCOUNT = 'SPECIALDISCOUNTS',
 }
 
 interface PharmaOverview {
@@ -493,7 +494,7 @@ export const searchMedicineApi = async (
   sortBy: string | null,
   filters: { [key: string]: string[] } | null,
   axdcCode?: string | null,
-  pincode?: string | null,
+  pincode?: string | null
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
@@ -582,15 +583,22 @@ export const pinCodeServiceabilityApi247 = (
   });
 };
 
+let cancelAvailabilityApi247: Canceler | undefined;
+
 export const availabilityApi247 = (
   pincode: string,
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelAvailabilityApi247 && cancelAvailabilityApi247();
   const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
   return Axios.get(url, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
     },
+    cancelToken: new CancelToken((c) => {
+      cancelAvailabilityApi247 = c;
+    }),
   });
 };
 
@@ -627,7 +635,7 @@ export const trackTagalysEvent = (
 export const getMedicineSearchSuggestionsApi = (
   searchText: string,
   axdcCode?: string | null,
-  pincode?: string | null,
+  pincode?: string | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
@@ -649,7 +657,7 @@ export const getProductsByCategoryApi = (
   sortBy: string | null,
   filters: { [key: string]: string[] } | null,
   axdcCode?: string | null,
-  pincode?: string | null 
+  pincode?: string | null
 ): Promise<AxiosResponse<CategoryProductsApiResponse>> => {
   return Axios.post(
     config.PRODUCTS_BY_CATEGORY[0],
@@ -689,7 +697,7 @@ export const getProductsByCategoryApi = (
 
 export const getMedicinePageProducts = (
   axdcCode?: string | null,
-  pincode?: string | null,
+  pincode?: string | null
 ): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
   let url = `${config.MEDICINE_PAGE[0]}`;
   if (axdcCode) {
@@ -886,9 +894,9 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
 };
 
 export const fetchConsultCoupons = (data: any): Promise<AxiosResponse<any>> => {
-  const { mobile, packageId, email } = data;
+  const { mobile, packageId, email, type } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/frontend?mobile=${mobile}&email=${email}`;
+  let url = `${baseUrl}/frontend?mobile=${mobile}&email=${email}&type=${type}`;
   if (!!packageId) {
     url += `&packageId=${packageId}`;
   }
@@ -902,9 +910,12 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
   return Axios.post(url, data);
 };
 
-export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<any>> => {
+export const userSpecificCoupon = (
+  mobileNumber: string,
+  type: string
+): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}`;
+  const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}&type=${type}`;
   return Axios.get(url);
 };
 

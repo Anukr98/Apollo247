@@ -216,6 +216,8 @@ export interface AppCommonDataContextProps {
   setCircleStatus: ((value: string) => void) | null;
   hdfcStatus: string;
   setHdfcStatus: ((value: string) => void) | null;
+  circlePaymentReference: any;
+  setCirclePaymentReference: ((payment: any) => void) | any;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -288,6 +290,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCircleStatus: null,
   hdfcStatus: '',
   setHdfcStatus: null,
+  circlePaymentReference: null,
+  setCirclePaymentReference: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -358,6 +362,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [savePatientDetailsWithHistory, setSavePatientDetailsWithHistory] = useState<
     AppCommonDataContextProps['savePatientDetailsWithHistory']
   >([]);
+  const [circlePaymentReference, setCirclePaymentReference] = useState<
+    AppCommonDataContextProps['circlePaymentReference']
+  >();
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
@@ -564,6 +571,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCircleStatus,
         hdfcStatus,
         setHdfcStatus,
+        circlePaymentReference,
+        setCirclePaymentReference,
       }}
     >
       {props.children}

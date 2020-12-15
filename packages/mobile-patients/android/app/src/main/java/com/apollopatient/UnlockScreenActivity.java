@@ -72,7 +72,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         Integer notifID = intent.getIntExtra("NOTIFICATION_ID", -1);
 
         //ringtoneManager start
-        Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
+        Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
         this.ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
         this.vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -84,8 +84,11 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 ringtone.setLooping(true);
                 ringtone.play();
                 try {
-                    Boolean isVibrationOn = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
-                            (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1);
+                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    Boolean isDndOn = manager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE;
+                    Boolean isVibrationOn = isDndOn ? false
+                            : (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
+                            (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1));
                     if (isVibrationOn) {
                         long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
                         vibrator.vibrate(pattern, 0);
@@ -188,7 +191,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     private void removeNotification(Boolean fallBack, Integer notifID) {
         if (fallBack) {
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            manager.cancel(notifID);
+            manager.cancelAll();
         }
     }
 

@@ -24,7 +24,10 @@ import {
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -72,6 +75,7 @@ import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import moment from 'moment';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -126,7 +130,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
     getUserSubscriptionsByStatus();
   }, []);
 
@@ -164,10 +167,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
-            firePurchaseEvent();
+            firePurchaseEvent(amountBreakup);
             eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
+          overlyCallPermissions(
+            currentPatient.firstName,
+            doctorName,
+            showAphAlert,
+            hideAphAlert,
+            true
+          );
         } else {
           fireOrderFailedEvent();
         }
@@ -238,7 +248,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
-  const firePurchaseEvent = () => {
+  const firePurchaseEvent = (amountBreakup: any) => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       coupon: coupon,
       currency: 'INR',
@@ -258,13 +268,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ],
       transaction_id: orderId,
       value: Number(price),
+      LOB: 'Consult',
     };
     console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-    fireCirclePurchaseEvent();
+    fireCirclePurchaseEvent(amountBreakup);
   };
 
-  const fireCirclePurchaseEvent = () => {
+  const fireCirclePurchaseEvent = (amountBreakup: any) => {
+    const Savings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
+    Savings > 0 && !circleSubscriptionId && circleWebEngage();
+
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       currency: 'INR',
       items: [
@@ -279,10 +293,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ],
       transaction_id: orderId,
       value: Number(circlePlanSelected?.currentSellingPrice),
+      LOB: 'Circle',
     };
-    circleSavings > 0 &&
+    Savings > 0 &&
       !circleSubscriptionId &&
       postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+
     console.log('eventAttributes >>>>', eventAttributes);
     clearCircleSubscriptionData();
   };
@@ -759,19 +775,22 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const circleWebEngage = () => {
-    const eventAttributes = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Consult',
+      Source: 'Consult',
     };
-    postWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_BUYS_SUBSCRIPTION, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const renderAddedCirclePlanWithValidity = () => {
-    circleWebEngage();
     return (
       <AddedCirclePlanWithValidity
         circleSavings={circleSavings}

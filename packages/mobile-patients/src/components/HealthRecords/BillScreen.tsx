@@ -26,6 +26,8 @@ import {
   getSourceName,
   handleGraphQlError,
   phrSortWithDate,
+  postWebEngagePHR,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -37,6 +39,10 @@ import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/global
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -183,6 +189,12 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalBillRecords();
+          postWebEngagePHR(
+            currentPatient,
+            WebEngageEventName.PHR_DELETE_BILLS,
+            'Bill',
+            selectedItem
+          );
         } else {
           setShowSpinner(false);
         }
@@ -259,6 +271,10 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
           title={`ADD DATA`}
           onPress={() => {
             setCallApi(false);
+            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+              Source: 'Bill',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'MedicalBill',
               recordType: MedicalRecordType.MEDICALBILL,
