@@ -184,6 +184,12 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const btnTxt = item?.banner_template_info?.Button;
     let imageHeight = 160;
 
+    if (subHeaderText2 || btnTxt || headerText3) {
+      imageHeight = 180;
+    } else {
+      imageHeight = 160;
+    }
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -194,7 +200,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           styles.hdfcBanner,
           {
             height: imageHeight,
-            width: width - 30,
+            width: width - 45,
           },
         ]}
       >
