@@ -578,9 +578,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setCircleCashback(circleCashback);
   };
 
-  const cartTotalCashback: ShoppingCartContextProps['cartTotalCashback'] = parseFloat(
-    cartItems.reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0).toFixed(2)
-  );
+  const cartTotalCashback: ShoppingCartContextProps['cartTotalCashback'] =
+    isCircleSubscription || circleMembershipCharges
+      ? parseFloat(
+          cartItems
+            .reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0)
+            .toFixed(2)
+        )
+      : 0;
 
   const cartTotalOfRxProducts: ShoppingCartContextProps['cartTotalOfRxProducts'] = parseFloat(
     cartItems
