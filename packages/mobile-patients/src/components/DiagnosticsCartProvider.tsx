@@ -29,6 +29,7 @@ export interface DiagnosticsCartItem {
   discountSpecialPrice?: number | null; //price
   collectionMethod: TEST_COLLECTION_TYPE;
   groupPlan?: string;
+  packageMrp?: number;
 }
 
 export interface DiagnosticClinic extends Clinic {

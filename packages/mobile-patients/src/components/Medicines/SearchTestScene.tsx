@@ -417,6 +417,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
+      packageMrp: pricesObject?.packageMrp,
     });
   };
 
@@ -607,8 +608,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
     const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
 
-    const productWithDiagnosticPricing = product.diagnosticPricing;
-    const pricesForItem = getPricesForItem(productWithDiagnosticPricing);
+    const productWithDiagnosticPricing = product?.diagnosticPricing;
+    const packageMrpForItem = product?.packageCalculatedMrp!;
+    const pricesForItem = getPricesForItem(productWithDiagnosticPricing, packageMrpForItem);
     // if all the groupPlans are inactive, then only don't show
     if (!pricesForItem?.itemActive) {
       return null;
@@ -625,6 +627,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
     const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
     const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
 
     const sellingPrice = !promoteCircle
       ? promoteDiscount && discountSpecialPrice != discountPrice
@@ -641,6 +644,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       circleSpecialPrice: circleSpecialPrice,
       discountPrice: discountPrice,
       discountSpecialPrice: discountSpecialPrice,
+      packageMrp: packageMrpForItem,
+      mrpToDisplay: mrpToDisplay,
     };
 
     return (
@@ -668,12 +673,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               testDescription: product?.testPreparationData,
               source: 'Full Search',
               type: product?.itemType,
+              packageMrp: packageMrpForItem,
             } as TestPackageForDetails,
           });
         }}
         medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
         price={price}
+        // price={mrpToDisplay}
         specialPrice={sellingPrice}
         // specialPrice={!promoteCircle && price != specialPrice ? specialPrice : undefined}
         circlePrice={promoteCircle ? circleSpecialPrice : undefined}

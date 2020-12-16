@@ -770,6 +770,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const getPinCodeServiceability = async () => {
+    console.log('ye chala');
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
     const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
     if (!!pinCodeFromAddress) {
@@ -787,7 +788,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData.cityName != '') {
             setAddressCityId!(String(serviceableData?.cityID!) || '');
-            setDeliveryAddressCityId!(String(serviceableData?.cityID || ''));
+            setDeliveryAddressCityId!(String(serviceableData?.cityID));
             getDiagnosticsAvailability(serviceableData?.cityID!, cartItems)
               .then(({ data }) => {
                 const diagnosticItems =
@@ -1002,11 +1003,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const listOfIds =
       typeof itemIds == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : itemIds;
 
-    console.log('address city id' + addressCityId);
+    console.log('address city id' + deliveryAddressCityId);
     console.log('source is ' + sourceScreen);
     const cityIdToPass =
       deliveryAddressId != ''
-        ? parseInt(addressCityId)
+        ? parseInt(deliveryAddressCityId)
         : !!sourceScreen
         ? 9
         : parseInt(diagnosticServiceabilityData?.cityId! || '9');

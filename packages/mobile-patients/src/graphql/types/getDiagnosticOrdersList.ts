@@ -35,6 +35,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   testPreparationData: string;
   testDescription: string | null;
   inclusions: (number | null)[] | null;
+  packageCalculatedMrp: number | null;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
 
