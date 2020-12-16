@@ -460,7 +460,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       'Yes',
       new Date(tatDate),
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
-      pharmacyCircleAttributes!
+      pharmacyCircleAttributes!,
+      moment(tatDate).diff(moment(), 'h')
     );
   }
 

@@ -88,7 +88,8 @@ export const postPhamracyCartAddressSelectedSuccess = (
   success: PhamracyCartAddressSelectedSuccess['Delivery Successful'],
   tatDisplayed: PhamracyCartAddressSelectedSuccess['TAT Displayed'],
   deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
-  pharmacyCircleEvent: PharmacyCircleEvent
+  pharmacyCircleEvent: PharmacyCircleEvent,
+  tatHrs: PhamracyCartAddressSelectedSuccess['TAT_Hrs']
 ) => {
   const eventAttributes: PhamracyCartAddressSelectedSuccess = {
     'TAT Displayed': tatDisplayed,
@@ -96,6 +97,7 @@ export const postPhamracyCartAddressSelectedSuccess = (
     'Delivery Address': deliveryAddress,
     Pincode: pincode,
     'Delivery TAT': deliveryTat,
+    TAT_Hrs: tatHrs,
     ...pharmacyCircleEvent,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);

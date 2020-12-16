@@ -281,7 +281,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       'Yes',
       new Date(tatDate),
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
-      pharmacyCircleAttributes!
+      pharmacyCircleAttributes!,
+      moment(tatDate).diff(moment(), 'h')
     );
   }
 
