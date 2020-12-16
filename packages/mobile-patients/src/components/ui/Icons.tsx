@@ -347,6 +347,10 @@ export const PhrDropdownBlueUpIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_phr_blue_dropdown.png')} />
 );
 
+export const PhrSearchIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_phr_search.png')} />
+);
+
 export const FrontCameraIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/frontCamera.png')} />
 );

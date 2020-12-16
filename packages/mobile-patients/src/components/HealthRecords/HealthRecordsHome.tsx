@@ -16,6 +16,7 @@ import {
   CrossPopup,
   DropdownGreen,
   PhrArrowRightIcon,
+  PhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -35,7 +36,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   phrSortByDate,
-  phrSortWithDate,
+  isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -44,7 +45,7 @@ import {
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
@@ -56,9 +57,10 @@ import {
   Image,
   TouchableOpacity,
   Keyboard,
-  Alert,
+  TextInput,
   Platform,
 } from 'react-native';
+import { searchPHRApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -141,7 +143,6 @@ const styles = StyleSheet.create({
   },
   profileDetailsMainViewStyle: {
     backgroundColor: '#FFFFFF',
-    marginTop: 16,
     paddingTop: 26,
     paddingHorizontal: 18,
     paddingBottom: 70,
@@ -309,6 +310,31 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'right',
   },
+  textInputStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
+  },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginVertical: 15,
+    alignItems: 'center',
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    marginLeft: 18,
+  },
 });
 
 type BloodGroupArray = {
@@ -381,6 +407,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [currentUpdatePopupId, setCurrentUpdatePopupId] = useState(0);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [isSearchFocus, SetIsSearchFocus] = useState(false);
+  const _searchInputRef = useRef(null);
+  const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [errorPopupText, setErrorPopupText] = useState<string>(
     string.common.error_enter_number_text
   );
@@ -1384,11 +1414,72 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const onSearchHealthRecords = (_searchText: string) => {
+    console.log('onSearchHealthRecords', _searchText);
+    searchPHRApi(_searchText, currentPatient?.uhid || '')
+      .then(({ data }) => {
+        console.log('data', data);
+      })
+      .catch((error) => {
+        console.log('searchPHRApi Error', error);
+      });
+  };
+
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      SetIsSearchFocus(false);
+      _searchInputRef?.current?.clear();
+      Keyboard.dismiss();
+    }
+  };
+
+  const onSearchTextChange = (value: string) => {
+    SetIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 3)) {
+        setHealthRecordSearchResults([]);
+        return;
+      }
+      const search = _.debounce(onSearchHealthRecords, 300);
+      search(value);
+    }
+  };
+
+  const renderSearchBar = () => {
+    return (
+      <View style={styles.searchBarMainViewStyle}>
+        <View style={styles.searchBarViewStyle}>
+          <PhrSearchIcon style={{ width: 20, height: 20 }} />
+          <TextInput
+            placeholder={'Search'}
+            style={styles.textInputStyle}
+            selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+            numberOfLines={1}
+            ref={_searchInputRef}
+            onFocus={() => SetIsSearchFocus(true)}
+            value={searchText}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(value) => onSearchTextChange(value)}
+          />
+        </View>
+        {isSearchFocus ? (
+          <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+            {'Cancel'}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderUpdateProfileDetailsPopup()}
         {renderHeader()}
+        {renderSearchBar()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderProfileDetailsView()}
           {renderHealthCategoriesView()}
