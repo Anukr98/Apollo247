@@ -967,3 +967,13 @@ export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
     },
   });
 };
+
+export const searchPHRApi = (
+  searchText: string,
+  uhid: string,
+  accessToken: string = '',
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrl = `https://ora.phrdemo.com/data/apollo/healthrecord/search?accessToken=KeyOf247&uhid=${uhid}&healthrecordType=&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrl);
+};
