@@ -45,6 +45,8 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
   };
 
   const renderDeliveryCharges = () => {
+    const amountToPay = cartTotal - couponDiscount - productDiscount;
+    const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Delivery charges</Text>
@@ -54,16 +56,17 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.free}>Free</Text>
-              {(isCircleSubscription || !!circleMembershipCharges) && (
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('R', 13, '#02475B', 1, 26),
-                    marginLeft: 5,
-                  }}
-                >
-                  for Circle Members
-                </Text>
-              )}
+              {(isCircleSubscription || !!circleMembershipCharges) &&
+                amountToPay < minValueForFreeDelivery && (
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('R', 13, '#02475B', 1, 26),
+                      marginLeft: 5,
+                    }}
+                  >
+                    for Circle Members
+                  </Text>
+                )}
             </View>
             <Text style={{ ...styles.text, textDecorationLine: 'line-through', marginLeft: 5 }}>
               +₹{deliveryFee.toFixed(2)}
