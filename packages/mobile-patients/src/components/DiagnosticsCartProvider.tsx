@@ -95,6 +95,9 @@ export interface DiagnosticsCartContextProps {
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
+  deliveryAddressCityId: string;
+  setDeliveryAddressCityId: ((id: string) => void) | null;
+
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
@@ -177,6 +180,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+
+  deliveryAddressCityId: '',
+  setDeliveryAddressCityId: null,
+
   addresses: [],
   setAddresses: null,
   addAddress: null,
@@ -260,6 +267,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   >(null);
 
   const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
+  const [deliveryAddressCityId, setDeliveryAddressCityId] = useState<
+    DiagnosticsCartContextProps['deliveryAddressCityId']
+  >('');
   const [diagnosticAreas, setDiagnosticAreas] = useState<
     DiagnosticsCartContextProps['diagnosticAreas']
   >([]);
@@ -269,6 +279,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     _setDiagnosticClinic(item);
     _setDiagnosticSlot(null);
     _setDeliveryAddressId('');
+    setDeliveryAddressCityId('');
   };
 
   const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
@@ -471,6 +482,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setEPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
+    setDeliveryAddressCityId('');
     setClinicId('');
     setPinCode('');
     setClinics([]);
@@ -573,6 +585,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         addAddress,
         deliveryAddressId,
         setDeliveryAddressId,
+
+        deliveryAddressCityId,
+        setDeliveryAddressCityId,
+
         deliveryType,
         coupon,
         setCoupon,
