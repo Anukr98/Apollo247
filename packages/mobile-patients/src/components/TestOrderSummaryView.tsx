@@ -187,6 +187,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     (prevVal, currVal) => prevVal + currVal,
     0
   );
+  const totalSavings = totalCartSaving + totalDiscountSaving;
 
   /**
    * to handle the quantity
@@ -351,7 +352,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           </View>
         </View>
       )}
-      {!!totalCartSaving && (
+      {!!totalSavings && (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
             <Text style={styles.commonText}></Text>
@@ -373,7 +374,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
               - {string.common.Rs}
-              {totalCartSaving}
+              {totalSavings}
             </Text>
           </View>
         </View>
