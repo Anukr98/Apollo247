@@ -810,6 +810,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ),
               onPressOk: () => {
                 hideAphAlert!();
+                setDeliveryAddressCityId!('');
+                setDeliveryAddressId!('');
               },
             });
           }
@@ -817,6 +819,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .catch((e) => {
           CommonBugFender('Tests_', e);
           setLoading!(false);
+          setDeliveryAddressCityId!('');
+          setDeliveryAddressId!('');
           console.log('getDiagnosticsPincode serviceability Error\n', { e });
         });
     }
