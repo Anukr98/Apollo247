@@ -176,6 +176,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
     if (isConsultJourney) {
+      !isModal && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_ADDS_CART);
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -561,6 +562,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         style={styles.buyNowBtn}
         onPress={() => {
           fireCircleBuyNowEvent();
+          isConsultJourney && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_ADDS_CART);
           setDefaultCirclePlan && setDefaultCirclePlan(null);
           setIsCircleSubscription && setIsCircleSubscription(true);
           autoSelectDefaultPlan(membershipPlans);
