@@ -2,21 +2,24 @@ import {
   dataSavedUserID,
   doRequestAndAccessLocationModified,
   findAddrComponents,
-  formatAddressWithLandmark,
   formatAddress,
+  formatAddressWithLandmark,
+  formatNameNumber,
   g,
+  getMaxQtyForMedicineItem,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
-  getMaxQtyForMedicineItem,
-  formatNameNumber,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
+import { StoreDriveWayPickupPopup } from '@aph/mobile-patients/src/components/Medicines/StoreDriveWayPickupPopup';
+import { StoreDriveWayPickupView } from '@aph/mobile-patients/src/components/Medicines/StoreDriveWayPickupView';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
+  PharmacyCircleEvent,
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
@@ -27,10 +30,13 @@ import {
   ArrowRight,
   CouponIcon,
   FreeShippingIcon,
+  OneApollo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { WhatsAppStatus } from '@aph/mobile-patients/src/components/ui/WhatsAppStatus';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
@@ -40,8 +46,11 @@ import {
   GET_PATIENT_ADDRESS_LIST,
   UPDATE_PATIENT_ADDRESS,
   UPLOAD_DOCUMENT,
-  VALIDATE_PHARMA_COUPON,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
@@ -49,27 +58,28 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
+  availabilityApi247,
+  getDeliveryTAT247,
+  getMedicineDetailsApi,
   getPlaceInfoByPincode,
   getStoreInventoryApi,
   GetStoreInventoryResponse,
+  MedicineProduct,
   pinCodeServiceabilityApi247,
   searchPickupStoresApi,
   Store,
-  MedicineProduct,
-  validateConsultCoupon,
-  userSpecificCoupon,
-  getMedicineDetailsApi,
   TatApiInput247,
-  getDeliveryTAT247,
-  availabilityApi247,
+  userSpecificCoupon,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { whatsAppUpdateAPICall } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
+  postPharmacyAddNewAddressCompleted,
   postPharmacyStorePickupViewed,
   postPharmacyStoreSelectedSuccess,
-  postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
   ProductPageViewedSource,
@@ -99,21 +109,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '../../graphql/types/getPatientAddressList';
-import { CouponCategoryApplicable, OrderLineItems } from '../../graphql/types/globalTypes';
-import {
-  validatePharmaCoupon,
-  validatePharmaCouponVariables,
-} from '../../graphql/types/validatePharmaCoupon';
-import { whatsAppUpdateAPICall } from '../../helpers/clientCalls';
-import { TextInputComponent } from '../ui/TextInputComponent';
-import { WhatsAppStatus } from '../ui/WhatsAppStatus';
-import { OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
-import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
-import { StoreDriveWayPickupView } from './StoreDriveWayPickupView';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -223,6 +218,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     addMultipleCartItems,
     circleSubscriptionId,
     hdfcSubscriptionId,
+    circleMembershipCharges,
+    circlePlanSelected,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
@@ -242,7 +239,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation, hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+    circlePaymentReference,
+  } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
@@ -251,6 +256,18 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [alertShown, setAlertShown] = useState<boolean>(false);
   const [storeType, setStoreType] = useState('');
   const [shopId, setShopId] = useState('');
+  const pharmacyCircleAttributes: PharmacyCircleEvent = {
+    'Circle Membership Added': circleSubscriptionId
+      ? 'Existing'
+      : !!circleMembershipCharges
+      ? 'Yes'
+      : 'No',
+    'Circle Membership Value': circleSubscriptionId
+      ? circlePaymentReference?.amount_paid
+      : !!circleMembershipCharges
+      ? circlePlanSelected?.currentSellingPrice
+      : null,
+  };
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -259,7 +276,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
   if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`)
+    packageId.push(`APOLLO:${circlePlanId}`);
   }
 
   // To remove applied coupon and selected storeId from cart when user goes back.
@@ -623,7 +640,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   ) => {
     try {
       const tatDate = deliverydate;
-      const currentDate = moment();
+      const currentDate = moment()
+        .hour(0)
+        .minute(0)
+        .second(0);
+      const momentTatDate = moment(tatDate)
+        .hour(0)
+        .minute(0)
+        .second(0);
       if (tatDate) {
         setdeliveryTime(tatDate);
         setshowDeliverySpinner(false);
@@ -633,7 +657,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             formatAddress(selectedAddress),
             'Yes',
             moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
-            moment(tatDate).diff(currentDate, 'd')
+            Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
+            pharmacyCircleAttributes,
+            moment(tatDate).diff(moment(), 'h')
           );
 
         if (selectedAddress && selectedAddress.id === newAddressAdded) {

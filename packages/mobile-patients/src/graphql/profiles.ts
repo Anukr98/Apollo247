@@ -2305,9 +2305,9 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
-export const GET_MEDICAL_PRISM_RECORD = gql`
-  query getPatientPrismMedicalRecords($patientId: ID!) {
-    getPatientPrismMedicalRecords(patientId: $patientId) {
+export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
+  query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
+    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
       labResults {
         response {
           id
@@ -2371,7 +2371,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorMsg
         errorType
       }
-      healthChecksNew {
+      healthChecks {
         errorCode
         errorMsg
         errorType
@@ -2397,7 +2397,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           followupDate
         }
       }
-      hospitalizationsNew {
+      hospitalizations {
         errorCode
         errorMsg
         errorType
@@ -3012,6 +3012,14 @@ export const ADD_CHAT_DOCUMENTS = gql`
       id
       documentPath
       prismFileId
+    }
+  }
+`;
+
+export const GET_PREVIOUS_ORDERS_SKUS = gql`
+  mutation getPreviousOrdersSkus($previousOrdersSkus: PreviousOrdersSkus) {
+    getPreviousOrdersSkus(previousOrdersSkus: $previousOrdersSkus) {
+      SkuDetails
     }
   }
 `;

@@ -314,6 +314,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     addresses,
     setDeliveryAddressId,
     deliveryAddressId,
+    setDeliveryAddressCityId,
+    deliveryAddressCityId,
     cartTotal,
     couponDiscount,
     grandTotal,
@@ -383,7 +385,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationForDiagnostics,
     locationDetails,
     diagnosticServiceabilityData,
-    circleSubscription,
   } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -399,7 +400,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
-  const [addressCityId, setAddressCityId] = useState<string>('');
+  const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
   const [isCashOnDelivery, setCashOnDelivery] = useState(true);
   const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
@@ -772,6 +773,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
     const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
     if (!!pinCodeFromAddress) {
+      setPinCode!(pinCodeFromAddress);
       setLoading!(true);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
@@ -785,6 +787,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData.cityName != '') {
             setAddressCityId!(String(serviceableData?.cityID!) || '');
+            setDeliveryAddressCityId!(String(serviceableData?.cityID || ''));
             getDiagnosticsAvailability(serviceableData?.cityID!, cartItems)
               .then(({ data }) => {
                 const diagnosticItems =
@@ -807,6 +810,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ),
               onPressOk: () => {
                 hideAphAlert!();
+                setDeliveryAddressCityId!('');
+                setDeliveryAddressId!('');
               },
             });
           }
@@ -814,6 +819,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .catch((e) => {
           CommonBugFender('Tests_', e);
           setLoading!(false);
+          setDeliveryAddressCityId!('');
+          setDeliveryAddressId!('');
           console.log('getDiagnosticsPincode serviceability Error\n', { e });
         });
     }
@@ -996,6 +1003,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       typeof itemIds == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : itemIds;
 
     console.log('address city id' + addressCityId);
+    console.log('source is ' + sourceScreen);
+    const cityIdToPass =
+      deliveryAddressId != ''
+        ? parseInt(addressCityId)
+        : !!sourceScreen
+        ? 9
+        : parseInt(diagnosticServiceabilityData?.cityId! || '9');
+    console.log('cityId..' + cityIdToPass);
+    console.log('typeof cityId ' + typeof cityIdToPass);
     {
       setLoading!(true);
       client
@@ -1003,12 +1019,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
           variables: {
             //if address is not selected then from pincode bar otherwise from address
-            cityID:
-              deliveryAddressId != ''
-                ? parseInt(addressCityId)
-                : sourceScreen!
-                ? 9
-                : parseInt(diagnosticServiceabilityData?.cityId! || '9'),
+            cityID: cityIdToPass,
             itemIDs: listOfIds!,
           },
           fetchPolicy: 'no-cache',

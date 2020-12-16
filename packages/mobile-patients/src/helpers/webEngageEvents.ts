@@ -18,6 +18,7 @@ export enum ProductPageViewedSource {
   FULL_SEARCH = 'full search',
   RECENT_SEARCH = 'recent search',
   HOME_PAGE = 'home page',
+  BUY_AGAIN = 'buy again',
   CATEGORY_OR_LISTING = 'category or listing',
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
@@ -1406,6 +1407,7 @@ export interface WebEngageEvents {
     'Delivery Address': string;
     Pincode: string;
     'Delivery TAT': number;
+    TAT_Hrs: number;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
   };

@@ -16,7 +16,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
-import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response as HospitalizationType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
@@ -76,13 +76,11 @@ const styles = StyleSheet.create({
 
 export interface HospitalizationScreenProps
   extends NavigationScreenProps<{
-    hospitalizationData: HospitalizationType[];
     onPressBack: () => void;
   }> {}
 
 export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (props) => {
-  const hospitalizationData = props.navigation?.getParam('hospitalizationData') || [];
-  const [hospitalizationMainData, setHospitalizationMainData] = useState<any>(hospitalizationData);
+  const [hospitalizationMainData, setHospitalizationMainData] = useState<any>([]);
   const [localHospitalizationData, setLocalHospitalizationData] = useState<Array<{
     key: string;
     data: HospitalizationType[];
@@ -91,7 +89,10 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(false);
-  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
+
+  useEffect(() => {
+    getLatestHospitalizationRecords();
+  }, []);
 
   useEffect(() => {
     let finalData: { key: string; data: HospitalizationType[] }[] = [];
@@ -110,7 +111,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, [callApi, callPhrMainApi]);
+  }, [callApi]);
 
   useEffect(() => {
     if (callApi) {
@@ -119,9 +120,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   }, [callApi]);
 
   const gotoPHRHomeScreen = () => {
-    if (!callApi && !callPhrMainApi) {
-      props.navigation.state.params?.onPressBack();
-    }
+    props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
   };
 
@@ -170,17 +169,18 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
 
   const getLatestHospitalizationRecords = () => {
     setShowSpinner(true);
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.HOSPITALIZATION,
+    ])
       .then((data: any) => {
-        const hospitalizationsNewData = g(
+        const hospitalizationsData = g(
           data,
-          'getPatientPrismMedicalRecords',
-          'hospitalizationsNew',
+          'getPatientPrismMedicalRecords_V2',
+          'hospitalizations',
           'response'
         );
-        setHospitalizationMainData(phrSortWithDate(hospitalizationsNewData));
+        setHospitalizationMainData(phrSortWithDate(hospitalizationsData));
         setShowSpinner(false);
-        setCallPhrMainApi(true);
       })
       .catch((error) => {
         setShowSpinner(false);

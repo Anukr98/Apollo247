@@ -99,6 +99,7 @@ import {
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -445,14 +446,22 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     address: savePatientAddress_savePatientAddress_patientAddress,
     tatDate: string
   ) {
-    const currentDate = moment();
+    const currentDate = moment()
+      .hour(0)
+      .minute(0)
+      .second(0);
+    const momentTatDate = moment(tatDate)
+      .hour(0)
+      .minute(0)
+      .second(0);
     postPhamracyCartAddressSelectedSuccess(
       address?.zipcode!,
       formatAddress(address),
       'Yes',
       new Date(tatDate),
-      moment(tatDate).diff(currentDate, 'd'),
-      pharmacyCircleAttributes!
+      Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
+      pharmacyCircleAttributes!,
+      moment(tatDate).diff(moment(), 'h')
     );
   }
 
@@ -1118,11 +1127,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           {renderUnServiceable()}
           {renderCartItems()}
+          {!!circleMembershipCharges && <CircleCartItem />}
           {(!isCircleSubscription || showCareSelectPlans) &&
             !coupon &&
             !circleSubscriptionId &&
+            !circleMembershipCharges &&
             renderCareSubscriptionOptions()}
-          {renderAvailFreeDelivery()}
+          {!circleMembershipCharges && renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
           {renderSuggestProducts()}

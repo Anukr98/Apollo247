@@ -39,7 +39,7 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
     (Text as any).defaultProps.allowFontScaling = false;
     (TextInput as any).defaultProps = (TextInput as any).defaultProps || {};
     (TextInput as any).defaultProps.allowFontScaling = false;
-    (TouchableOpacity as any).defaultProps.activeOpacity = 0.7;
+    (TouchableOpacity as any).defaultProps.activeOpacity = 1;
   }
 
   codePushStatusDidChange(status: codePush.SyncStatus) {

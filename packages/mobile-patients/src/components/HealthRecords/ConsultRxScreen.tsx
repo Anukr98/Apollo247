@@ -72,7 +72,7 @@ import {
   deletePatientPrismMedicalRecords,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import _ from 'lodash';
@@ -135,6 +135,7 @@ export interface ConsultRxScreenProps
     consultArray: any[];
     prescriptionArray: any[];
     onPressBack: () => void;
+    callPrescriptionsApi: () => void;
   }> {}
 
 export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
@@ -155,7 +156,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
   const [prescriptions, setPrescriptions] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[]
     | null
     | undefined
   >(props.navigation?.getParam('prescriptionArray') || []);
@@ -272,11 +273,11 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   const getLatestPrescriptionRecords = () => {
     setShowSpinner(true);
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.PRESCRIPTION])
       .then((data: any) => {
         const prescriptionsData = g(
           data,
-          'getPatientPrismMedicalRecords',
+          'getPatientPrismMedicalRecords_V2',
           'prescriptions',
           'response'
         );
@@ -335,6 +336,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const gotoPHRHomeScreen = () => {
     if (!callApi && !callPhrMainApi) {
       props.navigation.state.params?.onPressBack();
+    } else {
+      props.navigation.state.params?.onPressBack();
+      props.navigation.state.params?.callPrescriptionsApi();
     }
     props.navigation.goBack();
   };

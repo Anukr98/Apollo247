@@ -1301,6 +1301,12 @@ export interface PrescriptionReUploadInput {
   prismPrescriptionFileId?: string | null;
 }
 
+export interface PreviousOrdersSkus {
+  patientId: string;
+  fromDate?: number | null;
+  toDate?: number | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
