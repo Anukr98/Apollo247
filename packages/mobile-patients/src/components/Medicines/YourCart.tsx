@@ -242,7 +242,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation, hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+  } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
@@ -259,7 +266,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
   if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`)
+    packageId.push(`APOLLO:${circlePlanId}`);
   }
 
   // To remove applied coupon and selected storeId from cart when user goes back.
@@ -623,7 +630,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   ) => {
     try {
       const tatDate = deliverydate;
-      const currentDate = moment();
+      const currentDate = moment()
+        .hour(0)
+        .minute(0)
+        .second(0);
+      const momentTatDate = moment(tatDate)
+        .hour(0)
+        .minute(0)
+        .second(0);
       if (tatDate) {
         setdeliveryTime(tatDate);
         setshowDeliverySpinner(false);
@@ -633,7 +647,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             formatAddress(selectedAddress),
             'Yes',
             moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
-            moment(tatDate).diff(currentDate, 'd')
+            Math.ceil(momentTatDate.diff(currentDate, 'h') / 24)
           );
 
         if (selectedAddress && selectedAddress.id === newAddressAdded) {

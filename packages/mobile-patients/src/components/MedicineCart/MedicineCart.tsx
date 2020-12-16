@@ -446,13 +446,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     address: savePatientAddress_savePatientAddress_patientAddress,
     tatDate: string
   ) {
-    const currentDate = moment();
+    const currentDate = moment()
+      .hour(0)
+      .minute(0)
+      .second(0);
+    const momentTatDate = moment(tatDate)
+      .hour(0)
+      .minute(0)
+      .second(0);
     postPhamracyCartAddressSelectedSuccess(
       address?.zipcode!,
       formatAddress(address),
       'Yes',
       new Date(tatDate),
-      moment(tatDate).diff(currentDate, 'd'),
+      Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
       pharmacyCircleAttributes!
     );
   }
