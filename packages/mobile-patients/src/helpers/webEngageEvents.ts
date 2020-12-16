@@ -1407,6 +1407,7 @@ export interface WebEngageEvents {
     'Delivery Address': string;
     Pincode: string;
     'Delivery TAT': number;
+    TAT_Hrs: number;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
   };
