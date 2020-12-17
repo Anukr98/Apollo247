@@ -76,6 +76,7 @@ import {
   ShoppingCartContextProps,
   EPrescription,
   useShoppingCart,
+  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -1350,7 +1351,8 @@ export const postwebEngageAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
   sectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name']
+  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'],
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
@@ -1366,6 +1368,7 @@ export const postwebEngageAddToCartEvent = (
     Source: source,
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
+    ...pharmacyCircleAttributes,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1628,7 +1631,8 @@ export const postAppsFlyerAddToCartEvent = (
     price,
     special_price,
   }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
-  id: string
+  id: string,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
     'customer id': id,
@@ -1636,6 +1640,7 @@ export const postAppsFlyerAddToCartEvent = (
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku,
+    ...pharmacyCircleAttributes,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1680,7 +1685,8 @@ export const postFirebaseAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source'],
   section?: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Section'],
-  sectionName?: string
+  sectionName?: string,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
@@ -1698,6 +1704,7 @@ export const postFirebaseAddToCartEvent = (
       af_currency: 'INR',
       Section: section ? section : '',
       SectionName: sectionName || '',
+      ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   } catch (error) {}
@@ -1828,7 +1835,8 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
-  onComplete?: () => void
+  onComplete?: () => void,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -1853,7 +1861,8 @@ export const addPharmaItemToCart = (
       },
       otherInfo?.source,
       otherInfo?.section,
-      otherInfo?.categoryName
+      otherInfo?.categoryName,
+      pharmacyCircleAttributes!
     );
     postFirebaseAddToCartEvent(
       {
@@ -1864,7 +1873,9 @@ export const addPharmaItemToCart = (
         category_id: g(otherInfo, 'categoryId'),
       },
       g(otherInfo, 'source')!,
-      g(otherInfo, 'section')
+      g(otherInfo, 'section'),
+      '',
+      pharmacyCircleAttributes!
     );
     postAppsFlyerAddToCartEvent(
       {
@@ -1874,7 +1885,8 @@ export const addPharmaItemToCart = (
         special_price: cartItem.specialPrice,
         category_id: g(otherInfo, 'categoryId'),
       },
-      g(currentPatient, 'id')!
+      g(currentPatient, 'id')!,
+      pharmacyCircleAttributes!
     );
   };
 

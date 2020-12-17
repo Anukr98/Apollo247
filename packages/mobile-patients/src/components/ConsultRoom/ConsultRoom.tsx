@@ -433,7 +433,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcPlanId,
     setCircleStatus,
     setHdfcStatus,
-    setCirclePaymentReference,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -461,6 +460,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circleSubscriptionId,
     setHdfcSubscriptionId,
     setCirclePlanValidity,
+    setCirclePaymentReference,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -726,7 +727,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     eventName: WebEngageEventName,
     source?: PatientInfoWithSource['Source']
   ) => {
-    const eventAttributes: PatientInfo = {
+    let eventAttributes: PatientInfo = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -754,6 +755,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
+    if (eventName == WebEngageEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
     postWebEngageEvent(eventName, eventAttributes);
   };
 
@@ -771,7 +775,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     eventName: FirebaseEventName,
     source?: PatientInfoWithSourceFirebase['Source']
   ) => {
-    const eventAttributes: PatientInfoFirebase = {
+    let eventAttributes: PatientInfoFirebase = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -790,6 +794,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     ) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
+    }
+    if (eventName == FirebaseEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
     }
     postFirebaseEvent(eventName, eventAttributes);
   };

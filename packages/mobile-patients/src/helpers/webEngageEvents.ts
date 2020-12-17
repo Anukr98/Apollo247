@@ -616,7 +616,20 @@ export interface WebEngageEvents {
 
   // ********** Home Screen Events ********** \\
 
-  [WebEngageEventName.BUY_MEDICINES]: PatientInfoWithSource;
+  [WebEngageEventName.BUY_MEDICINES]: {
+    Source: 'Home Screen' | 'Menu';
+    Pincode?: String;
+    Serviceability?: String;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
+  };
   [WebEngageEventName.ORDER_TESTS]: PatientInfoWithSource;
   [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
   [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
@@ -789,6 +802,8 @@ export interface WebEngageEvents {
     'Section Name'?: string;
     af_revenue: number;
     af_currency: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
     'product name': string;
@@ -1887,6 +1902,8 @@ export interface WebEngageEvents {
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
     SectionName?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
