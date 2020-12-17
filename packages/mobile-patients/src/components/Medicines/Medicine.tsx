@@ -280,6 +280,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pinCode,
     setPinCode,
     setCirclePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -1894,7 +1895,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
-      () => setItemsLoading({ ...itemsLoading, [sku]: false })
+      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+      pharmacyCircleAttributes!
     );
   };
 

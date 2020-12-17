@@ -246,6 +246,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setHdfcPlanName,
     setIsFreeDelivery,
     setCirclePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -345,6 +346,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       ItemCode: testInfo.ItemID,
       ItemPrice: testInfo.Rate,
       LOB: 'Diagnostics',
+      ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
