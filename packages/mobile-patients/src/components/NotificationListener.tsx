@@ -868,7 +868,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .catch((err) => console.error(err));
       */
       if (notification.data?.type !== 'chat_room' && notification.data?.type !== 'call_started') {
-        processNotification(notification, true); // when app on foreground
+        processNotification(notification, true); // when app in foreground
       }
     });
 
