@@ -81,7 +81,7 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
       !!count && (
         <View style={styles.proceedToCheckout}>
           <Button
-            onPress={() => navigation.navigate(AppRoutes.YourCart)}
+            onPress={() => navigation.navigate(AppRoutes.MedicineCart)}
             title={string.proceedToCheckout.replace('{0}', `${count}`)}
           />
         </View>
