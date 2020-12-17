@@ -1,6 +1,9 @@
+import { Events } from '@aph/mobile-patients/src/components/MedicineBuyAgain';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
 import { MedicineListingProducts } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { medCartItemsDetailsApi, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -9,6 +12,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+
 export interface Props
   extends NavigationScreenProps<{
     movedFrom?: AppRoutes;
@@ -20,9 +24,12 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
   const [products, setProducts] = useState<MedicineProduct[]>([]);
   const [isLoading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
+  const { cartItems } = useShoppingCart();
+  const { buyAgainPageViewed } = Events.Events;
 
   useEffect(() => {
     fetchProducts();
+    buyAgainPageViewed({});
   }, []);
 
   const fetchProducts = async () => {
@@ -68,6 +75,20 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const renderProceedToCheckout = () => {
+    const count = cartItems.length;
+    return (
+      !!count && (
+        <View style={styles.proceedToCheckout}>
+          <Button
+            onPress={() => navigation.navigate(AppRoutes.YourCart)}
+            title={string.proceedToCheckout.replace('{0}', `${count}`)}
+          />
+        </View>
+      )
+    );
+  };
+
   const renderLoading = () => {
     return isLoading ? <ActivityIndicator color="green" size="large" /> : null;
   };
@@ -85,11 +106,12 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderSelectFromItems()}
       {renderProducts()}
+      {renderProceedToCheckout()}
     </SafeAreaView>
   );
 };
 
-const { text, container } = theme.viewStyles;
+const { text, card, container } = theme.viewStyles;
 const { LIGHT_BLUE, WHITE } = theme.colors;
 const styles = StyleSheet.create({
   selectFromItemsContainer: {
@@ -100,5 +122,10 @@ const styles = StyleSheet.create({
     ...text('M', 13, LIGHT_BLUE, 0.8),
     paddingHorizontal: 16,
     paddingVertical: 16,
+  },
+  proceedToCheckout: {
+    ...card(0, 0, 0),
+    paddingVertical: 12,
+    paddingHorizontal: 20,
   },
 });

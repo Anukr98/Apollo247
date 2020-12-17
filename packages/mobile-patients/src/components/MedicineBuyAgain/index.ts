@@ -1,4 +1,4 @@
+import * as Events from '@aph/mobile-patients/src/components/MedicineBuyAgain/Events';
 import * as MedicineBuyAgain from '@aph/mobile-patients/src/components/MedicineBuyAgain/MedicineBuyAgain';
-import * as MedicineBuyAgainEvents from '@aph/mobile-patients/src/components/MedicineBuyAgain/MedicineBuyAgainEvents';
 
-export { MedicineBuyAgain, MedicineBuyAgainEvents };
+export { MedicineBuyAgain, Events };
