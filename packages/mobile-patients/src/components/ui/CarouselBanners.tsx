@@ -182,10 +182,19 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const subHeaderText1 = item?.banner_template_info?.subHeaderText1;
     const subHeaderText2 = item?.banner_template_info?.subHeaderText2;
     const btnTxt = item?.banner_template_info?.Button;
-    let imageHeight = 160;
-    if (!subHeaderText2?.trim() || !btnTxt?.trim() || !headerText3?.trim()) {
-      // str is empty or contains only spaces
-      imageHeight = 160;
+    let imageHeight = 180;
+
+    if (!subHeaderText2 || !btnTxt || !headerText3) {
+      imageHeight = isDynamicBanner ? 160 : 144;
+      Image.getSize(
+        bannerUri,
+        (width, height) => {
+          imageHeight = height;
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
     } else {
       imageHeight = 180;
     }
@@ -200,7 +209,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           styles.hdfcBanner,
           {
             height: imageHeight,
-            width: width - 45,
+            width: isDynamicBanner ? width - 30 : 320,
           },
         ]}
       >
@@ -210,12 +219,12 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             width: '100%',
           }}
           imageStyle={{
-            borderRadius: !isDynamicBanner?.trim() ? 0 : 7,
+            borderRadius: isDynamicBanner ? 7 : 0,
           }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={!isDynamicBanner?.trim() ? 'contain' : 'cover'}
+          resizeMode={isDynamicBanner ? 'cover' : 'contain'}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
