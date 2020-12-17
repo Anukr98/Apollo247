@@ -100,7 +100,8 @@ type CustomNotificationType =
   | 'Appointment_Canceled_Refund'
   | 'Appointment_Payment_Pending_Failure'
   | 'Book_Appointment'
-  | 'webview';
+  | 'webview'
+  | 'patient_chat_message';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -745,6 +746,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           getAppointmentData(data.appointmentId, notificationType, '', '');
         }
         break;
+      case 'patient_chat_message':
+        getAppointmentData(data.appointmentId, notificationType, '', '');
+        break;
 
       case 'call_started':
         {
@@ -1101,7 +1105,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               notificationType == 'call_started' ||
               notificationType == 'chat_room' ||
               notificationType == 'Reminder_Appointment_15' ||
-              notificationType == 'Reminder_Appointment_Casesheet_15'
+              notificationType == 'Reminder_Appointment_Casesheet_15' ||
+              notificationType == 'patient_chat_message'
             ) {
               try {
                 if (appointmentData[0]!.doctorInfo !== null) {
