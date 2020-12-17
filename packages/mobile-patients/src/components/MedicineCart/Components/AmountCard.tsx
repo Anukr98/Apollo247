@@ -29,7 +29,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
   const renderProductDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={styles.text}>Cart Savings</Text>
+        <Text style={styles.text}>Product Discount</Text>
         <Text style={styles.discount}>-₹{productDiscount.toFixed(2)}</Text>
       </View>
     );
