@@ -44,40 +44,52 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const { data } = props;
   const prescriptionRequired = data.is_prescription_required == '1';
   const imageUri = productsThumbnailUrl(data.thumbnail);
-  const isOutOfStock = !data.is_in_stock;
+  const isOutOfStock = data?.dc_availability === 'No' && data?.is_in_contract === 'No';
   const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = Number(data.special_price) || undefined;
 
   const renderNamePriceAndInStockStatus = () => {
     return (
       <View style={styles.nameAndPriceViewStyle}>
-        <Text numberOfLines={1} style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}>
+        <Text numberOfLines={2} style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '90%' }}>
           {data.name}
         </Text>
-        {isOutOfStock && !isNotForOnlineSelling ? (
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20) }}>
-            {'Out Of Stock'}
-          </Text>
-        ) : (
-          <View style={{ flexDirection: 'row' }}>
-            {!specialPrice && (
-              <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>{'MRP '}</Text>
-            )}
-            <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>
-              {string.common.Rs} {specialPrice || data.price}
+        {isOutOfStock ? (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ ...theme.viewStyles.text('SB', 13, '#890000', 1, 20) }}>
+              {'Out Of Stock'}
             </Text>
-            {specialPrice ? (
-              <Text
-                style={[{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20), marginLeft: 8 }]}
-              >
-                <Text style={theme.viewStyles.text('M', 12, '#02475b')}>{' MRP '}</Text>
-                {'('}
-                <Text
-                  style={{ textDecorationLine: 'line-through' }}
-                >{`${string.common.Rs} ${data.price}`}</Text>
-                {')'}
+            {renderAddToCartView()}
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row' }}>
+              {!specialPrice && (
+                <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 25)}>{'MRP '}</Text>
+              )}
+              <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 25)}>
+                {string.common.Rs} {specialPrice || data.price}
               </Text>
-            ) : null}
+              {specialPrice ? (
+                <Text
+                  style={[{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20), marginLeft: 8 }]}
+                >
+                  <Text style={theme.viewStyles.text('M', 12, '#02475b')}>{' MRP '}</Text>
+                  {'('}
+                  <Text
+                    style={{ textDecorationLine: 'line-through' }}
+                  >{`${string.common.Rs} ${data.price}`}</Text>
+                  {')'}
+                </Text>
+              ) : null}
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              {isNotForOnlineSelling
+                ? renderNotForSaleTag()
+                : props.quantity
+                ? renderQuantityView()
+                : renderAddToCartView()}
+            </View>
           </View>
         )}
       </View>
@@ -139,14 +151,6 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
           {renderIconOrImage()}
           <View style={{ width: 16 }} />
           {renderNamePriceAndInStockStatus()}
-          <View style={{ width: 24 }} />
-          <View style={{ alignItems: 'flex-end' }}>
-            {isNotForOnlineSelling
-              ? renderNotForSaleTag()
-              : props.quantity
-              ? renderQuantityView()
-              : renderAddToCartView()}
-          </View>
         </View>
         {props.showSeparator ? <Spearator /> : null}
       </View>
