@@ -1219,7 +1219,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ? specialPrice!
               : undefined
             : undefined;
-
           return (
             <MedicineCard
               isComingFrom={'testCart'}
@@ -2471,9 +2470,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
 
     console.log('unique id' + validateCouponUniqueId);
-    const allItems = cartItems.find((item) => item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
-    const totalPriceWithoutAnyDiscount = cartItems.reduce(
-      (prevVal, currVal) => prevVal + currVal.price, //cartTotal
+    const allItems = cartItems.find(
+      (item) =>
+        item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
+        item.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+    );
+    //consider the  package prices to show the savings (~cartTotal)
+    const totalPriceWithoutAnyDiscount = cartItems?.reduce(
+      (prevVal, currVal) => prevVal + currVal?.price,
       0
     );
 
@@ -2505,7 +2509,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ? item.discountSpecialPrice
                 : (item.specialPrice as number) || item.price,
             quantity: 1,
-            // groupPlan: item?.groupPlan,
             groupPlan: isDiagnosticCircleSubscription
               ? item.groupPlan!
               : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
@@ -2516,7 +2519,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       slotId: employeeSlotId?.toString() || '0',
       areaId: (areaSelected || ({} as any)).key!,
       homeCollectionCharges: hcCharges,
-      totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
+      // totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
+      totalPriceExcludingDiscounts: cartTotal,
       subscriptionInclusionId: null,
       userSubscriptionId: circleSubscriptionId,
       // prismPrescriptionFileId: [

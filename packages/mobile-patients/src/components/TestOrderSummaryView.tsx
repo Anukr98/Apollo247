@@ -200,7 +200,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     (prevVal, currVal) => prevVal + currVal
   );
 
-  const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
+  const HomeCollectionCharges =
+    orderDetails?.totalPrice! -
+    totalIndividualDiagonsticsCharges! -
+    totalCartSaving -
+    totalCircleSaving -
+    totalDiscountSaving;
 
   const grossCharges =
     totalIndividualDiagonsticsCharges! +

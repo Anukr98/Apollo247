@@ -734,12 +734,30 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       Number(circlePriceToConsider),
       Number(discountPriceToConsider)
     );
-    console.log({ mrpToDisplay });
     const anySpecialDiscount =
-      (!promoteCircle && mrpToDisplay != circlePriceToConsider) ||
-      (promoteDiscount && mrpToDisplay != discountSpecialPriceToConsider);
-    console.log({ anySpecialDiscount });
-    console.log({ isDiagnosticCircleSubscription });
+      (!promoteCircle && circlePriceToConsider && mrpToDisplay != circlePriceToConsider) ||
+      (promoteDiscount &&
+        discountSpecialPriceToConsider &&
+        mrpToDisplay != discountSpecialPriceToConsider);
+
+    let bottomPrice;
+    if (isDiagnosticCircleSubscription) {
+      if (promoteCircle) {
+        bottomPrice = circleSpecialPriceToConsider;
+      } else if (promoteDiscount) {
+        bottomPrice = discountSpecialPriceToConsider;
+      } else {
+        bottomPrice = specialPriceToConsider || mrpToDisplay;
+      }
+    } else {
+      if (promoteCircle) {
+        bottomPrice = mrpToDisplay;
+      } else if (promoteDiscount) {
+        bottomPrice = discountSpecialPriceToConsider;
+      } else {
+        bottomPrice = specialPriceToConsider || mrpToDisplay;
+      }
+    }
     return (
       <SafeAreaView
         style={{
@@ -789,13 +807,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View
                 style={[
                   styles.circlePriceView,
-                  // { alignSelf: promoteDiscount ? 'flex-end' : 'flex-start' },
+                  { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
                 ]}
               >
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {/* {string.common.Rs} {findItemFromCart?.price! || testInfo?.Rate} */}
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
@@ -828,7 +845,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View
                 style={[
                   styles.circlePriceView,
-                  // { alignSelf: promoteDiscount ? 'flex-end' : 'flex-start' },
+                  { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
                 ]}
               >
                 <Text
@@ -845,20 +862,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           {/**
            * for normal cases where no special price + no circle price
            */}
-          {!promoteCircle &&
-            // (testDetails.source == 'Cart Page' && findItemFromCart!
-            //   ? findItemFromCart?.price == findItemFromCart?.specialPrice
-            //   : testDetails.Rate == testDetails.specialPrice) && (
-            mrpToDisplay != specialPriceToConsider && (
-              <View
-                style={{
-                  height: isItemAdded ? 60 : 40,
-                  alignItems: 'flex-end',
-                }}
-              >
-                {renderItemAdded()}
-              </View>
-            )}
+          {!promoteCircle && mrpToDisplay != specialPriceToConsider && (
+            <View
+              style={{
+                height: isItemAdded ? 60 : 40,
+                alignItems: 'flex-end',
+              }}
+            >
+              {renderItemAdded()}
+            </View>
+          )}
 
           <View style={{ backgroundColor: 'white', margin: -16 }}>
             <View style={{ margin: 16 }}>
@@ -896,17 +909,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                         },
                       ]}
                     >
-                      {string.common.Rs}{' '}
-                      {/* {isDiagnosticCircleSubscription && promoteCircle
-                        ? testInfo?.circleSpecialPrice
-                        : promoteDiscount
-                        ? testInfo?.discountSpecialPrice
-                        : testInfo?.specialPrice || testInfo?.Rate} */}
-                      {isDiagnosticCircleSubscription && promoteCircle
-                        ? testInfo?.circleSpecialPrice
-                        : promoteDiscount
-                        ? testInfo?.discountSpecialPrice
-                        : testInfo?.specialPrice || mrpToDisplay}
+                      {string.common.Rs}
+                      {bottomPrice}
                     </Text>
                     {isDiagnosticCircleSubscription && promoteCircle && (
                       <Text

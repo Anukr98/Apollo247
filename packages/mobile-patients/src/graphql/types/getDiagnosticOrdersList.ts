@@ -9,6 +9,14 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE } from "./globalTypes";
 // GraphQL query operation: getDiagnosticOrdersList
 // ====================================================
 
+export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_itemObj {
+  __typename: "ItemObj";
+  itemType: string | null;
+  testPreparationData: string | null;
+  packageCalculatedMrp: number | null;
+  inclusions: (number | null)[] | null;
+}
+
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_pricingObj {
   __typename: "PricingObj";
   mrp: number | null;
@@ -35,7 +43,6 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   testPreparationData: string;
   testDescription: string | null;
   inclusions: (number | null)[] | null;
-  packageCalculatedMrp: number | null;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
 
@@ -46,6 +53,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   quantity: number | null;
   price: number | null;
   groupPlan: string | null;
+  itemObj: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_itemObj | null;
   pricingObj: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics | null;
 }

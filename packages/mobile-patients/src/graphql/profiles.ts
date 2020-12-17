@@ -1494,6 +1494,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           quantity
           price
           groupPlan
+          itemObj{
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
           pricingObj {
             mrp
             price
@@ -1507,7 +1513,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             testPreparationData
             testDescription
             inclusions
-            packageCalculatedMrp
             diagnosticPricing {
               mrp
               price
@@ -1567,6 +1572,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
+          itemObj{
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
           pricingObj {
             mrp
             price
@@ -1585,7 +1596,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
             testDescription
-            packageCalculatedMrp
             diagnosticPricing {
               mrp
               price

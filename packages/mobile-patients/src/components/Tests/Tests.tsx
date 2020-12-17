@@ -1612,12 +1612,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }}
               >
                 {string.common.Rs}
-
                 {promoteCircle && !!circleSpecialPrice && isDiagnosticCircleSubscription
                   ? circleSpecialPrice
                   : promoteDiscount
                   ? discountSpecialPrice
-                  : specialPrice || mrpToDisplay}
+                  : mrpToDisplay}
               </Text>
               {/**
                * add to cart
@@ -2271,7 +2270,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
              * non-circle + promote circle
              */}
             {!isDiagnosticCircleSubscription && data?.promoteCircle && (
-              <Text style={[styles.normalPrice, { backgroundColor: 'pink' }]}>
+              <Text style={[styles.normalPrice]}>
                 {/* {string.common.Rs} {data?.specialPrice! || data?.mrpToDisplay} */}
                 {string.common.Rs} {data?.mrpToDisplay}
               </Text>
