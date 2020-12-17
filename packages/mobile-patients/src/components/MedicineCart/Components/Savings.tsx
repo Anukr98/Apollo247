@@ -19,15 +19,13 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     couponProducts,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
+  const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
   const [showCareDetails, setShowCareDetails] = useState(true);
-  // const careTotal = !!coupon
-  //   ? Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount)
-  //   : isCircleSubscription || circleMembershipCharges
-  //   ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
-  //   : Number(productDiscount);
 
   const careTotal = !!coupon
-    ? Number(cartTotal < 200 ? 0 : deliveryFee) + Number(productDiscount) + Number(couponDiscount)
+    ? Number(cartTotal <= minValueForFreeDelivery ? 0 : deliveryFee) +
+      Number(productDiscount) +
+      Number(couponDiscount)
     : isCircleSubscription || circleMembershipCharges
     ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
     : Number(productDiscount);
