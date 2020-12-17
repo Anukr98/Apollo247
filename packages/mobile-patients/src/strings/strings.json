@@ -101,6 +101,7 @@
   "sorryNoProductsHere": "Sorry, no products available here.",
   "genericError": "Oops! seems like we are having an issue. Please try again.",
   "selectFromOrderedItems": "Select from your previously ordered items",
+  "proceedToCheckout": "Proceed to Checkout ({0} items)",
   "specialOffers": "Special Offers",
   "notInStockInYourArea": "Not in stock in your area",
   "notForSale": "Not for sale",
