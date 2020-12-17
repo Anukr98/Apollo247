@@ -574,8 +574,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack:
-          cartTotalCashback || circleSubscriptionId ? Number(cartTotalCashback) || 0 : 0,
+        totalCashBack: isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
