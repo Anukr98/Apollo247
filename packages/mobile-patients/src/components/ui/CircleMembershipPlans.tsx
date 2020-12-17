@@ -179,6 +179,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       !isModal && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_ADDS_CART);
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
+      setIsCircleSubscription && setIsCircleSubscription(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
