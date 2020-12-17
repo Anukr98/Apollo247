@@ -44,6 +44,7 @@ import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
   SET_DEFAULT_ADDRESS,
+  GET_ONEAPOLLO_USER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
@@ -100,6 +101,7 @@ import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/Ci
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
+import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -163,6 +165,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
   const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
   const [appState, setappState] = useState<string>('');
+  const [availableHC, setAvailableHC] = useState<number>(0);
   const shoppingCart = useShoppingCart();
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
@@ -187,6 +190,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchUserSpecificCoupon();
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
+    fetchHealthCredits();
     cartItems.length &&
       PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'), pharmacyCircleAttributes!);
     setCircleMembershipCharges && setCircleMembershipCharges(0);
@@ -315,6 +319,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingUserSpecificCoupon', error);
       });
+  };
+
+  const fetchHealthCredits = async () => {
+    try {
+      const response = await client.query({
+        query: GET_ONEAPOLLO_USER,
+        variables: { patientId: currentPatient?.id },
+        fetchPolicy: 'no-cache',
+      });
+      if (response?.data?.getOneApolloUser) {
+        setAvailableHC(response?.data?.getOneApolloUser.availableHC);
+      }
+    } catch (error) {
+      CommonBugFender('fetchingHealthCreditsonCart', error);
+    }
   };
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
@@ -1033,13 +1052,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   };
 
-  const renderSavings = () => {
-    return <Savings />;
-  };
+  const renderSavings = () => <Savings />;
 
   const renderSuggestProducts = () => {
     return <SuggestProducts products={suggestedProducts} navigation={props.navigation} />;
   };
+
+  const renderOneApollo = () => <OneApolloCard availableHC={availableHC} />;
 
   const renderuploadPrescriptionPopup = () => {
     return (
@@ -1136,6 +1155,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {!circleMembershipCharges && renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
+          {renderOneApollo()}
           {renderSuggestProducts()}
           {renderPrescriptions()}
           {renderKerbSidePickup()}
