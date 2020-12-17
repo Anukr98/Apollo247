@@ -387,7 +387,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
-    cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
+    cartItems
+      ?.reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem?.packageMrp! > currItem?.price ? currItem?.packageMrp! : currItem?.price),
+        0
+      )
+      .toFixed(2)
   );
 
   const cartSaving: DiagnosticsCartContextProps['cartSaving'] =

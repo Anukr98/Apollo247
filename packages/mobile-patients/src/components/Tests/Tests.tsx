@@ -1344,6 +1344,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             preparation: diagnostics?.testPreparationData,
             testDescription: diagnostics?.testDescription,
             packageMrp: packageMrpForItem,
+            mrpToDisplay: mrpToDisplay,
             source: 'Home Page',
             type: diagnostics!.itemType,
           } as TestPackageForDetails,
@@ -1819,6 +1820,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         source: 'Home Page',
                         type: product?.itemType,
                         packageMrp: packageMrpForItem,
+                        mrpToDisplay: mrpToDisplay,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
@@ -2165,7 +2167,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         mrpToDisplay: data?.mrpToDisplay,
       };
       const isAddedToCart = !!cartItems.find((item) => item?.id == data?.itemId);
-      console.log({ pricesObject });
       return (
         <View style={[localStyles.nameAndPriceViewStyle]}>
           <View
@@ -2645,7 +2646,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     data: ListRenderItemInfo<searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics>
   ) => {
     const { index, item } = data;
-    console.log({ item });
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
     const {
       rate,
@@ -2706,6 +2706,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             source: 'Partial Search',
             type: itemType,
             packageMrp: packageCalculatedMrp,
+            mrpToDisplay: mrpToDisplay,
           } as TestPackageForDetails,
         });
       },
@@ -2733,7 +2734,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       promoteDiscount,
       planToConsider,
       mrpToDisplay,
-      packageCalculatedMrp,
+      packageCalculatedMrp: packageCalculatedMrp!,
     });
   };
 

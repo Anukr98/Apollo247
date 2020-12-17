@@ -430,6 +430,20 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderSearchPriceView = () => {
     return (
       <>
+        {/**
+         * non-sub + no-circle + special price
+         */}
+        {props.circlePrice == undefined && specialPrice && (
+          <View style={{ alignSelf: 'flex-end' }}>
+            <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
+              {'('}
+              <Text style={{ textDecorationLine: 'line-through' }}>
+                {`${strings.common.Rs} ${price!.toFixed(2)}`}
+              </Text>
+              {')'}
+            </Text>
+          </View>
+        )}
         {props.isCareSubscribed && (
           <View style={{ alignSelf: 'flex-end' }}>
             <Text
@@ -448,20 +462,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
               }}
             >
               {strings.common.Rs} {(specialPrice! ? specialPrice! : price!).toFixed(2)}
-            </Text>
-          </View>
-        )}
-        {/**
-         * non-sub + no-circle + special price
-         */}
-        {props.circlePrice == undefined && specialPrice && (
-          <View style={{ alignSelf: 'flex-end' }}>
-            <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
-              {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>
-                {`${strings.common.Rs} ${price!.toFixed(2)}`}
-              </Text>
-              {')'}
             </Text>
           </View>
         )}

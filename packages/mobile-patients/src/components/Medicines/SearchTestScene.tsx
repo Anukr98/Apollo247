@@ -532,7 +532,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
           fetchPackageDetails(pastSeacrh.name!, (product) => {
-            const pricesForItem = getPricesForItem(product?.diagnosticPricing);
+            const packageMrp = product?.packageCalculatedMrp;
+            const pricesForItem = getPricesForItem(product?.diagnosticPricing, packageMrp!);
             if (!pricesForItem?.itemActive) {
               return null;
             }
@@ -542,6 +543,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
             const discountPrice = pricesForItem?.discountPrice!;
             const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+            const mrpToDisplay = pricesForItem?.mrpToDisplay!;
 
             props.navigation.navigate(AppRoutes.TestDetails, {
               testDetails: {
@@ -561,6 +563,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                 testDescription: product?.testPreparationData,
                 source: 'Full Search',
                 type: product?.itemType,
+                packageMrp: product?.packageCalculatedMrp!,
+                mrpToDisplay: mrpToDisplay,
               } as TestPackageForDetails,
             });
           });
@@ -630,9 +634,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
 
     const sellingPrice = !promoteCircle
-      ? promoteDiscount && discountSpecialPrice != discountPrice
+      ? promoteDiscount && discountSpecialPrice != packageMrpForItem
         ? discountSpecialPrice
-        : specialPrice != price
+        : specialPrice != packageMrpForItem
         ? specialPrice
         : undefined
       : undefined;
@@ -674,13 +678,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               source: 'Full Search',
               type: product?.itemType,
               packageMrp: packageMrpForItem,
+              mrpToDisplay: mrpToDisplay,
             } as TestPackageForDetails,
           });
         }}
         medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
-        price={price}
-        // price={mrpToDisplay}
+        // price={price}
+        price={Number(mrpToDisplay!)}
         specialPrice={sellingPrice}
         // specialPrice={!promoteCircle && price != specialPrice ? specialPrice : undefined}
         circlePrice={promoteCircle ? circleSpecialPrice : undefined}
