@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, FlatList, View } from 'react-native';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -17,6 +17,8 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     isCircleSubscription,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
+  const screenWidth = Dimensions.get('window').width;
+  const isSmallScreenWidth = screenWidth <= 370;
   const renderCartTotal = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -29,7 +31,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
   const renderProductDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={styles.text}>Product Discount</Text>
+        <Text style={styles.text}>Cart Savings</Text>
         <Text style={styles.discount}>-₹{productDiscount.toFixed(2)}</Text>
       </View>
     );
@@ -57,16 +59,16 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.free}>Free</Text>
               {(isCircleSubscription || !!circleMembershipCharges) &&
-                amountToPay < minValueForFreeDelivery && (
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('R', 13, '#02475B', 1, 26),
-                      marginLeft: 5,
-                    }}
-                  >
-                    for Circle Members
-                  </Text>
+                amountToPay < minValueForFreeDelivery &&
+                isSmallScreenWidth && (
+                  <View>
+                    <Text style={styles.circleMessage}>for Circle</Text>
+                    <Text style={styles.circleMessage}>Members</Text>
+                  </View>
                 )}
+              {(isCircleSubscription || !!circleMembershipCharges) &&
+                amountToPay < minValueForFreeDelivery &&
+                !isSmallScreenWidth && <Text style={styles.circleMessage}>for Circle Members</Text>}
             </View>
             <Text style={{ ...styles.text, textDecorationLine: 'line-through', marginLeft: 5 }}>
               +₹{deliveryFee.toFixed(2)}
@@ -147,5 +149,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 24,
     color: '#01475B',
+  },
+  circleMessage: {
+    ...theme.viewStyles.text('R', 13, '#02475B', 1, 26),
+    marginLeft: 5,
   },
 });
