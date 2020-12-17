@@ -108,7 +108,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
         )}
         {!!productDiscount && (
           <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Product Discount</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Cart Savings</Text>
             <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
               ₹{productDiscount.toFixed(2)}
             </Text>
