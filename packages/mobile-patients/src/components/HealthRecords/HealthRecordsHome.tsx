@@ -17,6 +17,13 @@ import {
   DropdownGreen,
   PhrArrowRightIcon,
   PhrSearchIcon,
+  PrescriptionPhrSearchIcon,
+  LabTestPhrSearchIcon,
+  BillPhrSearchIcon,
+  InsurancePhrSearchIcon,
+  ClinicalDocumentPhrSearchIcon,
+  HospitalPhrSearchIcon,
+  HealthConditionPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -59,7 +66,10 @@ import {
   Keyboard,
   TextInput,
   Platform,
+  FlatList,
 } from 'react-native';
+import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import stripHtml from 'string-strip-html';
 import { searchPHRApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -319,8 +329,9 @@ const styles = StyleSheet.create({
   },
   searchBarMainViewStyle: {
     flexDirection: 'row',
-    marginHorizontal: 20,
-    marginVertical: 15,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     alignItems: 'center',
   },
   searchBarViewStyle: {
@@ -335,6 +346,13 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
     marginLeft: 18,
   },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
+  searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
 });
 
 type BloodGroupArray = {
@@ -1418,7 +1436,52 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     console.log('onSearchHealthRecords', _searchText);
     searchPHRApi(_searchText, currentPatient?.uhid || '')
       .then(({ data }) => {
-        console.log('data', data);
+        setHealthRecordSearchResults([]);
+        if (data?.response) {
+          const recordData = data.response;
+          console.log('data?.response', data?.response);
+          const finalData: any[] = [];
+          recordData.forEach((recordData: any) => {
+            const { healthrecordType } = recordData;
+            switch (healthrecordType) {
+              case 'PRESCRIPTION':
+                finalData.push({ healthkey: MedicalRecordType.PRESCRIPTION, value: recordData });
+                break;
+              case 'LABTEST':
+                finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
+                break;
+              case 'HOSPITALIZATION':
+                finalData.push({ healthkey: MedicalRecordType.HOSPITALIZATION, value: recordData });
+                break;
+              case 'ALLERGY':
+                finalData.push({ healthkey: MedicalRecordType.ALLERGY, value: recordData });
+                break;
+              case 'MEDICALCONDITION':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALCONDITION,
+                  value: recordData,
+                });
+                break;
+              case 'RESTRICTION':
+                finalData.push({
+                  healthkey: MedicalRecordType.HEALTHRESTRICTION,
+                  value: recordData,
+                });
+                break;
+              case 'INSURANCE':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALINSURANCE,
+                  value: recordData,
+                });
+                break;
+              case 'BILLS':
+                finalData.push({ healthkey: MedicalRecordType.MEDICALBILL, value: recordData });
+                break;
+            }
+          });
+          console.log(finalData);
+          setHealthRecordSearchResults(finalData);
+        }
       })
       .catch((error) => {
         console.log('searchPHRApi Error', error);
@@ -1429,6 +1492,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (_searchInputRef.current) {
       SetIsSearchFocus(false);
       _searchInputRef?.current?.clear();
+      setHealthRecordSearchResults([]);
       Keyboard.dismiss();
     }
   };
@@ -1448,7 +1512,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const renderSearchBar = () => {
     return (
-      <View style={styles.searchBarMainViewStyle}>
+      <View
+        style={[
+          styles.searchBarMainViewStyle,
+          { backgroundColor: isSearchFocus ? 'rgba(0,0,0,0.05)' : 'transparent' },
+        ]}
+      >
         <View style={styles.searchBarViewStyle}>
           <PhrSearchIcon style={{ width: 20, height: 20 }} />
           <TextInput
@@ -1474,19 +1543,148 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const renderHealthRecordSearchItem = (item: any, index: number) => {
+    const healthCardTopView = () => {
+      switch (item?.healthkey) {
+        case MedicalRecordType.PRESCRIPTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <PrescriptionPhrSearchIcon style={{ width: 12, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Doctor Consultations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.TEST_REPORT:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <LabTestPhrSearchIcon style={{ width: 14, height: 15 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Test Reports'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HOSPITALIZATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HospitalPhrSearchIcon style={{ width: 13, height: 15.17 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Hospitalizations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALBILL:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <BillPhrSearchIcon style={{ width: 16, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Bills'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALINSURANCE:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <InsurancePhrSearchIcon style={{ width: 15.55, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Insurance'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.ALLERGY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Allergies'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medications'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HEALTHRESTRICTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Health Restrictions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALCONDITION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medical Conditions'}
+              </Text>
+            </View>
+          );
+      }
+    };
+    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    return (
+      <SearchHealthRecordCard
+        dateText={dateText}
+        healthRecordTitle={item?.value?.title}
+        healthRecordMoreText={stripHtml(item?.value?.highlight)?.replaceAll('"', '')}
+        searchHealthCardTopView={healthCardTopView()}
+        item={item?.value}
+        index={index}
+        onSearchHealthCardPress={(item) => {}}
+      />
+    );
+  };
+
+  const searchListHeaderView = () => {
+    const search_result_text =
+      healthRecordSearchResults?.length === 1
+        ? `${healthRecordSearchResults?.length} search result for \‘${searchText}\’`
+        : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
+    return (
+      <View style={styles.searchListHeaderViewStyle}>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+      </View>
+    );
+  };
+
+  const renderHealthRecordSearchResults = () => {
+    return (
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        style={{ paddingHorizontal: 9 }}
+        bounces={false}
+        data={healthRecordSearchResults}
+        ListHeaderComponent={searchListHeaderView}
+        renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderUpdateProfileDetailsPopup()}
         {renderHeader()}
         {renderSearchBar()}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderProfileDetailsView()}
-          {renderHealthCategoriesView()}
-          {renderBillsInsuranceView()}
-          {/* PHR Phase 2 UI */}
-          {/* {renderClinicalDocumentsView()} */}
-        </ScrollView>
+        {searchText?.length > 3 && healthRecordSearchResults?.length > 0 ? (
+          renderHealthRecordSearchResults()
+        ) : (
+          <ScrollView style={{ flex: 1 }} bounces={false}>
+            {renderProfileDetailsView()}
+            {renderHealthCategoriesView()}
+            {renderBillsInsuranceView()}
+            {/* PHR Phase 2 UI */}
+            {/* {renderClinicalDocumentsView()} */}
+          </ScrollView>
+        )}
       </SafeAreaView>
     </View>
   );
