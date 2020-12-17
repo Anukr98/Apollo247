@@ -69,11 +69,13 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
+import AsyncStorage from '@react-native-community/async-storage';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -726,6 +728,25 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     }
   };
 
+  const onPressHealthPro = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
+      '&utm_token=',
+      currentDeviceToken,
+      '&utm_mobile_number=',
+      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
+    );
+
+    try {
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: healthProWithParams,
+      });
+    } catch (e) {
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', healthProWithParams);
+    }
+  };
+
   const handleCtaClick = (
     type: string,
     action: string,
@@ -769,6 +790,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate('DoctorSearchListing', {
           specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
+      } else if ((action = Hdfc_values.PRO_HEALTH)) {
+        onPressHealthPro();
+      } else {
+        props.navigation.navigate(AppRoutes.ConsultRoom);
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
