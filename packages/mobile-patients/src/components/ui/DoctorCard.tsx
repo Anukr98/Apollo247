@@ -190,11 +190,9 @@ export interface DoctorCardProps extends NavigationScreenProps {
   availableModes?: ConsultMode | null;
   callSaveSearch?: string;
   onPlanSelected?: (() => void) | null;
-  selectedConsultMode?: ConsultMode | null;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const { selectedConsultMode } = props;
   const rowData = props.rowData;
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient } = useAllCurrentPatients();
@@ -205,26 +203,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
+    minMrp,
+    minSlashedPrice,
+    minDiscountedPrice,
     onlineConsultDiscountedPrice,
-    physicalConsultSlashedPrice,
-    physicalConsultDiscountedPrice,
   } = circleDoctorDetails;
 
   const { showCircleSubscribed } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
 
-  const isOnlineConsultSelected = selectedConsultMode === ConsultMode.ONLINE;
-  const isPhysicalConsultSelected = selectedConsultMode === ConsultMode.PHYSICAL;
-  const isCircleAvailForPhysical = isPhysicalConsultSelected && physicalConsultMRPPrice > 0;
-  const isCircleAvailForOnline = isOnlineConsultSelected && onlineConsultMRPPrice > 0;
-  let _isCircleDoctor = isCircleDoctor;
-  if (!selectedConsultMode) {
-    _isCircleDoctor = isCircleDoctor;
-  } else if (isOnlineConsultSelected) {
-    _isCircleDoctor = isCircleAvailForOnline;
-  } else if (isPhysicalConsultSelected) {
-    _isCircleDoctor = isCircleAvailForPhysical;
-  }
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -289,19 +276,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={styles.rowContainer}>
             <Text style={styles.carePrice}>
               {string.common.Rs}
-              {!selectedConsultMode || isCircleAvailForOnline
-                ? onlineConsultMRPPrice
-                  ? onlineConsultMRPPrice
-                  : physicalConsultMRPPrice
-                : physicalConsultMRPPrice}
+              {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
             </Text>
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
-              {!selectedConsultMode || isCircleAvailForOnline
+              {physicalConsultMRPPrice === onlineConsultMRPPrice
                 ? onlineConsultSlashedPrice
-                  ? onlineConsultSlashedPrice
-                  : physicalConsultSlashedPrice
-                : physicalConsultSlashedPrice}
+                : minSlashedPrice}
             </Text>
           </View>
         </View>
@@ -321,11 +302,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </Text>
             <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
               {string.common.Rs}
-              {!selectedConsultMode || isCircleAvailForOnline
-                ? onlineConsultMRPPrice
-                  ? onlineConsultMRPPrice
-                  : physicalConsultMRPPrice
-                : physicalConsultMRPPrice}
+              {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
             </Text>
           </View>
           <View style={styles.seperatorLine} />
@@ -345,11 +322,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
                 {string.common.Rs}
-                {!selectedConsultMode || isCircleAvailForOnline
+                {physicalConsultMRPPrice === onlineConsultMRPPrice
                   ? onlineConsultSlashedPrice
-                    ? onlineConsultSlashedPrice
-                    : physicalConsultSlashedPrice
-                  : physicalConsultSlashedPrice}
+                  : minSlashedPrice}
               </Text>
 
               <InfoBlue style={styles.infoIcon} />
@@ -409,7 +384,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const renderDoctorProfile = () => {
     return (
-      <View style={{ marginLeft: _isCircleDoctor ? 3.3 : 0 }}>
+      <View style={{ marginLeft: isCircleDoctor ? 3.3 : 0 }}>
         {!!g(rowData, 'thumbnailUrl') ? (
           <Image
             style={styles.doctorProfile}
@@ -466,11 +441,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       : false;
     const isBoth = props.availableModes ? [ConsultMode.BOTH].includes(props.availableModes) : false;
     const discountedPrice =
-      !selectedConsultMode || isCircleAvailForOnline
+      physicalConsultMRPPrice === onlineConsultMRPPrice
         ? onlineConsultDiscountedPrice
-          ? onlineConsultDiscountedPrice
-          : physicalConsultDiscountedPrice
-        : physicalConsultDiscountedPrice;
+        : minDiscountedPrice;
     return (
       <TouchableOpacity
         key={rowData.id}
@@ -552,33 +525,33 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               )}
             </View>
             <View>
-              {_isCircleDoctor ? (
+              {isCircleDoctor ? (
                 <ImageBackground
                   source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
                   style={[
                     styles.drImageBackground,
                     styles.drImageMargins,
-                    { marginBottom: _isCircleDoctor ? 0 : 22 },
+                    { marginBottom: isCircleDoctor ? 0 : 22 },
                   ]}
                   resizeMode="cover"
                 >
                   {renderDoctorProfile()}
                 </ImageBackground>
               ) : (
-                <View style={[styles.drImageMargins, { marginBottom: _isCircleDoctor ? 0 : 22 }]}>
+                <View style={[styles.drImageMargins, { marginBottom: isCircleDoctor ? 0 : 22 }]}>
                   {renderDoctorProfile()}
                 </View>
               )}
 
               {/* </TouchableOpacity> */}
-              {_isCircleDoctor && renderCareLogo()}
+              {isCircleDoctor && renderCareLogo()}
               <View
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginHorizontal: 20,
-                  marginTop: _isCircleDoctor ? 3 : 0,
+                  marginTop: isCircleDoctor ? 3 : 0,
                 }}
               >
                 {isOnline && (
@@ -619,8 +592,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {renderSpecialities()}
-              {_isCircleDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {_isCircleDoctor && discountedPrice > -1 && showCircleSubscribed ? (
+              {isCircleDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
+              {isCircleDoctor && discountedPrice > -1 && showCircleSubscribed ? (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
@@ -631,7 +604,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 </Text>
               ) : null}
               <Text
-                style={[styles.educationTextStyles, { marginTop: _isCircleDoctor ? 10 : 0 }]}
+                style={[styles.educationTextStyles, { marginTop: isCircleDoctor ? 10 : 0 }]}
                 numberOfLines={props.numberOfLines}
               >
                 {rowData.qualification}

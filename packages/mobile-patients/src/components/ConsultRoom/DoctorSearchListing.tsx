@@ -1107,7 +1107,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           postDoctorClickWEGEvent(rowData, 'List', type);
         }}
         onPlanSelected={() => setShowCarePlanNotification(true)}
-        selectedConsultMode={filter}
       />
     ) : null;
   };
