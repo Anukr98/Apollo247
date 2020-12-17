@@ -314,7 +314,34 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     });
   };
 
-  const processNotification = async (notification: FirebaseMessagingTypes.RemoteMessage) => {
+  const showFollowupNotificationStatusAlert = (
+    data: any,
+    notificationType: CustomNotificationType
+  ) => {
+    showAphAlert!({
+      title: `Hi ${currentPatient?.firstName || ''},`,
+      description: `You have 1 new message from ${data?.doctorName || 'doctor'}`,
+      CTAs: [
+        {
+          text: 'DISMISS',
+          onPress: () => hideAphAlert!(),
+          type: 'white-button',
+        },
+        {
+          text: 'VIEW DETAILS',
+          onPress: () => {
+            hideAphAlert!();
+            getAppointmentData(data.appointmentId, notificationType, '', '');
+          },
+        },
+      ],
+    });
+  };
+
+  const processNotification = async (
+    notification: FirebaseMessagingTypes.RemoteMessage,
+    appOnForeground?: boolean
+  ) => {
     const data = notification.data || {};
     const notificationType = data.type as CustomNotificationType;
     const currentScreenName = await AsyncStorage.getItem('setCurrentName');
@@ -747,7 +774,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         }
         break;
       case 'patient_chat_message':
-        getAppointmentData(data.appointmentId, notificationType, '', '');
+        appOnForeground
+          ? showFollowupNotificationStatusAlert(data, notificationType)
+          : getAppointmentData(data.appointmentId, notificationType, '', '');
         break;
 
       case 'call_started':
@@ -839,7 +868,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .catch((err) => console.error(err));
       */
       if (notification.data?.type !== 'chat_room' && notification.data?.type !== 'call_started') {
-        processNotification(notification);
+        processNotification(notification, true); // when app on foreground
       }
     });
 
