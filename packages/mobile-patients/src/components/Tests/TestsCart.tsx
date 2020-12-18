@@ -2908,15 +2908,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const allInclusions = cartItems.map((item) => item?.inclusions);
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
     const duplicateItems = mergedInclusions?.filter((e: any, i: any, a: any) => a.indexOf(e) !== i);
-    console.log({ duplicateItems });
     if (duplicateItems?.length) {
       setLoading!(true);
       getDiagnosticsAvailability(Number(addressCityId), cartItems, duplicateItems, 'proceedToPay')
         .then(({ data }) => {
           const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-          console.log({ diagnosticItems });
           const duplicateTests = diagnosticItems?.map((item) => item?.itemName).join(', ');
-          console.log({ duplicateTests });
           showAphAlert!({
             title: string.common.uhOh,
             description:
