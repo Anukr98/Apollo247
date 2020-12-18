@@ -1093,6 +1093,7 @@ export interface MedicineCartOMSInput {
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
+  savedDeliveryCharge?: number | null;
 }
 
 export interface MedicineCartOMSItem {

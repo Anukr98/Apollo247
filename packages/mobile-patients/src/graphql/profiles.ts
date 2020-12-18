@@ -1584,6 +1584,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
             testDescription
+            inclusions
             diagnosticPricing {
               mrp
               price
@@ -1640,6 +1641,8 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
+        testDescription
+        inclusions
         diagnosticPricing {
           mrp
           price
@@ -1648,8 +1651,6 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
           startDate
           endDate
         }
-        testDescription
-        inclusions
       }
     }
   }
@@ -1671,6 +1672,8 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
+        testDescription
+        inclusions
         diagnosticPricing {
           mrp
           price
@@ -1679,7 +1682,6 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
           startDate
           endDate
         }
-        testDescription
       }
     }
   }
@@ -3097,6 +3099,7 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         toAgeInDays
         testDescription
         testPreparationData
+        inclusions
         diagnosticPricing {
           mrp
           price
@@ -3129,6 +3132,7 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
         toAgeInDays
         testDescription
         testPreparationData
+        inclusions
       }
     }
   }

@@ -2277,15 +2277,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const getDiagnosticsAvailability = (
     cityIdForAddress: number,
-    cartItems: DiagnosticsCartItem[]
+    cartItems?: DiagnosticsCartItem[],
+    duplicateItem?: any,
+    comingFrom?: string
   ) => {
-    const itemIds = cartItems.map((item) => parseInt(item.id));
+    const itemIds = comingFrom ? duplicateItem : cartItems?.map((item) => parseInt(item?.id));
     return client.query<
       findDiagnosticsByItemIDsAndCityID,
       findDiagnosticsByItemIDsAndCityIDVariables
     >({
       query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-      variables: { cityID: cityIdForAddress, itemIDs: itemIds },
+      variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
       fetchPolicy: 'no-cache',
     });
   };
@@ -2899,9 +2901,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
+    checkDuplicateItems();
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      bookDiagnosticOrder();
+      // bookDiagnosticOrder();
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();
@@ -2909,6 +2912,37 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       if (ePrescriptions.length > 0) {
         ePrescriptionUpload();
       }
+    }
+  };
+
+  const checkDuplicateItems = () => {
+    console.log({ cartItems });
+    const allInclusions = cartItems.map((item) => item?.inclusions);
+    const mergedInclusions = allInclusions?.flat(1); //from array level to single array
+    const duplicateItems = mergedInclusions?.filter((e: any, i: any, a: any) => a.indexOf(e) !== i);
+    console.log({ duplicateItems });
+    if (allInclusions?.length) {
+      setLoading!(true);
+      getDiagnosticsAvailability(Number(addressCityId), cartItems, duplicateItems, 'proceedToPay')
+        .then(({ data }) => {
+          const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+          console.log({ diagnosticItems });
+          const duplicateTests = diagnosticItems?.map((item) => item?.itemName).join(', ');
+          console.log({ duplicateTests });
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: duplicateTests + string.diagnostics.itemAlreadyExist,
+            onPressOk: () => {
+              setLoading!(false);
+              hideAphAlert!();
+            },
+          });
+        })
+        .catch((e) => {
+          CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
+          setLoading!(false);
+          errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+        });
     }
   };
 

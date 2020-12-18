@@ -213,6 +213,7 @@ export interface TestPackageForDetails extends TestPackage {
   circleSpecialPrice?: string | number;
   discountPrice?: string | number;
   discountSpecialPrice?: string | number;
+  inclusions?: any;
 }
 
 export interface TestDetailsProps

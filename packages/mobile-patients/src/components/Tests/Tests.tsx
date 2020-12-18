@@ -1273,7 +1273,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home page',
         'Featured tests'
       );
-      const alreadyExist = addCartItem!({
+      addCartItem!({
         id: `${diagnostics!.itemId}`,
         mou: diagnostics?.inclusions == null ? 1 : diagnostics?.inclusions.length,
         name: diagnostics?.itemName!,
@@ -1824,7 +1824,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                           'Home page',
                           'Browse packages'
                         );
-                    const aa = addCartItem!({
+                    addCartItem!({
                       id: String(diagnosticItem?.itemId),
                       name: diagnosticItem?.itemName!,
                       mou:
@@ -1843,7 +1843,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                           ? [Number(diagnosticItem?.itemId)]
                           : diagnosticItem?.inclusions,
                     });
-                    console.log('aa is' + aa);
                   });
                 }
               );
@@ -1972,19 +1971,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
       collectionType,
       diagnosticPricing,
     }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-    testsIncluded: number,
     pricesObject: any,
     promoteCircle: boolean,
     promoteDiscount: boolean,
     selectedPlan: any,
-    tests: any[]
+    inclusions: any[]
   ) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate, 'Partial search');
 
-    const aa = addCartItem!({
+    addCartItem!({
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate,
@@ -1993,13 +1991,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
       discountSpecialPrice: pricesObject?.discountSpecialPrice,
-      mou: testsIncluded,
+      mou: inclusions == null ? 1 : inclusions?.length,
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
-      inclusions: tests == null ? [Number(itemId)] : tests,
+      inclusions: inclusions == null ? [Number(itemId)] : inclusions,
     });
-    console.log('aa is' + aa);
   };
 
   const [searchText, setSearchText] = useState<string>('');
@@ -2118,6 +2115,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     promoteCircle: boolean;
     promoteDiscount: boolean;
     planToConsider: any;
+    inclusions: any;
     style?: ViewStyle;
   }
   const renderSearchSuggestionItem = (data: SuggestionType) => {
@@ -2178,12 +2176,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     : fetchPackageInclusion(`${data.itemId}`, (tests) => {
                         onAddCartItem(
                           data,
-                          tests.length,
                           pricesObject,
                           data?.promoteCircle,
                           data?.promoteDiscount,
                           data?.planToConsider,
-                          tests
+                          data?.inclusions
                         );
                       })
                 }
@@ -2641,6 +2638,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       testDescription,
       itemType,
       diagnosticPricing,
+      inclusions,
     } = item;
 
     const pricesForItem = getPricesForItem(diagnosticPricing);
@@ -2684,6 +2682,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             testDescription: testDescription,
             source: 'Partial Search',
             type: itemType,
+            inclusions: inclusions,
           } as TestPackageForDetails,
         });
       },
@@ -2710,6 +2709,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       promoteCircle,
       promoteDiscount,
       planToConsider,
+      inclusions,
     });
   };
 
