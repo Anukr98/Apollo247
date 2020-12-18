@@ -1336,6 +1336,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             testDescription: diagnostics?.testDescription,
             source: 'Home Page',
             type: diagnostics!.itemType,
+            inclusions:
+              diagnostics?.inclusions == null
+                ? [Number(diagnostics?.itemId)]
+                : diagnostics?.inclusions,
           } as TestPackageForDetails,
         });
       },
@@ -1800,6 +1804,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         testDescription: product?.testDescription,
                         source: 'Home Page',
                         type: product?.itemType,
+                        inclusions:
+                          product?.inclusions == null
+                            ? [Number(product?.itemId)]
+                            : product?.inclusions,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
@@ -2682,7 +2690,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             testDescription: testDescription,
             source: 'Partial Search',
             type: itemType,
-            inclusions: inclusions,
+            inclusions: inclusions == null ? [Number(itemId)] : inclusions,
           } as TestPackageForDetails,
         });
       },

@@ -913,6 +913,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                             : promoteDiscount
                             ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
                             : DIAGNOSTIC_GROUP_PLAN.ALL,
+                          inclusions: testInfo?.inclusions,
                         });
                       } else {
                         setItemAdded(false);

@@ -398,7 +398,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
     testsIncluded: number,
     pricesObject: any,
-    selectedPlan: any
+    selectedPlan: any,
+    inclusions: any
   ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
@@ -417,6 +418,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
+      inclusions: inclusions == null ? [Number(itemId)] : inclusions,
     });
   };
 
@@ -560,6 +562,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                 testDescription: product?.testPreparationData,
                 source: 'Full Search',
                 type: product?.itemType,
+                inclusions:
+                  product?.inclusions == null ? [Number(product?.inclusions)] : product?.inclusions,
               } as TestPackageForDetails,
             });
           });
@@ -668,6 +672,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               testDescription: product?.testPreparationData,
               source: 'Full Search',
               type: product?.itemType,
+              inclusions:
+                product?.inclusions == null ? [Number(product?.inclusions)] : product?.inclusions,
             } as TestPackageForDetails,
           });
         }}
@@ -682,7 +688,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Add item to cart');
           fetchPackageInclusion(`${product.itemId}`, (tests) => {
-            onAddCartItem(product, tests?.length, pricesObject, planToConsider);
+            onAddCartItem(
+              product,
+              tests?.length,
+              pricesObject,
+              planToConsider,
+              product?.inclusions
+            );
           });
         }}
         onPressRemove={() => {

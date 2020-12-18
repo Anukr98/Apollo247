@@ -2902,26 +2902,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
     checkDuplicateItems();
-    const prescriptions = physicalPrescriptions;
-    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      // bookDiagnosticOrder();
-    } else {
-      if (prescriptions.length > 0) {
-        physicalPrescriptionUpload();
-      }
-      if (ePrescriptions.length > 0) {
-        ePrescriptionUpload();
-      }
-    }
   };
 
   const checkDuplicateItems = () => {
-    console.log({ cartItems });
     const allInclusions = cartItems.map((item) => item?.inclusions);
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
     const duplicateItems = mergedInclusions?.filter((e: any, i: any, a: any) => a.indexOf(e) !== i);
     console.log({ duplicateItems });
-    if (allInclusions?.length) {
+    if (duplicateItems?.length) {
       setLoading!(true);
       getDiagnosticsAvailability(Number(addressCityId), cartItems, duplicateItems, 'proceedToPay')
         .then(({ data }) => {
@@ -2931,7 +2919,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           console.log({ duplicateTests });
           showAphAlert!({
             title: string.common.uhOh,
-            description: duplicateTests + string.diagnostics.itemAlreadyExist,
+            description:
+              duplicateTests +
+              (diagnosticItems?.length == 1 ? ' is' : ' are') +
+              string.diagnostics.itemAlreadyExist,
             onPressOk: () => {
               setLoading!(false);
               hideAphAlert!();
@@ -2943,6 +2934,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading!(false);
           errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
         });
+    } else {
+      proceedForBooking();
+    }
+  };
+
+  const proceedForBooking = () => {
+    const prescriptions = physicalPrescriptions;
+    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+      bookDiagnosticOrder();
+    } else {
+      if (prescriptions.length > 0) {
+        physicalPrescriptionUpload();
+      }
+      if (ePrescriptions.length > 0) {
+        ePrescriptionUpload();
+      }
     }
   };
 
