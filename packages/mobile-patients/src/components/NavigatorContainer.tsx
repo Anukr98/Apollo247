@@ -30,6 +30,7 @@ import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
+import { MedicineBuyAgain } from '@aph/mobile-patients/src/components/MedicineBuyAgain/MedicineBuyAgain';
 import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
@@ -145,6 +146,7 @@ export enum AppRoutes {
   SearchTestScene = 'SearchTestScene',
   MedicineSearch = 'MedicineSearch',
   MedicineListing = 'MedicineListing',
+  MedicineBuyAgain = 'MedicineBuyAgain',
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
@@ -324,6 +326,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineListing]: {
     screen: MedicineListing,
+  },
+  [AppRoutes.MedicineBuyAgain]: {
+    screen: MedicineBuyAgain,
   },
   [AppRoutes.MedicineDetailsScene]: {
     screen: MedicineDetailsScene,

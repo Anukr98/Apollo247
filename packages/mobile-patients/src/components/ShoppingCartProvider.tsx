@@ -109,6 +109,10 @@ export interface circleValidity {
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
+export interface PharmacyCircleEvent {
+  'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+  'Circle Membership Value': number | null;
+}
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
@@ -209,6 +213,9 @@ export interface ShoppingCartContextProps {
   setHdfcSubscriptionId: ((id: string) => void) | null;
   circlePlanValidity: circleValidity | null;
   setCirclePlanValidity: ((validity: circleValidity) => void) | null;
+  circlePaymentReference: any;
+  setCirclePaymentReference: ((payment: any) => void) | any;
+  pharmacyCircleAttributes: PharmacyCircleEvent | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -305,6 +312,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setHdfcSubscriptionId: null,
   circlePlanValidity: null,
   setCirclePlanValidity: null,
+  circlePaymentReference: null,
+  setCirclePaymentReference: null,
+  pharmacyCircleAttributes: null,
 });
 
 const AsyncStorageKeys = {
@@ -403,6 +413,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [hdfcSubscriptionId, setHdfcSubscriptionId] = useState<
     ShoppingCartContextProps['hdfcSubscriptionId']
   >('');
+  const [circlePaymentReference, setCirclePaymentReference] = useState<
+    ShoppingCartContextProps['circlePaymentReference']
+  >();
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
@@ -575,7 +588,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const cartTotalCashback: ShoppingCartContextProps['cartTotalCashback'] = parseFloat(
-    cartItems.reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0).toFixed(2)
+    cartItems?.reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0)?.toFixed(2)
   );
 
   const cartTotalOfRxProducts: ShoppingCartContextProps['cartTotalOfRxProducts'] = parseFloat(
@@ -833,6 +846,22 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setDefaultCirclePlan(defaultPlan[0]);
     }
   };
+
+  const pharmacyCircleAttributes: PharmacyCircleEvent = {
+    'Circle Membership Added': circleSubscriptionId
+      ? 'Existing'
+      : !!circleMembershipCharges
+      ? 'Yes'
+      : 'No',
+    'Circle Membership Value': circleSubscriptionId
+      ? circlePaymentReference?.purchase_via_HC
+        ? circlePaymentReference?.HC_used
+        : circlePaymentReference?.amount_paid
+      : !!circleMembershipCharges
+      ? circlePlanSelected?.currentSellingPrice
+      : null,
+  };
+
   return (
     <ShoppingCartContext.Provider
       value={{
@@ -926,6 +955,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setHdfcSubscriptionId,
         circlePlanValidity,
         setCirclePlanValidity,
+        circlePaymentReference,
+        setCirclePaymentReference,
+        pharmacyCircleAttributes,
       }}
     >
       {props.children}

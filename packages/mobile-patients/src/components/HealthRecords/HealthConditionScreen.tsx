@@ -32,6 +32,9 @@ import {
   getSourceName,
   handleGraphQlError,
   phrSortWithDate,
+  postWebEngagePHR,
+  postWebEngageEvent,
+  HEALTH_CONDITIONS_TITLE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -41,13 +44,17 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response as MedicalConditionType,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response as MedicationType,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response as HealthRestrictionType,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response as AllergyType,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response as MedicalConditionType,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications_response as MedicationType,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions_response as HealthRestrictionType,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response as AllergyType,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -82,10 +89,6 @@ const styles = StyleSheet.create({
 
 export interface HealthConditionScreenProps
   extends NavigationScreenProps<{
-    allergyArray: AllergyType[];
-    medicalConditionArray: MedicalConditionType[];
-    medicationArray: MedicationType[];
-    healthRestrictionArray: HealthRestrictionType[];
     onPressBack: () => void;
   }> {}
 
@@ -101,19 +104,18 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   const [medicalConditions, setMedicalConditions] = useState<
     (MedicalConditionType | null)[] | null | undefined
-  >(props.navigation?.getParam('medicalConditionArray') || []);
+  >([]);
   const [medicalHealthRestrictions, setMedicalHealthRestrictions] = useState<
     (HealthRestrictionType | null)[] | null | undefined
-  >(props.navigation?.getParam('healthRestrictionArray') || []);
+  >([]);
   const [medicalMedications, setMedicalMedications] = useState<
     (MedicationType | null)[] | null | undefined
-  >(props.navigation?.getParam('medicationArray') || []);
+  >([]);
   const [medicalAllergies, setMedicalAllergies] = useState<
     (AllergyType | null)[] | null | undefined
-  >(props.navigation?.getParam('allergyArray') || []);
+  >([]);
 
   const [callApi, setCallApi] = useState(false);
-  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
 
   useEffect(() => {
     const healthConditionsArray: any[] = [];
@@ -134,6 +136,10 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   }, [medicalConditions, medicalHealthRestrictions, medicalMedications, medicalAllergies]);
 
   useEffect(() => {
+    getLatestHealthConditionRecords();
+  }, []);
+
+  useEffect(() => {
     let finalData: { key: string; data: any[] }[] = [];
     finalData = initialSortByDays('health-conditions', healthConditionMainData, finalData);
     setLocalHealthRecordData(finalData);
@@ -150,7 +156,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, [callApi, callPhrMainApi]);
+  }, [callApi]);
 
   useEffect(() => {
     if (callApi) {
@@ -159,41 +165,48 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   }, [callApi]);
 
   const gotoPHRHomeScreen = () => {
-    if (!callApi && !callPhrMainApi) {
-      props.navigation.state.params?.onPressBack();
-    }
+    props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
   };
 
   const getLatestHealthConditionRecords = () => {
     setShowSpinner(true);
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.ALLERGY,
+      MedicalRecordType.MEDICATION,
+      MedicalRecordType.HEALTHRESTRICTION,
+      MedicalRecordType.MEDICALCONDITION,
+    ])
       .then((data: any) => {
         const medicalCondition = g(
           data,
-          'getPatientPrismMedicalRecords',
+          'getPatientPrismMedicalRecords_V2',
           'medicalConditions',
           'response'
         );
         const medicalHealthRestriction = g(
           data,
-          'getPatientPrismMedicalRecords',
+          'getPatientPrismMedicalRecords_V2',
           'healthRestrictions',
           'response'
         );
         const medicalMedication = g(
           data,
-          'getPatientPrismMedicalRecords',
+          'getPatientPrismMedicalRecords_V2',
           'medications',
           'response'
         );
-        const medicalAllergie = g(data, 'getPatientPrismMedicalRecords', 'allergies', 'response');
+        const medicalAllergie = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'allergies',
+          'response'
+        );
         setMedicalConditions(medicalCondition);
         setMedicalHealthRestrictions(medicalHealthRestriction);
         setMedicalMedications(medicalMedication);
         setMedicalAllergies(medicalAllergie);
         setShowSpinner(false);
-        setCallPhrMainApi(true);
       })
       .catch((error) => {
         setShowSpinner(false);
@@ -235,19 +248,54 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   const onHealthCardItemPress = (selectedItem: any) => {
     const headerTitle = selectedItem?.allergyName
-      ? 'ALLERGIES DETAIL'
+      ? HEALTH_CONDITIONS_TITLE.ALLERGY
       : selectedItem?.medicineName
-      ? 'MEDICATION'
+      ? HEALTH_CONDITIONS_TITLE.MEDICATION
       : selectedItem?.restrictionName
-      ? 'RESTRICTION'
+      ? HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION
       : selectedItem?.medicalConditionName
-      ? 'MEDICAL CONDITION'
+      ? HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
       : '';
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       healthCondition: true,
       healthHeaderTitle: headerTitle,
     });
+  };
+
+  const healthConditionDeleteWebEngageEvents = (
+    recordType: MedicalRecordType,
+    selectedItem: any
+  ) => {
+    if (recordType === MedicalRecordType.ALLERGY) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_ALLERGY,
+        'Allergy',
+        selectedItem
+      );
+    } else if (recordType === MedicalRecordType.MEDICATION) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_MEDICATION,
+        'Medication',
+        selectedItem
+      );
+    } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_HEALTH_RESTRICTIONS,
+        'Health Restriction',
+        selectedItem
+      );
+    } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION,
+        'Medical Condition',
+        selectedItem
+      );
+    }
   };
 
   const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
@@ -263,6 +311,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHealthConditionRecords();
+          healthConditionDeleteWebEngageEvents(recordType, selectedItem);
         } else {
           setShowSpinner(false);
         }
@@ -378,6 +427,10 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           title={`ADD DATA`}
           onPress={() => {
             setCallApi(false);
+            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+              Source: 'Health Condition',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'HealthCondition',
               recordType: MedicalRecordType.MEDICALCONDITION,

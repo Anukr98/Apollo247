@@ -198,6 +198,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     } else {
       imageHeight = 180;
     }
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -378,9 +379,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       }
     } else if (action == hdfc_values.SPECIALITY_LISTING) {
       fireBannerCovidClickedWebengageEvent();
-      props.navigation.navigate('DoctorSearchListing', {
-        specialities: [type],
-      });
+      if (type) {
+        props.navigation.navigate('DoctorSearchListing', {
+          specialities: [type],
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      }
     } else {
       if (type == hdfc_values.REDIRECT) {
         if (action == hdfc_values.SPECIALITY_LISTING) {

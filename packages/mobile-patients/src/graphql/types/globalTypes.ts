@@ -112,6 +112,8 @@ export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
   DESKTOP = "DESKTOP",
   IOS = "IOS",
+  MWEB = "MWEB",
+  WEB = "WEB",
 }
 
 export enum DIAGNOSTICS_TYPE {
@@ -345,13 +347,6 @@ export enum MedicalRecordType {
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
   PRESCRIPTION = "PRESCRIPTION",
   TEST_REPORT = "TEST_REPORT",
-}
-
-export enum MedicalTestUnit {
-  GM = "GM",
-  GM_SLASH_DL = "GM_SLASH_DL",
-  NONE = "NONE",
-  _PERCENT_ = "_PERCENT_",
 }
 
 export enum NonCartOrderOMSCity {
@@ -614,15 +609,6 @@ export interface AddDiabeticQuestionnaireInput {
   diabetic_year?: string | null;
 }
 
-export interface AddHealthCheckRecordInput {
-  id?: string | null;
-  patientId: string;
-  recordType: MedicalRecordType;
-  healthCheckName: string;
-  healthCheckDate: any;
-  healthCheckFiles?: (HealthCheckFileProperties | null)[] | null;
-}
-
 export interface AddHospitalizationRecordInput {
   id?: string | null;
   patientId: string;
@@ -658,31 +644,6 @@ export interface AddMedicalConditionRecordInput {
   notes?: string | null;
   illnessType: MedicalConditionIllnessTypes;
   medicationFiles?: (MedicalConditionFileProperties | null)[] | null;
-}
-
-export interface AddMedicalRecordInput {
-  additionalNotes?: string | null;
-  documentURLs?: string | null;
-  issuingDoctor?: string | null;
-  location?: string | null;
-  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
-  observations?: string | null;
-  patientId: string;
-  prismFileIds?: string | null;
-  recordType?: MedicalRecordType | null;
-  referringDoctor?: string | null;
-  sourceName?: string | null;
-  testDate?: any | null;
-  testName: string;
-  testResultFiles?: LabResultFileProperties | null;
-}
-
-export interface AddMedicalRecordParametersInput {
-  maximum?: number | null;
-  minimum?: number | null;
-  parameterName?: string | null;
-  result?: number | null;
-  unit?: MedicalTestUnit | null;
 }
 
 export interface AddPatientHealthRestrictionRecordInput {
@@ -782,6 +743,12 @@ export interface AppointmentPaymentInput {
   planId?: string | null;
   subPlanId?: string | null;
   storeCode?: ONE_APOLLO_STORE_CODE | null;
+}
+
+export interface Attachments {
+  documentName?: string | null;
+  fileName?: string | null;
+  documentBase64String?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -915,6 +882,7 @@ export interface DiagnosticBookHomeCollectionInput {
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
+  attachmentData?: (Attachments | null)[] | null;
 }
 
 export interface DiagnosticLineItem {
@@ -1026,18 +994,13 @@ export interface FilterDoctorInput {
   pageNo?: number | null;
   pageSize?: number | null;
   searchText?: string | null;
+  radius?: number | null;
   isCare?: boolean | null;
 }
 
 export interface Geolocation {
   latitude: number;
   longitude: number;
-}
-
-export interface HealthCheckFileProperties {
-  fileName?: string | null;
-  mimeType?: string | null;
-  content?: string | null;
 }
 
 export interface HelpEmailInput {
@@ -1052,12 +1015,6 @@ export interface HospitalizationFileProperties {
   fileName?: string | null;
   mimeType?: string | null;
   content?: string | null;
-}
-
-export interface LabResultFileProperties {
-  fileName: string;
-  mimeType: string;
-  content: string;
 }
 
 export interface LabTestFileProperties {
@@ -1116,7 +1073,8 @@ export interface MedicineCartOMSInput {
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
+  deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
   patientAddressId?: string | null;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
@@ -1135,7 +1093,6 @@ export interface MedicineCartOMSInput {
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
-  savedDeliveryCharge?: number | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1313,6 +1270,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   patientId: string;
   bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;
@@ -1341,6 +1299,12 @@ export interface PrescriptionReUploadInput {
   orderId: number;
   fileUrl: string;
   prismPrescriptionFileId?: string | null;
+}
+
+export interface PreviousOrdersSkus {
+  patientId: string;
+  fromDate?: number | null;
+  toDate?: number | null;
 }
 
 export interface Range {

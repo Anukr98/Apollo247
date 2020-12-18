@@ -20,11 +20,10 @@ import {
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_MEDICAL_PRISM_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { BloodGroups } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BloodGroups, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatientPastConsultsAndPrescriptions,
@@ -65,18 +64,11 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
-  getPatientPrismMedicalRecords,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import _ from 'lodash';
@@ -354,52 +346,17 @@ export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [healthChecksNew, setHealthChecksNew] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [hospitalizationsNew, setHospitalizationsNew] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response | null)[]
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response | null)[]
     | null
     | undefined
   >([]);
   const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
     | null
     | undefined
   >([]);
   const [prescriptions, setPrescriptions] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [medicalBills, setMedicalBills] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [medicalInsurance, setInsuranceBills] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [medicalConditions, setMedicalConditions] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [medicalHealthRestrictions, setMedicalHealthRestrictions] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [medicalMedications, setMedicalMedications] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [medicalAllergies, setMedicalAllergies] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response | null)[]
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[]
     | null
     | undefined
   >([]);
@@ -416,6 +373,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(true);
+  const [callPrescriptionApi, setCallPrescriptionApi] = useState(false);
+  const [callTestReportApi, setCallTestReportApi] = useState(false);
   const [updatePatientDetailsApi, setUpdatePatientDetailsApi] = useState(true);
   const [showUpdateProfilePopup, setShowUpdateProfilePopup] = useState(false);
   const [showUpdateProfileErrorPopup, setShowUpdateProfileErrorPopup] = useState(false);
@@ -557,87 +516,36 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     }
   };
 
-  const fetchTestData = useCallback(() => {
-    client
-      .query<getPatientPrismMedicalRecords>({
-        query: GET_MEDICAL_PRISM_RECORD,
-        context: {
-          headers: {
-            callingsource: 'healthRecords',
-          },
-        },
-        variables: {
-          patientId: currentPatient?.id || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const labResultsData = g(data, 'getPatientPrismMedicalRecords', 'labResults', 'response');
+  const fetchPrescriptionAndTestReportData = useCallback(() => {
+    setPrismdataLoader(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.PRESCRIPTION,
+      MedicalRecordType.TEST_REPORT,
+      MedicalRecordType.HEALTHCHECK,
+    ])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
         const prescriptionsData = g(
           data,
-          'getPatientPrismMedicalRecords',
+          'getPatientPrismMedicalRecords_V2',
           'prescriptions',
           'response'
         );
-        const healthChecksNewData = g(
+        const healthChecksData = g(
           data,
-          'getPatientPrismMedicalRecords',
-          'healthChecksNew',
+          'getPatientPrismMedicalRecords_V2',
+          'healthChecks',
           'response'
         );
-        const hospitalizationsNewData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'hospitalizationsNew',
-          'response'
-        );
-        const medicalBillsData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'medicalBills',
-          'response'
-        );
-        const medicalInsuranceData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'medicalInsurances',
-          'response'
-        );
-        const medicalConditionsData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'medicalConditions',
-          'response'
-        );
-        const medicalHealthRestrictionsData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'healthRestrictions',
-          'response'
-        );
-        const medicalMedicationsData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'medications',
-          'response'
-        );
-        const medicalAllergiesData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'allergies',
-          'response'
-        );
-        console.log('data', data);
+        tabsClickedWebEngageEvent(WebEngageEventName.PHR_LOAD_HEALTH_RECORDS);
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
-        setHealthChecksNew(healthChecksNewData);
-        setHospitalizationsNew(phrSortWithDate(hospitalizationsNewData));
-        setMedicalBills(phrSortWithDate(medicalBillsData));
-        setInsuranceBills(phrSortWithDate(medicalInsuranceData));
-        setMedicalConditions(medicalConditionsData);
-        setMedicalHealthRestrictions(medicalHealthRestrictionsData);
-        setMedicalMedications(medicalMedicationsData);
-        setMedicalAllergies(medicalAllergiesData);
+        setHealthChecksNew(healthChecksData);
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
@@ -647,12 +555,62 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .finally(() => setPrismdataLoader(false));
   }, [currentPatient]);
 
+  const fetchTestReportsData = useCallback(() => {
+    setPrismdataLoader(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.TEST_REPORT,
+      MedicalRecordType.HEALTHCHECK,
+    ])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        const healthChecksData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'healthChecks',
+          'response'
+        );
+        setLabResults(labResultsData);
+        setHealthChecksNew(healthChecksData);
+      })
+      .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchTestReportsData', error);
+        console.log('Error occured fetchTestReportsData', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setPrismdataLoader(false));
+  }, []);
+
+  const fetchPrescriptionData = useCallback(() => {
+    setPrismdataLoader(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.PRESCRIPTION])
+      .then((data: any) => {
+        const prescriptionsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'prescriptions',
+          'response'
+        );
+        setPrescriptions(prescriptionsData);
+      })
+      .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchPrescriptionData', error);
+        console.log('Error occured fetchPrescriptionData', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setPrismdataLoader(false));
+  }, []);
+
   useEffect(() => {
     if (updatePatientDetailsApi) {
       setPastDataLoader(true);
       setPrismdataLoader(true);
       fetchPastData();
-      fetchTestData();
+      fetchPrescriptionAndTestReportData();
     }
   }, [currentPatient, updatePatientDetailsApi]);
 
@@ -660,18 +618,24 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       if (callApi) {
         fetchPastData();
-        fetchTestData();
+        fetchPrescriptionAndTestReportData();
+      } else if (callPrescriptionApi) {
+        fetchPrescriptionData();
+      } else if (callTestReportApi) {
+        fetchTestReportsData();
       }
     });
     const didBlurSubsription = props.navigation.addListener('didBlur', (payload) => {
       setCallApi(true);
+      setCallPrescriptionApi(false);
+      setCallTestReportApi(false);
       setPhrNotificationData && setPhrNotificationData(null);
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       didBlurSubsription && didBlurSubsription.remove();
     };
-  }, [props.navigation, currentPatient, callApi]);
+  }, [props.navigation, currentPatient, callApi, callTestReportApi, callPrescriptionApi]);
 
   useEffect(() => {
     let mergeArray: { type: string; data: any }[] = [];
@@ -686,6 +650,25 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(webEngageEventName, eventAttributes);
+  };
+
+  const updateMedicalParametersWebEngageEvents = (
+    webEngageEventName: WebEngageEventName,
+    type: string,
+    value: string
+  ) => {
+    const eventAttributes = {
+      type,
+      value,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -922,6 +905,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     setCallApi(false);
   };
 
+  const onBackPrescriptionPressed = () => {
+    setCallApi(false);
+    setCallTestReportApi(false);
+    setCallPrescriptionApi(true);
+  };
+
+  const onBackTestReportPressed = () => {
+    setCallApi(false);
+    setCallPrescriptionApi(false);
+    setCallTestReportApi(true);
+  };
+
   const renderListItemView = (title: string, id: number) => {
     const renderLeftAvatar = () => {
       switch (id) {
@@ -945,57 +940,47 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const onPressListItem = () => {
       switch (id) {
         case 1:
-          setCallApi(true);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_PRESCRIPTIONS);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_DOCTOR_CONSULTATIONS);
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
             consultArray: arrayValues,
             prescriptionArray: prescriptions,
             onPressBack: onBackArrowPressed,
+            callPrescriptionsApi: onBackPrescriptionPressed,
           });
           break;
         case 2:
-          setCallApi(true);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_LAB_TESTS);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CHECKS);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_TEST_REPORTS);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
             testReportsData: testAndHealthCheck,
             onPressBack: onBackArrowPressed,
+            callTestReportsApi: onBackTestReportPressed,
           });
           break;
         case 3:
-          setCallApi(true);
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HOSPITALIZATIONS);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HOSPITALIZATIONS);
           props.navigation.navigate(AppRoutes.HospitalizationScreen, {
-            hospitalizationData: hospitalizationsNew,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 4:
-          setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HEALTH_CONDITIONS);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
-            allergyArray: medicalAllergies,
-            medicalConditionArray: medicalConditions,
-            medicationArray: medicalMedications,
-            healthRestrictionArray: medicalHealthRestrictions,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 5:
-          setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_BILLS);
           props.navigation.navigate(AppRoutes.BillScreen, {
-            medicalBillsData: medicalBills,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 6:
-          setCallApi(true);
+          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_INSURANCES);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
-            medicalInsuranceData: medicalInsurance,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 7:
-          setCallApi(true);
           props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);
           break;
       }
@@ -1101,7 +1086,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const bloodGroupData = selectedBloodGroupArray.map((i) => {
       return { key: i.key, value: i.title };
     });
-
     return (
       <MaterialMenu
         options={bloodGroupData}
@@ -1254,6 +1238,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.weight,
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
+            isHeightAvailable
+              ? updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_UPDATE_HEIGHT,
+                  'Height',
+                  height
+                )
+              : updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_ADD_HEIGHT,
+                  'Height',
+                  height
+                );
           }
         } else {
           if (
@@ -1270,6 +1265,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.weight,
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
+            isHeightAvailable
+              ? updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_UPDATE_HEIGHT,
+                  'Height',
+                  height
+                )
+              : updateMedicalParametersWebEngageEvents(
+                  WebEngageEventName.PHR_ADD_HEIGHT,
+                  'Height',
+                  height
+                );
           }
         }
       } else if (currentUpdatePopupId === 2) {
@@ -1281,6 +1287,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             weight,
             currentPatient?.patientMedicalHistory?.bloodGroup
           );
+          isWeightAvailable
+            ? updateMedicalParametersWebEngageEvents(
+                WebEngageEventName.PHR_UPDATE_WEIGHT,
+                'Weight',
+                weight
+              )
+            : updateMedicalParametersWebEngageEvents(
+                WebEngageEventName.PHR_ADD_WEIGHT,
+                'Weight',
+                weight
+              );
         }
       } else {
         updateMedicalParameters(
@@ -1288,6 +1305,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           currentPatient?.patientMedicalHistory?.weight,
           bloodGroup?.key?.toString() || ''
         );
+        currentPatient?.patientMedicalHistory?.bloodGroup
+          ? updateMedicalParametersWebEngageEvents(
+              WebEngageEventName.PHR_UPDATE_BLOOD_GROUP,
+              'BloodGroup',
+              bloodGroup?.title || ''
+            )
+          : updateMedicalParametersWebEngageEvents(
+              WebEngageEventName.PHR_ADD_BLOOD_GROUP,
+              'BloodGroup',
+              bloodGroup?.title || ''
+            );
       }
     };
 

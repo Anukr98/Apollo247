@@ -22,7 +22,7 @@ import {
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { NeedHelp } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -142,6 +142,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
