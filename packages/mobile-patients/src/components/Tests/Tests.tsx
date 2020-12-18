@@ -1273,7 +1273,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home page',
         'Featured tests'
       );
-      addCartItem!({
+      const alreadyExist = addCartItem!({
         id: `${diagnostics!.itemId}`,
         mou: diagnostics?.inclusions == null ? 1 : diagnostics?.inclusions.length,
         name: diagnostics?.itemName!,
@@ -1286,6 +1286,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         thumbnail: packageImage,
         collectionMethod: diagnostics?.collectionType!,
         groupPlan: planToConsider?.groupPlan,
+        inclusions:
+          diagnostics?.inclusions == null ? [Number(diagnostics?.itemId)] : diagnostics?.inclusions,
       });
     };
     const removeFromCart = () => {
@@ -1822,7 +1824,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                           'Home page',
                           'Browse packages'
                         );
-                    addCartItem!({
+                    const aa = addCartItem!({
                       id: String(diagnosticItem?.itemId),
                       name: diagnosticItem?.itemName!,
                       mou:
@@ -1836,7 +1838,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       discountSpecialPrice: discountSpecialPrice,
                       collectionMethod: product?.collectionType!,
                       groupPlan: planToConsider?.groupPlan,
+                      inclusions:
+                        diagnosticItem?.inclusions == null
+                          ? [Number(diagnosticItem?.itemId)]
+                          : diagnosticItem?.inclusions,
                     });
+                    console.log('aa is' + aa);
                   });
                 }
               );
@@ -1969,14 +1976,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     pricesObject: any,
     promoteCircle: boolean,
     promoteDiscount: boolean,
-    selectedPlan: any
+    selectedPlan: any,
+    tests: any[]
   ) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate, 'Partial search');
 
-    addCartItem!({
+    const aa = addCartItem!({
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate,
@@ -1989,7 +1997,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
+      inclusions: tests == null ? [Number(itemId)] : tests,
     });
+    console.log('aa is' + aa);
   };
 
   const [searchText, setSearchText] = useState<string>('');
@@ -2172,7 +2182,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                           pricesObject,
                           data?.promoteCircle,
                           data?.promoteDiscount,
-                          data?.planToConsider
+                          data?.planToConsider,
+                          tests
                         );
                       })
                 }

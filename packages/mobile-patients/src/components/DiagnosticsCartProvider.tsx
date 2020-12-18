@@ -15,6 +15,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface DiagnosticsCartItem {
   id: string;
@@ -29,6 +30,7 @@ export interface DiagnosticsCartItem {
   discountSpecialPrice?: number | null; //price
   collectionMethod: TEST_COLLECTION_TYPE;
   groupPlan?: string;
+  inclusions?: any[];
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -342,8 +344,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const addCartItem: DiagnosticsCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (cartItems.find((item) => item.id == itemToAdd.id)) {
+    if (cartItems.find((item) => item?.id == itemToAdd?.id)) {
       return;
+    }
+    if (
+      cartItems.find((item) => item?.inclusions?.includes(Number(itemToAdd?.id))) ||
+      cartItems.find((item) => itemToAdd?.inclusions?.includes(Number(item?.id)))
+    ) {
+      return string.diagnostics.itemAlreadyExist;
     }
     const newCartItems = [itemToAdd, ...cartItems];
     setCartItems(newCartItems);
