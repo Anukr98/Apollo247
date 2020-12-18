@@ -102,7 +102,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
           <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
             <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
               <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>Circle </Text>
-              Delivery Savings
+              Delivery
             </Text>
             <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>
               ₹{deliveryFee.toFixed(2)}
