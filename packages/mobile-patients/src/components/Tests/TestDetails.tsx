@@ -750,7 +750,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {string.common.Rs} {findItemFromCart?.price! || testInfo?.Rate}
                 </Text>
               </View>
-              {renderItemAdded()}
+              {/* {renderItemAdded()} */}
             </View>
           )}
           {/**
@@ -787,7 +787,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {string.common.Rs} {findItemFromCart?.price || testInfo?.Rate}
                 </Text>
               </View>
-              {renderItemAdded()}
+              {/* {renderItemAdded()} */}
             </View>
           )}
 
