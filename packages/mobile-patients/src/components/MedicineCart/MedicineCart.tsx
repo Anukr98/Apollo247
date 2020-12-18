@@ -925,9 +925,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {!!coupon &&
-          (isCircleSubscription || !!circleSubscriptionId) &&
-          renderApplyCircleBenefits()}
+        {(isCircleSubscription || !!circleSubscriptionId) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
