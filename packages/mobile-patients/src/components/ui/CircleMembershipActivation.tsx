@@ -43,7 +43,6 @@ import {
 
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 
 interface props extends NavigationScreenProps {
@@ -71,7 +70,6 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [planValidity, setPlanValidity] = useState<string>(circlePlanValidity || '');
   const { circleSubscriptionId } = useShoppingCart();
-  const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const client = useApolloClient();
@@ -224,7 +222,6 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         fireCirclePurchaseEvent(res?.data?.CreateUserSubscription?.response?.end_date);
         planActivated.current = true;
         setPlanValidity(res?.data?.CreateUserSubscription?.response?.end_date);
-        setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       } else {
         Alert.alert('Apollo', `${res?.data?.CreateUserSubscription?.message}`);
       }
