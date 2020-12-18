@@ -22,7 +22,7 @@ import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFu
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -31,7 +31,12 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { RadioSelectionItem } from './RadioSelectionItem';
-import { RE_UPLOAD_PRESCRIPTION, UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  RE_UPLOAD_PRESCRIPTION,
+  UPLOAD_DOCUMENT,
+  GET_PATIENT_ADDRESS_LIST,
+  SET_DEFAULT_ADDRESS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { ReUploadPrescriptionVariables } from '@aph/mobile-patients/src/graphql/types/ReUploadPrescription';
 import {
   PRISM_DOCUMENT_CATEGORY,
@@ -41,6 +46,21 @@ import {
   uploadDocument,
   uploadDocumentVariables,
 } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+import { ExpectCall } from '@aph/mobile-patients/src/components/Medicines/Components/ExpectCall';
+import { ProceedBar } from '@aph/mobile-patients/src/components/Medicines/Components/ProceedBar';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/ChooseAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { pinCodeServiceabilityApi247 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  makeAdressAsDefaultVariables,
+  makeAdressAsDefault,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -93,24 +113,31 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setEPrescriptions: setEPrescription,
     setOnHoldOptionOrder,
     onHoldOptionOrder,
+    addresses,
+    setAddresses,
+    deliveryAddressId,
+    setDeliveryAddressId,
   } = useShoppingCart();
   const [prescriptionOption, setPrescriptionOption] = useState<string>('specified');
   const [durationDays, setDurationDays] = useState<string>('30');
+  const [vdcType, setvdcType] = useState<string>('');
   const medicineDetailOptions = [
-    {
-      id: 'search',
-      title: 'Search and add medicine(s)',
-    },
     {
       id: 'Need all medicine and for duration as per prescription',
       title: 'All medicines from prescription',
+    },
+    {
+      id: 'search',
+      title: 'Search and add medicine(s)',
     },
     {
       id: 'Call me for details',
       title: 'Call me for details',
     },
   ];
-  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
+  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(
+    'Need all medicine and for duration as per prescription'
+  );
   const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] = useState<number>(
     type === 'Camera' ? 1 : 0
   );
@@ -121,6 +148,85 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     props.navigation.getParam('showOptions') != undefined
       ? props.navigation.getParam('showOptions')
       : true;
+
+  useEffect(() => {
+    fetchAddress();
+  }, []);
+
+  async function fetchAddress() {
+    try {
+      if (addresses.length) {
+        return;
+      }
+      const userId = g(currentPatient, 'id');
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: userId },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const addressList =
+        (data.getPatientAddressList
+          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      setAddresses!(addressList);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
+    if (deliveryAddressId && deliveryAddressId == address.id) {
+      return;
+    }
+    try {
+      setLoading?.(true);
+      const response = await pinCodeServiceabilityApi247(address.zipcode!);
+      const { data } = response;
+      console.log('data >>>>>', data);
+      if (data?.response?.servicable) {
+        setDeliveryAddressId && setDeliveryAddressId(address.id);
+        setDefaultAddress(address);
+        setvdcType(data?.response?.vdcType);
+        setLoading?.(false);
+      } else {
+        setDeliveryAddressId && setDeliveryAddressId('');
+        setLoading?.(false);
+        renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading?.(false);
+    }
+  }
+
+  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
+    try {
+      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+        query: SET_DEFAULT_ADDRESS,
+        variables: { patientAddressId: address?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+      const updatedAddresses = addresses.map((item) => ({
+        ...item,
+        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+      }));
+      setAddresses!(updatedAddresses);
+      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+    } catch (error) {
+      CommonBugFender('set_default_Address_on_Cart_Page', error);
+    }
+  }
+
+  async function availabilityTat(pincode: number) {}
+
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
+  };
 
   const uploadMultipleFiles = (physicalPrescription: PhysicalPrescription[]) => {
     return Promise.all(
@@ -243,7 +349,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       'Graph ql call for save prescription medicine order'
     );
     setLoading!(true);
-
     try {
       if (selectedMedicineOption === 'search') {
         if (EPrescriptions.length > 0) setEPrescription && setEPrescription([...EPrescriptions]);
@@ -519,27 +624,27 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   const getRadioButtonAction = () => {
     if (selectedMedicineOption === 'Call me for details') {
-      return (
-        <View
-          style={{
-            backgroundColor: theme.colors.CARD_BG,
-            padding: 16,
-            margin: 0,
-            borderBottomRightRadius: 10,
-            borderBottomLeftRadius: 10,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(13),
-              textAlign: 'center',
-            }}
-          >
-            Our pharmacist will call you within 2 hours to confirm medicines (8 AM to 8 PM).
-          </Text>
-        </View>
-      );
+      // return (
+      //   <View
+      //     style={{
+      //       backgroundColor: theme.colors.CARD_BG,
+      //       padding: 16,
+      //       margin: 0,
+      //       borderBottomRightRadius: 10,
+      //       borderBottomLeftRadius: 10,
+      //     }}
+      //   >
+      //     <Text
+      //       style={{
+      //         color: theme.colors.LIGHT_BLUE,
+      //         ...theme.fonts.IBMPlexSansMedium(13),
+      //         textAlign: 'center',
+      //       }}
+      //     >
+      //       Our pharmacist will call you within 2 hours to confirm medicines (8 AM to 8 PM).
+      //     </Text>
+      //   </View>
+      // );
     } else if (
       selectedMedicineOption === 'Need all medicine and for duration as per prescription'
     ) {
@@ -692,6 +797,59 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     }
   };
 
+  function showAddressPopup() {
+    showAphAlert!({
+      title: string.common.selectAddress,
+      removeTopIcon: true,
+      children: (
+        <ChooseAddress
+          addresses={addresses}
+          deliveryAddressId={deliveryAddressId}
+          onPressAddAddress={() => {
+            props.navigation.navigate(AppRoutes.AddAddress, {
+              source: 'Upload Prescription' as AddressSource,
+            });
+            hideAphAlert!();
+          }}
+          onPressEditAddress={(address) => {
+            props.navigation.push(AppRoutes.AddAddress, {
+              KeyName: 'Update',
+              DataAddress: address,
+              ComingFrom: AppRoutes.MedicineCart,
+            });
+            hideAphAlert!();
+          }}
+          onPressSelectAddress={(address) => {
+            checkServicability(address);
+            hideAphAlert!();
+          }}
+        />
+      ),
+    });
+  }
+
+  const renderExpectCall = () => {
+    return selectedMedicineOption === 'Call me for details' ? <ExpectCall /> : null;
+  };
+
+  const renderProceedBar = () => {
+    return (
+      <ProceedBar
+        onPressSelectDeliveryAddress={() => {
+          showAddressPopup();
+        }}
+        onPressAddDeliveryAddress={() => {
+          props.navigation.navigate(AppRoutes.AddAddress, {
+            source: 'Cart' as AddressSource,
+          });
+        }}
+        vdcType={vdcType}
+        onPressPlaceOrder={() => {}}
+        onPressChangeAddress={showAddressPopup}
+      />
+    );
+  };
+
   return (
     <View
       style={{
@@ -705,7 +863,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView bounces={false} style={{ flex: 1 }}>
+        <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 150 }}>
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
           <Text
@@ -722,17 +880,19 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             ADD MORE PRESCRIPTIONS
           </Text>
           {showMedicineDescription && renderMedicineDetailOptions()}
+          {showMedicineDescription && renderExpectCall()}
         </ScrollView>
       </SafeAreaView>
 
-      <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
+      {/* <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
         <Button
           disabled={disableSubmitButton()}
           title={'SUBMIT'}
           onPress={onSubmitOrder}
           style={{ marginHorizontal: 60, flex: 1 }}
         />
-      </StickyBottomComponent>
+      </StickyBottomComponent> */}
+      {renderProceedBar()}
       {renderPrescriptionModal()}
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
