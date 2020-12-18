@@ -2520,7 +2520,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       areaId: (areaSelected || ({} as any)).key!,
       homeCollectionCharges: hcCharges,
       // totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
-      totalPriceExcludingDiscounts: cartTotal,
+      totalPriceExcludingDiscounts: cartTotal + hcCharges,
       subscriptionInclusionId: null,
       userSubscriptionId: circleSubscriptionId,
       // prismPrescriptionFileId: [
