@@ -347,7 +347,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       return;
     }
     const newCartItems = [itemToAdd, ...cartItems];
-    console.log({ addCartItem });
     setCartItems(newCartItems);
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
