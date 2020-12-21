@@ -135,11 +135,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
-        setTotalCashBack(!!pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
+        setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
-        setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
-        setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
       .catch((error) => {
@@ -722,7 +720,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               {status === 'PAYMENT_SUCCESS' && isCircleBought
                 ? renderAddedCirclePlanWithValidity()
                 : null}
-              {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') && totalCashBack
+              {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') &&
+              totalCashBack &&
+              !isCircleBought
                 ? renderCircleSavingsOnPurchase()
                 : null}
               {renderCODNote()}

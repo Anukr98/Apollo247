@@ -1545,6 +1545,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async () => {
+    globalLoading!(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -1556,6 +1557,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      globalLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
@@ -1588,6 +1590,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }
       }
     } catch (error) {
+      globalLoading!(false);
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
   };
