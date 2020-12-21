@@ -138,6 +138,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     hdfcSubscriptionId,
     pharmacyCircleAttributes,
     newAddressAdded,
+    setNewAddressAdded,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -218,6 +219,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!!addressLength && !!newAddressAdded) {
       const newAddress = addresses.filter((value) => value.id === newAddressAdded);
       checkServicability(newAddress[0]);
+      setNewAddressAdded && setNewAddressAdded('');
     }
   }, [newAddressAdded]);
 
