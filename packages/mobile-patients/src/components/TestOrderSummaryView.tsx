@@ -143,6 +143,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
   };
 
+  console.log({ orderDetails });
   const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
   );
@@ -169,6 +170,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT)
     ) || [];
 
+  //using packageMrp check
   const discountCirclePrice =
     allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountCirclePrice });
@@ -189,18 +191,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   );
   const totalSavings = totalCartSaving + totalDiscountSaving;
 
-  /**
-   * to handle the quantity
-   */
-  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map(
-    (item) => item?.price! * item?.quantity!
+  //gross charges considering packageMrp (how to check for previous orders)
+  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map((item) =>
+    item?.itemObj?.packageCalculatedMrp! && item?.itemObj?.packageCalculatedMrp > item?.price!
+      ? item?.itemObj?.packageCalculatedMrp! * item?.quantity!
+      : item?.price! * item?.quantity!
   );
 
   const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
     (prevVal, currVal) => prevVal + currVal
   );
 
-  const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
+  const HomeCollectionCharges = totalIndividualDiagonsticsCharges! - orderDetails?.totalPrice!;
 
   const grossCharges =
     totalIndividualDiagonsticsCharges! +

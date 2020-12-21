@@ -1037,6 +1037,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     specialDiscount: number | string;
     promoteCircle?: boolean;
     promoteDiscount?: boolean;
+    mrpToDisplay: number;
   }) => {
     const {
       name,
@@ -1053,6 +1054,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       specialDiscount,
       promoteCircle,
       promoteDiscount,
+      mrpToDisplay,
     } = data;
 
     // if special discount is more than others.
@@ -1088,11 +1090,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                */}
               {(specialPrice != price || discountSpecialPrice != discountPrice) && (
                 <Text style={styles.discountPriceText}>
-                  {string.common.Rs} {price}
+                  {string.common.Rs} {mrpToDisplay}
                 </Text>
               )}
               <Text style={styles.sellingPriceText}>
-                {string.common.Rs} {promoteDiscount ? discountSpecialPrice : specialPrice || price}
+                {string.common.Rs}{' '}
+                {promoteDiscount ? discountSpecialPrice : specialPrice || mrpToDisplay}
               </Text>
             </View>
           )}
@@ -1135,7 +1138,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
           {promoteCircle
-            ? renderCircleView(circleSpecialPrice!, specialPrice! || price!, promoteCircle)
+            ? renderCircleView(circleSpecialPrice!, specialPrice! || mrpToDisplay!, promoteCircle)
             : null}
 
           <Text
@@ -1161,7 +1164,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderCircleView = (circleSpecialPrice: number, price: number, promoteCircle: boolean) => {
+  const renderCircleView = (
+    circleSpecialPrice: number,
+    price: number | string,
+    promoteCircle: boolean
+  ) => {
     return (
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row' }}>
@@ -1233,7 +1240,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     >
   ) => {
     const getDiagnosticPricingForItem = g(data, 'item', 'diagnostics', 'diagnosticPricing');
-    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem);
+    const getItems = g(data, 'item', 'diagnostics');
+    const packageMrpForItem = getItems?.packageCalculatedMrp!;
+    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
     // if all the groupPlans are inactive, then only don't show
     if (!pricesForItem?.itemActive) {
@@ -1268,7 +1277,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       postDiagnosticAddToCartEvent(
         diagnostics?.itemName!,
         `${diagnostics!.itemId}`,
-        mrpToDisplay,
+        Number(mrpToDisplay!),
         discountToDisplay,
         'Home page',
         'Featured tests'
@@ -1286,6 +1295,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         thumbnail: packageImage,
         collectionMethod: diagnostics?.collectionType!,
         groupPlan: planToConsider?.groupPlan,
+        packageMrp: packageMrpForItem,
         inclusions:
           diagnostics?.inclusions == null ? [Number(diagnostics?.itemId)] : diagnostics?.inclusions,
       });
@@ -1312,6 +1322,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       specialDiscount: specialDiscount,
       promoteCircle: promoteCircle,
       promoteDiscount: promoteDiscount,
+      mrpToDisplay: Number(mrpToDisplay!),
       onAddOrRemoveCartItem: foundTestInCart ? removeFromCart : addToCart,
       onPress: () => {
         if (!isDiagnosticLocationServiceable) {
@@ -1334,6 +1345,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ToAgeInDays: diagnostics?.toAgeInDays,
             preparation: diagnostics?.testPreparationData,
             testDescription: diagnostics?.testDescription,
+            packageMrp: packageMrpForItem,
+            mrpToDisplay: mrpToDisplay,
             source: 'Home Page',
             type: diagnostics!.itemType,
             inclusions:
@@ -1430,6 +1443,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     promoteCircle: boolean,
     promoteDiscount: boolean,
     numberOfInclusions: number,
+    mrpToDisplay: number,
     imageUri: string,
     style: ViewStyle,
     isAddedToCart: boolean,
@@ -1546,7 +1560,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {!isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubPrice}>
                     {string.common.Rs}
-                    {promoteCircle ? circleSpecialPrice : specialPrice || price}
+                    {promoteCircle ? circleSpecialPrice : specialPrice || mrpToDisplay}
                   </Text>
                 )}
               </View>
@@ -1559,20 +1573,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
                * original price (discount price is present and no circle + !promoteCircle)
                */}
               {!promoteCircle &&
-                ((!!specialPrice && specialPrice != price) ||
-                  (!!discountSpecialPrice && discountSpecialPrice != discountPrice)) &&
+                ((!!specialPrice && specialPrice != mrpToDisplay) ||
+                  (!!discountSpecialPrice && discountSpecialPrice != mrpToDisplay)) &&
                 !isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubStrikedPrice}>
-                    ({string.common.Rs} {price})
+                    ({string.common.Rs} {mrpToDisplay})
                   </Text>
                 )}
 
               {/**
                * slashed price in case prmote circle + sub or slashed price or discount price
                */}
-              {((!!specialPrice && specialPrice != price) ||
+              {((!!specialPrice && specialPrice != mrpToDisplay) ||
                 promoteCircle ||
-                (!!discountSpecialPrice && discountSpecialPrice != discountPrice)) &&
+                (!!discountSpecialPrice && discountSpecialPrice != mrpToDisplay)) &&
                 isDiagnosticCircleSubscription && (
                   <Text
                     style={{
@@ -1592,7 +1606,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         },
                       ]}
                     >
-                      {string.common.Rs} {price}
+                      {string.common.Rs} {mrpToDisplay}
                     </Text>
                     )
                   </Text>
@@ -1604,12 +1618,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }}
               >
                 {string.common.Rs}
-
                 {promoteCircle && !!circleSpecialPrice && isDiagnosticCircleSubscription
                   ? circleSpecialPrice
                   : promoteDiscount
                   ? discountSpecialPrice
-                  : specialPrice || price}
+                  : mrpToDisplay}
               </Text>
               {/**
                * add to cart
@@ -1725,7 +1738,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             data={PackagesWithDiagnosticPricing}
             renderItem={({ item, index }) => {
               const getDiagnosticPricingForItem = g(item, 'diagnostics', 'diagnosticPricing');
-              const pricesForItem = getPricesForItem(getDiagnosticPricingForItem);
+              const getItems = g(item, 'diagnostics');
+              const packageMrpForItem = getItems?.packageCalculatedMrp!;
+
+              const pricesForItem = getPricesForItem(
+                getDiagnosticPricingForItem,
+                packageMrpForItem
+              );
 
               // if all the groupPlans are inactive, then only don't show
               if (!pricesForItem?.itemActive) {
@@ -1774,6 +1793,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 promoteCircle,
                 promoteDiscount,
                 numberOfInclusions,
+                Number(mrpToDisplay!),
                 item.organImage!,
                 {
                   marginHorizontal: 4,
@@ -1804,6 +1824,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         testDescription: product?.testDescription,
                         source: 'Home Page',
                         type: product?.itemType,
+                        packageMrp: packageMrpForItem,
+                        mrpToDisplay: mrpToDisplay,
                         inclusions:
                           product?.inclusions == null
                             ? [Number(product?.itemId)]
@@ -1827,7 +1849,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       : postDiagnosticAddToCartEvent(
                           item?.organName!,
                           item?.id!,
-                          mrpToDisplay,
+                          Number(mrpToDisplay!),
                           discountToDisplay,
                           'Home page',
                           'Browse packages'
@@ -1846,6 +1868,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       discountSpecialPrice: discountSpecialPrice,
                       collectionMethod: product?.collectionType!,
                       groupPlan: planToConsider?.groupPlan,
+                      packageMrp: packageMrpForItem,
                       inclusions:
                         diagnosticItem?.inclusions == null
                           ? [Number(diagnosticItem?.itemId)]
@@ -2003,6 +2026,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
+      packageMrp: pricesObject?.mrpToDisplay,
       inclusions: inclusions == null ? [Number(itemId)] : inclusions,
     });
   };
@@ -2126,6 +2150,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     promoteCircle: boolean;
     promoteDiscount: boolean;
     planToConsider: any;
+    mrpToDisplay: string | number;
+    packageCalculatedMrp: string | number;
     inclusions: any;
     style?: ViewStyle;
   }
@@ -2156,9 +2182,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         circleSpecialPrice: data?.circleSpecialPrice,
         discountPrice: data?.discountPrice,
         discountSpecialPrice: data?.discountSpecialPrice,
+        mrpToDisplay: data?.mrpToDisplay,
       };
       const isAddedToCart = !!cartItems.find((item) => item?.id == data?.itemId);
-
       return (
         <View style={[localStyles.nameAndPriceViewStyle]}>
           <View
@@ -2206,18 +2232,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
            * show special price only when do not promote circle ~~~ merge below two checks
            */}
           {!data?.promoteCircle &&
-            (data?.specialPrice != data?.rate ||
-              data?.discountSpecialPrice != data?.discountPrice) && (
+            (data?.specialPrice != data?.mrpToDisplay ||
+              data?.discountSpecialPrice != data?.mrpToDisplay) && (
               <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
                 <Text style={styles.strikedPrice}>
-                  {string.common.Rs} {data?.rate}
+                  {string.common.Rs} {data?.mrpToDisplay}
                 </Text>
               </View>
             )}
           {isDiagnosticCircleSubscription && data?.promoteCircle && (
             <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
               <Text style={styles.strikedPrice}>
-                {string.common.Rs} {data?.specialPrice! || data?.rate}
+                {/* {string.common.Rs} {data?.specialPrice! || data?.rate} */}
+                {string.common.Rs} {data?.mrpToDisplay}
               </Text>
             </View>
           )}
@@ -2262,8 +2289,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
              * non-circle + promote circle
              */}
             {!isDiagnosticCircleSubscription && data?.promoteCircle && (
-              <Text style={styles.normalPrice}>
-                {string.common.Rs} {data?.specialPrice! || data?.rate}
+              <Text style={[styles.normalPrice]}>
+                {/* {string.common.Rs} {data?.specialPrice! || data?.mrpToDisplay} */}
+                {string.common.Rs} {data?.mrpToDisplay}
               </Text>
             )}
             {/**
@@ -2274,7 +2302,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {string.common.Rs}
                 {data?.promoteDiscount
                   ? data?.discountSpecialPrice
-                  : data?.specialPrice! || data?.rate}
+                  : data?.specialPrice! || data?.mrpToDisplay}
               </Text>
             )}
             {/**
@@ -2284,7 +2312,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <Text style={styles.normalPrice}>
                 {data?.promoteDiscount
                   ? data?.discountSpecialPrice
-                  : data?.specialPrice! || data?.rate}
+                  : data?.specialPrice! || data?.mrpToDisplay}
               </Text>
             )}
             {/**
@@ -2649,10 +2677,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       testDescription,
       itemType,
       diagnosticPricing,
+      packageCalculatedMrp,
       inclusions,
     } = item;
 
-    const pricesForItem = getPricesForItem(diagnosticPricing);
+    const pricesForItem = getPricesForItem(diagnosticPricing, packageCalculatedMrp!);
     if (!pricesForItem?.itemActive) {
       return null;
     }
@@ -2668,6 +2697,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const discount = pricesForItem?.discount;
     const circleDiscount = pricesForItem?.circleDiscount;
     const specialDiscount = pricesForItem?.specialDiscount;
+
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
 
     const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
     const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
@@ -2693,6 +2724,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             testDescription: testDescription,
             source: 'Partial Search',
             type: itemType,
+            packageMrp: packageCalculatedMrp,
+            mrpToDisplay: mrpToDisplay,
             inclusions: inclusions == null ? [Number(itemId)] : inclusions,
           } as TestPackageForDetails,
         });
@@ -2720,6 +2753,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       promoteCircle,
       promoteDiscount,
       planToConsider,
+      mrpToDisplay,
+      packageCalculatedMrp: packageCalculatedMrp!,
       inclusions,
     });
   };

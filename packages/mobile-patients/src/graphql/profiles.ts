@@ -1494,6 +1494,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           quantity
           price
           groupPlan
+          itemObj{
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
           pricingObj {
             mrp
             price
@@ -1566,6 +1572,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
+          itemObj{
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
           pricingObj {
             mrp
             price
@@ -1641,6 +1653,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
+        packageCalculatedMrp
         testDescription
         inclusions
         diagnosticPricing {
@@ -1672,6 +1685,7 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
+        packageCalculatedMrp
         testDescription
         inclusions
         diagnosticPricing {
@@ -1710,6 +1724,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testDescription
           collectionType
           inclusions
+          packageCalculatedMrp
           diagnosticPricing {
             mrp
             price
@@ -1741,6 +1756,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testDescription
           collectionType
           inclusions
+          packageCalculatedMrp
           diagnosticPricing {
             mrp
             price
@@ -3099,6 +3115,7 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         toAgeInDays
         testDescription
         testPreparationData
+        packageCalculatedMrp
         inclusions
         diagnosticPricing {
           mrp
