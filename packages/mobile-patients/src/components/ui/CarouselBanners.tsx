@@ -400,11 +400,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       type == hdfc_values.ONE_TOUCH ? null : fireCircleEvent(type, action);
       planPurchased.current = false;
       setCirclePlanSelected && setCirclePlanSelected(null);
-      if (type == hdfc_values.ONE_TOUCH && healthCredits === 49) {
-        setShowCircleActivation(true);
-      } else {
-        setShowCirclePlans(true);
-      }
+      setShowCirclePlans(true);
     } else if (action == hdfc_values.SPECIALITY_LISTING) {
       fireBannerCovidClickedWebengageEvent();
       if (type) {
@@ -509,7 +505,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         source={source}
         from={from}
         healthCredits={healthCredits}
-        onPurchaseViaHCCallback={(res: any) => {
+        onPurchaseWithHCCallback={(res: any) => {
           fireCirclePurchaseEvent(
             currentPatient,
             res?.data?.CreateUserSubscription?.response?.end_date

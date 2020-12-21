@@ -63,7 +63,7 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
   from?: string;
   healthCredits?: number;
-  onPurchaseViaHCCallback?: (res: any) => void;
+  onPurchaseWithHCCallback?: (res: any) => void;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
@@ -82,7 +82,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     source,
     from,
     healthCredits,
-    onPurchaseViaHCCallback,
+    onPurchaseWithHCCallback,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -111,6 +111,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const amountToPay = defaultCirclePlan
     ? defaultCirclePlan?.currentSellingPrice
     : circlePlanSelected?.currentSellingPrice;
+  const purchaseWithHC = healthCredits && healthCredits >= amountToPay;
   const planDimension = isModal ? 100 : 120;
   const defaultPlanDimension = isModal ? 130 : 120;
   const isIos = Platform.OS === 'ios';
@@ -158,12 +159,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       if (circlePlans) {
         setMembershipPlans(circlePlans);
         if ((doctorFees && doctorFees >= 400) || isModal) {
-          autoSelectDefaultPlan(circlePlans);
-          if (!circlePlanSelected) {
-            selectDefaultPlan && selectDefaultPlan(circlePlans);
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
-          } else {
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          if (!buyNow) {
+            autoSelectDefaultPlan(circlePlans);
+            if (!circlePlanSelected) {
+              selectDefaultPlan && selectDefaultPlan(circlePlans);
+              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
+            } else {
+              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+            }
           }
         } else {
           if (isConsultJourney || isDiagnosticJourney || !circleMembershipCharges) {
@@ -601,7 +604,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       });
       setLoading && setLoading(false);
       if (res?.data?.CreateUserSubscription?.success) {
-        onPurchaseViaHCCallback!(res);
+        onPurchaseWithHCCallback!(res);
       } else {
         Alert.alert('Apollo', `${res?.data?.CreateUserSubscription?.message}`);
       }
@@ -617,10 +620,20 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         disabled={!defaultCirclePlan && !circlePlanSelected}
         title={
           buyNow && from !== string.banner_context.PHARMACY_HOME
-            ? string.circleDoctors.upgrade
+            ? purchaseWithHC
+              ? string.circleDoctors.upgradeWithHC.replace(
+                  '{hc}',
+                  circlePlanSelected?.currentSellingPrice
+                )
+              : string.circleDoctors.upgrade
             : string.circleDoctors.addToCart
         }
-        style={styles.buyNowBtn}
+        style={[
+          styles.buyNowBtn,
+          {
+            width: purchaseWithHC ? 270 : 212,
+          },
+        ]}
         onPress={() => {
           fireCircleBuyNowEvent();
           isConsultJourney && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_ADDS_CART);
@@ -629,7 +642,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
           if (buyNow && from !== string.banner_context.PHARMACY_HOME) {
-            if (healthCredits && healthCredits >= amountToPay) {
+            if (purchaseWithHC) {
               onPurchasePlanThroughHC();
             } else {
               props.navigation.navigate(AppRoutes.CircleSubscription, {
