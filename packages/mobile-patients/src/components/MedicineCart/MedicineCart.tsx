@@ -925,9 +925,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {!!coupon &&
-          (isCircleSubscription || !!circleSubscriptionId) &&
-          renderApplyCircleBenefits()}
+        {(isCircleSubscription || !!circleSubscriptionId) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
@@ -1127,6 +1125,35 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return <UnServiceable style={{ marginTop: 24 }} />;
   };
 
+  const renderViewCirclePlans = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={[styles.applyBenefits, { marginBottom: 10 }]}
+        onPress={() => {
+          setCoupon && setCoupon(null);
+        }}
+      >
+        <View>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={styles.circleApplyContainer} />
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={styles.applyText}>View </Text>
+              <CareCashbackBanner
+                bannerText={`Plans`}
+                textStyle={styles.circleText}
+                logoStyle={styles.circleLogo}
+              />
+            </View>
+          </View>
+          <Text style={styles.useCircleText}>
+            Viewing plans will remove any applied coupon. You can opt for coupon again later.`
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderScreen = () => {
     return (
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1140,6 +1167,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             !circleSubscriptionId &&
             !circleMembershipCharges &&
             renderCareSubscriptionOptions()}
+          {!!coupon && !isCircleSubscription && !circleSubscriptionId && renderViewCirclePlans()}
           {!circleMembershipCharges && renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}

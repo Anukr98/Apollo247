@@ -46,6 +46,7 @@ import {
   PaymentStatus,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import moment from 'moment';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -200,7 +201,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
     if (isConsultJourney) {
-      !isModal && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_ADDS_CART);
+      !isModal &&
+        circleWebEngageEventForAddToCart(
+          WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
+          membershipPlan
+        );
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
       setIsCircleSubscription && setIsCircleSubscription(true);
@@ -554,6 +559,18 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const circleWebEngageEvent = (eventName: any) => {
+    let eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
+  const circleWebEngageEventForAddToCart = (eventName: any, membershipPlan: any) => {
     const eventAttributes = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -561,6 +578,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      'Membership Type': String(membershipPlan?.valid_duration) + ' days',
+      'Membership End Date': moment(new Date())
+        .add(membershipPlan?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': membershipPlan?.currentSellingPrice,
     };
     postWebEngageEvent(eventName, eventAttributes);
   };
@@ -636,7 +658,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ]}
         onPress={() => {
           fireCircleBuyNowEvent();
-          isConsultJourney && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_ADDS_CART);
+          isConsultJourney &&
+            circleWebEngageEventForAddToCart(
+              WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
+              circlePlanSelected
+            );
           setDefaultCirclePlan && setDefaultCirclePlan(null);
           setIsCircleSubscription && setIsCircleSubscription(true);
           autoSelectDefaultPlan(membershipPlans);

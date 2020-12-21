@@ -398,7 +398,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
     testsIncluded: number,
     pricesObject: any,
-    selectedPlan: any
+    selectedPlan: any,
+    inclusions: any
   ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
@@ -417,6 +418,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
+      packageMrp: pricesObject?.packageMrp,
+      inclusions: inclusions == null ? [Number(itemId)] : inclusions,
     });
   };
 
@@ -531,7 +534,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
           fetchPackageDetails(pastSeacrh.name!, (product) => {
-            const pricesForItem = getPricesForItem(product?.diagnosticPricing);
+            const packageMrp = product?.packageCalculatedMrp;
+            const pricesForItem = getPricesForItem(product?.diagnosticPricing, packageMrp!);
             if (!pricesForItem?.itemActive) {
               return null;
             }
@@ -541,6 +545,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
             const discountPrice = pricesForItem?.discountPrice!;
             const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+            const mrpToDisplay = pricesForItem?.mrpToDisplay!;
 
             props.navigation.navigate(AppRoutes.TestDetails, {
               testDetails: {
@@ -560,6 +565,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                 testDescription: product?.testPreparationData,
                 source: 'Full Search',
                 type: product?.itemType,
+                packageMrp: product?.packageCalculatedMrp!,
+                mrpToDisplay: mrpToDisplay,
+                inclusions:
+                  product?.inclusions == null ? [Number(product?.inclusions)] : product?.inclusions,
               } as TestPackageForDetails,
             });
           });
@@ -607,8 +616,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
     const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
 
-    const productWithDiagnosticPricing = product.diagnosticPricing;
-    const pricesForItem = getPricesForItem(productWithDiagnosticPricing);
+    const productWithDiagnosticPricing = product?.diagnosticPricing;
+    const packageMrpForItem = product?.packageCalculatedMrp!;
+    const pricesForItem = getPricesForItem(productWithDiagnosticPricing, packageMrpForItem);
     // if all the groupPlans are inactive, then only don't show
     if (!pricesForItem?.itemActive) {
       return null;
@@ -625,11 +635,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
     const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
     const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
 
     const sellingPrice = !promoteCircle
-      ? promoteDiscount && discountSpecialPrice != discountPrice
+      ? promoteDiscount && discountSpecialPrice != packageMrpForItem
         ? discountSpecialPrice
-        : specialPrice != price
+        : specialPrice != packageMrpForItem
         ? specialPrice
         : undefined
       : undefined;
@@ -641,6 +652,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       circleSpecialPrice: circleSpecialPrice,
       discountPrice: discountPrice,
       discountSpecialPrice: discountSpecialPrice,
+      packageMrp: packageMrpForItem,
+      mrpToDisplay: mrpToDisplay,
     };
 
     return (
@@ -668,12 +681,17 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               testDescription: product?.testPreparationData,
               source: 'Full Search',
               type: product?.itemType,
+              packageMrp: packageMrpForItem,
+              mrpToDisplay: mrpToDisplay,
+              inclusions:
+                product?.inclusions == null ? [Number(product?.inclusions)] : product?.inclusions,
             } as TestPackageForDetails,
           });
         }}
         medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
-        price={price}
+        // price={price}
+        price={Number(mrpToDisplay!)}
         specialPrice={sellingPrice}
         // specialPrice={!promoteCircle && price != specialPrice ? specialPrice : undefined}
         circlePrice={promoteCircle ? circleSpecialPrice : undefined}
@@ -682,7 +700,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Add item to cart');
           fetchPackageInclusion(`${product.itemId}`, (tests) => {
-            onAddCartItem(product, tests?.length, pricesObject, planToConsider);
+            onAddCartItem(
+              product,
+              tests?.length,
+              pricesObject,
+              planToConsider,
+              product?.inclusions
+            );
           });
         }}
         onPressRemove={() => {
