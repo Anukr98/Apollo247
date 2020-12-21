@@ -395,7 +395,7 @@ export const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 4,
-    title: 'TESTS',
+    title: 'LAB TESTS',
     image: <TestsIcon />,
   },
   {
@@ -846,7 +846,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 3,
-      title: 'Order Tests',
+      title: 'Book Lab Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
