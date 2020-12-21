@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { PhrNoDataIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
@@ -24,15 +24,20 @@ const style = StyleSheet.create({
   noDataIconStyle: { width: 140, height: 140, borderRadius: 70, resizeMode: 'contain' },
 });
 
-interface PhrNoDataComponentProps {}
+interface PhrNoDataComponentProps {
+  mainViewStyle?: StyleProp<ViewStyle>;
+  noDataText?: string;
+}
 
 export const PhrNoDataComponent: React.FC<PhrNoDataComponentProps> = (props) => {
   return (
     <View style={{ justifyContent: 'center' }}>
-      <View style={style.mainViewStyle}>
+      <View style={[style.mainViewStyle, props.mainViewStyle]}>
         <PhrNoDataIcon style={style.noDataIconStyle} />
       </View>
-      <Text style={style.noDataTextStyle}>{'No data available !!!'}</Text>
+      <Text style={style.noDataTextStyle}>
+        {props.noDataText ? props.noDataText : 'No data available !!!'}
+      </Text>
     </View>
   );
 };

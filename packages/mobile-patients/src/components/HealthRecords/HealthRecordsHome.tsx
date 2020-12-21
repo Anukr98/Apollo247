@@ -67,8 +67,10 @@ import {
   TextInput,
   Platform,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import stripHtml from 'string-strip-html';
 import { searchPHRApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -87,6 +89,8 @@ import _ from 'lodash';
 import { ListItem, Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -353,6 +357,8 @@ const styles = StyleSheet.create({
   healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
   searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
   searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
+  loaderViewStyle: { justifyContent: 'center', flex: 1, alignItems: 'center' },
+  loaderStyle: { height: 100, backgroundColor: 'transparent', alignSelf: 'center' },
 });
 
 type BloodGroupArray = {
@@ -427,6 +433,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [height, setHeight] = useState('');
   const [searchText, setSearchText] = useState('');
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const _searchInputRef = useRef(null);
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [errorPopupText, setErrorPopupText] = useState<string>(
@@ -1434,6 +1441,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const onSearchHealthRecords = (_searchText: string) => {
     console.log('onSearchHealthRecords', _searchText);
+    setSearchLoading(true);
     searchPHRApi(_searchText, currentPatient?.uhid || '')
       .then(({ data }) => {
         setHealthRecordSearchResults([]);
@@ -1481,15 +1489,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           console.log(finalData);
           setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
         }
       })
       .catch((error) => {
         console.log('searchPHRApi Error', error);
+        setSearchLoading(false);
       });
   };
 
   const onCancelTextClick = () => {
     if (_searchInputRef.current) {
+      setSearchText('');
       SetIsSearchFocus(false);
       _searchInputRef?.current?.clear();
       setHealthRecordSearchResults([]);
@@ -1505,9 +1516,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setHealthRecordSearchResults([]);
         return;
       }
+      setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 300);
       search(value);
     }
+  };
+
+  const renderSearchLoader = () => {
+    return (
+      <View style={styles.loaderViewStyle}>
+        <Spinner style={styles.loaderStyle} />
+      </View>
+    );
   };
 
   const renderSearchBar = () => {
@@ -1528,7 +1548,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             ref={_searchInputRef}
             onFocus={() => SetIsSearchFocus(true)}
             value={searchText}
-            keyboardType={'numbers-and-punctuation'}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(value) => onSearchTextChange(value)}
@@ -1656,12 +1675,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const renderHealthRecordSearchResults = () => {
-    return (
+    return searchLoading ? (
+      renderSearchLoader()
+    ) : (
       <FlatList
         keyExtractor={(_, index) => `${index}`}
         style={{ paddingHorizontal: 9 }}
         bounces={false}
         data={healthRecordSearchResults}
+        ListEmptyComponent={
+          <PhrNoDataComponent
+            mainViewStyle={{ marginTop: width / 3.2 }}
+            noDataText={'No result found.'}
+          />
+        }
         ListHeaderComponent={searchListHeaderView}
         renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
       />
@@ -1674,7 +1701,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         {renderUpdateProfileDetailsPopup()}
         {renderHeader()}
         {renderSearchBar()}
-        {searchText?.length > 3 && healthRecordSearchResults?.length > 0 ? (
+        {searchText?.length > 3 ? (
           renderHealthRecordSearchResults()
         ) : (
           <ScrollView style={{ flex: 1 }} bounces={false}>
