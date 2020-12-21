@@ -2472,10 +2472,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
 
     console.log('unique id' + validateCouponUniqueId);
-    const allItems = cartItems.find(
+    const allItems = cartItems?.find(
       (item) =>
-        item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
-        item.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
     );
     //consider the  package prices to show the savings (~cartTotal)
     const totalPriceWithoutAnyDiscount = cartItems?.reduce(
