@@ -44,6 +44,7 @@ import {
   postWebEngageEvent,
   phrSortByDate,
   isValidSearch,
+  HEALTH_CONDITIONS_TITLE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -1447,7 +1448,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setHealthRecordSearchResults([]);
         if (data?.response) {
           const recordData = data.response;
-          console.log('data?.response', data?.response);
+          console.log('data?.response', data?.response, JSON.stringify(data?.response));
           const finalData: any[] = [];
           recordData.forEach((recordData: any) => {
             const { healthrecordType } = recordData;
@@ -1542,6 +1543,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <PhrSearchIcon style={{ width: 20, height: 20 }} />
           <TextInput
             placeholder={'Search'}
+            autoCapitalize={'none'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
             numberOfLines={1}
@@ -1655,11 +1657,125 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         healthRecordTitle={item?.value?.title}
         healthRecordMoreText={stripHtml(item?.value?.highlight)?.replaceAll('"', '')}
         searchHealthCardTopView={healthCardTopView()}
-        item={item?.value}
+        item={item}
         index={index}
-        onSearchHealthCardPress={(item) => {}}
+        onSearchHealthCardPress={(item) => onClickSearchHealthCard(item)}
       />
     );
+  };
+
+  const onClickSearchHealthCard = (item: any) => {
+    console.log(
+      'onClickSearchHealthCard',
+      item,
+      JSON.stringify(item?.value),
+      JSON.stringify(JSON.parse(item?.value?.healthRecord))
+    );
+    const { date, healthrecordId } = item?.value;
+    switch (item?.healthkey) {
+      case MedicalRecordType.PRESCRIPTION:
+        const prescription_item = item?.value?.healthRecord
+          ? JSON.parse(item?.value?.healthRecord)
+          : {};
+        const final_item = {
+          ...prescription_item,
+          fileUrl:
+            prescription_item?.prescriptionFiles?.length > 0
+              ? `https://ora.phrdemo.com/data/prescriptions/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+              : '',
+          date,
+          id: healthrecordId,
+        };
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: final_item,
+          prescriptions: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.TEST_REPORT:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: item?.value,
+          labResults: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.HOSPITALIZATION:
+        const _hospitalization = item?.value?.healthRecord
+          ? JSON.parse(item?.value?.healthRecord)
+          : {};
+        const _hospitalization_item = {
+          ..._hospitalization,
+          fileUrl:
+            _hospitalization?.hospitalizationFiles?.length > 0
+              ? `https://ora.phrdemo.com/data/hospitalizations/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+              : '',
+          date,
+          id: healthrecordId,
+        };
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: _hospitalization_item,
+          hospitalization: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALBILL:
+        const _bill = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
+        const _bill_item = {
+          ..._bill,
+          fileUrl:
+            _bill?.hospitalizationFiles?.length > 0
+              ? `https://ora.phrdemo.com/data/bills/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+              : '',
+          date,
+          id: healthrecordId,
+        };
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: _bill_item,
+          medicalBill: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALINSURANCE:
+        const _insurance = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
+        const _insurance_item = {
+          ..._insurance,
+          fileUrl:
+            _insurance?.insuranceFiles?.length > 0
+              ? `https://ora.phrdemo.com/data/insurances/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+              : '',
+          date,
+          id: healthrecordId,
+        };
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: _insurance_item,
+          medicalInsurance: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.ALLERGY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: item,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.ALLERGY,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICATION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: item,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICATION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: item,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALCONDITION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: item,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION,
+          onPressBack: onBackArrowPressed,
+        });
+    }
   };
 
   const searchListHeaderView = () => {

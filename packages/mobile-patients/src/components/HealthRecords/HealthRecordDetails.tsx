@@ -182,6 +182,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const healthHeaderTitle = props.navigation.state.params
     ? props.navigation.state.params.healthHeaderTitle
     : '';
+  console.log('HealthRecordDetails', data, JSON.stringify(data));
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const client = useApolloClient();
@@ -215,7 +216,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    props.navigation.goBack();
+    onGoBack();
     return true;
   };
 
@@ -852,6 +853,11 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     );
   };
 
+  const onGoBack = () => {
+    props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
+    props.navigation.goBack();
+  };
+
   if (data) {
     const headerTitle = healthCheck
       ? 'HEALTH SUMMARY'
@@ -882,7 +888,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             leftIcon="backArrow"
             rightComponent={renderProfileImage()}
             container={{ borderBottomWidth: 0 }}
-            onPressLeftIcon={() => props.navigation.goBack()}
+            onPressLeftIcon={onGoBack}
           />
           <ScrollView bounces={false}>
             {renderTestTopDetailsView()}
