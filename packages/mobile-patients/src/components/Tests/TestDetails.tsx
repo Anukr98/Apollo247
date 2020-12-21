@@ -634,6 +634,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               ...theme.viewStyles.cardViewStyle,
               flexDirection: 'row',
               marginTop: -10,
+              right: 0,
+              position: 'absolute',
             }}
           >
             <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
@@ -816,7 +818,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
-              {renderItemAdded()}
+              {/* {renderItemAdded()} */}
             </View>
           )}
           {/**
@@ -828,7 +830,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {/* {string.common.Rs} {testInfo?.specialPrice! || testInfo?.Rate} */}
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
@@ -851,21 +852,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {/* {string.common.Rs} {findItemFromCart?.price || testInfo?.Rate} */}
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
-              {renderItemAdded()}
+              {/* {renderItemAdded()} */}
             </View>
           )}
 
           {/**
            * for normal cases where no special price + no circle price
            */}
-          {!promoteCircle && mrpToDisplay != specialPriceToConsider && (
+          {!promoteCircle && mrpToDisplay == specialPriceToConsider && (
             <View
               style={{
-                height: isItemAdded ? 60 : 40,
+                bottom: 50,
                 alignItems: 'flex-end',
               }}
             >
