@@ -213,6 +213,7 @@ export interface TestPackageForDetails extends TestPackage {
   circleSpecialPrice?: string | number;
   discountPrice?: string | number;
   discountSpecialPrice?: string | number;
+  inclusions?: any;
 }
 
 export interface TestDetailsProps
@@ -912,6 +913,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                             : promoteDiscount
                             ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
                             : DIAGNOSTIC_GROUP_PLAN.ALL,
+                          inclusions: testInfo?.inclusions,
                         });
                       } else {
                         setItemAdded(false);

@@ -29,6 +29,7 @@ export interface DiagnosticsCartItem {
   discountSpecialPrice?: number | null; //price
   collectionMethod: TEST_COLLECTION_TYPE;
   groupPlan?: string;
+  inclusions?: any[];
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -342,7 +343,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const addCartItem: DiagnosticsCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (cartItems.find((item) => item.id == itemToAdd.id)) {
+    if (cartItems.find((item) => item?.id == itemToAdd?.id)) {
       return;
     }
     const newCartItems = [itemToAdd, ...cartItems];

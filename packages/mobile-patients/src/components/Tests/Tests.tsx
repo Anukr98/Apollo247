@@ -1286,6 +1286,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         thumbnail: packageImage,
         collectionMethod: diagnostics?.collectionType!,
         groupPlan: planToConsider?.groupPlan,
+        inclusions:
+          diagnostics?.inclusions == null ? [Number(diagnostics?.itemId)] : diagnostics?.inclusions,
       });
     };
     const removeFromCart = () => {
@@ -1334,6 +1336,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             testDescription: diagnostics?.testDescription,
             source: 'Home Page',
             type: diagnostics!.itemType,
+            inclusions:
+              diagnostics?.inclusions == null
+                ? [Number(diagnostics?.itemId)]
+                : diagnostics?.inclusions,
           } as TestPackageForDetails,
         });
       },
@@ -1798,6 +1804,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         testDescription: product?.testDescription,
                         source: 'Home Page',
                         type: product?.itemType,
+                        inclusions:
+                          product?.inclusions == null
+                            ? [Number(product?.itemId)]
+                            : product?.inclusions,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
@@ -1836,6 +1846,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       discountSpecialPrice: discountSpecialPrice,
                       collectionMethod: product?.collectionType!,
                       groupPlan: planToConsider?.groupPlan,
+                      inclusions:
+                        diagnosticItem?.inclusions == null
+                          ? [Number(diagnosticItem?.itemId)]
+                          : diagnosticItem?.inclusions,
                     });
                   });
                 }
@@ -1965,11 +1979,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       collectionType,
       diagnosticPricing,
     }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-    testsIncluded: number,
     pricesObject: any,
     promoteCircle: boolean,
     promoteDiscount: boolean,
-    selectedPlan: any
+    selectedPlan: any,
+    inclusions: any[]
   ) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
@@ -1985,10 +1999,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
       discountSpecialPrice: pricesObject?.discountSpecialPrice,
-      mou: testsIncluded,
+      mou: inclusions == null ? 1 : inclusions?.length,
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
+      inclusions: inclusions == null ? [Number(itemId)] : inclusions,
     });
   };
 
@@ -2108,6 +2123,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     promoteCircle: boolean;
     promoteDiscount: boolean;
     planToConsider: any;
+    inclusions: any;
     style?: ViewStyle;
   }
   const renderSearchSuggestionItem = (data: SuggestionType) => {
@@ -2168,11 +2184,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     : fetchPackageInclusion(`${data.itemId}`, (tests) => {
                         onAddCartItem(
                           data,
-                          tests.length,
                           pricesObject,
                           data?.promoteCircle,
                           data?.promoteDiscount,
-                          data?.planToConsider
+                          data?.planToConsider,
+                          data?.inclusions
                         );
                       })
                 }
@@ -2630,6 +2646,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       testDescription,
       itemType,
       diagnosticPricing,
+      inclusions,
     } = item;
 
     const pricesForItem = getPricesForItem(diagnosticPricing);
@@ -2673,6 +2690,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             testDescription: testDescription,
             source: 'Partial Search',
             type: itemType,
+            inclusions: inclusions == null ? [Number(itemId)] : inclusions,
           } as TestPackageForDetails,
         });
       },
@@ -2699,6 +2717,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       promoteCircle,
       promoteDiscount,
       planToConsider,
+      inclusions,
     });
   };
 
