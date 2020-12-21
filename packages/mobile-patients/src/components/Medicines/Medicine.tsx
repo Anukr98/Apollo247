@@ -1996,7 +1996,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 persistentScrollbar={true}
                 style={{
                   paddingTop: 10.5,
-                  maxHeight: winHeight - 265,
+                  maxHeight: 266,
                   backgroundColor: '#f7f8f5',
                 }}
                 data={medicineList}
@@ -2064,13 +2064,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         } else {
           const products = g(data, section_key, 'products');
           const isCategoriesType = g(data, section_key, '0', 'title');
-          const filteredProducts = products ? products.filter(
-            (product: MedicineProduct) => 
-              product?.dc_availability != 'No' && product?.is_in_contract != 'No'
-          ) : [];
+          const filteredProducts = products
+            ? products.filter(
+                (product: MedicineProduct) =>
+                  product?.dc_availability != 'No' && product?.is_in_contract != 'No'
+              )
+            : [];
 
           return filteredProducts
-            ? renderHotSellers(section_name, filteredProducts || [], g(data, section_key, 'category_id'))
+            ? renderHotSellers(
+                section_name,
+                filteredProducts || [],
+                g(data, section_key, 'category_id')
+              )
             : isCategoriesType
             ? renderCategories(section_name, data[section_key] || [])
             : renderDealsOfTheDay(section_name, data[section_key] || []);

@@ -23,6 +23,20 @@ const styles = StyleSheet.create({
   nameAndPriceViewStyle: {
     flex: 1,
   },
+  discount: {
+    ...theme.viewStyles.text('SB', 13, '#00B38E', 0.6, 25),
+    marginLeft: 5,
+  },
+  lineThrough: {
+    textDecorationLine: 'line-through',
+  },
+  specialPrice: {
+    ...theme.viewStyles.text('M', 13, '#02475b', 0.6, 25),
+    marginLeft: 5,
+  },
+  flexRow: {
+    flexDirection: 'row',
+  },
 });
 
 export interface MedicineSearchSuggestionItemProps {
@@ -47,13 +61,28 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const isOutOfStock = data?.dc_availability === 'No' && data?.is_in_contract === 'No';
   const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = Number(data.special_price) || undefined;
+  const { dose_form_variant, pack_form, pack_size } = data;
+
+  function getDiscountPercent() {
+    return (((data.price - specialPrice) / data.price) * 100).toFixed(1);
+  }
 
   const renderNamePriceAndInStockStatus = () => {
     return (
       <View style={styles.nameAndPriceViewStyle}>
-        <Text numberOfLines={2} style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '90%' }}>
+        <Text
+          numberOfLines={2}
+          style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '90%' }}
+        >
           {data.name}
         </Text>
+        {!!dose_form_variant && !!pack_form && !!pack_size && (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={theme.viewStyles.text('R', 13, '#02475B', 0.7, 20)}>
+              {`${pack_form} of ${pack_size} ${dose_form_variant}`}
+            </Text>
+          </View>
+        )}
         {isOutOfStock ? (
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={{ ...theme.viewStyles.text('SB', 13, '#890000', 1, 20) }}>
@@ -65,22 +94,20 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ flexDirection: 'row' }}>
               {!specialPrice && (
-                <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 25)}>{'MRP '}</Text>
+                <Text style={theme.viewStyles.text('M', 13, '#01475B', 1, 25)}>{'MRP '}</Text>
               )}
-              <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 25)}>
-                {string.common.Rs} {specialPrice || data.price}
+              <Text style={theme.viewStyles.text('SB', 13, '#01475B', 1, 25)}>
+                {string.common.Rs}
+                {specialPrice || data.price}
               </Text>
               {specialPrice ? (
-                <Text
-                  style={[{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20), marginLeft: 8 }]}
-                >
-                  <Text style={theme.viewStyles.text('M', 12, '#02475b')}>{' MRP '}</Text>
-                  {'('}
-                  <Text
-                    style={{ textDecorationLine: 'line-through' }}
-                  >{`${string.common.Rs} ${data.price}`}</Text>
-                  {')'}
-                </Text>
+                <View style={styles.flexRow}>
+                  <Text style={styles.specialPrice}>
+                    <Text style={styles.lineThrough}>{' MRP '}</Text>
+                    <Text style={styles.lineThrough}>{`${string.common.Rs} ${data.price}`}</Text>
+                  </Text>
+                  <Text style={styles.discount}>{`${getDiscountPercent()}%off`}</Text>
+                </View>
               ) : null}
             </View>
             <View style={{ alignItems: 'flex-end' }}>

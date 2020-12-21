@@ -25,6 +25,9 @@ export interface MedicineProduct {
   is_express?: 'Yes' | 'No';
   dc_availability?: 'Yes' | 'No';
   is_in_contract?: 'Yes' | 'No';
+  dose_form_variant?: string | null;
+  pack_form?: string | null;
+  pack_size?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
