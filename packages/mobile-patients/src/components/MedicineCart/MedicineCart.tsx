@@ -348,6 +348,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
+        setloading(false);
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
         setloading(false);
