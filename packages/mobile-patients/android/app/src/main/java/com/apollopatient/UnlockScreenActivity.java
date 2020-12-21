@@ -85,7 +85,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 ringtone.play();
                 try {
                     NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    Boolean isDndOn = manager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE;
+                    Boolean isDndOn = Settings.Global.getInt(getContentResolver(), "zen_mode") != 0;
                     Boolean isVibrationOn = isDndOn ? false
                             : (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
                             (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1));

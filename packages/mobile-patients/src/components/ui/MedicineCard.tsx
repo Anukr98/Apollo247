@@ -514,7 +514,10 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
           {!props.isCareSubscribed && (
             <Text
-              style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04), marginTop: 4 }}
+              style={{
+                ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
+                marginTop: 4,
+              }}
             >
               {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
             </Text>

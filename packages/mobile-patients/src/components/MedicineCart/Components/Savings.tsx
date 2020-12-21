@@ -19,15 +19,14 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     couponProducts,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
+  const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
   const [showCareDetails, setShowCareDetails] = useState(true);
-  // const careTotal = !!coupon
-  //   ? Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount)
-  //   : isCircleSubscription || circleMembershipCharges
-  //   ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
-  //   : Number(productDiscount);
+  const [showCareSavings, setShowCareSavings] = useState(true);
 
   const careTotal = !!coupon
-    ? Number(cartTotal < 200 ? 0 : deliveryFee) + Number(productDiscount) + Number(couponDiscount)
+    ? Number(cartTotal <= minValueForFreeDelivery ? 0 : deliveryFee) +
+      Number(productDiscount) +
+      Number(couponDiscount)
     : isCircleSubscription || circleMembershipCharges
     ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
     : Number(productDiscount);
@@ -41,7 +40,11 @@ export const Savings: React.FC<SavingsProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          setShowCareDetails(!showCareDetails);
+          if (!!coupon && !isCircleSubscription) {
+            setShowCareSavings(!showCareSavings);
+          } else {
+            setShowCareDetails(!showCareDetails);
+          }
         }}
       >
         <View style={styles.rowSpaceBetween}>
@@ -51,7 +54,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
           <Down
             style={{
               height: 15,
-              transform: [{ rotate: showCareDetails ? '180deg' : '0deg' }],
+              transform: [{ rotate: showCareDetails && showCareSavings ? '180deg' : '0deg' }],
             }}
           />
         </View>
@@ -121,6 +124,29 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     );
   }
 
+  const renderCurrentSavings = () => {
+    return (
+      <View style={styles.careSavingsContainer}>
+        {!!couponDiscount && (
+          <View style={[styles.rowSpaceBetween]}>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Coupon savings</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              ₹{couponDiscount.toFixed(2)}
+            </Text>
+          </View>
+        )}
+        {!!productDiscount && (
+          <View style={[styles.rowSpaceBetween, { marginTop: 5 }]}>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Product Discount</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              ₹{productDiscount.toFixed(2)}
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return getSavings() && getSavings() != 0 ? (
     <>
       <View style={styles.savingsCard}>
@@ -129,6 +155,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
           !coupon &&
           showCareDetails &&
           careSavings()}
+        {!!coupon && !isCircleSubscription && showCareSavings && renderCurrentSavings()}
       </View>
       {(!(isCircleSubscription || !!circleMembershipCharges) || (!!coupon && showCareDetails)) &&
         careSubscribeMessage()}

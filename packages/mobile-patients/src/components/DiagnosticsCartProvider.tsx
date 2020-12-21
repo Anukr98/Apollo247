@@ -30,6 +30,7 @@ export interface DiagnosticsCartItem {
   collectionMethod: TEST_COLLECTION_TYPE;
   groupPlan?: string;
   packageMrp?: number;
+  inclusions?: any[];
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -343,7 +344,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const addCartItem: DiagnosticsCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (cartItems.find((item) => item.id == itemToAdd.id)) {
+    if (cartItems.find((item) => item?.id == itemToAdd?.id)) {
       return;
     }
     const newCartItems = [itemToAdd, ...cartItems];

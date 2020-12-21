@@ -2079,7 +2079,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const renderReOrderButton = () => {
     const isCancelled =
       orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED;
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
     return (
       !!isCancelled && (
         <View>

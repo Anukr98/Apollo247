@@ -1277,7 +1277,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       postDiagnosticAddToCartEvent(
         diagnostics?.itemName!,
         `${diagnostics!.itemId}`,
-        mrpToDisplay,
+        Number(mrpToDisplay!),
         discountToDisplay,
         'Home page',
         'Featured tests'
@@ -1296,6 +1296,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         collectionMethod: diagnostics?.collectionType!,
         groupPlan: planToConsider?.groupPlan,
         packageMrp: packageMrpForItem,
+        inclusions:
+          diagnostics?.inclusions == null ? [Number(diagnostics?.itemId)] : diagnostics?.inclusions,
       });
     };
     const removeFromCart = () => {
@@ -1320,7 +1322,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       specialDiscount: specialDiscount,
       promoteCircle: promoteCircle,
       promoteDiscount: promoteDiscount,
-      mrpToDisplay: mrpToDisplay,
+      mrpToDisplay: Number(mrpToDisplay!),
       onAddOrRemoveCartItem: foundTestInCart ? removeFromCart : addToCart,
       onPress: () => {
         if (!isDiagnosticLocationServiceable) {
@@ -1347,6 +1349,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             mrpToDisplay: mrpToDisplay,
             source: 'Home Page',
             type: diagnostics!.itemType,
+            inclusions:
+              diagnostics?.inclusions == null
+                ? [Number(diagnostics?.itemId)]
+                : diagnostics?.inclusions,
           } as TestPackageForDetails,
         });
       },
@@ -1787,7 +1793,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 promoteCircle,
                 promoteDiscount,
                 numberOfInclusions,
-                mrpToDisplay,
+                Number(mrpToDisplay!),
                 item.organImage!,
                 {
                   marginHorizontal: 4,
@@ -1820,6 +1826,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         type: product?.itemType,
                         packageMrp: packageMrpForItem,
                         mrpToDisplay: mrpToDisplay,
+                        inclusions:
+                          product?.inclusions == null
+                            ? [Number(product?.itemId)]
+                            : product?.inclusions,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
@@ -1839,7 +1849,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       : postDiagnosticAddToCartEvent(
                           item?.organName!,
                           item?.id!,
-                          mrpToDisplay,
+                          Number(mrpToDisplay!),
                           discountToDisplay,
                           'Home page',
                           'Browse packages'
@@ -1859,6 +1869,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       collectionMethod: product?.collectionType!,
                       groupPlan: planToConsider?.groupPlan,
                       packageMrp: packageMrpForItem,
+                      inclusions:
+                        diagnosticItem?.inclusions == null
+                          ? [Number(diagnosticItem?.itemId)]
+                          : diagnosticItem?.inclusions,
                     });
                   });
                 }
@@ -1988,11 +2002,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       collectionType,
       diagnosticPricing,
     }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-    testsIncluded: number,
     pricesObject: any,
     promoteCircle: boolean,
     promoteDiscount: boolean,
-    selectedPlan: any
+    selectedPlan: any,
+    inclusions: any[]
   ) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
@@ -2008,11 +2022,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
       discountSpecialPrice: pricesObject?.discountSpecialPrice,
-      mou: testsIncluded,
+      mou: inclusions == null ? 1 : inclusions?.length,
       thumbnail: '',
       collectionMethod: collectionType!,
       groupPlan: selectedPlan?.groupPlan,
       packageMrp: pricesObject?.mrpToDisplay,
+      inclusions: inclusions == null ? [Number(itemId)] : inclusions,
     });
   };
 
@@ -2134,6 +2149,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     planToConsider: any;
     mrpToDisplay: string | number;
     packageCalculatedMrp: string | number;
+    inclusions: any;
     style?: ViewStyle;
   }
   const renderSearchSuggestionItem = (data: SuggestionType) => {
@@ -2194,11 +2210,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     : fetchPackageInclusion(`${data.itemId}`, (tests) => {
                         onAddCartItem(
                           data,
-                          tests.length,
                           pricesObject,
                           data?.promoteCircle,
                           data?.promoteDiscount,
-                          data?.planToConsider
+                          data?.planToConsider,
+                          data?.inclusions
                         );
                       })
                 }
@@ -2659,6 +2675,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       itemType,
       diagnosticPricing,
       packageCalculatedMrp,
+      inclusions,
     } = item;
 
     const pricesForItem = getPricesForItem(diagnosticPricing, packageCalculatedMrp!);
@@ -2706,6 +2723,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             type: itemType,
             packageMrp: packageCalculatedMrp,
             mrpToDisplay: mrpToDisplay,
+            inclusions: inclusions == null ? [Number(itemId)] : inclusions,
           } as TestPackageForDetails,
         });
       },
@@ -2734,6 +2752,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       planToConsider,
       mrpToDisplay,
       packageCalculatedMrp: packageCalculatedMrp!,
+      inclusions,
     });
   };
 

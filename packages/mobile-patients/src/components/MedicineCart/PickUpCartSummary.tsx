@@ -12,7 +12,6 @@ import {
   PhysicalPrescription,
   useShoppingCart,
   ShoppingCartItem,
-  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SelectedAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/SelectedAddress';
@@ -27,7 +26,6 @@ import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDoc
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -39,9 +37,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     ePrescriptions,
     stores: storesFromContext,
     setPhysicalPrescriptions,
-    circleSubscriptionId,
-    circleMembershipCharges,
-    circlePlanSelected,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -50,19 +46,6 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const shoppingCart = useShoppingCart();
-  const { circlePaymentReference } = useAppCommonData();
-  const pharmacyCircleAttributes: PharmacyCircleEvent = {
-    'Circle Membership Added': circleSubscriptionId
-      ? 'Existing'
-      : !!circleMembershipCharges
-      ? 'Yes'
-      : 'No',
-    'Circle Membership Value': circleSubscriptionId
-      ? circlePaymentReference?.amount_paid
-      : !!circleMembershipCharges
-      ? circlePlanSelected?.currentSellingPrice
-      : null,
-  };
 
   useEffect(() => {
     onFinishUpload();

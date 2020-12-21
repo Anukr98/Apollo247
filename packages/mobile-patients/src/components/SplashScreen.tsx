@@ -1017,6 +1017,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Doctors_Page_Size: {
       PROD: 'Doctors_Page_Size',
     },
+    Need_Help: {
+      PROD: 'Need_Help',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1085,6 +1088,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'top6_specailties',
         'TOP_SPECIALITIES',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Need_Help',
+        'NEED_HELP',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.NEED_HELP
       );
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>

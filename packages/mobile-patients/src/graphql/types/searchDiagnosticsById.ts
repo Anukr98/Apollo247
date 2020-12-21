@@ -25,6 +25,7 @@ export interface searchDiagnosticsById_searchDiagnosticsById_diagnostics {
   toAgeInDays: number;
   testDescription: string | null;
   testPreparationData: string;
+  inclusions: (number | null)[] | null;
 }
 
 export interface searchDiagnosticsById_searchDiagnosticsById {

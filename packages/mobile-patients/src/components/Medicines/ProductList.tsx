@@ -55,7 +55,13 @@ export const ProductList: React.FC<Props> = ({
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
-  const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const {
+    getCartItemQty,
+    addCartItem,
+    updateCartItem,
+    removeCartItem,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string) => {
@@ -88,7 +94,9 @@ export const ProductList: React.FC<Props> = ({
         categoryId: productPageViewedEventProps?.CategoryID,
         categoryName: productPageViewedEventProps?.CategoryName,
         section: productPageViewedEventProps?.SectionName,
-      }
+      },
+      () => {},
+      pharmacyCircleAttributes!
     );
   };
 

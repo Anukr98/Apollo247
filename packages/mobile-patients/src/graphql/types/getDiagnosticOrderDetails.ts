@@ -48,6 +48,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   fromAgeInDays: number;
   collectionType: TEST_COLLECTION_TYPE | null;
   testDescription: string | null;
+  inclusions: (number | null)[] | null;
   diagnosticPricing: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
 

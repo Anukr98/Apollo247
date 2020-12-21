@@ -220,6 +220,7 @@ export interface TestPackageForDetails extends TestPackage {
   discountSpecialPrice?: string | number;
   packageMrp?: string | number;
   mrpToDisplay?: string | number;
+  inclusions?: any;
 }
 
 export interface TestDetailsProps
@@ -251,6 +252,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setHdfcPlanName,
     setIsFreeDelivery,
     setCirclePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -362,6 +364,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       ItemCode: testInfo.ItemID,
       ItemPrice: testInfo.Rate,
       LOB: 'Diagnostics',
+      ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
@@ -974,6 +977,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                             ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
                             : DIAGNOSTIC_GROUP_PLAN.ALL,
                           packageMrp: Number(testInfo?.packageMrp!),
+                          inclusions: testInfo?.inclusions,
                         });
                       } else {
                         setItemAdded(false);
