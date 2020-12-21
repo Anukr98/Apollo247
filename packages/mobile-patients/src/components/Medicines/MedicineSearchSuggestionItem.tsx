@@ -8,7 +8,10 @@ import { MedicineProduct } from '../../helpers/apiCalls';
 import { QuantityButton } from '../ui/QuantityButton';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  productsThumbnailUrl,
+  isProductInStock,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -58,7 +61,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const { data } = props;
   const prescriptionRequired = data.is_prescription_required == '1';
   const imageUri = productsThumbnailUrl(data.thumbnail);
-  const isOutOfStock = data?.dc_availability === 'No' && data?.is_in_contract === 'No';
+  const isOutOfStock = !isProductInStock(data);
   const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = Number(data.special_price) || undefined;
   const { dose_form_variant, pack_form, pack_size } = data;

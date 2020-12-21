@@ -72,6 +72,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   getDiscountPercentage,
+  isProductInStock,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -1680,13 +1681,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           leftTextStyle={categoryId ? { width: '75%' } : {}}
           onPressRightText={
             categoryId
-              ? () =>
+              ? () => {
+                  const filteredProducts = products
+                    ? products.filter((product: MedicineProduct) => isProductInStock(product))
+                    : [];
                   props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: categoryId == -1 ? undefined : categoryId,
-                    products: categoryId == -1 ? products : null,
+                    products: categoryId == -1 ? filteredProducts : null,
                     title: title || 'Products',
                     movedFrom: 'home',
-                  })
+                  });
+                }
               : undefined
           }
           style={categoryId ? { paddingBottom: 1 } : {}}
@@ -2065,10 +2070,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const products = g(data, section_key, 'products');
           const isCategoriesType = g(data, section_key, '0', 'title');
           const filteredProducts = products
-            ? products.filter(
-                (product: MedicineProduct) =>
-                  product?.dc_availability != 'No' && product?.is_in_contract != 'No'
-              )
+            ? products.filter((product: MedicineProduct) => isProductInStock(product))
             : [];
 
           return filteredProducts
