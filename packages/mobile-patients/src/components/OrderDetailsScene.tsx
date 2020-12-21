@@ -111,6 +111,7 @@ import {
   GetPatientFeedback,
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
+import { MedOrder } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
@@ -218,6 +219,7 @@ export interface OrderDetailsSceneProps
     /** One of @orderAutoId or @billNumber is mandatory */
     orderAutoId?: string;
     billNumber?: string;
+    isCancelOrder?: boolean;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
     refetchOrders?: () => void;
@@ -227,6 +229,7 @@ export interface OrderDetailsSceneProps
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const billNumber = props.navigation.getParam('billNumber');
+  const isCancelOrder = props.navigation.getParam('isCancelOrder');
   const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
@@ -327,6 +330,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     : g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails', 'billNumber');
 
   const [showRateDeliveryBtn, setShowRateDeliveryBtn] = useState(false);
+
+  useEffect(() => {
+    if (isCancelOrder && !loading) {
+      showCancelOrder();
+    }
+  }, [loading]);
 
   useEffect(() => {
     updateRateDeliveryBtnVisibility();
@@ -2012,22 +2021,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   const renderMoreMenu = () => {
-    const hideMenuIcon = !!orderStatusList.find(
-      (item) =>
-        item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
-    );
-    const isBeforeOrderPlacedStatus = !orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED
-    );
-    const cannotCancelOrder = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
-      // || item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY
-    );
-    if (hideMenuIcon || !orderStatusList.length || isBeforeOrderPlacedStatus) {
+    if (isOrderCancelAllowed(orderStatusList)) {
       return <View style={{ width: 24 }} />;
     }
     return (
@@ -2045,35 +2039,42 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
-            if (cannotCancelOrder) {
-              showAphAlert!({
-                title: string.common.uhOh,
-                description: string.OrderSummery.orderCancellationAfterBillingAlert,
-                ctaContainerStyle: { justifyContent: 'flex-end' },
-                CTAs: [
-                  {
-                    text: 'CLICK HERE',
-                    type: 'orange-link',
-                    onPress: () => {
-                      Linking.openURL(
-                        AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-                      ).catch((err) =>
-                        CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
-                      );
-                      hideAphAlert!();
-                    },
-                  },
-                ],
-              });
-            } else {
-              getCancellationReasons();
-            }
+            showCancelOrder();
           }
         }}
       >
         <More />
       </MaterialMenu>
     );
+  };
+
+  const showCancelOrder = () => {
+    const isOrderBilled = orderStatusList?.find(
+      (item) => item?.orderStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED
+    );
+    if (isOrderBilled) {
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: string.OrderSummery.orderCancellationAfterBillingAlert,
+        ctaContainerStyle: { justifyContent: 'flex-end' },
+        CTAs: [
+          {
+            text: 'CLICK HERE',
+            type: 'orange-link',
+            onPress: () => {
+              Linking.openURL(
+                AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+              ).catch((err) =>
+                CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
+              );
+              hideAphAlert!();
+            },
+          },
+        ],
+      });
+    } else {
+      getCancellationReasons();
+    }
   };
 
   const renderReOrderButton = () => {
@@ -2210,4 +2211,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       {showPrescriptionPopup && renderUploadPrescriptionPopUp()}
     </View>
   );
+};
+
+export const isOrderCancelAllowed = (orderStatusList: MedOrder['medicineOrdersStatus']) => {
+  const cancelNotApplicable = [
+    MEDICINE_ORDER_STATUS.DELIVERED,
+    MEDICINE_ORDER_STATUS.CANCELLED,
+    MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
+    MEDICINE_ORDER_STATUS.ORDER_FAILED,
+    MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+  ];
+  const isCancelNotApplicable = !!orderStatusList?.find((item) =>
+    cancelNotApplicable.includes(item?.orderStatus!)
+  );
+  const isBeforePlacedStatus = !orderStatusList?.find(
+    (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED
+  );
+  return !orderStatusList?.length || isCancelNotApplicable || !isBeforePlacedStatus;
 };
