@@ -879,8 +879,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
 `;
 
 export const GET_PLATINUM_DOCTOR = gql`
-  query getPlatinumDoctor($specialtyId: ID) {
-    getPlatinumDoctor(specialtyId: $specialtyId) {
+  query getPlatinumDoctor($specialtyId: ID, $zoneType: ZoneType, $zone: String) {
+    getPlatinumDoctor(specialtyId: $specialtyId, zoneType: $zoneType, zone: $zone) {
       doctors {
         id
         displayName
@@ -1494,7 +1494,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           quantity
           price
           groupPlan
-          itemObj{
+          itemObj {
             itemType
             testPreparationData
             packageCalculatedMrp
@@ -1572,7 +1572,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
-          itemObj{
+          itemObj {
             itemType
             testPreparationData
             packageCalculatedMrp
