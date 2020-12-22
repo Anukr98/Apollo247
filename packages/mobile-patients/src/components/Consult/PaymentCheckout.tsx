@@ -138,9 +138,17 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
   } = circleDoctorDetails;
+  let _isCircleDoctor = isCircleDoctor;
+  if (selectedTab === 'Consult Online') {
+    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
+  } else if (selectedTab === 'Visit Clinic') {
+    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
+  } else {
+    _isCircleDoctor = isCircleDoctor;
+  }
   const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
-    isCircleDoctor && !circleSubscriptionId
+    _isCircleDoctor && !circleSubscriptionId
   );
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
@@ -148,7 +156,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
-    circlePlanSelected && isCircleDoctor
+    circlePlanSelected && _isCircleDoctor
       ? isOnlineConsult
         ? onlineConsultSlashedPrice -
           couponDiscountFees +
@@ -158,13 +166,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
   const notSubscriberUserForCareDoctor =
-    isCircleDoctor && !circleSubscriptionId && !circlePlanSelected;
+    _isCircleDoctor && !circleSubscriptionId && !circlePlanSelected;
 
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
   finalAppointmentInput['actualAmount'] =
-    circlePlanSelected && isCircleDoctor
+    circlePlanSelected && _isCircleDoctor
       ? isOnlineConsult
         ? onlineConsultSlashedPrice
         : physicalConsultSlashedPrice
@@ -174,10 +182,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     PlanAmount: circlePlanSelected?.currentSellingPrice,
   };
   finalAppointmentInput['planPurchaseDetails'] =
-    circlePlanSelected && isCircleDoctor ? planPurchaseDetails : null;
+    circlePlanSelected && _isCircleDoctor ? planPurchaseDetails : null;
 
   const totalSavings =
-    isCircleDoctor && (circleSubscriptionId || circlePlanSelected)
+    _isCircleDoctor && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -313,7 +321,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <ListCard
         container={[
           styles.couponContainer,
-          { marginTop: isCircleDoctor && !!circleSubscriptionId ? 0 : 20 },
+          { marginTop: _isCircleDoctor && !!circleSubscriptionId ? 0 : 20 },
         ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
@@ -352,7 +360,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
     const billAmount =
-      circlePlanSelected && isCircleDoctor
+      circlePlanSelected && _isCircleDoctor
         ? isOnlineConsult
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
@@ -846,8 +854,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
-          {isCircleDoctor && !!circleSubscriptionId ? renderCareMembershipAddedCard() : null}
-          {isCircleDoctor && !circleSubscriptionId ? renderCircleSubscriptionPlans() : null}
+          {_isCircleDoctor && !!circleSubscriptionId ? renderCareMembershipAddedCard() : null}
+          {_isCircleDoctor && !circleSubscriptionId ? renderCircleSubscriptionPlans() : null}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
           {renderDiscountView()}

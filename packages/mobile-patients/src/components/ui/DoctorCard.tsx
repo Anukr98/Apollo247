@@ -208,9 +208,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     minDiscountedPrice,
     onlineConsultDiscountedPrice,
   } = circleDoctorDetails;
-
+  const { availableModes } = props;
   const { showCircleSubscribed } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
+  const isPhysical = availableModes
+    ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(availableModes)
+    : false;
+  const isOnline = availableModes
+    ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(availableModes)
+    : false;
+  const isBoth = availableModes ? [ConsultMode.BOTH].includes(availableModes) : false;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -243,17 +250,26 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           console.log('Error occured', { error });
         });
     }
-
-    props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
-      DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
-      DoctorId: id,
-      nextSlot: rowData ? rowData.slot : null,
-      ConsultType: props.availableModes,
-      callSaveSearch: props.callSaveSearch,
-      params: params,
-      availNowText: ctaBannerText?.AVAILABLE_NOW || '',
-      consultNowText: ctaBannerText?.CONSULT_NOW || '',
-    });
+    if (isBoth) {
+      props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
+        DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
+        DoctorId: id,
+        nextSlot: rowData ? rowData.slot : null,
+        ConsultType: props.availableModes,
+        callSaveSearch: props.callSaveSearch,
+        params: params,
+        availNowText: ctaBannerText?.AVAILABLE_NOW || '',
+        consultNowText: ctaBannerText?.CONSULT_NOW || '',
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.DoctorDetails, {
+        doctorId: id,
+        consultModeSelected: isOnline ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+        externalConnect: null,
+        callSaveSearch: props.callSaveSearch,
+        ...params,
+      });
+    }
   };
 
   const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
@@ -433,13 +449,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   if (rowData) {
     const clinicAddress = rowData?.doctorfacility;
-    const isPhysical = props.availableModes
-      ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(props.availableModes)
-      : false;
-    const isOnline = props.availableModes
-      ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(props.availableModes)
-      : false;
-    const isBoth = props.availableModes ? [ConsultMode.BOTH].includes(props.availableModes) : false;
     const discountedPrice =
       physicalConsultMRPPrice === onlineConsultMRPPrice
         ? onlineConsultDiscountedPrice

@@ -136,7 +136,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     physicalConsultSlashedPrice,
   } = circleDoctorDetails;
 
-  const actualPrice = isCircleDoctor
+  let _isCircleDoctor = isCircleDoctor;
+  if (selectedTab === 'Consult Online') {
+    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
+  } else if (selectedTab === 'Visit Clinic') {
+    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
+  } else {
+    _isCircleDoctor = isCircleDoctor;
+  }
+  const actualPrice = _isCircleDoctor
     ? selectedTab === 'Consult Online'
       ? circleSubscriptionId
         ? onlineConsultSlashedPrice
@@ -218,7 +226,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       actualAmount: actualPrice,
       pinCode: locationDetails && locationDetails.pincode,
       subscriptionDetails:
-        circleSubscriptionId && isCircleDoctor
+        circleSubscriptionId && _isCircleDoctor
           ? {
               userSubscriptionId: circleSubscriptionId,
               plan: PLAN.CARE_PLAN,

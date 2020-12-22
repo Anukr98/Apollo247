@@ -34,8 +34,16 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
   } = circleDoctorDetails;
+  let _isCircleDoctor = isCircleDoctor;
+  if (selectedTab === 'Consult Online') {
+    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
+  } else if (selectedTab === 'Visit Clinic') {
+    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
+  } else {
+    _isCircleDoctor = isCircleDoctor;
+  }
 
-  const amountToPay = isCircleDoctor
+  const amountToPay = _isCircleDoctor
     ? isOnlineConsult
       ? circleSubscriptionId
         ? onlineConsultSlashedPrice - couponDiscountFees
@@ -90,11 +98,11 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>
           {string.common.consultFee}{' '}
-          {`${isCircleDoctor && (!!circleSubscriptionId || planSelected) ? '(CIRCLE Price)' : ''}`}
+          {`${_isCircleDoctor && (!!circleSubscriptionId || planSelected) ? '(CIRCLE Price)' : ''}`}
         </Text>
-        {isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
+        {_isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
       </View>
-      {circleSubscriptionId == '' && planSelected && isCircleDoctor ? (
+      {circleSubscriptionId == '' && planSelected && _isCircleDoctor ? (
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <Text style={styles.regularText}>{string.common.careMembership}</Text>
           <Text style={styles.regularText}>
@@ -121,7 +129,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
         <Text style={styles.regularText}>{string.common.toPay}</Text>
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
           {string.common.Rs}
-          {planSelected && isCircleDoctor
+          {planSelected && _isCircleDoctor
             ? isOnlineConsult
               ? onlineConsultSlashedPrice -
                 couponDiscountFees +

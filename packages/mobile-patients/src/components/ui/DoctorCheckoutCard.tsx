@@ -33,6 +33,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
     isCircleDoctor,
@@ -46,6 +47,15 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
     : physicalConsultDiscountedPrice;
+  let _isCircleDoctor = isCircleDoctor;
+  if (isOnlineConsult) {
+    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
+  } else if (isPhysicalConsult) {
+    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
+  } else {
+    _isCircleDoctor = isCircleDoctor;
+  }
+
   const renderCareDoctorPricing = () => {
     return (
       <View>
@@ -90,7 +100,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
 
   const renderDoctorProfile = () => {
     return (
-      <View style={{ marginLeft: isCircleDoctor ? 3.5 : 0 }}>
+      <View style={{ marginLeft: _isCircleDoctor ? 3.5 : 0 }}>
         {!!g(doctor, 'photoUrl') ? (
           <Image
             style={styles.doctorProfile}
@@ -122,7 +132,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
           </Text>
         </View>
         <View>
-          {isCircleDoctor ? (
+          {_isCircleDoctor ? (
             <ImageBackground
               source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
               style={styles.drImageBackground}
@@ -133,11 +143,11 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
           ) : (
             <View>{renderDoctorProfile()}</View>
           )}
-          {isCircleDoctor && <CircleLogo style={styles.careLogo} />}
+          {_isCircleDoctor && <CircleLogo style={styles.careLogo} />}
         </View>
       </View>
       {!isOnlineConsult && (
-        <View style={{ width: isCircleDoctor ? width - 140 : width - 40 }}>
+        <View style={{ width: _isCircleDoctor ? width - 140 : width - 40 }}>
           <View style={styles.row}>
             <Location />
             <View style={{ flex: 1 }}>
@@ -158,7 +168,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
       <View style={styles.seperatorLine} />
       <View style={[styles.rowContainer, { marginTop: 9 }]}>
         <Text style={[styles.regularText, { marginTop: 0 }]}>{string.common.amountToPay}</Text>
-        {isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
+        {_isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
       </View>
     </View>
   );
