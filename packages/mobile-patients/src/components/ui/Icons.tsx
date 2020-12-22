@@ -1314,6 +1314,10 @@ export const PrescriptionPhrSearchIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_phr_search_prescription.png')} />
 );
 
+export const PhrSearchNoDataIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_phr_search_nodata.png')} />
+);
+
 export const LabTestPhrSearchIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_search_lab_test.png')} />
 );
