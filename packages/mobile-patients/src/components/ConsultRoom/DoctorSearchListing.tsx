@@ -1146,6 +1146,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           postDoctorClickWEGEvent(rowData, 'List', type);
         }}
         onPlanSelected={() => setShowCarePlanNotification(true)}
+        selectedConsultMode={filter}
       />
     ) : null;
   };
@@ -1160,7 +1161,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (rowData) {
       return index === 0 && platinumDoctor ? (
         <>
-          {renderPlatinumDoctorView()}
+          {renderPlatinumDoctorView(false, filter)}
           {renderDoctorCard(rowData, index, styles, numberOfLines, filter)}
         </>
       ) : (
@@ -1275,7 +1276,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             ListFooterComponent={renderListFooter()}
           />
         )}
-        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(true) : null}
+        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(true, filter) : null}
       </View>
     );
   };
@@ -1489,7 +1490,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   }, [doctorSearch]);
 
-  const renderPlatinumDoctorView = (setHeight: boolean = false) => {
+  const renderPlatinumDoctorView = (setHeight: boolean = false, filter?: ConsultMode) => {
     const doctorCardStyle = {
       backgroundColor: theme.colors.WHITE,
       shadowColor: theme.colors.SHADOW_GRAY,
@@ -1542,6 +1543,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
           }}
           onPlanSelected={() => setShowCarePlanNotification(true)}
+          selectedConsultMode={filter}
         />
       </LinearGradientComponent>
     );

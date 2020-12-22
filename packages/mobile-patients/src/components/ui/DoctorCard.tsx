@@ -190,10 +190,12 @@ export interface DoctorCardProps extends NavigationScreenProps {
   availableModes?: ConsultMode | null;
   callSaveSearch?: string;
   onPlanSelected?: (() => void) | null;
+  selectedConsultMode?: ConsultMode | null;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
+  const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -218,7 +220,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(availableModes)
     : false;
   const isBoth = availableModes ? [ConsultMode.BOTH].includes(availableModes) : false;
-
+  const isPhysicalConsultSelected = selectedConsultMode === ConsultMode.PHYSICAL;
+  let nonCircleDoctorFees = rowData?.onlineConsultationFees; // default fee
+  if (isPhysicalConsultSelected) {
+    nonCircleDoctorFees = rowData?.physicalConsultationFees;
+  } else {
+    nonCircleDoctorFees = rowData?.onlineConsultationFees;
+  }
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -279,7 +287,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {string.common.Rs}
         </Text>
         <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
-          {rowData.fee}
+          {nonCircleDoctorFees}
         </Text>
       </View>
     );
@@ -480,7 +488,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           try {
             if (rowData.doctorType === DoctorType.PAYROLL) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
-                Fee: Number(rowData?.fee),
+                Fee: Number(nonCircleDoctorFees),
                 'Doctor Speciality': g(rowData, 'specialty', 'name')!,
                 'Doctor Name': g(rowData, 'fullName')!,
                 Source: 'List',
