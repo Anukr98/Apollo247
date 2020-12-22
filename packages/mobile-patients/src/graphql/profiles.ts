@@ -1488,6 +1488,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         areaId
         rescheduleCount
         isRescheduled
+        collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
@@ -1566,6 +1567,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         orderType
         displayId
         createdDate
+        collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
@@ -1643,38 +1645,6 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         id
         itemId
         itemName
-        itemType
-        rate
-        gender
-        itemRemarks
-        city
-        state
-        collectionType
-        fromAgeInDays
-        toAgeInDays
-        testPreparationData
-        packageCalculatedMrp
-        testDescription
-        inclusions
-        diagnosticPricing {
-          mrp
-          price
-          groupPlan
-          status
-          startDate
-          endDate
-        }
-      }
-    }
-  }
-`;
-
-export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
-  query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
-    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID) {
-      diagnostics {
-        itemName
-        rate
         itemType
         rate
         gender

@@ -879,7 +879,7 @@ export interface DiagnosticBookHomeCollectionInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
   areaId: number;
-  homeCollectionCharges: number;
+  collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
   totalPriceExcludingDiscounts?: number | null;
