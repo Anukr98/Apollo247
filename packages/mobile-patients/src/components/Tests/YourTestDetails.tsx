@@ -11,6 +11,7 @@ import {
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -151,6 +152,9 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   const refetch =
     props.navigation.getParam('refetch') ||
     useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
+      context: {
+        sourceHeaders,
+      },
       variables: {
         patientId: currentPatient && currentPatient.id,
       },
@@ -169,6 +173,9 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
     client
       .query<getDiagnosticsOrderStatus, getDiagnosticsOrderStatusVariables>({
         query: GET_DIAGNOSTIC_ORDER_STATUS,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           diagnosticOrderId: orderSelectedId,
         },

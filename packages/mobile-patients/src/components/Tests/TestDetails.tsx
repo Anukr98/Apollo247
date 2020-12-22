@@ -70,6 +70,7 @@ import {
   calculateMrpToDisplay,
   calculatePackageDiscounts,
   getPricesForItem,
+  sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -385,10 +386,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       >({
         query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
         context: {
-          headers: {
-            source: Platform.OS,
-            source_version: DeviceInfo.getVersion(),
-          },
+          sourceHeaders,
         },
         variables: {
           cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
@@ -594,6 +592,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        context: {
+          sourceHeaders,
+        },
         fetchPolicy: 'no-cache',
         variables: query,
       });

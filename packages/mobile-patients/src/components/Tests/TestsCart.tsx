@@ -163,6 +163,7 @@ import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEv
 import {
   calculateMrpToDisplay,
   getPricesForItem,
+  sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -420,12 +421,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
       mutation: SAVE_DIAGNOSTIC_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderInput: orderInfo },
     });
 
   const saveHomeCollectionBookingOrder = (orderInfo: DiagnosticBookHomeCollectionInput) =>
     client.mutate<DiagnosticBookHomeCollection, DiagnosticBookHomeCollectionVariables>({
       mutation: SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderInput: orderInfo },
     });
 
@@ -746,10 +753,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       >({
         query: GET_PATIENT_ADDRESS_LIST,
         context: {
-          headers: {
-            source: Platform.OS,
-            source_version: DeviceInfo.getVersion(),
-          },
+          sourceHeaders,
         },
         variables: { patientId: userId },
         fetchPolicy: 'no-cache',
@@ -790,10 +794,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
           context: {
-            headers: {
-              source: Platform.OS,
-              source_version: DeviceInfo.getVersion(),
-            },
+            sourceHeaders,
           },
           variables: {
             pincode: parseInt(pinCodeFromAddress, 10),
@@ -1041,10 +1042,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
           context: {
-            headers: {
-              source: Platform.OS,
-              source_version: DeviceInfo.getVersion(),
-            },
+            sourceHeaders,
           },
           variables: {
             //if address is not selected then from pincode bar otherwise from address
@@ -1122,10 +1120,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     client
       .query<getAreas, getAreasVariables>({
         context: {
-          headers: {
-            source: Platform.OS,
-            source_version: DeviceInfo.getVersion(),
-          },
+          sourceHeaders,
         },
         query: GET_DIAGNOSTIC_AREAS,
         fetchPolicy: 'no-cache',
@@ -1320,10 +1315,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
         query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
         context: {
-          headers: {
-            source: Platform.OS,
-            source_version: DeviceInfo.getVersion(),
-          },
+          sourceHeaders,
         },
         fetchPolicy: 'no-cache',
         variables: {
@@ -2351,10 +2343,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     >({
       query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
       context: {
-        headers: {
-          source: Platform.OS,
-          source_version: DeviceInfo.getVersion(),
-        },
+        sourceHeaders,
       },
       variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
       fetchPolicy: 'no-cache',
@@ -3054,10 +3043,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         >({
           query: VALIDATE_DIAGNOSTIC_COUPON,
           context: {
-            headers: {
-              source: Platform.OS,
-              source_version: DeviceInfo.getVersion(),
-            },
+            sourceHeaders,
           },
           variables: {
             couponInput: CouponInput,
@@ -3092,10 +3078,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       >({
         query: GET_DIAGNOSTICS_HC_CHARGES,
         context: {
-          headers: {
-            source: Platform.OS,
-            source_version: DeviceInfo.getVersion(),
-          },
+          sourceHeaders,
         },
         variables: {
           itemIDs: itemWithId,

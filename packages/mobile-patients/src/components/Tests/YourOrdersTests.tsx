@@ -3,6 +3,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -229,6 +230,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const refetch =
     props.navigation.getParam('refetch') ||
     useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
+      context: {
+        sourceHeaders,
+      },
       variables: {
         patientId: currentPatient && currentPatient.id,
       },
@@ -289,6 +293,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         data: { searchDiagnosticsById },
       } = await client.query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
         query: SEARCH_DIAGNOSTICS_BY_ID,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           itemIds: itemId!.toString(),
         },
@@ -346,6 +353,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     client
       .query<getDiagnosticsOrderStatus, getDiagnosticsOrderStatusVariables>({
         query: GET_DIAGNOSTIC_ORDER_STATUS,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           diagnosticOrderId: id,
         },

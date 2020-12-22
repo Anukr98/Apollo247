@@ -74,7 +74,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -205,10 +205,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
         query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
         context: {
-          headers: {
-            source: Platform.OS,
-            source_version: DeviceInfo.getVersion(),
-          },
+          sourceHeaders,
         },
         variables: {
           patientId: g(currentPatient, 'id') || '',
@@ -242,10 +239,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           context: {
-            headers: {
-              source: Platform.OS,
-              source_version: DeviceInfo.getVersion(),
-            },
+            sourceHeaders,
           },
           variables: {
             searchText: name,
@@ -322,10 +316,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
         query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
         context: {
-          headers: {
-            source: Platform.OS,
-            source_version: DeviceInfo.getVersion(),
-          },
+          sourceHeaders,
         },
         variables: {
           searchText: _searchText,
