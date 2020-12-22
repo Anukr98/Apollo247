@@ -67,6 +67,7 @@ import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
 import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
+import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
@@ -139,6 +140,7 @@ export enum AppRoutes {
   SplashScreen = 'SplashScreen',
   MobileHelp = 'MobileHelp',
   NeedHelpPharmacyOrder = 'NeedHelpPharmacyOrder',
+  NeedHelpConsultOrder = 'NeedHelpConsultOrder',
   NeedHelpQueryDetails = 'NeedHelpQueryDetails',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
@@ -304,6 +306,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpPharmacyOrder]: {
     screen: NeedHelpPharmacyOrder,
+  },
+  [AppRoutes.NeedHelpConsultOrder]: {
+    screen: NeedHelpConsultOrder,
   },
   [AppRoutes.NeedHelpQueryDetails]: {
     screen: NeedHelpQueryDetails,

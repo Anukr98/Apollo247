@@ -25,7 +25,6 @@ const { LIGHT_BLUE } = theme.colors;
 const styles = StyleSheet.create({
   listItemContainer: {
     ...card(),
-    marginVertical: 0,
   },
   listItemTitle: {
     ...text('M', 17, LIGHT_BLUE),

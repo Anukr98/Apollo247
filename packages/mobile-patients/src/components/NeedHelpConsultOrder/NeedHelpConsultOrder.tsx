@@ -3,30 +3,22 @@ import {
   Props as BreadcrumbProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { OrderCard } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
+import { ConsultCard } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { AphListItem } from '@aph/mobile-patients/src/components/ui/AphListItem';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { RetryCard } from '@aph/mobile-patients/src/components/ui/RetryCard';
-import { formatOrders, MedOrder } from '@aph/mobile-patients/src/components/YourOrdersScene';
-import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
+  GetPatientAllAppointmentsForHelp,
+  GetPatientAllAppointmentsForHelpVariables,
+  GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appointments,
+} from '@aph/mobile-patients/src/graphql/types/GetPatientAllAppointmentsForHelp';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import {
-  Alert,
-  FlatList,
-  ListRenderItemInfo,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { FacebookLoader } from 'react-native-easy-content-loader';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -39,7 +31,9 @@ export interface Props
     email: string;
   }> {}
 
-export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
+type Consult = GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appointments;
+
+export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
   const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
   const breadCrumb = navigation.getParam('breadCrumb') || [
     { title: string.needHelp },
@@ -51,12 +45,15 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const { currentPatient } = useAllCurrentPatients();
   const [displayAll, setDisplayAll] = useState<boolean>(false);
 
-  const ordersQuery = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-    GET_MEDICINE_ORDERS_OMS__LIST,
-    { variables: { patientId: currentPatient?.id }, fetchPolicy: 'no-cache' }
-  );
+  const ordersQuery = useQuery<
+    GetPatientAllAppointmentsForHelp,
+    GetPatientAllAppointmentsForHelpVariables
+  >(GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP, {
+    variables: { patientId: currentPatient?.id },
+    fetchPolicy: 'no-cache',
+  });
   const { data, loading, error } = ordersQuery;
-  const orders = formatOrders(data) as MedOrder[];
+  const orders = data?.getPatientAllAppointments?.appointments || [];
 
   const renderHeader = () => {
     const onPressBack = () => navigation.goBack();
@@ -68,7 +65,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderRecentOrder = () => {
-    return <Text style={styles.recentOrder}>{string.recentOrders}</Text>;
+    return <Text style={styles.recentOrder}>{string.recentConsults}</Text>;
   };
 
   const renderLoader = () => {
@@ -79,32 +76,17 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const renderItem = ({ item }: ListRenderItemInfo<MedOrder>) => {
+  const renderItem = ({ item }: ListRenderItemInfo<Consult>) => {
     const onPressHelp = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
-        orderId: item.billNumber || item.orderAutoId,
+        orderId: item.displayId,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
       });
     };
-    const onPress = (isCancelOrder?: boolean) => {
-      navigation.navigate(AppRoutes.OrderDetailsScene, {
-        orderAutoId: item.orderAutoId,
-        billNumber: item.billNumber,
-        isCancelOrder: !!isCancelOrder,
-        isOrderHelp: true,
-        breadCrumb: [...breadCrumb, { title: string.productDetail }] as BreadcrumbProps['links'],
-      });
-    };
-    return (
-      <OrderCard
-        orderDetail={item}
-        onPress={onPress}
-        onPressCancel={() => onPress(true)}
-        onPressHelp={onPressHelp}
-      />
-    );
+    const onPress = () => {};
+    return <ConsultCard consult={item} onPress={onPress} onPressHelp={onPressHelp} />;
   };
 
   const renderOrders = () => {
@@ -129,7 +111,10 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     const visible = !displayAll && orders.length > 1;
     return (
       visible && (
-        <AphListItem title={string.chooseFromPreviousOrders} onPress={() => setDisplayAll(true)} />
+        <AphListItem
+          title={string.chooseFromPreviousConsults}
+          onPress={() => setDisplayAll(true)}
+        />
       )
     );
   };
@@ -139,7 +124,9 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderHelperText = () => {
-    return displayAll && <Text style={styles.helperText}>{string.ifYourOrderFailed}</Text>;
+    return (
+      displayAll && <Text style={styles.helperText}>{string.ifYourConsultTransactionFailed}</Text>
+    );
   };
 
   const renderIssueNotRelatedToOrder = () => {
@@ -150,7 +137,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
       });
     };
-    return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />;
+    return <AphListItem title={string.otherIssueNotMyConsults} onPress={onPress} />;
   };
 
   const renderSections = (visible: boolean) => {

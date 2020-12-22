@@ -17,12 +17,14 @@ export interface Props
     pageTitle?: string;
     breadCrumb: BreadcrumbProps['links'];
     queryCategory: string;
+    email: string;
     orderId: string;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const pageTitle = navigation.getParam('pageTitle') || string.help.toUpperCase();
   const queryCategory = navigation.getParam('queryCategory') || '';
+  const email = navigation.getParam('email') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const orderId = navigation.getParam('orderId') || '';
   const needHelp = AppConfig.Configuration.NEED_HELP;

@@ -232,6 +232,7 @@ const Apollo247Config = {
 export const NeedHelp = [
   {
     category: 'Pharmacy',
+    id: 'pharmacy',
     options: [
       'I would like to cancel the order!',
       'I would like to know the Delivery status of my order.',
@@ -247,6 +248,7 @@ export const NeedHelp = [
   },
   {
     category: 'Virtual/Online Consult',
+    id: 'virtualOnlineConsult',
     options: [
       'I am unable to book an appointment (slot not available/ Doctor not listed)',
       'The doctor did not start the consultation call on time',
@@ -262,6 +264,7 @@ export const NeedHelp = [
   },
   {
     category: 'Health Records',
+    id: 'healthRecords',
     options: [
       'Add multiple UHID’s linked to other mobile numbers',
       'Delay in responses to queries',
@@ -276,6 +279,7 @@ export const NeedHelp = [
   },
   {
     category: 'Physical Consult',
+    id: 'physicalConsult',
     options: [
       'App appointment dishonored at confirmed time slot',
       'Application issues(bandwidth & payment errors)',
@@ -294,6 +298,7 @@ export const NeedHelp = [
   },
   {
     category: 'Feedback',
+    id: 'feedback',
     options: [
       'Feedback on app',
       'Feedback on consultation',
@@ -303,6 +308,7 @@ export const NeedHelp = [
   },
   {
     category: 'Diagnostics',
+    id: 'diagnostics',
     options: [
       'Excess amount related',
       'Issues in order confirmation',
@@ -318,10 +324,12 @@ export const NeedHelp = [
   },
   {
     category: 'Unsubscribe',
+    id: 'unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
   {
     category: 'HealthyLife (HDFC)',
+    id: 'healthyLifeHdfc',
     options: [
       'Coupon related',
       'Concierge Services',
@@ -340,6 +348,7 @@ export const NeedHelp = [
   },
   {
     category: 'Circle Membership',
+    id: 'circleMembership',
     options: [
       'Details about Circle Membership',
       'Regarding Circle Benefits',
