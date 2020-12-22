@@ -1,4 +1,4 @@
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   CommonBugFender,
@@ -11,6 +11,7 @@ import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getPatientByMobileNumber } from '../graphql/types/getPatientByMobileNumber';
+import DeviceInfo from 'react-native-device-info';
 
 export const handleDeepLink = (navigationProps: any) => {
   try {
@@ -368,3 +369,10 @@ export const getPricesForItem = (getDiagnosticPricingForItem: any, itemPackageMr
     discountToDisplay,
   };
 };
+
+export const sourceHeaders = {
+  headers: {
+    source: Platform.OS,
+    source_version:DeviceInfo.getVersion(),
+  },
+}

@@ -6,6 +6,7 @@ import { CartIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/component
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import DeviceInfo from 'react-native-device-info';
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getPackageData,
@@ -33,6 +34,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -68,6 +70,7 @@ import {
   calculateMrpToDisplay,
   calculatePackageDiscounts,
   getPricesForItem,
+  sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -382,6 +385,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         findDiagnosticsByItemIDsAndCityIDVariables
       >({
         query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
           itemIDs: listOfIds,
@@ -586,6 +592,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        context: {
+          sourceHeaders,
+        },
         fetchPolicy: 'no-cache',
         variables: query,
       });

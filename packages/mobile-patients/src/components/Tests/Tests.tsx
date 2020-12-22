@@ -13,6 +13,8 @@ import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import DeviceInfo from 'react-native-device-info';
+
 import {
   CartIcon,
   LocationOff,
@@ -93,6 +95,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   BackHandler,
+  Platform,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -132,7 +135,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getActiveTestItems, getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  getActiveTestItems,
+  getPricesForItem,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -373,6 +380,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     getDiagnosticsHomePageItems,
     getDiagnosticsHomePageItemsVariables
   >(GET_DIAGNOSTIC_HOME_PAGE_ITEMS, {
+    context: {
+      sourceHeaders,
+    },
     variables: { cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9 },
     fetchPolicy: 'cache-first',
   });
@@ -602,6 +612,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   } = useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(
     GET_DIAGNOSTIC_ORDER_LIST,
     {
+      context: {
+        sourceHeaders,
+      },
       variables: {
         patientId: currentPatient && currentPatient.id,
       },
@@ -845,6 +858,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             pincode: parseInt(pincode, 10),
           },
@@ -1663,6 +1679,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
             itemIDs: listOfIds,
@@ -2056,6 +2075,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             searchText: _searchText,
             cityID: parseInt(locationForDiagnostics?.cityId!, 10),

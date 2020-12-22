@@ -7,6 +7,7 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import DeviceInfo from 'react-native-device-info';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -73,7 +74,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -203,6 +204,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     client
       .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
         query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           patientId: g(currentPatient, 'id') || '',
           type: SEARCH_TYPE.TEST,
@@ -234,6 +238,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             searchText: name,
             cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
@@ -308,6 +315,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     client
       .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
         query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           searchText: _searchText,
           cityID: parseInt(locationForDiagnostics?.cityId!, 10),
