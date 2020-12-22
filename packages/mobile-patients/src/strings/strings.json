@@ -690,7 +690,8 @@
     "healthCreditsRemaining": "Health Credits remaining",
     "returnToHomepage": "RETURN TO HOMEPAGE",
     "availableHealthCredits": "*Available Health Credits",
-    "upgradeWithHC": "UPGRADE FOR {hc} HEALTH CREDITS"
+    "upgradeWithHC": "UPGRADE WITH {hc} HC",
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
