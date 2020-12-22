@@ -2252,10 +2252,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
           {/**
            * show special price only when do not promote circle ~~~ merge below two checks
+           * changed 2 conditions from or to and
            */}
           {!data?.promoteCircle &&
-            (data?.specialPrice != data?.mrpToDisplay ||
-              data?.discountSpecialPrice != data?.mrpToDisplay) && (
+            data?.specialPrice != data?.mrpToDisplay &&
+            data?.discountSpecialPrice != data?.mrpToDisplay && (
               <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
                 <Text style={styles.strikedPrice}>
                   {string.common.Rs} {data?.mrpToDisplay}
