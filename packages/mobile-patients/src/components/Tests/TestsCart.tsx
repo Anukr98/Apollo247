@@ -2520,7 +2520,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ),
       slotId: employeeSlotId?.toString() || '0',
       areaId: (areaSelected || ({} as any)).key!,
-      homeCollectionCharges: hcCharges,
+      collectionCharges: hcCharges,
       // totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
       totalPriceExcludingDiscounts: cartTotal + hcCharges,
       subscriptionInclusionId: null,
