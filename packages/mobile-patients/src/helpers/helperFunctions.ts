@@ -2201,3 +2201,17 @@ export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
   }
   return circleMembershipType;
 };
+
+export const isProductInStock = (product: MedicineProduct) => {
+  const { dc_availability, is_in_contract } = product;
+  if (
+    !!dc_availability &&
+    !!is_in_contract &&
+    dc_availability.toLowerCase() === 'no' &&
+    is_in_contract.toLowerCase() === 'no'
+  ) {
+    return false;
+  } else {
+    return true;
+  }
+};

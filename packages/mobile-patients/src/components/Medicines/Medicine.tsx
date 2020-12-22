@@ -72,6 +72,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   getDiscountPercentage,
+  isProductInStock,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -155,7 +156,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 
-const { width: winWidth } = Dimensions.get('window');
+const { width: winWidth, height: winHeight } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   searchInput: { minHeight: undefined, paddingVertical: 8 },
@@ -207,6 +208,22 @@ const styles = StyleSheet.create({
   },
   discountPercentage: {
     ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
+  searchContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 60,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  viewAllContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#FCB716',
+    borderRadius: 6,
+    padding: 10,
+    alignItems: 'center',
   },
 });
 
@@ -1668,13 +1685,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           leftTextStyle={categoryId ? { width: '75%' } : {}}
           onPressRightText={
             categoryId
-              ? () =>
+              ? () => {
+                  const filteredProducts = products
+                    ? products.filter((product: MedicineProduct) => isProductInStock(product))
+                    : [];
                   props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: categoryId == -1 ? undefined : categoryId,
-                    products: categoryId == -1 ? products : null,
+                    products: categoryId == -1 ? filteredProducts : null,
                     title: title || 'Products',
                     movedFrom: 'home',
-                  })
+                  });
+                }
               : undefined
           }
           style={categoryId ? { paddingBottom: 1 } : {}}
@@ -1955,7 +1976,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         showSeparator={index !== medicineList.length - 1}
         style={{
           marginHorizontal: 20,
-          paddingBottom: index == medicineList.length - 1 ? 10 : 0,
+          paddingBottom: index == medicineList.length - 1 ? 20 : 0,
         }}
         maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
         removeCartItem={() => onRemoveCartItem(item.sku)}
@@ -1975,21 +1996,43 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           !!searchText &&
           searchText.length > 2 &&
           medicineList.length > 0 && (
-            <FlatList
-              keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-              bounces={false}
-              keyExtractor={(_, index) => `${index}`}
-              showsVerticalScrollIndicator={false}
-              style={{
-                paddingTop: 10.5,
-                maxHeight: 266,
-                backgroundColor: '#f7f8f5',
-              }}
-              data={medicineList}
-              extraData={itemsLoading}
-              renderItem={renderSearchSuggestionItemView}
-            />
+            <View>
+              <FlatList
+                keyboardShouldPersistTaps="always"
+                // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+                bounces={false}
+                keyExtractor={(_, index) => `${index}`}
+                showsVerticalScrollIndicator={true}
+                persistentScrollbar={true}
+                style={{
+                  paddingTop: 10.5,
+                  maxHeight: 266,
+                  backgroundColor: '#f7f8f5',
+                }}
+                data={medicineList}
+                extraData={itemsLoading}
+                renderItem={renderSearchSuggestionItemView}
+              />
+              <View style={styles.searchContainer}>
+                <TouchableOpacity
+                  onPress={() => {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                      keyword: searchText,
+                      Source: 'Pharmacy Home',
+                    };
+                    postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
+                    props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+                    setSearchText('');
+                    setMedicineList([]);
+                  }}
+                  style={styles.viewAllContainer}
+                >
+                  <Text style={theme.viewStyles.text('B', 15, '#FCB716', 1, 20)}>
+                    VIEW ALL RESULTS
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )
         )}
       </>
@@ -2031,9 +2074,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         } else {
           const products = g(data, section_key, 'products');
           const isCategoriesType = g(data, section_key, '0', 'title');
+          const filteredProducts = products
+            ? products.filter((product: MedicineProduct) => isProductInStock(product))
+            : [];
 
-          return products
-            ? renderHotSellers(section_name, products || [], g(data, section_key, 'category_id'))
+          return filteredProducts
+            ? renderHotSellers(
+                section_name,
+                filteredProducts || [],
+                g(data, section_key, 'category_id')
+              )
             : isCategoriesType
             ? renderCategories(section_name, data[section_key] || [])
             : renderDealsOfTheDay(section_name, data[section_key] || []);
