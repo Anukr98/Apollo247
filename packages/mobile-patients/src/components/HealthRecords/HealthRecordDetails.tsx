@@ -638,7 +638,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <Text style={{ ...viewStyles.text('R', 14, theme.colors.SKY_BLUE, 1, 18), marginTop: 3 }}>
           {'On '}
           <Text style={{ ...viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18) }}>{`${moment(
-            data?.date || data?.startDateTime
+            data?.date || data?.startDateTime || data?.billDateTime
           ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       );
@@ -828,8 +828,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
-        (!medicalBill || !medicalInsurance || !healthCondition) &&
-          postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));

@@ -30,7 +30,12 @@ import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHe
 import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
+  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPrismAuthTokenVariables,
+  getPrismAuthToken,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 import { BloodGroups, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -73,7 +78,7 @@ import {
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import stripHtml from 'string-strip-html';
-import { searchPHRApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -360,6 +365,7 @@ const styles = StyleSheet.create({
   searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
   loaderViewStyle: { justifyContent: 'center', flex: 1, alignItems: 'center' },
   loaderStyle: { height: 100, backgroundColor: 'transparent', alignSelf: 'center' },
+  phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
 });
 
 type BloodGroupArray = {
@@ -437,6 +443,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const _searchInputRef = useRef(null);
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
+  const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const [errorPopupText, setErrorPopupText] = useState<string>(
     string.common.error_enter_number_text
   );
@@ -462,6 +469,35 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     }
     setPatientHistoryValues();
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (currentPatient) {
+      getAuthToken();
+    }
+  }, [currentPatient]);
+
+  const getAuthToken = async () => {
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+        }
+        console.log('getPrismAuthToken', data, prism_auth_token);
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+      });
+  };
 
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
@@ -1443,7 +1479,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const onSearchHealthRecords = (_searchText: string) => {
     console.log('onSearchHealthRecords', _searchText);
     setSearchLoading(true);
-    searchPHRApi(_searchText, currentPatient?.uhid || '')
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken)
       .then(({ data }) => {
         setHealthRecordSearchResults([]);
         if (data?.response) {
@@ -1494,7 +1530,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('searchPHRApi Error', error);
+        console.log('searchPHRApiWithAuthToken Error', error);
+        getAuthToken();
         setSearchLoading(false);
       });
   };
@@ -1665,12 +1702,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const onClickSearchHealthCard = (item: any) => {
-    console.log(
-      'onClickSearchHealthCard',
-      item,
-      JSON.stringify(item?.value),
-      JSON.stringify(JSON.parse(item?.value?.healthRecord))
-    );
     const { date, healthrecordId } = item?.value;
     switch (item?.healthkey) {
       case MedicalRecordType.PRESCRIPTION:
@@ -1680,8 +1711,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const final_item = {
           ...prescription_item,
           fileUrl:
-            prescription_item?.prescriptionFiles?.length > 0
-              ? `https://ora.phrdemo.com/data/prescriptions/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+            prescription_item?.prescriptionFiles?.length > 0 && prismAuthToken
+              ? `https://ora.phrdemo.com/data/prescriptions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           date,
           id: healthrecordId,
@@ -1692,8 +1723,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.TEST_REPORT:
+        const _test_report = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
+        const _test_report_item = {
+          ..._test_report,
+          fileUrl:
+            _test_report?.testResultFiles?.length > 0 && prismAuthToken
+              ? `https://ora.phrdemo.com/data/labresults/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0&sequence=0`
+              : '',
+          date,
+          labTestName: _test_report?.testName,
+          labTestResults: _test_report?.results,
+          id: healthrecordId,
+        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: item?.value,
+          data: _test_report_item,
           labResults: true,
           onPressBack: onBackArrowPressed,
         });
@@ -1704,8 +1747,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const _hospitalization_item = {
           ..._hospitalization,
           fileUrl:
-            _hospitalization?.hospitalizationFiles?.length > 0
-              ? `https://ora.phrdemo.com/data/hospitalizations/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+            _hospitalization?.hospitalizationFiles?.length > 0 && prismAuthToken
+              ? `https://ora.phrdemo.com/data/hospitalizations/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           date,
           id: healthrecordId,
@@ -1720,11 +1763,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const _bill_item = {
           ..._bill,
           fileUrl:
-            _bill?.hospitalizationFiles?.length > 0
-              ? `https://ora.phrdemo.com/data/bills/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+            _bill?.billFilesList?.length > 0 && prismAuthToken
+              ? `https://ora.phrdemo.com/data/bills/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
-          date,
           id: healthrecordId,
+          billDateTime: _bill?.billDate,
+          billFiles: _bill?.billFilesList,
         };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
           data: _bill_item,
@@ -1736,10 +1780,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const _insurance_item = {
           ..._insurance,
           fileUrl:
-            _insurance?.insuranceFiles?.length > 0
-              ? `https://ora.phrdemo.com/data/insurances/downloadattach?authToken=9bsebul7ls7ckns2c3ekr06nj5&recordId=${healthrecordId}&fileIndex=0`
+            _insurance?.insuranceFiles?.length > 0 && prismAuthToken
+              ? `https://ora.phrdemo.com/data/insurances/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
-          date,
+          startDateTime: _insurance?.startDate,
+          endDateTime: _insurance?.endDate,
           id: healthrecordId,
         };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
@@ -1748,29 +1793,69 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.ALLERGY:
+        const _allergy = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
+        const _allergy_item = {
+          ..._allergy,
+          fileUrl:
+            _allergy?.attachementList?.length > 0 && prismAuthToken
+              ? `https://ora.phrdemo.com/data/allergies/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              : '',
+          attachmentList: _allergy?.attachementList,
+          startDateTime: _allergy?.startDate,
+          endDateTime: _allergy?.endDate,
+          id: healthrecordId,
+        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: item,
+          data: _allergy_item,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.ALLERGY,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.MEDICATION:
+        const _medication = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
+        const _medication_item = {
+          ..._medication,
+          id: healthrecordId,
+        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: item,
+          data: _medication_item,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICATION,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.HEALTHRESTRICTION:
+        const _health_restriction = item?.value?.healthRecord
+          ? JSON.parse(item?.value?.healthRecord)
+          : {};
+        const _health_restriction_item = {
+          ..._health_restriction,
+          startDateTime: _health_restriction?.startDate,
+          endDateTime: _health_restriction?.endDate,
+          id: healthrecordId,
+        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: item,
+          data: _health_restriction_item,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.MEDICALCONDITION:
+        const _medical_condition = item?.value?.healthRecord
+          ? JSON.parse(item?.value?.healthRecord)
+          : {};
+        const _medical_condition_item = {
+          ..._medical_condition,
+          fileUrl:
+            _medical_condition?.medicationFiles?.length > 0 && prismAuthToken
+              ? `https://ora.phrdemo.com/data/medicalconditions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              : '',
+          startDateTime: _medical_condition?.startDate,
+          endDateTime: _medical_condition?.endDate,
+          medicalConditionName: _medical_condition?.medicalCondition,
+          id: healthrecordId,
+        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: item,
+          data: _medical_condition_item,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION,
           onPressBack: onBackArrowPressed,
@@ -1800,10 +1885,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         bounces={false}
         data={healthRecordSearchResults}
         ListEmptyComponent={
-          <PhrNoDataComponent
-            mainViewStyle={{ marginTop: width / 3.2 }}
-            noDataText={'No result found.'}
-          />
+          <PhrNoDataComponent mainViewStyle={styles.phrNodataMainViewStyle} phrSearchList />
         }
         ListHeaderComponent={searchListHeaderView}
         renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
