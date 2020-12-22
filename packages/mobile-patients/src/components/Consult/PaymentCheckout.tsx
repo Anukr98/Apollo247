@@ -120,6 +120,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
   const { currentPatient } = useAllCurrentPatients();
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
@@ -128,27 +129,23 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-  let _isCircleDoctor = isCircleDoctor;
-  if (selectedTab === 'Consult Online') {
-    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
-  } else if (selectedTab === 'Visit Clinic') {
-    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
-  } else {
-    _isCircleDoctor = isCircleDoctor;
-  }
   const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
-    _isCircleDoctor && !circleSubscriptionId
+    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
   );
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
@@ -156,7 +153,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
-    circlePlanSelected && _isCircleDoctor
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? onlineConsultSlashedPrice -
           couponDiscountFees +
@@ -166,13 +163,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
   const notSubscriberUserForCareDoctor =
-    _isCircleDoctor && !circleSubscriptionId && !circlePlanSelected;
+    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
 
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
   finalAppointmentInput['actualAmount'] =
-    circlePlanSelected && _isCircleDoctor
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? onlineConsultSlashedPrice
         : physicalConsultSlashedPrice
@@ -182,10 +179,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     PlanAmount: circlePlanSelected?.currentSellingPrice,
   };
   finalAppointmentInput['planPurchaseDetails'] =
-    circlePlanSelected && _isCircleDoctor ? planPurchaseDetails : null;
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
 
   const totalSavings =
-    _isCircleDoctor && (circleSubscriptionId || circlePlanSelected)
+    isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -321,7 +318,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <ListCard
         container={[
           styles.couponContainer,
-          { marginTop: _isCircleDoctor && !!circleSubscriptionId ? 0 : 20 },
+          { marginTop: isCircleDoctorOnSelectedConsultMode && !!circleSubscriptionId ? 0 : 20 },
         ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
@@ -360,7 +357,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
     const billAmount =
-      circlePlanSelected && _isCircleDoctor
+      circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
@@ -854,8 +851,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
-          {_isCircleDoctor && !!circleSubscriptionId ? renderCareMembershipAddedCard() : null}
-          {_isCircleDoctor && !circleSubscriptionId ? renderCircleSubscriptionPlans() : null}
+          {isCircleDoctorOnSelectedConsultMode && !!circleSubscriptionId
+            ? renderCareMembershipAddedCard()
+            : null}
+          {isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
+            ? renderCircleSubscriptionPlans()
+            : null}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
           {renderDiscountView()}

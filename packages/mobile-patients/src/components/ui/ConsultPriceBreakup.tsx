@@ -26,24 +26,21 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-  let _isCircleDoctor = isCircleDoctor;
-  if (selectedTab === 'Consult Online') {
-    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
-  } else if (selectedTab === 'Visit Clinic') {
-    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
-  } else {
-    _isCircleDoctor = isCircleDoctor;
-  }
 
-  const amountToPay = _isCircleDoctor
+  const amountToPay = isCircleDoctorOnSelectedConsultMode
     ? isOnlineConsult
       ? circleSubscriptionId
         ? onlineConsultSlashedPrice - couponDiscountFees
@@ -98,11 +95,17 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>
           {string.common.consultFee}{' '}
-          {`${_isCircleDoctor && (!!circleSubscriptionId || planSelected) ? '(CIRCLE Price)' : ''}`}
+          {`${
+            isCircleDoctorOnSelectedConsultMode && (!!circleSubscriptionId || planSelected)
+              ? '(CIRCLE Price)'
+              : ''
+          }`}
         </Text>
-        {_isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
+        {isCircleDoctorOnSelectedConsultMode
+          ? renderCareDoctorPricing()
+          : renderNonCareDoctorPricing()}
       </View>
-      {circleSubscriptionId == '' && planSelected && _isCircleDoctor ? (
+      {circleSubscriptionId == '' && planSelected && isCircleDoctorOnSelectedConsultMode ? (
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <Text style={styles.regularText}>{string.common.careMembership}</Text>
           <Text style={styles.regularText}>
@@ -129,7 +132,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
         <Text style={styles.regularText}>{string.common.toPay}</Text>
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
           {string.common.Rs}
-          {planSelected && _isCircleDoctor
+          {planSelected && isCircleDoctorOnSelectedConsultMode
             ? isOnlineConsult
               ? onlineConsultSlashedPrice -
                 couponDiscountFees +

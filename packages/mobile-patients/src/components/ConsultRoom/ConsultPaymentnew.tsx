@@ -51,17 +51,16 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
-  const { isCircleDoctor, onlineConsultMRPPrice, physicalConsultMRPPrice } = circleDoctorDetails;
+  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
+  const { isCircleDoctorOnSelectedConsultMode } = circleDoctorDetails;
   const { circleSubscriptionId } = useShoppingCart();
-  let _isCircleDoctor = isCircleDoctor;
-  if (selectedTab === 'Consult Online') {
-    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
-  } else if (selectedTab === 'Visit Clinic') {
-    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
-  } else {
-    _isCircleDoctor = isCircleDoctor;
-  }
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -103,7 +102,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       appsflyerEventAttributes: appsflyerEventAttributes,
       paymentTypeID: paymentTypeID,
       isDoctorsOfTheHourStatus,
-      isCircleDoctor: _isCircleDoctor,
+      isCircleDoctor: isCircleDoctorOnSelectedConsultMode,
     });
   };
 
@@ -127,7 +126,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
     }`;
-    if (planSelected && _isCircleDoctor && circleSubscriptionId == '') {
+    if (planSelected && isCircleDoctorOnSelectedConsultMode && circleSubscriptionId == '') {
       url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
     }
     console.log(url);

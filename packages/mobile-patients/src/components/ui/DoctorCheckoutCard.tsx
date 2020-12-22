@@ -34,27 +34,23 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
   const isPhysicalConsult = selectedTab === 'Visit Clinic';
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
     : physicalConsultDiscountedPrice;
-  let _isCircleDoctor = isCircleDoctor;
-  if (isOnlineConsult) {
-    _isCircleDoctor = isCircleDoctor && onlineConsultMRPPrice > 0;
-  } else if (isPhysicalConsult) {
-    _isCircleDoctor = isCircleDoctor && physicalConsultMRPPrice > 0;
-  } else {
-    _isCircleDoctor = isCircleDoctor;
-  }
 
   const renderCareDoctorPricing = () => {
     return (
@@ -100,7 +96,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
 
   const renderDoctorProfile = () => {
     return (
-      <View style={{ marginLeft: _isCircleDoctor ? 3.5 : 0 }}>
+      <View style={{ marginLeft: isCircleDoctorOnSelectedConsultMode ? 3.5 : 0 }}>
         {!!g(doctor, 'photoUrl') ? (
           <Image
             style={styles.doctorProfile}
@@ -132,7 +128,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
           </Text>
         </View>
         <View>
-          {_isCircleDoctor ? (
+          {isCircleDoctorOnSelectedConsultMode ? (
             <ImageBackground
               source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
               style={styles.drImageBackground}
@@ -143,11 +139,11 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
           ) : (
             <View>{renderDoctorProfile()}</View>
           )}
-          {_isCircleDoctor && <CircleLogo style={styles.careLogo} />}
+          {isCircleDoctorOnSelectedConsultMode && <CircleLogo style={styles.careLogo} />}
         </View>
       </View>
       {!isOnlineConsult && (
-        <View style={{ width: _isCircleDoctor ? width - 140 : width - 40 }}>
+        <View style={{ width: isCircleDoctorOnSelectedConsultMode ? width - 140 : width - 40 }}>
           <View style={styles.row}>
             <Location />
             <View style={{ flex: 1 }}>
@@ -168,7 +164,9 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
       <View style={styles.seperatorLine} />
       <View style={[styles.rowContainer, { marginTop: 9 }]}>
         <Text style={[styles.regularText, { marginTop: 0 }]}>{string.common.amountToPay}</Text>
-        {_isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
+        {isCircleDoctorOnSelectedConsultMode
+          ? renderCareDoctorPricing()
+          : renderNonCareDoctorPricing()}
       </View>
     </View>
   );
