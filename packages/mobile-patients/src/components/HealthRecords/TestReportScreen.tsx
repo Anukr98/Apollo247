@@ -109,6 +109,7 @@ export interface TestReportScreenProps
   extends NavigationScreenProps<{
     testReportsData: any;
     onPressBack: () => void;
+    callTestReportsApi: () => void;
   }> {}
 
 export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
@@ -128,6 +129,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const gotoPHRHomeScreen = () => {
     if (!callApi && !callPhrMainApi) {
       props.navigation.state.params?.onPressBack();
+    } else {
+      props.navigation.state.params?.onPressBack();
+      props.navigation.state.params?.callTestReportsApi();
     }
     props.navigation.goBack();
   };
@@ -146,20 +150,28 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
 
   const getLatestLabAndHealthCheckRecords = () => {
     setShowSpinner(true);
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.TEST_REPORT,
+      MedicalRecordType.HEALTHCHECK,
+    ])
       .then((data: any) => {
-        const labResultsData = g(data, 'getPatientPrismMedicalRecords', 'labResults', 'response');
-        const healthChecksNewData = g(
+        const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords',
-          'healthChecksNew',
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        const healthChecksData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'healthChecks',
           'response'
         );
         let mergeArray: { type: string; data: any }[] = [];
         labResultsData?.forEach((c) => {
           mergeArray.push({ type: 'testReports', data: c });
         });
-        healthChecksNewData?.forEach((c) => {
+        healthChecksData?.forEach((c) => {
           mergeArray.push({ type: 'healthCheck', data: c });
         });
         setTestReportMainData(phrSortByDate(mergeArray));
@@ -424,7 +436,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           const status = g(data, 'addPatientLabTestRecord', 'status');
           if (status) {
             getLatestLabAndHealthCheckRecords();
-            postWebEngagePHR('Test Report', WebEngageEventName.PHR_DELETE_TEST_REPORT);
+            postWebEngagePHR(
+              currentPatient,
+              WebEngageEventName.PHR_DELETE_TEST_REPORT,
+              'Test Report',
+              selectedItem
+            );
           } else {
             setShowSpinner(false);
           }

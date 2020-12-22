@@ -112,6 +112,8 @@ export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
   DESKTOP = "DESKTOP",
   IOS = "IOS",
+  MWEB = "MWEB",
+  WEB = "WEB",
 }
 
 export enum DIAGNOSTICS_TYPE {
@@ -743,6 +745,12 @@ export interface AppointmentPaymentInput {
   storeCode?: ONE_APOLLO_STORE_CODE | null;
 }
 
+export interface Attachments {
+  documentName?: string | null;
+  fileName?: string | null;
+  documentBase64String?: string | null;
+}
+
 export interface BookAppointmentInput {
   patientId: string;
   doctorId: string;
@@ -874,6 +882,7 @@ export interface DiagnosticBookHomeCollectionInput {
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
+  attachmentData?: (Attachments | null)[] | null;
 }
 
 export interface DiagnosticLineItem {
@@ -985,6 +994,7 @@ export interface FilterDoctorInput {
   pageNo?: number | null;
   pageSize?: number | null;
   searchText?: string | null;
+  radius?: number | null;
   isCare?: boolean | null;
 }
 
@@ -1063,7 +1073,8 @@ export interface MedicineCartOMSInput {
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
+  deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
   patientAddressId?: string | null;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
@@ -1260,6 +1271,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   patientId: string;
   bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;
@@ -1288,6 +1300,12 @@ export interface PrescriptionReUploadInput {
   orderId: number;
   fileUrl: string;
   prismPrescriptionFileId?: string | null;
+}
+
+export interface PreviousOrdersSkus {
+  patientId: string;
+  fromDate?: number | null;
+  toDate?: number | null;
 }
 
 export interface Range {

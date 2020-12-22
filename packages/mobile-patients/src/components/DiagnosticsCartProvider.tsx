@@ -5,7 +5,7 @@ import {
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Clinic, DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -29,6 +29,8 @@ export interface DiagnosticsCartItem {
   discountSpecialPrice?: number | null; //price
   collectionMethod: TEST_COLLECTION_TYPE;
   groupPlan?: string;
+  packageMrp?: number;
+  inclusions?: any[];
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -95,6 +97,9 @@ export interface DiagnosticsCartContextProps {
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
+  deliveryAddressCityId: string;
+  setDeliveryAddressCityId: ((id: string) => void) | null;
+
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
@@ -177,6 +182,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+
+  deliveryAddressCityId: '',
+  setDeliveryAddressCityId: null,
+
   addresses: [],
   setAddresses: null,
   addAddress: null,
@@ -260,6 +269,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   >(null);
 
   const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
+  const [deliveryAddressCityId, setDeliveryAddressCityId] = useState<
+    DiagnosticsCartContextProps['deliveryAddressCityId']
+  >('');
   const [diagnosticAreas, setDiagnosticAreas] = useState<
     DiagnosticsCartContextProps['diagnosticAreas']
   >([]);
@@ -269,6 +281,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     _setDiagnosticClinic(item);
     _setDiagnosticSlot(null);
     _setDeliveryAddressId('');
+    setDeliveryAddressCityId('');
   };
 
   const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
@@ -331,7 +344,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const addCartItem: DiagnosticsCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (cartItems.find((item) => item.id == itemToAdd.id)) {
+    if (cartItems.find((item) => item?.id == itemToAdd?.id)) {
       return;
     }
     const newCartItems = [itemToAdd, ...cartItems];
@@ -374,30 +387,48 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     }
   };
 
-  const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
-    cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
+  const withDiscount = cartItems?.filter(
+    (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+  );
+  const withAll = cartItems?.filter((item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL);
+  const savingWithDisc = withDiscount?.reduce(
+    (currTotal, currItem) =>
+      currTotal +
+      (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
+        ? currItem?.packageMrp! - currItem?.discountSpecialPrice!
+        : currItem?.price! - currItem?.discountSpecialPrice!),
+    0
+  );
+  const savingWithAll = withAll?.reduce(
+    (currTotal, currItem) =>
+      currTotal +
+      (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
+        ? currItem?.packageMrp! - currItem?.specialPrice!
+        : currItem?.price! - currItem?.specialPrice!),
+    0
   );
 
-  const cartSaving: DiagnosticsCartContextProps['cartSaving'] =
-    cartTotal -
-    parseFloat(
-      cartItems
-        ?.reduce(
-          (currTotal, currItem) =>
-            currTotal +
-            (currItem?.discountSpecialPrice || currItem?.specialPrice || currItem?.price),
-          0
-        )
-        .toFixed(2)
-    );
+  const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
+    cartItems
+      ?.reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem?.packageMrp! > currItem?.price ? currItem?.packageMrp! : currItem?.price),
+        0
+      )
+      .toFixed(2)
+  );
 
+  const cartSaving: DiagnosticsCartContextProps['cartTotal'] = savingWithDisc + savingWithAll;
   const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
     cartItems
       ?.reduce(
         (currTotal, currItem) =>
           currTotal +
           (currItem?.groupPlan == 'CIRCLE'
-            ? currItem?.circlePrice! - currItem?.circleSpecialPrice!
+            ? (currItem?.packageMrp! > currItem?.circlePrice!
+                ? currItem?.packageMrp!
+                : currItem?.circlePrice!) - currItem?.circleSpecialPrice!
             : 0 || 0),
         0
       )
@@ -471,6 +502,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setEPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
+    setDeliveryAddressCityId('');
     setClinicId('');
     setPinCode('');
     setClinics([]);
@@ -573,6 +605,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         addAddress,
         deliveryAddressId,
         setDeliveryAddressId,
+
+        deliveryAddressCityId,
+        setDeliveryAddressCityId,
+
         deliveryType,
         coupon,
         setCoupon,

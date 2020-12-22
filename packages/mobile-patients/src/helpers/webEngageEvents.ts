@@ -18,6 +18,7 @@ export enum ProductPageViewedSource {
   FULL_SEARCH = 'full search',
   RECENT_SEARCH = 'recent search',
   HOME_PAGE = 'home page',
+  BUY_AGAIN = 'buy again',
   CATEGORY_OR_LISTING = 'category or listing',
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
@@ -198,6 +199,7 @@ export enum WebEngageEventName {
   PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition - app',
   PHR_DELETE_BILLS = 'PHR Delete Bill - app',
   PHR_DELETE_INSURANCE = 'PHR Delete Insurance - app',
+  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records - app',
   PHR_USER_LINKING = 'PHR User Linking - app',
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
 
@@ -256,6 +258,7 @@ export enum WebEngageEventName {
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
+  BUY_AGAIN_PAGE_VIEWED = 'Buy again page viewed',
 
   // HDFC events
   HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
@@ -613,7 +616,20 @@ export interface WebEngageEvents {
 
   // ********** Home Screen Events ********** \\
 
-  [WebEngageEventName.BUY_MEDICINES]: PatientInfoWithSource;
+  [WebEngageEventName.BUY_MEDICINES]: {
+    Source: 'Home Screen' | 'Menu';
+    Pincode?: String;
+    Serviceability?: String;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
+  };
   [WebEngageEventName.ORDER_TESTS]: PatientInfoWithSource;
   [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
   [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
@@ -786,6 +802,8 @@ export interface WebEngageEvents {
     'Section Name'?: string;
     af_revenue: number;
     af_currency: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
     'product name': string;
@@ -806,6 +824,8 @@ export interface WebEngageEvents {
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.SKU_PRICE_MISMATCH]: {
     'Mobile Number': string;
@@ -836,6 +856,8 @@ export interface WebEngageEvents {
     'Store Name'?: string;
     'Popup Shown'?: boolean;
     'No. of out of stock items'?: number;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -911,6 +933,8 @@ export interface WebEngageEvents {
     'Store Address'?: string;
     af_revenue: number;
     af_currency: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -991,7 +1015,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
-    'Servicability': 'Yes' | 'No'
+    Servicability: 'Yes' | 'No';
   };
   [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Address Pincode': number;
@@ -1042,11 +1066,11 @@ export interface WebEngageEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search';
-    Section?: 'Featured tests' | 'Browse packages'
+    Section?: 'Featured tests' | 'Browse packages';
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
-    'Pincode': string | number;
+    Pincode: string | number;
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
     'Order Amount': number; // Optional
@@ -1399,6 +1423,9 @@ export interface WebEngageEvents {
     'Delivery Address': string;
     Pincode: string;
     'Delivery TAT': number;
+    TAT_Hrs: number;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
@@ -1875,6 +1902,8 @@ export interface WebEngageEvents {
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
     SectionName?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -1892,6 +1921,7 @@ export interface WebEngageEvents {
     CategoryId: string;
     CategoryName: string;
   };
+  [WebEngageEventName.BUY_AGAIN_PAGE_VIEWED]: {};
   [WebEngageEventName.CONFIRM_LOCATION]: {
     isMarkerModified: boolean;
     changedByInMeters: number;

@@ -280,6 +280,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pinCode,
     setPinCode,
     setCirclePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -826,7 +827,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 item!.productSpecialPrice == item!.productPrice! ? '' : item!.productSpecialPrice,
               sku: item!.productSku!,
               type_id:
-                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
+                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1
+                  ? 'PHARMA'
+                  : (item!.categoryName || '').toLowerCase().indexOf('pl') > -1
+                  ? 'PL'
+                  : 'FMCG',
               mou: item!.mou!,
               sell_online: 1,
             } as MedicineProduct)
@@ -1540,6 +1545,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async () => {
+    globalLoading!(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -1551,6 +1557,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      globalLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
@@ -1583,6 +1590,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }
       }
     } catch (error) {
+      globalLoading!(false);
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
   };
@@ -1890,7 +1898,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
-      () => setItemsLoading({ ...itemsLoading, [sku]: false })
+      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+      pharmacyCircleAttributes!
     );
   };
 

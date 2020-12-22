@@ -35,7 +35,6 @@ import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from './Spinner';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -44,6 +43,7 @@ import {
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 
 interface props extends NavigationScreenProps {
   visible: boolean;
@@ -90,22 +90,6 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP,
         CircleEventAttributes
       );
-  };
-
-  const fireCirclePurchaseEvent = (endDate: string) => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
-      'Patient UHID': currentPatient?.uhid,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer ID': currentPatient?.id,
-      'Membership End Date': endDate
-        ?.split('T')[0]
-        .split('-')
-        .reverse()
-        .join('-'),
-      Type: 'From HC',
-      Source: 'from banner',
-    };
-    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const renderCloseIcon = () => {
@@ -219,7 +203,10 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       });
       setLoading && setLoading(false);
       if (res?.data?.CreateUserSubscription?.success) {
-        fireCirclePurchaseEvent(res?.data?.CreateUserSubscription?.response?.end_date);
+        fireCirclePurchaseEvent(
+          currentPatient,
+          res?.data?.CreateUserSubscription?.response?.end_date
+        );
         planActivated.current = true;
         setPlanValidity(res?.data?.CreateUserSubscription?.response?.end_date);
       } else {

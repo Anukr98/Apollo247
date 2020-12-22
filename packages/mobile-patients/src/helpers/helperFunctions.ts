@@ -77,6 +77,7 @@ import {
   ShoppingCartContextProps,
   EPrescription,
   useShoppingCart,
+  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -1126,7 +1127,7 @@ export const addTestsToCart = async (
       },
       variables: {
         searchText: name,
-        cityID: 9 //will always check for hyderabad, so that items gets added to cart
+        cityID: 9, //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });
@@ -1137,37 +1138,36 @@ export const addTestsToCart = async (
 
     console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
 
-        const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
-        const searchQueriesData = (await searchQueries)
-          .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-          // .filter((item, index) => g(item, 'itemName')! == items[index])
-          .filter((item) => !!item);
-        const detailQueries = Promise.all(
-          searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
-        );
-        const detailQueriesData = (await detailQueries).map(
-          (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
-        );
+    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
+    const searchQueriesData = (await searchQueries)
+      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      // .filter((item, index) => g(item, 'itemName')! == items[index])
+      .filter((item) => !!item);
+    const detailQueries = Promise.all(
+      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+    );
+    const detailQueriesData = (await detailQueries).map(
+      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+    );
 
-        const finalArray: DiagnosticsCartItem[] = Array.from({
-          length: searchQueriesData.length,
-        }).map((_, index) => {
-          const s = searchQueriesData[index];
-          const testIncludedCount = detailQueriesData[index];
-          return {
-            id: `${s.itemId}`,
-            name: s.itemName,
-            price: s.rate,
-            specialPrice: undefined,
-            mou: testIncludedCount,
-            thumbnail: '',
-            collectionMethod: s.collectionType,
-          } as DiagnosticsCartItem;
-        });
+    const finalArray: DiagnosticsCartItem[] = Array.from({
+      length: searchQueriesData.length,
+    }).map((_, index) => {
+      const s = searchQueriesData[index];
+      const testIncludedCount = detailQueriesData[index];
+      return {
+        id: `${s.itemId}`,
+        name: s.itemName,
+        price: s.rate,
+        specialPrice: undefined,
+        mou: testIncludedCount,
+        thumbnail: '',
+        collectionMethod: s.collectionType,
+      } as DiagnosticsCartItem;
+    });
 
-        console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
-        return finalArray;
-     
+    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+    return finalArray;
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
     throw 'error';
@@ -1358,7 +1358,8 @@ export const postwebEngageAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
   sectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name']
+  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'],
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
@@ -1374,13 +1375,27 @@ export const postwebEngageAddToCartEvent = (
     Source: source,
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
+    ...pharmacyCircleAttributes,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
 
-export const postWebEngagePHR = (source: string, webEngageEventName: WebEngageEventName) => {
-  const eventAttributes = {
+export const postWebEngagePHR = (
+  currentPatient: any,
+  webEngageEventName: WebEngageEventName,
+  source: string = '',
+  data: any = {}
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+    ...data,
     Source: source,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
   };
   postWebEngageEvent(webEngageEventName, eventAttributes);
 };
@@ -1623,7 +1638,8 @@ export const postAppsFlyerAddToCartEvent = (
     price,
     special_price,
   }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
-  id: string
+  id: string,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
     'customer id': id,
@@ -1631,6 +1647,7 @@ export const postAppsFlyerAddToCartEvent = (
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku,
+    ...pharmacyCircleAttributes,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1675,7 +1692,8 @@ export const postFirebaseAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source'],
   section?: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Section'],
-  sectionName?: string
+  sectionName?: string,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
@@ -1693,6 +1711,7 @@ export const postFirebaseAddToCartEvent = (
       af_currency: 'INR',
       Section: section ? section : '',
       SectionName: sectionName || '',
+      ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   } catch (error) {}
@@ -1823,7 +1842,8 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
-  onComplete?: () => void
+  onComplete?: () => void,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -1848,7 +1868,8 @@ export const addPharmaItemToCart = (
       },
       otherInfo?.source,
       otherInfo?.section,
-      otherInfo?.categoryName
+      otherInfo?.categoryName,
+      pharmacyCircleAttributes!
     );
     postFirebaseAddToCartEvent(
       {
@@ -1859,7 +1880,9 @@ export const addPharmaItemToCart = (
         category_id: g(otherInfo, 'categoryId'),
       },
       g(otherInfo, 'source')!,
-      g(otherInfo, 'section')
+      g(otherInfo, 'section'),
+      '',
+      pharmacyCircleAttributes!
     );
     postAppsFlyerAddToCartEvent(
       {
@@ -1869,7 +1892,8 @@ export const addPharmaItemToCart = (
         special_price: cartItem.specialPrice,
         category_id: g(otherInfo, 'categoryId'),
       },
-      g(currentPatient, 'id')!
+      g(currentPatient, 'id')!,
+      pharmacyCircleAttributes!
     );
   };
 
@@ -2111,9 +2135,10 @@ export const removeConsecutiveComma = (value: string) => {
 
 export const getCareCashback = (price: number, type_id: string | null | undefined) => {
   const { circleCashback } = useShoppingCart();
+  let typeId = !!type_id ? type_id.toUpperCase() : '';
   let cashback = 0;
-  if (!!circleCashback && !!circleCashback[type_id]) {
-    cashback = price * (circleCashback[type_id] / 100);
+  if (!!circleCashback && !!circleCashback[typeId]) {
+    cashback = price * (circleCashback[typeId] / 100);
   }
   return cashback;
 };

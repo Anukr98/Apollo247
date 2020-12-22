@@ -311,7 +311,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     userName &&
     // userName.length > 1 &&
     phoneNumber &&
-    phoneNumber.length == 10 &&
+    phoneNumber.length >= 10 &&
     addressLine1 &&
     areaDetails &&
     // addressLine1.length > 1 &&
@@ -702,7 +702,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               </Text>
               <TextInputComponent
                 conatinerstyles={styles.textInputContainerStyle}
-                maxLength={10}
+                maxLength={13}
                 keyboardType="numeric"
                 onChangeText={(phoneNumber) => {
                   _validateAndSetPhoneNumber(phoneNumber);

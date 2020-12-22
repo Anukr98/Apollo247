@@ -9,7 +9,15 @@ import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareC
 export interface FreeDeliveryProps {}
 
 export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
-  const { cartItems, cartTotal, couponDiscount, productDiscount, isCircleSubscription, circleMembershipCharges, coupon } = useShoppingCart();
+  const {
+    cartItems,
+    cartTotal,
+    couponDiscount,
+    productDiscount,
+    isCircleSubscription,
+    circleMembershipCharges,
+    coupon,
+  } = useShoppingCart();
   const minValuetoNudgeUsers =
     AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY;
   const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
@@ -28,34 +36,28 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
   }
 
   function renderFreeDeliveryCard() {
-    return (
-        ((!!isCircleSubscription || circleMembershipCharges) && !coupon) ?
-        <View style={styles.careCashbackContainer}>
-          {renderCareCashback()}
-        </View> :
-        <View style={styles.card}>
-          <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0),
-              alignSelf: 'center',
-              flex: 1,
-            }}
-          >
-            Add
-            <Text style={{ color: '#02475B', ...theme.fonts.IBMPlexSansBold(12) }}>
-              {' '}
-              ₹{getToAdd()}{' '}
-            </Text>
-            of eligible items to your order to qualify for FREE Delivery
+    return (!!isCircleSubscription || circleMembershipCharges) && !coupon ? null : (
+      <View style={styles.card}>
+        <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0),
+            alignSelf: 'center',
+            flex: 1,
+          }}
+        >
+          Add
+          <Text style={{ color: '#02475B', ...theme.fonts.IBMPlexSansBold(12) }}>
+            {' '}
+            ₹{getToAdd()}{' '}
           </Text>
-        </View>
-    )
+          of eligible items to your order to qualify for FREE Delivery
+        </Text>
+      </View>
+    );
   }
 
-  return (showCard() || circleMembershipCharges) ? (
-    renderFreeDeliveryCard()
-  ) : null;
+  return showCard() || circleMembershipCharges ? renderFreeDeliveryCard() : null;
 };
 
 const renderCareCashback = () => {

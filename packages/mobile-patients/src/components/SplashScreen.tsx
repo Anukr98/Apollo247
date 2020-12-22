@@ -1002,9 +1002,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Pharmacy_Delivery_Charges',
     },
     top6_specailties: {
-      QA: 'QA_top6_specailties',
-      DEV: 'DEV_top6_specailties',
-      PROD: 'top6_specailties',
+      QA: 'QA_top_specialties',
+      DEV: 'DEV_top_specialties',
+      PROD: 'top_specialties',
     },
     min_value_to_nudge_users_to_avail_free_delivery: {
       QA: 'QA_min_value_to_nudge_users_to_avail_free_delivery',
@@ -1016,6 +1016,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
     Doctors_Page_Size: {
       PROD: 'Doctors_Page_Size',
+    },
+    Need_Help: {
+      PROD: 'Need_Help',
     },
   };
 
@@ -1081,8 +1084,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', (key) => config.getNumber(key));
 
-      setAppConfig('top6_specailties', 'TOP_SPECIALITIES', (key) =>
-        JSON.parse(config.getString(key) || 'null')
+      setAppConfig(
+        'top6_specailties',
+        'TOP_SPECIALITIES',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Need_Help',
+        'NEED_HELP',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.NEED_HELP
       );
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>

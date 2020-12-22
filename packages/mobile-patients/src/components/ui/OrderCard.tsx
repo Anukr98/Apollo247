@@ -260,7 +260,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     const showReorder =
       props.status == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
       props.status == MEDICINE_ORDER_STATUS.DELIVERED ||
-      props.status == MEDICINE_ORDER_STATUS.CANCELLED;
+      props.status == MEDICINE_ORDER_STATUS.CANCELLED ||
+      props.status == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
     const title = props.isOnHold!
       ? 'ON-HOLD'
       : props.isChanged!
