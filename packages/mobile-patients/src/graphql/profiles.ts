@@ -879,8 +879,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
 `;
 
 export const GET_PLATINUM_DOCTOR = gql`
-  query getPlatinumDoctor($specialtyId: ID, $zoneType: ZoneType, $zone: String) {
-    getPlatinumDoctor(specialtyId: $specialtyId, zoneType: $zoneType, zone: $zone) {
+  query getPlatinumDoctor($specialtyId: ID) {
+    getPlatinumDoctor(specialtyId: $specialtyId) {
       doctors {
         id
         displayName
@@ -1488,19 +1488,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         areaId
         rescheduleCount
         isRescheduled
-        collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
           quantity
           price
           groupPlan
-          itemObj {
-            itemType
-            testPreparationData
-            packageCalculatedMrp
-            inclusions
-          }
           pricingObj {
             mrp
             price
@@ -1543,6 +1536,19 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
     }
   }
 `;
+export const GET_PACKAGE_INCLUSIONS = gql`
+  query getInclusionsOfMultipleItems($itemID: [Int]!) {
+    getInclusionsOfMultipleItems(itemID: $itemID) {
+      inclusions{
+        itemId
+        requiredAttachment
+        sampleRemarks
+        sampleTypeName
+        testParameters
+      }
+    }
+  }
+`;
 
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
   query getDiagnosticOrderDetails($diagnosticOrderId: String) {
@@ -1567,19 +1573,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         orderType
         displayId
         createdDate
-        collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
           price
           quantity
           groupPlan
-          itemObj {
-            itemType
-            testPreparationData
-            packageCalculatedMrp
-            inclusions
-          }
           pricingObj {
             mrp
             price
@@ -1598,7 +1597,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
             testDescription
-            inclusions
             diagnosticPricing {
               mrp
               price
@@ -1655,9 +1653,6 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
-        packageCalculatedMrp
-        testDescription
-        inclusions
         diagnosticPricing {
           mrp
           price
@@ -1666,6 +1661,38 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
           startDate
           endDate
         }
+        testDescription
+        inclusions
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
+  query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
+    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID) {
+      diagnostics {
+        itemName
+        rate
+        itemType
+        rate
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+        testDescription
       }
     }
   }
@@ -1694,7 +1721,6 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testDescription
           collectionType
           inclusions
-          packageCalculatedMrp
           diagnosticPricing {
             mrp
             price
@@ -1726,7 +1752,6 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testDescription
           collectionType
           inclusions
-          packageCalculatedMrp
           diagnosticPricing {
             mrp
             price
@@ -3085,8 +3110,6 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         toAgeInDays
         testDescription
         testPreparationData
-        packageCalculatedMrp
-        inclusions
         diagnosticPricing {
           mrp
           price
@@ -3119,7 +3142,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
         toAgeInDays
         testDescription
         testPreparationData
-        inclusions
       }
     }
   }

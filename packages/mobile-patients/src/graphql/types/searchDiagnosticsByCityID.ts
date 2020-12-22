@@ -35,8 +35,6 @@ export interface searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics
   toAgeInDays: number;
   testDescription: string | null;
   testPreparationData: string;
-  packageCalculatedMrp: number | null;
-  inclusions: (number | null)[] | null;
   diagnosticPricing: (searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics_diagnosticPricing | null)[] | null;
 }
 

@@ -32,10 +32,8 @@ export interface getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics {
   fromAgeInDays: number;
   toAgeInDays: number;
   testPreparationData: string;
-  packageCalculatedMrp: number | null;
-  testDescription: string | null;
-  inclusions: (number | null)[] | null;
   diagnosticPricing: (getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics_diagnosticPricing | null)[] | null;
+  testDescription: string | null;
 }
 
 export interface getDiagnosticOrderItem_getDiagnosticOrderItem {

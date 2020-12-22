@@ -72,6 +72,7 @@ import {
   getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPackageInclusions } from '../../helpers/clientCalls';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -304,20 +305,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (itemId) {
       loadTestDetails(itemId);
     } else {
-      !TestDetailsDiscription &&
-        getPackageData(currentItemId)
-          .then(({ data }) => {
-            setsearchSate('success');
-            aphConsole.log('getPackageData \n', { data });
-            setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
-          })
-          .catch((e) => {
-            CommonBugFender('TestDetails', e);
-            aphConsole.log('getPackageData Error \n', { e });
-            setsearchSate('fail');
-          });
+      !TestDetailsDiscription && fetchPackageInclusions(currentItemId);
     }
   }, []);
+
+  const fetchPackageInclusions = async (currentItemId: string) => {
+    try {
+      const arrayOfId = [Number(currentItemId)];
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        aphConsole.log('getPackageData \n', { data });
+        setTestInfo({ ...testInfo, PackageInClussion: data || [] });
+      }
+    } catch (e) {
+      CommonBugFender('TestDetails', e);
+      aphConsole.log('getPackageData Error \n', { e });
+      setsearchSate('fail');
+    }
+  };
 
   useEffect(() => {
     if (testInfo?.testDescription != null) {
@@ -415,15 +421,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         preparation: testPreparationData,
       };
 
-      const {
-        data: { data },
-      } = await getPackageData(itemId);
-
-      setTestInfo({
-        ...partialTestDetails,
-        PackageInClussion: data || [],
-      } as TestPackageForDetails);
-      setsearchSate('success');
+      try {
+        const arrayOfId = [Number(itemId)];
+        const res: any = await getPackageInclusions(client, arrayOfId);
+        if (res) {
+          const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+          aphConsole.log('getPackageData \n', { data });
+          setTestInfo({ ...partialTestDetails, ...testInfo, PackageInClussion: data || [] });
+          setsearchSate('success');
+        }
+      } catch (e) {
+        CommonBugFender('TestDetails', e);
+        aphConsole.log('getPackageData Error \n', { e });
+        setsearchSate('fail');
+      }
     } catch (error) {
       setsearchSate('fail');
     }
