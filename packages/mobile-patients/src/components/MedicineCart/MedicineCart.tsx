@@ -137,6 +137,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     pharmacyCircleAttributes,
+    newAddressAdded,
+    setNewAddressAdded,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -210,6 +212,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       isfocused && availabilityTat(false, true);
     }
   }, [deliveryAddressId]);
+
+  useEffect(() => {
+    // call servicability api if new address is added from cart
+    const addressLength = addresses.length;
+    if (!!addressLength && !!newAddressAdded) {
+      const newAddress = addresses.filter((value) => value.id === newAddressAdded);
+      checkServicability(newAddress[0]);
+      setNewAddressAdded && setNewAddressAdded('');
+    }
+  }, [newAddressAdded]);
 
   useEffect(() => {
     if (isfocused) {
@@ -324,7 +336,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
-    if (deliveryAddressId && deliveryAddressId == address.id) {
+    if (deliveryAddressId && deliveryAddressId == address.id && !newAddressAdded) {
       return;
     }
     try {
@@ -336,6 +348,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
+        setloading(false);
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
         setloading(false);

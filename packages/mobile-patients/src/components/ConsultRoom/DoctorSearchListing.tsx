@@ -590,9 +590,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                           lat: response.latitude || '',
                           lng: response.longitude || '',
                         },
-                        'distance',
-                        response.pincode,
-                        docTabSelected,
+                        'availability',
+                        undefined,
+                        false,
                         doctorSearch
                       );
                   })
