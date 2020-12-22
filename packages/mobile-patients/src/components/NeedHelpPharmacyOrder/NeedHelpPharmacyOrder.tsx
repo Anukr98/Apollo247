@@ -18,15 +18,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import {
-  Alert,
-  FlatList,
-  ListRenderItemInfo,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { FacebookLoader } from 'react-native-easy-content-loader';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -82,6 +74,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const renderItem = ({ item }: ListRenderItemInfo<MedOrder>) => {
     const onPressHelp = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+        isOrderRelatedIssue: true,
         orderId: item.billNumber || item.orderAutoId,
         queryCategory,
         email,

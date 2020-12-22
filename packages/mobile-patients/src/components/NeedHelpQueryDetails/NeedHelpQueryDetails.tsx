@@ -1,16 +1,26 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   Breadcrumb,
   Props as BreadcrumbProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { SEND_HELP_EMAIL } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  SendHelpEmail,
+  SendHelpEmailVariables,
+} from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { Divider } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -19,6 +29,7 @@ export interface Props
     queryCategory: string;
     email: string;
     orderId: string;
+    isOrderRelatedIssue: boolean;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -27,11 +38,15 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const email = navigation.getParam('email') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const orderId = navigation.getParam('orderId') || '';
-  const needHelp = AppConfig.Configuration.NEED_HELP;
-  const queryReasons = needHelp.find(({ category }) => category === queryCategory)?.options || [];
+  const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
+  const queryReasons = getFilteredReasons(queryCategory, isOrderRelatedIssue);
+  const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { needHelpToContactInMessage } = useAppCommonData();
 
   const [queryIndex, setQueryIndex] = useState<number>();
-  const [comment, setComment] = useState<string>('');
+  const [comments, setComments] = useState<string>('');
 
   const renderHeader = () => {
     const onPressBack = () => navigation.goBack();
@@ -42,15 +57,65 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return <Breadcrumb links={breadCrumb} containerStyle={styles.breadcrumb} />;
   };
 
+  const onSuccess = () => {
+    showAphAlert!({
+      title: string.common.hiWithSmiley,
+      description: needHelpToContactInMessage || string.needHelpSubmitMessage,
+      unDismissable: true,
+      onPressOk: () => {
+        hideAphAlert!();
+        navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+          })
+        );
+      },
+    });
+  };
+
+  const onError = () => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: string.genericError,
+    });
+  };
+
+  const onSubmit = async () => {
+    try {
+      setLoading!(true);
+      const variables: SendHelpEmailVariables = {
+        helpEmailInput: {
+          category: queryCategory,
+          reason: queryReasons[queryIndex!],
+          comments: comments,
+          patientId: currentPatient?.id,
+          email: email,
+        },
+      };
+      await client.query<SendHelpEmail, SendHelpEmailVariables>({
+        query: SEND_HELP_EMAIL,
+        variables,
+      });
+      setLoading!(false);
+      onSuccess();
+    } catch (error) {
+      setLoading!(false);
+      onError();
+    }
+  };
+
   const renderTextInput = () => {
     return [
       <TextInputComponent
-        value={comment}
-        onChangeText={setComment}
+        value={comments}
+        onChangeText={setComments}
         placeholder={string.weAreSorryWhatWentWrong}
         conatinerstyles={styles.textInputContainer}
+        autoFocus={true}
       />,
-      <Text style={[styles.submit, { opacity: comment ? 1 : 0.5 }]}>
+      <Text onPress={onSubmit} style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}>
         {string.submit.toUpperCase()}
       </Text>,
     ];
@@ -59,7 +124,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderItem = ({ index, item }: ListRenderItemInfo<string>) => {
     const onPress = () => {
       setQueryIndex(index);
-      setComment('');
+      setComments('');
     };
     return (
       <>
@@ -104,6 +169,20 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       {renderReasons()}
     </SafeAreaView>
   );
+};
+
+const getFilteredReasons = (queryCategory: string, isOrderRelated?: boolean) => {
+  const needHelp = AppConfig.Configuration.NEED_HELP;
+  const category = needHelp.find(({ category }) => category === queryCategory);
+  const queryReasons = category?.options || [];
+
+  return category?.orderRelatedIndices
+    ? queryReasons.filter((_, index) =>
+        isOrderRelated
+          ? (category?.orderRelatedIndices || [])?.indexOf(index) > -1
+          : (category?.orderRelatedIndices || [])?.indexOf(index) === -1
+      )
+    : queryReasons;
 };
 
 const { text, container, card } = theme.viewStyles;

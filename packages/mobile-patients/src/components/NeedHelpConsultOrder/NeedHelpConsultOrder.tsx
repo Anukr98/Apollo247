@@ -79,6 +79,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
   const renderItem = ({ item }: ListRenderItemInfo<Consult>) => {
     const onPressHelp = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+        isOrderRelatedIssue: true,
         orderId: item.displayId,
         queryCategory,
         email,
