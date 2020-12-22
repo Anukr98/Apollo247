@@ -19,6 +19,7 @@ import { Divider, Image } from 'react-native-elements';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -29,6 +30,7 @@ export interface Props extends MedicineProduct {
   quantity: number;
   containerStyle?: TouchableOpacityProps['style'];
   onCartScreen?: boolean;
+  onPressCashback?: () => void;
 }
 
 export const ProductCard: React.FC<Props> = ({
@@ -48,8 +50,14 @@ export const ProductCard: React.FC<Props> = ({
   onPressAddQty,
   onPressSubtractQty,
   is_express,
+  onPressCashback,
 }) => {
-  const { circleCashback } = useShoppingCart();
+  const {
+    circleSubscription,
+  } = useAppCommonData();
+  const {
+    isCircleSubscription,
+  } = useShoppingCart();
   const isPrescriptionRequired = is_prescription_required == 1;
   const discount = getDiscountPercentage(price, special_price);
 
@@ -133,7 +141,16 @@ export const ProductCard: React.FC<Props> = ({
     const finalPrice = discount ? special_price : price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback) {
-      return <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />;
+      return (
+        <TouchableOpacity activeOpacity={1} onPress={() => {
+          if (!circleSubscription?._id || !isCircleSubscription) {
+            // if not a circle member open circle webview
+            onPressCashback && onPressCashback();
+          }
+        }}>
+          <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />
+        </TouchableOpacity>
+      );
     } else {
       return <></>;
     }

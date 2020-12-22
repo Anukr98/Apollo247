@@ -62,15 +62,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     circleActivated || false
   );
   const planPurchased = useRef<boolean | undefined>(circleActivated);
-  const {
-    setCirclePlanSelected,
-    defaultCirclePlan,
-    selectDefaultPlan,
-    circleSubscriptionId,
-    circlePlanValidity,
-  } = useShoppingCart();
+  const { setCirclePlanSelected, circleSubscriptionId, circlePlanValidity } = useShoppingCart();
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
+  const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [benefitId, setbenefitId] = useState<string>('');
 
@@ -92,7 +87,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (membershipPlans) {
         setMembershipPlans(membershipPlans);
-        selectDefaultPlan && selectDefaultPlan(membershipPlans);
+        const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
+        if (defaultPlan?.length > 0) {
+          setDefaultCirclePlan(defaultPlan[0]);
+        }
       }
     } catch (error) {
       CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
@@ -204,7 +202,12 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() =>
-          handleOnBannerClick(cta_action.type, cta_action.meta.action, cta_action.meta.message)
+          handleOnBannerClick(
+            cta_action.type,
+            cta_action.meta.action,
+            cta_action.meta.message,
+            cta_action?.url
+          )
         }
         style={[
           styles.hdfcBanner,
@@ -255,7 +258,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             handleOnBannerClick(
               cta_action?.type,
               cta_action?.meta?.action,
-              cta_action?.meta?.message
+              cta_action?.meta?.message,
+              cta_action?.url
             )
           }
         >
@@ -346,7 +350,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     );
   };
 
-  const handleOnBannerClick = (type: any, action: any, message: any) => {
+  const handleOnBannerClick = (type: any, action: any, message: any, url: string) => {
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
@@ -380,9 +384,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       }
     } else if (action == hdfc_values.SPECIALITY_LISTING) {
       fireBannerCovidClickedWebengageEvent();
-      props.navigation.navigate('DoctorSearchListing', {
-        specialities: [type],
-      });
+      if (type) {
+        props.navigation.navigate('DoctorSearchListing', {
+          specialities: [type],
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      }
     } else {
       if (type == hdfc_values.REDIRECT) {
         if (action == hdfc_values.SPECIALITY_LISTING) {
@@ -432,6 +440,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         }
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
+      } else if (action == hdfc_values.ABSOLUTE_URL) {
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          itemId: url.split('/').reverse()[0],
+        });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
@@ -513,6 +525,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             onClose={() => setShowHdfcConnectPopup(false)}
             benefitId={benefitId || ''}
             successCallback={() => successCallback()}
+            userSubscriptionId={circleSubscriptionId}
           />
         </Overlay>
       </View>

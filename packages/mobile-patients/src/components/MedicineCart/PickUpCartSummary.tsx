@@ -37,6 +37,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     ePrescriptions,
     stores: storesFromContext,
     setPhysicalPrescriptions,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -114,7 +115,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
 
   function onPressProceedtoPay() {
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, { isStorePickup: true });
-    postwebEngageProceedToPayEvent(shoppingCart, false);
+    postwebEngageProceedToPayEvent(shoppingCart, false, '', pharmacyCircleAttributes!);
   }
 
   const renderAlert = (message: string) => {

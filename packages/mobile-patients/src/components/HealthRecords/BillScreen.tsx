@@ -26,6 +26,8 @@ import {
   getSourceName,
   handleGraphQlError,
   phrSortWithDate,
+  postWebEngagePHR,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -34,9 +36,13 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -71,13 +77,11 @@ const styles = StyleSheet.create({
 
 export interface BillScreenProps
   extends NavigationScreenProps<{
-    medicalBillsData: MedicalBillsType[];
     onPressBack: () => void;
   }> {}
 
 export const BillScreen: React.FC<BillScreenProps> = (props) => {
-  const medicalBillsData = props.navigation?.getParam('medicalBillsData') || [];
-  const [medicalBillsMainData, setMedicalBillsMainData] = useState<any>(medicalBillsData);
+  const [medicalBillsMainData, setMedicalBillsMainData] = useState<any>([]);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
@@ -86,7 +90,10 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     data: MedicalBillsType[];
   }> | null>(null);
   const [callApi, setCallApi] = useState(false);
-  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
+
+  useEffect(() => {
+    getLatestMedicalBillRecords();
+  }, []);
 
   useEffect(() => {
     let finalData: { key: string; data: MedicalBillsType[] }[] = [];
@@ -105,7 +112,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, [callApi, callPhrMainApi]);
+  }, [callApi]);
 
   useEffect(() => {
     if (callApi) {
@@ -114,20 +121,22 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   }, [callApi]);
 
   const gotoPHRHomeScreen = () => {
-    if (!callApi && !callPhrMainApi) {
-      props.navigation.state.params?.onPressBack();
-    }
+    props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
   };
 
   const getLatestMedicalBillRecords = () => {
     setShowSpinner(true);
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.MEDICALBILL])
       .then((data: any) => {
-        const medicalBills = g(data, 'getPatientPrismMedicalRecords', 'medicalBills', 'response');
+        const medicalBills = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'medicalBills',
+          'response'
+        );
         setMedicalBillsMainData(phrSortWithDate(medicalBills));
         setShowSpinner(false);
-        setCallPhrMainApi(true);
       })
       .catch((error) => {
         setShowSpinner(false);
@@ -183,6 +192,12 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalBillRecords();
+          postWebEngagePHR(
+            currentPatient,
+            WebEngageEventName.PHR_DELETE_BILLS,
+            'Bill',
+            selectedItem
+          );
         } else {
           setShowSpinner(false);
         }
@@ -259,6 +274,10 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
           title={`ADD DATA`}
           onPress={() => {
             setCallApi(false);
+            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+              Source: 'Bill',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'MedicalBill',
               recordType: MedicalRecordType.MEDICALBILL,

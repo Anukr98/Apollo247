@@ -123,10 +123,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Number': g(currentPatient, 'mobileNumber'),
-      'OrderID:': orderDetails.id,
-      'Sample Collection Date': orderDetails.diagnosticDate,
+      'Order id:': orderDetails?.id,
+      'Order Amount': grossCharges!,
+      'Sample Collection Date': orderDetails?.diagnosticDate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
   }, []);
@@ -152,6 +151,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
 
+  const getDiscountObject = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+  );
+
   const allCirclePlanObjects =
     getCircleObject?.map((item) =>
       item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
@@ -160,6 +163,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     getAllObject?.map((item) =>
       item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)
     ) || [];
+
+  const allSpecialPlanObjects =
+    getDiscountObject?.map((item) =>
+      item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT)
+    ) || [];
+
   const discountCirclePrice =
     allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountCirclePrice });
@@ -168,8 +177,17 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     allNormalPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountNormalPrice });
 
+  const discountSpecialPrice =
+    allSpecialPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
+  console.log({ discountSpecialPrice });
+
   const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
   const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+  const totalDiscountSaving = discountSpecialPrice?.reduce(
+    (prevVal, currVal) => prevVal + currVal,
+    0
+  );
+  const totalSavings = totalCartSaving + totalDiscountSaving;
 
   /**
    * to handle the quantity
@@ -184,7 +202,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
 
   const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
 
-  const grossCharges = totalIndividualDiagonsticsCharges! + totalCartSaving! + totalCircleSaving!;
+  const grossCharges =
+    totalIndividualDiagonsticsCharges! +
+    totalCartSaving! +
+    totalCircleSaving! +
+    totalDiscountSaving!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
@@ -330,7 +352,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           </View>
         </View>
       )}
-      {!!totalCartSaving && (
+      {!!totalSavings && (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
             <Text style={styles.commonText}></Text>
@@ -352,7 +374,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
               - {string.common.Rs}
-              {totalCartSaving}
+              {totalSavings}
             </Text>
           </View>
         </View>

@@ -177,75 +177,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
-  const handleOrderSuccess = async () => {
-    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    try {
-      if (checkoutEventAttributes) {
-        const paymentEventAttributes = {
-          order_Id: orderId,
-          order_AutoId: orderAutoId,
-          LOB: 'Pharmacy',
-          Payment_Status: 'PAYMENT_SUCCESS',
-        };
-        postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
-        postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
-        postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
-        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
-        postAppsFlyerEvent(
-          AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
-          appsflyerEventAttributes
-        );
-        firePurchaseEvent();
-        try {
-          Promise.all(
-            cartItems.map((cartItem) =>
-              trackTagalysEvent(
-                {
-                  event_type: 'product_action',
-                  details: {
-                    sku: cartItem.id,
-                    action: 'buy',
-                    quantity: cartItem.quantity,
-                    order_id: `${orderAutoId}`,
-                  } as Tagalys.ProductAction,
-                },
-                g(currentPatient, 'id')!
-              )
-            )
-          );
-        } catch (error) {
-          CommonBugFender(`${AppRoutes.PaymentScene}_trackTagalysEvent`, error);
-        }
-      }
-    } catch (error) {}
-
-    if (!!circleMembershipCharges) {
-      setCircleMembershipCharges && setCircleMembershipCharges(0);
-      AsyncStorage.removeItem('circlePlanSelected');
-    }
-    setLoading!(false);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
-    showAphAlert!({
-      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-      description:
-        'Your order has been placed successfully. We will confirm the order in a few minutes.',
-      children: (
-        <OrderPlacedPopUp
-          deliveryTime={deliveryTime}
-          orderAutoId={`${orderAutoId}`}
-          onPressViewInvoice={() => navigateToOrderDetails(true)}
-          onPressTrackOrder={() => navigateToOrderDetails(false)}
-        />
-      ),
-    });
-  };
-
   const fireOrderFailedEvent = () => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
       OrderID: orderId,
@@ -291,10 +222,12 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const onWebViewStateChange = (data: NavState, WebViewRef: any) => {
     const redirectedUrl = data.url;
+    const loading = data.loading;
     console.log({ redirectedUrl, data });
     if (
       redirectedUrl &&
-      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1 &&
+      loading
     ) {
       WebViewRef.stopLoading();
       // handleOrderSuccess();
@@ -303,7 +236,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       navigationToPaymentStatus('PAYMENT_SUCCESS');
     } else if (
       redirectedUrl &&
-      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1 &&
+      loading
     ) {
       WebViewRef.stopLoading();
       fireOrderFailedEvent();

@@ -395,7 +395,7 @@ export const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 4,
-    title: 'TESTS',
+    title: 'LAB TESTS',
     image: <TestsIcon />,
   },
   {
@@ -460,6 +460,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circleSubscriptionId,
     setHdfcSubscriptionId,
     setCirclePlanValidity,
+    setCirclePaymentReference,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -725,7 +727,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     eventName: WebEngageEventName,
     source?: PatientInfoWithSource['Source']
   ) => {
-    const eventAttributes: PatientInfo = {
+    let eventAttributes: PatientInfo = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -753,6 +755,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
+    if (eventName == WebEngageEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
     postWebEngageEvent(eventName, eventAttributes);
   };
 
@@ -770,7 +775,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     eventName: FirebaseEventName,
     source?: PatientInfoWithSourceFirebase['Source']
   ) => {
-    const eventAttributes: PatientInfoFirebase = {
+    let eventAttributes: PatientInfoFirebase = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -789,6 +794,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     ) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
+    }
+    if (eventName == FirebaseEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
     }
     postFirebaseEvent(eventName, eventAttributes);
   };
@@ -838,7 +846,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 3,
-      title: 'Order Tests',
+      title: 'Book Lab Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
@@ -864,7 +872,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     {
       id: 5,
-      title: 'Symptom Checker',
+      title: 'Book Doctor by Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
@@ -1141,6 +1149,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          * data?.APOLLO ----> Circle data
          */
         if (data?.APOLLO?.[0]._id) {
+          const paymentRef = data?.APOLLO?.[0]?.payment_reference;
+          const paymentStoredVal =
+            typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1151,11 +1162,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
           setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
+          paymentStoredVal &&
+            setCirclePaymentReference &&
+            setCirclePaymentReference(paymentStoredVal);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
           setCirclePlanValidity && setCirclePlanValidity(null);
+          setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
           fireFirstTimeLanded();
           setCircleStatus && setCircleStatus('');

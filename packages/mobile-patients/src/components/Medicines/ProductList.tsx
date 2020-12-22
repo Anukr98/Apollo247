@@ -25,6 +25,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
@@ -54,7 +55,13 @@ export const ProductList: React.FC<Props> = ({
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
-  const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const {
+    getCartItemQty,
+    addCartItem,
+    updateCartItem,
+    removeCartItem,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string) => {
@@ -87,8 +94,17 @@ export const ProductList: React.FC<Props> = ({
         categoryId: productPageViewedEventProps?.CategoryID,
         categoryName: productPageViewedEventProps?.CategoryName,
         section: productPageViewedEventProps?.SectionName,
-      }
+      },
+      () => {},
+      pharmacyCircleAttributes!
     );
+  };
+
+  const onPressCareCashback = () => {
+    navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      source: 'Pharma',
+    });
   };
 
   const renderItem = (info: ListRenderItemInfo<MedicineProduct>) => {
@@ -112,6 +128,7 @@ export const ProductList: React.FC<Props> = ({
       onPressAddQty: onPressAddQty,
       onPressSubtractQty: onPressSubtractQty,
       onPressNotify: () => onPressNotify(item.name),
+      onPressCashback: () => onPressCareCashback(),
       containerStyle:
         index === 0
           ? styles.itemStartContainer

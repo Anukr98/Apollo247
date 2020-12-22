@@ -134,10 +134,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
-        setLoading(false);
-        fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
+        setLoading(false);
+        fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
       .catch((error) => {
@@ -379,7 +379,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusIcon = () => {
-    if (status === success) {
+    if (status === success || paymentMode === 'COD') {
       return <Success style={styles.statusIconStyles} />;
     } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
@@ -408,7 +408,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusCardColour = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       return colors.SUCCESS;
     } else if (status == failure || status == aborted) {
       return colors.FAILURE;
@@ -420,7 +420,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const statusText = () => {
     let message = 'PAYMENT PENDING';
     let textColor = theme.colors.PENDING_TEXT;
-    if (status === success) {
+    if (paymentMode === 'COD') {
+      message = ' ORDER CONFIRMED';
+      textColor = theme.colors.SUCCESS_TEXT;
+    } else if (status === success) {
       message = ' PAYMENT SUCCESSFUL';
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
@@ -572,7 +575,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const getButtonText = () => {
-    if (status == success) {
+    if (paymentMode === 'COD') {
+      return 'VIEW ORDER';
+    } else if (status == success) {
       return 'TRACK ORDER';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
@@ -611,7 +616,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const handleButton = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       clearCircleSubscriptionData();
       props.navigation.navigate(AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
@@ -651,7 +656,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             {getButtonText()}
           </Text>
         </TouchableOpacity>
-        {status === success && (
+        {(status === success || paymentMode === 'COD') && (
           <TouchableOpacity
             style={styles.textButtonStyle}
             onPress={() => {
@@ -690,6 +695,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               left: -5,
             }}
           >
+            {' '}
             You{' '}
             <Text style={theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
@@ -714,7 +720,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               {status === 'PAYMENT_SUCCESS' && isCircleBought
                 ? renderAddedCirclePlanWithValidity()
                 : null}
-              {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') && totalCashBack
+              {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') &&
+              totalCashBack &&
+              !isCircleBought
                 ? renderCircleSavingsOnPurchase()
                 : null}
               {renderCODNote()}

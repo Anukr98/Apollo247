@@ -137,7 +137,18 @@ export interface AppsFlyerEvents {
 
   // ********** Home Screen Events ********** \\
 
-  [AppsFlyerEventName.BUY_MEDICINES]: PatientInfoWithSource;
+  [AppsFlyerEventName.BUY_MEDICINES]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    Source: 'Home Screen' | 'Menu';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
+  };
   [AppsFlyerEventName.ORDER_TESTS]: PatientInfoWithSource;
   [AppsFlyerEventName.MANAGE_DIABETES]: PatientInfo;
   [AppsFlyerEventName.TRACK_SYMPTOMS]: PatientInfo;
@@ -167,6 +178,8 @@ export interface AppsFlyerEvents {
     item_type: string;
     brand?: string;
     sku: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
     productname: string;
@@ -199,6 +212,8 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
@@ -228,6 +243,8 @@ export interface AppsFlyerEvents {
     'Delivery Date Time'?: string; // Optional (only if Home)
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
@@ -271,6 +288,8 @@ export interface AppsFlyerEvents {
     af_currency: string;
     'order id': string;
     'coupon applied': boolean;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -310,6 +329,8 @@ export interface AppsFlyerEvents {
     ItemCode?: string;
     ItemPrice?: number;
     LOB?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [AppsFlyerEventName.ITEMS_REMOVED_FROM_CART]: {
@@ -326,6 +347,8 @@ export interface AppsFlyerEvents {
     Pincode?: string;
     DeliveryTAT?: number;
     LOB?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [AppsFlyerEventName.ORDER_FAILED]: {

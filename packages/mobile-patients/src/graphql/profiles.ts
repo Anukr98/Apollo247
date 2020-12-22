@@ -92,8 +92,16 @@ export const UPDATE_PATIENT = gql`
 `;
 
 export const INITIATE_CALL_FOR_PARTNER = gql`
-  query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
-    initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
+  query initiateCallForPartner(
+    $mobileNumber: String!
+    $benefitId: String!
+    $userSubscriptionId: String
+  ) {
+    initiateCallForPartner(
+      mobileNumber: $mobileNumber
+      benefitId: $benefitId
+      userSubscriptionId: $userSubscriptionId
+    ) {
       success
     }
   }
@@ -2279,22 +2287,6 @@ export const SAVE_NOTIFICATION_SETTINGS = gql`
 //   }
 // `;
 
-export const ADD_MEDICAL_RECORD = gql`
-  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
-    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
-      status
-    }
-  }
-`;
-
-export const ADD_PATIENT_HEALTH_CHECK_RECORD = gql`
-  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
-    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
-      status
-    }
-  }
-`;
-
 export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
   mutation addPatientHospitalizationRecord(
     $AddHospitalizationRecordInput: AddHospitalizationRecordInput
@@ -2313,52 +2305,9 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
-export const GET_MEDICAL_PRISM_RECORD = gql`
-  query getPatientPrismMedicalRecords($patientId: ID!) {
-    getPatientPrismMedicalRecords(patientId: $patientId) {
-      labTests {
-        id
-        labTestName
-        labTestSource
-        labTestDate
-        labTestReferredBy
-        additionalNotes
-        testResultPrismFileIds
-        observation
-        labTestResultParameters {
-          parameterName
-          unit
-          result
-          range
-          setOutOfRange
-          setResultDate
-          setUnit
-          setParameterName
-          setRange
-          setResult
-        }
-        departmentName
-        signingDocName
-      }
-      healthChecks {
-        id
-        healthCheckName
-        healthCheckDate
-        healthCheckPrismFileIds
-        healthCheckSummary
-        source
-        appointmentDate
-        followupDate
-      }
-      hospitalizations {
-        id
-        diagnosisNotes
-        dateOfDischarge
-        dateOfHospitalization
-        dateOfNextVisit
-        hospitalizationPrismFileIds
-        source
-      }
+export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
+  query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
+    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
       labResults {
         response {
           id
@@ -2422,7 +2371,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorMsg
         errorType
       }
-      healthChecksNew {
+      healthChecks {
         errorCode
         errorMsg
         errorType
@@ -2448,7 +2397,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           followupDate
         }
       }
-      hospitalizationsNew {
+      hospitalizations {
         errorCode
         errorMsg
         errorType
@@ -3067,6 +3016,14 @@ export const ADD_CHAT_DOCUMENTS = gql`
   }
 `;
 
+export const GET_PREVIOUS_ORDERS_SKUS = gql`
+  mutation getPreviousOrdersSkus($previousOrdersSkus: PreviousOrdersSkus) {
+    getPreviousOrdersSkus(previousOrdersSkus: $previousOrdersSkus) {
+      SkuDetails
+    }
+  }
+`;
+
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
@@ -3117,38 +3074,6 @@ export const DELETE_DEVICE_TOKEN = gql`
   mutation deleteDeviceToken($deviceToken: String, $patientId: String) {
     deleteDeviceToken(deviceToken: $deviceToken, patientId: $patientId) {
       status
-    }
-  }
-`;
-
-export const SEARCH_DIAGNOSTICS = gql`
-  query searchDiagnostics($city: String, $patientId: String, $searchText: String!) {
-    searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
-      diagnostics {
-        id
-        itemId
-        itemName
-        itemType
-        rate
-        itemType
-        gender
-        itemRemarks
-        city
-        state
-        collectionType
-        fromAgeInDays
-        toAgeInDays
-        testDescription
-        testPreparationData
-        diagnosticPricing {
-          mrp
-          price
-          groupPlan
-          status
-          startDate
-          endDate
-        }
-      }
     }
   }
 `;

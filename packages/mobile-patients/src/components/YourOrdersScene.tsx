@@ -1,8 +1,24 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { BuyAgainSection } from '@aph/mobile-patients/src/components/ui/BuyAgainSection';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  GET_MEDICINE_ORDERS_OMS__LIST,
+  GET_PREVIOUS_ORDERS_SKUS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
+import {
+  getPreviousOrdersSkus,
+  getPreviousOrdersSkusVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPreviousOrdersSkus';
 import {
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_STATUS,
@@ -15,18 +31,10 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React from 'react';
-import { SafeAreaView, StyleSheet, View, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { FlatList, ListRenderItem, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useQuery } from 'react-apollo-hooks';
-import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  getMedicineOrdersOMSListVariables,
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-} from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -38,8 +46,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const formatOrders = (orders?: getMedicineOrdersOMSList) =>
-  ((orders?.getMedicineOrdersOMSList?.medicineOrdersList as MedOrder[]) || []).filter(
+const formatOrders = (orders: getMedicineOrdersOMSList, skuArray: string[]) => {
+  const formattedOrders = (
+    (orders?.getMedicineOrdersOMSList?.medicineOrdersList as MedOrder[]) || []
+  ).filter(
     (item) =>
       !(
         item.medicineOrdersStatus?.length == 1 &&
@@ -47,26 +57,65 @@ const formatOrders = (orders?: getMedicineOrdersOMSList) =>
       )
   );
 
+  return formattedOrders?.length && skuArray?.length
+    ? [...formattedOrders.slice(0, 1), { buyAgainSection: true }, ...formattedOrders.slice(1)]
+    : formattedOrders;
+};
+
 type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
+type AppSection = { buyAgainSection: true };
 export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const { data, error, loading, refetch } = useQuery<
-    getMedicineOrdersOMSList,
-    getMedicineOrdersOMSListVariables
-  >(GET_MEDICINE_ORDERS_OMS__LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'no-cache',
-  });
-  const orders = loading || error ? [] : formatOrders(data);
+  const client = useApolloClient();
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState<any>([]);
+  const [skuList, setSkuList] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const ordersResponse = await client.query<
+        getMedicineOrdersOMSList,
+        getMedicineOrdersOMSListVariables
+      >({
+        query: GET_MEDICINE_ORDERS_OMS__LIST,
+        variables: { patientId: currentPatient?.id },
+        fetchPolicy: 'no-cache',
+      });
+      let skuResponse;
+      try {
+        skuResponse = await client.mutate<getPreviousOrdersSkus, getPreviousOrdersSkusVariables>({
+          mutation: GET_PREVIOUS_ORDERS_SKUS,
+          variables: {
+            previousOrdersSkus: {
+              patientId: currentPatient?.id,
+            },
+          },
+          fetchPolicy: 'no-cache',
+        });
+      } catch (error) {}
+
+      const skuArray = (skuResponse?.data?.getPreviousOrdersSkus?.SkuDetails || []) as string[];
+      setOrders(formatOrders(ordersResponse?.data, skuArray));
+      setSkuList(skuArray);
+      setLoading(false);
+      setError(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      CommonBugFender(`${AppRoutes.YourOrdersScene}_fetchOrders`, error);
+    }
+  };
 
   const refetchOrders = async () => {
-    try {
-      await refetch();
-    } catch (e) {
-      CommonBugFender(`${AppRoutes.YourOrdersScene}_refetchOrders`, e);
-    }
+    fetchOrders();
   };
 
   const statusToShowNewItems = [
@@ -221,12 +270,27 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const renderOrders = () => {
+    const renderItem: ListRenderItem<MedOrder | AppSection> = ({ item, index }) => {
+      const onPressBuyAgain = () => {
+        props.navigation.navigate(AppRoutes.MedicineBuyAgain, {
+          movedFrom: AppRoutes.YourOrdersScene,
+          skuList: skuList,
+        });
+      };
+
+      return (item as AppSection)?.buyAgainSection ? (
+        <BuyAgainSection onPress={onPressBuyAgain} />
+      ) : (
+        renderOrder(item as MedOrder, index)
+      );
+    };
+
     return (
       <FlatList
         keyExtractor={(_, index) => `${index}`}
         bounces={false}
-        data={orders}
-        renderItem={({ item, index }) => renderOrder(item, index)}
+        data={orders as MedOrder[]}
+        renderItem={renderItem}
         ListEmptyComponent={renderNoOrders()}
       />
     );

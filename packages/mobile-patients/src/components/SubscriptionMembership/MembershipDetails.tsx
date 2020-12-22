@@ -1,7 +1,15 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Linking,
+  BackHandler,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -61,11 +69,13 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
+import AsyncStorage from '@react-native-community/async-storage';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -177,11 +187,13 @@ const styles = StyleSheet.create({
 export interface MembershipDetailsProps extends NavigationScreenProps {
   membershipType: string;
   isActive: boolean;
+  source?: string;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
   const isCirclePlan = membershipType === Circle.planName;
+  const source = props.navigation.getParam('source');
 
   const {
     hdfcUserSubscriptions,
@@ -198,6 +210,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     setIsFreeDelivery,
     setIsCircleSubscription,
     circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -239,6 +252,29 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
     }
   }, [upgradePlans]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    if (source) {
+      props.navigation.navigate(AppRoutes.MyMembership, { source: source });
+    } else {
+      props.navigation.goBack();
+    }
+    return false;
+  };
 
   const getUserSubscriptionsWithBenefits = () => {
     setLoading(true);
@@ -576,7 +612,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
             onPress={() => {
-              handleCtaClick(type, action, message, availableCount, id, webengageevent);
+              handleCtaClick(type, action, message, availableCount, id, webengageevent, '');
             }}
           >
             <Text style={styles.redeemButtonText}>{ctaLabel}</Text>
@@ -692,6 +728,25 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     }
   };
 
+  const onPressHealthPro = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
+      '&utm_token=',
+      currentDeviceToken,
+      '&utm_mobile_number=',
+      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
+    );
+
+    try {
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: healthProWithParams,
+      });
+    } catch (e) {
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', healthProWithParams);
+    }
+  };
+
   const handleCtaClick = (
     type: string,
     action: string,
@@ -718,17 +773,27 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.PHARMACY_LANDING) {
-        props.navigation.navigate('MEDICINES');
+        props.navigation.navigate(
+          'MEDICINES',
+          isCirclePlan ? { comingFrom: AppRoutes.MembershipDetails } : {}
+        );
       } else if (action == Hdfc_values.PHR) {
         props.navigation.navigate('HEALTH RECORDS');
       } else if (action == Hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.DIAGNOSTICS_LANDING) {
-        props.navigation.navigate('TESTS');
+        props.navigation.navigate(
+          'TESTS',
+          isCirclePlan ? { comingFrom: AppRoutes.MembershipDetails } : {}
+        );
       } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
           specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
+      } else if ((action = Hdfc_values.PRO_HEALTH)) {
+        onPressHealthPro();
+      } else {
+        props.navigation.navigate(AppRoutes.ConsultRoom);
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
@@ -876,7 +941,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           ...theme.viewStyles.cardViewStyle,
           borderRadius: 0,
         }}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
@@ -1055,6 +1120,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
+          userSubscriptionId={hdfcSubscriptionId}
         />
       )}
       {showAvailPopup && (

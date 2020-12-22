@@ -236,6 +236,14 @@ export const ShopByCategoryIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const MedicineBuyAgain: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_medicine_buy_again.png')} />
+);
+
+export const RightArrowOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_right_arrow_orange.png')} />
+);
+
 export const MedicineIconWhite: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 17, height: 20 }}
