@@ -71,7 +71,7 @@ import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { getPackageInclusions } from '../../helpers/clientCalls';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {

@@ -564,6 +564,11 @@ export enum WeekDay {
   WEDNESDAY = "WEDNESDAY",
 }
 
+export enum ZoneType {
+  CITY = "CITY",
+  STATE = "STATE",
+}
+
 export enum mediaPrescriptionSource {
   EPRESCRIPTION = "EPRESCRIPTION",
   SELF = "SELF",
