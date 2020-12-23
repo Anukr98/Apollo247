@@ -384,7 +384,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fetchAddress();
   }, []);
 
-  const getDoctorOfTheHour = async (state?: string) => {
+  const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
@@ -393,6 +393,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           specialtyId: props.navigation.getParam('specialityId') || '',
           zoneType: ZoneType.STATE,
           zone: state || locationDetails?.state,
+          partnerDoctor,
         },
       })
       .then(({ data }) => {
@@ -400,9 +401,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         console.log('data', data);
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
+        } else {
+          setPlatinumDoctor(null);
         }
       })
       .catch((e) => {
+        setPlatinumDoctor(null);
         CommonBugFender('GET_PLATINUM_DOCTOR', e);
       });
   };
@@ -424,7 +428,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        getDoctorOfTheHour(state);
+        getDoctorOfTheHour(false, state);
       }
     } catch (error) {
       console.log(error);
@@ -1161,7 +1165,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (rowData) {
       return index === 0 && platinumDoctor ? (
         <>
-          {renderPlatinumDoctorView(false, filter)}
+          {renderPlatinumDoctorView()}
           {renderDoctorCard(rowData, index, styles, numberOfLines, filter)}
         </>
       ) : (
@@ -1276,7 +1280,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             ListFooterComponent={renderListFooter()}
           />
         )}
-        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(true, filter) : null}
+        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(true) : null}
       </View>
     );
   };
@@ -1490,7 +1494,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   }, [doctorSearch]);
 
-  const renderPlatinumDoctorView = (setHeight: boolean = false, filter?: ConsultMode) => {
+  const renderPlatinumDoctorView = (setHeight: boolean = false) => {
     const doctorCardStyle = {
       backgroundColor: theme.colors.WHITE,
       shadowColor: theme.colors.SHADOW_GRAY,
@@ -1543,7 +1547,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
           }}
           onPlanSelected={() => setShowCarePlanNotification(true)}
-          selectedConsultMode={filter}
         />
       </LinearGradientComponent>
     );
@@ -1838,6 +1841,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
+      setPlatinumDoctor(null);
+      getDoctorOfTheHour();
+      fetchAddress(); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -1849,6 +1855,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
+      setPlatinumDoctor(null);
+      getDoctorOfTheHour(true);
+      fetchAddress();
     }
   };
 

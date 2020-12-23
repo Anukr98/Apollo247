@@ -906,8 +906,18 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
 `;
 
 export const GET_PLATINUM_DOCTOR = gql`
-  query getPlatinumDoctor($specialtyId: ID, $zoneType: ZoneType, $zone: String) {
-    getPlatinumDoctor(specialtyId: $specialtyId, zoneType: $zoneType, zone: $zone) {
+  query getPlatinumDoctor(
+    $specialtyId: ID
+    $zoneType: ZoneType
+    $zone: String
+    $partnerDoctor: Boolean
+  ) {
+    getPlatinumDoctor(
+      specialtyId: $specialtyId
+      zoneType: $zoneType
+      zone: $zone
+      partnerDoctor: $partnerDoctor
+    ) {
       doctors {
         id
         displayName
@@ -1574,7 +1584,7 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
 export const GET_PACKAGE_INCLUSIONS = gql`
   query getInclusionsOfMultipleItems($itemID: [Int]!) {
     getInclusionsOfMultipleItems(itemID: $itemID) {
-      inclusions{
+      inclusions {
         itemId
         requiredAttachment
         sampleRemarks

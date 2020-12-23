@@ -226,11 +226,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(availableModes)
     : false;
   const isBoth = availableModes ? [ConsultMode.BOTH].includes(availableModes) : false;
-  let nonCircleDoctorFees = rowData?.onlineConsultationFees; // default fee
+  let nonCircleDoctorFees = rowData?.onlineConsultationFees || rowData?.fee; // default fee
   if (isPhysicalConsultSelected) {
-    nonCircleDoctorFees = rowData?.physicalConsultationFees;
+    nonCircleDoctorFees = rowData?.physicalConsultationFees || rowData?.fee;
   } else {
-    nonCircleDoctorFees = rowData?.onlineConsultationFees;
+    nonCircleDoctorFees = rowData?.onlineConsultationFees || rowData?.fee;
   }
   const isCircleAvailForOnline = isOnlineConsultSelected && onlineConsultMRPPrice > 0;
   const circleDoctorFees =
