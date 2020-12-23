@@ -23,6 +23,13 @@ export interface MedicineProduct {
   url_key: string;
   careCashback?: number | null;
   is_express?: 'Yes' | 'No';
+  dc_availability?: 'Yes' | 'No';
+  is_in_contract?: 'Yes' | 'No';
+  is_returnable?: 'Yes' | 'No';
+  marketer_address?: string | null;
+  pack_form?: string | null;
+  pack_size?: string | null;
+  dose_form_variant?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {

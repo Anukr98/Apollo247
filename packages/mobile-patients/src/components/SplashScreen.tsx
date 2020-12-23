@@ -734,7 +734,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'MedicineDetail':
         console.log('MedicineDetail');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        props.navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: id,
           movedFrom: ProductPageViewedSource.DEEP_LINK,
         });
@@ -914,7 +914,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const response = await getMedicineSku(skuKey);
       const { data } = response;
       data?.Message == 'Product available'
-        ? props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        ? props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: data?.sku,
             movedFrom: ProductPageViewedSource.DEEP_LINK,
           })

@@ -1841,7 +1841,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.push(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.ProductDetailPage, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });

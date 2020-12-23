@@ -555,7 +555,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         key={pastSeacrh.typeId!}
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: pastSeacrh.typeId,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
@@ -609,7 +609,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
@@ -685,7 +685,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
@@ -985,7 +985,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });

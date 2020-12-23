@@ -632,7 +632,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 key: null,
                 actions: [
                   NavigationActions.navigate({
-                    routeName: AppRoutes.MedicineDetailsScene,
+                    routeName: AppRoutes.ProductDetailPage,
                     params: {
                       sku: id,
                       movedFrom: ProductPageViewedSource.REGISTRATION,

@@ -901,7 +901,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         screen={'cart'}
         setloading={setloading}
         onPressProduct={(item) => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.id,
             movedFrom: ProductPageViewedSource.CART,
           });
