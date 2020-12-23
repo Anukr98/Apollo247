@@ -67,7 +67,7 @@ import {
   getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { getPackageInclusions } from '../../helpers/clientCalls';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 

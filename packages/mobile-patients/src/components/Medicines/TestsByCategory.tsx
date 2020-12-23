@@ -58,7 +58,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { getPackageInclusions } from '../../helpers/clientCalls';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
