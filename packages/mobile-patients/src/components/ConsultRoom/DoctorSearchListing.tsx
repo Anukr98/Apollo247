@@ -1165,7 +1165,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (rowData) {
       return index === 0 && platinumDoctor ? (
         <>
-          {renderPlatinumDoctorView(false, filter)}
+          {renderPlatinumDoctorView()}
           {renderDoctorCard(rowData, index, styles, numberOfLines, filter)}
         </>
       ) : (
@@ -1280,7 +1280,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             ListFooterComponent={renderListFooter()}
           />
         )}
-        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(true, filter) : null}
+        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(true) : null}
       </View>
     );
   };
@@ -1494,7 +1494,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   }, [doctorSearch]);
 
-  const renderPlatinumDoctorView = (setHeight: boolean = false, filter?: ConsultMode) => {
+  const renderPlatinumDoctorView = (setHeight: boolean = false) => {
     const doctorCardStyle = {
       backgroundColor: theme.colors.WHITE,
       shadowColor: theme.colors.SHADOW_GRAY,
@@ -1547,7 +1547,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
           }}
           onPlanSelected={() => setShowCarePlanNotification(true)}
-          selectedConsultMode={filter}
         />
       </LinearGradientComponent>
     );
@@ -1842,7 +1841,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
+      setPlatinumDoctor(null);
       getDoctorOfTheHour();
+      fetchAddress(); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -1854,7 +1855,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
+      setPlatinumDoctor(null);
       getDoctorOfTheHour(true);
+      fetchAddress();
     }
   };
 
