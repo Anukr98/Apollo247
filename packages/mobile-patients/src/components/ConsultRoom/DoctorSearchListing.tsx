@@ -384,7 +384,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fetchAddress();
   }, []);
 
-  const getDoctorOfTheHour = async (state?: string) => {
+  const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
@@ -393,6 +393,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           specialtyId: props.navigation.getParam('specialityId') || '',
           zoneType: ZoneType.STATE,
           zone: state || locationDetails?.state,
+          partnerDoctor,
         },
       })
       .then(({ data }) => {
@@ -400,9 +401,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         console.log('data', data);
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
+        } else {
+          setPlatinumDoctor(null);
         }
       })
       .catch((e) => {
+        setPlatinumDoctor(null);
         CommonBugFender('GET_PLATINUM_DOCTOR', e);
       });
   };
@@ -424,7 +428,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        getDoctorOfTheHour(state);
+        getDoctorOfTheHour(false, state);
       }
     } catch (error) {
       console.log(error);
@@ -1838,6 +1842,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
+      getDoctorOfTheHour();
     }
   };
 
@@ -1849,6 +1854,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
+      getDoctorOfTheHour(true);
     }
   };
 
