@@ -335,6 +335,7 @@ export enum MedicalRecordType {
   ALLERGY = "ALLERGY",
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  FAMILY_HISTORY = "FAMILY_HISTORY",
   HEALTHCHECK = "HEALTHCHECK",
   HEALTHRESTRICTION = "HEALTHRESTRICTION",
   HOSPITALIZATION = "HOSPITALIZATION",
@@ -357,6 +358,11 @@ export enum ONE_APOLLO_STORE_CODE {
   ANDCUS = "ANDCUS",
   IOSCUS = "IOSCUS",
   WEBCUS = "WEBCUS",
+}
+
+export enum ORDER_TYPE {
+  CONSULT = "CONSULT",
+  PHARMACY = "PHARMACY",
 }
 
 export enum OTP_STATUS {
@@ -876,7 +882,7 @@ export interface DiagnosticBookHomeCollectionInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
   areaId: number;
-  homeCollectionCharges: number;
+  collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
   totalPriceExcludingDiscounts?: number | null;
@@ -1009,6 +1015,8 @@ export interface HelpEmailInput {
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
 }
 
 export interface HospitalizationFileProperties {

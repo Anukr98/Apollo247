@@ -8,6 +8,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { SEND_HELP_EMAIL } from '@aph/mobile-patients/src/graphql/profiles';
+import { ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SendHelpEmail,
   SendHelpEmailVariables,
@@ -85,6 +86,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const onSubmit = async () => {
     try {
       setLoading!(true);
+      const needHelp = AppConfig.Configuration.NEED_HELP;
+      const category = needHelp.find(({ category }) => category === queryCategory);
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: queryCategory,
@@ -92,6 +95,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
+          orderId: Number(orderId) || null,
+          orderType:
+            category?.id == 'pharmacy'
+              ? ORDER_TYPE.PHARMACY
+              : category?.id == 'virtualOnlineConsult'
+              ? ORDER_TYPE.CONSULT
+              : null,
         },
       };
       await client.query<SendHelpEmail, SendHelpEmailVariables>({
