@@ -1520,6 +1520,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               case 'BILLS':
                 finalData.push({ healthkey: MedicalRecordType.MEDICALBILL, value: recordData });
                 break;
+              case 'FAMILYHISTORY':
+                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                break;
             }
           });
           setHealthRecordSearchResults(finalData);
@@ -1702,159 +1705,78 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const { date, healthrecordId } = item?.value;
     switch (item?.healthkey) {
       case MedicalRecordType.PRESCRIPTION:
-        const prescription_item = item?.value?.healthRecord
-          ? JSON.parse(item?.value?.healthRecord)
-          : {};
-        const final_item = {
-          ...prescription_item,
-          fileUrl:
-            prescription_item?.prescriptionFiles?.length > 0 && prismAuthToken
-              ? `${AppConfig.Configuration.PHR_BASE_URL}/prescriptions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
-              : '',
-          date,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: final_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.PRESCRIPTION,
           prescriptions: true,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.TEST_REPORT:
-        const _test_report = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
-        const _test_report_item = {
-          ..._test_report,
-          fileUrl:
-            _test_report?.testResultFiles?.length > 0 && prismAuthToken
-              ? `${AppConfig.Configuration.PHR_BASE_URL}/labresults/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0&sequence=0`
-              : '',
-          date,
-          labTestName: _test_report?.testName,
-          labTestResults: _test_report?.results,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _test_report_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.TEST_REPORT,
           labResults: true,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.HOSPITALIZATION:
-        const _hospitalization = item?.value?.healthRecord
-          ? JSON.parse(item?.value?.healthRecord)
-          : {};
-        const _hospitalization_item = {
-          ..._hospitalization,
-          fileUrl:
-            _hospitalization?.hospitalizationFiles?.length > 0 && prismAuthToken
-              ? `${AppConfig.Configuration.PHR_BASE_URL}/hospitalizations/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
-              : '',
-          date,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _hospitalization_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.HOSPITALIZATION,
           hospitalization: true,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.MEDICALBILL:
-        const _bill = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
-        const _bill_item = {
-          ..._bill,
-          fileUrl:
-            _bill?.billFilesList?.length > 0 && prismAuthToken
-              ? `${AppConfig.Configuration.PHR_BASE_URL}/bills/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
-              : '',
-          id: healthrecordId,
-          billDateTime: _bill?.billDate,
-          billFiles: _bill?.billFilesList,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _bill_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALBILL,
           medicalBill: true,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.MEDICALINSURANCE:
-        const _insurance = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
-        const _insurance_item = {
-          ..._insurance,
-          fileUrl:
-            _insurance?.insuranceFiles?.length > 0 && prismAuthToken
-              ? `${AppConfig.Configuration.PHR_BASE_URL}/insurances/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
-              : '',
-          startDateTime: _insurance?.startDate,
-          endDateTime: _insurance?.endDate,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _insurance_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALINSURANCE,
           medicalInsurance: true,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.ALLERGY:
-        const _allergy = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
-        const _allergy_item = {
-          ..._allergy,
-          fileUrl:
-            _allergy?.attachementList?.length > 0 && prismAuthToken
-              ? `${AppConfig.Configuration.PHR_BASE_URL}/allergies/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
-              : '',
-          attachmentList: _allergy?.attachementList,
-          startDateTime: _allergy?.startDate,
-          endDateTime: _allergy?.endDate,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _allergy_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.ALLERGY,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.ALLERGY,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.MEDICATION:
-        const _medication = item?.value?.healthRecord ? JSON.parse(item?.value?.healthRecord) : {};
-        const _medication_item = {
-          ..._medication,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _medication_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICATION,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICATION,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.HEALTHRESTRICTION:
-        const _health_restriction = item?.value?.healthRecord
-          ? JSON.parse(item?.value?.healthRecord)
-          : {};
-        const _health_restriction_item = {
-          ..._health_restriction,
-          startDateTime: _health_restriction?.startDate,
-          endDateTime: _health_restriction?.endDate,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _health_restriction_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.HEALTHRESTRICTION,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.MEDICALCONDITION:
-        const _medical_condition = item?.value?.healthRecord
-          ? JSON.parse(item?.value?.healthRecord)
-          : {};
-        const _medical_condition_item = {
-          ..._medical_condition,
-          fileUrl:
-            _medical_condition?.medicationFiles?.length > 0 && prismAuthToken
-              ? `${AppConfig.Configuration.PHR_BASE_URL}/medicalconditions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
-              : '',
-          startDateTime: _medical_condition?.startDate,
-          endDateTime: _medical_condition?.endDate,
-          medicalConditionName: _medical_condition?.medicalCondition,
-          id: healthrecordId,
-        };
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: _medical_condition_item,
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALCONDITION,
           healthCondition: true,
           healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.FAMILY_HISTORY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.FAMILY_HISTORY,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY,
           onPressBack: onBackArrowPressed,
         });
     }

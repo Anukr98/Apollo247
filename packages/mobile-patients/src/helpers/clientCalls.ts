@@ -381,6 +381,33 @@ export const getPatientPrismMedicalRecordsApi = (
   });
 };
 
+export const getPatientPrismSingleMedicalRecordApi = (
+  client: ApolloClient<object>,
+  patientId: string,
+  records: MedicalRecordType[],
+  recordId: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientPrismMedicalRecords_V2, getPatientPrismMedicalRecords_V2Variables>({
+        query: GET_MEDICAL_PRISM_RECORD_V2,
+        variables: {
+          patientId: patientId || '',
+          records: records,
+          recordId: recordId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        res(data);
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getPatientPrismMedicalRecordsApi', e);
+        rej(e);
+      });
+  });
+};
+
 export const getAppointments = (
   client: ApolloClient<object>,
   patientId: string | null | undefined

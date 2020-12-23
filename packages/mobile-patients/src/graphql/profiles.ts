@@ -2317,8 +2317,16 @@ export const GET_PRISM_AUTH_TOKEN = gql`
 `;
 
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
-  query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
-    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
+  query getPatientPrismMedicalRecords_V2(
+    $patientId: ID!
+    $records: [MedicalRecordType]
+    $recordId: String
+  ) {
+    getPatientPrismMedicalRecords_V2(
+      patientId: $patientId
+      records: $records
+      recordId: $recordId
+    ) {
       labResults {
         response {
           id

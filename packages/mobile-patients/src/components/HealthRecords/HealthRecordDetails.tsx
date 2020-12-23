@@ -51,6 +51,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import _ from 'lodash';
+import { getPatientPrismSingleMedicalRecordApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -153,6 +155,12 @@ const styles = StyleSheet.create({
   },
   doctorTextStyle: { ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 },
   sourceTextStyle: { ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 },
+  safeAreaViewStyle: {
+    ...theme.viewStyles.container,
+  },
+  mainViewStyle: {
+    flex: 1,
+  },
 });
 
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
@@ -160,7 +168,9 @@ export interface HealthRecordDetailsProps extends NavigationScreenProps {}
 export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) => {
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
-  const data = props.navigation.state.params ? props.navigation.state.params.data : {};
+  const [data, setData] = useState<any>(
+    props.navigation.state.params ? props.navigation.state.params.data : {}
+  );
   const labResults = props.navigation.state.params
     ? props.navigation.state.params.labResults
     : false;
@@ -184,6 +194,12 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : false;
   const healthHeaderTitle = props.navigation.state.params
     ? props.navigation.state.params.healthHeaderTitle
+    : '';
+  const healthrecordId = props.navigation.state.params
+    ? props.navigation.state.params?.healthrecordId
+    : '';
+  const healthRecordType = props.navigation.state.params
+    ? props.navigation.state.params?.healthRecordType
     : '';
   console.log('HealthRecordDetails', data, JSON.stringify(data));
   const { currentPatient } = useAllCurrentPatients();
@@ -216,6 +232,128 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       console.log('error', error);
     }
   };
+
+  useEffect(() => {
+    if (healthrecordId) {
+      setLoading && setLoading(true);
+      getPatientPrismSingleMedicalRecordApi(
+        client,
+        currentPatient?.id,
+        [healthRecordType],
+        healthrecordId
+      )
+        .then((data: any) => {
+          switch (healthRecordType) {
+            case MedicalRecordType.PRESCRIPTION:
+              const prescriptionsData = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'prescriptions',
+                'response',
+                '0' as any
+              );
+              setData(prescriptionsData);
+              break;
+            case MedicalRecordType.TEST_REPORT:
+              const labResultsData = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'labResults',
+                'response',
+                '0' as any
+              );
+              setData(labResultsData);
+              break;
+            case MedicalRecordType.HOSPITALIZATION:
+              const hospitalizationsData = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'hospitalizations',
+                'response',
+                '0' as any
+              );
+              setData(hospitalizationsData);
+              break;
+            case MedicalRecordType.MEDICALBILL:
+              const medicalBills = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medicalBills',
+                'response',
+                '0' as any
+              );
+              setData(medicalBills);
+              break;
+            case MedicalRecordType.MEDICALINSURANCE:
+              const medicalInsurances = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medicalInsurances',
+                'response',
+                '0' as any
+              );
+              setData(medicalInsurances);
+              break;
+            case MedicalRecordType.ALLERGY:
+              const medicalAllergie = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'allergies',
+                'response',
+                '0' as any
+              );
+              setData(medicalAllergie);
+              break;
+            case MedicalRecordType.MEDICATION:
+              const medicalMedication = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medications',
+                'response',
+                '0' as any
+              );
+              setData(medicalMedication);
+              break;
+            case MedicalRecordType.HEALTHRESTRICTION:
+              const medicalHealthRestriction = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'healthRestrictions',
+                'response',
+                '0' as any
+              );
+              setData(medicalHealthRestriction);
+              break;
+            case MedicalRecordType.MEDICALCONDITION:
+              const medicalCondition = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medicalConditions',
+                'response',
+                '0' as any
+              );
+              setData(medicalCondition);
+              break;
+            case MedicalRecordType.FAMILY_HISTORY:
+              const medicalFamilyHistory = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'familyHistory',
+                'response',
+                '0' as any
+              );
+              setData(medicalFamilyHistory);
+              break;
+          }
+        })
+        .catch((error) => {
+          CommonBugFender('HealthRecordsHome_fetchTestData', error);
+          console.log('Error occured', { error });
+          currentPatient && handleGraphQlError(error);
+        })
+        .finally(() => setLoading && setLoading(false));
+    }
+  }, []);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -880,16 +1018,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? healthHeaderTitle || 'Health Condition'
       : 'TEST REPORTS DETAIL';
     return (
-      <View
-        style={{
-          flex: 1,
-        }}
-      >
-        <SafeAreaView
-          style={{
-            ...theme.viewStyles.container,
-          }}
-        >
+      <View style={styles.mainViewStyle}>
+        <SafeAreaView style={styles.safeAreaViewStyle}>
           <Header
             title={headerTitle}
             leftIcon="backArrow"
@@ -905,5 +1035,16 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       </View>
     );
   }
-  return <Spinner />;
+  return (
+    <View style={styles.mainViewStyle}>
+      <SafeAreaView style={styles.safeAreaViewStyle}>
+        <Header
+          leftIcon="backArrow"
+          rightComponent={renderProfileImage()}
+          container={{ borderBottomWidth: 0 }}
+          onPressLeftIcon={onGoBack}
+        />
+      </SafeAreaView>
+    </View>
+  );
 };
