@@ -112,6 +112,8 @@ export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
   DESKTOP = "DESKTOP",
   IOS = "IOS",
+  MWEB = "MWEB",
+  WEB = "WEB",
 }
 
 export enum DIAGNOSTICS_TYPE {
@@ -1003,6 +1005,7 @@ export interface FilterDoctorInput {
   pageNo?: number | null;
   pageSize?: number | null;
   searchText?: string | null;
+  radius?: number | null;
   isCare?: boolean | null;
 }
 
@@ -1083,7 +1086,8 @@ export interface MedicineCartOMSInput {
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
+  deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
   patientAddressId?: string | null;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
@@ -1280,6 +1284,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   patientId: string;
   bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;
@@ -1308,6 +1313,12 @@ export interface PrescriptionReUploadInput {
   orderId: number;
   fileUrl: string;
   prismPrescriptionFileId?: string | null;
+}
+
+export interface PreviousOrdersSkus {
+  patientId: string;
+  fromDate?: number | null;
+  toDate?: number | null;
 }
 
 export interface Range {

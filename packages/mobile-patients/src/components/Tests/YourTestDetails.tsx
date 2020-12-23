@@ -34,7 +34,6 @@ import {
   getDiagnosticsOrderStatusVariables,
   getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
-import { getPackageData } from '@aph/mobile-patients/src/helpers/apiCalls';
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 
 export interface TestStatusObject {
@@ -229,19 +228,19 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
           orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.PackageInclussion?.map(
             (test: any) => {
               objArray.push({
-                id: orderSelected.diagnosticOrderLineItems[index].diagnostics.id,
-                displayId: orderSelected!.displayId!,
-                slotTimings: orderSelected!.slotTimings,
-                patientName: currentPatient.firstName,
-                showDateTime: orderSelected!.diagnosticDate,
-                itemId: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemId,
-                currentStatus: orderSelected.maxStatus,
-                packageId: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemId,
-                packageName: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemName,
-                itemName: test.TestName,
-                statusDate: itemIdObject[key][0].statusDate,
+                id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
+                displayId: orderSelected?.displayId!,
+                slotTimings: orderSelected?.slotTimings,
+                patientName: currentPatient?.firstName,
+                showDateTime: orderSelected?.diagnosticDate,
+                itemId: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemId,
+                currentStatus: orderSelected?.maxStatus,
+                packageId: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemId,
+                packageName: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemName,
+                itemName: test?.name,
+                statusDate: itemIdObject[key][0]?.statusDate,
                 testPreparationData:
-                  orderSelected.diagnosticOrderLineItems[index].diagnostics.testPreparationData,
+                  orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.testPreparationData,
               });
             }
           );

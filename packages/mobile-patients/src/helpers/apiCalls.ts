@@ -354,11 +354,13 @@ export interface MedicinePageAPiResponse {
 }
 
 export interface PackageInclusion {
+  requiredAttachment?: string;
+  itemId?: number;
   TestInclusion: string;
-  SampleRemarks: string;
-  SampleTypeName: string;
-  TestParameters: string;
-  TestName?: string; // getting TestInclusion value in TestName from API
+  sampleRemarks: string;
+  sampleTypeName: string;
+  testParameters: string;
+  name?: string; 
 }
 
 export interface TestPackage {

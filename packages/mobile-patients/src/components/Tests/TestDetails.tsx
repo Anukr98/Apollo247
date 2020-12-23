@@ -6,12 +6,7 @@ import { CartIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/component
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import DeviceInfo from 'react-native-device-info';
-import {
-  DIAGNOSTIC_GROUP_PLAN,
-  getPackageData,
-  TestPackage,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { DIAGNOSTIC_GROUP_PLAN, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
 import {
@@ -72,6 +67,7 @@ import {
   getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -304,20 +300,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (itemId) {
       loadTestDetails(itemId);
     } else {
-      !TestDetailsDiscription &&
-        getPackageData(currentItemId)
-          .then(({ data }) => {
-            setsearchSate('success');
-            aphConsole.log('getPackageData \n', { data });
-            setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
-          })
-          .catch((e) => {
-            CommonBugFender('TestDetails', e);
-            aphConsole.log('getPackageData Error \n', { e });
-            setsearchSate('fail');
-          });
+      !TestDetailsDiscription && fetchPackageInclusions(currentItemId);
     }
   }, []);
+
+  const fetchPackageInclusions = async (currentItemId: string) => {
+    try {
+      const arrayOfId = [Number(currentItemId)];
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        aphConsole.log('getPackageData \n', { data });
+        setTestInfo({ ...testInfo, PackageInClussion: data || [] });
+      }
+    } catch (e) {
+      CommonBugFender('TestDetails', e);
+      aphConsole.log('getPackageData Error \n', { e });
+      setsearchSate('fail');
+    }
+  };
 
   useEffect(() => {
     if (testInfo?.testDescription != null) {
@@ -415,15 +416,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         preparation: testPreparationData,
       };
 
-      const {
-        data: { data },
-      } = await getPackageData(itemId);
-
-      setTestInfo({
-        ...partialTestDetails,
-        PackageInClussion: data || [],
-      } as TestPackageForDetails);
-      setsearchSate('success');
+      try {
+        const arrayOfId = [Number(itemId)];
+        const res: any = await getPackageInclusions(client, arrayOfId);
+        if (res) {
+          const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+          aphConsole.log('getPackageData \n', { data });
+          setTestInfo({ ...partialTestDetails, ...testInfo, PackageInClussion: data || [] });
+          setsearchSate('success');
+        }
+      } catch (e) {
+        CommonBugFender('TestDetails', e);
+        aphConsole.log('getPackageData Error \n', { e });
+        setsearchSate('fail');
+      }
     } catch (error) {
       setsearchSate('fail');
     }
@@ -493,7 +499,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
               <Text style={styles.personDetailStyles}>
-                {testInfo.PackageInClussion.map((item) => item.SampleTypeName)
+                {testInfo?.PackageInClussion.map((item) => item?.sampleTypeName)
                   .filter((i) => i)
                   .filter((i, idx, array) => array.indexOf(i) >= idx)
                   .join(', ')}
@@ -541,7 +547,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {testInfo.PackageInClussion.map((item, i) => (
           <View key={i}>
             <Text style={styles.descriptionTextStyles}>
-              {i + 1}. {item.TestInclusion || item.TestName}
+              {i + 1}. {item?.TestInclusion || item?.name}
             </Text>
           </View>
         ))}

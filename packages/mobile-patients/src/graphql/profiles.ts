@@ -1571,6 +1571,21 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
   }
 `;
 
+export const GET_PACKAGE_INCLUSIONS = gql`
+  query getInclusionsOfMultipleItems($itemID: [Int]!) {
+    getInclusionsOfMultipleItems(itemID: $itemID) {
+      inclusions{
+        itemId
+        requiredAttachment
+        sampleRemarks
+        sampleTypeName
+        testParameters
+        name
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
   query getDiagnosticOrderDetails($diagnosticOrderId: String) {
     getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {

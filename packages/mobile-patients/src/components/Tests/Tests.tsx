@@ -57,9 +57,7 @@ import {
   getTestsPackages,
   TestPackage,
   PackageInclusion,
-  getPackageData,
   getPlaceInfoByPincode,
-  DIAGNOSTIC_GROUP_PLAN,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -134,7 +132,10 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getPackageInclusions,
+  getUserBannersList,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   getActiveTestItems,
   getPricesForItem,
@@ -1710,28 +1711,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
-    setLoadingContext!(true);
-    getPackageData(id)
-      .then(({ data }) => {
+  const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
+    try {
+      const arrayOfId = [Number(id)];
+      setLoadingContext!(true);
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
         setLoadingContext!(false);
-        console.log('getPackageData\n', { data });
-        const product = g(data, 'data');
+        const product = data;
         if (product && product.length) {
           func && func(product);
         } else {
           errorAlert();
         }
-      })
-      .catch((e) => {
-        CommonBugFender('Tests_fetchPackageInclusion', e);
-        setLoadingContext!(false);
-        console.log('getPackageData Error\n', { e });
-        errorAlert();
-      });
-    // .finally(() => {
-    //   setLoadingContext!(false);
-    // });
+      }
+    } catch (e) {
+      CommonBugFender('Tests_fetchPackageInclusion', e);
+      setLoadingContext!(false);
+      console.log('getPackageData Error\n', { e });
+      errorAlert();
+    }
   };
 
   const renderTestPackages = () => {
@@ -2537,7 +2537,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             styles.inputContainerStyle,
             itemsNotFound
               ? {
-                  borderBottomColor: '#890000',
+                  borderColor: '#890000',
                 }
               : {},
           ]}

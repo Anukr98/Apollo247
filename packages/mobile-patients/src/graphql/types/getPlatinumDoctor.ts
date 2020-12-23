@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { ZoneType, ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE } from "./globalTypes";
+import {ZoneType, ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPlatinumDoctor
