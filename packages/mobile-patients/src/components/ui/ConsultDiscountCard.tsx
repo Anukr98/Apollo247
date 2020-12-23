@@ -35,15 +35,21 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     circleSubscriptionId,
     planSelected,
   } = props;
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     physicalConsultDiscountedPrice,
     onlineConsultDiscountedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-  const isOnlineConsult = selectedTab === 'Consult Online';
+
   const totalSavings =
-    isCircleDoctor && (circleSubscriptionId || planSelected)
+    isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || planSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -74,7 +80,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         {showPriceBreakup ? (
           <View>
             <View style={styles.seperatorLine} />
-            {isCircleDoctor && (!!circleSubscriptionId || planSelected) ? (
+            {isCircleDoctorOnSelectedConsultMode && (!!circleSubscriptionId || planSelected) ? (
               <View style={[styles.rowContainer, { marginTop: 10 }]}>
                 <View style={styles.row}>
                   <CircleLogo style={styles.careLogo} />

@@ -127,16 +127,22 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const circleDoctorDetails = calculateCircleDoctorPricing(props.doctor);
+  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    props.doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     onlineConsultSlashedPrice,
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
     physicalConsultSlashedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-
-  const actualPrice = isCircleDoctor
+  const actualPrice = isCircleDoctorOnSelectedConsultMode
     ? selectedTab === 'Consult Online'
       ? circleSubscriptionId
         ? onlineConsultSlashedPrice
@@ -218,7 +224,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       actualAmount: actualPrice,
       pinCode: locationDetails && locationDetails.pincode,
       subscriptionDetails:
-        circleSubscriptionId && isCircleDoctor
+        circleSubscriptionId && isCircleDoctorOnSelectedConsultMode
           ? {
               userSubscriptionId: circleSubscriptionId,
               plan: PLAN.CARE_PLAN,
