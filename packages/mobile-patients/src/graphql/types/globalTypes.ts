@@ -335,6 +335,7 @@ export enum MedicalRecordType {
   ALLERGY = "ALLERGY",
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  FAMILY_HISTORY = "FAMILY_HISTORY",
   HEALTHCHECK = "HEALTHCHECK",
   HEALTHRESTRICTION = "HEALTHRESTRICTION",
   HOSPITALIZATION = "HOSPITALIZATION",
@@ -972,6 +973,23 @@ export interface EndAppointmentSessionInput {
   callType?: APPT_CALL_TYPE | null;
   appVersion?: string | null;
   isReferred?: boolean | null;
+}
+
+export interface FamilyHistoryFilesProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface FamilyHistoryParameters {
+  patientId: string;
+  diseaseName?: string | null;
+  id?: string | null;
+  familyMember?: Relation | null;
+  notes?: string | null;
+  age?: number | null;
+  recordDate?: any | null;
+  attachmentList?: (FamilyHistoryFilesProperties | null)[] | null;
 }
 
 export interface FilterDoctorInput {

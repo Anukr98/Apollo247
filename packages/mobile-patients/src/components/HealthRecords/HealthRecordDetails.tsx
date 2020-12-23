@@ -50,6 +50,7 @@ import {
   getLabResultpdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -150,6 +151,8 @@ const styles = StyleSheet.create({
     ...viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30),
     marginRight: 10,
   },
+  doctorTextStyle: { ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 },
+  sourceTextStyle: { ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 },
 });
 
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
@@ -521,6 +524,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'medicationFiles', '0', 'fileName')
       : g(data, 'attachmentList', '0', 'fileName')
       ? g(data, 'attachmentList', '0', 'fileName')
+      : g(data, 'familyHistoryFiles', '0', 'fileName')
+      ? g(data, 'familyHistoryFiles', '0', 'fileName')
       : '';
     return (
       <View
@@ -610,6 +615,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'Discharge Date'
       : medicalInsurance
       ? 'Insurance Date'
+      : healthCondition && data?.recordDateTime
+      ? 'Updated'
       : 'Checkup Date';
     const renderDateView = () => {
       return hospitalization && data?.dateOfHospitalization !== 0 ? (
@@ -673,48 +680,45 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
           </Text>
         ) : null}
+        {data?.diseaseName ? (
+          <Text style={styles.recordNameTextStyle}>{data?.diseaseName}</Text>
+        ) : null}
         {data?.labTestRefferedBy ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}</Text>
+        ) : null}
+        {data?.familyMember ? (
+          <Text style={styles.doctorTextStyle}>{_.capitalize(data?.familyMember) || ''}</Text>
         ) : null}
         {medicalBill && data?.bill_no ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {data?.bill_no}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{data?.bill_no}</Text>
         ) : null}
         {medicalInsurance && data?.policyNumber ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {data?.policyNumber}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{data?.policyNumber}</Text>
         ) : null}
         {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.prescribedBy || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.prescribedBy || 'Dr. -'}</Text>
         ) : null}
         {data?.suggestedByDoctor ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}</Text>
         ) : null}
         {data?.doctorTreated ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.doctorTreated || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.doctorTreated || 'Dr. -'}</Text>
         ) : null}
         {hospitalization ? null : data?.doctorName ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.doctorName || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.doctorName || 'Dr. -'}</Text>
         ) : null}
-        {medicalInsurance || hospitalization ? null : (
-          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
+        {medicalInsurance || hospitalization || data?.diseaseName ? null : (
+          <Text style={styles.sourceTextStyle}>
             {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) || '-'}
           </Text>
         )}
+        {data?.age ? (
+          <Text style={styles.sourceTextStyle}>
+            {data?.age === 1 ? `${data?.age} Yr` : `${data?.age} Yrs`}
+          </Text>
+        ) : null}
         {hospitalization ? (
-          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
+          <Text style={styles.sourceTextStyle}>
             {data?.hospitalName &&
             getSourceName(data?.source) === string.common.clicnical_document_text
               ? data?.hospitalName
@@ -784,6 +788,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
         : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
         ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
+        : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
+        ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
         : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
       : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
@@ -802,6 +808,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'medicationFiles', '0', 'fileName')
       : g(data, 'attachmentList', '0', 'fileName')
       ? g(data, 'attachmentList', '0', 'fileName')
+      : g(data, 'familyHistoryFiles', '0', 'fileName')
+      ? g(data, 'familyHistoryFiles', '0', 'fileName')
       : '';
     const dirs = RNFetchBlob.fs.dirs;
 
