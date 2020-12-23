@@ -521,7 +521,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <Overlay
           onRequestClose={() => {}}
           isVisible={true}
-          windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
+          windowBackgroundColor={'rgba(255, 255, 255, 0.6)'}
           overlayStyle={styles.overlayStyle}
         >
           <View style={styles.flexRow}>
