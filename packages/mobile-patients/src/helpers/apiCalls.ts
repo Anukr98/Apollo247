@@ -973,7 +973,7 @@ export const searchPHRApi = (
   uhid: string,
   healthRecordType: string = ''
 ): Promise<AxiosResponse<any>> => {
-  const searchPHRUrl = `https://ora.phrdemo.com/data/apollo/healthrecord/search?accessToken=KeyOf247&uhid=${uhid}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  const searchPHRUrl = `${AppConfig.Configuration.PHR_BASE_URL}/apollo/healthrecord/search?accessToken=KeyOf247&uhid=${uhid}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
   return Axios.get(searchPHRUrl);
 };
 
@@ -982,6 +982,6 @@ export const searchPHRApiWithAuthToken = (
   authToken: string,
   healthRecordType: string = ''
 ): Promise<AxiosResponse<any>> => {
-  const searchPHRUrlWithAuthToke = `https://ora.phrdemo.com/data/searchhealthrecord?authToken=${authToken}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  const searchPHRUrlWithAuthToke = `${AppConfig.Configuration.PHR_BASE_URL}/searchhealthrecord?authToken=${authToken}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
   return Axios.get(searchPHRUrlWithAuthToke);
 };

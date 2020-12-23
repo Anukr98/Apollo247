@@ -36,6 +36,7 @@ import {
   getPrismAuthTokenVariables,
   getPrismAuthToken,
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { BloodGroups, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -490,7 +491,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         if (prism_auth_token) {
           setPrismAuthToken(prism_auth_token);
         }
-        console.log('getPrismAuthToken', data, prism_auth_token);
       })
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
@@ -1477,14 +1477,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const onSearchHealthRecords = (_searchText: string) => {
-    console.log('onSearchHealthRecords', _searchText);
     setSearchLoading(true);
     searchPHRApiWithAuthToken(_searchText, prismAuthToken)
       .then(({ data }) => {
         setHealthRecordSearchResults([]);
         if (data?.response) {
           const recordData = data.response;
-          console.log('data?.response', data?.response, JSON.stringify(data?.response));
           const finalData: any[] = [];
           recordData.forEach((recordData: any) => {
             const { healthrecordType } = recordData;
@@ -1524,7 +1522,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 break;
             }
           });
-          console.log(finalData);
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
         }
@@ -1712,7 +1709,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           ...prescription_item,
           fileUrl:
             prescription_item?.prescriptionFiles?.length > 0 && prismAuthToken
-              ? `https://ora.phrdemo.com/data/prescriptions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              ? `${AppConfig.Configuration.PHR_BASE_URL}/prescriptions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           date,
           id: healthrecordId,
@@ -1728,7 +1725,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           ..._test_report,
           fileUrl:
             _test_report?.testResultFiles?.length > 0 && prismAuthToken
-              ? `https://ora.phrdemo.com/data/labresults/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0&sequence=0`
+              ? `${AppConfig.Configuration.PHR_BASE_URL}/labresults/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0&sequence=0`
               : '',
           date,
           labTestName: _test_report?.testName,
@@ -1748,7 +1745,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           ..._hospitalization,
           fileUrl:
             _hospitalization?.hospitalizationFiles?.length > 0 && prismAuthToken
-              ? `https://ora.phrdemo.com/data/hospitalizations/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              ? `${AppConfig.Configuration.PHR_BASE_URL}/hospitalizations/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           date,
           id: healthrecordId,
@@ -1764,7 +1761,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           ..._bill,
           fileUrl:
             _bill?.billFilesList?.length > 0 && prismAuthToken
-              ? `https://ora.phrdemo.com/data/bills/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              ? `${AppConfig.Configuration.PHR_BASE_URL}/bills/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           id: healthrecordId,
           billDateTime: _bill?.billDate,
@@ -1781,7 +1778,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           ..._insurance,
           fileUrl:
             _insurance?.insuranceFiles?.length > 0 && prismAuthToken
-              ? `https://ora.phrdemo.com/data/insurances/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              ? `${AppConfig.Configuration.PHR_BASE_URL}/insurances/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           startDateTime: _insurance?.startDate,
           endDateTime: _insurance?.endDate,
@@ -1798,7 +1795,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           ..._allergy,
           fileUrl:
             _allergy?.attachementList?.length > 0 && prismAuthToken
-              ? `https://ora.phrdemo.com/data/allergies/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              ? `${AppConfig.Configuration.PHR_BASE_URL}/allergies/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           attachmentList: _allergy?.attachementList,
           startDateTime: _allergy?.startDate,
@@ -1847,7 +1844,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           ..._medical_condition,
           fileUrl:
             _medical_condition?.medicationFiles?.length > 0 && prismAuthToken
-              ? `https://ora.phrdemo.com/data/medicalconditions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
+              ? `${AppConfig.Configuration.PHR_BASE_URL}/medicalconditions/downloadattach?authToken=${prismAuthToken}&recordId=${healthrecordId}&fileIndex=0`
               : '',
           startDateTime: _medical_condition?.startDate,
           endDateTime: _medical_condition?.endDate,
