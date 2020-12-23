@@ -57,9 +57,7 @@ import {
   getTestsPackages,
   TestPackage,
   PackageInclusion,
-  getPackageData,
   getPlaceInfoByPincode,
-  DIAGNOSTIC_GROUP_PLAN,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -2538,7 +2536,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             styles.inputContainerStyle,
             itemsNotFound
               ? {
-                  borderBottomColor: '#890000',
+                  borderColor: '#890000',
                 }
               : {},
           ]}

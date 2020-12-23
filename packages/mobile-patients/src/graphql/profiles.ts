@@ -1545,6 +1545,7 @@ export const GET_PACKAGE_INCLUSIONS = gql`
         sampleRemarks
         sampleTypeName
         testParameters
+        name
       }
     }
   }

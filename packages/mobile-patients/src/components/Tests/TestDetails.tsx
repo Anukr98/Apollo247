@@ -6,12 +6,7 @@ import { CartIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/component
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import DeviceInfo from 'react-native-device-info';
-import {
-  DIAGNOSTIC_GROUP_PLAN,
-  getPackageData,
-  TestPackage,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { DIAGNOSTIC_GROUP_PLAN, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
 import {
@@ -504,7 +499,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
               <Text style={styles.personDetailStyles}>
-                {testInfo.PackageInClussion.map((item) => item.SampleTypeName)
+                {testInfo?.PackageInClussion.map((item) => item?.sampleTypeName)
                   .filter((i) => i)
                   .filter((i, idx, array) => array.indexOf(i) >= idx)
                   .join(', ')}
@@ -552,7 +547,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {testInfo.PackageInClussion.map((item, i) => (
           <View key={i}>
             <Text style={styles.descriptionTextStyles}>
-              {i + 1}. {item.TestInclusion || item.TestName}
+              {i + 1}. {item?.TestInclusion || item?.name}
             </Text>
           </View>
         ))}

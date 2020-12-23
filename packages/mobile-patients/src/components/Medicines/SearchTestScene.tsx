@@ -63,11 +63,7 @@ import stripHtml from 'string-strip-html';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import {
-  DIAGNOSTIC_GROUP_PLAN,
-  getPackageData,
-  PackageInclusion,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
