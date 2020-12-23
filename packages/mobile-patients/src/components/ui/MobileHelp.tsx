@@ -46,6 +46,8 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   subViewPopup: {
@@ -133,14 +135,17 @@ export interface MobileHelpProps extends NavigationScreenProps {}
 export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [comment, setComment] = useState<string>('');
   const [helpCategory, setHelpCategory] = useState<string>('');
+  const [helpCategoryId, setHelpCategoryId] = useState<string>('');
   const [selectedQuery, setSelectedQuery] = useState<string>('');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { needHelpToContactInMessage } = useAppCommonData();
-  const [email, setEmail] = useState<string>('');
-  const [emailValidation, setEmailValidation] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
+  const [emailValidation, setEmailValidation] = useState<boolean>(
+    currentPatient?.emailAddress ? true : false
+  );
   const { showAphAlert, hideAphAlert } = useUIElements();
   const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
@@ -159,7 +164,10 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     setSelectedQuery('');
   }, [helpCategory]);
 
-  const renderCategory = (category: string, containerStyle?: StyleProp<ViewStyle>) => {
+  const renderCategory = (
+    { category, id }: typeof NeedHelp[0],
+    containerStyle?: StyleProp<ViewStyle>
+  ) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -170,6 +178,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         ]}
         onPress={() => {
           setHelpCategory(category);
+          setHelpCategoryId(id);
         }}
       >
         <Text
@@ -307,12 +316,10 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const renderContent = () => {
     return (
       <View style={{ paddingHorizontal: 15, paddingTop: 12, paddingBottom: 20 }}>
-        <View style={styles.categoryWrapper}>
-          {NeedHelp.map((item) => renderCategory(item.category))}
-        </View>
+        <View style={styles.categoryWrapper}>{NeedHelp.map((item) => renderCategory(item))}</View>
         {renderEmailField()}
-        {renderQueyFiled()}
-        {renderCommentField()}
+        {/* {renderQueyFiled()} */}
+        {/* {renderCommentField()} */}
       </View>
     );
   };
@@ -341,16 +348,6 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     showAphAlert!({
       title: `Hi,`,
       description: `Please enter your valid email address`,
-      unDismissable: true,
-      CTAs: [
-        {
-          text: 'Okay',
-          onPress: () => {
-            hideAphAlert && hideAphAlert();
-          },
-          type: 'orange-button',
-        },
-      ],
     });
   };
   const onSubmit = () => {
@@ -358,6 +355,20 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       showAlert();
       return;
     }
+    const route =
+      helpCategoryId === 'pharmacy'
+        ? AppRoutes.NeedHelpPharmacyOrder
+        : helpCategoryId === 'virtualOnlineConsult'
+        ? AppRoutes.NeedHelpConsultOrder
+        : AppRoutes.NeedHelpQueryDetails;
+    props.navigation.navigate(route, {
+      queryCategory: helpCategory,
+      breadCrumb: [{ title: string.needHelp }, { title: helpCategory }] as BreadcrumbProps['links'],
+      pageTitle: helpCategory.toUpperCase(),
+      email: email,
+    });
+    return;
+
     setLoading(true);
     // submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email);
 
@@ -417,6 +428,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       return;
     }
     setHelpCategory('');
+    setHelpCategoryId('');
     setComment('');
     setSelectedQuery('');
     setEmail('');
@@ -438,7 +450,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         <View style={{ width: 16 }} />
         <Button
           onPress={() => onSubmit()}
-          disabled={!(helpCategory && selectedQuery && email && comment)}
+          disabled={!helpCategory || !email}
           title="SUBMIT"
           style={styles.submitButtonStyle}
         />
@@ -465,19 +477,17 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <View style={{ flex: 1 }}>
-          <ScrollView
-            style={styles.subViewPopup}
-            bounces={false}
-            showsVerticalScrollIndicator={false}
-          >
-            <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
-            <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
-              {'What do you need help with?'}
-            </Text>
-            <KeyboardAwareScrollView bounces={false}>{renderContent()}</KeyboardAwareScrollView>
+          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+            <KeyboardAwareScrollView style={styles.subViewPopup} bounces={false}>
+              <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
+              <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
+                {'What do you need help with?'}
+              </Text>
+              {renderContent()}
+            </KeyboardAwareScrollView>
           </ScrollView>
-          {renderButtons()}
         </View>
+        {renderButtons()}
       </SafeAreaView>
     </View>
   );

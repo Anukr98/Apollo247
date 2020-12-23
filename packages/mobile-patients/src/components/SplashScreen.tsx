@@ -1018,6 +1018,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Doctors_Page_Size',
     },
     Need_Help: {
+      QA: 'QA_Need_Help',
       PROD: 'Need_Help',
     },
   };

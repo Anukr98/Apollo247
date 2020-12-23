@@ -426,6 +426,33 @@ export const GET_PATIENT_APPOINTMENTS = gql`
   }
 `;
 
+export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
+  query GetPatientAllAppointmentsForHelp($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        actualAmount
+        appointmentType
+        appointmentDateTime
+        displayId
+        doctorInfo {
+          thumbnailUrl
+          displayName
+          experience
+          specialty {
+            name
+          }
+          doctorHospital {
+            facility {
+              name
+              city
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   query getPatientAllAppointments($patientId: String!) {
     getPatientAllAppointments(patientId: $patientId) {
