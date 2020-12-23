@@ -111,6 +111,7 @@ export const OrderCard: React.FC<Props> = ({
   return (
     <ListItem
       title={renderTitle()}
+      onPress={onPress}
       subtitle={renderStatusAndLinks()}
       pad={16}
       containerStyle={styles.listItemContainer}

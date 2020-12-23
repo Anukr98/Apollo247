@@ -87,13 +87,15 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         billNumber: item.billNumber,
         isCancelOrder: !!isCancelOrder,
         isOrderHelp: true,
+        queryCategory,
+        email,
         breadCrumb: [...breadCrumb, { title: string.productDetail }] as BreadcrumbProps['links'],
       });
     };
     return (
       <OrderCard
         orderDetail={item}
-        onPress={onPress}
+        onPress={() => onPress(false)}
         onPressCancel={() => onPress(true)}
         onPressHelp={onPressHelp}
       />
