@@ -53,6 +53,7 @@ import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEv
 import _ from 'lodash';
 import { getPatientPrismSingleMedicalRecordApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -1040,10 +1041,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       <SafeAreaView style={styles.safeAreaViewStyle}>
         <Header
           leftIcon="backArrow"
-          rightComponent={renderProfileImage()}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={onGoBack}
         />
+        <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
       </SafeAreaView>
     </View>
   );

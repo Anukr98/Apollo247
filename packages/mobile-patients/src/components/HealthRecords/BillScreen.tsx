@@ -90,6 +90,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     data: MedicalBillsType[];
   }> | null>(null);
   const [callApi, setCallApi] = useState(false);
+  const [apiError, setApiError] = useState(false);
 
   useEffect(() => {
     getLatestMedicalBillRecords();
@@ -140,6 +141,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       })
       .catch((error) => {
         setShowSpinner(false);
+        setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
@@ -157,9 +159,9 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const renderHeader = () => {
     return (
       <Header
-        title={'BILLS'}
+        title={apiError ? undefined : 'BILLS'}
         leftIcon={'backArrow'}
-        rightComponent={renderProfileImage()}
+        rightComponent={apiError ? undefined : renderProfileImage()}
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={gotoPHRHomeScreen}
       />
@@ -248,6 +250,14 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
+  const emptyListView = () => {
+    return apiError ? (
+      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+    ) : (
+      <PhrNoDataComponent />
+    );
+  };
+
   const renderMedicalBillsData = () => {
     return (
       <SectionList
@@ -256,7 +266,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalBillsData || []}
         renderItem={({ item, index }) => renderMedicalBillItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={emptyListView}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -298,7 +308,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderMedicalBillsData()}
         </ScrollView>
-        {renderAddButton()}
+        {!apiError && renderAddButton()}
       </SafeAreaView>
     </View>
   );

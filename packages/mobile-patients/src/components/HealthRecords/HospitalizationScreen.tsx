@@ -89,6 +89,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(false);
+  const [apiError, setApiError] = useState(false);
 
   useEffect(() => {
     getLatestHospitalizationRecords();
@@ -136,9 +137,9 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const renderHeader = () => {
     return (
       <Header
-        title={'HOSPITALIZATION'}
+        title={apiError ? undefined : 'HOSPITALIZATION'}
         leftIcon={'backArrow'}
-        rightComponent={renderProfileImage()}
+        rightComponent={apiError ? undefined : renderProfileImage()}
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={gotoPHRHomeScreen}
       />
@@ -184,6 +185,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       })
       .catch((error) => {
         setShowSpinner(false);
+        setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
@@ -267,6 +269,14 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     );
   };
 
+  const emptyListView = () => {
+    return apiError ? (
+      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+    ) : (
+      <PhrNoDataComponent />
+    );
+  };
+
   const renderHospitalizationData = () => {
     return (
       <SectionList
@@ -275,7 +285,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHospitalizationData || []}
         renderItem={({ item, index }) => renderHospitalizationItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={emptyListView}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -317,7 +327,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderHospitalizationData()}
         </ScrollView>
-        {renderAddButton()}
+        {!apiError && renderAddButton()}
       </SafeAreaView>
     </View>
   );
