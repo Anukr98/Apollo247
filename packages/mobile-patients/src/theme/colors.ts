@@ -89,6 +89,7 @@ const Common = {
   APP_RED: red,
   TURQUOISE_BLUE: '#0589BB',
   EXTREME_LIGHT_BLUE: '#2096C2',
+  SILVER_LIGHT: 'rgba(1, 71, 91, 0.6)',
   OFF_WHITE: '#F7F7F7',
   LIGHT_YELLOW: lightYellow,
   GREEN: '#07AE8B',

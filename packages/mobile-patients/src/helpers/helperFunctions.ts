@@ -92,6 +92,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import stripHtml from 'string-strip-html';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
@@ -143,6 +144,7 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICATION = 'MEDICATION',
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
+  FAMILY_HISTORY = 'FAMILY HISTORY',
 }
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
@@ -320,13 +322,17 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b.date || b.billDateTime || b.startDateTime)
+      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
         .toDate()
         .getTime() -
-      moment(a.date || a.billDateTime || a.startDateTime)
+      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
         .toDate()
         .getTime()
   );
+};
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
 };
 
 export const getSourceName = (
@@ -1132,7 +1138,8 @@ export const addTestsToCart = async (
       },
       fetchPolicy: 'no-cache',
     });
-  const detailQuery = async (itemId: string) => await getPackageInclusions(apolloClient, [Number(itemId)]);
+  const detailQuery = async (itemId: string) =>
+    await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
@@ -1148,7 +1155,7 @@ export const addTestsToCart = async (
       searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
     );
     const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'getInclusionsOfMultipleItems','inclusions',  'length') || 1 // updating testsIncluded
+      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData.length,

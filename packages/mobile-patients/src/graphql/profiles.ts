@@ -1980,108 +1980,20 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
-    getMedicineOrderOMSDetails(
+export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
+  query GetMedicineOrderShipmentDetails(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
+    getMedicineOrderOMSDetailsWithAddress(
       patientId: $patientId
       orderAutoId: $orderAutoId
       billNumber: $billNumber
     ) {
       medicineOrderDetails {
-        id
-        createdDate
-        orderAutoId
-        billNumber
-        devliveryCharges
-        couponDiscount
-        productDiscount
-        redeemedAmount
-        estimatedAmount
-        prescriptionImageUrl
-        oldOrderTat
-        orderTat
-        oldOrderTat
-        orderType
-        shopAddress
-        packagingCharges
-        deliveryType
-        currentStatus
-        patientAddressId
-        alertStore
-        prescriptionOptionSelected
-        totalCashBack
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-          statusMessage
-        }
-        medicineOrderLineItems {
-          medicineSKU
-          medicineName
-          price
-          mrp
-          quantity
-          isMedicine
-          mou
-          isPrescriptionNeeded
-        }
-        medicineOrderPayments {
-          id
-          paymentType
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-          healthCreditsRedeemed
-          paymentMode
-        }
-        medicineOrderRefunds {
-          refundAmount
-          refundStatus
-          refundId
-          orderId
-          createdDate
-        }
         medicineOrderShipments {
-          id
-          siteId
-          siteName
           apOrderNo
-          updatedDate
-          currentStatus
-          itemDetails
-          medicineOrdersStatus {
-            id
-            orderStatus
-            statusDate
-            hideStatus
-          }
-          medicineOrderInvoice {
-            id
-            siteId
-            remarks
-            requestType
-            vendorName
-            billDetails
-            itemDetails
-          }
-        }
-        patient {
-          firstName
-          lastName
-          addressList {
-            id
-            addressLine1
-            addressLine2
-            city
-            state
-            zipcode
-          }
         }
       }
     }
@@ -2364,9 +2276,30 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
+export const GET_PRISM_AUTH_TOKEN = gql`
+  query getPrismAuthToken($uhid: String!) {
+    getPrismAuthToken(uhid: $uhid) {
+      errorCode
+      errorMsg
+      errorType
+      response
+    }
+  }
+`;
+
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
-  query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
-    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
+  query getPatientPrismMedicalRecords_V2(
+    $patientId: ID!
+    $records: [MedicalRecordType]
+    $recordId: String
+    $source: String
+  ) {
+    getPatientPrismMedicalRecords_V2(
+      patientId: $patientId
+      records: $records
+      recordId: $recordId
+      source: $source
+    ) {
       labResults {
         response {
           id
@@ -2626,6 +2559,30 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           }
         }
       }
+      familyHistory {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          diseaseName
+          authToken
+          source
+          fileUrl
+          familyMember
+          notes
+          recordDateTime
+          age
+          familyHistoryFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
     }
   }
 `;
@@ -2740,6 +2697,14 @@ export const DELETE_PATIENT_PRISM_MEDICAL_RECORD = gql`
     deletePatientPrismMedicalRecord(
       deletePatientPrismMedicalRecordInput: $deletePatientPrismMedicalRecordInput
     ) {
+      status
+    }
+  }
+`;
+
+export const ADD_FAMILY_HISTORY_RECORD = gql`
+  mutation savePatientFamilyHistoryToPRISM($familyHistoryParameters: FamilyHistoryParameters) {
+    savePatientFamilyHistoryToPRISM(familyHistoryParameters: $familyHistoryParameters) {
       status
     }
   }

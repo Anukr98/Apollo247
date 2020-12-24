@@ -56,11 +56,14 @@ export const OrderCard: React.FC<Props> = ({
       status === MEDICINE_ORDER_STATUS.DELIVERED ||
       status === MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
     const progress =
-      status === MEDICINE_ORDER_STATUS.ORDER_PLACED
+      status === MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+      status === MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
         ? 1
         : status === MEDICINE_ORDER_STATUS.ORDER_VERIFIED
         ? 2
-        : status === MEDICINE_ORDER_STATUS.ORDER_BILLED
+        : status === MEDICINE_ORDER_STATUS.ORDER_BILLED ||
+          status === MEDICINE_ORDER_STATUS.SHIPPED ||
+          status === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY
         ? 3
         : 0;
 

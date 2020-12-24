@@ -16,13 +16,27 @@ import {
   CrossPopup,
   DropdownGreen,
   PhrArrowRightIcon,
+  PhrSearchIcon,
+  PrescriptionPhrSearchIcon,
+  LabTestPhrSearchIcon,
+  BillPhrSearchIcon,
+  InsurancePhrSearchIcon,
+  ClinicalDocumentPhrSearchIcon,
+  HospitalPhrSearchIcon,
+  HealthConditionPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
+  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPrismAuthTokenVariables,
+  getPrismAuthToken,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { BloodGroups, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -35,7 +49,9 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   phrSortByDate,
-  phrSortWithDate,
+  isValidSearch,
+  HEALTH_CONDITIONS_TITLE,
+  getPhrHighlightText,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -44,7 +60,7 @@ import {
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
@@ -56,9 +72,15 @@ import {
   Image,
   TouchableOpacity,
   Keyboard,
-  Alert,
+  TextInput,
   Platform,
+  FlatList,
+  Dimensions,
 } from 'react-native';
+import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
+import stripHtml from 'string-strip-html';
+import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -75,6 +97,8 @@ import _ from 'lodash';
 import { ListItem, Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -141,7 +165,6 @@ const styles = StyleSheet.create({
   },
   profileDetailsMainViewStyle: {
     backgroundColor: '#FFFFFF',
-    marginTop: 16,
     paddingTop: 26,
     paddingHorizontal: 18,
     paddingBottom: 70,
@@ -309,6 +332,42 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'right',
   },
+  textInputStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
+  },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    marginLeft: 18,
+  },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
+  searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
+  loaderViewStyle: { justifyContent: 'center', flex: 1, alignItems: 'center' },
+  loaderStyle: { height: 100, backgroundColor: 'transparent', alignSelf: 'center' },
+  phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
 });
 
 type BloodGroupArray = {
@@ -381,6 +440,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [currentUpdatePopupId, setCurrentUpdatePopupId] = useState(0);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [isSearchFocus, SetIsSearchFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const _searchInputRef = useRef(null);
+  const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
+  const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const [errorPopupText, setErrorPopupText] = useState<string>(
     string.common.error_enter_number_text
   );
@@ -406,6 +471,34 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     }
     setPatientHistoryValues();
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (currentPatient) {
+      getAuthToken();
+    }
+  }, [currentPatient]);
+
+  const getAuthToken = async () => {
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+      });
+  };
 
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
@@ -944,6 +1037,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
             consultArray: arrayValues,
             prescriptionArray: prescriptions,
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
             callPrescriptionsApi: onBackPrescriptionPressed,
           });
@@ -952,6 +1046,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_TEST_REPORTS);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
             testReportsData: testAndHealthCheck,
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
             callTestReportsApi: onBackTestReportPressed,
           });
@@ -959,24 +1054,28 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         case 3:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HOSPITALIZATIONS);
           props.navigation.navigate(AppRoutes.HospitalizationScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 4:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HEALTH_CONDITIONS);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 5:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_BILLS);
           props.navigation.navigate(AppRoutes.BillScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 6:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_INSURANCES);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
@@ -1384,18 +1483,363 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const onSearchHealthRecords = (_searchText: string) => {
+    setSearchLoading(true);
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken)
+      .then(({ data }) => {
+        setHealthRecordSearchResults([]);
+        if (data?.response) {
+          const recordData = data.response;
+          const finalData: any[] = [];
+          recordData.forEach((recordData: any) => {
+            const { healthrecordType } = recordData;
+            switch (healthrecordType) {
+              case 'PRESCRIPTION':
+                finalData.push({ healthkey: MedicalRecordType.PRESCRIPTION, value: recordData });
+                break;
+              case 'LABTEST':
+                finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
+                break;
+              case 'HOSPITALIZATION':
+                finalData.push({ healthkey: MedicalRecordType.HOSPITALIZATION, value: recordData });
+                break;
+              case 'ALLERGY':
+                finalData.push({ healthkey: MedicalRecordType.ALLERGY, value: recordData });
+                break;
+              case 'MEDICALCONDITION':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALCONDITION,
+                  value: recordData,
+                });
+                break;
+              case 'RESTRICTION':
+                finalData.push({
+                  healthkey: MedicalRecordType.HEALTHRESTRICTION,
+                  value: recordData,
+                });
+                break;
+              case 'INSURANCE':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALINSURANCE,
+                  value: recordData,
+                });
+                break;
+              case 'BILLS':
+                finalData.push({ healthkey: MedicalRecordType.MEDICALBILL, value: recordData });
+                break;
+              case 'FAMILYHISTORY':
+                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                break;
+            }
+          });
+          setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.log('searchPHRApiWithAuthToken Error', error);
+        getAuthToken();
+        setSearchLoading(false);
+      });
+  };
+
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      setSearchText('');
+      SetIsSearchFocus(false);
+      _searchInputRef?.current?.clear();
+      setHealthRecordSearchResults([]);
+      Keyboard.dismiss();
+    }
+  };
+
+  const onSearchTextChange = (value: string) => {
+    SetIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 2)) {
+        setHealthRecordSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      const search = _.debounce(onSearchHealthRecords, 300);
+      search(value);
+    }
+  };
+
+  const renderSearchLoader = () => {
+    return (
+      <View style={styles.loaderViewStyle}>
+        <Spinner style={styles.loaderStyle} />
+      </View>
+    );
+  };
+
+  const renderSearchBar = () => {
+    return (
+      <View
+        style={[
+          styles.searchBarMainViewStyle,
+          { backgroundColor: isSearchFocus ? 'rgba(0,0,0,0.05)' : 'transparent' },
+        ]}
+      >
+        <View style={styles.searchBarViewStyle}>
+          <PhrSearchIcon style={{ width: 20, height: 20 }} />
+          <TextInput
+            placeholder={'Search'}
+            autoCapitalize={'none'}
+            style={styles.textInputStyle}
+            selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+            numberOfLines={1}
+            ref={_searchInputRef}
+            onFocus={() => SetIsSearchFocus(true)}
+            value={searchText}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(value) => onSearchTextChange(value)}
+          />
+        </View>
+        {isSearchFocus ? (
+          <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+            {'Cancel'}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderHealthRecordSearchItem = (item: any, index: number) => {
+    const healthCardTopView = () => {
+      switch (item?.healthkey) {
+        case MedicalRecordType.PRESCRIPTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <PrescriptionPhrSearchIcon style={{ width: 12, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Doctor Consultations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.TEST_REPORT:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <LabTestPhrSearchIcon style={{ width: 14, height: 15 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Test Reports'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HOSPITALIZATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HospitalPhrSearchIcon style={{ width: 13, height: 15.17 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Hospitalizations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALBILL:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <BillPhrSearchIcon style={{ width: 16, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Bills'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALINSURANCE:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <InsurancePhrSearchIcon style={{ width: 15.55, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Insurance'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.ALLERGY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Allergies'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medications'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HEALTHRESTRICTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Health Restrictions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALCONDITION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medical Conditions'}
+              </Text>
+            </View>
+          );
+      }
+    };
+    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
+    return (
+      <SearchHealthRecordCard
+        dateText={dateText}
+        healthRecordTitle={item?.value?.title}
+        healthRecordMoreText={healthMoreText}
+        searchHealthCardTopView={healthCardTopView()}
+        item={item}
+        index={index}
+        onSearchHealthCardPress={(item) => onClickSearchHealthCard(item)}
+      />
+    );
+  };
+
+  const onClickSearchHealthCard = (item: any) => {
+    const { healthrecordId } = item?.value;
+    switch (item?.healthkey) {
+      case MedicalRecordType.PRESCRIPTION:
+        const prescription_item = item?.value?.healthRecord
+          ? JSON.parse(item?.value?.healthRecord || '{}')
+          : {};
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.PRESCRIPTION,
+          prescriptions: true,
+          prescriptionSource: prescription_item?.source,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.TEST_REPORT:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.TEST_REPORT,
+          labResults: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.HOSPITALIZATION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.HOSPITALIZATION,
+          hospitalization: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALBILL:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALBILL,
+          medicalBill: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALINSURANCE:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALINSURANCE,
+          medicalInsurance: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.ALLERGY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.ALLERGY,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.ALLERGY,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICATION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICATION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICATION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.HEALTHRESTRICTION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALCONDITION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALCONDITION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.FAMILY_HISTORY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.FAMILY_HISTORY,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY,
+          onPressBack: onBackArrowPressed,
+        });
+    }
+  };
+
+  const searchListHeaderView = () => {
+    const search_result_text =
+      healthRecordSearchResults?.length === 1
+        ? `${healthRecordSearchResults?.length} search result for \‘${searchText}\’`
+        : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
+    return (
+      <View style={styles.searchListHeaderViewStyle}>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+      </View>
+    );
+  };
+
+  const renderHealthRecordSearchResults = () => {
+    return searchLoading ? (
+      renderSearchLoader()
+    ) : (
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        bounces={false}
+        data={healthRecordSearchResults}
+        ListEmptyComponent={
+          <PhrNoDataComponent mainViewStyle={styles.phrNodataMainViewStyle} phrSearchList />
+        }
+        ListHeaderComponent={searchListHeaderView}
+        renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderUpdateProfileDetailsPopup()}
         {renderHeader()}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderProfileDetailsView()}
-          {renderHealthCategoriesView()}
-          {renderBillsInsuranceView()}
-          {/* PHR Phase 2 UI */}
-          {/* {renderClinicalDocumentsView()} */}
-        </ScrollView>
+        {renderSearchBar()}
+        {searchText?.length > 2 ? (
+          renderHealthRecordSearchResults()
+        ) : (
+          <ScrollView style={{ flex: 1 }} bounces={false}>
+            {renderProfileDetailsView()}
+            {renderHealthCategoriesView()}
+            {renderBillsInsuranceView()}
+            {/* PHR Phase 2 UI */}
+            {/* {renderClinicalDocumentsView()} */}
+          </ScrollView>
+        )}
       </SafeAreaView>
     </View>
   );

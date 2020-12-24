@@ -985,6 +985,23 @@ export interface EndAppointmentSessionInput {
   isReferred?: boolean | null;
 }
 
+export interface FamilyHistoryFilesProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface FamilyHistoryParameters {
+  patientId: string;
+  diseaseName?: string | null;
+  id?: string | null;
+  familyMember?: Relation | null;
+  notes?: string | null;
+  age?: number | null;
+  recordDate?: any | null;
+  attachmentList?: (FamilyHistoryFilesProperties | null)[] | null;
+}
+
 export interface FilterDoctorInput {
   patientId?: string | null;
   specialty?: string | null;

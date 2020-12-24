@@ -65,6 +65,7 @@ const appStaticVariables = {
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
+  MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
@@ -79,6 +80,7 @@ const appStaticVariables = {
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
 };
 
 const DEV_top_specialties = [

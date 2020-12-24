@@ -21,6 +21,7 @@
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "best_doctor_text": "Here are our best ",
+    "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
     "distance": "Distance",
     "consult_now": "CONSULT NOW",
@@ -101,6 +102,8 @@
     }
   },
   "lookingForBoughtPreviously": "Looking for an item you bought previously?",
+  "trackYourShipment": "TRACK YOUR SHIPMENT",
+  "reportIssue": "REPORT ISSUE",
   "submit": "Submit",
   "retry": "Retry",
   "help": "Help",
@@ -325,27 +328,51 @@
     "filter_data": [
       {
         "label": "City",
-        "options": ["Hyderabad", "Chennai"]
+        "options": [
+          "Hyderabad",
+          "Chennai"
+        ]
       },
       {
         "label": "Experience In Years",
-        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
+        "options": [
+          "0 - 5",
+          "6 - 10",
+          "11 - 15",
+          "15+"
+        ]
       },
       {
         "label": "Availability",
-        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
+        "options": [
+          "Now",
+          "Today",
+          "Tomorrow",
+          "Next 3 Days"
+        ]
       },
       {
         "label": "Fees In Rupees",
-        "options": ["100 - 500", "501 - 1000", "1000+"]
+        "options": [
+          "100 - 500",
+          "501 - 1000",
+          "1000+"
+        ]
       },
       {
         "label": "Gender",
-        "options": ["Male", "Female"]
+        "options": [
+          "Male",
+          "Female"
+        ]
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu"
+        ]
       }
     ]
   },
@@ -516,7 +543,12 @@
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar",
-    "availabilityList": ["Now", "Today", "Tomorrow", "Next 3 days"],
+    "availabilityList": [
+      "Now",
+      "Today",
+      "Tomorrow",
+      "Next 3 days"
+    ],
     "appointmentStatus": [
       "Active",
       "Completed",

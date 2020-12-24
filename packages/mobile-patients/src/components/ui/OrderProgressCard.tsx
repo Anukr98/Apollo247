@@ -82,6 +82,7 @@ interface OrderDescription {
   heading?: string;
   description?: string;
   onPress?: () => void;
+  component?: React.FC;
 }
 
 interface NewOrderDescription extends OrderDescription {
@@ -241,6 +242,9 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
               </Text>
             </View>
           )}
+        {props.showCurrentStatusDesc && props.getOrderDescription?.component
+          ? props.getOrderDescription?.component
+          : null}
         {props.showCurrentStatusDesc && props.showReUploadPrescription
           ? renderUploadPrescription()
           : null}

@@ -844,6 +844,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
       orderCancelText?: string
     ) => {
+      const shipmentNumber = order?.medicineOrderShipments?.[0]?.apOrderNo;
+      const renderTrackOrder = (
+        <Text
+          onPress={() => {
+            const url = AppConfig.Configuration.MED_TRACK_SHIPMENT_URL;
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: url.replace('{{shipmentNumber}}', shipmentNumber!),
+              isGoBack: true,
+            });
+          }}
+          style={styles.trackOrder}
+        >
+          TRACK YOUR SHIPMENT
+        </Text>
+      );
       const isCartItemsUpdated =
         orderDetails.medicineOrderShipments!.length > 0 &&
         !isEmptyObject(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
@@ -903,6 +918,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
+        [MEDICINE_ORDER_STATUS.SHIPPED]: [
+          '',
+          `Your order has been picked-up by our courier partner and is in-transit. Shipment AWB number is ${shipmentNumber}.`,
+          () => {},
+          shipmentNumber ? renderTrackOrder : null,
+        ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
           `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
@@ -932,6 +953,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             heading: g(orderStatusDescMapping, status as any, '0'),
             description: g(orderStatusDescMapping, status as any, '1'),
             onPress: g(orderStatusDescMapping, status as any, '2'),
+            component: g(orderStatusDescMapping, status as any, '3'),
           }
         : null;
     };
@@ -1995,6 +2017,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const onPress = () => {
       props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
+        medicineOrderStatus: order?.currentStatus,
         orderId: billNumber || orderAutoId,
         queryCategory,
         email,
@@ -2193,6 +2216,11 @@ const styles = StyleSheet.create({
   flexRow: {
     display: 'flex',
     flexDirection: 'row',
+  },
+  trackOrder: {
+    ...text('B', 14, APP_YELLOW),
+    textAlign: 'right',
+    padding: 5,
   },
   reOrderButtonTransparentTopView: {
     position: 'absolute',
