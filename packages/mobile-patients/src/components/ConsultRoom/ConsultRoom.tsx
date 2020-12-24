@@ -2210,6 +2210,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderTopIcons = () => {
+    const onPressCart = () => {
+      const route =
+        (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
+          ? AppRoutes.MedAndTestCart
+          : shopCartItems.length
+          ? AppRoutes.MedicineCart
+          : AppRoutes.TestsCart;
+      props.navigation.navigate(route);
+    };
+
     return (
       <View
         style={{
@@ -2225,11 +2235,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
-            // style={{ right: 20 }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={onPressCart}>
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
