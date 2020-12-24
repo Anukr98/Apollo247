@@ -1556,7 +1556,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     SetIsSearchFocus(true);
     if (isValidSearch(value)) {
       setSearchText(value);
-      if (!(value && value.length > 3)) {
+      if (!(value && value.length > 2)) {
         setHealthRecordSearchResults([]);
         return;
       }
@@ -1828,7 +1828,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         {renderUpdateProfileDetailsPopup()}
         {renderHeader()}
         {renderSearchBar()}
-        {searchText?.length > 3 ? (
+        {searchText?.length > 2 ? (
           renderHealthRecordSearchResults()
         ) : (
           <ScrollView style={{ flex: 1 }} bounces={false}>
