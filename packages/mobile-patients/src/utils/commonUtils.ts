@@ -261,11 +261,6 @@ export const getActiveTestItems = (
   pricingObjectForItem: any,
   itemWithPackageMrp: string | number
 ) => {
-  //1. get the diff in price + grroupPlan + active + start-end Date
-  //2. now filter the items for active and start-endDate (this will be the main plans to consider)
-  //3. if after filter at 2. we don't have anything left, then return that item is not active
-  //4. after step 2. whatever i am left with, consider it to promote circle/ discount/ don't promote.
-
   //1.
   const currentDate = moment(new Date()).format('YYYY-MM-DD');
   var diffPriceForItem: {
