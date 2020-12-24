@@ -96,6 +96,7 @@ const Common = {
   CARE_RED: careRed,
   CAROUSEL_INACTIVE_DOT: '#C4C4C4',
   ORANGE_BORDER: '#FA9E3E',
+  GRAY: '#6A6A6A',
 };
 
 const Header = {

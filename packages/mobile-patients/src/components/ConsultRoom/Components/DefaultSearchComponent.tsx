@@ -144,6 +144,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemTxt}>{item?.name}</Text>
+                  <Text style={styles.smallText}>{item?.symptoms}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -214,5 +215,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     paddingHorizontal: 5,
+  },
+  smallText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.GRAY),
+    flexWrap: 'wrap',
+    marginTop: 2,
   },
 });
