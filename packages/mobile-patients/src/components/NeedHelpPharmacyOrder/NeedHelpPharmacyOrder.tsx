@@ -75,6 +75,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     const onPressHelp = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
+        medicineOrderStatus: item.currentStatus,
         orderId: item.billNumber || item.orderAutoId,
         queryCategory,
         email,

@@ -2017,6 +2017,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const onPress = () => {
       props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
+        medicineOrderStatus: order?.currentStatus,
         orderId: billNumber || orderAutoId,
         queryCategory,
         email,
