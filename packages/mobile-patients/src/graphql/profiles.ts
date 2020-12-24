@@ -426,6 +426,33 @@ export const GET_PATIENT_APPOINTMENTS = gql`
   }
 `;
 
+export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
+  query GetPatientAllAppointmentsForHelp($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        actualAmount
+        appointmentType
+        appointmentDateTime
+        displayId
+        doctorInfo {
+          thumbnailUrl
+          displayName
+          experience
+          specialty {
+            name
+          }
+          doctorHospital {
+            facility {
+              name
+              city
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   query getPatientAllAppointments($patientId: String!) {
     getPatientAllAppointments(patientId: $patientId) {
@@ -879,8 +906,18 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
 `;
 
 export const GET_PLATINUM_DOCTOR = gql`
-  query getPlatinumDoctor($specialtyId: ID) {
-    getPlatinumDoctor(specialtyId: $specialtyId) {
+  query getPlatinumDoctor(
+    $specialtyId: ID
+    $zoneType: ZoneType
+    $zone: String
+    $partnerDoctor: Boolean
+  ) {
+    getPlatinumDoctor(
+      specialtyId: $specialtyId
+      zoneType: $zoneType
+      zone: $zone
+      partnerDoctor: $partnerDoctor
+    ) {
       doctors {
         id
         displayName
@@ -1488,12 +1525,19 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         areaId
         rescheduleCount
         isRescheduled
+        collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
           quantity
           price
           groupPlan
+          itemObj {
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
           pricingObj {
             mrp
             price
@@ -1537,6 +1581,21 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
   }
 `;
 
+export const GET_PACKAGE_INCLUSIONS = gql`
+  query getInclusionsOfMultipleItems($itemID: [Int]!) {
+    getInclusionsOfMultipleItems(itemID: $itemID) {
+      inclusions {
+        itemId
+        requiredAttachment
+        sampleRemarks
+        sampleTypeName
+        testParameters
+        name
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
   query getDiagnosticOrderDetails($diagnosticOrderId: String) {
     getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
@@ -1560,12 +1619,19 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         orderType
         displayId
         createdDate
+        collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
           price
           quantity
           groupPlan
+          itemObj {
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
           pricingObj {
             mrp
             price
@@ -1584,6 +1650,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
             testDescription
+            inclusions
             diagnosticPricing {
               mrp
               price
@@ -1640,37 +1707,9 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
-        diagnosticPricing {
-          mrp
-          price
-          groupPlan
-          status
-          startDate
-          endDate
-        }
+        packageCalculatedMrp
         testDescription
         inclusions
-      }
-    }
-  }
-`;
-
-export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
-  query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
-    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID) {
-      diagnostics {
-        itemName
-        rate
-        itemType
-        rate
-        gender
-        itemRemarks
-        city
-        state
-        collectionType
-        fromAgeInDays
-        toAgeInDays
-        testPreparationData
         diagnosticPricing {
           mrp
           price
@@ -1679,7 +1718,6 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
           startDate
           endDate
         }
-        testDescription
       }
     }
   }
@@ -1708,6 +1746,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testDescription
           collectionType
           inclusions
+          packageCalculatedMrp
           diagnosticPricing {
             mrp
             price
@@ -1739,6 +1778,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testDescription
           collectionType
           inclusions
+          packageCalculatedMrp
           diagnosticPricing {
             mrp
             price
@@ -1921,108 +1961,20 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
-    getMedicineOrderOMSDetails(
+export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
+  query GetMedicineOrderShipmentDetails(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
+    getMedicineOrderOMSDetailsWithAddress(
       patientId: $patientId
       orderAutoId: $orderAutoId
       billNumber: $billNumber
     ) {
       medicineOrderDetails {
-        id
-        createdDate
-        orderAutoId
-        billNumber
-        devliveryCharges
-        couponDiscount
-        productDiscount
-        redeemedAmount
-        estimatedAmount
-        prescriptionImageUrl
-        oldOrderTat
-        orderTat
-        oldOrderTat
-        orderType
-        shopAddress
-        packagingCharges
-        deliveryType
-        currentStatus
-        patientAddressId
-        alertStore
-        prescriptionOptionSelected
-        totalCashBack
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-          statusMessage
-        }
-        medicineOrderLineItems {
-          medicineSKU
-          medicineName
-          price
-          mrp
-          quantity
-          isMedicine
-          mou
-          isPrescriptionNeeded
-        }
-        medicineOrderPayments {
-          id
-          paymentType
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-          healthCreditsRedeemed
-          paymentMode
-        }
-        medicineOrderRefunds {
-          refundAmount
-          refundStatus
-          refundId
-          orderId
-          createdDate
-        }
         medicineOrderShipments {
-          id
-          siteId
-          siteName
           apOrderNo
-          updatedDate
-          currentStatus
-          itemDetails
-          medicineOrdersStatus {
-            id
-            orderStatus
-            statusDate
-            hideStatus
-          }
-          medicineOrderInvoice {
-            id
-            siteId
-            remarks
-            requestType
-            vendorName
-            billDetails
-            itemDetails
-          }
-        }
-        patient {
-          firstName
-          lastName
-          addressList {
-            id
-            addressLine1
-            addressLine2
-            city
-            state
-            zipcode
-          }
         }
       }
     }
@@ -3150,6 +3102,8 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         toAgeInDays
         testDescription
         testPreparationData
+        packageCalculatedMrp
+        inclusions
         diagnosticPricing {
           mrp
           price
@@ -3182,6 +3136,7 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
         toAgeInDays
         testDescription
         testPreparationData
+        inclusions
       }
     }
   }

@@ -137,7 +137,18 @@ export interface AppsFlyerEvents {
 
   // ********** Home Screen Events ********** \\
 
-  [AppsFlyerEventName.BUY_MEDICINES]: PatientInfoWithSource;
+  [AppsFlyerEventName.BUY_MEDICINES]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    Source: 'Home Screen' | 'Menu';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
+  };
   [AppsFlyerEventName.ORDER_TESTS]: PatientInfoWithSource;
   [AppsFlyerEventName.MANAGE_DIABETES]: PatientInfo;
   [AppsFlyerEventName.TRACK_SYMPTOMS]: PatientInfo;
@@ -167,6 +178,8 @@ export interface AppsFlyerEvents {
     item_type: string;
     brand?: string;
     sku: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
     productname: string;
@@ -316,6 +329,8 @@ export interface AppsFlyerEvents {
     ItemCode?: string;
     ItemPrice?: number;
     LOB?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [AppsFlyerEventName.ITEMS_REMOVED_FROM_CART]: {

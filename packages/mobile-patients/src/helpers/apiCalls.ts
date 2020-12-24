@@ -23,6 +23,11 @@ export interface MedicineProduct {
   url_key: string;
   careCashback?: number | null;
   is_express?: 'Yes' | 'No';
+  dc_availability?: 'Yes' | 'No';
+  is_in_contract?: 'Yes' | 'No';
+  dose_form_variant?: string | null;
+  pack_form?: string | null;
+  pack_size?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -349,11 +354,13 @@ export interface MedicinePageAPiResponse {
 }
 
 export interface PackageInclusion {
+  requiredAttachment?: string;
+  itemId?: number;
   TestInclusion: string;
-  SampleRemarks: string;
-  SampleTypeName: string;
-  TestParameters: string;
-  TestName?: string; // getting TestInclusion value in TestName from API
+  sampleRemarks: string;
+  sampleTypeName: string;
+  testParameters: string;
+  name?: string; 
 }
 
 export interface TestPackage {

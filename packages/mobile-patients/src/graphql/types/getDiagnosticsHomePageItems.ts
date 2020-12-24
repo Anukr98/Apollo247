@@ -36,6 +36,7 @@ export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnos
   testDescription: string | null;
   collectionType: TEST_COLLECTION_TYPE | null;
   inclusions: (number | null)[] | null;
+  packageCalculatedMrp: number | null;
   diagnosticPricing: (getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans_diagnostics_diagnosticPricing | null)[] | null;
 }
 
@@ -74,6 +75,7 @@ export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnos
   testDescription: string | null;
   collectionType: TEST_COLLECTION_TYPE | null;
   inclusions: (number | null)[] | null;
+  packageCalculatedMrp: number | null;
   diagnosticPricing: (getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers_diagnostics_diagnosticPricing | null)[] | null;
 }
 

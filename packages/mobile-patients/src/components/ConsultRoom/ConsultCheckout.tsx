@@ -299,6 +299,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
               planSelected: planSelected,
               isDoctorsOfTheHourStatus,
+              selectedTab,
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               consultedWithDoctorBefore: consultedWithDoctorBefore,
@@ -323,6 +324,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
               planSelected: planSelected,
               isDoctorsOfTheHourStatus,
+              selectedTab,
             });
         setLoading && setLoading(false);
       })

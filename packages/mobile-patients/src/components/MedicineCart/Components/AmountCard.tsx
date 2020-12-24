@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, FlatList, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -49,25 +49,17 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={styles.text}>Delivery charges</Text>
+        <View>
+          <Text style={styles.text}>Delivery charges</Text>
+          {(isCircleSubscription || !!circleMembershipCharges) &&
+            amountToPay < minValueForFreeDelivery &&
+            <Text style={styles.circleMessage}>(Free for Circle Members)</Text>}
+        </View>
         {deliveryCharges ? (
           <Text style={styles.text}>+₹{deliveryCharges.toFixed(2)}</Text>
         ) : (
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.free}>Free</Text>
-              {(isCircleSubscription || !!circleMembershipCharges) &&
-                amountToPay < minValueForFreeDelivery && (
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('R', 13, '#02475B', 1, 26),
-                      marginLeft: 5,
-                    }}
-                  >
-                    for Circle Members
-                  </Text>
-                )}
-            </View>
+            <Text style={styles.free}>Free</Text>
             <Text style={{ ...styles.text, textDecorationLine: 'line-through', marginLeft: 5 }}>
               +₹{deliveryFee.toFixed(2)}
             </Text>
@@ -147,5 +139,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 24,
     color: '#01475B',
+  },
+  circleMessage: {
+    ...theme.viewStyles.text('L', 12, '#02475B', 1, 20),
   },
 });

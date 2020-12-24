@@ -395,7 +395,7 @@ export const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 4,
-    title: 'TESTS',
+    title: 'LAB TESTS',
     image: <TestsIcon />,
   },
   {
@@ -433,7 +433,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcPlanId,
     setCircleStatus,
     setHdfcStatus,
-    setCirclePaymentReference,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -461,6 +460,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circleSubscriptionId,
     setHdfcSubscriptionId,
     setCirclePlanValidity,
+    setCirclePaymentReference,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -656,7 +657,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [upgradePlans]);
 
   const fetchInProgressAppointments = async () => {
-    setLoading && setLoading(true);
     try {
       const res = await client.query<getPatientFutureAppointmentCount>({
         query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -678,10 +678,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             true
           );
         }
-        setLoading && setLoading(false);
       }
     } catch (error) {
-      setLoading && setLoading(false);
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
   };
@@ -726,7 +724,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     eventName: WebEngageEventName,
     source?: PatientInfoWithSource['Source']
   ) => {
-    const eventAttributes: PatientInfo = {
+    let eventAttributes: PatientInfo = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -754,6 +752,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
+    if (eventName == WebEngageEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
     postWebEngageEvent(eventName, eventAttributes);
   };
 
@@ -771,7 +772,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     eventName: FirebaseEventName,
     source?: PatientInfoWithSourceFirebase['Source']
   ) => {
-    const eventAttributes: PatientInfoFirebase = {
+    let eventAttributes: PatientInfoFirebase = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -790,6 +791,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     ) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
+    }
+    if (eventName == FirebaseEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
     }
     postFirebaseEvent(eventName, eventAttributes);
   };
@@ -839,7 +843,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 3,
-      title: 'Order Tests',
+      title: 'Book Lab Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
@@ -2203,6 +2207,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderTopIcons = () => {
+    const onPressCart = () => {
+      const route =
+        (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
+          ? AppRoutes.MedAndTestCart
+          : shopCartItems.length
+          ? AppRoutes.MedicineCart
+          : AppRoutes.TestsCart;
+      props.navigation.navigate(route);
+    };
+
     return (
       <View
         style={{
@@ -2218,11 +2232,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
-            // style={{ right: 20 }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={onPressCart}>
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>

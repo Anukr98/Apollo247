@@ -360,6 +360,11 @@ export enum ONE_APOLLO_STORE_CODE {
   WEBCUS = "WEBCUS",
 }
 
+export enum ORDER_TYPE {
+  CONSULT = "CONSULT",
+  PHARMACY = "PHARMACY",
+}
+
 export enum OTP_STATUS {
   BLOCKED = "BLOCKED",
   EXPIRED = "EXPIRED",
@@ -563,6 +568,11 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum ZoneType {
+  CITY = "CITY",
+  STATE = "STATE",
 }
 
 export enum mediaPrescriptionSource {
@@ -877,7 +887,7 @@ export interface DiagnosticBookHomeCollectionInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
   areaId: number;
-  homeCollectionCharges: number;
+  collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
   totalPriceExcludingDiscounts?: number | null;
@@ -1027,6 +1037,8 @@ export interface HelpEmailInput {
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
 }
 
 export interface HospitalizationFileProperties {
@@ -1111,6 +1123,7 @@ export interface MedicineCartOMSInput {
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
+  savedDeliveryCharge?: number | null;
 }
 
 export interface MedicineCartOMSItem {

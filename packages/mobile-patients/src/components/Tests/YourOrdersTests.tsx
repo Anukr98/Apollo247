@@ -3,6 +3,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -77,11 +78,11 @@ import {
   getDiagnosticsOrderStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
 import _ from 'lodash';
-import { getPackageData } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   searchDiagnosticsById,
   searchDiagnosticsByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -229,6 +230,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const refetch =
     props.navigation.getParam('refetch') ||
     useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
+      context: {
+        sourceHeaders,
+      },
       variables: {
         patientId: currentPatient && currentPatient.id,
       },
@@ -289,6 +293,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         data: { searchDiagnosticsById },
       } = await client.query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
         query: SEARCH_DIAGNOSTICS_BY_ID,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           itemIds: itemId!.toString(),
         },
@@ -314,12 +321,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         preparation: testPreparationData,
       };
 
-      const {
-        data: { data },
-      } = await getPackageData(itemId!.toString());
-      if (data) {
-        item.diagnostics.partialTestDetails = partialTestDetails;
-        item.diagnostics.PackageInclussion = data || [];
+      try {
+        const arrayOfId = [Number(itemId)];
+        const res: any = await getPackageInclusions(client, arrayOfId);
+        if (res) {
+          const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+          item.diagnostics.partialTestDetails = partialTestDetails;
+          item.diagnostics.PackageInclussion = data || [];
+        }
+      } catch (e) {
+        CommonBugFender('Your test details', e);
+        setLoading!(false);
       }
     } catch (error) {
       // setsearchSate('fail');
@@ -329,16 +341,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const loadPackageDetails = async (packageId: string, items: any) => {
-    getPackageData(packageId)
-      .then(({ data }) => {
-        items.diagnostics.PackageInclussion! = data.data || [];
+    try {
+      const arrayOfId = [Number(packageId)];
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        items.diagnostics.PackageInclussion! = data || [];
         setLoading!(false);
-      })
-      .catch((e) => {
-        CommonBugFender('TestDetails', e);
+      } else {
         setLoading!(false);
-        console.log('getPackageData Error \n', { e });
-      });
+      }
+    } catch (e) {
+      CommonBugFender('TestDetails', e);
+      setLoading!(false);
+      console.log('getPackageData Error \n', { e });
+    }
   };
 
   const fetchOrderStatusForEachTest = async (id: string, order: DiagnosticsOrderList) => {
@@ -346,6 +363,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     client
       .query<getDiagnosticsOrderStatus, getDiagnosticsOrderStatusVariables>({
         query: GET_DIAGNOSTIC_ORDER_STATUS,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           diagnosticOrderId: id,
         },
