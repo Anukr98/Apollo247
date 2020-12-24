@@ -326,6 +326,38 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response | null)[] | null;
 }
 
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response_familyHistoryFiles {
+  __typename: "FamilyHistoryFiles";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+  byteContent: string | null;
+  dateCreated: number | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response {
+  __typename: "FamilyHistoryResponse";
+  id: string | null;
+  diseaseName: string | null;
+  authToken: string | null;
+  source: string | null;
+  fileUrl: string | null;
+  familyMember: string | null;
+  notes: string | null;
+  recordDateTime: any | null;
+  age: number | null;
+  familyHistoryFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response_familyHistoryFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory {
+  __typename: "PrismFamilyHistoryResponse";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response | null)[] | null;
+}
+
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2 {
   __typename: "PrismMedicalRecordsResult_V2";
   labResults: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults | null;
@@ -338,6 +370,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   medications: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications | null;
   healthRestrictions: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions | null;
   allergies: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies | null;
+  familyHistory: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2 {
@@ -347,4 +380,5 @@ export interface getPatientPrismMedicalRecords_V2 {
 export interface getPatientPrismMedicalRecords_V2Variables {
   patientId: string;
   records?: (MedicalRecordType | null)[] | null;
+  recordId?: string | null;
 }

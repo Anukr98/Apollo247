@@ -79,6 +79,7 @@ const appStaticVariables = {
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
 };
 
 const DEV_top_specialties = [

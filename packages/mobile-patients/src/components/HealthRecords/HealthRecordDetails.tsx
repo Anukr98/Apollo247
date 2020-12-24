@@ -50,6 +50,9 @@ import {
   getLabResultpdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import _ from 'lodash';
+import { getPatientPrismSingleMedicalRecordApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -150,6 +153,14 @@ const styles = StyleSheet.create({
     ...viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30),
     marginRight: 10,
   },
+  doctorTextStyle: { ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 },
+  sourceTextStyle: { ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 },
+  safeAreaViewStyle: {
+    ...theme.viewStyles.container,
+  },
+  mainViewStyle: {
+    flex: 1,
+  },
 });
 
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
@@ -157,7 +168,9 @@ export interface HealthRecordDetailsProps extends NavigationScreenProps {}
 export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) => {
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
-  const data = props.navigation.state.params ? props.navigation.state.params.data : {};
+  const [data, setData] = useState<any>(
+    props.navigation.state.params ? props.navigation.state.params.data : {}
+  );
   const labResults = props.navigation.state.params
     ? props.navigation.state.params.labResults
     : false;
@@ -182,6 +195,13 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const healthHeaderTitle = props.navigation.state.params
     ? props.navigation.state.params.healthHeaderTitle
     : '';
+  const healthrecordId = props.navigation.state.params
+    ? props.navigation.state.params?.healthrecordId
+    : '';
+  const healthRecordType = props.navigation.state.params
+    ? props.navigation.state.params?.healthRecordType
+    : '';
+  console.log('HealthRecordDetails', data, JSON.stringify(data));
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const client = useApolloClient();
@@ -213,9 +233,131 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     }
   };
 
+  useEffect(() => {
+    if (healthrecordId) {
+      setLoading && setLoading(true);
+      getPatientPrismSingleMedicalRecordApi(
+        client,
+        currentPatient?.id,
+        [healthRecordType],
+        healthrecordId
+      )
+        .then((data: any) => {
+          switch (healthRecordType) {
+            case MedicalRecordType.PRESCRIPTION:
+              const prescriptionsData = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'prescriptions',
+                'response',
+                '0' as any
+              );
+              setData(prescriptionsData);
+              break;
+            case MedicalRecordType.TEST_REPORT:
+              const labResultsData = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'labResults',
+                'response',
+                '0' as any
+              );
+              setData(labResultsData);
+              break;
+            case MedicalRecordType.HOSPITALIZATION:
+              const hospitalizationsData = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'hospitalizations',
+                'response',
+                '0' as any
+              );
+              setData(hospitalizationsData);
+              break;
+            case MedicalRecordType.MEDICALBILL:
+              const medicalBills = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medicalBills',
+                'response',
+                '0' as any
+              );
+              setData(medicalBills);
+              break;
+            case MedicalRecordType.MEDICALINSURANCE:
+              const medicalInsurances = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medicalInsurances',
+                'response',
+                '0' as any
+              );
+              setData(medicalInsurances);
+              break;
+            case MedicalRecordType.ALLERGY:
+              const medicalAllergie = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'allergies',
+                'response',
+                '0' as any
+              );
+              setData(medicalAllergie);
+              break;
+            case MedicalRecordType.MEDICATION:
+              const medicalMedication = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medications',
+                'response',
+                '0' as any
+              );
+              setData(medicalMedication);
+              break;
+            case MedicalRecordType.HEALTHRESTRICTION:
+              const medicalHealthRestriction = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'healthRestrictions',
+                'response',
+                '0' as any
+              );
+              setData(medicalHealthRestriction);
+              break;
+            case MedicalRecordType.MEDICALCONDITION:
+              const medicalCondition = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'medicalConditions',
+                'response',
+                '0' as any
+              );
+              setData(medicalCondition);
+              break;
+            case MedicalRecordType.FAMILY_HISTORY:
+              const medicalFamilyHistory = g(
+                data,
+                'getPatientPrismMedicalRecords_V2',
+                'familyHistory',
+                'response',
+                '0' as any
+              );
+              setData(medicalFamilyHistory);
+              break;
+          }
+        })
+        .catch((error) => {
+          CommonBugFender('HealthRecordsHome_fetchTestData', error);
+          console.log('Error occured', { error });
+          currentPatient && handleGraphQlError(error);
+        })
+        .finally(() => setLoading && setLoading(false));
+    }
+  }, []);
+
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    props.navigation.goBack();
+    onGoBack();
     return true;
   };
 
@@ -520,6 +662,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'medicationFiles', '0', 'fileName')
       : g(data, 'attachmentList', '0', 'fileName')
       ? g(data, 'attachmentList', '0', 'fileName')
+      : g(data, 'familyHistoryFiles', '0', 'fileName')
+      ? g(data, 'familyHistoryFiles', '0', 'fileName')
       : '';
     return (
       <View
@@ -609,6 +753,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'Discharge Date'
       : medicalInsurance
       ? 'Insurance Date'
+      : healthCondition && data?.recordDateTime
+      ? 'Updated'
       : 'Checkup Date';
     const renderDateView = () => {
       return hospitalization && data?.dateOfHospitalization !== 0 ? (
@@ -637,7 +783,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <Text style={{ ...viewStyles.text('R', 14, theme.colors.SKY_BLUE, 1, 18), marginTop: 3 }}>
           {'On '}
           <Text style={{ ...viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18) }}>{`${moment(
-            data?.date || data?.startDateTime
+            data?.date || data?.startDateTime || data?.billDateTime
           ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       );
@@ -672,48 +818,45 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
           </Text>
         ) : null}
+        {data?.diseaseName ? (
+          <Text style={styles.recordNameTextStyle}>{data?.diseaseName}</Text>
+        ) : null}
         {data?.labTestRefferedBy ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}</Text>
+        ) : null}
+        {data?.familyMember ? (
+          <Text style={styles.doctorTextStyle}>{_.capitalize(data?.familyMember) || ''}</Text>
         ) : null}
         {medicalBill && data?.bill_no ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {data?.bill_no}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{data?.bill_no}</Text>
         ) : null}
         {medicalInsurance && data?.policyNumber ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {data?.policyNumber}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{data?.policyNumber}</Text>
         ) : null}
         {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.prescribedBy || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.prescribedBy || 'Dr. -'}</Text>
         ) : null}
         {data?.suggestedByDoctor ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}</Text>
         ) : null}
         {data?.doctorTreated ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.doctorTreated || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.doctorTreated || 'Dr. -'}</Text>
         ) : null}
         {hospitalization ? null : data?.doctorName ? (
-          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
-            {'Dr. ' + data?.doctorName || 'Dr. -'}
-          </Text>
+          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.doctorName || 'Dr. -'}</Text>
         ) : null}
-        {medicalInsurance || hospitalization ? null : (
-          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
+        {medicalInsurance || hospitalization || data?.diseaseName ? null : (
+          <Text style={styles.sourceTextStyle}>
             {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) || '-'}
           </Text>
         )}
+        {data?.age ? (
+          <Text style={styles.sourceTextStyle}>
+            {data?.age === 1 ? `${data?.age} Yr` : `${data?.age} Yrs`}
+          </Text>
+        ) : null}
         {hospitalization ? (
-          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
+          <Text style={styles.sourceTextStyle}>
             {data?.hospitalName &&
             getSourceName(data?.source) === string.common.clicnical_document_text
               ? data?.hospitalName
@@ -783,6 +926,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
         : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
         ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
+        : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
+        ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
         : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
       : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
@@ -801,6 +946,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'medicationFiles', '0', 'fileName')
       : g(data, 'attachmentList', '0', 'fileName')
       ? g(data, 'attachmentList', '0', 'fileName')
+      : g(data, 'familyHistoryFiles', '0', 'fileName')
+      ? g(data, 'familyHistoryFiles', '0', 'fileName')
       : '';
     const dirs = RNFetchBlob.fs.dirs;
 
@@ -827,8 +974,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
-        (!medicalBill || !medicalInsurance || !healthCondition) &&
-          postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
@@ -852,6 +998,11 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     );
   };
 
+  const onGoBack = () => {
+    props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
+    props.navigation.goBack();
+  };
+
   if (data) {
     const headerTitle = healthCheck
       ? 'HEALTH SUMMARY'
@@ -867,22 +1018,14 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? healthHeaderTitle || 'Health Condition'
       : 'TEST REPORTS DETAIL';
     return (
-      <View
-        style={{
-          flex: 1,
-        }}
-      >
-        <SafeAreaView
-          style={{
-            ...theme.viewStyles.container,
-          }}
-        >
+      <View style={styles.mainViewStyle}>
+        <SafeAreaView style={styles.safeAreaViewStyle}>
           <Header
             title={headerTitle}
             leftIcon="backArrow"
             rightComponent={renderProfileImage()}
             container={{ borderBottomWidth: 0 }}
-            onPressLeftIcon={() => props.navigation.goBack()}
+            onPressLeftIcon={onGoBack}
           />
           <ScrollView bounces={false}>
             {renderTestTopDetailsView()}
@@ -892,5 +1035,16 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       </View>
     );
   }
-  return <Spinner />;
+  return (
+    <View style={styles.mainViewStyle}>
+      <SafeAreaView style={styles.safeAreaViewStyle}>
+        <Header
+          leftIcon="backArrow"
+          rightComponent={renderProfileImage()}
+          container={{ borderBottomWidth: 0 }}
+          onPressLeftIcon={onGoBack}
+        />
+      </SafeAreaView>
+    </View>
+  );
 };

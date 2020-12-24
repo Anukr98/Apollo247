@@ -20,6 +20,7 @@ import {
   PhrMedicalIcon,
   PhrMedicationIcon,
   PhrRestrictionIcon,
+  PhrFamilyHistoryIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
@@ -48,6 +49,7 @@ import {
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications_response as MedicationType,
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions_response as HealthRestrictionType,
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response as AllergyType,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response as FamilyHistoryType,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -114,6 +116,9 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   const [medicalAllergies, setMedicalAllergies] = useState<
     (AllergyType | null)[] | null | undefined
   >([]);
+  const [familyHistory, setFamilyHistory] = useState<
+    (FamilyHistoryType | null)[] | null | undefined
+  >([]);
 
   const [callApi, setCallApi] = useState(false);
 
@@ -131,9 +136,18 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     medicalAllergies?.forEach((allergyRecord: any) => {
       allergyRecord && healthConditionsArray.push(allergyRecord);
     });
+    familyHistory?.forEach((familyHistoryRecord: any) => {
+      familyHistoryRecord && healthConditionsArray.push(familyHistoryRecord);
+    });
     const sortedData = phrSortWithDate(healthConditionsArray);
     setHealthConditionMainData(sortedData);
-  }, [medicalConditions, medicalHealthRestrictions, medicalMedications, medicalAllergies]);
+  }, [
+    medicalConditions,
+    medicalHealthRestrictions,
+    medicalMedications,
+    medicalAllergies,
+    familyHistory,
+  ]);
 
   useEffect(() => {
     getLatestHealthConditionRecords();
@@ -176,6 +190,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       MedicalRecordType.MEDICATION,
       MedicalRecordType.HEALTHRESTRICTION,
       MedicalRecordType.MEDICALCONDITION,
+      MedicalRecordType.FAMILY_HISTORY,
     ])
       .then((data: any) => {
         const medicalCondition = g(
@@ -202,10 +217,17 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           'allergies',
           'response'
         );
+        const medicalFamilyHistory = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'familyHistory',
+          'response'
+        );
         setMedicalConditions(medicalCondition);
         setMedicalHealthRestrictions(medicalHealthRestriction);
         setMedicalMedications(medicalMedication);
         setMedicalAllergies(medicalAllergie);
+        setFamilyHistory(medicalFamilyHistory);
         setShowSpinner(false);
       })
       .catch((error) => {
@@ -255,6 +277,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       ? HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION
       : selectedItem?.medicalConditionName
       ? HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
+      : selectedItem?.diseaseName
+      ? HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
       : '';
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
@@ -295,6 +319,13 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         'Medical Condition',
         selectedItem
       );
+    } else if (recordType === MedicalRecordType.FAMILY_HISTORY) {
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_DELETE_FAMILY_HISTORY,
+        'Family History',
+        selectedItem
+      );
     }
   };
 
@@ -305,6 +336,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       ? MedicalRecordType.MEDICATION
       : selectedItem?.restrictionName
       ? MedicalRecordType.HEALTHRESTRICTION
+      : selectedItem?.diseaseName
+      ? MedicalRecordType.FAMILY_HISTORY
       : MedicalRecordType.MEDICALCONDITION;
     setShowSpinner(true);
     deletePatientPrismMedicalRecords(client, selectedItem?.id, currentPatient?.id || '', recordType)
@@ -329,6 +362,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       ? MedicalRecordType.MEDICATION
       : selectedItem?.restrictionName
       ? MedicalRecordType.HEALTHRESTRICTION
+      : selectedItem?.diseaseName
+      ? MedicalRecordType.FAMILY_HISTORY
       : MedicalRecordType.MEDICALCONDITION;
     setCallApi(false);
     props.navigation.navigate(AppRoutes.AddRecord, {
@@ -351,6 +386,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           <PhrRestrictionIcon style={{ width: 14, height: 14, marginRight: 9 }} />
         ) : item?.medicalConditionName ? (
           <PhrMedicalIcon style={{ width: 14, height: 14.03, marginRight: 8 }} />
+        ) : item?.diseaseName ? (
+          <PhrFamilyHistoryIcon style={{ width: 14, height: 17.14, marginRight: 9 }} />
         ) : null;
       };
       const getHealthConditionTypeTitle = item?.allergyName
@@ -361,6 +398,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         ? 'Health Restrictions'
         : item?.medicalConditionName
         ? 'Medical Conditions'
+        : item?.diseaseName
+        ? 'Family History'
         : '';
       return (
         <View style={{ marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
@@ -376,12 +415,14 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       item?.medicineName ||
       item?.restrictionName ||
       item?.medicalConditionName ||
+      item?.diseaseName ||
       '';
-    const dateText = getPrescriptionDate(item?.startDateTime);
+    const dateText = getPrescriptionDate(item?.startDateTime || item?.recordDateTime);
     const soureName = getSourceName(item?.source) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
+    const familyMember = _.capitalize(item?.familyMember) || '';
     return (
       <HealthRecordCard
         item={item}
@@ -394,6 +435,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}
+        familyMember={familyMember}
         sourceName={soureName || ''}
         healthConditionCard
         healthCondtionCardTopView={renderHealthConditionTopView()}

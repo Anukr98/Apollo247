@@ -974,3 +974,21 @@ export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
     },
   });
 };
+
+export const searchPHRApi = (
+  searchText: string,
+  uhid: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrl = `${AppConfig.Configuration.PHR_BASE_URL}/apollo/healthrecord/search?accessToken=KeyOf247&uhid=${uhid}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrl);
+};
+
+export const searchPHRApiWithAuthToken = (
+  searchText: string,
+  authToken: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrlWithAuthToke = `${AppConfig.Configuration.PHR_BASE_URL}/searchhealthrecord?authToken=${authToken}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrlWithAuthToke);
+};

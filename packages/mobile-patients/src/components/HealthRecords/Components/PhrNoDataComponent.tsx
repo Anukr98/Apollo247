@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
-import { PhrNoDataIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { View, Text, Dimensions, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { PhrNoDataIcon, PhrSearchNoDataIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -22,17 +22,30 @@ const style = StyleSheet.create({
     marginTop: 14,
   },
   noDataIconStyle: { width: 140, height: 140, borderRadius: 70, resizeMode: 'contain' },
+  noDataSearchIconStyle: { width: 132, height: 126, resizeMode: 'contain' },
 });
 
-interface PhrNoDataComponentProps {}
+interface PhrNoDataComponentProps {
+  mainViewStyle?: StyleProp<ViewStyle>;
+  noDataText?: string;
+  phrSearchList?: boolean;
+}
 
 export const PhrNoDataComponent: React.FC<PhrNoDataComponentProps> = (props) => {
   return (
     <View style={{ justifyContent: 'center' }}>
-      <View style={style.mainViewStyle}>
-        <PhrNoDataIcon style={style.noDataIconStyle} />
+      <View style={[style.mainViewStyle, props.mainViewStyle]}>
+        {props.phrSearchList ? (
+          <PhrSearchNoDataIcon style={style.noDataSearchIconStyle} />
+        ) : (
+          <PhrNoDataIcon style={style.noDataIconStyle} />
+        )}
       </View>
-      <Text style={style.noDataTextStyle}>{'No data available !!!'}</Text>
+      {props.phrSearchList ? null : (
+        <Text style={style.noDataTextStyle}>
+          {props.noDataText ? props.noDataText : 'No data available !!!'}
+        </Text>
+      )}
     </View>
   );
 };

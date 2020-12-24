@@ -2345,9 +2345,28 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
+export const GET_PRISM_AUTH_TOKEN = gql`
+  query getPrismAuthToken($uhid: String!) {
+    getPrismAuthToken(uhid: $uhid) {
+      errorCode
+      errorMsg
+      errorType
+      response
+    }
+  }
+`;
+
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
-  query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
-    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
+  query getPatientPrismMedicalRecords_V2(
+    $patientId: ID!
+    $records: [MedicalRecordType]
+    $recordId: String
+  ) {
+    getPatientPrismMedicalRecords_V2(
+      patientId: $patientId
+      records: $records
+      recordId: $recordId
+    ) {
       labResults {
         response {
           id
@@ -2607,6 +2626,30 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           }
         }
       }
+      familyHistory {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          diseaseName
+          authToken
+          source
+          fileUrl
+          familyMember
+          notes
+          recordDateTime
+          age
+          familyHistoryFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
     }
   }
 `;
@@ -2721,6 +2764,14 @@ export const DELETE_PATIENT_PRISM_MEDICAL_RECORD = gql`
     deletePatientPrismMedicalRecord(
       deletePatientPrismMedicalRecordInput: $deletePatientPrismMedicalRecordInput
     ) {
+      status
+    }
+  }
+`;
+
+export const ADD_FAMILY_HISTORY_RECORD = gql`
+  mutation savePatientFamilyHistoryToPRISM($familyHistoryParameters: FamilyHistoryParameters) {
+    savePatientFamilyHistoryToPRISM(familyHistoryParameters: $familyHistoryParameters) {
       status
     }
   }
