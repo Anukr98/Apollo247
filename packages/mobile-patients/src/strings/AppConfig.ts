@@ -65,6 +65,7 @@ const appStaticVariables = {
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
+  MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
