@@ -23,6 +23,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const source = props.navigation.getParam('source');
   const [loading, setLoading] = useState<boolean>(true);
   const isCallback = props.navigation.getParam('isCallback');
+  const isGoBack = props.navigation.getParam('isGoBack');
   const { currentPatient } = useAllCurrentPatients();
   const {
     setCirclePlanSelected,
@@ -97,11 +98,11 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const handleBack = async () => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    isGoBack ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom);
   };
 
   const renderError = (WebViewRef: any) => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    isGoBack ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom);
     return <View style={{ flex: 1 }}></View>;
   };
 
