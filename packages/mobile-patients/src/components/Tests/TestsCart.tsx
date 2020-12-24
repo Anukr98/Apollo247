@@ -932,6 +932,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               thumbnail: cartItem?.thumbnail,
               groupPlan: planToConsider?.groupPlan,
               packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
+              inclusions:
+                results?.[isItemInCart]?.inclusions == null
+                  ? [Number(results?.[isItemInCart]?.itemId)]
+                  : results?.[isItemInCart]?.inclusions,
             });
           }
         }
