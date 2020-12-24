@@ -1801,7 +1801,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     ) : (
       <FlatList
         keyExtractor={(_, index) => `${index}`}
-        style={{ paddingHorizontal: 9 }}
         bounces={false}
         data={healthRecordSearchResults}
         ListEmptyComponent={

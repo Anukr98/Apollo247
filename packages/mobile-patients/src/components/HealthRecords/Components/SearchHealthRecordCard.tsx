@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
   dateTextStyle: { ...theme.viewStyles.text('R', 14, '#95B1B7', 1, 21) },
   cardMainContainerStyle: {
     ...theme.viewStyles.cardViewStyle,
-    marginHorizontal: 0,
+    marginHorizontal: 9,
     marginBottom: 16,
   },
   healthRecordTitleTextStyle: {
