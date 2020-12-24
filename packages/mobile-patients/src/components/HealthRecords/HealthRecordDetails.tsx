@@ -202,6 +202,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const healthRecordType = props.navigation.state.params
     ? props.navigation.state.params?.healthRecordType
     : '';
+  const prescriptionSource = props.navigation.state.params
+    ? props.navigation.state.params?.prescriptionSource
+    : null;
+  const [apiError, setApiError] = useState(false);
   console.log('HealthRecordDetails', data, JSON.stringify(data));
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
@@ -235,19 +239,21 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   useEffect(() => {
+    // calling this api only for search records
     if (healthrecordId) {
       setLoading && setLoading(true);
       getPatientPrismSingleMedicalRecordApi(
         client,
         currentPatient?.id,
         [healthRecordType],
-        healthrecordId
+        healthrecordId,
+        prescriptionSource
       )
-        .then((data: any) => {
+        .then((_data: any) => {
           switch (healthRecordType) {
             case MedicalRecordType.PRESCRIPTION:
               const prescriptionsData = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'prescriptions',
                 'response',
@@ -257,7 +263,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.TEST_REPORT:
               const labResultsData = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'labResults',
                 'response',
@@ -267,7 +273,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.HOSPITALIZATION:
               const hospitalizationsData = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'hospitalizations',
                 'response',
@@ -277,7 +283,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.MEDICALBILL:
               const medicalBills = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'medicalBills',
                 'response',
@@ -287,7 +293,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.MEDICALINSURANCE:
               const medicalInsurances = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'medicalInsurances',
                 'response',
@@ -297,7 +303,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.ALLERGY:
               const medicalAllergie = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'allergies',
                 'response',
@@ -307,7 +313,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.MEDICATION:
               const medicalMedication = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'medications',
                 'response',
@@ -317,7 +323,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.HEALTHRESTRICTION:
               const medicalHealthRestriction = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'healthRestrictions',
                 'response',
@@ -327,7 +333,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.MEDICALCONDITION:
               const medicalCondition = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'medicalConditions',
                 'response',
@@ -337,7 +343,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               break;
             case MedicalRecordType.FAMILY_HISTORY:
               const medicalFamilyHistory = g(
-                data,
+                _data,
                 'getPatientPrismMedicalRecords_V2',
                 'familyHistory',
                 'response',
@@ -346,8 +352,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               setData(medicalFamilyHistory);
               break;
           }
+          data ? setApiError(false) : setApiError(true);
         })
         .catch((error) => {
+          setApiError(true);
           CommonBugFender('HealthRecordsHome_fetchTestData', error);
           console.log('Error occured', { error });
           currentPatient && handleGraphQlError(error);
@@ -1044,7 +1052,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={onGoBack}
         />
-        <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+        {apiError ? (
+          <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+        ) : null}
       </SafeAreaView>
     </View>
   );
