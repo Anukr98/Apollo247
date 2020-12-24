@@ -657,7 +657,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [upgradePlans]);
 
   const fetchInProgressAppointments = async () => {
-    setLoading && setLoading(true);
     try {
       const res = await client.query<getPatientFutureAppointmentCount>({
         query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -679,10 +678,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             true
           );
         }
-        setLoading && setLoading(false);
       }
     } catch (error) {
-      setLoading && setLoading(false);
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
   };
