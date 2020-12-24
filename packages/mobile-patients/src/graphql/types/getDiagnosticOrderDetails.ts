@@ -93,7 +93,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   orderType: string;
   displayId: number;
   createdDate: any;
-  collectionCharges: number;
+  collectionCharges: number | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

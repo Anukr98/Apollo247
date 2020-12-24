@@ -109,7 +109,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header leftIcon="logo" onPressLeftIcon={() => handleBack()} />
+        <Header leftIcon={isGoBack ? 'close' : 'logo'} onPressLeftIcon={() => handleBack()} />
         <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
       {loading && <Spinner />}

@@ -82,7 +82,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   areaId: number | null;
   rescheduleCount: number | null;
   isRescheduled: boolean | null;
-  collectionCharges: number;
+  collectionCharges: number | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
 
