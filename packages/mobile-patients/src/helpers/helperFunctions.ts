@@ -90,6 +90,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -325,6 +326,10 @@ export const phrSortWithDate = (array: any) => {
         .toDate()
         .getTime()
   );
+};
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
 };
 
 export const getSourceName = (

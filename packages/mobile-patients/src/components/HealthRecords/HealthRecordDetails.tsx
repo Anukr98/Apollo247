@@ -239,6 +239,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   useEffect(() => {
+    // calling this api only for search records
     if (healthrecordId) {
       setLoading && setLoading(true);
       getPatientPrismSingleMedicalRecordApi(

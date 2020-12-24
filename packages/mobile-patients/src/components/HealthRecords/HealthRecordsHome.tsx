@@ -51,6 +51,7 @@ import {
   phrSortByDate,
   isValidSearch,
   HEALTH_CONDITIONS_TITLE,
+  getPhrHighlightText,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -1694,7 +1695,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       }
     };
     const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
-    const healthMoreText = stripHtml(item?.value?.highlight?.replace(/[\{["]/gi, '')) || '';
+    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
     return (
       <SearchHealthRecordCard
         dateText={dateText}
