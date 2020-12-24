@@ -121,6 +121,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   >([]);
 
   const [callApi, setCallApi] = useState(false);
+  const [apiError, setApiError] = useState(false);
 
   useEffect(() => {
     const healthConditionsArray: any[] = [];
@@ -232,6 +233,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       })
       .catch((error) => {
         setShowSpinner(false);
+        setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
@@ -249,9 +251,9 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   const renderHeader = () => {
     return (
       <Header
-        title={'HEALTH CONDITIONS'}
+        title={apiError ? undefined : 'HEALTH CONDITIONS'}
         leftIcon={'backArrow'}
-        rightComponent={renderProfileImage()}
+        rightComponent={apiError ? undefined : renderProfileImage()}
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={gotoPHRHomeScreen}
       />
@@ -443,6 +445,14 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     );
   };
 
+  const emptyListView = () => {
+    return apiError ? (
+      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+    ) : (
+      <PhrNoDataComponent />
+    );
+  };
+
   const renderHealthCondtionsData = () => {
     return (
       <SectionList
@@ -451,7 +461,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHealthRecordData || []}
         renderItem={({ item, index }) => renderHealthConditionItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={emptyListView}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -498,7 +508,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderHealthCondtionsData()}
         </ScrollView>
-        {renderAddButton()}
+        {!apiError && renderAddButton()}
       </SafeAreaView>
     </View>
   );

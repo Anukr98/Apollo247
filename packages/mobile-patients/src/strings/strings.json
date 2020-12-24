@@ -20,6 +20,7 @@
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "best_doctor_text": "Here are our best ",
+    "phr_api_error_text":"We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
     "distance": "Distance",
     "consult_now": "CONSULT NOW",
