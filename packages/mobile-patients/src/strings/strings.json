@@ -79,7 +79,10 @@
     "careMembership": "CIRCLE Membership",
     "tryAgainLater": "Something went wrong, please try again after sometime",
     "weAreHereToHelpYou": "Always caring about your health, we are here to help you!",
-    "consultFee": "Consult Fee"
+    "consultFee": "Consult Fee",
+    "consultedDoctors": "Consulted Doctors",
+    "pastSearches": "Past Searches",
+    "topSpecialities": "Top Specialities"
   },
   "components": {
     "medicineDetails": {
