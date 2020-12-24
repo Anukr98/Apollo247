@@ -1688,11 +1688,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       }
     };
     const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    const healthMoreText = stripHtml(item?.value?.highlight?.replace(/[\{["]/gi, '')) || '';
     return (
       <SearchHealthRecordCard
         dateText={dateText}
         healthRecordTitle={item?.value?.title}
-        healthRecordMoreText={stripHtml(item?.value?.highlight)?.replaceAll('"', '')}
+        healthRecordMoreText={healthMoreText}
         searchHealthCardTopView={healthCardTopView()}
         item={item}
         index={index}
@@ -1702,7 +1703,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const onClickSearchHealthCard = (item: any) => {
-    const { date, healthrecordId } = item?.value;
+    const { healthrecordId } = item?.value;
     switch (item?.healthkey) {
       case MedicalRecordType.PRESCRIPTION:
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
