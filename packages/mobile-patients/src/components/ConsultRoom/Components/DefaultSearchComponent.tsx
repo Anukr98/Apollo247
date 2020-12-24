@@ -51,7 +51,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.DoctorDetails, {
                     doctorId: item?.id,
-                    callSaveSearch: 'true',
+                    callSaveSearch: 'false',
                   });
                 }}
               >
