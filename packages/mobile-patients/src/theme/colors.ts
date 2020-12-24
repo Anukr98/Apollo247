@@ -95,6 +95,7 @@ const Common = {
   TURQUOISE_LIGHT_BLUE: '#007C9D',
   CARE_RED: careRed,
   CAROUSEL_INACTIVE_DOT: '#C4C4C4',
+  ORANGE_BORDER: '#FA9E3E',
 };
 
 const Header = {

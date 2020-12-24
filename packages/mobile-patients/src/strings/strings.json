@@ -78,7 +78,10 @@
     "careMembership": "CIRCLE Membership",
     "tryAgainLater": "Something went wrong, please try again after sometime",
     "weAreHereToHelpYou": "Always caring about your health, we are here to help you!",
-    "consultFee": "Consult Fee"
+    "consultFee": "Consult Fee",
+    "consultedDoctors": "Consulted Doctors",
+    "pastSearches": "Past Searches",
+    "topSpecialities": "Top Specialities"
   },
   "components": {
     "medicineDetails": {
@@ -585,7 +588,7 @@
     "ONE_TOUCH": "ONE-TOUCH",
     "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
     "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
-    "ABSOLUTE_URL" : "ABSOLUTE_URL",
+    "ABSOLUTE_URL": "ABSOLUTE_URL",
     "ADVANCED_DIABETES": "POP-UP",
     "FILL_FORM": "LEAD-FORM",
     "DIABETES_CONSENT": {
