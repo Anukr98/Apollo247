@@ -2321,11 +2321,13 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
     $patientId: ID!
     $records: [MedicalRecordType]
     $recordId: String
+    $source: String
   ) {
     getPatientPrismMedicalRecords_V2(
       patientId: $patientId
       records: $records
       recordId: $recordId
+      source: $source
     ) {
       labResults {
         response {

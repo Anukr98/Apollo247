@@ -1036,6 +1036,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
             consultArray: arrayValues,
             prescriptionArray: prescriptions,
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
             callPrescriptionsApi: onBackPrescriptionPressed,
           });
@@ -1044,6 +1045,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_TEST_REPORTS);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
             testReportsData: testAndHealthCheck,
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
             callTestReportsApi: onBackTestReportPressed,
           });
@@ -1051,24 +1053,28 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         case 3:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HOSPITALIZATIONS);
           props.navigation.navigate(AppRoutes.HospitalizationScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 4:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HEALTH_CONDITIONS);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 5:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_BILLS);
           props.navigation.navigate(AppRoutes.BillScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 6:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_INSURANCES);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
+            authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
@@ -1706,10 +1712,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const { healthrecordId } = item?.value;
     switch (item?.healthkey) {
       case MedicalRecordType.PRESCRIPTION:
+        const prescription_item = item?.value?.healthRecord
+          ? JSON.parse(item?.value?.healthRecord || '{}')
+          : {};
         return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
           healthrecordId: healthrecordId,
           healthRecordType: MedicalRecordType.PRESCRIPTION,
           prescriptions: true,
+          prescriptionSource: prescription_item?.source,
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.TEST_REPORT:

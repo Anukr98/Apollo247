@@ -385,7 +385,8 @@ export const getPatientPrismSingleMedicalRecordApi = (
   client: ApolloClient<object>,
   patientId: string,
   records: MedicalRecordType[],
-  recordId: string
+  recordId: string,
+  source: string | null = null
 ) => {
   return new Promise((res, rej) => {
     client
@@ -395,6 +396,7 @@ export const getPatientPrismSingleMedicalRecordApi = (
           patientId: patientId || '',
           records: records,
           recordId: recordId,
+          source: source,
         },
         fetchPolicy: 'no-cache',
       })

@@ -381,4 +381,5 @@ export interface getPatientPrismMedicalRecords_V2Variables {
   patientId: string;
   records?: (MedicalRecordType | null)[] | null;
   recordId?: string | null;
+  source?: string | null;
 }
