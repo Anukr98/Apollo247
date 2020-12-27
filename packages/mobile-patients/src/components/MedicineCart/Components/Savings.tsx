@@ -3,19 +3,33 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, CircleLogo, CouponIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface SavingsProps {}
 
 export const Savings: React.FC<SavingsProps> = (props) => {
-  const { couponDiscount, productDiscount, deliveryCharges, isCircleSubscription, cartTotalCashback, circleMembershipCharges, coupon } = useShoppingCart();
+  const {
+    couponDiscount,
+    productDiscount,
+    isCircleSubscription,
+    cartTotalCashback,
+    circleMembershipCharges,
+    coupon,
+    cartTotal,
+    couponProducts,
+  } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
+  const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
   const [showCareDetails, setShowCareDetails] = useState(true);
-  const careTotal = !!coupon ? 
-    Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount) : 
-    isCircleSubscription || circleMembershipCharges ? 
-    Number(deliveryFee) + Number(productDiscount) + cartTotalCashback : 
-    Number(deliveryFee) + Number(productDiscount);
+  const [showCareSavings, setShowCareSavings] = useState(true);
+
+  const careTotal = !!coupon
+    ? Number(cartTotal <= minValueForFreeDelivery ? 0 : deliveryFee) +
+      Number(productDiscount) +
+      Number(couponDiscount)
+    : isCircleSubscription || circleMembershipCharges
+    ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
+    : Number(productDiscount);
 
   function getSavings() {
     return Number(careTotal).toFixed(2);
@@ -26,100 +40,125 @@ export const Savings: React.FC<SavingsProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          setShowCareDetails(!showCareDetails);
+          if (!!coupon && !isCircleSubscription) {
+            setShowCareSavings(!showCareSavings);
+          } else {
+            setShowCareDetails(!showCareDetails);
+          }
         }}
       >
         <View style={styles.rowSpaceBetween}>
           <Text style={styles.youText}>
-            You{' '}
-            <Text style={styles.saveText}>
-              saved ₹{getSavings()}
-            </Text>{' '}
-            on your purchase
+            You <Text style={styles.saveText}>saved ₹{getSavings()}</Text> on your purchase
           </Text>
-            <Down style={{
+          <Down
+            style={{
               height: 15,
-              transform: [{ rotate: showCareDetails ? '180deg' : '0deg'}],
-            }} />
+              transform: [{ rotate: showCareDetails && showCareSavings ? '180deg' : '0deg' }],
+            }}
+          />
         </View>
       </TouchableOpacity>
     );
   }
 
   function careSubscribeMessage() {
-    if (cartTotalCashback > 1) {
+    let circleSaving = (cartTotalCashback + deliveryFee + Number(productDiscount)).toFixed(2);
+    if (couponProducts.length) {
+      circleSaving = (cartTotalCashback + deliveryFee).toFixed(2);
+    }
+    if (cartTotalCashback > 1 && showCareDetails && Number(couponDiscount) < Number(circleSaving)) {
       return (
         <View style={styles.careMessageCard}>
           <Text style={styles.youText}>
-            You could{' '}
-            <Text style={styles.saveText}>
-              save ₹{cartTotalCashback}
-            </Text>{' '}
-            on your purchase with
+            You could <Text style={styles.saveText}>save ₹{circleSaving}</Text> on your purchase
+            with
           </Text>
           <CircleLogo style={styles.circleLogo} />
         </View>
       );
     } else {
-      return <></>
+      return <></>;
     }
-  }
-
-  function renderCareLogo() {
-    return (
-      <CircleLogo style={styles.circleLogoTwo} />
-    );
   }
 
   function careSavings() {
     return (
       <View style={styles.careSavingsContainer}>
         <View style={styles.rowSpaceBetween}>
-          <View style={{
-            flexDirection: 'row',
-          }}>
-            {renderCareLogo()}
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Membership Cashback</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+            }}
+          >
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>Circle </Text>
+              Membership Cashback
+            </Text>
           </View>
-          <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{cartTotalCashback}</Text>
+          <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>₹{cartTotalCashback}</Text>
         </View>
-        {
-          !!deliveryFee &&
-          <View style={[
-            styles.rowSpaceBetween,
-            { marginTop: 10 }
-          ]}>
-            <View style={{flexDirection: 'row'}}>
-              {renderCareLogo()}
-              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery</Text>
-            </View>
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{deliveryFee.toFixed(2)}</Text>
+        {!!deliveryFee && (
+          <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>Circle </Text>
+              Delivery
+            </Text>
+            <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>
+              ₹{deliveryFee.toFixed(2)}
+            </Text>
           </View>
-        }
-        {
-          !!productDiscount &&
-          <View style={[
-            styles.rowSpaceBetween,
-            { marginTop: 10 }
-          ]}>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Cart Savings</Text>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>₹{productDiscount.toFixed(2)}</Text>
+        )}
+        {!!productDiscount && (
+          <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Product Discount</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              ₹{productDiscount.toFixed(2)}
+            </Text>
           </View>
-        }
+        )}
         <View style={styles.totalAmountContainer}>
           <Text style={styles.totalAmount}>₹{careTotal.toFixed(2)}</Text>
         </View>
       </View>
-    )
+    );
   }
+
+  const renderCurrentSavings = () => {
+    return (
+      <View style={styles.careSavingsContainer}>
+        {!!couponDiscount && (
+          <View style={[styles.rowSpaceBetween]}>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Coupon savings</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              ₹{couponDiscount.toFixed(2)}
+            </Text>
+          </View>
+        )}
+        {!!productDiscount && (
+          <View style={[styles.rowSpaceBetween, { marginTop: 5 }]}>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Product Discount</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              ₹{productDiscount.toFixed(2)}
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   return getSavings() && getSavings() != 0 ? (
     <>
       <View style={styles.savingsCard}>
         {saveMessage()}
-        { ((isCircleSubscription || !!circleMembershipCharges) && !coupon && showCareDetails) && careSavings() }
+        {(isCircleSubscription || !!circleMembershipCharges) &&
+          !coupon &&
+          showCareDetails &&
+          careSavings()}
+        {!!coupon && !isCircleSubscription && showCareSavings && renderCurrentSavings()}
       </View>
-      { (!(isCircleSubscription || !!circleMembershipCharges) || !!coupon && showCareDetails) && careSubscribeMessage() }
+      {(!(isCircleSubscription || !!circleMembershipCharges) || (!!coupon && showCareDetails)) &&
+        careSubscribeMessage()}
     </>
   ) : null;
 };
@@ -165,16 +204,16 @@ const styles = StyleSheet.create({
   },
   totalAmount: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20),
-    textAlign: 'right'
+    textAlign: 'right',
   },
-  youText: { 
-    ...theme.fonts.IBMPlexSansRegular(13), 
-    lineHeight: 17, 
+  youText: {
+    ...theme.fonts.IBMPlexSansRegular(13),
+    lineHeight: 17,
     color: '#02475B',
   },
-  saveText: { 
-    ...theme.fonts.IBMPlexSansSemiBold(13), 
-    lineHeight: 17, 
+  saveText: {
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    lineHeight: 17,
     color: '#00B38E',
   },
   circleLogo: {

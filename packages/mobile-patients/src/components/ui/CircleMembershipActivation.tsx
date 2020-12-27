@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -31,35 +31,73 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
+import { Spinner } from './Spinner';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 
 interface props extends NavigationScreenProps {
   visible: boolean;
   closeModal: ((planActivated?: boolean) => void) | null;
   defaultCirclePlan?: any;
   healthCredits?: number;
+  circlePaymentDone?: boolean;
+  circlePlanValidity?: string;
+  from: string;
+  source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
 }
 export const CircleMembershipActivation: React.FC<props> = (props) => {
-  const { visible, closeModal, defaultCirclePlan, healthCredits } = props;
-  const [planActivated, setPlanActivated] = useState<boolean>(false);
-  const [planValidity, setPlanValidity] = useState<string>('');
-  const { setLoading } = useUIElements();
-
+  const {
+    visible,
+    closeModal,
+    defaultCirclePlan,
+    healthCredits,
+    circlePaymentDone,
+    circlePlanValidity,
+    from,
+    source,
+  } = props;
+  const planActivated = useRef<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [planValidity, setPlanValidity] = useState<string>(circlePlanValidity || '');
+  const { circleSubscriptionId } = useShoppingCart();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
+  planActivated.current = circlePaymentDone ? true : planActivated.current;
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
+  };
+
+  const fireCircleOtherPaymentEvent = () => {
+    source == 'Diagnostic' &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP,
+        CircleEventAttributes
+      );
+  };
+
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIcon}>
         <TouchableOpacity
           onPress={() => {
-            closeModal && closeModal(planActivated);
+            closeModal && closeModal(planActivated.current);
           }}
         >
           <CrossPopup style={styles.crossIconStyle} />
@@ -73,10 +111,12 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       <View>
         <Text style={styles.bigTitle}>{string.circleDoctors.greatChoice}</Text>
         <Text style={styles.description}>
-          {string.circleDoctors.upgradingWithHealthCredits.replace(
-            '{credits}',
-            `${defaultPlanSellingPrice}`
-          )}
+          {defaultPlanSellingPrice
+            ? string.circleDoctors.upgradingWithHealthCredits.replace(
+                '{credits}',
+                `${defaultPlanSellingPrice}`
+              )
+            : string.circleDoctors.upgradingWithHealthCreditsDesc}
         </Text>
         <Button
           title={string.circleDoctors.goAhead}
@@ -88,8 +128,9 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         />
         <TouchableOpacity
           onPress={() => {
+            fireCircleOtherPaymentEvent();
             closeModal && closeModal();
-            props.navigation.navigate(AppRoutes.CircleSubscription);
+            props.navigation.navigate(AppRoutes.CircleSubscription, { from: from });
           }}
         >
           <Text style={styles.btnText}>{string.circleDoctors.useAnotherPaymentMethod}</Text>
@@ -102,19 +143,26 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     return (
       <View>
         <Text style={styles.title}>{string.circleDoctors.membershipActivated}</Text>
-        {planValidity ? (
+        {moment(planValidity).isValid() ? (
           <Text style={styles.description}>
             Valid till:{' '}
             <Text style={styles.mediumText}>{moment(planValidity).format('D MMMM YYYY')}</Text>
           </Text>
         ) : null}
-        {healthCredits ? (
+        {healthCredits && !circlePaymentDone ? (
           <Text style={[styles.description, { marginTop: 0 }]}>
             {string.circleDoctors.healthCreditsRemaining}:{' '}
             <Text style={styles.mediumText}>{healthCredits - defaultPlanSellingPrice}</Text>
           </Text>
         ) : null}
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            closeModal && closeModal(true);
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: Circle.planName,
+            });
+          }}
+        >
           <Text style={styles.btnText}>{string.common.knowMore}</Text>
         </TouchableOpacity>
         <Button
@@ -130,7 +178,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   };
 
   const onPurchasePlan = async () => {
-    // setLoading && setLoading(true);
+    setLoading && setLoading(true);
     try {
       const res = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
         mutation: CREATE_USER_SUBSCRIPTION,
@@ -155,7 +203,11 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       });
       setLoading && setLoading(false);
       if (res?.data?.CreateUserSubscription?.success) {
-        setPlanActivated(true);
+        fireCirclePurchaseEvent(
+          currentPatient,
+          res?.data?.CreateUserSubscription?.response?.end_date
+        );
+        planActivated.current = true;
         setPlanValidity(res?.data?.CreateUserSubscription?.response?.end_date);
       } else {
         Alert.alert('Apollo', `${res?.data?.CreateUserSubscription?.message}`);
@@ -170,14 +222,18 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       isVisible={visible}
       windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
       overlayStyle={styles.overlayStyle}
+      onRequestClose={() => closeModal && closeModal()}
     >
       <View>
-        {renderCloseIcon()}
-        <View style={styles.leftCircle} />
-        <EllipseCircle style={styles.ellipse} />
-        <View style={styles.rightCircle} />
-        <CircleLogoBig style={styles.circleLogo} />
-        {!planActivated ? renderAskingBeforeUpgradation() : renderMembershipActivated()}
+        {loading && <Spinner />}
+        {!loading && renderCloseIcon()}
+        <View style={styles.container}>
+          <View style={styles.leftCircle} />
+          <EllipseCircle style={styles.ellipse} />
+          <View style={styles.rightCircle} />
+          <CircleLogoBig style={styles.circleLogo} />
+          {!planActivated.current ? renderAskingBeforeUpgradation() : renderMembershipActivated()}
+        </View>
       </View>
     </Overlay>
   );
@@ -186,11 +242,13 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
 const styles = StyleSheet.create({
   overlayStyle: {
     borderRadius: 10,
-    backgroundColor: 'white',
     width: width - 36,
     height: 'auto',
     padding: 0,
-    paddingBottom: 30,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
   },
   leftCircle: {
     width: 30,
@@ -274,5 +332,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: 32,
     borderRadius: 6,
+  },
+  container: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingBottom: 30,
   },
 });

@@ -7,7 +7,21 @@
     "edit_profile_imp_text": "You cannot edit Name, Age, Date of Birth \nand Gender!",
     "new_profile_confirmation_text": "You cannot edit these details once you \nhave saved them. They will appear on all \nyour medical documents. Do you wish to \nconfirm?",
     "uhOh": "Uh oh.. :(",
+    "hiWithSmiley": "Hi :)",
+    "date_placeholder_text": "DD MMM, YYYY",
+    "select_text": "Select",
+    "doctor_name_text": "Doctor name",
+    "end_date_text": "End Date",
+    "enter_doctor_name_text": "Enter name of doctor",
+    "enter_date_text": "Enter end date of {0}",
+    "enter_name_of_text": "Enter name of {0}",
+    "additional_text": "Additional Notes",
+    "enter_additional_text": "Enter Additional Notes",
+    "clicnical_document_text": "Self upload",
+    "patient_uploaded_text": "Patient Uploaded",
+    "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "best_doctor_text": "Here are our best ",
+    "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
     "distance": "Distance",
     "consult_now": "CONSULT NOW",
@@ -55,7 +69,7 @@
     "optedForClinicConsultation": "You have opted for a Clinic Visit at -",
     "amountToPay": "Amount to Pay",
     "amountSavedByCare": "You save ₹ {amount} by using CARE",
-    "amountSavedOnConsultByCare": "You SAVE ₹ {amount} on this Consult",
+    "amountSavedOnConsultByCare": "You will save ₹ {amount} on this Consult",
     "totalCharges": "TOTAL CHARGES",
     "subtotal": "Subtotal",
     "toPay": "To Pay",
@@ -63,7 +77,12 @@
     "savingsOnBill": "Savings of ₹ {amount} on the bill",
     "couponApplied": "Coupon Applied",
     "careMembership": "CIRCLE Membership",
-    "tryAgainLater": "Something went wrong, please try again after sometime"
+    "tryAgainLater": "Something went wrong, please try again after sometime",
+    "weAreHereToHelpYou": "Always caring about your health, we are here to help you!",
+    "consultFee": "Consult Fee",
+    "consultedDoctors": "Consulted Doctors",
+    "pastSearches": "Past Searches",
+    "topSpecialities": "Top Specialities"
   },
   "components": {
     "medicineDetails": {
@@ -82,6 +101,31 @@
       }
     }
   },
+  "lookingForBoughtPreviously": "Looking for an item you bought previously?",
+  "trackYourShipment": "TRACK YOUR SHIPMENT",
+  "reportIssue": "REPORT ISSUE",
+  "submit": "Submit",
+  "retry": "Retry",
+  "help": "Help",
+  "cancel": "Cancel",
+  "needHelp": "Need Help",
+  "needHelpSubmitMessage": "Thank you for bringing this to our notice. We’ll gather the details regarding your issue and immediately after that someone from our team will call you.",
+  "recentConsults": "RECENT CONSULTS",
+  "recentOrders": "RECENT ORDERS",
+  "pharmacy": "Pharmacy",
+  "productDetail": "Product Detail",
+  "weAreSorryWhatWentWrong": "We’re sorry! Tell us what went wrong....",
+  "chooseFromPreviousConsults": "Choose from previous consultations",
+  "otherIssueNotMyConsults": "Other issue not related to consult",
+  "chooseFromPreviousOrders": "Choose from previous orders",
+  "otherIssueNotMyOrders": "Other issue not related to My Orders",
+  "ifYourOrderFailed": "If your order transaction failed report issue in this section:",
+  "ifYourConsultTransactionFailed": "If your consult transaction failed you may find your issue in this section:",
+  "buyAgain": "Buy Again",
+  "sorryNoProductsHere": "Sorry, no products available here.",
+  "genericError": "Oops! seems like we are having an issue. Please try again.",
+  "selectFromOrderedItems": "Select from your previously ordered items",
+  "proceedToCheckout": "Proceed to Checkout ({0} items)",
   "specialOffers": "Special Offers",
   "notInStockInYourArea": "Not in stock in your area",
   "notForSale": "Not for sale",
@@ -155,7 +199,8 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [{
+    "arrayTest": [
+      {
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -174,7 +219,8 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [{
+    "startDoctor": [
+      {
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -203,7 +249,8 @@
     }
   },
   "consult_room": {
-    "specialities": [{
+    "specialities": [
+      {
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -237,7 +284,8 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [{
+      "data": [
+        {
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -249,7 +297,8 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [{
+      "data": [
+        {
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -276,29 +325,54 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [{
+    "filter_data": [
+      {
         "label": "City",
-        "options": ["Hyderabad", "Chennai"]
+        "options": [
+          "Hyderabad",
+          "Chennai"
+        ]
       },
       {
         "label": "Experience In Years",
-        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
+        "options": [
+          "0 - 5",
+          "6 - 10",
+          "11 - 15",
+          "15+"
+        ]
       },
       {
         "label": "Availability",
-        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
+        "options": [
+          "Now",
+          "Today",
+          "Tomorrow",
+          "Next 3 Days"
+        ]
       },
       {
         "label": "Fees In Rupees",
-        "options": ["100 - 500", "501 - 1000", "1000+"]
+        "options": [
+          "100 - 500",
+          "501 - 1000",
+          "1000+"
+        ]
       },
       {
         "label": "Gender",
-        "options": ["Male", "Female"]
+        "options": [
+          "Male",
+          "Female"
+        ]
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu"
+        ]
       }
     ]
   },
@@ -331,7 +405,13 @@
     "proceedToCartCTA": "PROCEED TO CART",
     "noPreparationRequiredText": "No special preparation required",
     "noTestDescription": "No test description available",
-    "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order."
+    "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
+    "cashOnDeliverySubText": "Currently we have Cash on delivery as a payment option.",
+    "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
+    "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
+    "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
+    "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
+    "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay."
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -380,7 +460,8 @@
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [{
+    "tabs": [
+      {
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -425,7 +506,8 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [{
+  "muiltdosages": [
+    {
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -461,7 +543,12 @@
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar",
-    "availabilityList": ["Now", "Today", "Tomorrow", "Next 3 days"],
+    "availabilityList": [
+      "Now",
+      "Today",
+      "Tomorrow",
+      "Next 3 days"
+    ],
     "appointmentStatus": [
       "Active",
       "Completed",
@@ -472,6 +559,7 @@
     ]
   },
   "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "appointmentDataError": "An error occurred while processing the request, do you want to try again?",
   "Hdfc_values": {
     "TnC": [
       "The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.",
@@ -507,6 +595,7 @@
     "SPECIALITY_LISTING": "SPECIALITY_LISTING",
     "PHARMACY_LANDING": "PHARMACY_LANDING",
     "DIETECIAN_LANDING": "DIETECIAN_LANDING",
+    "PRO_HEALTH": "PRO-HEALTH",
     "PHR": "PHR",
     "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED": "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED",
     "DIAGNOSTICS_LANDING": "DIAGNOSTICS_LANDING",
@@ -527,6 +616,66 @@
       "HDFCDigitalVaultClick": "HDFCDigitalVaultClick",
       "HDFC7000DoctorsClick": "HDFC7000DoctorsClick",
       "HDFCFreeMedClick": "HDFCFreeMedClick"
+    },
+    "ONE_TOUCH": "ONE-TOUCH",
+    "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
+    "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
+    "ABSOLUTE_URL": "ABSOLUTE_URL",
+    "ADVANCED_DIABETES": "POP-UP",
+    "FILL_FORM": "LEAD-FORM",
+    "DIABETES_CONSENT": {
+      "HEADING": "Our Team will reach out to you on call to activate the Free Trial of Advanced Diabetes Management.",
+      "SUBHEADING": "Please confirm if you would like to go ahead.",
+      "CTA": "CONFIRM"
+    },
+    "ADVANCE_DIABETES_QUESTIONAIRE": {
+      "HEADING": "THANK YOU  !!",
+      "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
+      "QUESTIONAIRE": [
+        {
+          "QUESTION": "Q1. Which type of diabetes are you living with?",
+          "OPTIONS": [
+            {
+              "key": "Pre-Diabetes",
+              "value": "Pre-Diabetes"
+            },
+            {
+              "key": "Type-1-Diabetes",
+              "value": "Type 1 Diabetes"
+            },
+            {
+              "key": "Type-2-Diabetes",
+              "value": "Type 2 Diabetes"
+            },
+            {
+              "key": "Gestational-Diabetes",
+              "value": "Gestational Diabetes"
+            }
+          ]
+        },
+        {
+          "QUESTION": "Q2. For how many years have you lived with diabetes?",
+          "OPTIONS": [
+            {
+              "key": "lessThan2Years",
+              "value": "Less than 2 years"
+            },
+            {
+              "key": "between2-5Years",
+              "value": "Between 2-5 years"
+            },
+            {
+              "key": "between5-10Years",
+              "value": "Between 5-10 years"
+            },
+            {
+              "key": "over10Years",
+              "value": "Over 10 Years"
+            }
+          ]
+        }
+      ],
+      "CTA": "SUBMIT"
     }
   },
   "symptomChecker": {
@@ -579,21 +728,24 @@
     "addToCart": "ADD TO CART",
     "consultCircleOfferDescription": "Enable Circle membership to get the best offers on all transactions you make with us",
     "getCircleMembershipOffersDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
-    "successfullyPurchashedCircleSubscription": "Congratulations! You have successfully purchased Circle Subscription.",
+    "successfullyPurchashedCircleSubscription": "Congrats! You have successfully upgraded to Circle.",
     "validTill": "Valid till:",
     "subscriptionID": "Subscription ID",
-    "buyNow": "BUY NOW",
+    "upgrade": "UPGRADE",
     "billTotal": "BILL TOTAL",
     "membershipPlan": "Membership Plan",
     "total": "TOTAL",
     "greatChoice": "Great choice!",
     "upgradingWithHealthCredits": "We are upgrading you to Circle with your Health Credits to the amount of {credits}HC",
+    "upgradingWithHealthCreditsDesc": "We are upgrading you to Circle with your Health Credits",
     "goAhead": "SURE! GO AHEAD",
     "useAnotherPaymentMethod": "USE ANOTHER PAYMENT METHOD",
     "membershipActivated": "Circle Membership Activated!",
     "healthCreditsRemaining": "Health Credits remaining",
     "returnToHomepage": "RETURN TO HOMEPAGE",
-    "availableHealthCredits": "*Available Health Credits"
+    "availableHealthCredits": "*Available Health Credits",
+    "upgradeWithHC": "UPGRADE WITH {hc} HC",
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
@@ -602,7 +754,7 @@
     "instantCashback": "Instant cashback",
     "freeDelivery": "Free delivery"
   },
-  "circleDiagnostics":{
+  "circleDiagnostics": {
     "nonSubscribedText": "WHATEVER YOUR TEST, WE'LL MAKE IT EASIER.",
     "nonSubscribedSubText": "Special prices on diagnostic tests."
   },
@@ -610,6 +762,93 @@
   "Diagnostics_Feedback_Others": "Others (Please specify)",
   "Circle": {
     "planName": "CIRCLE PLAN",
+    "CARE_PLAN": "CARE_PLAN",
+    "CIRCLEPlan": "CIRCLEPlan",
     "DOC_ON_CALL": "Doc on Call",
+    "TnC": [
+      "Circle is the marketing program offered by Apollo 24/7, a digital platform managed by Apollo Hospitals Enterprise Limited (AHEL)",
+      "The validity of the program (“Term”) will be as per the plan selected by the customer.",
+      "The discounts offered under Circle program shall be applied at the time of payment checkout by the customer.",
+      "The offerings under the program will vary with the different categories under it.",
+      "The Circle program is non-transferable.",
+      "The activation of the benefits for the Circle program will be completed 24 hours post the service delivery/fulfillment of the qualifying transaction.",
+      "By enrolling for the Circle program, a member consents to allow use and disclosure of his/her personal and other information as provided by the member at the time of enrolment and/or upto subsequently by Apollo Hospitals Group ",
+      "As a prerequisite to becoming a member, a customer is required to provide mandatory information including full name, valid and active Indian mobile number. He/she shall be governed by such terms and conditions as may be prescribed for membership from time to time.",
+      "The Circle membership program will be issued solely at the discretion of the management and the final discretion on all matters relating to the membership shall rest with Apollo 24/7(AHEL).",
+      "Apollo 24/7 reserves the right to add, alter, amend and revise terms and conditions without prior notice and intimation.",
+      "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
+      "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
+    ],
+    "FAQ": [
+      {
+        "question": "What is the Apollo 24|7 CIRCLE Membership program?",
+        "answer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
+      },
+      {
+        "question": "Sounds good. Tell me more about the plans?",
+        "answer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
+      },
+      {
+        "question": "How Do I Sign Up for a Circle Membership?",
+        "answer": "It’s simple! If you’re a part of Apollo 24|7 already, you can click on the link above and sign up. If you’re new to Apollo 24|7, download the app today and get started."
+      },
+      {
+        "question": "Is annual membership better than the monthly membership?",
+        "answer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!"
+      },
+      {
+        "question": "Can I buy Circle Membership using my health credits?",
+        "answer": "Yes, you can! If you have Health Credits that equal the price of the membership. If not, you can always pay via our easy payment methods."
+      },
+      {
+        "question": "Where will I get the Circle cashback?",
+        "answer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
+      },
+      {
+        "question": "How can I use Circle cashback?",
+        "answer": "You can use your Circle cashback as Health Credits to buy medicines and Apollo branded products on Apollo 24|7"
+      },
+      {
+        "question": "Can I cancel Circle membership after purchasing it?",
+        "answer": "Yes, but we do recommend retaining it to continue enjoying its privileges and benefits."
+      },
+      {
+        "question": "Can the offers change after I buy the membership?",
+        "answer": "Yes, it’s possible but we will always aim to upgrade benefits so that you get the best out of your Circle membership"
+      },
+      {
+        "question": "What does Circle Cashback mean? Is it different from One Apollo Cashback?",
+        "answer": "Every time you make a transaction through Circle, you will be rewarded with Circle Cashback that you can use to purchase medicines and Apollo-branded products. It’s the same as OneApollo Cashback."
+      },
+      {
+        "question": "Can Circle cashback be used to pay for a Virtual Consultation?",
+        "answer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
+      },
+      {
+        "question": "What is URLife Program offering?",
+        "answer": "The URLife Program will be available on Circle soon. Stay tuned!"
+      },
+      {
+        "question": "Will some of these features be part of the Apollo Hospital experience as well?",
+        "answer": "Not as of now, but we are working towards it so you get the best out of Circle"
+      }
+    ]
+  },
+  "banner_context": {
+    "HOME": "HOME",
+    "PHARMACY_HOME": "PHARMACY_HOME",
+    "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME"
+  },
+  "circleMembershipBenefits": {
+    "PHARMA_CASHBACK": "Pharma Cashback",
+    "FREE_DELIVERY": "Free Delivery",
+    "DOCTOR_HELPLINE": "Slashed Consults",
+    "DIAGNOSTICS_SAMPLE_COLLECTION": "Diagnostic Collection",
+    "DIAGNOSTICS_DISCOUNT": "Diagnostic Discounts",
+    "DOC_ON_CALL": "Doc on Call",
+    "PRO_HEALTH": "Pro Health",
+    "ADVANCE_DIABETES": "Advanced Diabetes",
+    "COVID_CARE": "CovidCare",
+    "DIGITALIZATION_PHR": "DigitizationPHR"
   }
 }

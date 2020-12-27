@@ -10,7 +10,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
-  GET_MEDICAL_PRISM_RECORD,
+  GET_MEDICAL_PRISM_RECORD_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientPastConsultsAndPrescriptions,
@@ -18,7 +18,7 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
-import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DoctorType, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -31,11 +31,11 @@ import { Overlay } from 'react-native-elements';
 import { ScrollView, NavigationScreenProps } from 'react-navigation';
 import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
-  getPatientPrismMedicalRecords,
-  getPatientPrismMedicalRecordsVariables,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+  getPatientPrismMedicalRecords_V2,
+  getPatientPrismMedicalRecords_V2Variables,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
+  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { CheckedIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
@@ -54,6 +54,7 @@ export interface SelectEPrescriptionModalProps extends NavigationScreenProps {
   selectedEprescriptionIds?: EPrescription['id'][];
   displayPrismRecords?: boolean;
   displayMedicalRecords?: boolean;
+  showLabResults?: boolean;
 }
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
@@ -93,31 +94,36 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   });
 
   const { data: medPrismRecords, loading: medPrismloading, error: medPrismerror } = useQuery<
-    getPatientPrismMedicalRecords,
-    getPatientPrismMedicalRecordsVariables
-  >(GET_MEDICAL_PRISM_RECORD, {
+    getPatientPrismMedicalRecords_V2,
+    getPatientPrismMedicalRecords_V2Variables
+  >(GET_MEDICAL_PRISM_RECORD_V2, {
     variables: {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      records: props.showLabResults
+        ? [MedicalRecordType.PRESCRIPTION, MedicalRecordType.TEST_REPORT]
+        : [MedicalRecordType.PRESCRIPTION],
     },
     fetchPolicy: 'no-cache',
   });
   const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
     | null
     | undefined
   >([]);
   const [prescriptions, setPrescriptions] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[]
     | null
     | undefined
   >([]);
 
   useEffect(() => {
-    setLabResults(
-      g(medPrismRecords, 'getPatientPrismMedicalRecords', 'labResults', 'response') || []
-    );
+    if (props.showLabResults) {
+      setLabResults(
+        g(medPrismRecords, 'getPatientPrismMedicalRecords_V2', 'labResults', 'response') || []
+      );
+    }
     setPrescriptions(
-      g(medPrismRecords, 'getPatientPrismMedicalRecords', 'prescriptions', 'response') || []
+      g(medPrismRecords, 'getPatientPrismMedicalRecords_V2', 'prescriptions', 'response') || []
     );
   }, [medPrismRecords]);
 
@@ -141,14 +147,14 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription';
       data: any;
     }[] = [];
-    labResults &&
-      labResults.forEach((item) => {
+    if (props.showLabResults) {
+      labResults?.forEach((item) => {
         mergeArray.push({ type: 'lab', data: item });
       });
-    prescriptions &&
-      prescriptions.forEach((item) => {
-        mergeArray.push({ type: 'prescription', data: item });
-      });
+    }
+    prescriptions?.forEach((item) => {
+      mergeArray.push({ type: 'prescription', data: item });
+    });
     setCombination(sordByDate(mergeArray));
   }, [labResults, prescriptions]);
 

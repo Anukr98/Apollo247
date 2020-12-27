@@ -13,10 +13,10 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_PHARMA_TRANSACTION_STATUS,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+  SAVE_MEDICINE_ORDER_OMS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  g,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -30,6 +30,7 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  SafeAreaView,
   Text,
   TouchableOpacity,
   View,
@@ -46,35 +47,63 @@ import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
+import {
+  SaveMedicineOrderPaymentMq,
+  SaveMedicineOrderPaymentMqVariables,
+} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import moment from 'moment';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
 export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (props) => {
-  const { 
-    clearCartInfo, 
-    setCircleMembershipCharges, 
-    cartTotalCashback,
+  const {
+    clearCartInfo,
+    setCircleMembershipCharges,
+    isCircleSubscription,
     setIsCircleSubscription,
+    cartItems,
+    coupon,
+    circlePlanSelected,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
-
+  const deliveryTime = props.navigation.getParam('deliveryTime');
+  const orderInfo = props.navigation.getParam('orderInfo');
+  const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
-  const circleSavings = cartTotalCashback;
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
-
+  const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
+  const [totalCashBack, setTotalCashBack] = useState<number>(0);
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
-
-
+  const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -90,6 +119,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     client
       .query({
         query: GET_PHARMA_TRANSACTION_STATUS,
@@ -99,14 +129,19 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log('res.data.pharmaPaymentStatus: ', JSON.stringify(res.data.pharmaPaymentStatus));
-        setorderDateTime(res.data.pharmaPaymentStatus.orderDateTime);
-        setpaymentRefId(res.data.pharmaPaymentStatus.paymentRefId);
-        setStatus(res.data.pharmaPaymentStatus.paymentStatus);
-        setPaymentMode(res.data.pharmaPaymentStatus.paymentMode);
+        const pharmaPaymentStatus = res?.data?.pharmaPaymentStatus;
+        setorderDateTime(pharmaPaymentStatus?.orderDateTime);
+        setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
+        setStatus(pharmaPaymentStatus?.paymentStatus);
+        setPaymentMode(pharmaPaymentStatus?.paymentMode);
+        setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
+        fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
       .catch((error) => {
+        setLoading(false);
         CommonBugFender('fetchingTxnStutus', error);
         renderErrorPopup(`Something went wrong, please try again after sometime`);
       });
@@ -158,8 +193,193 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     return true;
   };
 
+  const fireCirclePlanActivatedEvent = (planPurchased: boolean) => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Pharmacy',
+      Source: 'Pharma',
+    };
+    planPurchased && postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+  };
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
+    client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS,
+      variables: orderInfo,
+    });
+
+  const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
+    client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+      variables: paymentInfo,
+    });
+
+  const handleOrderSuccess = (orderAutoId: string) => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    fireOrderSuccessEvent(orderAutoId);
+    showAphAlert!({
+      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+      description:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
+      children: (
+        <OrderPlacedPopUp
+          deliveryTime={deliveryTime}
+          orderAutoId={orderAutoId}
+          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
+          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
+        />
+      ),
+    });
+  };
+
+  const placeOrder = async (orderAutoId: number) => {
+    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+      medicinePaymentMqInput: {
+        orderAutoId: orderAutoId,
+        amountPaid: getFormattedAmount(price),
+        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+    try {
+      const response = await savePayment(paymentInfo);
+      const { data } = response;
+      const { errorCode, errorMessage } = data?.SaveMedicineOrderPaymentMq || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+      } else {
+        console.log('inside success');
+        handleOrderSuccess(`${orderAutoId}`);
+        clearCartInfo?.();
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_savePayment', error);
+      errorPopUp();
+    }
+  };
+
+  const initiateOrder = async () => {
+    setcodOrderProcessing(true);
+    try {
+      const response = await saveOrder(orderInfo);
+      const { data } = response;
+      const { orderId, orderAutoId, errorCode, errorMessage } = data?.saveMedicineOrderOMS || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+        setcodOrderProcessing(false);
+        return;
+      } else {
+        placeOrder(orderAutoId!);
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_saveOrder', error);
+      setcodOrderProcessing(false);
+      errorPopUp();
+    }
+  };
+
+  const errorPopUp = () => {
+    fireOrderFailedEvent();
+    showAphAlert!({
+      title: `Hi ${currentPatient?.firstName || ''}!`,
+      description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+    });
+  };
+
+  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderAutoId: string) => {
+    hideAphAlert!();
+    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      goToHomeOnBack: true,
+      showOrderSummaryTab,
+      orderAutoId: orderAutoId,
+    });
+  };
+
+  const fireOrderSuccessEvent = (newOrderId: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+      'Payment failed order id': orderId,
+      'Payment Success Order Id': newOrderId,
+      status: true,
+    };
+    postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
+    firePurchaseEvent();
+  };
+
+  const fireOrderFailedEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+      'Payment failed order id': orderId,
+      status: false,
+    };
+    postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
+  };
+
+  const firePurchaseEvent = () => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = item.quantity; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: coupon?.coupon,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: price,
+      LOB: 'Pharma',
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
+  const fireCirclePurchaseEvent = (planPurchased: boolean) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      currency: 'INR',
+      items: [
+        {
+          item_name: 'Circle Plan',
+          item_id: circlePlanSelected?.subPlanId,
+          price: Number(circlePlanSelected?.currentSellingPrice),
+          item_category: 'Circle',
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      transaction_id: orderId,
+      value: Number(circlePlanSelected?.currentSellingPrice),
+      LOB: 'Circle',
+    };
+    console.log('eventAttributes >>>>', eventAttributes);
+    planPurchased && postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
   const statusIcon = () => {
-    if (status === success) {
+    if (status === success || paymentMode === 'COD') {
       return <Success style={styles.statusIconStyles} />;
     } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
@@ -188,7 +408,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusCardColour = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       return colors.SUCCESS;
     } else if (status == failure || status == aborted) {
       return colors.FAILURE;
@@ -200,7 +420,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const statusText = () => {
     let message = 'PAYMENT PENDING';
     let textColor = theme.colors.PENDING_TEXT;
-    if (status === success) {
+    if (paymentMode === 'COD') {
+      message = ' ORDER CONFIRMED';
+      textColor = theme.colors.SUCCESS_TEXT;
+    } else if (status === success) {
       message = ' PAYMENT SUCCESSFUL';
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
@@ -218,13 +441,17 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     const priceText = `${string.common.Rs} ` + String(price);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-          <View style={{
+        <View
+          style={{
             flexDirection: 'row',
-          }}>
+            justifyContent: 'space-between',
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+            }}
+          >
             <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
             <View
               style={{
@@ -237,12 +464,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           </View>
           <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 22, 0.7)}>{priceText}</Text>
         </View>
-        <View style={{
-          marginVertical: 10,
-          marginHorizontal: 20,
-          borderTopColor: '#E5E5E5',
-          borderTopWidth: 1,
-        }}/>
+        <View
+          style={{
+            marginVertical: 10,
+            marginHorizontal: 20,
+            borderTopColor: '#E5E5E5',
+            borderTopWidth: 1,
+          }}
+        />
         <View>
           <View
             style={{
@@ -251,25 +480,38 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             }}
           >
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Order ID : </Text>
-            <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>{orderId}</Text>
+            <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
+              {orderId}
+            </Text>
           </View>
-          <View style={{ justifyContent: 'flex-start' }}>
-            <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Payment Reference Number : </Text>
-            <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refNumberText)}>
-              <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>{paymentRefId}</Text>
-              <Copy style={styles.iconStyle} />
-            </TouchableOpacity>
-          </View>
-          <Snackbar
-            style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
-            visible={snackbarState}
-            onDismiss={() => {
-              setSnackbarState(false);
-            }}
-            duration={1000}
-          >
-            Copied
-          </Snackbar>
+          {!!paymentRefId && (
+            <>
+              <View style={{ justifyContent: 'flex-start' }}>
+                <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>
+                  Payment Reference Number :{' '}
+                </Text>
+                <TouchableOpacity
+                  style={styles.refStyles}
+                  onPress={() => copyToClipboard(refNumberText)}
+                >
+                  <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
+                    {paymentRefId}
+                  </Text>
+                  <Copy style={styles.iconStyle} />
+                </TouchableOpacity>
+              </View>
+              <Snackbar
+                style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
+                visible={snackbarState}
+                onDismiss={() => {
+                  setSnackbarState(false);
+                }}
+                duration={1000}
+              >
+                Copied
+              </Snackbar>
+            </>
+          )}
         </View>
         <View>
           <TouchableOpacity onPress={() => {}}></TouchableOpacity>
@@ -292,12 +534,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         <View style={{ marginVertical: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
           <View>
             <View style={{ justifyContent: 'flex-start' }}>
-              {textComponent(
-                'Order Date & Time',
-                undefined,
-                theme.colors.ASTRONAUT_BLUE,
-                false
-              )}
+              {textComponent('Order Date & Time', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
             <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(
@@ -308,24 +545,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               )}
             </View>
           </View>
-          <View>
-            <View style={{ justifyContent: 'flex-start' }}>
-              {textComponent(
-                'Mode of Payment',
-                undefined,
-                theme.colors.ASTRONAUT_BLUE,
-                false
-              )}
+          {!!paymentMode && (
+            <View>
+              <View style={{ justifyContent: 'flex-start' }}>
+                {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
+              </View>
+              <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
+                {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+              </View>
             </View>
-            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-              {textComponent(
-                paymentMode,
-                undefined,
-                theme.colors.SHADE_CYAN_BLUE,
-                false
-              )}
-            </View>
-          </View>
+          )}
         </View>
       </View>
     );
@@ -336,6 +565,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 10-14 business days.';
+    } else if (paymentMode === 'COD') {
+      noteText = 'Note - Your order is confirmed and has been placed successfully.';
     } else if (status != success && status != failure && status != aborted) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
@@ -344,7 +575,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const getButtonText = () => {
-    if (status == success) {
+    if (paymentMode === 'COD') {
+      return 'VIEW ORDER';
+    } else if (status == success) {
       return 'TRACK ORDER';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
@@ -353,8 +586,37 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     }
   };
 
+  const renderCODNote = () => {
+    let noteText = "Your order wasn't placed as payment could not be processed. Please try again";
+    return status == failure ? <Text style={styles.codText}>{noteText}</Text> : null;
+  };
+
+  const renderCODButton = () => {
+    return status == failure ? (
+      <View style={{ marginHorizontal: 0.06 * windowWidth, marginBottom: 0.06 * windowWidth }}>
+        <Button
+          style={{ height: 0.06 * windowHeight }}
+          title={`PAY CASH ON DELIVERY`}
+          onPress={() => initiateOrder()}
+          disabled={false}
+        />
+      </View>
+    ) : null;
+  };
+
+  const renderRetryPayment = () => {
+    return (
+      <View style={styles.retryPayment}>
+        <TouchableOpacity onPress={() => handleButton()}>
+          <Text style={styles.clickText}>Click here</Text>
+        </TouchableOpacity>
+        <Text style={styles.retryText}>{' to retry your payment'}</Text>
+      </View>
+    );
+  };
+
   const handleButton = () => {
-    if (status == success) {
+    if (status == success || paymentMode === 'COD') {
       clearCircleSubscriptionData();
       props.navigation.navigate(AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
@@ -394,9 +656,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             {getButtonText()}
           </Text>
         </TouchableOpacity>
-        {
-          (status === success) &&
-            <TouchableOpacity
+        {(status === success || paymentMode === 'COD') && (
+          <TouchableOpacity
             style={styles.textButtonStyle}
             onPress={() => {
               clearCircleSubscriptionData();
@@ -407,7 +668,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               GO TO HOMEPAGE
             </Text>
           </TouchableOpacity>
-        }
+        )}
       </View>
     );
   };
@@ -415,8 +676,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const renderAddedCirclePlanWithValidity = () => {
     return (
       <AddedCirclePlanWithValidity
-        circleSavings={circleSavings}
+        circleSavings={totalCashBack}
         circlePlanDetails={circlePlanDetails}
+        isConsult={false}
       />
     );
   };
@@ -430,13 +692,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             style={{
               ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 14),
               marginTop: 3,
-              left: -5
+              left: -5,
             }}
           >
+            {' '}
             You{' '}
             <Text style={theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {circleSavings}{' '}
+              {totalCashBack}{' '}
             </Text>
             on your purchase
           </Text>
@@ -448,24 +711,33 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-      {!loading ? (
-        <View style={styles.container}>
-          <ScrollView style={styles.container}>
-            {renderStatusCard()}
-            {status === 'PAYMENT_SUCCESS' && circleSavings > 0 && !circleSubscriptionID
-              ? renderAddedCirclePlanWithValidity()
-              : null}
-            {(status === 'PAYMENT_SUCCESS' && circleSavings > 0 && circleSubscriptionID) ? renderCircleSavingsOnPurchase() : null}
-            {appointmentHeader()}
-            {appointmentCard()}
-            {renderNote()}
-            {renderButton()}
-          </ScrollView>
-        </View>
-      ) : (
-        <Spinner />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <View style={styles.container}>
+            <ScrollView style={styles.container}>
+              {renderStatusCard()}
+              {status === 'PAYMENT_SUCCESS' && isCircleBought
+                ? renderAddedCirclePlanWithValidity()
+                : null}
+              {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') &&
+              totalCashBack &&
+              !isCircleBought
+                ? renderCircleSavingsOnPurchase()
+                : null}
+              {renderCODNote()}
+              {renderCODButton()}
+              {appointmentHeader()}
+              {appointmentCard()}
+              {renderNote()}
+              {status == failure ? renderRetryPayment() : renderButton()}
+            </ScrollView>
+          </View>
+        ) : (
+          <Spinner />
+        )}
+        {codOrderProcessing && <Spinner />}
+      </SafeAreaView>
     </View>
   );
 };
@@ -613,5 +885,23 @@ const styles = StyleSheet.create({
     width: 50,
     height: 32,
     marginRight: 5,
+  },
+  codText: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.SHADE_GREY, 1, 17),
+    textAlign: 'center',
+    marginHorizontal: 0.1 * windowWidth,
+    marginBottom: 8,
+  },
+  retryPayment: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 13,
+  },
+  clickText: {
+    ...theme.viewStyles.text('SB', 13, '#fcb716', 1, 17, 0.04),
+  },
+  retryText: {
+    ...theme.viewStyles.text('R', 13, '#02475b', 1, 17, 0.04),
   },
 });

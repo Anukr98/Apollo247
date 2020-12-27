@@ -71,6 +71,8 @@ import {
   setWebEngageScreenNames,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  getDiscountPercentage,
+  isProductInStock,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -101,6 +103,7 @@ import {
   ViewStyle,
   Platform,
   FlatList,
+  BackHandler,
 } from 'react-native';
 import { Image, ListItem } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -145,13 +148,15 @@ import {
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 import {
   GetSubscriptionsOfUserByStatusVariables,
   GetSubscriptionsOfUserByStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 
-const { width: winWidth } = Dimensions.get('window');
+const { width: winWidth, height: winHeight } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   searchInput: { minHeight: undefined, paddingVertical: 8 },
@@ -194,6 +199,32 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
   },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
+  searchContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 60,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  viewAllContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#FCB716',
+    borderRadius: 6,
+    padding: 10,
+    alignItems: 'center',
+  },
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -211,6 +242,7 @@ export interface MedicineProps
     focusSearch?: boolean;
     showUploadPrescriptionPopup?: boolean; // using for deeplink
     showRecommendedSection?: boolean; // using for deeplink
+    comingFrom?: string;
   }> {}
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
@@ -219,6 +251,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
   const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     locationDetails,
     pharmacyLocation,
@@ -230,11 +263,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setLocationDetails,
     setAxdcCode,
     axdcCode,
+    circleSubscription,
+    setBannerData,
+    bannerData,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
+    setCartItems,
     addCartItem,
     removeCartItem,
     updateCartItem,
@@ -251,11 +288,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setCircleSubPlanId,
     setCircleSubscriptionId,
     setIsCircleSubscription,
+    productDiscount,
+    cartDiscountTotal,
+    setHdfcSubscriptionId,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    circleSubscriptionId,
+    pinCode,
+    setPinCode,
+    setCirclePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
+  const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
@@ -378,7 +426,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
         type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
-        if (!response) {
+        if (!servicable) {
           globalLoading!(true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
@@ -479,8 +527,53 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
+      setPinCode && setPinCode(pharmacyPincode);
     }
   }, []);
+
+  useEffect(() => {
+    // set cart items again to set item cashbacks and total cashback
+    if (cartItems.length) {
+      setCartItems && setCartItems(cartItems);
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setBannerData && setBannerData([]);
+
+    if (comingFrom == AppRoutes.MembershipDetails) {
+      props.navigation.navigate(AppRoutes.MembershipDetails, {
+        membershipType: string.Circle.planName,
+        source: AppRoutes.Medicine,
+      });
+    } else {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        })
+      );
+    }
+
+    return false;
+  };
 
   useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
@@ -498,11 +591,45 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       fetchRecommendedProducts();
       fetchLatestMedicineOrder();
     }
+    if (currentPatient) {
+      getUserBanners();
+    }
   }, [currentPatient]);
 
   useEffect(() => {
+    setBannerData && setBannerData([]); // default banners to be empty
     fetchAddress();
   }, []);
+
+  const getUserBanners = async () => {
+    const res: any = await getUserBannersList(
+      client,
+      currentPatient,
+      string.banner_context.PHARMACY_HOME
+    );
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+          from={string.banner_context.PHARMACY_HOME}
+          source={'Pharma'}
+        />
+      );
+    }
+  };
 
   const formatAddressToLocation = (address: Address): LocationData => ({
     displayName: address.city!,
@@ -671,7 +798,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
     try {
       setLoading(true);
-      const resonse = (await getMedicinePageProducts(axdcCode)).data;
+      const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
@@ -717,7 +844,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 item!.productSpecialPrice == item!.productPrice! ? '' : item!.productSpecialPrice,
               sku: item!.productSku!,
               type_id:
-                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
+                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1
+                  ? 'PHARMA'
+                  : (item!.categoryName || '').toLowerCase().indexOf('pl') > -1
+                  ? 'PL'
+                  : 'FMCG',
               mou: item!.mou!,
               sell_online: 1,
             } as MedicineProduct)
@@ -1431,6 +1562,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async () => {
+    globalLoading!(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -1442,36 +1574,49 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      globalLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: data?.APOLLO?.[0]?.start_date,
+            endDate: data?.APOLLO?.[0]?.end_date,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
         }
       }
     } catch (error) {
+      globalLoading!(false);
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
   };
-
-  const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      planActivationCallback={() => {
-        getUserSubscriptionsByStatus();
-      }}
-    />
-  );
 
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {renderCircleBanners()}
+        {renderCarouselBanners()}
         <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
@@ -1540,13 +1685,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           leftTextStyle={categoryId ? { width: '75%' } : {}}
           onPressRightText={
             categoryId
-              ? () =>
+              ? () => {
+                  const filteredProducts = products
+                    ? products.filter((product: MedicineProduct) => isProductInStock(product))
+                    : [];
                   props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: categoryId == -1 ? undefined : categoryId,
-                    products: categoryId == -1 ? products : null,
+                    products: categoryId == -1 ? filteredProducts : null,
                     title: title || 'Products',
                     movedFrom: 'home',
-                  })
+                  });
+                }
               : undefined
           }
           style={categoryId ? { paddingBottom: 1 } : {}}
@@ -1624,7 +1773,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -1770,7 +1919,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
-      () => setItemsLoading({ ...itemsLoading, [sku]: false })
+      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+      pharmacyCircleAttributes!
     );
   };
 
@@ -1826,7 +1976,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         showSeparator={index !== medicineList.length - 1}
         style={{
           marginHorizontal: 20,
-          paddingBottom: index == medicineList.length - 1 ? 10 : 0,
+          paddingBottom: index == medicineList.length - 1 ? 20 : 0,
         }}
         maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
         removeCartItem={() => onRemoveCartItem(item.sku)}
@@ -1846,21 +1996,43 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           !!searchText &&
           searchText.length > 2 &&
           medicineList.length > 0 && (
-            <FlatList
-              keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-              bounces={false}
-              keyExtractor={(_, index) => `${index}`}
-              showsVerticalScrollIndicator={false}
-              style={{
-                paddingTop: 10.5,
-                maxHeight: 266,
-                backgroundColor: '#f7f8f5',
-              }}
-              data={medicineList}
-              extraData={itemsLoading}
-              renderItem={renderSearchSuggestionItemView}
-            />
+            <View>
+              <FlatList
+                keyboardShouldPersistTaps="always"
+                // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+                bounces={false}
+                keyExtractor={(_, index) => `${index}`}
+                showsVerticalScrollIndicator={true}
+                persistentScrollbar={true}
+                style={{
+                  paddingTop: 10.5,
+                  maxHeight: 266,
+                  backgroundColor: '#f7f8f5',
+                }}
+                data={medicineList}
+                extraData={itemsLoading}
+                renderItem={renderSearchSuggestionItemView}
+              />
+              <View style={styles.searchContainer}>
+                <TouchableOpacity
+                  onPress={() => {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                      keyword: searchText,
+                      Source: 'Pharmacy Home',
+                    };
+                    postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
+                    props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+                    setSearchText('');
+                    setMedicineList([]);
+                  }}
+                  style={styles.viewAllContainer}
+                >
+                  <Text style={theme.viewStyles.text('B', 15, '#FCB716', 1, 20)}>
+                    VIEW ALL RESULTS
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )
         )}
       </>
@@ -1902,9 +2074,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         } else {
           const products = g(data, section_key, 'products');
           const isCategoriesType = g(data, section_key, '0', 'title');
+          const filteredProducts = products
+            ? products.filter((product: MedicineProduct) => isProductInStock(product))
+            : [];
 
-          return products
-            ? renderHotSellers(section_name, products || [], g(data, section_key, 'category_id'))
+          return filteredProducts
+            ? renderHotSellers(
+                section_name,
+                filteredProducts || [],
+                g(data, section_key, 'category_id')
+              )
             : isCategoriesType
             ? renderCategories(section_name, data[section_key] || [])
             : renderDealsOfTheDay(section_name, data[section_key] || []);
@@ -1952,6 +2131,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCartDiscount = () => {
+    const cartDiscountPercent = getDiscountPercentage(cartTotal, cartTotal - productDiscount);
+    return (
+      <>
+        {cartDiscountPercent ? (
+          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {cartTotal})
+            </Text>
+            <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const renderCircleCartDetails = () => {
     const circleStyles = StyleSheet.create({
       container: {
@@ -1975,11 +2171,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       upgradeTo: {
         flexDirection: 'row',
         justifyContent: 'center',
+        alignItems: 'center',
       },
       circleLogo: {
         resizeMode: 'contain',
         width: 35,
-        height: 25,
+        height: 23,
         marginLeft: 5,
       },
       cartButton: {
@@ -1992,56 +2189,91 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
       circleLogoTwo: {
         resizeMode: 'contain',
-        width: 40,
+        width: 35,
         height: 25,
-        // top: -24,
+        marginRight: 4,
       },
     });
-    const effectivePrice = Math.round(cartTotal - cartTotalCashback);
-    console.log('cartTotalCashback: ', cartTotalCashback);
+    const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+
     return (
-      <View style={circleStyles.container}>
+      <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
         <View style={circleStyles.content}>
-          <View style={{ alignItems: isCircleSubscription ? 'flex-start' : 'center' }}>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
-              {isCircleSubscription ? 'Items' : 'Total no. of items'}
+              {!!circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
             </Text>
             <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
               {cartItems.length}
             </Text>
           </View>
+          {!!circleSubscriptionId || isCircleSubscription ? (
+            <View
+              style={{
+                borderLeftWidth: 2,
+                borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
+                marginTop: 6,
+                marginBottom: 6,
+              }}
+            ></View>
+          ) : null}
           {cartTotalCashback > 1 ? (
             <>
-              {isCircleSubscription ? (
-                <View>
-                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
-                    ₹{cartTotal}
-                  </Text>
+              {!!circleSubscriptionId || isCircleSubscription ? (
+                <View style={{ width: '60%' }}>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
+                      MRP{'  '}
+                      {string.common.Rs}
+                      {(cartTotal - productDiscount).toFixed(2)}
+                    </Text>
+                    {renderCartDiscount()}
+                  </View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <CircleLogo style={circleStyles.circleLogoTwo} />
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      cashback {string.common.Rs}
+                      {cartTotalCashback.toFixed(2)}
+                    </Text>
+                  </View>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
-                      Effective price for
-                    </Text>
-                    <CircleLogo style={circleStyles.circleLogoTwo} />
-                    <Text
-                      style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}
-                    >
-                      members
+                      Effective price for you{' '}
                     </Text>
                     <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
-                      ₹{effectivePrice}
+                      {string.common.Rs}
+                      {effectivePrice}
                     </Text>
                   </View>
                 </View>
               ) : (
-                <TouchableOpacity activeOpacity={1} onPress={() => {}} style={circleStyles.upgrade}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setShowCirclePopup(true);
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+                      'Patient UHID': currentPatient?.uhid,
+                      'Mobile Number': currentPatient?.mobileNumber,
+                      'Customer ID': currentPatient?.id,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE,
+                      eventAttributes
+                    );
+                  }}
+                  style={circleStyles.upgrade}
+                >
                   <View style={circleStyles.upgradeTo}>
-                    <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>
-                      UPGRADE TO
-                    </Text>
+                    <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
                     <CircleLogo style={circleStyles.circleLogo} />
                   </View>
                   <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
-                    {`Get effective price of ₹${effectivePrice}`}
+                    {`Get Circle Cashback of ₹${cartTotalCashback.toFixed(2)}`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -2052,7 +2284,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 marginTop: 13,
               }}
             >
-              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+                ₹{cartTotal - productDiscount}
+              </Text>
             </View>
           )}
           <TouchableOpacity
@@ -2062,9 +2296,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {!isCircleSubscription && cartTotalCashback > 1 && (
+            {!circleSubscriptionId && !isCircleSubscription && cartTotalCashback > 1 && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-                {`Buy for ₹${cartTotal}`}
+                {`Buy for ${string.common.Rs}${cartDiscountTotal}`}
               </Text>
             )}
           </TouchableOpacity>
@@ -2080,6 +2314,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         closeModal={() => setShowCirclePopup(false)}
         navigation={props.navigation}
         isConsultJourney={false}
+        from={string.banner_context.PHARMACY_HOME}
+        source={'Pharma'}
         onSelectMembershipPlan={(plan) => {
           if (plan) {
             // if plan is selected
@@ -2137,7 +2373,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 50 : 0 }}>
+        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 80 : 0 }}>
           {renderSections()}
           {renderOverlay()}
           {!!cartItems.length && renderCircleCartDetails()}

@@ -9,11 +9,16 @@ import {
   ImageBackground,
   Dimensions,
   ScrollView,
+  Platform,
+  Alert,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
-import { GET_PLAN_DETAILS_BY_PLAN_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PLAN_DETAILS_BY_PLAN_ID,
+  CREATE_USER_SUBSCRIPTION,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -26,15 +31,29 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  CreateUserSubscription,
+  CreateUserSubscriptionVariables,
+} from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
+import {
+  one_apollo_store_code,
+  PaymentStatus,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import moment from 'moment';
 
 const { width } = Dimensions.get('window');
-const planDimension = 120;
-const defaultPlanDimension = 160;
-
 interface CircleMembershipPlansProps extends NavigationScreenProps {
   style?: StyleProp<ViewStyle>;
   onSelectMembershipPlan?: (plan?: any) => void;
   isConsultJourney?: boolean;
+  isDiagnosticJourney?: boolean;
   careDiscountPrice?: number;
   isModal?: boolean;
   closeModal?: (() => void) | null;
@@ -42,13 +61,18 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   doctorFees?: number;
   onEndApiCall?: (() => void) | null;
   buyNow?: boolean;
+  source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
+  from?: string;
+  healthCredits?: number;
+  onPurchaseWithHCCallback?: (res: any) => void;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
   const [membershipPlans, setMembershipPlans] = useState<any>(props.membershipPlans || []);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [spinning, setSpinning] = useState<boolean>(true);
   const {
     isConsultJourney,
+    isDiagnosticJourney,
     careDiscountPrice,
     onSelectMembershipPlan,
     isModal,
@@ -56,9 +80,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     doctorFees,
     onEndApiCall,
     buyNow,
+    source,
+    from,
+    healthCredits,
+    onPurchaseWithHCCallback,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
+  const circleStaticMonthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
   const {
     circlePlanSelected,
     setCirclePlanSelected,
@@ -71,19 +100,52 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCircleMembershipCharges,
     setAutoCirlcePlanAdded,
     autoCirlcePlanAdded,
+    circleMembershipCharges,
+    setCircleSubPlanId,
+    circleSubscriptionId,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-
-  const isCartTotalLimit = cartTotal > 400;
-
+  const { currentPatient } = useAllCurrentPatients();
+  const { setLoading } = useUIElements();
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
+  const amountToPay = defaultCirclePlan
+    ? defaultCirclePlan?.currentSellingPrice
+    : circlePlanSelected?.currentSellingPrice;
+  const purchaseWithHC = healthCredits && healthCredits >= amountToPay;
+  const planDimension = isModal ? 100 : 120;
+  const defaultPlanDimension = isModal ? 130 : 120;
+  const isIos = Platform.OS === 'ios';
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
+  };
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
       fetchCarePlans();
     } else {
-      setLoading(false);
+      setSpinning(false);
       onEndApiCall && onEndApiCall();
     }
+    if (buyNow && props.membershipPlans?.length > 0) {
+      setDefaultCirclePlan && setDefaultCirclePlan(null);
+      // selectDefaultPlan && selectDefaultPlan(props.membershipPlans);
+      // setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
+    }
   }, []);
+
+  const fireMembershipPlanSelected = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PLAN_SELECTED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
+      from: props.source || 'HomePage',
+    };
+    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_PLAN_SELECTED, CircleEventAttributes);
+  };
 
   const fetchCarePlans = async () => {
     try {
@@ -97,33 +159,53 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       const circlePlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (circlePlans) {
         setMembershipPlans(circlePlans);
-        if ((doctorFees && doctorFees >= 400) || isCartTotalLimit || isModal) {
-          autoSelectDefaultPlan(circlePlans);
-          if (!circlePlanSelected) {
-            selectDefaultPlan && selectDefaultPlan(circlePlans);
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
-          } else {
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+        if ((doctorFees && doctorFees >= 400) || isModal) {
+          if (!buyNow) {
+            autoSelectDefaultPlan(circlePlans);
+            if (!circlePlanSelected) {
+              selectDefaultPlan && selectDefaultPlan(circlePlans);
+              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
+            } else {
+              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+            }
           }
         } else {
-          setDefaultCirclePlan && setDefaultCirclePlan(null);
-          defaultCirclePlan && setCirclePlanSelected && setCirclePlanSelected(null);
-          setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          if (isConsultJourney || isDiagnosticJourney || !circleMembershipCharges) {
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            defaultCirclePlan && setCirclePlanSelected && setCirclePlanSelected(null);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          } else {
+            // pharma journey and circle membership charges
+            const planSelected = circlePlans.filter(
+              (value) => value?.currentSellingPrice == circleMembershipCharges
+            );
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            onSelectMembershipPlan && onSelectMembershipPlan(planSelected[0]);
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          }
         }
       }
-      setLoading(false);
+      setSpinning(false);
       onEndApiCall && onEndApiCall();
     } catch (error) {
-      setLoading(false);
+      setSpinning(false);
       onEndApiCall && onEndApiCall();
       CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
     }
   };
   const onPressMembershipPlans = (index: number) => {
+    fireMembershipPlanSelected();
+
     const membershipPlan = membershipPlans?.[index];
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
     if (isConsultJourney) {
+      !isModal &&
+        circleWebEngageEventForAddToCart(
+          WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
+          membershipPlan
+        );
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
       setIsCircleSubscription && setIsCircleSubscription(true);
@@ -135,6 +217,50 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
   };
 
+  const fireCircleKnowMoreEvent = () => {
+    source == 'Pharma' &&
+      postWebEngageEvent(
+        WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP,
+        CircleEventAttributes
+      );
+    source == 'Product Detail' &&
+      postWebEngageEvent(
+        WebEngageEventName.PHARMA_PRODUCT_KNOW_MORE_CLICKED_CIRCLE_POPUP,
+        CircleEventAttributes
+      );
+    source == 'Pharma Cart' &&
+      postWebEngageEvent(
+        WebEngageEventName.PHARMA_CART_KNOW_MORE_CLICKED_CIRCLE_POPUP,
+        CircleEventAttributes
+      );
+    source == 'Diagnostic' &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP,
+        CircleEventAttributes
+      );
+  };
+
+  const fireCircleBuyNowEvent = () => {
+    source == 'Product Detail' &&
+      postWebEngageEvent(
+        WebEngageEventName.PHARMA_PRODUCT_ADD_TO_CART_CLICKED_CIRCLE_POPUP,
+        CircleEventAttributes
+      );
+    source == 'Diagnostic' &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP,
+        CircleEventAttributes
+      );
+  };
+
+  const fireCirclePlanRemovedEvent = () => {
+    source == 'Pharma Cart' &&
+      postWebEngageEvent(
+        WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED,
+        CircleEventAttributes
+      );
+  };
+
   const renderCareSubscribeCard = (value: any, index: number) => {
     const duration = value?.durationInMonth;
     const isPlanActive =
@@ -142,76 +268,94 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       (isModal && defaultCirclePlan?.subPlanId === value?.subPlanId);
     const iconDimension = isPlanActive ? defaultPlanDimension : planDimension;
     return (
-      <View style={{ paddingBottom: 62 }}>
-        <TouchableOpacity
-          key={index}
-          activeOpacity={1}
-          onPress={() => onPressMembershipPlans(index)}
-          style={[styles.subscriptionCard, { marginLeft: index === 0 ? 10 : 0 }]}
-        >
-          <ImageBackground
-            source={{ uri: value?.icon }}
+      <View>
+        <View style={{ paddingBottom: 20 }}>
+          <TouchableOpacity
+            key={index}
+            activeOpacity={1}
+            onPress={() => onPressMembershipPlans(index)}
+            style={[styles.subscriptionCard, { marginLeft: index === 0 ? 10 : 0 }]}
+          >
+            <ImageBackground
+              source={{ uri: value?.icon }}
+              style={[
+                styles.planContainer,
+                {
+                  width: iconDimension,
+                  height: iconDimension,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.duration,
+                  {
+                    left:
+                      `${duration}`.length === 1
+                        ? !isIos
+                          ? isPlanActive
+                            ? 6
+                            : isModal
+                            ? 5
+                            : 6
+                          : isPlanActive
+                          ? 7
+                          : isModal
+                          ? 6
+                          : 7
+                        : isPlanActive
+                        ? 5
+                        : isModal
+                        ? 3
+                        : 4,
+                    top: `${duration}`.length === 1 ? iconDimension / 2 - 3 : iconDimension / 2 + 3,
+                    transform:
+                      `${duration}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
+                    color: value?.defaultPack ? 'white' : theme.colors.APP_YELLOW,
+                    fontSize: isPlanActive ? 16 : 14,
+                  },
+                ]}
+              >
+                {duration}
+              </Text>
+              <Text
+                style={[
+                  styles.price,
+                  {
+                    marginTop: isPlanActive ? iconDimension / 2 - 12 : iconDimension / 2 - 8,
+                    fontSize: isPlanActive ? 22 : 16,
+                    color: value?.defaultPack ? 'white' : theme.colors.SEARCH_UNDERLINE_COLOR,
+                  },
+                ]}
+              >
+                {string.common.Rs}
+                {value?.currentSellingPrice}
+              </Text>
+            </ImageBackground>
+          </TouchableOpacity>
+          {/* {value?.saved_extra_on_lower_plan && (
+            <Text
+              style={[
+                styles.savingsText,
+                {
+                  top: iconDimension + 24,
+                },
+              ]}
+            >
+              Save {value?.saved_extra_on_lower_plan} extra
+            </Text>
+          )} */}
+        </View>
+        <TouchableOpacity onPress={() => onPressMembershipPlans(index)} style={styles.radioBtn}>
+          <View
             style={[
-              styles.planContainer,
+              styles.radioBtnIcon,
               {
-                width: iconDimension,
-                height: iconDimension,
+                borderWidth: isPlanActive ? 3 : 1,
               },
             ]}
-          >
-            <Text
-              style={[
-                styles.duration,
-                {
-                  left: `${duration}`.length === 1 ? (isPlanActive ? 8 : 7) : isPlanActive ? 5 : 3,
-                  top: `${duration}`.length === 1 ? iconDimension / 2 - 3 : iconDimension / 2 + 3,
-                  transform:
-                    `${duration}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
-                  color: value?.defaultPack ? 'white' : theme.colors.APP_YELLOW,
-                  fontSize: isPlanActive ? 18 : 14,
-                },
-              ]}
-            >
-              {duration}
-            </Text>
-            <Text
-              style={[
-                styles.price,
-                {
-                  marginTop: iconDimension / 2 - 10,
-                  fontSize: isPlanActive ? 24 : 18,
-                  color: value?.defaultPack ? 'white' : theme.colors.SEARCH_UNDERLINE_COLOR,
-                },
-              ]}
-            >
-              {string.common.Rs}
-              {value?.currentSellingPrice}
-            </Text>
-          </ImageBackground>
+          />
         </TouchableOpacity>
-        {value?.saved_extra_on_lower_plan && (
-          <Text
-            style={[
-              styles.savingsText,
-              {
-                top: iconDimension + 24,
-              },
-            ]}
-          >
-            Save {value?.saved_extra_on_lower_plan} extra
-          </Text>
-        )}
-        <TouchableOpacity
-          onPress={() => onPressMembershipPlans(index)}
-          style={[
-            styles.radioBtn,
-            {
-              marginRight: index === 0 ? 0 : 12,
-              top: value?.saved_extra_on_lower_plan ? iconDimension + 35 : iconDimension + 20,
-              borderWidth: isPlanActive ? 3 : 1,
-            },
-          ]}
-        />
       </View>
     );
   };
@@ -220,6 +364,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     <View>
       {isModal ? (
         <Overlay
+          onRequestClose={() => closeModal && closeModal()}
           isVisible={isModal}
           windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
           overlayStyle={styles.overlayStyle}
@@ -237,79 +382,89 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
 
   const renderCloseIcon = () => {
     return (
-      <View style={styles.closeIcon}>
-        <TouchableOpacity
-          onPress={() => {
-            setCirclePlanSelected && setCirclePlanSelected(null);
+      <TouchableOpacity
+        onPress={() => {
+          if (!buyNow && from !== string.banner_context.PHARMACY_HOME) {
             setIsCircleSubscription && setIsCircleSubscription(false);
-            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
-            AsyncStorage.removeItem('circlePlanSelected');
             selectDefaultPlan && selectDefaultPlan(membershipPlans);
-            closeModal && closeModal();
-          }}
-        >
-          <CrossPopup style={styles.crossIconStyle} />
-        </TouchableOpacity>
-      </View>
+          } else {
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          }
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanSelected && setCirclePlanSelected(null);
+          AsyncStorage.removeItem('circlePlanSelected');
+          closeModal && closeModal();
+        }}
+        style={styles.closeIcon}
+      >
+        <CrossPopup style={styles.crossIconStyle} />
+      </TouchableOpacity>
     );
   };
 
   const renderSubscriptionPlans = () => {
     return (
-      <ContentLoader loading={loading} active containerStyles={{ marginTop: 10 }}>
-        {isModal && renderHeaderTitle()}
-        <View style={isModal ? styles.careBannerView : {}}>
-          <View style={styles.careTextContainer}>
-            <CircleLogo style={styles.circleLogo} />
-            {isConsultJourney ? (
-              autoCirlcePlanAdded ? (
-                <Text style={styles.getCareText}>
-                  Get{' '}
-                  <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
-                    {string.common.Rs}
-                    {careDiscountPrice} off{' '}
-                  </Text>{' '}
-                  on this Consult with CIRCLE membership and a lot more benefits....
+      <View style={styles.subscriptionContainer}>
+        <ContentLoader loading={spinning} active containerStyles={{ marginTop: 10 }}>
+          {isModal && renderHeaderTitle()}
+          <View style={isModal ? [styles.careBannerView, { paddingBottom: 5 }] : {}}>
+            <View style={styles.careTextContainer}>
+              <CircleLogo style={styles.circleLogo} />
+              {isConsultJourney ? (
+                autoCirlcePlanAdded ? (
+                  <Text style={styles.getCareText}>
+                    Get{' '}
+                    <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
+                      {string.common.Rs}
+                      {careDiscountPrice} off{' '}
+                    </Text>{' '}
+                    on this Consult with CIRCLE membership and a lot more benefits....
+                  </Text>
+                ) : (
+                  <Text style={styles.getCareText}>
+                    {string.circleDoctors.consultCircleOfferDescription}
+                  </Text>
+                )
+              ) : isModal ? (
+                <Text style={[styles.getCareText, { fontSize: 10.6 }]}>
+                  {isConsultJourney
+                    ? string.circleDoctors.getCircleMembershipOffersDescription
+                    : string.circlePharmacy.modalDescription}
                 </Text>
               ) : (
                 <Text style={styles.getCareText}>
-                  {string.circleDoctors.consultCircleOfferDescription}
+                  {string.circlePharmacy.enableCircleToGetBestOffers}
                 </Text>
-              )
-            ) : isModal ? (
-              <Text style={[styles.getCareText, { fontSize: 10.6 }]}>
-                {isConsultJourney
-                  ? string.circleDoctors.getCircleMembershipOffersDescription
-                  : string.circlePharmacy.modalDescription}
-              </Text>
-            ) : (
-              <Text style={styles.getCareText}>
-                {isCartTotalLimit
-                  ? string.circlePharmacy.enabledCircleMembership
-                  : string.circlePharmacy.enableCircleToGetBestOffers}
-              </Text>
-            )}
+              )}
+            </View>
+            <ScrollView
+              style={{ marginTop: 4 }}
+              contentContainerStyle={{
+                alignItems: 'center',
+                justifyContent: 'space-around',
+              }}
+              horizontal={true}
+              bounces={false}
+              showsHorizontalScrollIndicator={false}
+            >
+              {membershipPlans?.map((value: any, index: number) =>
+                renderCareSubscribeCard(value, index)
+              )}
+            </ScrollView>
+            {!isModal &&
+              isConsultJourney &&
+              !autoCirlcePlanAdded &&
+              renderCircleDiscountOnConsult()}
+            {!isModal && !isConsultJourney && renderCircleDiscountOnPharmacy()}
+            {!isModal && renderKnowMore('flex-end')}
           </View>
-          <ScrollView
-            style={{ marginTop: 4 }}
-            contentContainerStyle={{ alignItems: 'center' }}
-            horizontal={true}
-            bounces={false}
-            showsHorizontalScrollIndicator={false}
-          >
-            {membershipPlans?.map((value: any, index: number) =>
-              renderCareSubscribeCard(value, index)
-            )}
-          </ScrollView>
-          {!isModal && isConsultJourney && !autoCirlcePlanAdded && renderCircleDiscountOnConsult()}
-          {!isModal && !isConsultJourney && renderCircleDiscountOnPharmacy()}
-          {!isModal && renderKnowMore('flex-end')}
-        </View>
-        {isModal && renderKnowMore('center')}
-        {isModal && renderAddToCart()}
-        {isModal && renderCircleFacts()}
-      </ContentLoader>
+          {isModal && renderKnowMore('center')}
+          {isModal && renderAddToCart()}
+          {isModal && renderCircleFacts()}
+        </ContentLoader>
+      </View>
     );
   };
 
@@ -340,6 +495,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         <TouchableOpacity
           style={styles.knowMoreBtn}
           onPress={() => {
+            fireCircleKnowMoreEvent();
             openCircleWebView();
             closeModal && closeModal();
           }}
@@ -389,11 +545,46 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const openCircleWebView = () => {
+    console.log(isDiagnosticJourney);
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: isConsultJourney
         ? AppConfig.Configuration.CIRCLE_CONSULT_URL
+        : from === string.banner_context.HOME
+        ? AppConfig.Configuration.CIRCLE_LANDING_URL
+        : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
+        ? AppConfig.Configuration.CIRCLE_TEST_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      source: source,
     });
+  };
+
+  const circleWebEngageEvent = (eventName: any) => {
+    let eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
+  const circleWebEngageEventForAddToCart = (eventName: any, membershipPlan: any) => {
+    const eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Membership Type': String(membershipPlan?.valid_duration) + ' days',
+      'Membership End Date': moment(new Date())
+        .add(membershipPlan?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': membershipPlan?.currentSellingPrice,
+    };
+    postWebEngageEvent(eventName, eventAttributes);
   };
 
   const removeAutoAddedPlan = () => {
@@ -404,20 +595,96 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     AsyncStorage.removeItem('circlePlanSelected');
     setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+    circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_REMOVES_CART);
+  };
+
+  const onPurchasePlanThroughHC = async () => {
+    setLoading && setLoading(true);
+    try {
+      const res = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
+        mutation: CREATE_USER_SUBSCRIPTION,
+        variables: {
+          userSubscription: {
+            mobile_number: currentPatient?.mobileNumber,
+            plan_id: planId,
+            sub_plan_id: defaultCirclePlan
+              ? defaultCirclePlan?.subPlanId
+              : circlePlanSelected?.subPlanId,
+            storeCode,
+            FirstName: currentPatient?.firstName,
+            LastName: currentPatient?.lastName,
+            payment_reference: {
+              amount_paid: 0,
+              payment_status: PaymentStatus.TXN_SUCCESS,
+              purchase_via_HC: true,
+              HC_used: amountToPay,
+            },
+            transaction_date_time: new Date().toISOString(),
+          },
+        },
+        fetchPolicy: 'no-cache',
+      });
+      setLoading && setLoading(false);
+      if (res?.data?.CreateUserSubscription?.success) {
+        onPurchaseWithHCCallback!(res);
+      } else {
+        Alert.alert('Apollo', `${res?.data?.CreateUserSubscription?.message}`);
+      }
+    } catch (error) {
+      setLoading && setLoading(false);
+      CommonBugFender('ConsultRoom_createUserCircleSubscription', error);
+    }
   };
 
   const renderAddToCart = () => {
     return (
       <Button
-        title={buyNow ? string.circleDoctors.buyNow : string.circleDoctors.addToCart}
-        style={styles.buyNowBtn}
+        disabled={!defaultCirclePlan && !circlePlanSelected}
+        title={
+          buyNow && from !== string.banner_context.PHARMACY_HOME
+            ? purchaseWithHC
+              ? string.circleDoctors.upgradeWithHC.replace(
+                  '{hc}',
+                  circlePlanSelected?.currentSellingPrice
+                )
+              : !circlePlanSelected
+              ? string.circleDoctors.upgrade
+              : string.circleDoctors.upgradeWithPrice.replace(
+                  '{price}',
+                  circlePlanSelected?.currentSellingPrice
+                )
+            : string.circleDoctors.addToCart
+        }
+        style={[
+          styles.buyNowBtn,
+          {
+            width: purchaseWithHC ? 230 : 212,
+          },
+        ]}
         onPress={() => {
+          fireCircleBuyNowEvent();
+          isConsultJourney &&
+            circleWebEngageEventForAddToCart(
+              WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
+              circlePlanSelected
+            );
           setDefaultCirclePlan && setDefaultCirclePlan(null);
+          setIsCircleSubscription && setIsCircleSubscription(true);
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
-          if (buyNow) {
-            props.navigation.navigate(AppRoutes.CircleSubscription);
+          if (buyNow && from !== string.banner_context.PHARMACY_HOME) {
+            if (purchaseWithHC) {
+              onPurchasePlanThroughHC();
+            } else {
+              props.navigation.navigate(AppRoutes.CircleSubscription, {
+                from: from,
+                soruce: source,
+              });
+            }
+          } else {
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
           }
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
         }}
       />
     );
@@ -428,6 +695,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       const defaultPlan = plans?.filter((item: any) => item.defaultPack === true);
       if (defaultPlan?.length > 0) {
         setCirclePlanSelected && setCirclePlanSelected(defaultPlan[0]);
+        AsyncStorage.setItem('circlePlanSelected', JSON.stringify(defaultPlan[0]));
+        setCircleSubPlanId && setCircleSubPlanId(defaultPlan[0].subPlanId);
         setCircleMembershipCharges &&
           setCircleMembershipCharges(defaultPlan[0]?.currentSellingPrice);
       }
@@ -442,7 +711,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           <Text style={theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR)}>
             On an average Circle members{'\n'}
           </Text>
-          save upto ₹400 every month
+          save upto ₹{circleStaticMonthlySavings} every month
         </Text>
       </View>
     );
@@ -455,40 +724,44 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     );
   };
 
-  const renderCarePlanAdded = () => (
-    <View style={styles.planAddedContainer}>
-      <View style={styles.spaceRow}>
-        <View style={styles.rowCenter}>
-          <CircleLogo style={styles.careLogo} />
-          <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE) }}>
-            Plan added to cart!
-          </Text>
+  const renderCarePlanAdded = () => {
+    return (
+      <View style={styles.planAddedContainer}>
+        <View style={styles.spaceRow}>
+          <View style={styles.rowCenter}>
+            <CircleLogo style={styles.careLogo} />
+            <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE) }}>
+              Plan added to cart!
+            </Text>
+          </View>
+          <View style={styles.rowCenter}>
+            <Text
+              style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}
+            >
+              {string.common.Rs}
+              {circlePlanSelected?.currentSellingPrice}
+            </Text>
+          </View>
         </View>
-        <View style={styles.rowCenter}>
-          <Text style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
-            {string.common.Rs}
-            {circlePlanSelected?.currentSellingPrice}
-          </Text>
-        </View>
+        <TouchableOpacity
+          style={{ marginTop: 7 }}
+          onPress={() => {
+            fireCirclePlanRemovedEvent();
+            setCirclePlanSelected && setCirclePlanSelected(null);
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+            AsyncStorage.removeItem('circlePlanSelected');
+          }}
+        >
+          <Text style={styles.removeTxt}>REMOVE</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={{ marginTop: 7 }}
-        onPress={() => {
-          setCirclePlanSelected && setCirclePlanSelected(null);
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCircleMembershipCharges && setCircleMembershipCharges(0);
-          AsyncStorage.removeItem('circlePlanSelected');
-        }}
-      >
-        <Text style={styles.removeTxt}>REMOVE</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
+    );
+  };
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !loading && !defaultCirclePlan
+      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !spinning && !defaultCirclePlan
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>
@@ -547,7 +820,6 @@ const styles = StyleSheet.create({
   },
   price: {
     ...theme.viewStyles.text('SB', 20, theme.colors.SEARCH_UNDERLINE_COLOR),
-    marginTop: planDimension / 2 - 10,
     alignSelf: 'center',
   },
   oldPrice: {
@@ -609,24 +881,26 @@ const styles = StyleSheet.create({
   },
   duration: {
     position: 'absolute',
-    top: planDimension / 2 - 2,
     transform: [{ rotate: '-90deg' }],
     ...theme.viewStyles.text('M', 16, theme.colors.APP_YELLOW),
   },
   planContainer: {
-    width: planDimension,
-    height: planDimension,
     alignSelf: 'center',
   },
   radioBtn: {
+    width: 24,
+    height: 24,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    marginBottom: 5,
+  },
+  radioBtnIcon: {
     width: 12,
     height: 12,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     alignSelf: 'center',
-    marginTop: 16,
-    position: 'absolute',
   },
   savingsText: {
     ...theme.viewStyles.text('M', 8, theme.colors.SHERPA_BLUE),
@@ -642,12 +916,13 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   overlayStyle: {
-    borderRadius: 10,
-    backgroundColor: 'white',
+    padding: 0,
     width: width - 36,
     height: 'auto',
-    padding: 0,
-    paddingBottom: 20,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
   },
   closeIcon: {
     alignSelf: 'flex-end',
@@ -670,7 +945,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   headerText: {
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+    ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE),
   },
   buyNowBtn: {
     marginTop: 2,
@@ -710,5 +985,10 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     marginRight: 8,
+  },
+  subscriptionContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingBottom: 20,
   },
 });

@@ -170,7 +170,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    updateCartItem,
+    cartItems,
+    pinCode,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
@@ -237,7 +244,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -266,7 +273,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode)
+      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode, pinCode)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
@@ -380,7 +387,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Full Search', categoryId: category_id },
-      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
+      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
+      pharmacyCircleAttributes!
     );
   };
 
@@ -810,7 +818,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 onEndReached={() => {
                   if (!listFetching && !endReached) {
                     setListFetching(true);
-                    searchMedicineApi(searchText, pageCount, sortBy, {}, axdcCode)
+                    searchMedicineApi(searchText, pageCount, sortBy, {}, axdcCode, pinCode)
                       .then(({ data }) => {
                         const products = data.products || [];
                         if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {

@@ -42,6 +42,7 @@ import {
   GET_DOCTOR_LIST,
   GET_PLATINUM_DOCTOR,
   GET_DOCTORLIST_FILTERS,
+  GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
@@ -56,6 +57,7 @@ import {
   FilterDoctorInput,
   Range,
   SpecialtySearchType,
+  ZoneType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   autoCompletePlaceSearch,
@@ -111,6 +113,11 @@ import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -196,6 +203,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 20,
     marginBottom: 10,
+    marginTop: 20,
   },
   careLogo: {
     width: 45,
@@ -260,7 +268,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     []
   );
   const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
-  const { clearCartInfo } = useDiagnosticsCart();
+  const { clearDiagnoticCartInfo } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [
@@ -372,12 +380,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [showCarePlanNotification]);
 
   useEffect(() => {
+    getDoctorOfTheHour();
+    fetchAddress();
+  }, []);
+
+  const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
         fetchPolicy: 'no-cache',
         variables: {
           specialtyId: props.navigation.getParam('specialityId') || '',
+          zoneType: ZoneType.STATE,
+          zone: state || locationDetails?.state,
+          partnerDoctor,
         },
       })
       .then(({ data }) => {
@@ -385,12 +401,40 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         console.log('data', data);
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
+        } else {
+          setPlatinumDoctor(null);
         }
       })
       .catch((e) => {
+        setPlatinumDoctor(null);
         CommonBugFender('GET_PLATINUM_DOCTOR', e);
       });
-  }, []);
+  };
+
+  async function fetchAddress() {
+    try {
+      if (locationDetails?.state) {
+        return;
+      }
+      const userId = g(currentPatient, 'id');
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: userId },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const addressList =
+        (data?.getPatientAddressList
+          ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      const state = addressList?.[0]?.state;
+      if (state) {
+        getDoctorOfTheHour(false, state);
+      }
+    } catch (error) {
+      console.log(error);
+      CommonBugFender('DoctorSearchListing_fetchAddress', error);
+    }
+  }
 
   const vaueChange = (sort: any) => {
     if (sort === 'distance') {
@@ -550,18 +594,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                           lat: response.latitude || '',
                           lng: response.longitude || '',
                         },
-                        'distance',
-                        response.pincode,
-                        docTabSelected,
+                        'availability',
+                        undefined,
+                        false,
                         doctorSearch
                       );
                   })
                   .catch((e) => {
                     CommonBugFender('DoctorSearchListing_ALLOW_AUTO_DETECT', e);
-                    showAphAlert!({
-                      title: 'Uh oh! :(',
-                      description: 'Unable to access location.',
-                    });
+                    setSortValue('availability');
+                    fetchSpecialityFilterData(
+                      filterMode,
+                      FilterData,
+                      latlng,
+                      'availability',
+                      undefined,
+                      false,
+                      doctorSearch
+                    );
                   })
                   .finally(() => {
                     setLoadingContext!(false);
@@ -802,7 +852,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           city.toLowerCase() !=
           ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
         ) {
-          clearCartInfo && clearCartInfo();
+          clearDiagnoticCartInfo && clearDiagnoticCartInfo();
         }
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);
@@ -1100,6 +1150,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           postDoctorClickWEGEvent(rowData, 'List', type);
         }}
         onPlanSelected={() => setShowCarePlanNotification(true)}
+        selectedConsultMode={filter}
       />
     ) : null;
   };
@@ -1204,7 +1255,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     return (
       <View style={{ flex: 1 }}>
-        {doctorsType === 'APOLLO' && renderViewCareSwitch()}
+        {/* {doctorsType === 'APOLLO' && renderViewCareSwitch()} */}
         {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
@@ -1212,7 +1263,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               DoctorsflatListRef = ref;
             }}
             contentContainerStyle={{
-              marginTop: 10,
+              marginTop: 20,
               marginBottom: 8,
               paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
@@ -1294,7 +1345,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             elevation: 15,
           }}
           onPress={() => {
-            setshowLocationpopup(false), !locationDetails && checkLocation();
+            setshowLocationpopup(false);
+            setshowSpinner(false);
+            !doctorsList?.length &&
+              fetchSpecialityFilterData(
+                filterMode,
+                FilterData,
+                latlng,
+                'availability',
+                undefined,
+                false,
+                doctorSearch
+              );
+            // !locationDetails && checkLocation();
           }}
         >
           <View
@@ -1563,6 +1626,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           doctorSearch
         );
       } else {
+        setDoctorsList([]);
         checkLocation(doctorTabsSelected);
       }
     }
@@ -1777,6 +1841,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
+      setPlatinumDoctor(null);
+      getDoctorOfTheHour();
+      fetchAddress(); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -1788,6 +1855,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
+      setPlatinumDoctor(null);
+      getDoctorOfTheHour(true);
+      fetchAddress();
     }
   };
 
@@ -1838,6 +1908,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const filterCircleWebEngage = () => {
+    const eventAttributes = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
+  };
+
   const renderViewCareSwitch = () => {
     return (
       <View style={styles.rowContainer}>
@@ -1848,6 +1927,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onChange={(value) => {
             setCareDoctorsSwitch(value);
             setFilterActionTaken(true);
+            filterCircleWebEngage();
           }}
           value={careDoctorsSwitch}
         />
@@ -1866,12 +1946,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             renderSearchLoadingView()
           ) : (
             <View style={{ flex: 1 }}>
-              <Text style={styles.consultHeadingText}>
+              {/* <Text style={styles.consultHeadingText}>
                 {string.doctor_search_listing.consultBest.replace(
                   '{0}',
                   specialistPluralTerm || 'Doctors'
                 )}
-              </Text>
+              </Text> */}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox

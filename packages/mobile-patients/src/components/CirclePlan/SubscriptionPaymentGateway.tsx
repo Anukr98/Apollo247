@@ -11,30 +11,51 @@ import {
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { WebView } from 'react-native-webview';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  postWebEngageEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import moment from 'moment';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
+  selectedPlan?: any;
+  forCircle?: boolean;
+  from?: string;
 }
 export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props) => {
   let WebViewRef: any;
   const { currentPatient } = useAllCurrentPatients();
   const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
-
+  const from = props.navigation.getParam('from');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const selectedPlan = props.navigation.getParam('selectedPlan');
+  const forCircle = props.navigation.getParam('forCircle');
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const { setLoading } = useUIElements();
-  const planSellingPrice = defaultCirclePlan
+  const planSellingPrice = selectedPlan
+    ? selectedPlan?.currentSellingPrice
+    : defaultCirclePlan
     ? defaultCirclePlan?.currentSellingPrice
     : circlePlanSelected?.currentSellingPrice;
-  const subPlanId = defaultCirclePlan
+  const subPlanId = selectedPlan
+    ? selectedPlan?.subPlanId
+    : defaultCirclePlan
     ? defaultCirclePlan?.subPlanId
     : circlePlanSelected?.subPlanId;
 
@@ -44,6 +65,42 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const fireCirclePurchaseEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      currency: 'INR',
+      items: [
+        {
+          item_name: 'Circle Plan',
+          item_id: circlePlanSelected?.subPlanId,
+          price: Number(circlePlanSelected?.currentSellingPrice),
+          item_category: 'Circle',
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      transaction_id: currentPatient?.mobileNumber,
+      value: Number(circlePlanSelected?.currentSellingPrice),
+      LOB: 'Circle',
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
+  const firePaymentDoneEvent = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
+      'Membership End Date': moment(new Date())
+        .add(circlePlanSelected?.valid_duration, 'days')
+        .format('DD-MMM-YYYY'),
+      'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+      Type: 'Direct Payment',
+      Source: from,
+    };
+    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+  };
 
   const handleBack = () => {
     Alert.alert('Alert', 'Are you sure you want to choose a different payment mode?', [
@@ -62,7 +119,6 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   const renderwebView = () => {
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     let circlePurchaseUrl = `${baseUrl}/subscriptionpayment?patientId=${currentPatient?.id}&price=${planSellingPrice}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES&planId=${planId}&subPlanId=${subPlanId}&storeCode=${storeCode}`;
-
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
@@ -82,15 +138,33 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
     console.log({ data, redirectedUrl });
     if (
       redirectedUrl &&
-      (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1 ||
-        redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1)
+      redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1
     ) {
-      navigatetoStatusScreen();
+      forCircle ? firePaymentDoneEvent() : null;
+      fireCirclePurchaseEvent();
+      navigatetoStatusScreen(redirectedUrl);
     }
   };
 
-  const navigatetoStatusScreen = () => {
+  const navigatetoStatusScreen = (url: string) => {
     // show circle member activated component
+    setLoading!(false);
+    const circlePlanValidity = url.split('end_date=');
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+            params: {
+              circleActivated: true,
+              circlePlanValidity: circlePlanValidity[1],
+            },
+          }),
+        ],
+      })
+    );
   };
 
   return (

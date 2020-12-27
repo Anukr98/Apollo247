@@ -1,3 +1,4 @@
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
@@ -13,7 +14,7 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -47,6 +48,8 @@ import {
   getAppointmentData as getAppointmentDataQuery,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import {
   GET_APPOINTMENT_DATA,
   GET_ALL_SPECIALTIES,
@@ -60,7 +63,7 @@ import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
-import { string } from '../strings/string';
+import { string as localStrings } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
@@ -121,7 +124,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const { setAllPatients, setMobileAPICalled } = useAuth();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
   const voipAppointmentId = useRef<string>('');
@@ -130,33 +133,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipDoctorName = useRef<string>('');
 
   const config: Pubnub.PubnubConfig = {
+    origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+    restore: true,
     ssl: true,
     uuid: `PATIENT_${voipPatientId.current}`,
-    restore: true,
-    keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
-    heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
 
-  // const { setVirtualConsultationFee } = useAppCommonData();
+  const { setPhrNotificationData } = useAppCommonData();
 
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
-      console.log('Accept Params', params);
-      voipCallType.current = params.call_type;
-      callPermissions();
-      getAppointmentDataAndNavigate(params.appointment_id, true);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        voipCallType.current = params.call_type;
+        callPermissions();
+        getAppointmentDataAndNavigate(params.appointment_id, true);
+      }
     });
     DeviceEventEmitter.addListener('reject', (params) => {
-      console.log('Reject Params', params);
-      getAppointmentDataAndNavigate(params.appointment_id, false);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        getAppointmentDataAndNavigate(params.appointment_id, false);
+      }
     });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -212,7 +213,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const initializeCallkit = () => {
     const callkeepOptions = {
       ios: {
-        appName: string.LocalStrings.appName,
+        appName: localStrings.LocalStrings.appName,
         imageName: 'callkitAppIcon.png',
       },
     };
@@ -241,8 +242,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
-  const onAnswerCallAction = () => {
-    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+  const onAnswerCallAction = async () => {
+    if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+      voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+    }
   };
 
   const onDisconnetCallAction = () => {
@@ -250,9 +253,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     RNCallKeep.endAllCalls();
     pubnub.publish(
       {
-        message: '^^#PATIENT_REJECTED_CALL',
+        message: { message: '^^#PATIENT_REJECTED_CALL' },
         channel: voipAppointmentId.current,
         storeInHistory: true,
+        sendByPost: true,
       },
       (status, response) => {
         voipAppointmentId.current = '';
@@ -321,8 +325,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       let route;
 
       const a = event.indexOf('https://www.apollo247.com');
-
-      if (a != -1) {
+      if (a == 0) {
         handleDeeplinkFormatTwo(event);
       } else {
         route = event.replace('apollopatients://', '');
@@ -330,8 +333,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const data = route.split('?');
         setBugFenderLog('DEEP_LINK_DATA', data);
         route = data[0];
-
-        // console.log(data, 'data');
 
         let linkId = '';
 
@@ -405,11 +406,37 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             break;
 
           case 'DoctorCall':
-            if (data.length === 2) {
+            if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
               const params = linkId.split('+');
               voipCallType.current = params[1];
               callPermissions();
               getAppointmentDataAndNavigate(params[0], true);
+            }
+            break;
+
+          case 'DoctorCallRejected':
+            {
+              setLoading!(true);
+              const appointmentId = linkId?.split('+')?.[0];
+              const config: Pubnub.PubnubConfig = {
+                origin: 'apollo.pubnubapi.com',
+                subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+                publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+                ssl: true,
+                restore: true,
+              };
+              const pubnub = new Pubnub(config);
+              pubnub.publish(
+                {
+                  message: { message: '^^#PATIENT_REJECTED_CALL' },
+                  channel: appointmentId,
+                  storeInHistory: true,
+                  sendByPost: true,
+                },
+                (status, response) => {
+                  setLoading!(false);
+                }
+              );
             }
             break;
 
@@ -506,6 +533,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient?.id || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
+
   async function fireAppOpenedEvent(event: any) {
     const a = event.indexOf('apollopatients://');
     const b = event.indexOf('https://www.apollo247.com');
@@ -517,7 +559,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       utm_content: 'not set',
       referrer: 'not set',
     };
-    if (a != -1) {
+    if (a == 0) {
       const route = event.replace('apollopatients://', '');
       const data = route.split('?');
       if (data.length >= 2) {
@@ -527,8 +569,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
-    }
-    if (b != -1) {
+    } else if (b == 0) {
       const route = event.replace('https://www.apollo247.com/', '');
       const data = route.split('?');
       if (data.length >= 2) {
@@ -543,8 +584,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
-    }
-    if (!event) {
+    } else {
       console.log('attributes >>>', attributes);
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }
@@ -559,6 +599,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
       const item = JSON.parse(retrievedItem || 'null');
+      const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
       let allPatients;
@@ -581,7 +622,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const mePatient = allPatients
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
-
+      const currentPatient = allPatients
+        ? allPatients?.find((patient: any) => patient?.id === currentPatientId) ||
+          allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
+        : null;
       setAllPatients(allPatients);
 
       setTimeout(
@@ -591,6 +635,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
             if (mePatient) {
               if (mePatient.firstName !== '') {
+                callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
                 pushTheView(routeName, id ? id : undefined, isCall);
               } else {
@@ -626,24 +671,40 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       return encodedString.split('%20');
     }
   };
-  const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
-    client
-      .query<getAppointmentDataQuery, getAppointmentDataVariables>({
+  const getAppointmentDataAndNavigate = async (appointmentId: string, isCall: boolean) => {
+    try {
+      setLoading!(true);
+      const response = await client.query<getAppointmentDataQuery, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
-        variables: {
-          appointmentId: appointmentID,
-        },
+        variables: { appointmentId },
         fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
-        if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0], true, isCall);
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('SplashFetchingAppointmentData', error);
       });
+      const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
+      if (appointmentData?.doctorInfo) {
+        getData('ChatRoom', appointmentData, false, isCall);
+      } else {
+        throw new Error('Doctor info is required to process the request.');
+      }
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: string.appointmentDataError,
+        CTAs: [
+          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'RETRY',
+            onPress: () => {
+              hideAphAlert!();
+              getAppointmentDataAndNavigate(appointmentId, isCall);
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+      CommonBugFender('SplashFetchingAppointmentData', error);
+    }
   };
 
   const pushTheView = (routeName: String, id?: any, isCall?: boolean) => {
@@ -722,6 +783,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
+          fromDeeplink: true,
         });
         break;
 
@@ -940,9 +1002,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Pharmacy_Delivery_Charges',
     },
     top6_specailties: {
-      QA: 'QA_top6_specailties',
-      DEV: 'DEV_top6_specailties',
-      PROD: 'top6_specailties',
+      QA: 'QA_top_specialties',
+      DEV: 'DEV_top_specialties',
+      PROD: 'top_specialties',
     },
     min_value_to_nudge_users_to_avail_free_delivery: {
       QA: 'QA_min_value_to_nudge_users_to_avail_free_delivery',
@@ -955,6 +1017,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Doctors_Page_Size: {
       PROD: 'Doctors_Page_Size',
     },
+    Need_Help: {
+      QA: 'QA_Need_Help',
+      PROD: 'Need_Help',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -965,7 +1031,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2
+      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2 || currentEnv === AppEnv.QA3
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
@@ -1019,8 +1085,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', (key) => config.getNumber(key));
 
-      setAppConfig('top6_specailties', 'TOP_SPECIALITIES', (key) =>
-        JSON.parse(config.getString(key) || 'null')
+      setAppConfig(
+        'top6_specailties',
+        'TOP_SPECIALITIES',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Need_Help',
+        'NEED_HELP',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.NEED_HELP
       );
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>

@@ -15,6 +15,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 const { height } = Dimensions.get('window');
 
@@ -122,10 +123,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Number': g(currentPatient, 'mobileNumber'),
-      'OrderID:': orderDetails.id,
-      'Sample Collection Date': orderDetails.diagnosticDate,
+      'Order id:': orderDetails?.id,
+      'Order Amount': grossCharges!,
+      'Sample Collection Date': orderDetails?.diagnosticDate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
   }, []);
@@ -143,12 +143,17 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
   };
 
+  console.log({ orderDetails });
   const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
   );
 
   const getAllObject = orderDetails?.diagnosticOrderLineItems?.filter(
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  );
+
+  const getDiscountObject = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
 
   const allCirclePlanObjects =
@@ -159,6 +164,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     getAllObject?.map((item) =>
       item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)
     ) || [];
+
+  const allSpecialPlanObjects =
+    getDiscountObject?.map((item) =>
+      item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT)
+    ) || [];
+
+  //using packageMrp check
   const discountCirclePrice =
     allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountCirclePrice });
@@ -167,23 +179,40 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     allNormalPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountNormalPrice });
 
+  const discountSpecialPrice =
+    allSpecialPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
+  console.log({ discountSpecialPrice });
+
   const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
   const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+  const totalDiscountSaving = discountSpecialPrice?.reduce(
+    (prevVal, currVal) => prevVal + currVal,
+    0
+  );
+  const totalSavings = totalCartSaving + totalDiscountSaving;
 
-  /**
-   * to handle the quantity
-   */
-  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map(
-    (item) => item?.price! * item?.quantity!
+  //gross charges considering packageMrp (how to check for previous orders)
+  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map((item) =>
+    item?.itemObj?.packageCalculatedMrp! && item?.itemObj?.packageCalculatedMrp > item?.price!
+      ? item?.itemObj?.packageCalculatedMrp! * item?.quantity!
+      : item?.price! * item?.quantity!
   );
 
   const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
     (prevVal, currVal) => prevVal + currVal
   );
 
-  const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
+  const HomeCollectionCharges = orderDetails?.collectionCharges
+    ? orderDetails?.collectionCharges
+    : totalIndividualDiagonsticsCharges! > orderDetails?.totalPrice
+    ? totalIndividualDiagonsticsCharges! - orderDetails?.totalPrice!
+    : orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges;
 
-  const grossCharges = totalIndividualDiagonsticsCharges! + totalCartSaving! + totalCircleSaving!;
+  const grossCharges =
+    totalIndividualDiagonsticsCharges! +
+    totalCartSaving! +
+    totalCircleSaving! +
+    totalDiscountSaving!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
@@ -311,21 +340,25 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             <Text
               style={[
                 styles.commonText,
-                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+                {
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  textAlign: 'right',
+                  color: colors.APP_GREEN,
+                },
               ]}
             >
               CIRCLE SAVING
             </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>
+            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
               - {string.common.Rs}
               {totalCircleSaving}
             </Text>
           </View>
         </View>
       )}
-      {!!totalCartSaving && (
+      {!!totalSavings && (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
             <Text style={styles.commonText}></Text>
@@ -334,16 +367,20 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             <Text
               style={[
                 styles.commonText,
-                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+                {
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  textAlign: 'right',
+                  color: colors.APP_GREEN,
+                },
               ]}
             >
               CART SAVING
             </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>
+            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
               - {string.common.Rs}
-              {totalCartSaving}
+              {totalSavings}
             </Text>
           </View>
         </View>

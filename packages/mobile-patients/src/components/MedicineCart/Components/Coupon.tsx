@@ -2,7 +2,12 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { ArrowRight, CouponIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  CouponIcon,
+  Cross,
+  PendingIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface CouponProps {
   onPressApplyCoupon: () => void;
@@ -10,7 +15,13 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon, couponDiscount, isProuctFreeCouponApplied, isCircleSubscription, circleMembershipCharges } = useShoppingCart();
+  const {
+    coupon,
+    couponDiscount,
+    isProuctFreeCouponApplied,
+    isCircleSubscription,
+    circleMembershipCharges,
+  } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -28,18 +39,13 @@ export const Coupon: React.FC<CouponProps> = (props) => {
     );
   };
 
-  const renderCareMessage = () => 
+  const renderCareMessage = () => (
     <View style={styles.careMessageContainer}>
-      <PendingIcon style={styles.pendingIconStyle} />
-      <View style={styles.careMessage}>
-        <Text style={styles.removeCircleText}>
-          Remove Circle membership to apply coupon
-        </Text>
-        <Text style={[styles.removeCircleText, { marginTop: 5}]}>
-          You can either use CIRCLE benefits or apply coupon. Remove CIRCLE membership from CART to avail coupon discount.
-        </Text>
-      </View>
+      <Text style={styles.removeCircleText}>
+        You can either use Circle benefits or apply a Coupon code
+      </Text>
     </View>
+  );
 
   const renderCouponMsg = () => {
     return !isProuctFreeCouponApplied ? (
@@ -94,12 +100,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 15,
+    paddingVertical: 10,
   },
   applyCouponText: {
     color: '#01475B',
     ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 24,
-    marginVertical: 16,
     marginLeft: 10,
   },
   couponApplied: {
@@ -127,21 +133,17 @@ const styles = StyleSheet.create({
   careMessageContainer: {
     flexDirection: 'row',
     marginLeft: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingBottom: 7,
     justifyContent: 'flex-start',
-    borderTopWidth: 0.5,
-    borderTopColor: '#979797',
-  },
-  careMessage: {
-    width: '90%',
   },
   pendingIconStyle: {
     marginRight: 10,
     marginTop: 5,
   },
   removeCircleText: {
-    ...theme.viewStyles.text('B', 13, '#979797', 1, 20), 
-    flexWrap: 'wrap'
-  }
+    width: '85%',
+    marginLeft: 40,
+    ...theme.viewStyles.text('M', 13, '#02475B', 1, 17),
+    flexWrap: 'wrap',
+  },
 });

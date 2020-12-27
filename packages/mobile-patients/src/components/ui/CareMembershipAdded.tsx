@@ -8,12 +8,16 @@ import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 
 interface CareMembershipProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
+  isOnlineConsult?: boolean;
 }
 
 export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
-  const { doctor } = props;
+  const { doctor, isOnlineConsult } = props;
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
-  const { minDiscountedPrice } = circleDoctorDetails;
+  const { onlineConsultDiscountedPrice, physicalConsultDiscountedPrice } = circleDoctorDetails;
+  const discountedPrice = isOnlineConsult
+    ? onlineConsultDiscountedPrice
+    : physicalConsultDiscountedPrice;
 
   return (
     <View style={styles.container}>
@@ -25,7 +29,7 @@ export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
       </View>
       <View style={styles.amountSavedView}>
         <Text style={styles.amountSavedText}>
-          {string.common.amountSavedOnConsultByCare.replace('{amount}', `${minDiscountedPrice}`)}
+          {string.common.amountSavedOnConsultByCare.replace('{amount}', `${discountedPrice}`)}
         </Text>
       </View>
     </View>

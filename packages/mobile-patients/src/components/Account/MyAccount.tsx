@@ -38,6 +38,7 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
+  BackHandler,
   Dimensions,
   Image,
   NativeScrollEvent,
@@ -174,12 +175,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const {
     setIsDiagnosticCircleSubscription,
     isDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
   } = useDiagnosticsCart();
   const {
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setCircleSubscriptionId,
     circleSubscriptionId,
+    hdfcSubscriptionId,
+    clearCartInfo,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -239,6 +243,31 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     const now = new Date();
     let age = parse(dob);
     return differenceInYears(now, age);
+  };
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    return false;
   };
 
   const renderDetails = () => {
@@ -313,6 +342,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
       AsyncStorage.removeItem('circlePlanSelected');
+      clearCartInfo && clearCartInfo();
+      clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
       props.navigation.dispatch(
         StackActions.reset({
@@ -512,7 +543,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {!!(hdfcUserSubscriptions?._id || circleSubscriptionId) && (
+        {!!(hdfcSubscriptionId || circleSubscriptionId) && (
           <ListCard
             title={'My Memberships'}
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}

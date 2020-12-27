@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --endpoint=https://aph.dev.api.popcornapps.com/graphql --target=typescript --queries=./src/graphql/**.ts",
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --endpoint=https://aph.staging.api.popcornapps.com/graphql --target=typescript --queries=./src/graphql/**.ts",
     "build": "npm run build:android & npm run build:ios",
     "build:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "build:ios": "rm -rf ios/bundle/; mkdir ios/bundle; react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/bundle/main.jsbundle --assets-dest ios/bundle",
@@ -15,7 +15,7 @@
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
     "jetify": "jetify",
-    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec"
+    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec && npx jetify"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
@@ -59,9 +59,6 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/mobile-ui-components": "file:../mobile-ui-components",
-    "@aph/shared-ui-components": "file:../shared-ui-components",
-    "@aph/universal": "file:../universal",
     "@bugfender/rn-bugfender": "1.1.0",
     "@praktice/navigator-react-native-sdk": "0.0.2",
     "@react-native-community/async-storage": "1.7.1",
@@ -89,6 +86,7 @@
     "date-fns": "^1.30.1",
     "graphql": "^14.5.3",
     "graphql-tag": "^2.10.1",
+    "jsc-android": "^245459.0.0",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",

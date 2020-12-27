@@ -244,6 +244,8 @@ export interface FirebaseEvents {
     SectionName?: string;
     af_revenue: number;
     af_currency: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [FirebaseEventName.DIAGNOSTIC_ADD_TO_CART]: {
     productname: string;
@@ -281,6 +283,8 @@ export interface FirebaseEvents {
     CartID?: string;
     CartItems: object[];
     ServiceArea: 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [FirebaseEventName.DIAGNOSTIC_CART_VIEWED]: {
     TotalItemsInCart: number;
@@ -305,6 +309,8 @@ export interface FirebaseEvents {
     DeliveryDateTime?: string; // Optional (only if Home)
     PinCode: string | number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [FirebaseEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     TotalItemsInCart: number;
@@ -357,6 +363,8 @@ export interface FirebaseEvents {
     Payment_Type?: 'COD' | 'Prepaid'; // Optional
     Cart_ID?: string | number; // Optional
     Service_Area: 'Pharmacy' | 'Diagnostic';
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [FirebaseEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     Order_ID: string | number;
@@ -397,6 +405,8 @@ export interface FirebaseEvents {
     ItemCode?: string;
     ItemPrice?: number;
     LOB?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [FirebaseEventName.ITEMS_REMOVED_FROM_CART]: {
@@ -413,6 +423,8 @@ export interface FirebaseEvents {
     Pincode?: string;
     DeliveryTAT?: number;
     LOB?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [FirebaseEventName.ORDER_FAILED]: {
@@ -656,5 +668,6 @@ export interface FirebaseEvents {
     items: any;
     transaction_id: string;
     value: number;
+    LOB: string;
   };
 }

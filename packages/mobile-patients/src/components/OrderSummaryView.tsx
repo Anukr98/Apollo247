@@ -16,7 +16,7 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo, DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
@@ -126,6 +126,28 @@ const styles = StyleSheet.create({
     color: theme.colors.SKY_BLUE,
     lineHeight: 15,
     marginLeft: 3,
+  },
+  cashBackView: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    // marginHorizontal: 13,
+    borderRadius: 5,
+    marginBottom: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderColor: '#00B38E',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  cashBackInnerView: { flexDirection: 'row', alignItems: 'center' },
+  circleIcon: { height: 25, width: 40, resizeMode: 'center' },
+  cashBackText: {
+    ...theme.viewStyles.text('R', 13, '#01475b'),
+    marginHorizontal: 5,
+  },
+  highlightedCashBackText: {
+    ...theme.viewStyles.text('SB', 13, '#00B38E'),
+    marginHorizontal: 5,
   },
 });
 
@@ -460,6 +482,24 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     return moment(statusDate).format('ddd, D MMMM, hh:mm A');
   };
 
+  const renderCircleSaving = () => {
+    return (
+      <View style={styles.cashBackView}>
+        <View style={styles.cashBackInnerView}>
+          <CircleLogo style={styles.circleIcon} />
+          <Text style={styles.cashBackText}>
+            cashback of{' '}
+            <Text style={styles.highlightedCashBackText}>
+              {string.common.Rs}
+              {orderDetails?.totalCashBack!} earned{' '}
+            </Text>
+            on your order
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const isStorePickup = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP;
   const userName = `${g(orderDetails, 'patient', 'firstName')} ${g(
     orderDetails,
@@ -654,6 +694,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
         </View>
 
+        {orderDetails?.totalCashBack! > 0 && renderCircleSaving()}
         {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER ||
         (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
           orderBilledAndPacked) ? (

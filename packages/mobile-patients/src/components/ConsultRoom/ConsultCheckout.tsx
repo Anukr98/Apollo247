@@ -142,7 +142,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
-    let date = new Date(time);
+    let date = moment(time).toDate();
     // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -299,6 +299,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
               planSelected: planSelected,
               isDoctorsOfTheHourStatus,
+              selectedTab,
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               consultedWithDoctorBefore: consultedWithDoctorBefore,
@@ -323,6 +324,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
               planSelected: planSelected,
               isDoctorsOfTheHourStatus,
+              selectedTab,
             });
         setLoading && setLoading(false);
       })

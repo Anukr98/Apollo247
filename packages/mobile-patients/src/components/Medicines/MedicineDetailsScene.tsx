@@ -84,7 +84,7 @@ import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/N
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   GetSubscriptionsOfUserByStatusVariables,
   GetSubscriptionsOfUserByStatus,
@@ -269,14 +269,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   circleText: {
-    ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
+    ...theme.viewStyles.text('M', 10, '#02475B', 1, 15),
     paddingVertical: 2,
+    marginLeft: -4,
   },
   circleLogo: {
     resizeMode: 'contain',
     width: 38,
     height: 20,
-    left: -5,
   },
   careBanner: {
     resizeMode: 'contain',
@@ -341,6 +341,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     pharmacyLocation,
     isPharmacyLocationServiceable,
     circleSubscription,
+    setAxdcCode,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -375,11 +376,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     isCircleSubscription,
     setCircleSubscriptionId,
     setIsCircleSubscription,
+    setHdfcSubscriptionId,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    circleSubscriptionId,
+    setCirclePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
+  const hdfc_values = string.Hdfc_values;
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
@@ -490,6 +498,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ProductName: name,
         Stockavailability: !!is_in_stock ? 'Yes' : 'No',
         ...productPageViewedEventProps,
+        ...pharmacyCircleAttributes,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -527,10 +536,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       maxOrderQty: MaxOrderQty,
       productType: type_id,
     });
-    postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
-    postFirebaseAddToCartEvent(item, 'Pharmacy PDP', sectionName);
+    postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName, '', pharmacyCircleAttributes!);
+    postFirebaseAddToCartEvent(item, 'Pharmacy PDP', sectionName, '', pharmacyCircleAttributes!);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(item, id);
+    postAppsFlyerAddToCartEvent(item, id, pharmacyCircleAttributes!);
   };
 
   const updateQuantityCartItem = (
@@ -558,9 +567,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
     try {
+      const response = await pinCodeServiceabilityApi247(pincode);
+      const { data } = response;
+      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
       let pinCodeNotServiceable =
         isPharmacyLocationServiceable == undefined || pharmacyPincode != pincode
-          ? !(await pinCodeServiceabilityApi247(pincode)).data.response
+          ? !data?.response?.servicable
           : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
       setNotServiceable(pinCodeNotServiceable);
       if (pinCodeNotServiceable) {
@@ -747,12 +759,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       return (
         <>
           <CareCashbackBanner
-            bannerText={`Extra Care ₹${cashback} Cashback`}
+            bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
             textStyle={styles.circleText}
             logoStyle={styles.circleLogo}
           />
           <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
-            {`Effective price for you ₹${finalPrice - cashback}`}
+            Effective price for you
+            <Text style={{ fontWeight: 'bold' }}>
+              {' '}
+              {string.common.Rs}
+              {(finalPrice - cashback).toFixed(2)}
+            </Text>
           </Text>
         </>
       );
@@ -812,17 +829,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               <View style={styles.priceView}>
                 <Text style={styles.price}>
                   {discountPercent
-                    ? `₹${medicineDetails.special_price}`
-                    : `MRP ₹${medicineDetails.price}`}
+                    ? `MRP ${string.common.Rs}${medicineDetails.special_price}`
+                    : `MRP ${string.common.Rs}${medicineDetails.price}`}
                 </Text>
                 {!!medicineDetails.special_price && (
                   <View style={styles.discountPriceView}>
-                    <Text style={styles.mrp}>{'MRP '}</Text>
-                    <Text style={styles.priceStrikeOff}>(₹{medicineDetails.price})</Text>
+                    {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
+                    <Text style={styles.priceStrikeOff}>
+                      ({string.common.Rs}
+                      {medicineDetails.price})
+                    </Text>
                     <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
-                {circleSubscription?._id && renderCareCashback()}
+                {!!circleSubscriptionId && renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()
@@ -962,7 +982,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
         {isCircleSubscribed && renderCircleSubscribeSuccess()}
-        {!!cashback && renderCircleBanners()}
+        {/* {!!cashback && renderCircleBanners()} */}
       </View>
     );
   };
@@ -985,26 +1005,37 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: data?.APOLLO?.[0]?.start_date,
+            endDate: data?.APOLLO?.[0]?.end_date,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
         } else {
           setIsCircleSubscribed(false);
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
         }
       }
     } catch (error) {
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
   };
-
-  const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      planActivationCallback={() => {
-        getUserSubscriptionsByStatus();
-      }}
-    />
-  );
 
   const renderCircleSubscribeSuccess = () => {
     return (

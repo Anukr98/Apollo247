@@ -7,6 +7,7 @@ import {
   MedicineIcon,
   CheckedIcon,
   OneApollo,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -25,7 +26,7 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   CODCity,
   BOOKINGSOURCE,
-  DEVICETYPE,
+  DEVICE_TYPE,
   ONE_APOLLO_STORE_CODE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -81,7 +82,10 @@ import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import DeviceInfo from 'react-native-device-info';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -90,7 +94,6 @@ const windowHeight = Dimensions.get('window').height;
 
 export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
-  const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
   const tatType = props.navigation.getParam('tatType');
   const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
@@ -98,16 +101,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const circlePlanId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
-  const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);
-  const [chennaiOrderFormInfo, setChennaiOrderFormInfo] = useState(['', '']); // storing paymentMode, bankCode for Chennai Order
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState<string>(g(currentPatient, 'emailAddress') || '');
-  const [emailIdCheckbox, setEmailIdCheckbox] = useState<boolean>(
-    !g(currentPatient, 'emailAddress')
-  );
-  const [agreementCheckbox, setAgreementCheckbox] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const [showAmountCard, setShowAmountCard] = useState<boolean>(false);
   const {
     deliveryAddressId,
     storeId,
@@ -117,7 +112,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
-    clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -130,8 +124,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     pinCode,
     circleMembershipCharges,
     circleSubPlanId,
+    cartTotalCashback,
+    circleSubscriptionId,
+    isCircleSubscription,
+    isFreeDelivery,
+    setIsCircleSubscription,
+    setDefaultCirclePlan,
+    setCirclePlanSelected,
+    setCircleMembershipCharges,
+    defaultCirclePlan,
+    circlePlanSelected,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
-  const { circleSubscription } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -157,19 +161,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [burnHC, setBurnHC] = useState<number>(0);
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
+  const [showCareDetails, setShowCareDetails] = useState(true);
+  const [defaultPlan, setDefaultPlan] = useState(defaultCirclePlan);
+  const [planSelected, setPlanSelected] = useState(circlePlanSelected);
+  const [planCharges, setPlanCharges] = useState(circleMembershipCharges);
+  const [showRemoveMembership, setShowRemoveMembership] = useState<boolean>(
+    !!circleMembershipCharges
+  );
+
   const client = useApolloClient();
 
-  useEffect(() => {
-    if (email) {
-      setEmailIdCheckbox(false);
-    } else {
-      setEmailIdCheckbox(true);
-    }
-  }, [emailIdCheckbox, email]);
-
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
-
-  const handleBackPressFromChennaiOrderForm = () => setShowChennaiOrderForm(false);
 
   const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
     client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
@@ -282,6 +284,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
         af_currency: 'INR',
+        ...pharmacyCircleAttributes!,
       };
       if (store) {
         eventAttributes['Store Id'] = store.storeid;
@@ -303,6 +306,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       af_currency: 'INR',
       'order id': orderId,
       'coupon applied': coupon ? true : false,
+      ...pharmacyCircleAttributes!,
     };
     return appsflyerEventAttributes;
   };
@@ -358,17 +362,19 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
-        // Values for chennai COD order
-        email: isChennaiOrder && email ? email.trim() : null,
-        CODCity: isChennaiOrder ? CODCity.CHENNAI : null,
       },
     };
     if (orderType == 'HCorder') {
       paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
-      paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal);
+      paymentInfo.medicinePaymentMqInput['healthCredits'] = !!circleMembershipCharges
+        ? getFormattedAmount(grandTotal - circleMembershipCharges)
+        : getFormattedAmount(grandTotal);
+      if (circleMembershipCharges) {
+        paymentInfo.medicinePaymentMqInput['healthCreditsSub'] = circleMembershipCharges;
+      }
     }
-    if (!circleSubscription?._id && !!circleMembershipCharges) {
+    if (!circleSubscriptionId && !!circleMembershipCharges) {
       paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
       paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
       paymentInfo.medicinePaymentMqInput['storeCode'] =
@@ -400,8 +406,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } catch (error) {
             console.log(error);
           }
-          clearCartInfo && clearCartInfo();
-          handleOrderSuccess(`${orderAutoId}`);
+          props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+            status: 'PAYMENT_PENDING',
+            price: getFormattedAmount(grandTotal),
+            orderId: orderAutoId,
+          });
         }
       })
       .catch((e) => {
@@ -419,7 +428,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orderId: string,
     orderAutoId: number,
     paymentMode: string,
-    bankCode: string
+    bankCode: string,
+    orderInfo: saveMedicineOrderOMSVariables
   ) => {
     try {
       const paymentEventAttributes = {
@@ -454,6 +464,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
+      orderInfo: orderInfo,
       planId: circlePlanId || '',
       subPlanId: circleSubPlanId || '',
     });
@@ -465,11 +476,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     isCOD: boolean,
     hcOrder: boolean
   ) => {
-    if (isChennaiOrder && !showChennaiOrderForm) {
-      setChennaiOrderFormInfo([paymentMode, bankCode]);
-      setShowChennaiOrderForm(true);
-      return;
-    }
     const estimatedAmount = !!circleMembershipCharges
       ? getFormattedAmount(grandTotal - circleMembershipCharges)
       : getFormattedAmount(grandTotal);
@@ -539,7 +545,23 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } as MedicineCartOMSItem;
         }),
         bookingSource: BOOKINGSOURCE.MOBILE,
-        deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+        deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+        healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
+        subscriptionDetails: circleSubscriptionId
+          ? { userSubscriptionId: circleSubscriptionId }
+          : null,
+        planPurchaseDetails: !!circleMembershipCharges
+          ? {
+              TYPE: Circle.CARE_PLAN,
+              PlanAmount: circleMembershipCharges || 0,
+              planId: Circle.CIRCLEPlan,
+              subPlanId: circleSubPlanId || '',
+            }
+          : null,
+        totalCashBack: isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+        appVersion: DeviceInfo.getVersion(),
+        savedDeliveryCharge:
+          !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
       },
     };
 
@@ -575,7 +597,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             placeOrder(orderId, orderAutoId, 'HCorder', false);
           } else {
             console.log('Redirect To Payment Gateway');
-            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode)
+            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode, orderInfo)
               .catch((e) => {
                 CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
               })
@@ -631,6 +653,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: getFormattedAmount(grandTotal),
+      LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
@@ -644,104 +667,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    const deliveryTimeMomentFormat = moment(
-      deliveryTime,
-      AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
-    );
     showAphAlert!({
-      // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
         'Your order has been placed successfully. We will confirm the order in a few minutes.',
       children: (
-        <View
-          style={{
-            margin: 20,
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: '#f7f8f5',
-            borderRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <MedicineIcon />
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
-              }}
-            >
-              Medicines
-            </Text>
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 24,
-                color: '#01475b',
-                textAlign: 'right',
-              }}
-            >
-              {`#${orderAutoId}`}
-            </Text>
-          </View>
-          {deliveryTimeMomentFormat.isValid() && (
-            <>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: '#02475b',
-                  opacity: 0.1,
-                  marginBottom: 7.5,
-                  marginTop: 15.5,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                  }}
-                >
-                  {deliveryTime &&
-                    `Delivery By: ${deliveryTimeMomentFormat.format(
-                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
-                    )}`}
-                </Text>
-              </View>
-            </>
-          )}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 15.5,
-              marginTop: 7.5,
-            }}
-          />
-          <View style={styles.popupButtonStyle}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() => navigateToOrderDetails(true, orderAutoId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false, orderAutoId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <OrderPlacedPopUp
+          deliveryTime={deliveryTime}
+          orderAutoId={orderAutoId}
+          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
+          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
+        />
       ),
     });
   };
@@ -763,182 +699,266 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         title={'PAYMENT'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.CheckoutSceneNew, 'Go back clicked');
-          if (showChennaiOrderForm) {
-            handleBackPressFromChennaiOrderForm();
-          } else {
-            props.navigation.goBack();
-          }
+          props.navigation.goBack();
         }}
       />
     );
   };
 
-  const isSatisfyingEmailRegex = (value: string) =>
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-      value
-    );
-
-  const onPressChennaiOrderPayButton = () => {
-    if (!(email === '' || (email && isSatisfyingEmailRegex(email.trim())))) {
-      showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
-    } else {
-      try {
-        CommonLogEvent(AppRoutes.CheckoutSceneNew, `SUBMIT TO CONFIRM ORDER`);
-      } catch (error) {
-        CommonBugFender('CheckoutScene_renderPayButton_try', error);
-      }
-      initiateOrder(chennaiOrderFormInfo[0], chennaiOrderFormInfo[1], isCashOnDelivery, HCorder);
-    }
-  };
-
-  const renderChennaiOrderPayButton = () => {
-    const isPayDisabled = !agreementCheckbox;
-    return (
-      <StickyBottomComponent
-        style={[styles.stickyBottomComponentStyle, { paddingHorizontal: 0, paddingTop: 25 }]}
-      >
-        <Button
-          style={{ width: '100%' }}
-          title={`SUBMIT TO CONFIRM ORDER`}
-          onPress={onPressChennaiOrderPayButton}
-          disabled={isPayDisabled}
-        />
-      </StickyBottomComponent>
-    );
-  };
-
-  const renderChennaiOrderFormAndPayButton = () => {
-    const keyboardVerticalOffset =
-      Platform.OS === 'android' ? { keyboardVerticalOffset: 110 } : { keyboardVerticalOffset: 30 };
-
-    return (
-      <View style={{ ...theme.viewStyles.card(16, 20, 10, '#fff'), flex: 1 }}>
-        {/* <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'} {...keyboardVerticalOffset}> */}
-        <ScrollView contentContainerStyle={{ flex: 1 }} bounces={false}>
-          {renderChennaiOrderForm()}
-          {renderChennaiOrderPayButton()}
-        </ScrollView>
-        {/* </KeyboardAvoidingView> */}
-      </View>
-    );
-  };
-
-  const renderChennaiOrderForm = () => {
-    return (
-      <>
-        <Text style={styles.textStyle1}>
-          {`Dear ${g(currentPatient, 'firstName') ||
-            ''},\n\nSUPERB!\n\nYour order request is in process\n`}
-        </Text>
-        <Text style={styles.textStyle2}>
-          {'Just one more step. New Regulation in your region requires your email id.\n'}
-        </Text>
-        <Text style={styles.textStyle3}>{'Your email id please'}</Text>
-        <TextInputComponent
-          value={`${email}`}
-          onChangeText={(email) => setEmail(email)}
-          placeholder={'name@email.com'}
-          inputStyle={styles.inputStyle}
-        />
-        <TouchableOpacity
-          onPress={() => setEmailIdCheckbox(!emailIdCheckbox)}
-          activeOpacity={1}
-          style={styles.checkboxViewStyle}
-        >
-          {emailIdCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
-          <Text style={styles.checkboxTextStyle}>
-            {
-              'Check this box if you don’t have an Email Id & want us to share your order details over SMS.'
-            }
-          </Text>
-        </TouchableOpacity>
-        <Spearator style={styles.separatorStyle} />
-        <TouchableOpacity
-          onPress={() => setAgreementCheckbox(!agreementCheckbox)}
-          activeOpacity={1}
-          style={[styles.checkboxViewStyle, { marginTop: 0 }]}
-        >
-          {agreementCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
-          <Text style={styles.checkboxTextStyle}>
-            {'I agree to share my medicine requirements with Apollo Pharmacy for home delivery.'}
-          </Text>
-        </TouchableOpacity>
-      </>
-    );
-  };
-
   const rendertotalAmount = () => {
+    const careStyle = StyleSheet.create({
+      careSaving: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E5E5',
+        justifyContent: 'center',
+        paddingBottom: 10,
+      },
+      titleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 7,
+      },
+      totalContainer: {
+        borderTopWidth: 1,
+        borderTopColor: '#E5E5E5',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 10,
+      },
+      logoStyle: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 30,
+      },
+    });
+    const membershipCharges = circleMembershipCharges || 0;
     return (
-      <View>
-        <View
-          style={{
-            ...styles.amountCont,
-            borderBottomLeftRadius: showAmountCard ? 0 : 9,
-            borderBottomRightRadius: showAmountCard ? 0 : 9,
-          }}
-        >
-          <View style={styles.toPay}>
-            <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
-              Amount To Pay
-            </Text>
-          </View>
-          <View style={styles.total}>
-            <Text style={styles.grandTotalTxt}>
-              {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
-            </Text>
-          </View>
-          {(couponDiscount != 0 || burnHC != 0) && (
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.arrow}
-              onPress={() => setShowAmountCard(!showAmountCard)}
-            >
-              {showAmountCard ? <Up /> : <Down />}
-            </TouchableOpacity>
-          )}
+      <View style={styles.amountCont}>
+        <View style={careStyle.careSaving}>
+          <Text style={theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+            BILL TOTAL
+          </Text>
         </View>
-        {showAmountCard && AmountCard()}
-      </View>
-    );
-  };
-
-  const AmountCard = () => {
-    return (
-      <View style={styles.amountCard}>
-        <View style={styles.subCont}>
-          <Text style={styles.SubtotalTxt}>Subtotal</Text>
-          <Text style={styles.SubtotalTxt}>
-            {string.common.Rs}{' '}
-            {getFormattedAmount(cartTotal + deliveryCharges + packagingCharges - productDiscount)}
+        <View style={careStyle.titleContainer}>
+          <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+            Bill Amount
+          </Text>
+          <Text style={styles.grandTotalTxt}>
+            {string.common.Rs} {getFormattedAmount(grandTotal - membershipCharges + couponDiscount)}
           </Text>
         </View>
         {couponDiscount != 0 && (
-          <View style={{ ...styles.subCont, marginTop: 2 }}>
-            <View>
-              <Text style={styles.discountTxt}>Coupon Applied</Text>
-              <Text style={styles.discountTxt}>({coupon?.coupon})</Text>
+          <View style={careStyle.titleContainer}>
+            <View style={{ ...styles.subCont, marginTop: 2 }}>
+              <View>
+                <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                  Coupon Applied
+                </Text>
+                <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                  ({coupon?.coupon})
+                </Text>
+              </View>
             </View>
-            <Text style={styles.discountTxt}>
+            <Text style={styles.grandTotalTxt}>
               - {string.common.Rs} {getFormattedAmount(couponDiscount)}
             </Text>
           </View>
         )}
         {burnHC != 0 && (
-          <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
-            <Text style={styles.discountTxt}>OneApollo HC</Text>
-            <Text style={styles.discountTxt}>
+          <View style={careStyle.titleContainer}>
+            <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
+              <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+                OneApollo HC
+              </Text>
+            </View>
+            <Text style={styles.grandTotalTxt}>
               - {string.common.Rs} {getFormattedAmount(burnHC)}
             </Text>
           </View>
         )}
-        <View style={styles.toPayBorder}></View>
-        <View style={{ ...styles.subCont, marginTop: 0.02 * windowWidth }}>
-          <Text style={styles.SubtotalTxt}>To Pay</Text>
+        {!!circleMembershipCharges && (
+          <View style={careStyle.titleContainer}>
+            <Text style={theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+              Circle Membership
+            </Text>
+            <Text style={styles.grandTotalTxt}>
+              {string.common.Rs} {circleMembershipCharges}
+            </Text>
+          </View>
+        )}
+        <View style={careStyle.totalContainer}>
+          <Text style={theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)}>
+            TOTAL
+          </Text>
           <Text style={styles.grandTotalTxt}>
             {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
           </Text>
         </View>
       </View>
+    );
+  };
+
+  const getTotalCashbackAmount = () => {
+    if (burnHC != 0) {
+      return getFormattedAmount(
+        (Number(cartTotalCashback) * Number(grandTotal - burnHC)) / Number(grandTotal)
+      );
+    } else {
+      return cartTotalCashback;
+    }
+  };
+
+  const renderCareSavings = () => {
+    const careStyle = StyleSheet.create({
+      careSavingsContainer: {
+        ...theme.viewStyles.cardViewStyle,
+        borderRadius: 9,
+        paddingHorizontal: 10,
+        paddingVertical: 9,
+        borderColor: '#00B38E',
+        borderWidth: 3,
+        borderStyle: 'dashed',
+        margin: 0.05 * windowWidth,
+      },
+      rowSpaceBetween: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      circleLogo: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 25,
+      },
+      totalAmountContainer: {
+        borderTopColor: '#979797',
+        borderTopWidth: 0.5,
+        paddingTop: 5,
+        marginTop: 10,
+      },
+      totalAmount: {
+        ...theme.viewStyles.text('B', 14, '#02475B', 1, 20),
+        textAlign: 'right',
+      },
+      youText: {
+        ...theme.fonts.IBMPlexSansRegular(13),
+        lineHeight: 25,
+        color: '#02475B',
+      },
+    });
+    const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
+    return (
+      <View style={careStyle.careSavingsContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setShowCareDetails(!showCareDetails);
+          }}
+        >
+          <View
+            style={[
+              careStyle.rowSpaceBetween,
+              {
+                paddingBottom: 7,
+                borderBottomWidth: showCareDetails ? 0.8 : 0,
+                borderBottomColor: '#E5E5E5',
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <CircleLogo style={careStyle.circleLogo} />
+              <Text style={careStyle.youText}> helped you save</Text>
+            </View>
+            <Down
+              style={{
+                height: 15,
+                transform: [{ rotate: showCareDetails ? '180deg' : '0deg' }],
+                marginTop: 5,
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+        {showCareDetails && (
+          <View>
+            {Number(grandTotal) - Number(burnHC) > 1 && (
+              <View style={[careStyle.rowSpaceBetween, { marginTop: 7 }]}>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                    Membership Cashback
+                  </Text>
+                </View>
+                <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                  ₹{getTotalCashbackAmount()}
+                </Text>
+              </View>
+            )}
+            {!!deliveryFee && (
+              <View style={[careStyle.rowSpaceBetween, { marginTop: 10 }]}>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                    Delivery Savings
+                  </Text>
+                </View>
+                <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+                  ₹{deliveryFee.toFixed(2)}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderRemoveMembershipSection = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          if (circleMembershipCharges) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            setCirclePlanSelected && setCirclePlanSelected(null);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+          } else {
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            setDefaultCirclePlan && setDefaultCirclePlan(defaultPlan);
+            setCirclePlanSelected && setCirclePlanSelected(planSelected);
+            setCircleMembershipCharges && setCircleMembershipCharges(planCharges);
+          }
+        }}
+        activeOpacity={1}
+        style={{
+          backgroundColor: '#E8F5FF',
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          flexDirection: 'row',
+          marginTop: 20,
+        }}
+      >
+        {!!circleMembershipCharges ? (
+          <CheckUnselectedIcon style={{ marginRight: 10, marginTop: 4 }} />
+        ) : (
+          <CheckedIcon style={{ marginRight: 10, marginTop: 4 }} />
+        )}
+        <View style={{ width: '85%' }}>
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, '#02475B', 1, 20),
+              opacity: !!circleMembershipCharges ? 1 : 0.4,
+              marginBottom: 4,
+            }}
+          >
+            Remove Circle membership to avail COD
+          </Text>
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 12, '#02475B', 1, 17),
+              opacity: !!circleMembershipCharges ? 1 : 0.4,
+            }}
+          >
+            COD option is not available for current order as Circle is a prepaid membership
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -969,10 +989,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 setBurnHC(getFormattedAmount(grandTotal - deliveryCharges - packagingCharges));
                 if (deliveryCharges + packagingCharges == 0) {
                   setHCorder(true);
-                  setScrollToend(true);
-                  setTimeout(() => {
-                    setScrollToend(false);
-                  }, 500);
                 }
               } else {
                 setBurnHC(availableHC);
@@ -1165,65 +1181,20 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       </View>
     );
   };
-  const renderCOD = () => {
+  const renderNewCOD = () => {
     return (
       <View>
-        <TouchableOpacity
-          onPress={() => {
-            if (!isOneApolloSelected) {
-              setCashOnDelivery(!isCashOnDelivery);
-              setScrollToend(true);
-              setTimeout(() => {
-                setScrollToend(false);
-              }, 500);
-            }
-          }}
-          disabled={!!isOneApolloSelected}
-          style={{
-            ...styles.paymentModeCard,
-            marginBottom: 10,
-            flexDirection: 'column',
-            justifyContent: 'center',
-            height: isOneApolloSelected ? 'auto' : 0.08 * windowHeight,
-            paddingVertical: 20,
-          }}
-        >
-          <View style={{ flexDirection: 'row' }}>
-            <View
-              style={{
-                opacity: isOneApolloSelected ? 0.5 : 1,
-                flex: 0.16,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
-            </View>
-            <View
-              style={{
-                opacity: isOneApolloSelected ? 0.5 : 1,
-                flex: 0.84,
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
-            >
-              <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
-                CASH ON DELIVERY
-              </Text>
-            </View>
-          </View>
-          {!!isOneApolloSelected && (
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18),
-                marginTop: 10,
-                marginHorizontal: 25,
-              }}
-            >
-              ! COD option is not available along with OneApollo Health Credits.
-            </Text>
-          )}
-        </TouchableOpacity>
+        <Button
+          disabled={isOneApolloSelected || !!circleMembershipCharges}
+          style={styles.CODoption}
+          title={'CASH ON DELIVERY'}
+          onPress={() => initiateOrder('', '', true, false)}
+        />
+        {!!isOneApolloSelected && (
+          <Text style={styles.codAlertMsg}>
+            {'! COD option is not available along with OneApollo Health Credits.'}
+          </Text>
+        )}
       </View>
     );
   };
@@ -1266,24 +1237,19 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {/* {renderOneApolloAndHealthCreditsCard()} */}
-        {showChennaiOrderForm ? (
-          !loading ? (
-            renderChennaiOrderFormAndPayButton()
-          ) : (
-            <Spinner />
-          )
-        ) : !loading ? (
+        {!loading ? (
           <ScrollView
             style={{ flex: 0.9 }}
             ref={(ref) => (ScrollViewRef = ref)}
             onContentSizeChange={() => scrollToend && ScrollViewRef.scrollToEnd({ animated: true })}
           >
             {rendertotalAmount()}
+            {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
             {availableHC != 0 && renderOneApolloOption()}
+            {renderNewCOD()}
+            {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()}
             {renderPaymentOptions()}
             {bankOptions.length > 0 && renderNetBanking()}
-            {!circleMembershipCharges && renderCOD()}
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (
@@ -1339,15 +1305,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
-  popupButtonStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  popupButtonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.APP_YELLOW,
-    lineHeight: 24,
-  },
   textStyle1: {
     ...theme.viewStyles.text('R', 13, '#02475b'),
     textAlign: 'justify',
@@ -1389,14 +1346,13 @@ const styles = StyleSheet.create({
     marginBottom: 0.03 * windowWidth,
   },
   amountCont: {
+    ...theme.viewStyles.cardContainer,
     flex: 1,
-    flexDirection: 'row',
     width: 0.9 * windowWidth,
-    height: 0.07 * windowHeight,
     borderRadius: 9,
-    backgroundColor: 'rgba(0, 135, 186, 0.15)',
     margin: 0.05 * windowWidth,
     marginBottom: 0,
+    padding: 10,
   },
   toPay: {
     flex: 0.45,
@@ -1462,5 +1418,16 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: 'rgba(2, 71, 91, 0.6)',
     lineHeight: 20,
+  },
+  CODoption: {
+    marginTop: 0.05 * windowWidth,
+    height: 0.06 * windowHeight,
+    width: 0.9 * windowWidth,
+    marginHorizontal: 0.05 * windowWidth,
+  },
+  codAlertMsg: {
+    ...theme.viewStyles.text('M', 11, theme.colors.LIGHT_BLUE, 1, 18),
+    marginTop: 6,
+    marginHorizontal: 25,
   },
 });

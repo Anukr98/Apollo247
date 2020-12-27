@@ -5,13 +5,20 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
-interface CircleTotalBillProps {}
+interface CircleTotalBillProps {
+  selectedPlan?: any;
+}
 export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
+  const { selectedPlan } = props;
   const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
-  const planSellingPrice = defaultCirclePlan
+  const planSellingPrice = selectedPlan
+    ? selectedPlan?.currentSellingPrice
+    : defaultCirclePlan
     ? defaultCirclePlan?.currentSellingPrice
     : circlePlanSelected?.currentSellingPrice;
-  const planDurationInMonth = defaultCirclePlan
+  const planDurationInMonth = selectedPlan
+    ? selectedPlan?.durationInMonth
+    : defaultCirclePlan
     ? defaultCirclePlan?.durationInMonth
     : circlePlanSelected?.durationInMonth;
   return (
@@ -34,7 +41,7 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
             {planDurationInMonth} month
             {`${planDurationInMonth === 1 ? '' : 's'}`} plan
           </Text>
-          <Text style={styles.validityText}>Valid till: xxxx</Text>
+          {/* <Text style={styles.validityText}>Valid till: xxxx</Text> */}
         </View>
       </View>
       <View style={styles.seperatorTwo} />
@@ -75,7 +82,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    marginTop: 10,
+    marginVertical: 20,
     marginLeft: 10,
   },
   circleLogo: {

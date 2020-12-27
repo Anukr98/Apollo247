@@ -57,7 +57,14 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     axdcCode,
   } = useAppCommonData();
   const { showAphAlert } = useUIElements();
-  const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const {
+    getCartItemQty,
+    addCartItem,
+    updateCartItem,
+    removeCartItem,
+    pinCode,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,
@@ -106,7 +113,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       setLoading(true);
       const {
         data: { products },
-      } = await getMedicineSearchSuggestionsApi(searchText, axdcCode);
+      } = await getMedicineSearchSuggestionsApi(searchText, axdcCode, pinCode);
       fireSearchEvent(searchText, products.length);
       setSearchResults(products || []);
       setLoading(false);
@@ -273,7 +280,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         currentPatient,
         !!isPharmacyLocationServiceable,
         { source: 'Pharmacy Partial Search', categoryId: item.category_id },
-        () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false })
+        () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
+        pharmacyCircleAttributes!
       );
     };
 

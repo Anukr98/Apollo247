@@ -1,6 +1,7 @@
 import {
   ShoppingCartItem,
   ShoppingCartContextProps,
+  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   WebEngageEventName,
@@ -21,8 +22,9 @@ import {
 
 export function postwebEngageProceedToPayEvent(
   shoppingCart: ShoppingCartContextProps,
-  isStorePickup?: boolean,
-  deliveryTime?: string
+  isStorePickup: boolean,
+  deliveryTime: string,
+  pharmacyCircleEvent: PharmacyCircleEvent
 ) {
   const {
     cartTotal,
@@ -50,6 +52,7 @@ export function postwebEngageProceedToPayEvent(
     'Pin Code': pinCode,
     'Service Area': 'Pharmacy',
     'No. of out of stock items': numberOfOutOfStockItems,
+    ...pharmacyCircleEvent,
   };
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
@@ -58,7 +61,11 @@ export function postwebEngageProceedToPayEvent(
   postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
 }
 
-export function PharmacyCartViewedEvent(shoppingCart: ShoppingCartContextProps, id: string) {
+export function PharmacyCartViewedEvent(
+  shoppingCart: ShoppingCartContextProps,
+  id: string,
+  pharmacyCircleEvent: PharmacyCircleEvent
+) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart.cartItems.length,
     'Sub Total': shoppingCart.cartTotal,
@@ -80,6 +87,7 @@ export function PharmacyCartViewedEvent(shoppingCart: ShoppingCartContextProps, 
     ),
     'Service Area': 'Pharmacy',
     'Customer ID': id,
+    ...pharmacyCircleEvent,
   };
   if (shoppingCart.coupon) {
     eventAttributes['Coupon code used'] = shoppingCart.coupon.coupon;
@@ -106,7 +114,9 @@ export function PharmacyCartViewedEvent(shoppingCart: ShoppingCartContextProps, 
     ),
     ServiceArea: 'Pharmacy',
     CustomerID: id,
+    ...pharmacyCircleEvent,
   };
+
   if (shoppingCart.coupon) {
     firebaseAttributes['CouponCodeUsed'] = shoppingCart.coupon.coupon;
   }
@@ -189,3 +199,31 @@ export function uploadPrescriptionClickedEvent(id: string) {
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
 }
+
+export const fireCircleBuyNowEvent = (currentPatient: any) => {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+  postWebEngageEvent(
+    WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP,
+    CircleEventAttributes
+  );
+};
+
+export const fireCirclePurchaseEvent = (currentPatient: any, endDate: string) => {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    'Membership End Date': endDate
+      ?.split('T')[0]
+      .split('-')
+      .reverse()
+      .join('-'),
+    Type: 'From HC',
+    Source: 'from banner',
+  };
+  postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+};

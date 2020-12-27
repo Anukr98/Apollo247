@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
-  DownOrange,
-  UpOrange,
   CircleLogo,
   HealthLogo,
   DoctorIcon,
   EmergencyCall,
-  ExpressDelivery,
-  OneApolloLogo,
+  ExpressDeliveryLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
@@ -24,18 +21,21 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
   const renderCircleExpiryBanner = () => {
     return (
-      <View style={styles.expiryBanner}>
+      <View style={[styles.expiryBanner, { alignItems: 'center' }]}>
         <CircleLogo style={styles.circleLogo} />
-        <Text style={theme.viewStyles.text('SB', 14, '#01475B', 1, 28, 0.35)}>
-          Membership expires on {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+        <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
+          Membership expires on{' '}
+          <Text style={theme.viewStyles.text('M', 12, '#01475B')}>
+            {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+          </Text>
         </Text>
       </View>
     );
   };
 
   const renderCircleSavings = () => {
-    const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
-    return totalSavingsDone ? (
+    const totalSavingsDone = totalCircleSavings?.totalSavings! + totalCircleSavings?.callsUsed!;
+    return (
       <View
         style={{
           backgroundColor: 'rgba(0, 179, 142, 0.1)',
@@ -43,17 +43,15 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           alignItems: 'center',
         }}
       >
-        <Text style={theme.viewStyles.text('M', 16, '#02475B', 1, 28, 0.35)}>
+        <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 18, 0.35)}>
           Total Savings Using Circle Plan{'  '}
-          <Text style={theme.viewStyles.text('SB', 19, '#00B38E', 1, 28, 0.35)}>
+          <Text style={theme.viewStyles.text('SB', 18, '#00B38E', 1, 28, 0.35)}>
             {strings.common.Rs}
-            {totalCircleSavings?.totalSavings || 0}
+            {totalCircleSavings?.totalSavings.toFixed(2) || 0}
           </Text>
         </Text>
         {renderSavingsCard()}
       </View>
-    ) : (
-      renderSaveFromCircle()
     );
   };
 
@@ -119,49 +117,65 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             <HealthLogo style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Savings on Pharmacy</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.pharmaSavings || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.pharmaSavings.toFixed(2) || 0}
+            </Text>
+          </View>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
             <DoctorIcon style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Savings on Doctor Consult</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.consultSavings || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.consultSavings.toFixed(2) || 0}
+            </Text>
+          </View>
         </View>
+        <View style={styles.savingsContainer}>
+          <View style={styles.savingsRow}>
+            <Image
+              source={{
+                uri: 'https://assets.apollo247.com/images/circle/ic_diagnostics.png',
+              }}
+              style={styles.savingsIcon}
+            />
+            <Text style={styles.savingsHeading}>Total Savings on Diagnostics</Text>
+          </View>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.diagnosticsSavings.toFixed(2) || 0}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
             <EmergencyCall style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Free Emergency Calls Made</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {totalCircleSavings?.callsUsed || 0}/{totalCircleSavings?.callsTotal || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {totalCircleSavings?.callsUsed || 0}/{totalCircleSavings?.callsTotal || 0}
+            </Text>
+          </View>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
-            <ExpressDelivery style={styles.savingsIcon} />
+            <ExpressDeliveryLogo style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Delivery Charges Saved</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.deliverySavings || 0}
-          </Text>
-        </View>
-        <View style={styles.savingsContainer}>
-          <View style={styles.savingsRow}>
-            <OneApolloLogo style={styles.savingsIcon} />
-            <Text style={styles.savingsHeading}>Total Health Credits Earned</Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.deliverySavings.toFixed(2) || 0}
+            </Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.pharmaSavings || 0}
-          </Text>
         </View>
       </View>
     );
@@ -178,14 +192,15 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 const styles = StyleSheet.create({
   circleLogo: {
     resizeMode: 'contain',
-    width: 50,
+    width: 35,
     height: 30,
+    marginRight: 10,
   },
   expiryBanner: {
     flexDirection: 'row',
-    justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     paddingVertical: 13,
+    paddingHorizontal: 15,
   },
   savingsCard: {
     ...theme.viewStyles.cardViewStyle,
@@ -201,18 +216,20 @@ const styles = StyleSheet.create({
   savingsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
+    width: '73%',
   },
   savingsHeading: {
-    ...theme.viewStyles.text('M', 15, '#02475B', 1, 24, 0.35),
+    ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.35),
     marginLeft: 10,
   },
   savingsAmount: {
-    ...theme.viewStyles.text('SB', 17, '#00B38E', 1, 24, 0.35),
+    ...theme.viewStyles.text('SB', 14, '#00B38E', 1, 18, 0.35),
+    textAlign: 'right',
   },
   savingsIcon: {
     resizeMode: 'contain',
-    width: 25,
-    height: 25,
+    width: 20,
+    height: 20,
   },
   saveCircleContainer: {
     ...theme.viewStyles.cardViewStyle,
@@ -226,5 +243,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 30,
     height: 30,
+  },
+  priceView: {
+    width: '25%',
   },
 });

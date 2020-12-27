@@ -127,7 +127,7 @@ export interface pharma_coupon {
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
-  // const isTest = props.navigation.getParam('isTest');
+  const isDiag = props.navigation.getParam('isDiag');
   const [couponText, setCouponText] = useState<string>('');
   const [couponMsg, setcouponMsg] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
@@ -145,27 +145,39 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     isCircleSubscription,
     setIsCircleSubscription,
     circleMembershipCharges,
-    setCircleSubscriptionId,
+    circleSubscriptionId,
+    hdfcSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions, pharmacyLocation } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+  } = useAppCommonData();
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-  let packageId = '';
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId =
-      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
   }
 
   useEffect(() => {
     const data = {
-      packageId,
+      packageId: packageId.join(),
       mobile: g(currentPatient, 'mobileNumber'),
-      email: g(currentPatient, 'emailAddress')
+      email: g(currentPatient, 'emailAddress'),
+      type: isDiag ? 'Diag' : 'Pharmacy',
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
@@ -199,15 +211,14 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageId: packageId,
+      packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setCircleSubscriptionId && setCircleSubscriptionId('');
           if (resp.data.response.valid) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
             console.log(g(resp.data, 'response'));
             setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
             props.navigation.goBack();
@@ -364,7 +375,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <Text style={styles.careMessage}>
-        You can either use CARE discount or apply a Coupon code
+        You can either use CIRCLE discount or apply a Coupon code
       </Text>
     </View>
   );

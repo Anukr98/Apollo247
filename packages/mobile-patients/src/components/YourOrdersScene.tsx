@@ -1,8 +1,24 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { BuyAgainSection } from '@aph/mobile-patients/src/components/ui/BuyAgainSection';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  GET_MEDICINE_ORDERS_OMS__LIST,
+  GET_PREVIOUS_ORDERS_SKUS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
+import {
+  getPreviousOrdersSkus,
+  getPreviousOrdersSkusVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPreviousOrdersSkus';
 import {
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_STATUS,
@@ -15,18 +31,10 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React from 'react';
-import { SafeAreaView, StyleSheet, View, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { FlatList, ListRenderItem, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useQuery } from 'react-apollo-hooks';
-import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  getMedicineOrdersOMSListVariables,
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-} from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -38,35 +46,60 @@ const styles = StyleSheet.create({
   },
 });
 
-const formatOrders = (orders?: getMedicineOrdersOMSList) =>
-  ((orders?.getMedicineOrdersOMSList?.medicineOrdersList as MedOrder[]) || []).filter(
-    (item) =>
-      !(
-        item.medicineOrdersStatus?.length == 1 &&
-        item.medicineOrdersStatus?.find((s) => !s!.hideStatus)
-      )
-  );
-
-type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
+type AppSection = { buyAgainSection: true };
+export type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
 export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const { data, error, loading, refetch } = useQuery<
-    getMedicineOrdersOMSList,
-    getMedicineOrdersOMSListVariables
-  >(GET_MEDICINE_ORDERS_OMS__LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'no-cache',
-  });
-  const orders = loading || error ? [] : formatOrders(data);
+  const client = useApolloClient();
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState<any>([]);
+  const [skuList, setSkuList] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const ordersResponse = await client.query<
+        getMedicineOrdersOMSList,
+        getMedicineOrdersOMSListVariables
+      >({
+        query: GET_MEDICINE_ORDERS_OMS__LIST,
+        variables: { patientId: currentPatient?.id },
+        fetchPolicy: 'no-cache',
+      });
+      let skuResponse;
+      try {
+        skuResponse = await client.mutate<getPreviousOrdersSkus, getPreviousOrdersSkusVariables>({
+          mutation: GET_PREVIOUS_ORDERS_SKUS,
+          variables: {
+            previousOrdersSkus: {
+              patientId: currentPatient?.id,
+            },
+          },
+          fetchPolicy: 'no-cache',
+        });
+      } catch (error) {}
+
+      const skuArray = (skuResponse?.data?.getPreviousOrdersSkus?.SkuDetails || []) as string[];
+      setOrders(formatOrdersWithBuyAgain(ordersResponse?.data, skuArray));
+      setSkuList(skuArray);
+      setLoading(false);
+      setError(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      CommonBugFender(`${AppRoutes.YourOrdersScene}_fetchOrders`, error);
+    }
+  };
 
   const refetchOrders = async () => {
-    try {
-      await refetch();
-    } catch (e) {
-      CommonBugFender(`${AppRoutes.YourOrdersScene}_refetchOrders`, e);
-    }
+    fetchOrders();
   };
 
   const statusToShowNewItems = [
@@ -75,61 +108,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
   ];
 
-  const getDeliverTypeOrDescription = (order: MedOrder) => {
-    const getStore = () => {
-      const shopAddress = order?.shopAddress;
-      const parsedShopAddress = JSON.parse(shopAddress || '{}');
-      return (
-        (parsedShopAddress?.storename &&
-          [parsedShopAddress.storename, parsedShopAddress.city, parsedShopAddress.zipcode]
-            .filter((a) => a)
-            .join(', ')) ||
-        ''
-      );
-    };
-
-    if (order?.billNumber) {
-      return getStore();
-    }
-
-    const type = order?.deliveryType;
-
-    if (type === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
-      return 'Home Delivery';
-    } else if (type === MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
-      return 'Store Pickup';
-    } else {
-      return '';
-    }
-  };
-
-  const getFormattedTime = (time: string) => {
-    return moment(time).format('D MMM YY, hh:mm A');
-  };
-
-  const getOrderTitle = (order: MedOrder) => {
-    // use billedItems for delivered orders
-    const billedItems = order?.medicineOrderShipments?.[0]?.medicineOrderInvoice?.[0]?.itemDetails;
-    const billedLineItems = billedItems
-      ? (JSON.parse(billedItems) as { itemName: string }[])
-      : null;
-    const lineItems = (billedLineItems || order?.medicineOrderLineItems || []) as {
-      itemName?: string;
-      medicineName?: string;
-    }[];
-    let title = 'Medicines';
-
-    if (lineItems.length) {
-      const firstItem = lineItems?.[0]?.[billedLineItems ? 'itemName' : 'medicineName']!;
-      const lineItemsLength = lineItems.length;
-      title =
-        lineItemsLength > 1
-          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
-          : firstItem;
-    }
-
-    return title;
-  };
   const checkIsJSON = (val: string) => {
     try {
       JSON.parse(val);
@@ -208,17 +186,40 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           statusToShowNewItems.includes(order.currentStatus!) && order.oldOrderTat! ? true : false
         }
         dateTime={getFormattedTime(order?.createdDate)}
+        reOrder={() =>
+          props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+            orderAutoId: order.orderAutoId,
+            billNumber: order.billNumber,
+            refetchOrders: refetchOrders,
+            reOrder: true,
+          })
+        }
       />
     );
   };
 
   const renderOrders = () => {
+    const renderItem: ListRenderItem<MedOrder | AppSection> = ({ item, index }) => {
+      const onPressBuyAgain = () => {
+        props.navigation.navigate(AppRoutes.MedicineBuyAgain, {
+          movedFrom: AppRoutes.YourOrdersScene,
+          skuList: skuList,
+        });
+      };
+
+      return (item as AppSection)?.buyAgainSection ? (
+        <BuyAgainSection onPress={onPressBuyAgain} />
+      ) : (
+        renderOrder(item as MedOrder, index)
+      );
+    };
+
     return (
       <FlatList
         keyExtractor={(_, index) => `${index}`}
         bounces={false}
-        data={orders}
-        renderItem={({ item, index }) => renderOrder(item, index)}
+        data={orders as MedOrder[]}
+        renderItem={renderItem}
         ListEmptyComponent={renderNoOrders()}
       />
     );
@@ -275,4 +276,84 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       {loading && <Spinner />}
     </View>
   );
+};
+
+export const getDeliverTypeOrDescription = (order: MedOrder) => {
+  const getStore = () => {
+    const shopAddress = order?.shopAddress;
+    const parsedShopAddress = JSON.parse(shopAddress || '{}');
+    return (
+      (parsedShopAddress?.storename &&
+        [parsedShopAddress.storename, parsedShopAddress.city, parsedShopAddress.zipcode]
+          .filter((a) => a)
+          .join(', ')) ||
+      ''
+    );
+  };
+
+  if (order?.billNumber) {
+    return getStore();
+  }
+
+  const type = order?.deliveryType;
+
+  if (type === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
+    return 'Home Delivery';
+  } else if (type === MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
+    return 'Store Pickup';
+  } else {
+    return '';
+  }
+};
+
+export const getFormattedTime = (time: string) => {
+  return moment(time).format('D MMM YY, hh:mm A');
+};
+
+export const getOrderTitle = (order: MedOrder) => {
+  // use billedItems for delivered orders
+  const billedItems = order?.medicineOrderShipments?.[0]?.medicineOrderInvoice?.[0]?.itemDetails;
+  const billedLineItems = billedItems ? (JSON.parse(billedItems) as { itemName: string }[]) : null;
+  const lineItems = (billedLineItems || order?.medicineOrderLineItems || []) as {
+    itemName?: string;
+    medicineName?: string;
+  }[];
+  let title = 'Medicines';
+
+  if (lineItems.length) {
+    const firstItem = lineItems?.[0]?.[billedLineItems ? 'itemName' : 'medicineName']!;
+    const lineItemsLength = lineItems.length;
+    title =
+      lineItemsLength > 1
+        ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
+        : firstItem;
+  }
+
+  return title;
+};
+
+export const formatOrders = (orders?: getMedicineOrdersOMSList) => {
+  return (orders?.getMedicineOrdersOMSList?.medicineOrdersList || []).filter(
+    (item) =>
+      !(
+        item?.medicineOrdersStatus?.length == 1 &&
+        item?.medicineOrdersStatus?.find((s) => !s!.hideStatus)
+      )
+  );
+};
+
+export const formatOrdersWithBuyAgain = (orders: getMedicineOrdersOMSList, skuArray: string[]) => {
+  const formattedOrders = (
+    (orders?.getMedicineOrdersOMSList?.medicineOrdersList as MedOrder[]) || []
+  ).filter(
+    (item) =>
+      !(
+        item.medicineOrdersStatus?.length == 1 &&
+        item.medicineOrdersStatus?.find((s) => !s!.hideStatus)
+      )
+  );
+
+  return formattedOrders?.length && skuArray?.length
+    ? [...formattedOrders.slice(0, 1), { buyAgainSection: true }, ...formattedOrders.slice(1)]
+    : formattedOrders;
 };

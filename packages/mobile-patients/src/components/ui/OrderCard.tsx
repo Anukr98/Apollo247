@@ -4,6 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -124,9 +125,11 @@ export interface OrderCardProps {
   isOnHold?: boolean;
   isItemsUpdated?: boolean;
   isChanged?: boolean;
+  reOrder?: () => void;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
+  const { reOrder } = props;
   const isOrderWithProgressIcons =
     props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
     props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
@@ -217,6 +220,17 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     );
   };
 
+  const renderReOrder = () => {
+    return (
+      <Button
+        style={{ width: undefined, height: undefined }}
+        onPress={reOrder}
+        title={'RE ORDER'}
+        titleTextStyle={{ marginHorizontal: 25, fontSize: 12, marginVertical: 7 }}
+      />
+    );
+  };
+
   const renderDetails = () => {
     return (
       <View style={styles.detailsViewStyle}>
@@ -243,6 +257,11 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   };
 
   const renderBadge = () => {
+    const showReorder =
+      props.status == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
+      props.status == MEDICINE_ORDER_STATUS.DELIVERED ||
+      props.status == MEDICINE_ORDER_STATUS.CANCELLED ||
+      props.status == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
     const title = props.isOnHold!
       ? 'ON-HOLD'
       : props.isChanged!
@@ -253,7 +272,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       : props.isChanged!
       ? 'rgb(230,130,49)'
       : 'rgba(79, 176, 144,1)';
-    return props.isOnHold! || props.isItemsUpdated! || props.isChanged! ? (
+    return showReorder ? (
+      renderReOrder()
+    ) : props.isOnHold! || props.isItemsUpdated! || props.isChanged! ? (
       <View style={[styles.badgeOuterView, { backgroundColor: bckColor }]}>
         <Text
           style={[

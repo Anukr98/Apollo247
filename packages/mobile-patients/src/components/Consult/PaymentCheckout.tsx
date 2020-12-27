@@ -99,7 +99,13 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
+  const {
+    locationDetails,
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+  } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -114,6 +120,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
   const { currentPatient } = useAllCurrentPatients();
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
@@ -122,41 +129,47 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
-    minDiscountedPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-  const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
+  const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
-    isCircleDoctor && !circleSubscriptionId
+    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
   );
+  const discountedPrice = isOnlineConsult
+    ? onlineConsultDiscountedPrice
+    : physicalConsultDiscountedPrice;
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
-    circlePlanSelected && isCircleDoctor
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? onlineConsultSlashedPrice -
           couponDiscountFees +
-          Number(circlePlanSelected?.currentSellingPrice)
+          (circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0)
         : physicalConsultSlashedPrice -
           couponDiscountFees +
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
   const notSubscriberUserForCareDoctor =
-    isCircleDoctor && !circleSubscriptionId && !circlePlanSelected;
+    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
 
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
   finalAppointmentInput['actualAmount'] =
-    circlePlanSelected && isCircleDoctor
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? onlineConsultSlashedPrice
         : physicalConsultSlashedPrice
@@ -166,10 +179,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     PlanAmount: circlePlanSelected?.currentSellingPrice,
   };
   finalAppointmentInput['planPurchaseDetails'] =
-    circlePlanSelected && isCircleDoctor ? planPurchaseDetails : null;
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
 
   const totalSavings =
-    isCircleDoctor && (circleSubscriptionId || circlePlanSelected)
+    isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -187,7 +200,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   }, []);
 
   const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
+    userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Consult')
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
           let couponList = resp?.data?.response;
@@ -240,7 +253,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const renderCareMembershipAddedCard = () => {
-    return <CareMembershipAdded doctor={doctor} />;
+    return <CareMembershipAdded doctor={doctor} isOnlineConsult={isOnlineConsult} />;
   };
 
   const renderPriceBreakup = () => {
@@ -265,8 +278,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return (
       <ConsultDiscountCard
         style={{
-          marginBottom:
-            notSubscriberUserForCareDoctor && amountToPay >= minDiscountedPrice ? 0 : 20,
+          marginBottom: notSubscriberUserForCareDoctor && amountToPay >= discountedPrice ? 0 : 20,
         }}
         coupon={coupon}
         couponDiscountFees={couponDiscountFees}
@@ -289,7 +301,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         isConsultJourney={true}
         style={styles.careSelectContainer}
         navigation={props.navigation}
-        careDiscountPrice={minDiscountedPrice}
+        careDiscountPrice={discountedPrice}
         doctorFees={isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         onSelectMembershipPlan={() => {
           setTimeout(() => {
@@ -306,7 +318,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <ListCard
         container={[
           styles.couponContainer,
-          { marginTop: isCircleDoctor && circleSubscriptionId ? 0 : 20 },
+          { marginTop: isCircleDoctorOnSelectedConsultMode && !!circleSubscriptionId ? 0 : 20 },
         ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
@@ -344,17 +356,19 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
-    let packageId = '';
     const billAmount =
-      circlePlanSelected && isCircleDoctor
+      circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
         : Number(price);
 
-    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-      packageId =
-        g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    let packageId: string[] = [];
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleStatus === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`);
     }
     const timeSlot =
       tabs[0].title === selectedTab &&
@@ -382,7 +396,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           rescheduling: false,
         },
       ],
-      packageId: packageId,
+      packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
     console.log('datadata', data);
@@ -812,7 +826,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           You could have{' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             saved {string.common.Rs}
-            {minDiscountedPrice}
+            {discountedPrice}
           </Text>{' '}
           on this purchase with
         </Text>
@@ -837,13 +851,17 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
-          {isCircleDoctor && circleSubscriptionId ? renderCareMembershipAddedCard() : null}
-          {isCircleDoctor && !circleSubscriptionId ? renderCircleSubscriptionPlans() : null}
+          {isCircleDoctorOnSelectedConsultMode && !!circleSubscriptionId
+            ? renderCareMembershipAddedCard()
+            : null}
+          {isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
+            ? renderCircleSubscriptionPlans()
+            : null}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
           {renderDiscountView()}
           {notSubscriberUserForCareDoctor &&
-            amountToPay >= minDiscountedPrice &&
+            amountToPay >= discountedPrice &&
             renderSaveWithCarePlanView()}
         </ScrollView>
         {renderBottomButton()}

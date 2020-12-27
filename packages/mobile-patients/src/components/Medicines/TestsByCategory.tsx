@@ -58,6 +58,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -156,7 +157,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'product name': name,
       'product id': id,
-      Source: 'Diagnostic',
+      Source: 'Search',
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
@@ -182,26 +183,27 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     });
   };
 
-  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
-    setGlobalLoading!(true);
-    getPackageData(id)
-      .then(({ data }) => {
-        console.log('getPackageData\n', { data });
-        const product = g(data, 'data');
+  const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
+    try {
+      const arrayOfId = [Number(id)];
+      setGlobalLoading!(true);
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        setGlobalLoading!(false);
+        const product = data;
         if (product && product.length) {
           func && func(product);
         } else {
           errorAlert();
         }
-      })
-      .catch((e) => {
-        CommonBugFender('TestsByCategory_fetchPackageInclusion', e);
-        console.log({ e });
-        errorAlert();
-      })
-      .finally(() => {
-        setGlobalLoading!(false);
-      });
+      }
+    } catch (e) {
+      CommonBugFender('Tests_fetchPackageInclusion', e);
+      setGlobalLoading!(false);
+      console.log('getPackageData Error\n', { e });
+      errorAlert();
+    }
   };
 
   const onAddCartItem = (

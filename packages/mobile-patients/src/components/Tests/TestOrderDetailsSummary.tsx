@@ -10,6 +10,7 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 // import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
   CANCEL_DIAGNOSTIC_ORDER,
@@ -45,7 +46,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { BackHandler, SafeAreaView, StyleSheet, View } from 'react-native';
 import {
   NavigationActions,
   NavigationScreenProps,
@@ -121,6 +122,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   const refetchOrders =
     props.navigation.getParam('refetch') ||
     useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
+      context: {
+        sourceHeaders,
+      },
       variables: {
         patientId: currentPatient && currentPatient.id,
       },
@@ -137,6 +141,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     getDiagnosticOrderDetails,
     getDiagnosticOrderDetailsVariables
   >(GET_DIAGNOSTIC_ORDER_LIST_DETAILS, {
+    context: {
+      sourceHeaders,
+    },
     variables: { diagnosticOrderId: orderId },
   });
   const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
@@ -149,7 +156,15 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   //   setRescheduleVisible(true);
   // }, []);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
   const handleBack = () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (!goToHomeOnBack) {
       refetchOrders()
         .then((data: any) => {
@@ -168,11 +183,11 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
           actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
         })
       );
+      props.navigation.navigate('TESTS', { focusSearch: false });
     } else {
       props.navigation.goBack();
     }
-
-    return false;
+    return true;
   };
 
   const getFormattedDate = (time: string) => {
@@ -265,6 +280,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     setApiLoading(true);
     const api = client.mutate<cancelDiagnosticOrder, cancelDiagnosticOrderVariables>({
       mutation: CANCEL_DIAGNOSTIC_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderId: orderDetails.displayId },
     });
     callApiAndRefetchOrderDetails(api);
@@ -305,6 +323,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
 
     const api = client.mutate<updateDiagnosticOrder, updateDiagnosticOrderVariables>({
       mutation: UPDATE_DIAGNOSTIC_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables,
     });
     callApiAndRefetchOrderDetails(api);

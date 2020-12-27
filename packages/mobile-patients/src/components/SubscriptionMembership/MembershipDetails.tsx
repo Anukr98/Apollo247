@@ -1,8 +1,17 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Linking,
+  BackHandler,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   DownOrange,
   UpOrange,
@@ -13,10 +22,24 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  useAppCommonData,
+  CirclePlanSummary,
+  CircleGroup,
+  PlanBenefits,
+  BenefitCtaAction,
+  CicleSubscriptionData,
+  GroupPlan,
+  SubscriptionData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  g,
+  postWebEngageEvent,
+  setCircleMembershipType,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -33,6 +56,29 @@ import { BenefitsConsumedTab } from '@aph/mobile-patients/src/components/Subscri
 import { CircleSavings } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/CircleSavings';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { UserConstentPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/UserConsentPopup';
+import { DiabeticQuestionairePopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/DiabeticQuestionairePopup';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  addDiabeticQuestionnaire,
+  addDiabeticQuestionnaireVariables,
+} from '@aph/mobile-patients/src/graphql/types/addDiabeticQuestionnaire';
+import {
+  ADD_DIABETIC_QUESTIONNAIRE,
+  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  GetAllUserSubscriptionsWithPlanBenefitsV2,
+  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
+import AsyncStorage from '@react-native-community/async-storage';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -144,18 +190,31 @@ const styles = StyleSheet.create({
 export interface MembershipDetailsProps extends NavigationScreenProps {
   membershipType: string;
   isActive: boolean;
+  source?: string;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
   const isCirclePlan = membershipType === Circle.planName;
+  const source = props.navigation.getParam('source');
 
   const {
     hdfcUserSubscriptions,
     circleSubscription,
     hdfcUpgradeUserSubscriptions,
     totalCircleSavings,
+    setTotalCircleSavings,
+    setHdfcUserSubscriptions,
+    setCircleSubscription,
+    setHdfcUpgradeUserSubscriptions,
   } = useAppCommonData();
+  const {
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setIsCircleSubscription,
+    circleSubscriptionId,
+    hdfcSubscriptionId,
+  } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
@@ -180,6 +239,280 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [benefitId, setBenefitId] = useState<string>('');
+  const [showUserConstentPopUp, setShowUserConsentPopup] = useState<boolean>(false);
+  const [showDiabeticQuestionaire, setShowDiabeticQuestionaire] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
+  const client = useApolloClient();
+
+  useEffect(() => {
+    fetchCircleSavings();
+    getUserSubscriptionsWithBenefits();
+  }, []);
+
+  useEffect(() => {
+    if (upgradePlans.length) {
+      setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
+    }
+  }, [upgradePlans]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
+    };
+  });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    if (source) {
+      props.navigation.navigate(AppRoutes.MyMembership, { source: source });
+    } else {
+      props.navigation.goBack();
+    }
+    return false;
+  };
+
+  const getUserSubscriptionsWithBenefits = () => {
+    setLoading(true);
+    const mobile_number = g(currentPatient, 'mobileNumber');
+    mobile_number &&
+      client
+        .query<
+          GetAllUserSubscriptionsWithPlanBenefitsV2,
+          GetAllUserSubscriptionsWithPlanBenefitsV2Variables
+        >({
+          query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+          variables: { mobile_number },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          setLoading(false);
+          const groupPlans = g(
+            data,
+            'data',
+            'GetAllUserSubscriptionsWithPlanBenefitsV2',
+            'response'
+          );
+          if (groupPlans) {
+            const hdfcPlan = groupPlans?.HDFC;
+            const circlePlan = groupPlans?.APOLLO;
+
+            if (hdfcPlan) {
+              const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
+              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription);
+
+              const subscriptionName = g(hdfcSubscription, 'name')
+                ? g(hdfcSubscription, 'name')
+                : '';
+              if (g(hdfcSubscription, 'isActive')) {
+                setHdfcPlanName && setHdfcPlanName(subscriptionName);
+              }
+              if (
+                subscriptionName === Hdfc_values.PLATINUM_PLAN &&
+                !!g(hdfcSubscription, 'isActive')
+              ) {
+                setIsFreeDelivery && setIsFreeDelivery(true);
+              }
+            }
+
+            if (circlePlan) {
+              const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
+              if (!!circlePlan[0]?._id) {
+                setIsCircleSubscription && setIsCircleSubscription(true);
+              }
+              setCircleSubscription && setCircleSubscription(circleSubscription);
+            }
+          }
+        })
+        .catch((e) => {
+          setLoading(false);
+          CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
+        });
+  };
+
+  const setCircleSubscriptionData = (plan: any) => {
+    const planSummary: CirclePlanSummary[] = [];
+    const summary = plan?.plan_summary;
+    if (summary && summary.length) {
+      summary.forEach((value) => {
+        const plan_summary: CirclePlanSummary = {
+          price: value?.price,
+          renewMode: value?.renew_mode,
+          starterPack: !!value?.starter_pack,
+          benefitsWorth: value?.benefits_worth,
+          availableForTrial: !!value?.available_for_trial,
+          specialPriceEnabled: value?.special_price_enabled,
+          subPlanId: value?.subPlanId,
+          durationInMonth: value?.durationInMonth,
+          currentSellingPrice: value?.currentSellingPrice,
+          icon: value?.icon,
+        };
+        planSummary.push(plan_summary);
+      });
+    }
+
+    const group = plan?.group;
+    const groupDetailsData: CircleGroup = {
+      _id: group?._id,
+      name: group?.name,
+      isActive: group?.is_active,
+    };
+
+    const benefits = plan.benefits;
+    const circleBenefits: PlanBenefits[] = [];
+    if (benefits && benefits.length) {
+      benefits.forEach((item) => {
+        const ctaAction = item?.cta_action;
+        const benefitCtaAction: BenefitCtaAction = {
+          type: ctaAction?.type,
+          action: ctaAction?.meta?.action,
+          message: ctaAction?.meta?.message,
+          webEngageEvent: ctaAction?.meta?.webEngage,
+        };
+        const benefit: PlanBenefits = {
+          _id: item?._id,
+          attribute: item?.attribute,
+          headerContent: item?.header_content,
+          description: item?.description,
+          ctaLabel: item?.cta_label,
+          ctaAction: item?.cta_action?.cta_action,
+          benefitCtaAction,
+          attributeType: item?.attribute_type,
+          availableCount: item?.available_count,
+          refreshFrequency: item?.refresh_frequency,
+          icon: item?.icon,
+        };
+        circleBenefits.push(benefit);
+      });
+    }
+
+    const circleSubscptionData: CicleSubscriptionData = {
+      _id: plan?._id,
+      name: plan?.name,
+      planId: plan?.plan_id,
+      activationModes: plan?.activation_modes,
+      status: plan?.status,
+      subscriptionStatus: plan?.subscriptionStatus,
+      subPlanIds: plan?.sub_plan_ids,
+      planSummary: planSummary,
+      groupDetails: groupDetailsData,
+      benefits: circleBenefits,
+      endDate: plan?.subscriptionEndDate,
+      startDate: plan?.start_date,
+    };
+
+    return circleSubscptionData;
+  };
+
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean) => {
+    try {
+      const group = plan.group;
+      const groupData: GroupPlan = {
+        _id: group!._id || '',
+        name: group!.name || '',
+        isActive: group!.is_active,
+      };
+      const benefits = plan.benefits;
+      const planBenefits: PlanBenefits[] = [];
+      if (benefits && benefits.length) {
+        benefits.forEach((item) => {
+          const ctaAction = g(item, 'cta_action');
+          const benefitCtaAction: BenefitCtaAction = {
+            type: g(ctaAction, 'type'),
+            action: g(ctaAction, 'meta', 'action'),
+            message: g(ctaAction, 'meta', 'message'),
+            webEngageEvent: g(ctaAction, 'meta', 'webEngage'),
+          };
+          const benefit: PlanBenefits = {
+            _id: item!._id,
+            attribute: item!.attribute,
+            headerContent: item!.header_content,
+            description: item!.description,
+            ctaLabel: item!.cta_label,
+            ctaAction: g(item, 'cta_action', 'cta_action'),
+            benefitCtaAction,
+            attributeType: item!.attribute_type,
+            availableCount: item!.available_count,
+            refreshFrequency: item!.refresh_frequency,
+            icon: item!.icon,
+          };
+          planBenefits.push(benefit);
+        });
+      }
+      const isActive = plan!.subscriptionStatus === Hdfc_values.ACTIVE_STATUS;
+      const subscription: SubscriptionData = {
+        _id: plan!._id || '',
+        name: plan!.name || '',
+        planId: plan!.plan_id || '',
+        benefitsWorth: plan!.benefits_worth || '',
+        activationModes: plan!.activation_modes,
+        price: plan!.price,
+        minTransactionValue: plan?.plan_summary?.[0]?.min_transaction_value,
+        status: plan!.status || '',
+        subscriptionStatus: plan!.subscriptionStatus || '',
+        isActive,
+        group: groupData,
+        benefits: planBenefits,
+        coupons: plan!.coupons ? plan!.coupons : [],
+        upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
+      };
+      const upgradeToPlan = g(plan, 'can_upgrade_to');
+      if (g(upgradeToPlan, '_id')) {
+        setSubscriptionData(upgradeToPlan, true);
+      }
+
+      if (!!isUpgradePlan) {
+        setUpgradePlans([...upgradePlans, subscription]);
+      }
+      return subscription;
+    } catch (e) {
+      console.log('ERROR: ', e);
+    }
+  };
+
+  const fetchCircleSavings = async () => {
+    setLoading(true);
+    try {
+      const res = await client.query({
+        query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+        variables: {
+          mobile_number: currentPatient?.mobileNumber,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
+      const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
+      const consultSavings = savings?.consult || 0;
+      const pharmaSavings = savings?.pharma || 0;
+      const diagnosticsSavings = savings?.diagnostics || 0;
+      const deliverySavings = savings?.delivery || 0;
+      const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      const docOnCallBenefit = circlebenefits?.filter(
+        (value) => value?.attribute === Circle.DOC_ON_CALL
+      );
+      setTotalCircleSavings &&
+        setTotalCircleSavings({
+          consultSavings,
+          pharmaSavings,
+          diagnosticsSavings,
+          deliverySavings,
+          totalSavings,
+          callsTotal: docOnCallBenefit?.[0]?.attribute_type?.total,
+          callsUsed: docOnCallBenefit?.[0]?.attribute_type?.used,
+        });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+    }
+  };
 
   const upgradeTransactionValue =
     membershipType === upgradePlanName
@@ -191,6 +524,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderTabComponent = () => {
     return (
       <ScrollView bounces={false}>
+        {renderMembershipBanner()}
         {renderCoupons()}
         <TabsComponent
           style={styles.tabsContainer}
@@ -256,7 +590,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderTermsAndConditions = () => <TermsAndConditions />;
+  const renderTermsAndConditions = () => <TermsAndConditions isCirclePlan={isCirclePlan} />;
 
   const renderRedeemableCards = (
     heading: string,
@@ -281,7 +615,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
             onPress={() => {
-              handleCtaClick(type, action, message, availableCount, id, webengageevent);
+              handleCtaClick(type, action, message, availableCount, id, webengageevent, '');
             }}
           >
             <Text style={styles.redeemButtonText}>{ctaLabel}</Text>
@@ -328,13 +662,102 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     }
   };
 
+  const handleCircleWebengageEvents = (attribute: string) => {
+    const circleMembershipType = setCircleMembershipType(
+      circleSubscription?.startDate!,
+      circleSubscription?.endDate!
+    );
+    const circleEventAttributes: WebEngageEvents[WebEngageEventName.MY_MEMBERSHIP_VIEW_DETAILS_CLICKED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
+      'Membership Type': circleMembershipType,
+      'Circle Membership Start Date': circleSubscription?.startDate!,
+      'Circle Membership End Date': circleSubscription?.endDate!,
+    };
+
+    const attributeName = string.circleMembershipBenefits;
+    if (attribute == attributeName.PHARMA_CASHBACK) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.FREE_DELIVERY) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_FREE_DELIVERY_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DOCTOR_HELPLINE) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DIAGNOSTICS_SAMPLE_COLLECTION) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DIAGNOSTICS_DISCOUNT) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DOC_ON_CALL) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DOC_ON_CALL_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.PRO_HEALTH) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_PRO_HEALTH_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.ADVANCE_DIABETES) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.COVID_CARE) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_COVID_CARE_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DIGITALIZATION_PHR) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED,
+        circleEventAttributes
+      );
+    }
+  };
+
+  const onPressHealthPro = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
+      '&utm_token=',
+      currentDeviceToken,
+      '&utm_mobile_number=',
+      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
+    );
+
+    try {
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: healthProWithParams,
+      });
+    } catch (e) {
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', healthProWithParams);
+    }
+  };
+
   const handleCtaClick = (
     type: string,
     action: string,
     message: string,
     availableCount: number,
     id: string,
-    webengageevent: string | null
+    webengageevent: string | null,
+    attribute: string
   ) => {
     if (webengageevent) {
       handleWebengageEvents(webengageevent);
@@ -345,21 +768,33 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.HDFC_REDEEM_CLICKED, eventAttributes);
     }
 
+    if (isCirclePlan) {
+      handleCircleWebengageEvents(attribute);
+    }
+
     if (type == Hdfc_values.REDIRECT) {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.PHARMACY_LANDING) {
-        props.navigation.navigate('MEDICINES');
+        props.navigation.navigate(
+          'MEDICINES',
+          isCirclePlan ? { comingFrom: AppRoutes.MembershipDetails } : {}
+        );
       } else if (action == Hdfc_values.PHR) {
         props.navigation.navigate('HEALTH RECORDS');
       } else if (action == Hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.DIAGNOSTICS_LANDING) {
-        props.navigation.navigate('TESTS');
+        props.navigation.navigate(
+          'TESTS',
+          isCirclePlan ? { comingFrom: AppRoutes.MembershipDetails } : {}
+        );
       } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
           specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
+      } else if ((action = Hdfc_values.PRO_HEALTH)) {
+        onPressHealthPro();
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
@@ -373,6 +808,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             'Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.'
           );
         }
+      }
+    } else if (type == Hdfc_values.ADVANCED_DIABETES) {
+      if (action == Hdfc_values.FILL_FORM) {
+        setShowUserConsentPopup(true);
       }
     } else if (type == Hdfc_values.WHATSAPP_OPEN_CHAT) {
       Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
@@ -420,6 +859,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }}
         bounces={false}
       >
+        {renderMembershipBanner()}
         {areBenefitsAvailable && renderWhatWillYouGet()}
         {renderHowToAvail()}
       </ScrollView>
@@ -504,7 +944,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           ...theme.viewStyles.cardViewStyle,
           borderRadius: 0,
         }}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
@@ -512,6 +952,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderInactivePlansContainer = () => {
     return (
       <ScrollView bounces={false}>
+        {renderMembershipBanner()}
         {renderInactivePlanMessage()}
         <Text style={styles.benefitsAvailableHeading}>Benefits Available</Text>
         {renderBenefitsAvailable()}
@@ -561,29 +1002,79 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderHdfcMembershipDetails = () => {
     return (
-      <View>
-        {isCanUpgradeTo
-          ? renderSubscribeContent()
-          : isActivePlan
-          ? renderTabComponent()
-          : renderInactivePlansContainer()}
+      <View style={{ flex: 1 }}>
+        <ScrollView>
+          {isCanUpgradeTo
+            ? renderSubscribeContent()
+            : isActivePlan
+            ? renderTabComponent()
+            : renderInactivePlansContainer()}
+        </ScrollView>
         {renderBottomContainer()}
       </View>
     );
   };
 
+  const onPressUserConsent = () => {
+    setShowUserConsentPopup(false);
+    setShowDiabeticQuestionaire(true);
+  };
+
+  const submitQuestionaire = (type: string, duration: string) => {
+    setLoading!(true);
+    client
+      .mutate<addDiabeticQuestionnaire, addDiabeticQuestionnaireVariables>({
+        mutation: ADD_DIABETIC_QUESTIONNAIRE,
+        variables: {
+          addDiabeticQuestionnaireInput: {
+            patientId: g(currentPatient, 'id'),
+            plan: circleSubscription?.name,
+            diabetic_type: type,
+            diabetic_year: duration,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setLoading!(false);
+        const getResponse = g(response, 'data', 'addDiabeticQuestionnaire');
+        if (getResponse?.success) {
+          setShowDiabeticQuestionaire(false);
+          showAphAlert!({
+            title: 'Thanks!',
+            description: 'Your information has been submitted',
+          });
+        }
+      })
+      .catch((error) => {
+        setLoading!(false);
+        setShowDiabeticQuestionaire(false);
+        console.log(error);
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: 'Error while connecting to the Doctor, Please try again',
+        });
+      });
+  };
+
   const renderCircleBenefits = (circleBenefits: any) => {
-    const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
-    return circleBenefits.map((value) => {
-      const { headerContent, description, benefitCtaAction, icon, availableCount, _id } = value;
+    const totalSavingsDone = totalCircleSavings?.totalSavings! + totalCircleSavings?.callsUsed!;
+    return circleBenefits?.map((value: any) => {
+      const {
+        headerContent,
+        description,
+        benefitCtaAction,
+        icon,
+        availableCount,
+        _id,
+        attribute,
+      } = value;
       const { action, message, type, webEngageEvent } = benefitCtaAction;
       return (
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            if (totalSavingsDone) {
-              handleCtaClick(type, action, message, availableCount, _id, null);
-            }
+            handleCtaClick(type, action, message, availableCount, _id, null, attribute);
           }}
           style={[styles.cardStyle, { marginVertical: 10 }]}
         >
@@ -601,6 +1092,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderCirclePlan = () => {
     return (
       <ScrollView bounces={false}>
+        {renderMembershipBanner()}
         <CircleSavings navigation={props.navigation} />
         <View
           style={{
@@ -608,27 +1100,30 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             padding: 15,
           }}
         >
-          <Text style={theme.viewStyles.text('M', 16, '#02475B', 1, 20, 0.35)}>
+          <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 18, 0.35)}>
             AVAILABLE BENEFITS
           </Text>
           {renderCircleBenefits(circleSubscription?.benefits)}
           <FAQComponent />
+          {renderTermsAndConditions()}
         </View>
       </ScrollView>
     );
   };
-
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaStyle}>
         {renderHeader()}
-        {renderMembershipBanner()}
         {isCirclePlan ? renderCirclePlan() : renderHdfcMembershipDetails()}
       </SafeAreaView>
       {showHdfcConnectPopup && (
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
           benefitId={benefitId || ''}
+          successCallback={() => {
+            getUserSubscriptionsWithBenefits();
+          }}
+          userSubscriptionId={isCirclePlan ? circleSubscriptionId : hdfcSubscriptionId}
         />
       )}
       {showAvailPopup && (
@@ -639,6 +1134,32 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           navigation={props.navigation}
         />
       )}
+      {showUserConstentPopUp ? (
+        <UserConstentPopup
+          heading={Hdfc_values.DIABETES_CONSENT.HEADING}
+          subHeading={Hdfc_values.DIABETES_CONSENT.SUBHEADING}
+          ctaText={Hdfc_values.DIABETES_CONSENT.CTA}
+          onClose={() => setShowUserConsentPopup(false)}
+          onPressConfirm={() => {
+            onPressUserConsent();
+          }}
+          navigation={props.navigation}
+        />
+      ) : null}
+      {showDiabeticQuestionaire ? (
+        <DiabeticQuestionairePopup
+          heading={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.HEADING}
+          subHeading={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.SUBHEADING}
+          ctaText={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.CTA}
+          questions={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.QUESTIONAIRE}
+          onClose={() => setShowDiabeticQuestionaire(false)}
+          onPressSubmit={(typeOfDiabetes, durationOfDiabetes) =>
+            submitQuestionaire(typeOfDiabetes, durationOfDiabetes)
+          }
+          navigation={props.navigation}
+        />
+      ) : null}
+      {loading && <Spinner />}
     </View>
   );
 };

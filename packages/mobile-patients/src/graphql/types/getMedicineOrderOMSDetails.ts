@@ -125,6 +125,7 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
   patientAddressId: string | null;
   alertStore: boolean | null;
   prescriptionOptionSelected: string | null;
+  totalCashBack: number | null;
   medicineOrdersStatus: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus | null)[] | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments | null)[] | null;

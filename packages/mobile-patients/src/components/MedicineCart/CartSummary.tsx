@@ -76,8 +76,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setAddresses,
     deliveryTime,
     setdeliveryTime,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
-  const { setPharmacyLocation } = useAppCommonData();
+  const { setPharmacyLocation, setAxdcCode } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -131,7 +132,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setloading(true);
     const response = await pinCodeServiceabilityApi247(address.zipcode!);
     const { data } = response;
-    if (data.response) {
+    setAxdcCode && setAxdcCode(data?.response?.axdcCode);
+    if (data?.response?.servicable) {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
       setDefaultAddress(address);
@@ -249,13 +251,22 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     address: savePatientAddress_savePatientAddress_patientAddress,
     tatDate: string
   ) {
-    const currentDate = moment();
+    const currentDate = moment()
+      .hour(0)
+      .minute(0)
+      .second(0);
+    const momentTatDate = moment(tatDate)
+      .hour(0)
+      .minute(0)
+      .second(0);
     postPhamracyCartAddressSelectedSuccess(
       address?.zipcode!,
       formatAddress(address),
       'Yes',
       new Date(tatDate),
-      moment(tatDate).diff(currentDate, 'd')
+      Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
+      pharmacyCircleAttributes!,
+      moment(tatDate).diff(moment(), 'h')
     );
   }
 
@@ -343,18 +354,13 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }
 
   function onPressProceedtoPay() {
-    const zipcode = selectedAddress?.zipcode;
-    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
-      (addr) => addr == Number(zipcode)
-    );
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
-      isChennaiOrder: isChennaiAddress ? true : false,
       storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });
-    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime);
+    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime, pharmacyCircleAttributes!);
   }
 
   const renderAlert = (message: string) => {

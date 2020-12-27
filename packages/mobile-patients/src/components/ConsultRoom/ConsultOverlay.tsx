@@ -53,7 +53,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-
+import moment from 'moment';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -127,16 +127,22 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const circleDoctorDetails = calculateCircleDoctorPricing(props.doctor);
+  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    props.doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     onlineConsultSlashedPrice,
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
     physicalConsultSlashedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-
-  const actualPrice = isCircleDoctor
+  const actualPrice = isCircleDoctorOnSelectedConsultMode
     ? selectedTab === 'Consult Online'
       ? circleSubscriptionId
         ? onlineConsultSlashedPrice
@@ -218,7 +224,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       actualAmount: actualPrice,
       pinCode: locationDetails && locationDetails.pincode,
       subscriptionDetails:
-        circleSubscriptionId && isCircleDoctor
+        circleSubscriptionId && isCircleDoctorOnSelectedConsultMode
           ? {
               userSubscriptionId: circleSubscriptionId,
               plan: PLAN.CARE_PLAN,
@@ -313,6 +319,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     }
     // to avoid duplicate events
     if (!slotsSelected.find((val) => val == slot)) {
+      console.log('new Date >>>>', new Date(slot));
+      console.log('moment >>>>>', moment(slot).toDate());
       const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
         if (item && item.facility && item.facility.facilityType)
           return item.facility.facilityType === 'HOSPITAL';
@@ -326,7 +334,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         'Doctor ID': g(props.doctor, 'id')!,
         'Speciality ID': g(props.doctor, 'specialty', 'id')!,
         'Patient UHID': g(currentPatient, 'uhid'),
-        'Consult Date Time': new Date(slot),
+        'Consult Date Time': moment(slot).toDate(),
       };
       postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
       setSlotsSelected([...slotsSelected, slot]);

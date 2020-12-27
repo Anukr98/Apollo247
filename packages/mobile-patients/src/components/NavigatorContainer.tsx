@@ -17,12 +17,20 @@ import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { FilterHealthRecordScene } from '@aph/mobile-patients/src/components/FilterHealthRecordScene';
 import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
 import { AddRecord } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
+import { ConsultRxScreen } from '@aph/mobile-patients/src/components/HealthRecords/ConsultRxScreen';
+import { ClinicalDocumentScreen } from '@aph/mobile-patients/src/components/HealthRecords/ClinicalDocumentScreen';
+import { HealthConditionScreen } from '@aph/mobile-patients/src/components/HealthRecords/HealthConditionScreen';
+import { BillScreen } from '@aph/mobile-patients/src/components/HealthRecords/BillScreen';
+import { TestReportScreen } from '@aph/mobile-patients/src/components/HealthRecords/TestReportScreen';
+import { HospitalizationScreen } from '@aph/mobile-patients/src/components/HealthRecords/HospitalizationScreen';
+import { InsuranceScreen } from '@aph/mobile-patients/src/components/HealthRecords/InsuranceScreen';
 import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
+import { MedicineBuyAgain } from '@aph/mobile-patients/src/components/MedicineBuyAgain/MedicineBuyAgain';
 import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
@@ -58,6 +66,9 @@ import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomCheck
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
+import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
+import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
+import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -128,6 +139,9 @@ export enum AppRoutes {
   MyAccount = 'MyAccount',
   SplashScreen = 'SplashScreen',
   MobileHelp = 'MobileHelp',
+  NeedHelpPharmacyOrder = 'NeedHelpPharmacyOrder',
+  NeedHelpConsultOrder = 'NeedHelpConsultOrder',
+  NeedHelpQueryDetails = 'NeedHelpQueryDetails',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   FilterHealthRecordScene = 'FilterHealthRecordScene',
@@ -138,6 +152,7 @@ export enum AppRoutes {
   SearchTestScene = 'SearchTestScene',
   MedicineSearch = 'MedicineSearch',
   MedicineListing = 'MedicineListing',
+  MedicineBuyAgain = 'MedicineBuyAgain',
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
@@ -161,6 +176,13 @@ export enum AppRoutes {
   AddressBook = 'AddressBook',
   NotificationSettings = 'NotificationSettings',
   AddRecord = 'AddRecord',
+  ClinicalDocumentScreen = 'ClinicalDocumentScreen',
+  HealthConditionScreen = 'HealthConditionScreen',
+  ConsultRxScreen = 'ConsultRxScreen',
+  BillScreen = 'BillScreen',
+  TestReportScreen = 'TestReportScreen',
+  HospitalizationScreen = 'HospitalizationScreen',
+  InsuranceScreen = 'InsuranceScreen',
   AzureUpload = 'AzureUpload',
   AppointmentOnlineDetails = 'AppointmentOnlineDetails',
   ChooseDoctor = 'ChooseDoctor',
@@ -282,6 +304,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.MobileHelp]: {
     screen: MobileHelp,
   },
+  [AppRoutes.NeedHelpPharmacyOrder]: {
+    screen: NeedHelpPharmacyOrder,
+  },
+  [AppRoutes.NeedHelpConsultOrder]: {
+    screen: NeedHelpConsultOrder,
+  },
+  [AppRoutes.NeedHelpQueryDetails]: {
+    screen: NeedHelpQueryDetails,
+  },
   [AppRoutes.Consult]: {
     screen: Consult,
     path: 'ConsultPage',
@@ -310,6 +341,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineListing]: {
     screen: MedicineListing,
+  },
+  [AppRoutes.MedicineBuyAgain]: {
+    screen: MedicineBuyAgain,
   },
   [AppRoutes.MedicineDetailsScene]: {
     screen: MedicineDetailsScene,
@@ -389,6 +423,27 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AddRecord]: {
     screen: AddRecord,
+  },
+  [AppRoutes.ConsultRxScreen]: {
+    screen: ConsultRxScreen,
+  },
+  [AppRoutes.HealthConditionScreen]: {
+    screen: HealthConditionScreen,
+  },
+  [AppRoutes.ClinicalDocumentScreen]: {
+    screen: ClinicalDocumentScreen,
+  },
+  [AppRoutes.TestReportScreen]: {
+    screen: TestReportScreen,
+  },
+  [AppRoutes.HospitalizationScreen]: {
+    screen: HospitalizationScreen,
+  },
+  [AppRoutes.BillScreen]: {
+    screen: BillScreen,
+  },
+  [AppRoutes.InsuranceScreen]: {
+    screen: InsuranceScreen,
   },
   [AppRoutes.AzureUpload]: {
     screen: AzureUpload,
@@ -555,6 +610,7 @@ const logRouteChange = (route: string, routeIndex: number | undefined) => {
 };
 
 let prevRoute = '';
+export const getCurrentRoute = () => prevRoute;
 
 const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,

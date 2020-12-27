@@ -1,5 +1,4 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
 import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
@@ -8,13 +7,14 @@ export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   QA2 = 'QA2',
+  QA3 = 'QA3',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -60,17 +60,18 @@ const appStaticVariables = {
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
-  CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
+  MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
   PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   CIRCLE_PLAN_ID: 'CIRCLEPlan',
+  CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
@@ -78,104 +79,142 @@ const appStaticVariables = {
     'https://api.whatsapp.com/send?phone=914041894343&text=On-hold%20order:%20I%20want%20to%20chat%20with%20the%20pharmacist',
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
+  SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
 };
 
-const DEV_top6_specailties = [
+const DEV_top_specialties = [
   {
     speciality_id: '4145727e-e3a4-4219-814b-d0f10df9b2f1',
     speciality_order: '1',
     speciality_name: 'General Physician/ Internal Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'bf0cc02f-1422-45e6-86ee-4ab2b35ffc02',
-    speciality_order: '5',
+    speciality_order: '6',
     speciality_name: 'Cardiology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '3ea4faf5-05b2-4c58-8e00-f6ee71f4eb7d',
-    speciality_order: '6',
+    speciality_order: '7',
     speciality_name: 'Gastroenterology/ GI Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'e3ede210-b0bb-4100-919d-2086afdbe89e',
-    speciality_order: '3',
+    speciality_order: '4',
     speciality_name: 'Dermatology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '22bd8220-327c-433f-a112-2a2f89216859',
     speciality_order: '2',
     speciality_name: 'Obstetrics & Gynaecology',
+    gender: 'FEMALE',
   },
   {
     speciality_id: '0735146e-bd51-4b7c-b7a1-234efc1b259d',
-    speciality_order: '4',
+    speciality_order: '5',
     speciality_name: 'Paediatrics',
+    gender: 'UNISEX',
+  },
+  {
+    speciality_id: '03457e8f-d8e2-4647-ae7a-16028f754df8',
+    speciality_order: '3',
+    speciality_name: 'Urology',
+    gender: 'MALE',
   },
 ];
 
-const QA_top6_specailties = [
+const QA_top_specialties = [
   {
     speciality_id: '4145727e-e3a4-4219-814b-d0f10df9b2f1',
     speciality_order: '1',
     speciality_name: 'General Physician/ Internal Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'bf0cc02f-1422-45e6-86ee-4ab2b35ffc02',
-    speciality_order: '5',
+    speciality_order: '6',
     speciality_name: 'Cardiology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '3ea4faf5-05b2-4c58-8e00-f6ee71f4eb7d',
-    speciality_order: '6',
+    speciality_order: '7',
     speciality_name: 'Gastroenterology/ GI Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'e3ede210-b0bb-4100-919d-2086afdbe89e',
-    speciality_order: '3',
+    speciality_order: '5',
     speciality_name: 'Dermatology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '22bd8220-327c-433f-a112-2a2f89216859',
     speciality_order: '2',
     speciality_name: 'Obstetrics & Gynaecology',
+    gender: 'FEMALE',
   },
   {
     speciality_id: '0735146e-bd51-4b7c-b7a1-234efc1b259d',
     speciality_order: '4',
     speciality_name: 'Paediatrics',
+    gender: 'UNISEX',
+  },
+  {
+    speciality_id: '03457e8f-d8e2-4647-ae7a-16028f754df8',
+    speciality_order: '3',
+    speciality_name: 'Urology',
+    gender: 'MALE',
   },
 ];
 
-const top6_specailties = [
+const top_specialties = [
   {
     speciality_id: '615ebc75-4172-4f46-9ba0-b3688c053fcc',
     speciality_order: '1',
     speciality_name: 'General Physician/ Internal Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'f325ede7-8710-49a6-b0ea-32ddc06f2b4c',
-    speciality_order: '5',
+    speciality_order: '6',
     speciality_name: 'Cardiology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '789b2a65-1d81-4023-92c8-39959ca8a7ed',
-    speciality_order: '6',
+    speciality_order: '7',
     speciality_name: 'Gastroenterology/ GI Medicine',
+    gender: 'UNISEX',
   },
   {
     speciality_id: '73dae7a6-ec1f-45c4-98bd-0c8acb6e4eca',
-    speciality_order: '3',
+    speciality_order: '4',
     speciality_name: 'Dermatology',
+    gender: 'UNISEX',
   },
   {
     speciality_id: 'd67d4978-a14a-46c8-8af8-697823bfcadf',
     speciality_order: '2',
     speciality_name: 'Obstetrics & Gynaecology',
+    gender: 'FEMALE',
   },
   {
     speciality_id: '1f110338-87d5-430c-b10a-8b3eddd54732',
-    speciality_order: '4',
+    speciality_order: '5',
     speciality_name: 'Paediatrics',
+    gender: 'UNISEX',
+  },
+  {
+    speciality_id: 'd188a910-996b-4478-b014-72a8ec54312e',
+    speciality_order: '3',
+    speciality_name: 'Urology',
+    gender: 'MALE',
   },
 ];
 
@@ -191,6 +230,148 @@ const Apollo247Config = {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
   },
 };
+
+export const NeedHelp = [
+  {
+    category: 'Pharmacy',
+    id: 'pharmacy',
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
+    options: [
+      'I would like to cancel the order!',
+      'I would like to know the Delivery status of my order.',
+      'I need to know why my order was cancelled',
+      'I have issues in order delivered!',
+      'Excess amount was charged to me by Delivery Executive',
+      'Inappropriate attitude & behaviour of Delivery Executive',
+      'I need to know my refund status',
+      'I have prescription related queries (Invalid/ Order cancelled)',
+      'I was not able to place the order due to technical errors',
+      'My money got deducted but no order confirmation received',
+    ],
+  },
+  {
+    category: 'Virtual/Online Consult',
+    id: 'virtualOnlineConsult',
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
+    options: [
+      'The doctor did not start the consultation call on time',
+      'I faced technical issues during/after booking an appointment',
+      'I want to reschedule/cancel my appointment ',
+      'I haven’t received the prescription',
+      'Improper behaviour/attitude of doctor or staff',
+      'I need to know my refund status',
+      'I did not recieve invoice/ receipt of my appointment',
+      'Consultation ended, Doctor has not replied to my query over 24 hours',
+      'I am unable to book an appointment (slot not available/ Doctor not listed)',
+      'My money got deducted but no confirmation on the doctor appointment',
+    ],
+  },
+  {
+    category: 'Health Records',
+    id: 'healthRecords',
+    options: [
+      'Add multiple UHID’s linked to other mobile numbers',
+      'Delay in responses to queries',
+      'Incomplete health records',
+      'Issues in downloading the records',
+      'No / Wrong UHID',
+      'No records available for linked UHID',
+      'Personal details are not editable',
+      'Unable to see my reports',
+      'Unable to add family members',
+    ],
+  },
+  {
+    category: 'Physical Consult',
+    id: 'physicalConsult',
+    options: [
+      'App appointment dishonored at confirmed time slot',
+      'Application issues(bandwidth & payment errors)',
+      'Behavior and attitude of the doctor',
+      "Can't find doctor’s name in respective list",
+      'Delayed prescription',
+      'Doctor not available',
+      'Long waiting time for physical consult',
+      'No past / upcoming consultation details',
+      'No updates on delays, reschedules or cancellations of the consult',
+      'Payment issues',
+      'Require reschedule',
+      'Refund required',
+      'Discount / Promotions / Voucher issues',
+    ],
+  },
+  {
+    category: 'Feedback',
+    id: 'feedback',
+    options: [
+      'Feedback on app',
+      'Feedback on consultation',
+      'Feedback on health records',
+      'Feedback on medicine deliver',
+    ],
+  },
+  {
+    category: 'Diagnostics',
+    id: 'diagnostics',
+    options: [
+      'Excess amount related',
+      'Issues in order confirmation',
+      'Payment issues while ordering',
+      'Pickup cancelled without any information',
+      'Pickup cancelled, no refund',
+      'Report not received',
+      'Require reschedule',
+      'Sample pick up related',
+      'Sample pick up staff related',
+      'Wrong report received',
+    ],
+  },
+  {
+    category: 'Unsubscribe',
+    id: 'unsubscribe',
+    options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
+  },
+  {
+    category: 'HealthyLife (HDFC)',
+    id: 'healthyLifeHdfc',
+    options: [
+      'Coupon related',
+      'Concierge Services',
+      'Digitization of Health Records',
+      'Covid Services',
+      'OneApollo Membership',
+      'Doctor on Call',
+      'Early Access to Offers & Sampling of New health products',
+      'Free Delivery',
+      'Base Diabetes Management Program',
+      'Advanced Diabetes Management Program Trial',
+      'Activating Membership',
+      'Membership Upgrade',
+      'Membership Downgrade',
+    ],
+  },
+  {
+    category: 'Circle Membership',
+    id: 'circleMembership',
+    options: [
+      'Details about Circle Membership',
+      'Regarding Circle Benefits',
+      'Plans available for Circle Membership',
+      'Signing Up for Circle Membership',
+      'Buying Circle Membership using OneApollo Health Credits',
+      'About Circle Cashback',
+      'How to use Circle Cashback',
+      'Membership Cancellation',
+      'Changing Membership Plan',
+      'How to get free delivery with Circle',
+      'Covid Care Benefit with Circle',
+      'Regarding Digitization of Patient Health Records',
+      'Regarding Doctor on Call',
+      'Regarding Advanced Diabetes Management Program',
+      'Special Offers and Discounts with Circle Membership',
+    ],
+  },
+];
 
 const PharmaApiConfig = {
   dev: {
@@ -303,10 +484,11 @@ const ConfigurationDev = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: DEV_top6_specailties,
+  TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  NEED_HELP: NeedHelp,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -321,6 +503,8 @@ const ConfigurationDev = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -352,10 +536,11 @@ const ConfigurationQA = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  NEED_HELP: NeedHelp,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -370,6 +555,8 @@ const ConfigurationQA = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -401,10 +588,11 @@ const ConfigurationQA2 = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  NEED_HELP: NeedHelp,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -419,8 +607,55 @@ const ConfigurationQA2 = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+};
+
+// QA3
+const ConfigurationQA3 = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'QEuQRL5_DKsdca021jR9bpVrQf9x3rF6hOADA',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '_9aJEBfuTc3Vki4DZUAbC3X0YEHff4D-lR28l',
+  PAYMENT_GATEWAY_BASE_URL: 'https://qathreepmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://qathreepmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  CONSULT_PG_PENDING_PATH: '/consultpg-pending',
+  CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://qathreepmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top_specialties,
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  ...Apollo247Config.dev,
+  NEED_HELP: NeedHelp,
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://qathreepmt.apollo247.com/',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 
 // VAPT
@@ -450,10 +685,11 @@ const ConfigurationVAPT = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  NEED_HELP: NeedHelp,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://stagingpmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -468,6 +704,8 @@ const ConfigurationVAPT = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -498,10 +736,11 @@ const ConfigurationProd = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: top6_specailties,
+  TOP_SPECIALITIES: top_specialties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   ...Apollo247Config.prod,
+  NEED_HELP: NeedHelp,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -512,9 +751,10 @@ const ConfigurationProd = {
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  CIRCLE_CONSULT_URL:
-    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_CONSULT_URL: 'https://www.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://www.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://www.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://www.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -546,10 +786,11 @@ const ConfigurationPERFORM = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: DEV_top6_specailties,
+  TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  NEED_HELP: NeedHelp,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -565,6 +806,8 @@ const ConfigurationPERFORM = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -596,10 +839,11 @@ const ConfigurationDevReplica = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: QA_top6_specailties,
+  TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  NEED_HELP: NeedHelp,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -615,6 +859,8 @@ const ConfigurationDevReplica = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -626,6 +872,8 @@ const Configuration =
     ? ConfigurationQA
     : APP_ENV == AppEnv.QA2
     ? ConfigurationQA2
+    : APP_ENV == AppEnv.QA3
+    ? ConfigurationQA3
     : APP_ENV == AppEnv.PERFORM
     ? ConfigurationPERFORM
     : APP_ENV == AppEnv.VAPT
@@ -834,117 +1082,6 @@ export const TestReschedulingReasons = {
     'Others (please specify)',
   ],
 };
-
-export const NeedHelp = [
-  {
-    category: 'Pharmacy',
-    options: [
-      'I would like to cancel the order!',
-      'I would like to know the Delivery status of my order.',
-      'I was not able to place the order due to technical errors',
-      'My money got deducted but no order confirmation received',
-      'I need to know why my order was cancelled',
-      'I have issues in order delivered!',
-      'Excess amount was charged to me by Delivery Executive',
-      'Inappropriate attitude & behaviour of Delivery Executive',
-      'I need to know my refund status',
-      'I have prescription related queries (Invalid/ Order cancelled)',
-    ],
-  },
-  {
-    category: 'Virtual/Online Consult',
-    options: [
-      'I am unable to book an appointment (slot not available/ Doctor not listed)',
-      'The doctor did not start the consultation call on time',
-      'My money got deducted but no confirmation on the doctor appointment',
-      'I faced technical issues during/after booking an appointment',
-      'I want to reschedule/cancel my appointment ',
-      'I haven’t received the prescription',
-      'Improper behaviour/attitude of doctor or staff',
-      'I need to know my refund status',
-      'I did not recieve invoice/ receipt of my appointment',
-      'Consultation ended, Doctor has not replied to my query over 24 hours',
-    ],
-  },
-  {
-    category: 'Health Records',
-    options: [
-      'Add multiple UHID’s linked to other mobile numbers',
-      'Delay in responses to queries',
-      'Incomplete health records',
-      'Issues in downloading the records',
-      'No / Wrong UHID',
-      'No records available for linked UHID',
-      'Personal details are not editable',
-      'Unable to see my reports',
-      'Unable to add family members',
-    ],
-  },
-  {
-    category: 'Physical Consult',
-    options: [
-      'App appointment dishonored at confirmed time slot',
-      'Application issues(bandwidth & payment errors)',
-      'Behavior and attitude of the doctor',
-      "Can't find doctor’s name in respective list",
-      'Delayed prescription',
-      'Doctor not available',
-      'Long waiting time for physical consult',
-      'No past / upcoming consultation details',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Require reschedule',
-      'Refund required',
-      'Discount / Promotions / Voucher issues',
-    ],
-  },
-  {
-    category: 'Feedback',
-    options: [
-      'Feedback on app',
-      'Feedback on consultation',
-      'Feedback on health records',
-      'Feedback on medicine deliver',
-    ],
-  },
-  {
-    category: 'Diagnostics',
-    options: [
-      'Excess amount related',
-      'Issues in order confirmation',
-      'Payment issues while ordering',
-      'Pickup cancelled without any information',
-      'Pickup cancelled, no refund',
-      'Report not received',
-      'Require reschedule',
-      'Sample pick up related',
-      'Sample pick up staff related',
-      'Wrong report received',
-    ],
-  },
-  {
-    category: 'Unsubscribe',
-    options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
-  },
-  {
-    category: 'Membership',
-    options: [
-      'Coupon related',
-      'Concierge Services',
-      'Digitization of Health Records',
-      'Covid Services',
-      'OneApollo Membership',
-      'Doctor on Call',
-      'Early Access to Offers & Sampling of New health products',
-      'Free Delivery',
-      'Base Diabetes Management Program',
-      'Advanced Diabetes Management Program Trial',
-      'Activating Membership',
-      'Membership Upgrade',
-      'Membership Downgrade',
-    ],
-  },
-];
 
 export const CancelConsultation = {
   reason: [

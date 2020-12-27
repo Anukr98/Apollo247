@@ -6,6 +6,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 
 export interface LocationData {
   displayName: string;
@@ -91,6 +92,7 @@ export interface CicleSubscriptionData {
   planSummary: CirclePlanSummary[] | [];
   groupDetails: CircleGroup;
   endDate?: Date | null;
+  startDate?: Date | null;
   benefits?: PlanBenefits[];
 }
 
@@ -135,6 +137,12 @@ export interface TotalCircleSavings {
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
+  phrNotificationData: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount | null;
+  setPhrNotificationData:
+    | ((
+        phrNotificationObj: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount | null
+      ) => void)
+    | null;
   totalCircleSavings: TotalCircleSavings | null;
   setTotalCircleSavings: ((items: TotalCircleSavings) => void) | null;
   hdfcUpgradeUserSubscriptions: SubscriptionData[] | [];
@@ -200,11 +208,21 @@ export interface AppCommonDataContextProps {
   setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
   axdcCode: string;
   setAxdcCode: ((value: string) => void) | null;
+  circlePlanId: string;
+  setCirclePlanId: ((value: string) => void) | null;
+  hdfcPlanId: string;
+  setHdfcPlanId: ((value: string) => void) | null;
+  circleStatus: string;
+  setCircleStatus: ((value: string) => void) | null;
+  hdfcStatus: string;
+  setHdfcStatus: ((value: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   hdfcUserSubscriptions: null,
   setHdfcUserSubscriptions: null,
+  phrNotificationData: null,
+  setPhrNotificationData: null,
   totalCircleSavings: null,
   setTotalCircleSavings: null,
   hdfcUpgradeUserSubscriptions: [],
@@ -262,6 +280,14 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setDoctorJoinedChat: null,
   axdcCode: '',
   setAxdcCode: null,
+  circlePlanId: '',
+  setCirclePlanId: null,
+  hdfcPlanId: '',
+  setHdfcPlanId: null,
+  circleStatus: '',
+  setCircleStatus: null,
+  hdfcStatus: '',
+  setHdfcStatus: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -277,6 +303,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
 
+  const [phrNotificationData, setPhrNotificationData] = useState<
+    AppCommonDataContextProps['phrNotificationData']
+  >(null);
   const [totalCircleSavings, _setTotalCircleSavings] = useState<
     AppCommonDataContextProps['totalCircleSavings']
   >(null);
@@ -420,6 +449,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   };
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
+  const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
+  const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
+  const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
+  const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
@@ -451,7 +484,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
-        _setDiagnosticLocationServiceable(diagnosticPinCodeServiceability || 'null');
+        _setDiagnosticLocationServiceable(JSON.parse(diagnosticPinCodeServiceability || 'null'));
       } catch (error) {
         console.log('Failed to get location from local storage.');
       }
@@ -464,6 +497,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
       value={{
         isCurrentLocationFetched,
         setCurrentLocationFetched,
+        phrNotificationData,
+        setPhrNotificationData,
         locationDetails,
         setLocationDetails,
         hdfcUserSubscriptions,
@@ -521,6 +556,14 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setSavePatientDetailsWithHistory,
         axdcCode,
         setAxdcCode,
+        circlePlanId,
+        setCirclePlanId,
+        hdfcPlanId,
+        setHdfcPlanId,
+        circleStatus,
+        setCircleStatus,
+        hdfcStatus,
+        setHdfcStatus,
       }}
     >
       {props.children}

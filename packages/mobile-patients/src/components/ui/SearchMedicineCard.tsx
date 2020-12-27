@@ -16,6 +16,7 @@ import {
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -119,15 +120,23 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     onPressNotify,
     onPressAddQty,
     onPressSubtractQty,
+    dc_availability,
+    is_in_contract,
   } = props;
 
+  const isOutOfStock =
+    !!dc_availability &&
+    !!is_in_contract &&
+    dc_availability.toLowerCase() === 'no' &&
+    is_in_contract.toLowerCase() === 'no';
+
   const renderCareCashback = () => {
-    const finalPrice = price - Number(special_price) ? Number(special_price) : price;
+    const finalPrice = Number(special_price) || price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback && type_id) {
       return (
         <CareCashbackBanner
-          bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
+          bannerText={`extra ${string.common.Rs}${cashback.toFixed(2)} cashback`}
         />
       );
     } else {
@@ -151,14 +160,14 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     return (
       <TouchableOpacity
         style={[
-          styles.addToCartViewStyle, 
-          !!is_in_stock && { paddingHorizontal: 23 }, 
-          !!is_express && { marginTop: 10 }
+          styles.addToCartViewStyle,
+          !isOutOfStock && { paddingHorizontal: 23 },
+          !!is_express && { marginTop: 10 },
         ]}
-        onPress={!is_in_stock ? onPressNotify : onPressAddToCart}
+        onPress={isOutOfStock ? onPressNotify : onPressAddToCart}
       >
         <Text style={theme.viewStyles.text('SB', 10, '#fc9916', 1, 24, 0)}>
-          {!is_in_stock ? 'NOTIFY ME' : 'ADD'}
+          {isOutOfStock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
     );
@@ -205,18 +214,23 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   const renderOutOfStock = () => {
     const discount = getDiscountPercentage(price, special_price);
     const off_text = discount ? ' ' + discount + '%off' : '';
-    return !is_in_stock && sell_online ? (
+    return isOutOfStock && sell_online ? (
       <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
-      <View style={{ flexDirection: 'row' }}>
-        {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>}
-        <Text style={styles.priceTextCollapseStyle}>Rs. {discount ? special_price : price}</Text>
+      <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+        {/* {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>} */}
+        <Text style={styles.priceTextCollapseStyle}>
+          {string.common.Rs}
+          {discount ? special_price : price}
+        </Text>
         {!!special_price && (
           <>
-            {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>}
+            {/* {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>} */}
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+              <Text
+                style={{ textDecorationLine: 'line-through' }}
+              >{`${string.common.Rs}${price}`}</Text>
               {')'}
             </Text>
             <Text style={styles.offTextStyle}>{off_text}</Text>

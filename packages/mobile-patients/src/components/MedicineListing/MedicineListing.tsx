@@ -28,6 +28,8 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { isProductInStock } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export type SortByOption = {
   id: string;
@@ -60,10 +62,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
 
+  const { pinCode } = useShoppingCart();
+
   // states
   const [isLoading, setLoading] = useState(false);
   const [isLoadingMore, setLoadingMore] = useState(false);
-  const [showListView, setShowListView] = useState<boolean>(false);
+  const [showListView, setShowListView] = useState<boolean>(true);
   const [products, setProducts] = useState<MedicineProduct[]>(productsNavProp);
   const [productsTotal, setProductsTotal] = useState<number>(productsNavProp.length);
   const [pageId, setPageId] = useState(1);
@@ -120,7 +124,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         pageId,
         sortBy,
         _selectedFilters,
-        axdcCode
+        axdcCode,
+        pinCode
       );
       updateProducts(pageId, products, data);
       setProductsTotal(data.product_count);
@@ -166,7 +171,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         pageId,
         sortBy,
         _selectedFilters,
-        axdcCode
+        axdcCode,
+        pinCode
       );
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
@@ -190,10 +196,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     productsApiResponse: MedicineProductsResponse
   ) => {
     const { products } = productsApiResponse;
+    const filteredProducts = products
+      ? products.filter((product: MedicineProduct) => isProductInStock(product))
+      : [];
     if (pageId == 1) {
-      setProducts(products || []);
+      setProducts(filteredProducts || []);
     } else {
-      setProducts([...existingProducts, ...(products || [])]);
+      setProducts([...existingProducts, ...(filteredProducts || [])]);
     }
   };
 

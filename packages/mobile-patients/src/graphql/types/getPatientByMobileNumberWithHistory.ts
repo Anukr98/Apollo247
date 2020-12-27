@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation } from "./globalTypes";
+import { Gender, Relation, BloodGroups } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientByMobileNumberWithHistory
@@ -19,6 +19,7 @@ export interface getPatientByMobileNumberWithHistory_getPatientByMobileNumber_pa
   pastMedicalHistory: string | null;
   pastSurgicalHistory: string | null;
   temperature: string | null;
+  bloodGroup: BloodGroups | null;
   weight: string | null;
 }
 

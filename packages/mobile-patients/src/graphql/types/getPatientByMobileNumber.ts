@@ -3,11 +3,25 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation } from "./globalTypes";
+import { Gender, Relation, BloodGroups } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientByMobileNumber
 // ====================================================
+
+export interface getPatientByMobileNumber_getPatientByMobileNumber_patients_patientMedicalHistory {
+  __typename: "MedicalHistory";
+  bp: string | null;
+  dietAllergies: string | null;
+  drugAllergies: string | null;
+  height: string | null;
+  menstrualHistory: string | null;
+  pastMedicalHistory: string | null;
+  pastSurgicalHistory: string | null;
+  temperature: string | null;
+  bloodGroup: BloodGroups | null;
+  weight: string | null;
+}
 
 export interface getPatientByMobileNumber_getPatientByMobileNumber_patients {
   __typename: "Patient";
@@ -30,6 +44,7 @@ export interface getPatientByMobileNumber_getPatientByMobileNumber_patients {
   whatsAppMedicine: boolean | null;
   whatsAppConsult: boolean | null;
   partnerId: string | null;
+  patientMedicalHistory: getPatientByMobileNumber_getPatientByMobileNumber_patients_patientMedicalHistory | null;
 }
 
 export interface getPatientByMobileNumber_getPatientByMobileNumber {

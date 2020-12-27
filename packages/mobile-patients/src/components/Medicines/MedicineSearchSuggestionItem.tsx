@@ -8,7 +8,10 @@ import { MedicineProduct } from '../../helpers/apiCalls';
 import { QuantityButton } from '../ui/QuantityButton';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  productsThumbnailUrl,
+  isProductInStock,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -22,6 +25,20 @@ const styles = StyleSheet.create({
   },
   nameAndPriceViewStyle: {
     flex: 1,
+  },
+  discount: {
+    ...theme.viewStyles.text('SB', 13, '#00B38E', 0.6, 25),
+    marginLeft: 5,
+  },
+  lineThrough: {
+    textDecorationLine: 'line-through',
+  },
+  specialPrice: {
+    ...theme.viewStyles.text('M', 13, '#02475b', 0.6, 25),
+    marginLeft: 5,
+  },
+  flexRow: {
+    flexDirection: 'row',
   },
 });
 
@@ -44,40 +61,65 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const { data } = props;
   const prescriptionRequired = data.is_prescription_required == '1';
   const imageUri = productsThumbnailUrl(data.thumbnail);
-  const isOutOfStock = !data.is_in_stock;
+  const isOutOfStock = !isProductInStock(data);
   const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = Number(data.special_price) || undefined;
+  const { dose_form_variant, pack_form, pack_size } = data;
+
+  function getDiscountPercent() {
+    return (((data.price - specialPrice) / data.price) * 100).toFixed(1);
+  }
 
   const renderNamePriceAndInStockStatus = () => {
     return (
       <View style={styles.nameAndPriceViewStyle}>
-        <Text numberOfLines={1} style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}>
+        <Text
+          numberOfLines={2}
+          style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '90%' }}
+        >
           {data.name}
         </Text>
-        {isOutOfStock && !isNotForOnlineSelling ? (
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20) }}>
-            {'Out Of Stock'}
-          </Text>
-        ) : (
-          <View style={{ flexDirection: 'row' }}>
-            {!specialPrice && (
-              <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>{'MRP '}</Text>
-            )}
-            <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>
-              {string.common.Rs} {specialPrice || data.price}
+        {!!dose_form_variant && !!pack_form && !!pack_size && (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={theme.viewStyles.text('R', 13, '#02475B', 0.7, 20)}>
+              {`${pack_form} of ${pack_size} ${dose_form_variant}`}
             </Text>
-            {specialPrice ? (
-              <Text
-                style={[{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20), marginLeft: 8 }]}
-              >
-                <Text style={theme.viewStyles.text('M', 12, '#02475b')}>{' MRP '}</Text>
-                {'('}
-                <Text
-                  style={{ textDecorationLine: 'line-through' }}
-                >{`${string.common.Rs} ${data.price}`}</Text>
-                {')'}
+          </View>
+        )}
+        {isOutOfStock ? (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ ...theme.viewStyles.text('SB', 13, '#890000', 1, 20) }}>
+              {'Out Of Stock'}
+            </Text>
+            {renderAddToCartView()}
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row' }}>
+              {!specialPrice && (
+                <Text style={theme.viewStyles.text('M', 13, '#01475B', 1, 25)}>{'MRP '}</Text>
+              )}
+              <Text style={theme.viewStyles.text('SB', 13, '#01475B', 1, 25)}>
+                {string.common.Rs}
+                {specialPrice || data.price}
               </Text>
-            ) : null}
+              {specialPrice ? (
+                <View style={styles.flexRow}>
+                  <Text style={styles.specialPrice}>
+                    <Text style={styles.lineThrough}>{' MRP '}</Text>
+                    <Text style={styles.lineThrough}>{`${string.common.Rs} ${data.price}`}</Text>
+                  </Text>
+                  <Text style={styles.discount}>{`${getDiscountPercent()}%off`}</Text>
+                </View>
+              ) : null}
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              {isNotForOnlineSelling
+                ? renderNotForSaleTag()
+                : props.quantity
+                ? renderQuantityView()
+                : renderAddToCartView()}
+            </View>
           </View>
         )}
       </View>
@@ -139,14 +181,6 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
           {renderIconOrImage()}
           <View style={{ width: 16 }} />
           {renderNamePriceAndInStockStatus()}
-          <View style={{ width: 24 }} />
-          <View style={{ alignItems: 'flex-end' }}>
-            {isNotForOnlineSelling
-              ? renderNotForSaleTag()
-              : props.quantity
-              ? renderQuantityView()
-              : renderAddToCartView()}
-          </View>
         </View>
         {props.showSeparator ? <Spearator /> : null}
       </View>

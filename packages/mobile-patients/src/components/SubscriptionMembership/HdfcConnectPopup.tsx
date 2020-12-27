@@ -13,6 +13,7 @@ import {
   initiateCallForPartnerVariables,
 } from '../../graphql/types/initiateCallForPartner';
 import { INITIATE_CALL_FOR_PARTNER } from '../../graphql/profiles';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   blurView: {
@@ -82,39 +83,45 @@ const styles = StyleSheet.create({
 export interface HdfcConnectPopupProps {
   onClose: () => void;
   benefitId: string;
+  successCallback: () => void;
+  userSubscriptionId: string;
 }
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
+  const { userSubscriptionId } = props;
   const { currentPatient } = useAllCurrentPatients();
   const mobileNumber = g(currentPatient, 'mobileNumber');
-  const { showAphAlert, setLoading: globalLoading } = useUIElements();
+  const { showAphAlert } = useUIElements();
   const [showConnectMessage, setShowConnectMessage] = useState<boolean>(false);
   const [disableButton, setDisableButton] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
 
   const fireExotelApi = () => {
     setDisableButton(true);
-    globalLoading!(true);
+    setLoading(true);
     client
       .query<initiateCallForPartner, initiateCallForPartnerVariables>({
         query: INITIATE_CALL_FOR_PARTNER,
         variables: {
           mobileNumber,
-          benefitId: props.benefitId,
+          benefitId: `${props.benefitId}`,
+          userSubscriptionId,
         },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
         setShowConnectMessage(true);
-        globalLoading!(false);
+        setLoading(false);
         setTimeout(() => {
           props.onClose();
         }, 2000);
+        props.successCallback();
         console.log('initiateCallForPartner response', data);
       })
       .catch((e) => {
         props.onClose();
-        globalLoading!(false);
+        setLoading(false);
         showAphAlert!({
           title: string.common.uhOh,
           description: 'We could not connect to the doctor now. Please try later.',
@@ -133,9 +140,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
         <View style={styles.containerRow}>
           <View style={styles.stepsContainer}>
             <CallConnectIcon />
-            <Text style={styles.stepsText}>
-              {`Answer the call from 040-482-17258 to connect.`}
-            </Text>
+            <Text style={styles.stepsText}>{`Answer the call from 040-482-17258 to connect.`}</Text>
           </View>
           <View style={styles.stepsContainer}>
             <CallRingIcon style={styles.callIcon} />
@@ -193,6 +198,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
 
   return (
     <View style={styles.blurView}>
+      {loading && <Spinner />}
       <View style={styles.popupContainerView}>
         <View style={{ width: '5.72%' }} />
         <View style={styles.popupView}>

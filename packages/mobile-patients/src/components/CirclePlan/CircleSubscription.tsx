@@ -1,13 +1,22 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, BackHandler, SafeAreaView } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { PaymentOptions } from '@aph/mobile-patients/src/components/ui/PaymentOptions';
 import { CircleTotalBill } from '@aph/mobile-patients/src/components/ui/CircleTotalBill';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
-interface CirclePaymentProps extends NavigationScreenProps {}
+interface CirclePaymentProps extends NavigationScreenProps {
+  action?: string;
+  selectedPlan?: any;
+  from?: string;
+}
 export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
+  const action = props.navigation.getParam('action');
+  const from = props?.navigation?.state?.params?.from;
+  const selectedPlan = props.navigation.getParam('selectedPlan');
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -21,14 +30,32 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
-          props.navigation.goBack();
+          if (action === 'PAY') {
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            );
+            // props.navigation.navigate('TESTS');
+          } else {
+            props.navigation.goBack();
+          }
         },
       },
     ]);
     return true;
   };
 
-  const renderPaymentOptions = () => <PaymentOptions navigation={props.navigation} />;
+  const renderPaymentOptions = () => (
+    <PaymentOptions
+      navigation={props.navigation}
+      from={from}
+      selectedPlan={selectedPlan}
+      comingFrom={'circlePlanPurchase'}
+    />
+  );
 
   const renderHeader = () => {
     return (
@@ -41,7 +68,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
     );
   };
 
-  const renderCircleBill = () => <CircleTotalBill />;
+  const renderCircleBill = () => <CircleTotalBill selectedPlan={selectedPlan} />;
 
   return (
     <View style={theme.viewStyles.container}>

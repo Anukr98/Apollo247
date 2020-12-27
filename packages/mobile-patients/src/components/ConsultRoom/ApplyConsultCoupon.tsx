@@ -28,6 +28,7 @@ import { useAppCommonData } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -117,13 +118,16 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [loading, setLoading] = useState<boolean>(true);
   const [validating, setValidating] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
-  const { hdfcUserSubscriptions } = useAppCommonData();
+  const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
+  const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
-  let packageId = '';
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId =
-      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
   }
 
   const renderErrorPopup = (desc: string) =>
@@ -134,9 +138,10 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
 
   useEffect(() => {
     const data = {
-      packageId,
+      packageId: packageId.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
+      type: 'Consult',
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
