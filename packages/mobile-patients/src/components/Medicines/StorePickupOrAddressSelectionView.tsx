@@ -20,7 +20,7 @@ import {
 import React, { useState, useEffect } from 'react';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -321,8 +321,9 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
             style={styles.yellowTextStyle}
             onPress={() => {
               postPharmacyAddNewAddressClick('Upload Prescription');
-              props.navigation.navigate(AppRoutes.AddAddress, {
+              props.navigation.navigate(AppRoutes.AddAddressNew, {
                 source: 'Upload Prescription' as AddressSource,
+                addOnly: true,
               });
             }}
           >
@@ -344,9 +345,9 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   };
 
   const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
-    props.navigation.push(AppRoutes.AddAddress, {
+    props.navigation.push(AppRoutes.AddAddressNew, {
       KeyName: dataname,
-      DataAddress: address,
+      addressDetails: address,
       ComingFrom: comingFrom,
     });
   };
