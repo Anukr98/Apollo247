@@ -1843,6 +1843,7 @@ export const RESCHEDULE_DIAGNOSTIC_ORDER = gql`
     rescheduleDiagnosticsOrder(rescheduleDiagnosticsInput: $rescheduleDiagnosticsInput) {
       status
       rescheduleCount
+      message
     }
   }
 `;

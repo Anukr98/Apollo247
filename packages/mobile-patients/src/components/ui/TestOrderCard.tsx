@@ -581,11 +581,11 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                     <Text style={[styles.titleStyle]}>
                       {item?.diagnostics?.itemName!.toLowerCase() || ''}
                       {item?.diagnostics?.itemType == 'PACKAGE' &&
-                        item?.diagnostics?.PackageInclussion?.length > 0 && (
+                        item?.diagnostics?.inclusions?.length! > 0 && (
                           <Text
                             style={[styles.titleStyle, { ...theme.fonts.IBMPlexSansMedium(11) }]}
                           >
-                            {'\n'} Inclusions : {item?.diagnostics?.PackageInclussion?.length}
+                            {'\n'} Inclusions : {item?.diagnostics?.inclusions?.length}
                           </Text>
                         )}
                       {index == 2 && testsPerOrder - 3 > 0 ? (
