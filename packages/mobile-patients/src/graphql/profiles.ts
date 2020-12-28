@@ -244,6 +244,7 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       name
       image
       specialty
+      symptoms
     }
   }
 `;
