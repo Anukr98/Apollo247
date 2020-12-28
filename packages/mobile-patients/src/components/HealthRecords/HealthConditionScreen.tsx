@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   View,
@@ -7,6 +7,10 @@ import {
   ScrollView,
   SectionList,
   BackHandler,
+  Keyboard,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -21,6 +25,9 @@ import {
   PhrMedicationIcon,
   PhrRestrictionIcon,
   PhrFamilyHistoryIcon,
+  PhrSearchIcon,
+  SearchDarkPhrIcon,
+  HealthConditionPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
@@ -36,6 +43,8 @@ import {
   postWebEngagePHR,
   postWebEngageEvent,
   HEALTH_CONDITIONS_TITLE,
+  isValidSearch,
+  getPhrHighlightText,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -57,6 +66,15 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  getPrismAuthTokenVariables,
+  getPrismAuthToken,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { GET_PRISM_AUTH_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -87,11 +105,50 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23.4),
     marginBottom: 3,
   },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+    paddingBottom: 10,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center',
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    marginLeft: 18,
+  },
+  textInputStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
+  },
+  loaderViewStyle: { justifyContent: 'center', flex: 1, alignItems: 'center' },
+  loaderStyle: { height: 100, backgroundColor: 'transparent', alignSelf: 'center' },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
+  searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
+  phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
+  searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
 });
 
 export interface HealthConditionScreenProps
   extends NavigationScreenProps<{
     onPressBack: () => void;
+    authToken: string;
   }> {}
 
 export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (props) => {
@@ -122,6 +179,16 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   const [callApi, setCallApi] = useState(false);
   const [apiError, setApiError] = useState(false);
+  const [isSearchFocus, SetIsSearchFocus] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchInputFocus, setSearchInputFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const _searchInputRef = useRef(null);
+  const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
+  const [prismAuthToken, setPrismAuthToken] = useState<string>(
+    props.navigation?.getParam('authToken') || ''
+  );
 
   useEffect(() => {
     const healthConditionsArray: any[] = [];
@@ -172,6 +239,101 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, [callApi]);
+
+  const getAuthToken = async () => {
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+      });
+  };
+
+  const onSearchHealthRecords = (_searchText: string) => {
+    setSearchLoading(true);
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken, 'HealthConditions')
+      .then(({ data }) => {
+        setHealthRecordSearchResults([]);
+        if (data?.response) {
+          const recordData = data.response;
+          const finalData: any[] = [];
+          recordData.forEach((_recordData: any) => {
+            const { healthrecordType } = _recordData;
+            switch (healthrecordType) {
+              case 'ALLERGY':
+                finalData.push({ healthkey: MedicalRecordType.ALLERGY, value: _recordData });
+                break;
+              case 'MEDICATION':
+                finalData.push({ healthkey: MedicalRecordType.MEDICATION, value: _recordData });
+                break;
+              case 'MEDICALCONDITION':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALCONDITION,
+                  value: _recordData,
+                });
+                break;
+              case 'RESTRICTION':
+                finalData.push({
+                  healthkey: MedicalRecordType.HEALTHRESTRICTION,
+                  value: _recordData,
+                });
+                break;
+              case 'FAMILYHISTORY':
+                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                break;
+            }
+          });
+          setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
+        } else {
+          getAuthToken();
+          setSearchLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.log('searchPHRApiWithAuthToken Error', error);
+        getAuthToken();
+        setSearchLoading(false);
+      });
+  };
+
+  const onSearchTextChange = (value: string) => {
+    SetIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 2)) {
+        setHealthRecordSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      const search = _.debounce(onSearchHealthRecords, 300);
+      search(value);
+    }
+  };
+
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      setSearchText('');
+      SetIsSearchFocus(false);
+      setShowSearchBar(false);
+      _searchInputRef?.current?.clear();
+      setHealthRecordSearchResults([]);
+      Keyboard.dismiss();
+    }
+  };
 
   useEffect(() => {
     if (callApi) {
@@ -266,6 +428,18 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
           {'Health Conditions'}
         </Text>
+        <View style={styles.searchBarMainView}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setShowSearchBar(true);
+              setSearchInputFocus(true);
+            }}
+            style={{ paddingLeft: 11 }}
+          >
+            <SearchDarkPhrIcon style={{ width: 17.49, height: 17.49 }} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -499,16 +673,204 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
+  const renderSearchBar = () => {
+    return (
+      <View style={styles.searchBarMainView}>
+        <View style={styles.searchBarMainViewStyle}>
+          <View style={styles.searchBarViewStyle}>
+            <PhrSearchIcon style={{ width: 20, height: 20 }} />
+            <TextInput
+              placeholder={'Search health conditions'}
+              autoCapitalize={'none'}
+              autoFocus={searchInputFocus}
+              style={styles.textInputStyle}
+              selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+              numberOfLines={1}
+              ref={_searchInputRef}
+              onFocus={() => SetIsSearchFocus(true)}
+              value={searchText}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(value) => onSearchTextChange(value)}
+            />
+          </View>
+          {isSearchFocus ? (
+            <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+              {'Cancel'}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderSearchLoader = () => {
+    return (
+      <View style={styles.loaderViewStyle}>
+        <Spinner style={styles.loaderStyle} />
+      </View>
+    );
+  };
+
+  const searchListHeaderView = () => {
+    const search_result_text =
+      healthRecordSearchResults?.length === 1
+        ? `${healthRecordSearchResults?.length} search result for \‘${searchText}\’`
+        : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
+    return (
+      <View style={styles.searchListHeaderViewStyle}>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+      </View>
+    );
+  };
+
+  const onClickSearchHealthCard = (item: any) => {
+    const { healthrecordId } = item?.value;
+    switch (item?.healthkey) {
+      case MedicalRecordType.ALLERGY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.ALLERGY,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.ALLERGY,
+        });
+      case MedicalRecordType.MEDICATION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICATION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICATION,
+        });
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.HEALTHRESTRICTION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION,
+        });
+      case MedicalRecordType.MEDICALCONDITION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALCONDITION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION,
+        });
+      case MedicalRecordType.FAMILY_HISTORY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.FAMILY_HISTORY,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY,
+        });
+    }
+  };
+
+  const renderHealthRecordSearchItem = (item: any, index: number) => {
+    const healthCardTopView = () => {
+      switch (item?.healthkey) {
+        case MedicalRecordType.ALLERGY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Allergies'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medications'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HEALTHRESTRICTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Health Restrictions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALCONDITION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medical Conditions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.FAMILY_HISTORY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Family History'}
+              </Text>
+            </View>
+          );
+      }
+    };
+    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
+    return (
+      <SearchHealthRecordCard
+        dateText={dateText}
+        healthRecordTitle={item?.value?.title}
+        healthRecordMoreText={healthMoreText}
+        searchHealthCardTopView={healthCardTopView()}
+        item={item}
+        index={index}
+        onSearchHealthCardPress={(item) => onClickSearchHealthCard(item)}
+      />
+    );
+  };
+
+  const renderHealthRecordSearchResults = () => {
+    return searchLoading ? (
+      renderSearchLoader()
+    ) : (
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        bounces={false}
+        data={healthRecordSearchResults}
+        ListEmptyComponent={
+          <PhrNoDataComponent mainViewStyle={styles.phrNodataMainViewStyle} phrSearchList />
+        }
+        ListHeaderComponent={searchListHeaderView}
+        renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
+      />
+    );
+  };
+
+  const renderHealthConditionMainView = () => {
+    return (
+      <>
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {renderHealthCondtionsData()}
+        </ScrollView>
+        {!apiError && renderAddButton()}
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {healthConditionMainData?.length > 0 ? renderSearchAndFilterView() : null}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderHealthCondtionsData()}
-        </ScrollView>
-        {!apiError && renderAddButton()}
+        {healthConditionMainData?.length > 0
+          ? showSearchBar
+            ? renderSearchBar()
+            : renderSearchAndFilterView()
+          : null}
+        {searchText?.length > 2
+          ? renderHealthRecordSearchResults()
+          : renderHealthConditionMainView()}
       </SafeAreaView>
     </View>
   );

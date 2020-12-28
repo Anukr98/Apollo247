@@ -473,6 +473,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+        } else {
+          getAuthToken();
+          setSearchLoading(false);
         }
       })
       .catch((error) => {
@@ -514,7 +517,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           <View style={styles.searchBarViewStyle}>
             <PhrSearchIcon style={{ width: 20, height: 20 }} />
             <TextInput
-              placeholder={'Search'}
+              placeholder={'Search doctor consulations'}
               autoCapitalize={'none'}
               autoFocus={searchInputFocus}
               style={styles.textInputStyle}
