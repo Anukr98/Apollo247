@@ -465,14 +465,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={{ marginLeft: 10 }}
               disabled={true}
               activeOpacity={1}
-              onPress={() => setFilterVisible(true)}
+              onPress={() => console.log('filter press')}
             >
               <Filter />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -698,10 +698,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         }}
         medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
-        // price={price}
-        price={Number(mrpToDisplay!)}
+        price={price}
+        mrpToDisplay={Number(mrpToDisplay!)}
         specialPrice={sellingPrice}
-        // specialPrice={!promoteCircle && price != specialPrice ? specialPrice : undefined}
+        packageMrp={packageMrpForItem}
         circlePrice={promoteCircle ? circleSpecialPrice : undefined}
         isCareSubscribed={isDiagnosticCircleSubscription}
         unit={1}

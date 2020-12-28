@@ -1506,6 +1506,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               case 'ALLERGY':
                 finalData.push({ healthkey: MedicalRecordType.ALLERGY, value: recordData });
                 break;
+              case 'MEDICATION':
+                finalData.push({ healthkey: MedicalRecordType.MEDICATION, value: recordData });
+                break;
               case 'MEDICALCONDITION':
                 finalData.push({
                   healthkey: MedicalRecordType.MEDICALCONDITION,
@@ -1533,6 +1536,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             }
           });
           setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
+        } else {
+          getAuthToken();
           setSearchLoading(false);
         }
       })
@@ -1689,6 +1695,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
               <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
                 {'Health Conditions > Medical Conditions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.FAMILY_HISTORY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Family History'}
               </Text>
             </View>
           );
