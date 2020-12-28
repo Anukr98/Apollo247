@@ -148,7 +148,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
   };
 
-  console.log({ orderDetails });
   const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
   );
@@ -200,7 +199,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         ? item?.packageMrp! - item?.pricingObj?.[0].price!
         : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
     ) || [];
-  console.log({ discountCirclePrice });
 
   const discountNormalPrice =
     newAllArray?.map((item) =>
@@ -208,7 +206,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         ? item?.packageMrp! - item?.pricingObj?.[0].price!
         : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
     ) || [];
-  console.log({ discountNormalPrice });
 
   const discountSpecialPrice =
     newSpecialArray?.map((item) =>
@@ -216,7 +213,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         ? item?.packageMrp! - item?.pricingObj?.[0].price!
         : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
     ) || [];
-  console.log({ discountSpecialPrice });
 
   const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
   const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
@@ -237,8 +233,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     (prevVal, currVal) => prevVal + currVal
   );
 
-  console.log({ totalIndividualDiagonsticsCharges });
-
   const HomeCollectionCharges =
     orderDetails?.collectionCharges != null
       ? orderDetails?.collectionCharges
@@ -246,12 +240,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       ? totalIndividualDiagonsticsCharges! - orderDetails?.totalPrice!
       : orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges;
 
-  console.log({ HomeCollectionCharges });
-
   //removed the savings (cart,circle,discounts)
   const grossCharges = totalIndividualDiagonsticsCharges!;
-
-  console.log({ grossCharges });
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (

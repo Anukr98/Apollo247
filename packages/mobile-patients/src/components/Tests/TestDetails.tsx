@@ -193,6 +193,13 @@ const styles = StyleSheet.create({
     height: 50,
   },
   circlePriceView: { alignSelf: 'flex-start', marginTop: 5 },
+  priceTextSlashed: {
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+    textDecorationLine: 'line-through',
+    opacity: 0.5,
+    marginTop: -10,
+  },
 });
 
 var tabs = [
@@ -930,18 +937,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
                   {/**added */}
                   {promoteCircle && !!strikedPrice && strikedPrice! > bottomPrice && (
-                    <Text
-                      style={[
-                        styles.priceText,
-                        {
-                          textAlign: 'left',
-                          alignSelf: 'flex-start',
-                          textDecorationLine: 'line-through',
-                          opacity: 0.5,
-                          marginTop: -10,
-                        },
-                      ]}
-                    >
+                    <Text style={[styles.priceText, styles.priceTextSlashed]}>
                       ({string.common.Rs}
                       {strikedPrice})
                     </Text>
