@@ -176,6 +176,13 @@ import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { ConsultProgressBar } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultProgressBar';
+let chatProgressData = [
+  { title: 'Medical Details', isCompleted: true },
+  { title: 'Consult in Progress', isCompleted: false },
+  { title: 'Completed', isCompleted: false },
+  { title: 'Prescription', isCompleted: false },
+];
 
 interface OpentokStreamObject {
   connection: {
@@ -267,7 +274,7 @@ const styles = StyleSheet.create({
   },
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 12,
+    paddingTop: 10,
     paddingHorizontal: 20,
     ...theme.viewStyles.shadowStyle,
   },
@@ -284,9 +291,9 @@ const styles = StyleSheet.create({
   },
   doctorNameStyle: {
     paddingTop: 8,
-    paddingBottom: 0,
+    paddingBottom: 5,
     textTransform: 'capitalize',
-    ...theme.fonts.IBMPlexSansSemiBold(23),
+    ...theme.fonts.IBMPlexSansSemiBold(16),
     color: theme.colors.LIGHT_BLUE,
   },
   doctorSpecialityStyle: {
@@ -297,7 +304,6 @@ const styles = StyleSheet.create({
     lineHeight: 15,
   },
   timeStyle: {
-    paddingBottom: 20,
     ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.SKY_BLUE,
   },
@@ -2621,7 +2627,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // thirtySecondCall();
       // minuteCaller();
     } else {
+      // if(JD + !SKIP){
       setDisplayChatQuestions(true);
+      // }
     }
   }, []);
 
@@ -5009,16 +5017,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
     const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
     if (textChange && !jrDoctorJoined.current) {
-      time = 'Consult is In-progress';
+      chatProgressData = [
+        { title: 'Medical Details', isCompleted: true },
+        { title: 'Consult in Progress', isCompleted: true },
+        { title: 'Completed', isCompleted: false },
+        { title: 'Prescription', isCompleted: false },
+      ];
     } else {
       if (status === STATUS.COMPLETED) {
         time = `Consult is completed`;
       } else if (diffMin <= 0) {
-        time = `Will be joining soon`;
+        time = `Joining soon. Please wait!`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+        time = `Expected to join in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours >= 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in ${convertMinsToHrsMins(diffMin)}`;
+        time = `Expected to join in ${convertMinsToHrsMins(diffMin)}`;
       } else {
         time = `Consult on ${moment(appointmentTime).format('DD/MM')} at ${moment(
           appointmentTime
@@ -5027,42 +5040,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     return (
       <View style={styles.mainView}>
-        <View style={{ maxWidth: '40%' }}>
-          <Text style={styles.displayId} numberOfLines={1}>
-            #{appointmentData.displayId}
-          </Text>
-          <View style={styles.separatorStyle} />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
-            <Text style={styles.doctorSpecialityStyle}>{`${g(
-              appointmentData,
-              'doctorInfo',
-              'specialty',
-              'userFriendlyNomenclature'
-            )} | MCI Reg. No. ${g(appointmentData, 'doctorInfo', 'registrationNumber')}`}</Text>
-            <Text style={styles.timeStyle}>{time}</Text>
-          </View>
-          <View style={styles.imageView}>
-            <View style={styles.imageContainer}>
-              {appointmentData.doctorInfo.thumbnailUrl &&
-              appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
-                <Image
-                  source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
-                  resizeMode={'contain'}
-                  style={styles.doctorImage}
-                />
-              ) : (
-                <DoctorPlaceholderImage style={styles.doctorImage} />
-              )}
-            </View>
-          </View>
-        </View>
+        <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
+        <Text style={styles.timeStyle}>{time}</Text>
+        {renderProgressBar(chatProgressData)}
       </View>
     );
   };
@@ -6499,6 +6479,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Rating Reason': reason,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
+  };
+
+  const renderProgressBar = (data: { title: string; isCompleted: boolean }[]) => {
+    return <ConsultProgressBar data={data} />;
   };
 
   return (
