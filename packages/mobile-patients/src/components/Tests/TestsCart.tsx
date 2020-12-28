@@ -322,6 +322,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDeliveryAddressCityId,
     deliveryAddressCityId,
     cartTotal,
+    totalPriceExcludingAnyDiscounts,
     couponDiscount,
     grandTotal,
     uploadPrescriptionRequired,
@@ -1272,7 +1273,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         testDescription: product?.testDescription,
                         source: 'Cart Page',
                         type: product?.itemType,
-                        packageMrp: product?.packageCalculatedMrp,
+                        packageMrp: itemPackageMrp,
                         mrpToDisplay: mrpToDisplay,
                       } as TestPackageForDetails,
                     });
@@ -1281,12 +1282,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 );
               }}
               medicineName={test.name!}
-              // price={price}
-              price={Number(mrpToDisplay!)}
+              price={price}
+              mrpToDisplay={Number(mrpToDisplay!)}
               specialPrice={sellingPrice}
+              packageMrp={itemPackageMrp}
               circlePrice={promoteCircle ? circleSpecialPrice! : undefined}
               discount={
-                promoteCircle ? circleDiscount! : promoteDiscount ? specialDiscount! : discount!
+                promoteCircle && isDiagnosticCircleSubscription
+                  ? circleDiscount!
+                  : promoteDiscount
+                  ? specialDiscount!
+                  : discount!
               }
               imageUrl={imageUrl}
               onPressAdd={() => {}}
@@ -1930,7 +1936,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
             <Text style={styles.blueTextStyle}>
-              {string.common.Rs} {cartTotal.toFixed(2)}
+              {string.common.Rs} {totalPriceExcludingAnyDiscounts.toFixed(2)}
             </Text>
           </View>
           {couponDiscount > 0 && (
@@ -2507,11 +2513,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
     );
-    //consider the  package prices to show the savings (~cartTotal)
-    const totalPriceWithoutAnyDiscount = cartItems?.reduce(
-      (prevVal, currVal) => prevVal + currVal?.price,
-      0
-    );
 
     const bookingOrderInfo: DiagnosticBookHomeCollectionInput = {
       uniqueID: validateCouponUniqueId,
@@ -2551,8 +2552,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       slotId: employeeSlotId?.toString() || '0',
       areaId: (areaSelected || ({} as any)).key!,
       collectionCharges: hcCharges,
-      // totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
-      totalPriceExcludingDiscounts: cartTotal + hcCharges,
+      totalPriceExcludingDiscounts: totalPriceExcludingAnyDiscounts + hcCharges,
       subscriptionInclusionId: null,
       userSubscriptionId: circleSubscriptionId,
       // prismPrescriptionFileId: [

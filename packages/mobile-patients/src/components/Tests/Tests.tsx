@@ -1107,12 +1107,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                */}
               {(specialPrice != price || discountSpecialPrice != discountPrice) && (
                 <Text style={styles.discountPriceText}>
-                  {string.common.Rs} {mrpToDisplay}
+                  {string.common.Rs} {price}
                 </Text>
               )}
               <Text style={styles.sellingPriceText}>
-                {string.common.Rs}{' '}
-                {promoteDiscount ? discountSpecialPrice : specialPrice || mrpToDisplay}
+                {string.common.Rs}
+                {promoteDiscount ? discountSpecialPrice : specialPrice || price}
               </Text>
             </View>
           )}
@@ -1155,7 +1155,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
           {promoteCircle
-            ? renderCircleView(circleSpecialPrice!, specialPrice! || mrpToDisplay!, promoteCircle)
+            ? renderCircleView(
+                circleSpecialPrice!,
+                mrpToDisplay!,
+                circlePrice! || price!,
+                promoteCircle
+              )
             : null}
 
           <Text
@@ -1183,7 +1188,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderCircleView = (
     circleSpecialPrice: number,
-    price: number | string,
+    price: number | string, //(mrpToDisplay)
+    circlePrice: number | string,
     promoteCircle: boolean
   ) => {
     return (
@@ -1215,8 +1221,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
               {string.common.Rs} {price}
             </Text>
           )}
+          {!isDiagnosticCircleSubscription && promoteCircle && price > circlePrice && (
+            <Text
+              style={[
+                styles.circleMainPriceText,
+                {
+                  ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 0.5, 15.6),
+                  textDecorationLine: 'line-through',
+                },
+              ]}
+            >
+              {string.common.Rs} {price}
+            </Text>
+          )}
           <Text style={styles.circleSellingPriceText}>
-            {string.common.Rs} {isDiagnosticCircleSubscription ? circleSpecialPrice : price}
+            {string.common.Rs} {isDiagnosticCircleSubscription ? circleSpecialPrice : circlePrice}
           </Text>
         </View>
       </View>
@@ -1461,6 +1480,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     promoteDiscount: boolean,
     numberOfInclusions: number,
     mrpToDisplay: number,
+    packageCalculatedMrp: number,
     imageUri: string,
     style: ViewStyle,
     isAddedToCart: boolean,
@@ -1577,7 +1597,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {!isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubPrice}>
                     {string.common.Rs}
-                    {promoteCircle ? circleSpecialPrice : specialPrice || mrpToDisplay}
+                    {promoteCircle ? circleSpecialPrice : specialPrice || price}
                   </Text>
                 )}
               </View>
@@ -1587,24 +1607,36 @@ export const Tests: React.FC<TestsProps> = (props) => {
              */}
             <View style={{ flexDirection: 'row' }}>
               {/**
+               * price to be shown if mrp is not same as packageCal
+               */}
+              {!!packageCalculatedMrp &&
+                packageCalculatedMrp != price &&
+                packageCalculatedMrp > price && (
+                  <Text style={styles.nonSubStrikedPrice}>
+                    ({string.common.Rs} {packageCalculatedMrp})
+                  </Text>
+                )}
+              {/**
                * original price (discount price is present and no circle + !promoteCircle)
                */}
               {!promoteCircle &&
-                ((!!specialPrice && specialPrice != mrpToDisplay) ||
-                  (!!discountSpecialPrice && discountSpecialPrice != mrpToDisplay)) &&
+                ((!!specialPrice && specialPrice != price) ||
+                  (!!discountSpecialPrice && discountSpecialPrice != discountPrice)) &&
                 !isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubStrikedPrice}>
-                    ({string.common.Rs} {mrpToDisplay})
+                    ({string.common.Rs} {price})
                   </Text>
                 )}
 
               {/**
                * slashed price in case prmote circle + sub or slashed price or discount price
                */}
-              {((!!specialPrice && specialPrice != mrpToDisplay) ||
+              {((!!specialPrice && specialPrice != price) ||
                 promoteCircle ||
-                (!!discountSpecialPrice && discountSpecialPrice != mrpToDisplay)) &&
-                isDiagnosticCircleSubscription && (
+                (!!discountSpecialPrice && discountSpecialPrice != discountPrice)) &&
+                isDiagnosticCircleSubscription &&
+                price > packageCalculatedMrp! &&
+                discountPrice > packageCalculatedMrp && (
                   <Text
                     style={{
                       ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
@@ -1623,7 +1655,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         },
                       ]}
                     >
-                      {string.common.Rs} {mrpToDisplay}
+                      {string.common.Rs} {price}
                     </Text>
                     )
                   </Text>
@@ -1639,7 +1671,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   ? circleSpecialPrice
                   : promoteDiscount
                   ? discountSpecialPrice
-                  : mrpToDisplay}
+                  : specialPrice || price}
               </Text>
               {/**
                * add to cart
@@ -1813,6 +1845,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 promoteDiscount,
                 numberOfInclusions,
                 Number(mrpToDisplay!),
+                packageMrpForItem,
                 item.organImage!,
                 {
                   marginHorizontal: 4,
@@ -2251,26 +2284,37 @@ export const Tests: React.FC<TestsProps> = (props) => {
           {/* <Spearator style={{ marginTop: 6, marginBottom: 2 }} /> */}
 
           {/**
-           * show special price only when do not promote circle ~~~ merge below two checks
-           * changed 2 conditions from or to and
+           * code for slash pricing
            */}
-          {!data?.promoteCircle &&
-            data?.specialPrice != data?.mrpToDisplay &&
-            data?.discountSpecialPrice != data?.mrpToDisplay && (
-              <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
-                <Text style={styles.strikedPrice}>
-                  {string.common.Rs} {data?.mrpToDisplay}
-                </Text>
-              </View>
-            )}
-          {isDiagnosticCircleSubscription && data?.promoteCircle && (
+
+          {!!data?.packageCalculatedMrp && data?.packageCalculatedMrp > data?.rate && (
             <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
               <Text style={styles.strikedPrice}>
-                {/* {string.common.Rs} {data?.specialPrice! || data?.rate} */}
-                {string.common.Rs} {data?.mrpToDisplay}
+                ({string.common.Rs} {data?.packageCalculatedMrp})
               </Text>
             </View>
           )}
+
+          {(data?.packageCalculatedMrp == null || data?.packageCalculatedMrp == 0) &&
+            data?.promoteCircle &&
+            data?.circleSpecialPrice != data?.circlePrice &&
+            (!isDiagnosticCircleSubscription ? data?.circlePrice != data?.mrpToDisplay : true) && (
+              <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
+                <Text style={styles.strikedPrice}>
+                  ({string.common.Rs} {data?.circlePrice})
+                </Text>
+              </View>
+            )}
+
+          {(data?.packageCalculatedMrp == null || data?.packageCalculatedMrp == 0) &&
+            data?.promoteDiscount &&
+            data?.discountPrice != data?.discountSpecialPrice && (
+              <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
+                <Text style={styles.strikedPrice}>
+                  ({string.common.Rs} {data?.discountPrice})
+                </Text>
+              </View>
+            )}
 
           <View
             style={{
@@ -2313,8 +2357,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
              */}
             {!isDiagnosticCircleSubscription && data?.promoteCircle && (
               <Text style={[styles.normalPrice]}>
-                {/* {string.common.Rs} {data?.specialPrice! || data?.mrpToDisplay} */}
-                {string.common.Rs} {data?.mrpToDisplay}
+                {string.common.Rs} {data?.specialPrice! || data?.mrpToDisplay}
+                {/* {string.common.Rs} {data?.mrpToDisplay} */}
               </Text>
             )}
             {/**
@@ -2333,6 +2377,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
              */}
             {isDiagnosticCircleSubscription && !data?.promoteCircle && (
               <Text style={styles.normalPrice}>
+                {string.common.Rs}
                 {data?.promoteDiscount
                   ? data?.discountSpecialPrice
                   : data?.specialPrice! || data?.mrpToDisplay}
