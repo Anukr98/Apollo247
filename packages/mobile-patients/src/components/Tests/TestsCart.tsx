@@ -130,7 +130,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { getAreas, getAreasVariables } from '@aph/mobile-patients/src/graphql/types/getAreas';
 import {
   getDiagnosticSlotsWithAreaID,
@@ -1393,9 +1393,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
-    props.navigation.push(AppRoutes.AddAddress, {
+    props.navigation.push(AppRoutes.AddAddressNew, {
       KeyName: dataname,
-      DataAddress: address,
+      addressDetails: address,
       ComingFrom: comingFrom,
     });
   };
@@ -1476,7 +1476,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={styles.yellowTextStyle}
             onPress={() => {
               postPharmacyAddNewAddressClick('Diagnostics Cart');
-              props.navigation.navigate(AppRoutes.AddAddress, {
+              props.navigation.navigate(AppRoutes.AddAddressNew, {
                 addOnly: true,
                 source: 'Diagnostics Cart' as AddressSource,
               });
