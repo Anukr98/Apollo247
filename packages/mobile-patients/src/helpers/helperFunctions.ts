@@ -92,8 +92,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import stripHtml from 'string-strip-html';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -146,6 +146,10 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
   FAMILY_HISTORY = 'FAMILY HISTORY',
 }
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
+};
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
@@ -329,10 +333,6 @@ export const phrSortWithDate = (array: any) => {
         .toDate()
         .getTime()
   );
-};
-
-export const getPhrHighlightText = (highlightText: string) => {
-  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
 };
 
 export const getSourceName = (
