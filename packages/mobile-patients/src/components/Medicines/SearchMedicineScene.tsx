@@ -170,7 +170,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems, pinCode } = useShoppingCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    updateCartItem,
+    cartItems,
+    pinCode,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
@@ -380,7 +387,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Full Search', categoryId: category_id },
-      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
+      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
+      pharmacyCircleAttributes!
     );
   };
 

@@ -23,7 +23,6 @@ import {
   useShoppingCart,
   ShoppingCartItem,
   PhysicalPrescription,
-  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { FreeDelivery } from '@aph/mobile-patients/src/components/MedicineCart/Components/FreeDelivery';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
@@ -137,6 +136,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setDefaultCirclePlan,
     circleSubscriptionId,
     hdfcSubscriptionId,
+    pharmacyCircleAttributes,
+    newAddressAdded,
+    setNewAddressAdded,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -150,7 +152,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     hdfcPlanId,
     hdfcStatus,
     circleStatus,
-    circlePaymentReference,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -172,18 +173,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
 
-  const pharmacyCircleAttributes: PharmacyCircleEvent = {
-    'Circle Membership Added': circleSubscriptionId
-      ? 'Existing'
-      : !!circleMembershipCharges
-      ? 'Yes'
-      : 'No',
-    'Circle Membership Value': circleSubscriptionId
-      ? circlePaymentReference?.amount_paid
-      : !!circleMembershipCharges
-      ? circlePlanSelected?.currentSellingPrice
-      : null,
-  };
   useEffect(() => {
     fetchAddress();
     availabilityTat(false);
@@ -223,6 +212,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       isfocused && availabilityTat(false, true);
     }
   }, [deliveryAddressId]);
+
+  useEffect(() => {
+    // call servicability api if new address is added from cart
+    const addressLength = addresses.length;
+    if (!!addressLength && !!newAddressAdded) {
+      const newAddress = addresses.filter((value) => value.id === newAddressAdded);
+      checkServicability(newAddress[0]);
+      setNewAddressAdded && setNewAddressAdded('');
+    }
+  }, [newAddressAdded]);
 
   useEffect(() => {
     if (isfocused) {
@@ -337,7 +336,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
-    if (deliveryAddressId && deliveryAddressId == address.id) {
+    if (deliveryAddressId && deliveryAddressId == address.id && !newAddressAdded) {
       return;
     }
     try {
@@ -349,6 +348,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
+        setloading(false);
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
         setloading(false);
@@ -938,8 +938,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {(!!coupon || isCircleSubscription || !!circleSubscriptionId) &&
-          renderApplyCircleBenefits()}
+        {(isCircleSubscription || !!circleSubscriptionId) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
@@ -1139,6 +1138,35 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return <UnServiceable style={{ marginTop: 24 }} />;
   };
 
+  const renderViewCirclePlans = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={[styles.applyBenefits, { marginBottom: 10 }]}
+        onPress={() => {
+          setCoupon && setCoupon(null);
+        }}
+      >
+        <View>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={styles.circleApplyContainer} />
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={styles.applyText}>View </Text>
+              <CareCashbackBanner
+                bannerText={`Plans`}
+                textStyle={styles.circleText}
+                logoStyle={styles.circleLogo}
+              />
+            </View>
+          </View>
+          <Text style={styles.useCircleText}>
+            Viewing plans will remove any applied coupon. You can opt for coupon again later.`
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderScreen = () => {
     return (
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1152,6 +1180,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             !circleSubscriptionId &&
             !circleMembershipCharges &&
             renderCareSubscriptionOptions()}
+          {!!coupon && !isCircleSubscription && !circleSubscriptionId && renderViewCirclePlans()}
           {!circleMembershipCharges && renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}

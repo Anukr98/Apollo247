@@ -19,7 +19,6 @@ import { StoreDriveWayPickupPopup } from '@aph/mobile-patients/src/components/Me
 import { StoreDriveWayPickupView } from '@aph/mobile-patients/src/components/Medicines/StoreDriveWayPickupView';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
-  PharmacyCircleEvent,
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
@@ -218,8 +217,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     addMultipleCartItems,
     circleSubscriptionId,
     hdfcSubscriptionId,
-    circleMembershipCharges,
-    circlePlanSelected,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
@@ -246,7 +244,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     circlePlanId,
     hdfcStatus,
     circleStatus,
-    circlePaymentReference,
   } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
@@ -256,18 +253,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [alertShown, setAlertShown] = useState<boolean>(false);
   const [storeType, setStoreType] = useState('');
   const [shopId, setShopId] = useState('');
-  const pharmacyCircleAttributes: PharmacyCircleEvent = {
-    'Circle Membership Added': circleSubscriptionId
-      ? 'Existing'
-      : !!circleMembershipCharges
-      ? 'Yes'
-      : 'No',
-    'Circle Membership Value': circleSubscriptionId
-      ? circlePaymentReference?.amount_paid
-      : !!circleMembershipCharges
-      ? circlePlanSelected?.currentSellingPrice
-      : null,
-  };
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 

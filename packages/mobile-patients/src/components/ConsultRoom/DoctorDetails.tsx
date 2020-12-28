@@ -882,7 +882,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <View>
                       <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                      {isCircleDoctor && onlineConsultMRPPrice ? (
+                      {isCircleDoctor && onlineConsultMRPPrice > 0 ? (
                         renderCareDoctorPricing(ConsultMode.ONLINE)
                       ) : (
                         <Text style={styles.onlineConsultAmount}>
@@ -974,7 +974,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
-                          {isCircleDoctor && physicalConsultMRPPrice ? (
+                          {isCircleDoctor && physicalConsultMRPPrice > 0 ? (
                             renderCareDoctorPricing(ConsultMode.PHYSICAL)
                           ) : (
                             <Text style={styles.onlineConsultAmount}>

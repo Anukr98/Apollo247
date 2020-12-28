@@ -51,6 +51,8 @@ export const ProductCard: React.FC<Props> = ({
   onPressSubtractQty,
   is_express,
   onPressCashback,
+  is_in_contract,
+  dc_availability,
 }) => {
   const {
     circleSubscription,

@@ -381,6 +381,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     setIsFreeDelivery,
     circleSubscriptionId,
     setCirclePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -497,6 +498,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ProductName: name,
         Stockavailability: !!is_in_stock ? 'Yes' : 'No',
         ...productPageViewedEventProps,
+        ...pharmacyCircleAttributes,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -534,10 +536,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       maxOrderQty: MaxOrderQty,
       productType: type_id,
     });
-    postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
-    postFirebaseAddToCartEvent(item, 'Pharmacy PDP', sectionName);
+    postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName, '', pharmacyCircleAttributes!);
+    postFirebaseAddToCartEvent(item, 'Pharmacy PDP', sectionName, '', pharmacyCircleAttributes!);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(item, id);
+    postAppsFlyerAddToCartEvent(item, id, pharmacyCircleAttributes!);
   };
 
   const updateQuantityCartItem = (

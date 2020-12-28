@@ -244,6 +244,8 @@ export interface FirebaseEvents {
     SectionName?: string;
     af_revenue: number;
     af_currency: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [FirebaseEventName.DIAGNOSTIC_ADD_TO_CART]: {
     productname: string;
@@ -403,6 +405,8 @@ export interface FirebaseEvents {
     ItemCode?: string;
     ItemPrice?: number;
     LOB?: string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
 
   [FirebaseEventName.ITEMS_REMOVED_FROM_CART]: {

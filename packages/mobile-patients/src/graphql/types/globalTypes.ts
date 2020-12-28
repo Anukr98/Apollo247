@@ -335,6 +335,7 @@ export enum MedicalRecordType {
   ALLERGY = "ALLERGY",
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  FAMILY_HISTORY = "FAMILY_HISTORY",
   HEALTHCHECK = "HEALTHCHECK",
   HEALTHRESTRICTION = "HEALTHRESTRICTION",
   HOSPITALIZATION = "HOSPITALIZATION",
@@ -357,6 +358,11 @@ export enum ONE_APOLLO_STORE_CODE {
   ANDCUS = "ANDCUS",
   IOSCUS = "IOSCUS",
   WEBCUS = "WEBCUS",
+}
+
+export enum ORDER_TYPE {
+  CONSULT = "CONSULT",
+  PHARMACY = "PHARMACY",
 }
 
 export enum OTP_STATUS {
@@ -562,6 +568,11 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum ZoneType {
+  CITY = "CITY",
+  STATE = "STATE",
 }
 
 export enum mediaPrescriptionSource {
@@ -876,7 +887,7 @@ export interface DiagnosticBookHomeCollectionInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
   areaId: number;
-  homeCollectionCharges: number;
+  collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
   totalPriceExcludingDiscounts?: number | null;
@@ -974,6 +985,23 @@ export interface EndAppointmentSessionInput {
   isReferred?: boolean | null;
 }
 
+export interface FamilyHistoryFilesProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface FamilyHistoryParameters {
+  patientId: string;
+  diseaseName?: string | null;
+  id?: string | null;
+  familyMember?: Relation | null;
+  notes?: string | null;
+  age?: number | null;
+  recordDate?: any | null;
+  attachmentList?: (FamilyHistoryFilesProperties | null)[] | null;
+}
+
 export interface FilterDoctorInput {
   patientId?: string | null;
   specialty?: string | null;
@@ -1009,6 +1037,8 @@ export interface HelpEmailInput {
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
 }
 
 export interface HospitalizationFileProperties {
@@ -1093,6 +1123,7 @@ export interface MedicineCartOMSInput {
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
+  savedDeliveryCharge?: number | null;
 }
 
 export interface MedicineCartOMSItem {

@@ -164,9 +164,17 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     onPressNotify,
     onPressAddQty,
     onPressSubtractQty,
+    dc_availability,
+    is_in_contract,
   } = props;
   const finalPrice = price - Number(special_price) ? Number(special_price) : price;
   const cashback = getCareCashback(Number(finalPrice), type_id);
+
+  const isOutOfStock =
+    !!dc_availability &&
+    !!is_in_contract &&
+    dc_availability.toLowerCase() === 'no' &&
+    is_in_contract.toLowerCase() === 'no';
 
   const renderTitleAndIcon = () => {
     return (
@@ -185,11 +193,11 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={[styles.addToCartViewStyle, !!is_in_stock && { paddingHorizontal: 23 }]}
-        onPress={!is_in_stock ? onPressNotify : onPressAddToCart}
+        style={[styles.addToCartViewStyle, !isOutOfStock && { paddingHorizontal: 23 }]}
+        onPress={isOutOfStock ? onPressNotify : onPressAddToCart}
       >
         <Text style={theme.viewStyles.text('SB', 9, '#fc9916', 1, 24, 0)}>
-          {!is_in_stock ? 'NOTIFY ME' : 'ADD'}
+          {isOutOfStock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
     );
@@ -234,8 +242,8 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const renderSpecialPrice = () => {
     const discount = getDiscountPercentage(price, special_price);
     const off_text = discount ? ' ' + discount + '%off' : '';
-    return is_in_stock ? (
-      <View style={{ flexDirection: 'row', marginBottom: 20, }}>
+    return !isOutOfStock ? (
+      <View style={{ flexDirection: 'row', marginBottom: 20 }}>
         {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>
@@ -253,7 +261,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
 
   const renderOutOfStock = () => {
     const discount = getDiscountPercentage(price, special_price);
-    return !is_in_stock && sell_online ? (
+    return isOutOfStock && sell_online ? (
       <Text style={styles.outOfStockStyle} numberOfLines={2}>
         {'Out Of Stock'}
       </Text>
@@ -304,10 +312,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     >
       {!!cashback && !!type_id && renderOfferTag()}
       {is_express === 'Yes' && renderExpressFlag()}
-      <View style={[
-        styles.medicineIconAndNameViewStyle,
-        {marginTop: 10}
-      ]}>
+      <View style={[styles.medicineIconAndNameViewStyle, { marginTop: 10 }]}>
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
       </View>

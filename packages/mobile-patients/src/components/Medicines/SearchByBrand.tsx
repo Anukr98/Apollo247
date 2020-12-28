@@ -144,7 +144,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems, pinCode } = useShoppingCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    updateCartItem,
+    cartItems,
+    pinCode,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
@@ -258,7 +265,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy List', categoryId: category_id },
-      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
+      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
+      pharmacyCircleAttributes!
     );
   };
 

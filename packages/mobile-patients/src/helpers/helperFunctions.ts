@@ -2,6 +2,7 @@ import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPackageData,
@@ -76,6 +77,7 @@ import {
   ShoppingCartContextProps,
   EPrescription,
   useShoppingCart,
+  PharmacyCircleEvent,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -90,6 +92,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import stripHtml from 'string-strip-html';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -140,6 +144,7 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICATION = 'MEDICATION',
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
+  FAMILY_HISTORY = 'FAMILY HISTORY',
 }
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
@@ -317,13 +322,17 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b.date || b.billDateTime || b.startDateTime)
+      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
         .toDate()
         .getTime() -
-      moment(a.date || a.billDateTime || a.startDateTime)
+      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
         .toDate()
         .getTime()
   );
+};
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
 };
 
 export const getSourceName = (
@@ -1117,13 +1126,20 @@ export const addTestsToCart = async (
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+      context: {
+        headers: {
+          source: Platform.OS,
+          source_version: DeviceInfo.getVersion(),
+        },
+      },
       variables: {
         searchText: name,
         cityID: 9, //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });
-  const detailQuery = (itemId: string) => getPackageData(itemId);
+  const detailQuery = async (itemId: string) =>
+    await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
@@ -1139,22 +1155,22 @@ export const addTestsToCart = async (
       searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
     );
     const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
-
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData.length,
     }).map((_, index) => {
       const s = searchQueriesData[index];
       const testIncludedCount = detailQueriesData[index];
       return {
-        id: `${s.itemId}`,
-        name: s.itemName,
-        price: s.rate,
+        id: `${s?.itemId}`,
+        name: s?.itemName,
+        price: s?.rate,
         specialPrice: undefined,
         mou: testIncludedCount,
         thumbnail: '',
         collectionMethod: s.collectionType,
+        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions
       } as DiagnosticsCartItem;
     });
 
@@ -1350,7 +1366,8 @@ export const postwebEngageAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
   sectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name']
+  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'],
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
@@ -1366,6 +1383,7 @@ export const postwebEngageAddToCartEvent = (
     Source: source,
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
+    ...pharmacyCircleAttributes,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1628,7 +1646,8 @@ export const postAppsFlyerAddToCartEvent = (
     price,
     special_price,
   }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
-  id: string
+  id: string,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
     'customer id': id,
@@ -1636,6 +1655,7 @@ export const postAppsFlyerAddToCartEvent = (
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku,
+    ...pharmacyCircleAttributes,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1680,7 +1700,8 @@ export const postFirebaseAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source'],
   section?: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Section'],
-  sectionName?: string
+  sectionName?: string,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
@@ -1698,6 +1719,7 @@ export const postFirebaseAddToCartEvent = (
       af_currency: 'INR',
       Section: section ? section : '',
       SectionName: sectionName || '',
+      ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   } catch (error) {}
@@ -1828,7 +1850,8 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
-  onComplete?: () => void
+  onComplete?: () => void,
+  pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -1853,7 +1876,8 @@ export const addPharmaItemToCart = (
       },
       otherInfo?.source,
       otherInfo?.section,
-      otherInfo?.categoryName
+      otherInfo?.categoryName,
+      pharmacyCircleAttributes!
     );
     postFirebaseAddToCartEvent(
       {
@@ -1864,7 +1888,9 @@ export const addPharmaItemToCart = (
         category_id: g(otherInfo, 'categoryId'),
       },
       g(otherInfo, 'source')!,
-      g(otherInfo, 'section')
+      g(otherInfo, 'section'),
+      '',
+      pharmacyCircleAttributes!
     );
     postAppsFlyerAddToCartEvent(
       {
@@ -1874,7 +1900,8 @@ export const addPharmaItemToCart = (
         special_price: cartItem.specialPrice,
         category_id: g(otherInfo, 'categoryId'),
       },
-      g(currentPatient, 'id')!
+      g(currentPatient, 'id')!,
+      pharmacyCircleAttributes!
     );
   };
 
@@ -2181,4 +2208,18 @@ export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
     circleMembershipType = 'Annual';
   }
   return circleMembershipType;
+};
+
+export const isProductInStock = (product: MedicineProduct) => {
+  const { dc_availability, is_in_contract } = product;
+  if (
+    !!dc_availability &&
+    !!is_in_contract &&
+    dc_availability.toLowerCase() === 'no' &&
+    is_in_contract.toLowerCase() === 'no'
+  ) {
+    return false;
+  } else {
+    return true;
+  }
 };

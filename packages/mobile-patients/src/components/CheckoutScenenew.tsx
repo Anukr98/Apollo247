@@ -1,8 +1,5 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  useShoppingCart,
-  PharmacyCircleEvent,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -86,7 +83,6 @@ import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import DeviceInfo from 'react-native-device-info';
@@ -138,8 +134,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     setCircleMembershipCharges,
     defaultCirclePlan,
     circlePlanSelected,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
-  const { circlePaymentReference } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -174,18 +170,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   );
 
   const client = useApolloClient();
-  const pharmacyCircleAttributes: PharmacyCircleEvent = {
-    'Circle Membership Added': circleSubscriptionId
-      ? 'Existing'
-      : !!circleMembershipCharges
-      ? 'Yes'
-      : 'No',
-    'Circle Membership Value': circleSubscriptionId
-      ? circlePaymentReference?.amount_paid
-      : !!circleMembershipCharges
-      ? circlePlanSelected?.currentSellingPrice
-      : null,
-  };
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 

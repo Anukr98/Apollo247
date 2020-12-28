@@ -16,6 +16,7 @@ import {
   postFirebaseEvent,
   setCircleMembershipType,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -159,7 +160,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/DiagnosticBookHomeCollection';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateMrpToDisplay,
+  getPricesForItem,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
@@ -416,12 +421,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
       mutation: SAVE_DIAGNOSTIC_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderInput: orderInfo },
     });
 
   const saveHomeCollectionBookingOrder = (orderInfo: DiagnosticBookHomeCollectionInput) =>
     client.mutate<DiagnosticBookHomeCollection, DiagnosticBookHomeCollectionVariables>({
       mutation: SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderInput: orderInfo },
     });
 
@@ -741,6 +752,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         getPatientAddressListVariables
       >({
         query: GET_PATIENT_ADDRESS_LIST,
+        context: {
+          sourceHeaders,
+        },
         variables: { patientId: userId },
         fetchPolicy: 'no-cache',
       });
@@ -770,6 +784,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const getPinCodeServiceability = async () => {
+    console.log('ye chala');
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
     const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
     if (!!pinCodeFromAddress) {
@@ -778,6 +793,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             pincode: parseInt(pinCodeFromAddress, 10),
           },
@@ -787,7 +805,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData.cityName != '') {
             setAddressCityId!(String(serviceableData?.cityID!) || '');
-            setDeliveryAddressCityId!(String(serviceableData?.cityID || ''));
+            setDeliveryAddressCityId!(String(serviceableData?.cityID));
             getDiagnosticsAvailability(serviceableData?.cityID!, cartItems)
               .then(({ data }) => {
                 const diagnosticItems =
@@ -843,7 +861,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         );
 
         if (isItemInCart !== -1) {
-          const pricesForItem = getPricesForItem(results?.[isItemInCart]?.diagnosticPricing);
+          const pricesForItem = getPricesForItem(
+            results?.[isItemInCart]?.diagnosticPricing,
+            results?.[isItemInCart]?.packageCalculatedMrp!
+          );
 
           // if all the groupPlans are inactive, then only don't show
           if (!pricesForItem?.itemActive) {
@@ -861,6 +882,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const discount = pricesForItem?.discount;
           const circleDiscount = pricesForItem?.circleDiscount;
           const specialDiscount = pricesForItem?.specialDiscount;
+
+          const mrpToDisplay = pricesForItem?.mrpToDisplay;
 
           const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
           const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
@@ -892,10 +915,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               },
             });
             updateCartItem!({
-              id: results[isItemInCart]
-                ? String(results[isItemInCart].itemId)
-                : String(cartItem.id),
-              name: results[isItemInCart].itemName || '',
+              id: results?.[isItemInCart]
+                ? String(results?.[isItemInCart]?.itemId)
+                : String(cartItem?.id),
+              name: results?.[isItemInCart]?.itemName || '',
               price: price,
               specialPrice: specialPrice || price,
               circlePrice: circlePrice,
@@ -903,11 +926,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               discountPrice: discountPrice,
               discountSpecialPrice: discountSpecialPrice,
               mou:
-                results[isItemInCart].inclusions !== null
-                  ? results[isItemInCart].inclusions.length
+                results?.[isItemInCart]?.inclusions !== null
+                  ? results?.[isItemInCart]?.inclusions.length
                   : 1,
-              thumbnail: cartItem.thumbnail,
+              thumbnail: cartItem?.thumbnail,
               groupPlan: planToConsider?.groupPlan,
+              packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
+              inclusions:
+                results?.[isItemInCart]?.inclusions == null
+                  ? [Number(results?.[isItemInCart]?.itemId)]
+                  : results?.[isItemInCart]?.inclusions,
             });
           }
         }
@@ -1002,11 +1030,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const listOfIds =
       typeof itemIds == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : itemIds;
 
-    console.log('address city id' + addressCityId);
+    console.log('address city id' + deliveryAddressCityId);
     console.log('source is ' + sourceScreen);
     const cityIdToPass =
       deliveryAddressId != ''
-        ? parseInt(addressCityId)
+        ? parseInt(deliveryAddressCityId)
         : !!sourceScreen
         ? 9
         : parseInt(diagnosticServiceabilityData?.cityId! || '9');
@@ -1017,6 +1045,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             //if address is not selected then from pincode bar otherwise from address
             cityID: cityIdToPass,
@@ -1035,8 +1066,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             if (comingFrom == 'diagnosticServiceablityChange') {
               product.map((item) => {
                 const diagnosticPricing = g(item, 'diagnosticPricing');
-
-                const pricesForItem = getPricesForItem(diagnosticPricing);
+                const packageMrp = item?.packageCalculatedMrp!;
+                const pricesForItem = getPricesForItem(diagnosticPricing, packageMrp);
                 if (!pricesForItem?.itemActive) {
                   return null;
                 }
@@ -1061,6 +1092,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   discountSpecialPrice: discountSpecialPrice,
                   collectionMethod: item?.collectionType!,
                   groupPlan: planToConsider?.groupPlan,
+                  packageMrp: packageMrp,
                 });
               });
             }
@@ -1091,6 +1123,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setLoading!(true);
     client
       .query<getAreas, getAreasVariables>({
+        context: {
+          sourceHeaders,
+        },
         query: GET_DIAGNOSTIC_AREAS,
         fetchPolicy: 'no-cache',
         variables: {
@@ -1157,19 +1192,38 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </Text>
         )}
         {cartItems.map((test, index, array) => {
+          const itemPackageMrp = test?.packageMrp!;
           const specialPrice = test?.specialPrice!;
           const price = test?.price!; //more than price (black)
           const circlePrice = test?.circlePrice!;
-          const circleSpecialPrice = test?.circleSpecialPrice;
-          const discountPrice = test?.discountPrice;
-          const discountSpecialPrice = test?.discountSpecialPrice;
+          const circleSpecialPrice = test?.circleSpecialPrice!;
+          const discountPrice = test?.discountPrice!;
+          const discountSpecialPrice = test?.discountSpecialPrice!;
 
-          const discount = getDiscountPercentage(price, specialPrice);
-          const circleDiscount = getDiscountPercentage(circlePrice!, circleSpecialPrice!);
-          const specialDiscount = getDiscountPercentage(discountPrice!, discountSpecialPrice!);
+          const discount = getDiscountPercentage(
+            !!itemPackageMrp && itemPackageMrp > price ? itemPackageMrp : price,
+            specialPrice
+          );
+          const circleDiscount = getDiscountPercentage(
+            !!itemPackageMrp && itemPackageMrp > circlePrice ? itemPackageMrp : circlePrice,
+            circleSpecialPrice
+          );
+          const specialDiscount = getDiscountPercentage(
+            !!itemPackageMrp && itemPackageMrp > discountPrice ? itemPackageMrp : discountPrice,
+            discountSpecialPrice
+          );
 
           const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
           const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
+
+          const mrpToDisplay = calculateMrpToDisplay(
+            promoteCircle,
+            promoteDiscount,
+            itemPackageMrp,
+            price,
+            circlePrice,
+            discountPrice
+          );
 
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
@@ -1189,7 +1243,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ? specialPrice!
               : undefined
             : undefined;
-
           return (
             <MedicineCard
               isComingFrom={'testCart'}
@@ -1219,6 +1272,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         testDescription: product?.testDescription,
                         source: 'Cart Page',
                         type: product?.itemType,
+                        packageMrp: product?.packageCalculatedMrp,
+                        mrpToDisplay: mrpToDisplay,
                       } as TestPackageForDetails,
                     });
                   },
@@ -1226,7 +1281,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 );
               }}
               medicineName={test.name!}
-              price={price}
+              // price={price}
+              price={Number(mrpToDisplay!)}
               specialPrice={sellingPrice}
               circlePrice={promoteCircle ? circleSpecialPrice! : undefined}
               discount={
@@ -1262,6 +1318,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
         query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+        context: {
+          sourceHeaders,
+        },
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(date).format('YYYY-MM-DD'),
@@ -2277,15 +2336,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const getDiagnosticsAvailability = (
     cityIdForAddress: number,
-    cartItems: DiagnosticsCartItem[]
+    cartItems?: DiagnosticsCartItem[],
+    duplicateItem?: any,
+    comingFrom?: string
   ) => {
-    const itemIds = cartItems.map((item) => parseInt(item.id));
+    const itemIds = comingFrom ? duplicateItem : cartItems?.map((item) => parseInt(item?.id));
     return client.query<
       findDiagnosticsByItemIDsAndCityID,
       findDiagnosticsByItemIDsAndCityIDVariables
     >({
       query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-      variables: { cityID: cityIdForAddress, itemIDs: itemIds },
+      context: {
+        sourceHeaders,
+      },
+      variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
       fetchPolicy: 'no-cache',
     });
   };
@@ -2438,9 +2502,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
 
     console.log('unique id' + validateCouponUniqueId);
-    const allItems = cartItems.find((item) => item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
-    const totalPriceWithoutAnyDiscount = cartItems.reduce(
-      (prevVal, currVal) => prevVal + currVal.price,
+    const allItems = cartItems?.find(
+      (item) =>
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+    );
+    //consider the  package prices to show the savings (~cartTotal)
+    const totalPriceWithoutAnyDiscount = cartItems?.reduce(
+      (prevVal, currVal) => prevVal + currVal?.price,
       0
     );
 
@@ -2472,7 +2541,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ? item.discountSpecialPrice
                 : (item.specialPrice as number) || item.price,
             quantity: 1,
-            // groupPlan: item?.groupPlan,
             groupPlan: isDiagnosticCircleSubscription
               ? item.groupPlan!
               : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
@@ -2482,8 +2550,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ),
       slotId: employeeSlotId?.toString() || '0',
       areaId: (areaSelected || ({} as any)).key!,
-      homeCollectionCharges: hcCharges,
-      totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
+      collectionCharges: hcCharges,
+      // totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
+      totalPriceExcludingDiscounts: cartTotal + hcCharges,
       subscriptionInclusionId: null,
       userSubscriptionId: circleSubscriptionId,
       // prismPrescriptionFileId: [
@@ -2899,6 +2968,42 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
+    checkDuplicateItems();
+  };
+
+  const checkDuplicateItems = () => {
+    const allInclusions = cartItems.map((item) => item?.inclusions);
+    const mergedInclusions = allInclusions?.flat(1); //from array level to single array
+    const duplicateItems = mergedInclusions?.filter((e: any, i: any, a: any) => a.indexOf(e) !== i);
+    if (duplicateItems?.length) {
+      setLoading!(true);
+      getDiagnosticsAvailability(Number(addressCityId), cartItems, duplicateItems, 'proceedToPay')
+        .then(({ data }) => {
+          const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+          const duplicateTests = diagnosticItems?.map((item) => item?.itemName).join(', ');
+          showAphAlert!({
+            title: string.common.uhOh,
+            description:
+              duplicateTests +
+              (diagnosticItems?.length == 1 ? ' is' : ' are') +
+              string.diagnostics.itemAlreadyExist,
+            onPressOk: () => {
+              setLoading!(false);
+              hideAphAlert!();
+            },
+          });
+        })
+        .catch((e) => {
+          CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
+          setLoading!(false);
+          errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+        });
+    } else {
+      proceedForBooking();
+    }
+  };
+
+  const proceedForBooking = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
       bookDiagnosticOrder();
@@ -2930,7 +3035,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         });
       });
       const CouponInput = {
-        grossOrderAmountExcludingDiscount: cartTotal,
+        grossOrderAmountExcludingDiscount: cartTotal, //without packageMrp
         testsOrdered: orderedTestArray,
         cityId: parseInt(addressCityId),
       };
@@ -2941,6 +3046,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           vaidateDiagnosticCouponVariables
         >({
           query: VALIDATE_DIAGNOSTIC_COUPON,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             couponInput: CouponInput,
           },
@@ -2973,6 +3081,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         getDiagnosticsHCChargesVariables
       >({
         query: GET_DIAGNOSTICS_HC_CHARGES,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           itemIDs: itemWithId,
           totalCharges: cartTotal,

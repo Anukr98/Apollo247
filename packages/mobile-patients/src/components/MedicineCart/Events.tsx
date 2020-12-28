@@ -211,3 +211,19 @@ export const fireCircleBuyNowEvent = (currentPatient: any) => {
     CircleEventAttributes
   );
 };
+
+export const fireCirclePurchaseEvent = (currentPatient: any, endDate: string) => {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    'Membership End Date': endDate
+      ?.split('T')[0]
+      .split('-')
+      .reverse()
+      .join('-'),
+    Type: 'From HC',
+    Source: 'from banner',
+  };
+  postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+};

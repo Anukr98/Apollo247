@@ -431,9 +431,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     return (
       <>
         {/**
-         * non-sub + no-circle + special price
+         * non-sub + no-circle + special price added one more check
          */}
-        {props.circlePrice == undefined && specialPrice && (
+        {props.circlePrice == undefined && specialPrice && specialPrice != price && (
           <View style={{ alignSelf: 'flex-end' }}>
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
               {'('}

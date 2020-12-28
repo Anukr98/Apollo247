@@ -65,6 +65,7 @@ const appStaticVariables = {
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
+  MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
@@ -79,6 +80,7 @@ const appStaticVariables = {
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
 };
 
 const DEV_top_specialties = [
@@ -232,25 +234,27 @@ const Apollo247Config = {
 export const NeedHelp = [
   {
     category: 'Pharmacy',
+    id: 'pharmacy',
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
     options: [
       'I would like to cancel the order!',
       'I would like to know the Delivery status of my order.',
-      'I was not able to place the order due to technical errors',
-      'My money got deducted but no order confirmation received',
       'I need to know why my order was cancelled',
       'I have issues in order delivered!',
       'Excess amount was charged to me by Delivery Executive',
       'Inappropriate attitude & behaviour of Delivery Executive',
       'I need to know my refund status',
       'I have prescription related queries (Invalid/ Order cancelled)',
+      'I was not able to place the order due to technical errors',
+      'My money got deducted but no order confirmation received',
     ],
   },
   {
     category: 'Virtual/Online Consult',
+    id: 'virtualOnlineConsult',
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
     options: [
-      'I am unable to book an appointment (slot not available/ Doctor not listed)',
       'The doctor did not start the consultation call on time',
-      'My money got deducted but no confirmation on the doctor appointment',
       'I faced technical issues during/after booking an appointment',
       'I want to reschedule/cancel my appointment ',
       'I haven’t received the prescription',
@@ -258,10 +262,13 @@ export const NeedHelp = [
       'I need to know my refund status',
       'I did not recieve invoice/ receipt of my appointment',
       'Consultation ended, Doctor has not replied to my query over 24 hours',
+      'I am unable to book an appointment (slot not available/ Doctor not listed)',
+      'My money got deducted but no confirmation on the doctor appointment',
     ],
   },
   {
     category: 'Health Records',
+    id: 'healthRecords',
     options: [
       'Add multiple UHID’s linked to other mobile numbers',
       'Delay in responses to queries',
@@ -276,6 +283,7 @@ export const NeedHelp = [
   },
   {
     category: 'Physical Consult',
+    id: 'physicalConsult',
     options: [
       'App appointment dishonored at confirmed time slot',
       'Application issues(bandwidth & payment errors)',
@@ -294,6 +302,7 @@ export const NeedHelp = [
   },
   {
     category: 'Feedback',
+    id: 'feedback',
     options: [
       'Feedback on app',
       'Feedback on consultation',
@@ -303,6 +312,7 @@ export const NeedHelp = [
   },
   {
     category: 'Diagnostics',
+    id: 'diagnostics',
     options: [
       'Excess amount related',
       'Issues in order confirmation',
@@ -318,10 +328,12 @@ export const NeedHelp = [
   },
   {
     category: 'Unsubscribe',
+    id: 'unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
   {
     category: 'HealthyLife (HDFC)',
+    id: 'healthyLifeHdfc',
     options: [
       'Coupon related',
       'Concierge Services',
@@ -340,6 +352,7 @@ export const NeedHelp = [
   },
   {
     category: 'Circle Membership',
+    id: 'circleMembership',
     options: [
       'Details about Circle Membership',
       'Regarding Circle Benefits',

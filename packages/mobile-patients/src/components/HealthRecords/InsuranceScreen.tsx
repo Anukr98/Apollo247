@@ -90,6 +90,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     data: MedicalInsuranceType[];
   }> | null>(null);
   const [callApi, setCallApi] = useState(false);
+  const [apiError, setApiError] = useState(false);
 
   useEffect(() => {
     getLatestMedicalInsuranceRecords();
@@ -142,6 +143,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       })
       .catch((error) => {
         setShowSpinner(false);
+        setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
@@ -159,9 +161,9 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const renderHeader = () => {
     return (
       <Header
-        title={'INSURANCE'}
+        title={!apiError ? undefined : 'INSURANCE'}
         leftIcon={'backArrow'}
-        rightComponent={renderProfileImage()}
+        rightComponent={apiError ? undefined : renderProfileImage()}
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={gotoPHRHomeScreen}
       />
@@ -257,6 +259,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     );
   };
 
+  const emptyListView = () => {
+    return apiError ? (
+      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+    ) : (
+      <PhrNoDataComponent />
+    );
+  };
+
   const renderMedicalInsuranceData = () => {
     return (
       <SectionList
@@ -265,7 +275,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalInsuranceData || []}
         renderItem={({ item, index }) => renderMedicalInsuranceItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={emptyListView}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -307,7 +317,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderMedicalInsuranceData()}
         </ScrollView>
-        {renderAddButton()}
+        {!apiError && renderAddButton()}
       </SafeAreaView>
     </View>
   );
