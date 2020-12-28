@@ -1591,3 +1591,10 @@ export const MaleCircleIcon: React.FC<IconProps> = (props) => (
 export const CircleDiscountBadge: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/discountBadge.png')} />
 );
+
+export const HomeAddressIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/home_icon.png')} />
+);
+export const OfficeAddressIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/office_icon.png')} />
+);

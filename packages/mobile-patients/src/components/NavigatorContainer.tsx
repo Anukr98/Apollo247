@@ -26,6 +26,9 @@ import { HospitalizationScreen } from '@aph/mobile-patients/src/components/Healt
 import { InsuranceScreen } from '@aph/mobile-patients/src/components/HealthRecords/InsuranceScreen';
 import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddAddressNew } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
+import { LocationSearch } from '@aph/mobile-patients/src/components/AddressSelection/LocationSearch';
+import { EditAddress } from '@aph/mobile-patients/src/components/AddressSelection/EditAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
@@ -165,6 +168,9 @@ export enum AppRoutes {
   TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
+  AddAddressNew = 'AddAddressNew',
+  LocationSearch = 'LocationSearch',
+  EditAddress = 'EditAddress',
   UploadPrescription = 'UploadPrescription',
   ChennaiNonCartOrderForm = 'ChennaiNonCartOrderForm',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
@@ -394,6 +400,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AddAddress]: {
     screen: AddAddress,
+  },
+  [AppRoutes.AddAddressNew]: {
+    screen: AddAddressNew,
+  },
+  [AppRoutes.LocationSearch]: {
+    screen: LocationSearch,
+  },
+  [AppRoutes.EditAddress]: {
+    screen: EditAddress,
   },
   [AppRoutes.SelectDeliveryAddress]: {
     screen: SelectDeliveryAddress,

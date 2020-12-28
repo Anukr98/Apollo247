@@ -138,7 +138,7 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { PincodeInput } from '@aph/mobile-patients/src/components/Medicines/Components/PicodeInput';
 import { getFormattedLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -733,17 +733,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddress, {
+            props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
-              DataAddress: address,
+              addressDetails: address,
               source: 'Medicine' as AddressSource,
               ComingFrom: AppRoutes.Medicine,
             });
             hideAphAlert!();
           }}
           onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddress, {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Medicine' as AddressSource,
+              addOnly: true,
             });
             hideAphAlert!();
           }}

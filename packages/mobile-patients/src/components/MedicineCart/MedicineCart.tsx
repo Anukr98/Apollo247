@@ -70,7 +70,7 @@ import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicine
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
 import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   postwebEngageProceedToPayEvent,
@@ -809,14 +809,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           onPressAddAddress={() => {
             props.navigation.navigate(AppRoutes.AddAddress, {
               source: 'Cart' as AddressSource,
+              addOnly: true,
             });
             postPharmacyAddNewAddressClick('Cart');
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddress, {
+            props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
-              DataAddress: address,
+              addressDetails: address,
               ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
@@ -1105,6 +1106,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressAddDeliveryAddress={() => {
           props.navigation.navigate(AppRoutes.AddAddress, {
             source: 'Cart' as AddressSource,
+            addOnly: true,
           });
           postPharmacyAddNewAddressClick('Cart');
         }}
