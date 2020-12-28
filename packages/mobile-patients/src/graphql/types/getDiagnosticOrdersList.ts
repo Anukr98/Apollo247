@@ -37,12 +37,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics {
   __typename: "Diagnostics";
   id: string;
-  itemId: number;
-  itemName: string;
-  itemType: DIAGNOSTICS_TYPE | null;
-  testPreparationData: string;
   testDescription: string | null;
-  inclusions: (number | null)[] | null;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
 
@@ -50,9 +45,11 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   __typename: "DiagnosticOrderLineItems";
   id: string;
   itemId: number | null;
+  itemName: string | null;
   quantity: number | null;
   price: number | null;
   groupPlan: string | null;
+  itemType: DIAGNOSTICS_TYPE | null;
   itemObj: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_itemObj | null;
   pricingObj: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics | null;
@@ -80,6 +77,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   displayId: number;
   createdDate: any;
   areaId: number | null;
+  slotDateTimeInUTC: any | null;
   rescheduleCount: number | null;
   isRescheduled: boolean | null;
   collectionCharges: number | null;

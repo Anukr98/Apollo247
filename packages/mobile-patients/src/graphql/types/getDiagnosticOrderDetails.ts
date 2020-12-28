@@ -38,7 +38,6 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   __typename: "Diagnostics";
   id: string;
   itemId: number;
-  itemName: string;
   gender: string;
   rate: number;
   itemRemarks: string;
@@ -56,6 +55,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   __typename: "DiagnosticOrderLineItems";
   id: string;
   itemId: number | null;
+  itemName: string | null;
   price: number | null;
   quantity: number | null;
   groupPlan: string | null;
@@ -94,6 +94,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   displayId: number;
   createdDate: any;
   collectionCharges: number | null;
+  slotDateTimeInUTC: any | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

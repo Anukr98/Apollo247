@@ -1542,15 +1542,18 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         displayId
         createdDate
         areaId
+        slotDateTimeInUTC
         rescheduleCount
         isRescheduled
         collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
+          itemName
           quantity
           price
           groupPlan
+          itemType
           itemObj {
             itemType
             testPreparationData
@@ -1564,12 +1567,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           }
           diagnostics {
             id
-            itemId
-            itemName
-            itemType
-            testPreparationData
             testDescription
-            inclusions
             diagnosticPricing {
               mrp
               price
@@ -1639,9 +1637,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         displayId
         createdDate
         collectionCharges
+        slotDateTimeInUTC
         diagnosticOrderLineItems {
           id
           itemId
+          itemName
           price
           quantity
           groupPlan
@@ -1659,7 +1659,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           diagnostics {
             id
             itemId
-            itemName
             gender
             rate
             itemRemarks
