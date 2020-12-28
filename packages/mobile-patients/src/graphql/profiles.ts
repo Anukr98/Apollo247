@@ -1642,6 +1642,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           id
           itemId
           itemName
+          itemType
           price
           quantity
           groupPlan

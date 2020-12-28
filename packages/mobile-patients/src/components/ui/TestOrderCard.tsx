@@ -183,7 +183,7 @@ export interface TestOrderCardProps {
   showDateTime: boolean;
   showRescheduleCancel: boolean;
   isTypeOfPackage?: boolean;
-  ordersData: [];
+  ordersData: any;
   dateTime: string;
   statusDesc?: string;
   isCancelled: boolean;
@@ -369,7 +369,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 : {},
             ]}
           >
-            {props.statusDesc.replace('_', ' ')}
+            {props.statusDesc?.replace('_', ' ')}
           </Text>
           <Text
             style={{
@@ -525,9 +525,9 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
             ) => {
               return (
                 <>
-                  {item?.diagnostics?.testPreparationData != '' && (
+                  {item?.itemObj?.testPreparationData != '' && (
                     <View style={styles.testNameView}>
-                      <Text style={styles.testNameText}>{item?.diagnostics?.itemName!}:</Text>
+                      <Text style={styles.testNameText}>{item?.itemName!}:</Text>
                       <Text
                         style={[
                           styles.testNameText,
@@ -537,7 +537,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                           },
                         ]}
                       >
-                        {item?.diagnostics?.testPreparationData!}
+                        {item?.itemObj?.testPreparationData!}
                       </Text>
                     </View>
                   )}
@@ -547,7 +547,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           )
         ) : (
           <View style={styles.testNameView}>
-            <Text style={styles.testNameText}>{props.ordersData.itemName!}:</Text>
+            <Text style={styles.testNameText}>{props.ordersData?.itemName!}:</Text>
             <Text
               style={[
                 styles.testNameText,
@@ -566,26 +566,27 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   };
 
   const renderTestInOrder = () => {
-    const testsPerOrder = props.isComingFrom == 'individualTest' ? 0 : props.ordersData.length;
+    const testsPerOrder = props.isComingFrom == 'individualTest' ? 0 : props.ordersData?.length;
     return (
       <View style={{ marginTop: '5%' }}>
         {props.isComingFrom != 'individualTest' ? (
-          props.ordersData.map(
+          props.ordersData?.map(
             (
               item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
-              index
+              index: any
             ) => {
               return (
                 <View style={{}}>
                   {index < 3 && (
                     <Text style={[styles.titleStyle]}>
-                      {item?.diagnostics?.itemName!.toLowerCase() || ''}
-                      {item?.diagnostics?.itemType == 'PACKAGE' &&
-                        item?.diagnostics?.inclusions?.length! > 0 && (
+                      {item?.itemName?.toLowerCase() || ''}
+                      {item?.itemObj?.itemType! == 'PACKAGE' &&
+                        item?.itemObj?.inclusions != null &&
+                        item?.itemObj?.inclusions?.length! > 0 && (
                           <Text
                             style={[styles.titleStyle, { ...theme.fonts.IBMPlexSansMedium(11) }]}
                           >
-                            {'\n'} Inclusions : {item?.diagnostics?.inclusions?.length}
+                            {'\n'} Inclusions : {item?.itemObj?.inclusions?.length}
                           </Text>
                         )}
                       {index == 2 && testsPerOrder - 3 > 0 ? (

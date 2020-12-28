@@ -81,7 +81,7 @@ import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetai
 
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
-import { YourTestDetails } from '@aph/mobile-patients/src/components/Tests/YourTestDetails';
+import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
 import { TestOrderDetailsSummary } from '@aph/mobile-patients/src/components/Tests/TestOrderDetailsSummary';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
@@ -207,7 +207,7 @@ export enum AppRoutes {
   MyMembership = 'MyMembership',
   MembershipDetails = 'MembershipDetails',
   YourOrdersTest = 'YourOrdersTest',
-  YourTestDetails = 'YourTestDetails',
+  OrderedTestStatus = 'OrderedTestStatus',
   TestOrderDetails = 'TestOrderDetails',
   TestOrderDetailsSummary = 'TestOrderDetailsSummary',
   ClinicSelection = 'ClinicSelection',
@@ -516,8 +516,8 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
   },
-  [AppRoutes.YourTestDetails]: {
-    screen: YourTestDetails,
+  [AppRoutes.OrderedTestStatus]: {
+    screen: OrderedTestStatus,
   },
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,
