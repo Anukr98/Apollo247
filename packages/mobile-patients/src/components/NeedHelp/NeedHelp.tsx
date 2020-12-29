@@ -48,6 +48,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { PreviousQuery } from '@aph/mobile-patients/src/components/NeedHelp';
+import { Helpers, Query } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   subViewPopup: {
@@ -130,9 +133,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface MobileHelpProps extends NavigationScreenProps {}
+export interface Props extends NavigationScreenProps {}
 
-export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
+export const NeedHelp: React.FC<Props> = (props) => {
   const [comment, setComment] = useState<string>('');
   const [helpCategory, setHelpCategory] = useState<string>('');
   const [helpCategoryId, setHelpCategoryId] = useState<string>('');
@@ -143,6 +146,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { needHelpToContactInMessage } = useAppCommonData();
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
+  const [ongoingQuery, setOngoingQuery] = useState<Query>();
   const [emailValidation, setEmailValidation] = useState<boolean>(
     currentPatient?.emailAddress ? true : false
   );
@@ -161,8 +165,25 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   };
 
   useEffect(() => {
+    fetchOngoingQuery();
+  }, []);
+
+  useEffect(() => {
     setSelectedQuery('');
   }, [helpCategory]);
+
+  const fetchOngoingQuery = async () => {
+    try {
+      const { getNeedHelpQuery: getTicket } = Helpers;
+      const DISPLAY_TILL_HOURS = 48;
+      const ticket = await getTicket();
+      if (ticket?.createdDate) {
+        const toBeShown =
+          moment(new Date()).diff(moment(ticket.createdDate), 'hours') <= DISPLAY_TILL_HOURS;
+        toBeShown && setOngoingQuery(ticket);
+      }
+    } catch (error) {}
+  };
 
   const renderCategory = (
     { category, id }: typeof NeedHelp[0],
@@ -471,6 +492,14 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     );
   };
 
+  const renderPreviousTicketView = () => {
+    return !!ongoingQuery && <PreviousQuery query={ongoingQuery} />;
+  };
+
+  const needHelpForQuery = !!ongoingQuery
+    ? 'New issue? Tell us what you need help with?'
+    : 'What do you need help with?';
+
   return (
     <View style={theme.viewStyles.container}>
       {loading && <Spinner />}
@@ -480,9 +509,8 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
           <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
             <KeyboardAwareScrollView style={styles.subViewPopup} bounces={false}>
               <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
-              <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
-                {'What do you need help with?'}
-              </Text>
+              {renderPreviousTicketView()}
+              <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>{needHelpForQuery}</Text>
               {renderContent()}
             </KeyboardAwareScrollView>
           </ScrollView>
