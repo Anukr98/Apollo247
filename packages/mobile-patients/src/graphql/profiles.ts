@@ -810,6 +810,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
   query getDoctorDetailsById($id: String!) {
     getDoctorDetailsById(id: $id) {
       id
+      skipAutoQuestions
+      isJdAllowed
       salutation
       firstName
       lastName

@@ -77,6 +77,7 @@ export interface HeaderProps {
   titleTextProps?: TextProps;
   titleTextViewStyle?: ViewStyle;
   leftComponent?: React.ReactNode;
+  component: React.ReactNode;
 }
 
 export const Header: React.FC<HeaderProps> = (props) => {
@@ -88,59 +89,72 @@ export const Header: React.FC<HeaderProps> = (props) => {
     rightIcon,
     titleTextProps,
     titleTextViewStyle,
+    component,
   } = props;
 
   return (
-    <View style={[styles.container, props.container]}>
-      <View style={{ flexGrow: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
-        {props.leftText ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.leftText.onPress} style={{}}>
-            <Text style={styles.titleTextStyle} numberOfLines={1}>
-              {props.leftText.title}
+    <View style={[props.container, { height: component ? 'auto' : 56 }]}>
+      <View
+        style={[
+          styles.container,
+          {
+            height: component ? 'auto' : 56,
+            borderBottomWidth: component ? 0 : 1,
+            marginTop: component ? 10 : 0,
+          },
+        ]}
+      >
+        <View style={{ flexGrow: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
+          {props.leftText ? (
+            <TouchableOpacity activeOpacity={1} onPress={props.leftText.onPress} style={{}}>
+              <Text style={styles.titleTextStyle} numberOfLines={1}>
+                {props.leftText.title}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={props.onPressLeftIcon}
+              style={{
+                height: 35,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {leftIcon === 'backArrow' && <BackArrow />}
+              {leftIcon === 'close' && <Remove />}
+              {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
+              {leftIcon === 'homeIcon' && <HomeIcon />}
+              {leftIcon === 'logo' && (
+                <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
+        {props.leftComponent ? props.leftComponent : null}
+        <View style={[{ flexGrow: 1 }, titleTextViewStyle]}>
+          {titleComponent ? titleComponent : null}
+          {title && (
+            <Text
+              style={[styles.titleTextStyle, props.titleStyle]}
+              numberOfLines={1}
+              {...titleTextProps}
+            >
+              {title}
             </Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={props.onPressLeftIcon}
-            style={{
-              height: 35,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {leftIcon === 'backArrow' && <BackArrow />}
-            {leftIcon === 'close' && <Remove />}
-            {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
-            {leftIcon === 'homeIcon' && <HomeIcon />}
-            {leftIcon === 'logo' && (
-              <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
-            )}
-          </TouchableOpacity>
-        )}
+          )}
+        </View>
+        <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
+          {rightText && (
+            <Text style={[styles.rightTextStyle, rightText.style]} onPress={rightText.onPress}>
+              {rightText.title}
+            </Text>
+          )}
+          {rightIcon && rightIcon}
+          {props.rightComponent ? props.rightComponent : null}
+        </View>
       </View>
-      {props.leftComponent ? props.leftComponent : null}
-      <View style={[{ flexGrow: 1 }, titleTextViewStyle]}>
-        {titleComponent ? titleComponent : null}
-        {title && (
-          <Text
-            style={[styles.titleTextStyle, props.titleStyle]}
-            numberOfLines={1}
-            {...titleTextProps}
-          >
-            {title}
-          </Text>
-        )}
-      </View>
-      <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
-        {rightText && (
-          <Text style={[styles.rightTextStyle, rightText.style]} onPress={rightText.onPress}>
-            {rightText.title}
-          </Text>
-        )}
-        {rightIcon && rightIcon}
-        {props.rightComponent ? props.rightComponent : null}
-      </View>
+      {component ? component : null}
     </View>
   );
 };
