@@ -93,6 +93,7 @@ import {
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -144,6 +145,10 @@ export enum HEALTH_CONDITIONS_TITLE {
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
 }
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
+};
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
@@ -1182,13 +1187,15 @@ export const addTestsToCart = async (
       const s = searchQueriesData[index];
       const testIncludedCount = detailQueriesData[index];
       return {
-        id: `${s.itemId}`,
-        name: s.itemName,
-        price: s.rate,
+        id: `${s?.itemId}`,
+        name: s?.itemName,
+        price: s?.rate,
         specialPrice: undefined,
         mou: testIncludedCount,
         thumbnail: '',
-        collectionMethod: s.collectionType,
+        collectionMethod: s?.collectionType,
+        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions
+
       } as DiagnosticsCartItem;
     });
 

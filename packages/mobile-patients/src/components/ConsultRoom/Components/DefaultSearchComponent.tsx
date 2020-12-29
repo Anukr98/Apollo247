@@ -78,6 +78,8 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
       <View style={{ marginBottom: 12 }}>
         <Text style={styles.title}>{string.common.pastSearches}</Text>
         {pastSearches?.map((item: any, index: number) => {
+          const isSearchTypeDoctor = item?.searchType === 'DOCTOR';
+          const isSearchTypeSpeciality = item?.searchType === 'SPECIALTY';
           return (
             <View>
               {index === 3 &&
@@ -87,14 +89,14 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
               <TouchableOpacity
                 style={styles.doctorCard}
                 onPress={() => {
-                  if (item?.searchType === 'DOCTOR') {
+                  if (isSearchTypeDoctor) {
                     CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move clicked');
                     props.navigation.navigate(AppRoutes.DoctorDetails, {
                       doctorId: item?.typeId,
                       callSaveSearch: 'false',
                     });
                   }
-                  if (item?.searchType === 'SPECIALTY') {
+                  if (isSearchTypeSpeciality) {
                     CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
                     if (item?.typeId && item?.name) onClickSearch(item?.typeId, item?.name);
                   }
@@ -107,7 +109,9 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemTxt}>{item?.name}</Text>
-                  <Text style={styles.itemSubTxt}>{item?.specialty?.toUpperCase()}</Text>
+                  <Text style={isSearchTypeDoctor ? styles.itemSubTxt : styles.smallText}>
+                    {isSearchTypeDoctor ? item?.specialty?.toUpperCase() : item?.symptoms}
+                  </Text>
                 </View>
               </TouchableOpacity>
             </View>

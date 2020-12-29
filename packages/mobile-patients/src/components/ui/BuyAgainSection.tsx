@@ -7,7 +7,7 @@ import { ListItem, ListItemProps } from 'react-native-elements';
 
 interface Props extends ListItemProps {}
 
-export const BuyAgainSection: React.FC<Props> = ({ onPress }) => {
+export const BuyAgainSection: React.FC<Props> = (props) => {
   const subtitle = (
     <View style={styles.subtitleContainer}>
       <Text style={styles.subtitleStyle}>{string.buyAgain}</Text>
@@ -24,8 +24,8 @@ export const BuyAgainSection: React.FC<Props> = ({ onPress }) => {
       containerStyle={styles.containerStyle}
       titleStyle={styles.titleStyle}
       subtitleStyle={styles.subtitleStyle}
-      onPress={onPress}
       Component={TouchableOpacity}
+      {...props}
     />
   );
 };
