@@ -249,7 +249,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   return (
     <View>
       {renderCircleExpiryBanner()}
-      {((totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed) < 0) ? 
+      {((totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed) > 0) ? 
         renderCircleSavings() : renderViewCarousel()}
     </View>
   );
