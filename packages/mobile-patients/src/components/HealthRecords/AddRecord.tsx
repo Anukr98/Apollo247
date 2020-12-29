@@ -15,7 +15,6 @@ import {
   PhrMinusCircleIcon,
   PhrCheckboxIcon,
   PhrUncheckboxIcon,
-  DropdownGreen,
   PhrDropdownBlueUpIcon,
   PhrRemoveTestDetailsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -37,6 +36,7 @@ import {
   ADD_PATIENT_MEDICAL_CONDITION_RECORD,
   ADD_PATIENT_MEDICATION_RECORD,
   DELETE_HEALTH_RECORD_FILES,
+  ADD_FAMILY_HISTORY_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
@@ -46,6 +46,7 @@ import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/t
 import { addPatientAllergyRecord } from '@aph/mobile-patients/src/graphql/types/addPatientAllergyRecord';
 import { addPatientHealthRestrictionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthRestrictionRecord';
 import { addPatientMedicalConditionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalConditionRecord';
+import { savePatientFamilyHistoryToPRISM } from '@aph/mobile-patients/src/graphql/types/savePatientFamilyHistoryToPRISM';
 import { addPatientMedicationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicationRecord';
 import { deleteHealthRecordFiles } from '@aph/mobile-patients/src/graphql/types/deleteHealthRecordFiles';
 import {
@@ -57,14 +58,15 @@ import {
   AddPatientMedicalBillRecordInput,
   AddPatientMedicalInsuranceRecordInput,
   AllergySeverity,
-  AllergyFileProperties,
   AddAllergyRecordInput,
   DeleteHealthRecordFilesInput,
   AddMedicalConditionRecordInput,
+  FamilyHistoryParameters,
   AddPatientHealthRestrictionRecordInput,
   AddPatientMedicationRecordInput,
   HealthRestrictionNature,
   MedicalConditionIllnessTypes,
+  Relation,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   g,
@@ -422,6 +424,69 @@ const illnessTypeArray: SeverityType[] = [
   },
 ];
 
+const relationType: SeverityType[] = [
+  {
+    value: _.startCase(_.toLower(Relation.ME)),
+    key: Relation.ME,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.MOTHER)),
+    key: Relation.MOTHER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.FATHER)),
+    key: Relation.FATHER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.SISTER)),
+    key: Relation.SISTER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.BROTHER)),
+    key: Relation.BROTHER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.COUSIN)),
+    key: Relation.COUSIN,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.WIFE)),
+    key: Relation.WIFE,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.HUSBAND)),
+    key: Relation.HUSBAND,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.OTHER)),
+    key: Relation.OTHER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.SON)),
+    key: Relation.SON,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.GRANDSON)),
+    key: Relation.GRANDSON,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.GRANDMOTHER)),
+    key: Relation.GRANDMOTHER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.GRANDFATHER)),
+    key: Relation.GRANDFATHER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.GRANDDAUGHTER)),
+    key: Relation.GRANDDAUGHTER,
+  },
+  {
+    value: _.startCase(_.toLower(Relation.DAUGHTER)),
+    key: Relation.DAUGHTER,
+  },
+];
+
 const TestRecordInitialValues: LabTestParameters = {
   parameterName: '',
   unit: '',
@@ -441,6 +506,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const [displayAllergyPopup, setdisplayAllergyPopup] = useState<boolean>(false);
+  const [displayFamilyHistoryPopup, setdisplayFamilyHistoryPopup] = useState<boolean>(false);
   const [displayMedicalConditionPopup, setdisplayMedicalConditionPopup] = useState<boolean>(false);
   const [displayReviewPhotoPopup, setDisplayReviewPhotoPopup] = useState<boolean>(false);
   const [reviewPopupID, setReviewPopupID] = useState<number>(1);
@@ -514,6 +580,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     ''
   );
   const [medicalConditionImage, setMedicalConditionImage] = useState<PickerImage>([]);
+
+  const [familyHistoryCheckbox, setFamilyHistoryCheckbox] = useState(false);
+  const [showFamilyHistoryDetails, setShowFamilyHistoryDetails] = useState<boolean>(false);
+  const [age, setAge] = useState<string>('');
+  const [medicalHistoryName, setMedicalHistoryName] = useState<string>('');
+  const [familyHistoryAdditionalNotes, setFamilyHistoryAdditionalNotes] = useState<string>('');
+  const [selectedRelationName, setSelectedRelationName] = useState<Relation | null>(Relation.ME);
+  const [familyHistoryImage, setFamilyHistoryImage] = useState<PickerImage>([]);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
@@ -707,6 +781,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             : ''
         );
         setMedicalConditionImage(setUploadedImages(selectedRecord?.medicationFiles));
+      } else if (recordType === MedicalRecordType.FAMILY_HISTORY) {
+        setFamilyHistoryCheckbox(true);
+        setShowFamilyHistoryDetails(true);
+        setFamilyHistoryAdditionalNotes(selectedRecord?.notes || '');
+        setMedicalHistoryName(selectedRecord?.diseaseName || '');
+        setSelectedRelationName(selectedRecord?.familyMember || null);
+        setAge(selectedRecord?.age?.toString() || '');
+        setdateOfTest(
+          selectedRecord?.recordDateTime
+            ? moment(selectedRecord?.recordDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setFamilyHistoryImage(setUploadedImages(selectedRecord?.familyHistoryFiles));
       }
     }
   }, [selectedRecord]);
@@ -973,6 +1060,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return imagesArray;
   };
 
+  const getAddedFamilyHistoryImage = () => {
+    let imagesArray = [] as any;
+    familyHistoryImage?.forEach((item: any) => {
+      let imageObj = {} as any;
+      imageObj.fileName = item?.title + '.' + item?.fileType;
+      imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
+      imageObj.content = item?.base64;
+      imagesArray.push(imageObj);
+    });
+    return imagesArray;
+  };
+
   const gotoHealthRecordsHomeScreen = () => {
     props.navigation.state.params?.onRecordAdded();
     props.navigation.goBack();
@@ -1066,6 +1165,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addHealthRestrictionRecord();
         } else if (medicalConditionCheckbox) {
           addMedicalConditionRecord();
+        } else if (familyHistoryCheckbox) {
+          addFamilyHistoryRecord();
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
@@ -1128,6 +1229,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addHealthRestrictionRecord();
         } else if (medicalConditionCheckbox) {
           addMedicalConditionRecord();
+        } else if (familyHistoryCheckbox) {
+          addFamilyHistoryRecord();
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
@@ -1187,6 +1290,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         if (medicalConditionCheckbox) {
           addMedicalConditionRecord();
+        } else if (familyHistoryCheckbox) {
+          addFamilyHistoryRecord();
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
@@ -1245,26 +1350,79 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         },
       })
       .then(({ data }) => {
+        if (familyHistoryCheckbox) {
+          addFamilyHistoryRecord();
+        } else {
+          setshowSpinner(false);
+          if (selectedRecord) {
+            postWebEngagePHR(
+              currentPatient,
+              WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION,
+              'Medical Condition',
+              inputData
+            );
+          } else {
+            postWebEngagePHR(
+              currentPatient,
+              WebEngageEventName.PHR_ADD_MEDICAL_CONDITION,
+              'Medical Condition',
+              inputData
+            );
+          }
+          gotoHealthRecordsHomeScreen();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        currentPatient && handleGraphQlError(e);
+      });
+  };
+
+  const addFamilyHistoryRecord = () => {
+    setshowSpinner(true);
+    const inputData: FamilyHistoryParameters = {
+      id: selectedRecordID,
+      patientId: currentPatient?.id || '',
+      diseaseName: medicalHistoryName,
+      familyMember: selectedRelationName,
+      notes: showMedicalConditionDetails ? medicalConditionAdditionalNotes : '',
+      recordDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
+      age: age ? parseInt(age) : null,
+      attachmentList: imageUpdate ? [] : getAddedFamilyHistoryImage(),
+    };
+    client
+      .mutate<savePatientFamilyHistoryToPRISM>({
+        mutation: ADD_FAMILY_HISTORY_RECORD,
+        variables: {
+          familyHistoryParameters: inputData,
+        },
+      })
+      .then(({ data }) => {
         setshowSpinner(false);
         if (selectedRecord) {
           postWebEngagePHR(
             currentPatient,
-            WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION,
-            'Medical Condition',
+            WebEngageEventName.PHR_UPDATE_FAMILY_HISTORY,
+            'Family History',
             inputData
           );
         } else {
           postWebEngagePHR(
             currentPatient,
-            WebEngageEventName.PHR_ADD_MEDICAL_CONDITION,
-            'Medical Condition',
+            WebEngageEventName.PHR_ADD_FAMILY_HISTORY,
+            'Family History',
             inputData
           );
         }
         gotoHealthRecordsHomeScreen();
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_FAMILY_HISTORY_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
@@ -1514,7 +1672,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             addPatientInsuranceRecords();
           } else if (
             recordType === MedicalRecordType.ALLERGY ||
-            recordType === MedicalRecordType.MEDICALCONDITION
+            recordType === MedicalRecordType.MEDICALCONDITION ||
+            recordType === MedicalRecordType.FAMILY_HISTORY
           ) {
             callHealthConditionApis();
           }
@@ -1582,12 +1741,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       recordType === MedicalRecordType.MEDICALCONDITION ||
       recordType === MedicalRecordType.ALLERGY ||
       recordType === MedicalRecordType.MEDICATION ||
-      recordType === MedicalRecordType.HEALTHRESTRICTION
+      recordType === MedicalRecordType.HEALTHRESTRICTION ||
+      recordType === MedicalRecordType.FAMILY_HISTORY
     ) {
       if (
         callDeleteApi &&
         (recordType === MedicalRecordType.MEDICALCONDITION ||
-          recordType === MedicalRecordType.ALLERGY)
+          recordType === MedicalRecordType.ALLERGY ||
+          recordType === MedicalRecordType.FAMILY_HISTORY)
       ) {
         callDeleteHealthRecordFileApi();
       } else {
@@ -1618,6 +1779,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       callHealthRestricitonApi();
     } else if (medicalConditionCheckbox) {
       callMedicalConditionApi();
+    } else if (familyHistoryCheckbox) {
+      callFamilyHistoryApi();
     } else {
       addAllergyRecord();
     }
@@ -1638,6 +1801,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       callHealthRestricitonApi();
     } else if (medicalConditionCheckbox) {
       callMedicalConditionApi();
+    } else if (familyHistoryCheckbox) {
+      callFamilyHistoryApi();
     } else if (allergyCheckbox) {
       addAllergyRecord();
     } else {
@@ -1666,6 +1831,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       });
     } else if (medicalConditionCheckbox) {
       callMedicalConditionApi();
+    } else if (familyHistoryCheckbox) {
+      callFamilyHistoryApi();
     } else if (allergyCheckbox) {
       addAllergyRecord();
     } else if (medicationCheckbox) {
@@ -1699,6 +1866,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         title: 'Alert!',
         description: 'Please select correct end date of condition',
       });
+    } else if (familyHistoryCheckbox) {
+      callFamilyHistoryApi();
     } else if (allergyCheckbox) {
       addAllergyRecord();
     } else if (medicationCheckbox) {
@@ -1707,6 +1876,35 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       addHealthRestrictionRecord();
     } else {
       addMedicalConditionRecord();
+    }
+  };
+
+  const callFamilyHistoryApi = () => {
+    if (!medicalHistoryName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please enter medical history name',
+      });
+    } else if (!selectedRelationName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select relation',
+      });
+    } else if (age && (parseInt(age) <= 0 || parseInt(age) > 100)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please enter correct age',
+      });
+    } else if (allergyCheckbox) {
+      addAllergyRecord();
+    } else if (medicationCheckbox) {
+      addMedicalRecord();
+    } else if (healthRestrictionCheckbox) {
+      addHealthRestrictionRecord();
+    } else if (medicalConditionCheckbox) {
+      addMedicalConditionRecord();
+    } else {
+      addFamilyHistoryRecord();
     }
   };
 
@@ -1726,12 +1924,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         callHealthRestricitonApi();
       } else if (medicalConditionCheckbox) {
         callMedicalConditionApi();
+      } else if (familyHistoryCheckbox) {
+        callFamilyHistoryApi();
       }
       if (
         !allergyCheckbox &&
         !medicationCheckbox &&
         !healthRestrictionCheckbox &&
-        !medicalConditionCheckbox
+        !medicalConditionCheckbox &&
+        !familyHistoryCheckbox
       ) {
         showAphAlert!({
           title: 'Alert!',
@@ -1747,13 +1948,21 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const fileType = data?.fileType;
     const deleteImage = () => {
       const imageCOPY =
-        id === 1 ? [...Images] : id === 2 ? [...allergyImage] : [...medicalConditionImage];
+        id === 1
+          ? [...Images]
+          : id === 2
+          ? [...allergyImage]
+          : id === 3
+          ? [...medicalConditionImage]
+          : [...familyHistoryImage];
       imageCOPY.splice(i, 1);
       id === 1
         ? setImages(imageCOPY)
         : id === 2
         ? setAllergyImage(imageCOPY)
-        : setMedicalConditionImage(imageCOPY);
+        : id === 3
+        ? setMedicalConditionImage(imageCOPY)
+        : setFamilyHistoryImage(imageCOPY);
       if (imageUpdate) {
         setCallDeleteAttachmentApi(true);
       }
@@ -1765,7 +1974,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         (recordType === MedicalRecordType.MEDICALBILL ||
           recordType === MedicalRecordType.MEDICALINSURANCE ||
           recordType === MedicalRecordType.ALLERGY ||
-          recordType === MedicalRecordType.MEDICALCONDITION)
+          recordType === MedicalRecordType.MEDICALCONDITION ||
+          recordType === MedicalRecordType.FAMILY_HISTORY)
       ) {
         Alert.alert('Alert!', 'Are you sure, you want to remove the attachment', [
           { text: 'Yes', onPress: () => deleteImage() },
@@ -1795,13 +2005,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const renderUploadedImages = (id: number) => {
-    const imagesArray = id === 1 ? Images : id === 2 ? allergyImage : medicalConditionImage;
+    const imagesArray =
+      id === 1
+        ? Images
+        : id === 2
+        ? allergyImage
+        : id === 3
+        ? medicalConditionImage
+        : familyHistoryImage;
     const onPressAddPage = () => {
       id === 1
         ? setdisplayOrderPopup(true)
         : id === 2
         ? setdisplayAllergyPopup(true)
-        : setdisplayMedicalConditionPopup(true);
+        : id === 3
+        ? setdisplayMedicalConditionPopup(true)
+        : setdisplayFamilyHistoryPopup(true);
     };
     const renderAddMorePagesCard = () => {
       return (
@@ -1946,7 +2165,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         {recordType === MedicalRecordType.MEDICALCONDITION ||
         recordType === MedicalRecordType.ALLERGY ||
         recordType === MedicalRecordType.MEDICATION ||
-        recordType === MedicalRecordType.HEALTHRESTRICTION ? null : (
+        recordType === MedicalRecordType.HEALTHRESTRICTION ||
+        recordType === MedicalRecordType.FAMILY_HISTORY ? null : (
           <View style={styles.listItemViewStyle}>
             {renderListItem('Type of Record', false)}
             <View style={{ marginTop: 14, marginHorizontal: 14 }}>
@@ -2265,9 +2485,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           placeholderTextColor={theme.colors.placeholderTextColor}
           underlineColorAndroid={'transparent'}
           onChangeText={(additionalNotes) => {
-            if (isValidText(additionalNotes)) {
-              setadditionalNotes(additionalNotes);
-            }
+            setadditionalNotes(additionalNotes);
           }}
         />
       </View>
@@ -2608,9 +2826,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholderTextColor={theme.colors.placeholderTextColor}
                 underlineColorAndroid={'transparent'}
                 onChangeText={(additionalNotes) => {
-                  if (isValidText(additionalNotes)) {
-                    setAllergyAdditionalNotes(additionalNotes);
-                  }
+                  setAllergyAdditionalNotes(additionalNotes);
                 }}
               />
             </View>
@@ -2756,9 +2972,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
               onChangeText={(additionalNotes) => {
-                if (isValidText(additionalNotes)) {
-                  setHealthRestrictionAdditionalNotes(additionalNotes);
-                }
+                setHealthRestrictionAdditionalNotes(additionalNotes);
               }}
             />
           </>
@@ -2905,9 +3119,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholderTextColor={theme.colors.placeholderTextColor}
                 underlineColorAndroid={'transparent'}
                 onChangeText={(additionalNotes) => {
-                  if (isValidText(additionalNotes)) {
-                    setMedicalConditionAdditionalNotes(additionalNotes);
-                  }
+                  setMedicalConditionAdditionalNotes(additionalNotes);
                 }}
               />
             </View>
@@ -3069,9 +3281,122 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholderTextColor={theme.colors.placeholderTextColor}
                 underlineColorAndroid={'transparent'}
                 onChangeText={(additionalNotes) => {
-                  if (isValidText(additionalNotes)) {
-                    setMedicationAdditionalNotes(additionalNotes);
-                  }
+                  setMedicationAdditionalNotes(additionalNotes);
+                }}
+              />
+            </View>
+          </>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderFamilyHistoryDetails = () => {
+    const rightElement = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowFamilyHistoryDetails(!showFamilyHistoryDetails)}
+        >
+          {showFamilyHistoryDetails ? (
+            <PhrMinusCircleIcon style={{ width: 24, height: 24 }} />
+          ) : (
+            <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
+          )}
+        </TouchableOpacity>
+      );
+    };
+    return (
+      <>
+        <View>
+          {renderListItem('Medical history name', true, true)}
+          <TextInput
+            placeholder={string.common.enter_name_of_text?.replace('{0}', 'medical history')}
+            style={styles.textInputStyle}
+            selectionColor={theme.colors.SKY_BLUE}
+            numberOfLines={1}
+            value={medicalHistoryName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setMedicalHistoryName(locName);
+              }
+            }}
+          />
+        </View>
+        <View style={styles.illnessTypeViewStyle}>
+          {renderListItemAdd('Relation', true, rightElement())}
+          <View style={styles.menuContainerViewStyle}>
+            <MaterialMenu
+              menuContainerStyle={styles.menuContainerStyle}
+              itemContainer={{ height: 44.8, width: 150 / 2 }}
+              itemTextStyle={styles.itemTextStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              lastContainerStyle={{ borderBottomWidth: 0 }}
+              bottomPadding={{ paddingBottom: 0 }}
+              options={relationType}
+              selectedText={selectedRelationName!}
+              onPress={(data) => {
+                setSelectedRelationName(data?.key as Relation);
+              }}
+            >
+              <TextInputComponent noInput={true} conatinerstyles={{ paddingBottom: 0 }} />
+              <View style={{ flexDirection: 'row' }}>
+                <View style={[styles.placeholderViewStyle]}>
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      !selectedRelationName && styles.placeholderStyle,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {selectedRelationName
+                      ? relationType?.find((item) => item.key === selectedRelationName)?.value
+                      : string.common.select_text}
+                  </Text>
+                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                    <PhrDropdownBlueUpIcon />
+                  </View>
+                </View>
+              </View>
+            </MaterialMenu>
+          </View>
+        </View>
+
+        {showFamilyHistoryDetails ? (
+          <>
+            {renderListItem('Age')}
+            <TextInput
+              placeholder={'Enter the age of relative'}
+              style={styles.textInputStyle}
+              selectionColor={theme.colors.SKY_BLUE}
+              numberOfLines={1}
+              value={age}
+              keyboardType={numberKeyboardType}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (/^[0-9.]*$/.test(locName)) {
+                  setAge(locName);
+                }
+              }}
+            />
+            {renderUploadedImages(4)}
+            <View style={{ marginTop: 24 }}>
+              {renderListItem(string.common.additional_text, false)}
+              <TextInput
+                placeholder={string.common.enter_additional_text}
+                style={[styles.textInputStyle, styles.additionalTextInputStyle]}
+                multiline
+                selectionColor={theme.colors.SKY_BLUE}
+                numberOfLines={1}
+                value={familyHistoryAdditionalNotes}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(additionalNotes) => {
+                  setFamilyHistoryAdditionalNotes(additionalNotes);
                 }}
               />
             </View>
@@ -3197,6 +3522,35 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderFamilyHistoryTopView = () => {
+    return (
+      <View style={styles.allergyViewStyle}>
+        <TouchableOpacity
+          onPress={() => setFamilyHistoryCheckbox(!familyHistoryCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {familyHistoryCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={styles.morningTextStyle}>{'Yes'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setFamilyHistoryCheckbox(!familyHistoryCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {!familyHistoryCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={styles.morningTextStyle}>{'No'}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderUpdateRecordDetailsHealthCondition = () => {
     return (
       <View style={styles.illnessTypeViewStyle}>
@@ -3204,6 +3558,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         {recordType === MedicalRecordType.MEDICATION ? renderMedicationView() : null}
         {recordType === MedicalRecordType.HEALTHRESTRICTION ? renderHealthRestrictionView() : null}
         {recordType === MedicalRecordType.MEDICALCONDITION ? renderMedicalConditionView() : null}
+        {recordType === MedicalRecordType.FAMILY_HISTORY ? renderFamilyHistoryView() : null}
       </View>
     );
   };
@@ -3248,6 +3603,16 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderFamilyHistoryView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Have any family medical history?', false)}
+        {renderFamilyHistoryTopView()}
+        {familyHistoryCheckbox ? renderFamilyHistoryDetails() : null}
+      </View>
+    );
+  };
+
   const renderRecordDetailsHealthCondition = () => {
     return (
       <View style={styles.illnessTypeViewStyle}>
@@ -3255,6 +3620,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         {renderMedicationView()}
         {renderHealthRestrictionView()}
         {renderMedicalConditionView()}
+        {renderFamilyHistoryView()}
       </View>
     );
   };
@@ -3274,7 +3640,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : recordType === MedicalRecordType.MEDICALCONDITION ||
             recordType === MedicalRecordType.ALLERGY ||
             recordType === MedicalRecordType.MEDICATION ||
-            recordType === MedicalRecordType.HEALTHRESTRICTION
+            recordType === MedicalRecordType.HEALTHRESTRICTION ||
+            recordType === MedicalRecordType.FAMILY_HISTORY
           ? selectedRecord
             ? renderUpdateRecordDetailsHealthCondition()
             : renderRecordDetailsHealthCondition()
@@ -3290,7 +3657,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         {recordType === MedicalRecordType.MEDICALCONDITION ||
         recordType === MedicalRecordType.ALLERGY ||
         recordType === MedicalRecordType.MEDICATION ||
-        recordType === MedicalRecordType.HEALTHRESTRICTION
+        recordType === MedicalRecordType.HEALTHRESTRICTION ||
+        recordType === MedicalRecordType.FAMILY_HISTORY
           ? null
           : renderUploadedImages(1)}
         {renderRecordDetailsCard()}
@@ -3316,6 +3684,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       setDisplayReviewPhotoPopup(false);
       setdisplayOrderPopup(false);
       setdisplayMedicalConditionPopup(false);
+      setdisplayFamilyHistoryPopup(false);
       setdisplayAllergyPopup(false);
     };
 
@@ -3364,23 +3733,34 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         ? [...Images]
         : reviewPopupID === 2
         ? [...allergyImage]
-        : [...medicalConditionImage];
+        : reviewPopupID === 3
+        ? [...medicalConditionImage]
+        : [...familyHistoryImage];
     const index = imageCOPY.findIndex((item) => item.title === currentImage?.title);
     imageCOPY.splice(index, 1);
     reviewPopupID === 1
       ? setImages(imageCOPY)
       : reviewPopupID === 2
       ? setAllergyImage(imageCOPY)
-      : setMedicalConditionImage(imageCOPY);
+      : reviewPopupID === 3
+      ? setMedicalConditionImage(imageCOPY)
+      : setFamilyHistoryImage(imageCOPY);
     setDisplayReviewPhotoPopup(false);
     setdisplayOrderPopup(false);
     setdisplayMedicalConditionPopup(false);
+    setdisplayFamilyHistoryPopup(false);
     setdisplayAllergyPopup(false);
   };
 
   const renderUploadPrescriptionPopup = (id: number) => {
     const displayPopup =
-      id === 1 ? displayOrderPopup : id === 2 ? displayAllergyPopup : displayMedicalConditionPopup;
+      id === 1
+        ? displayOrderPopup
+        : id === 2
+        ? displayAllergyPopup
+        : id === 3
+        ? displayMedicalConditionPopup
+        : displayFamilyHistoryPopup;
 
     const onResponseCall = (selectedType: any, response: any, type) => {
       if (id === 1) {
@@ -3412,7 +3792,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           setAllergyImage(response);
           setdisplayAllergyPopup(false);
         }
-      } else {
+      } else if (id === 3) {
         setdisplayMedicalConditionPopup(false);
         if (selectedType == 'CAMERA_AND_GALLERY') {
           if (response.length == 0) return;
@@ -3427,6 +3807,21 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           setMedicalConditionImage(response);
           setdisplayMedicalConditionPopup(false);
         }
+      } else {
+        setdisplayFamilyHistoryPopup(false);
+        if (selectedType == 'CAMERA_AND_GALLERY') {
+          if (response.length == 0) return;
+          if (type === 'Camera') {
+            setDisplayReviewPhotoPopup(true);
+            setReviewPopupID(4);
+            setCurrentImage(response[0]);
+          }
+          // Logic for multiple images
+          // setImages([...Images, ...response]);
+          setImageUpdate(false);
+          setFamilyHistoryImage(response);
+          setdisplayFamilyHistoryPopup(false);
+        }
       }
     };
 
@@ -3435,7 +3830,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         ? setdisplayOrderPopup(false)
         : id === 2
         ? setdisplayAllergyPopup(false)
-        : setdisplayMedicalConditionPopup(false);
+        : id === 3
+        ? setdisplayMedicalConditionPopup(false)
+        : setdisplayFamilyHistoryPopup(false);
     };
 
     return (
@@ -3515,6 +3912,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       {displayOrderPopup && renderUploadPrescriptionPopup(1)}
       {displayAllergyPopup && renderUploadPrescriptionPopup(2)}
       {displayMedicalConditionPopup && renderUploadPrescriptionPopup(3)}
+      {displayFamilyHistoryPopup && renderUploadPrescriptionPopup(4)}
       {showSpinner && <Spinner />}
       {showPopUp && (
         <BottomPopUp

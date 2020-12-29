@@ -92,8 +92,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import stripHtml from 'string-strip-html';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -144,8 +144,11 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICATION = 'MEDICATION',
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
-  FAMILY_HISTORY = 'FAMILY HISTORY',
 }
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
+};
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
@@ -222,6 +225,32 @@ export const formatAddressWithLandmark = (
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
 };
+
+export const formatAddressBookAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = removeConsecutiveComma(
+    [address?.addressLine1, address?.addressLine2, address?.city].filter((v) => v).join(', ')
+  );
+  const landmark = [address?.landmark];
+  const state =[address?.state];
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
+  if (address?.landmark != '') {
+    return `${addrLine1},\n${landmark}\n${state}${formattedZipcode}`;
+  } else {
+    return `${addrLine1},\n${state}${formattedZipcode}`;
+  }
+};
+
+
+export const formatAddressForApi = (address: savePatientAddress_savePatientAddress_patientAddress)=>{
+  const addrLine1 = 
+    [address?.addressLine1, address?.addressLine2, address?.landmark,address?.city].filter((v) => v).join(', ');
+  const state =[address?.state];
+  const formattedZipcode = address?.zipcode ? `- ${address?.zipcode}` : '';
+  const formattedAddress = removeConsecutiveComma(addrLine1 + ', ' +formattedZipcode);
+  return formattedAddress;
+}
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   if (address.name!) {
@@ -322,17 +351,13 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
+      moment(b.date || b.billDateTime || b.startDateTime)
         .toDate()
         .getTime() -
-      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
+      moment(a.date || a.billDateTime || a.startDateTime)
         .toDate()
         .getTime()
   );
-};
-
-export const getPhrHighlightText = (highlightText: string) => {
-  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
 };
 
 export const getSourceName = (
@@ -1138,8 +1163,7 @@ export const addTestsToCart = async (
       },
       fetchPolicy: 'no-cache',
     });
-  const detailQuery = async (itemId: string) =>
-    await getPackageInclusions(apolloClient, [Number(itemId)]);
+  const detailQuery = async (itemId: string) => await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
@@ -1155,7 +1179,7 @@ export const addTestsToCart = async (
       searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
     );
     const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
+      (item) => g(item, 'data', 'getInclusionsOfMultipleItems','inclusions',  'length') || 1 // updating testsIncluded
     );
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData.length,
@@ -1169,8 +1193,9 @@ export const addTestsToCart = async (
         specialPrice: undefined,
         mou: testIncludedCount,
         thumbnail: '',
-        collectionMethod: s.collectionType,
+        collectionMethod: s?.collectionType,
         inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions
+
       } as DiagnosticsCartItem;
     });
 

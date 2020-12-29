@@ -362,7 +362,7 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   };
 
   const mapStatusWithText = (val: string) => {
-    return val.replace(/[_]/g, ' ');
+    return val?.replace(/[_]/g, ' ');
   };
 
   const renderOrders = () => {

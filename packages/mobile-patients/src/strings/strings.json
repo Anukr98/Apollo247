@@ -125,7 +125,8 @@
   "sorryNoProductsHere": "Sorry, no products available here.",
   "genericError": "Oops! seems like we are having an issue. Please try again.",
   "selectFromOrderedItems": "Select from your previously ordered items",
-  "proceedToCheckout": "Proceed to Checkout ({0} items)",
+  "proceedToCheckoutItems": "Proceed to Checkout ({0} items)",
+  "proceedToCheckout": "Proceed to Checkout",
   "specialOffers": "Special Offers",
   "notInStockInYourArea": "Not in stock in your area",
   "notForSale": "Not for sale",
@@ -804,6 +805,12 @@
         "question": "Will some of these features be part of the Apollo Hospital experience as well?",
         "answer": "Not as of now, but we are working towards it so you get the best out of Circle"
       }
+    ],
+    "video_links": [
+      "https://www.youtube.com/embed/vTEJT52hNRw",
+      "https://www.youtube.com/embed/c0egNatC16I",
+      "https://www.youtube.com/embed/rsFlGsOBMuM",
+      "https://www.youtube.com/embed/0-TlHa7rLxo"
     ]
   },
   "banner_context": {
@@ -822,5 +829,12 @@
     "ADVANCE_DIABETES": "Advanced Diabetes",
     "COVID_CARE": "CovidCare",
     "DIGITALIZATION_PHR": "DigitizationPHR"
+  },
+  "addressSelection":{
+    "USE_CURRENT_LOCATION_TEXT" : "Use current location",
+    "USE_GPS_TEXT":"Using GPS",
+    "NO_RESULTS_FOUND": "No Results Found",
+    "MARKER_TEXT":"MOVE MAP TO ADJUST",
+    "HELP_US_LOCATE_TEXT":"Help us locate your address"
   }
 }

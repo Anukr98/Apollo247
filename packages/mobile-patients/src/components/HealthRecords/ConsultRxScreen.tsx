@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
   searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
   searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
   phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
+  searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
 });
 
 export enum FILTER_TYPE {
@@ -466,13 +467,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           const finalData: any[] = [];
           recordData.forEach((recordData: any) => {
             const { healthrecordType } = recordData;
-            switch (healthrecordType) {
-              case 'PRESCRIPTION':
-                finalData.push({ healthkey: MedicalRecordType.PRESCRIPTION, value: recordData });
-                break;
+            if (healthrecordType === 'PRESCRIPTION') {
+              finalData.push({ healthkey: MedicalRecordType.PRESCRIPTION, value: recordData });
             }
           });
           setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
+        } else {
+          getAuthToken();
           setSearchLoading(false);
         }
       })
@@ -510,12 +512,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   const renderSearchBar = () => {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={styles.searchBarMainView}>
         <View style={styles.searchBarMainViewStyle}>
           <View style={styles.searchBarViewStyle}>
             <PhrSearchIcon style={{ width: 20, height: 20 }} />
             <TextInput
-              placeholder={'Search'}
+              placeholder={'Search doctor consulations'}
               autoCapitalize={'none'}
               autoFocus={searchInputFocus}
               style={styles.textInputStyle}
@@ -546,7 +548,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
           {'Doctor Consultations'}
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={styles.searchBarMainView}>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
