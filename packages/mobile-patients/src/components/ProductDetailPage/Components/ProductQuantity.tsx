@@ -12,6 +12,7 @@ export interface ProductQuantityProps {
   isInStock: boolean;
   packForm: string;
   packSize: string;
+  unit: string;
   sku: string;
   onAddCartItem: () => void;
   name: string;
@@ -26,6 +27,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     isInStock,
     packForm,
     packSize,
+    unit,
     sku,
     onAddCartItem,
     name,
@@ -69,7 +71,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
   const renderPackSize = () => (
     <Text
       style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0.35)}
-    >{`  ${packSize} in 1 ${packForm}`}</Text>
+    >{`  ${packSize}${unit} in 1 ${packForm}`}</Text>
   );
 
   const renderCartCTA = () => {

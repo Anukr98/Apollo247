@@ -30,6 +30,7 @@ export interface MedicineProduct {
   pack_form?: string | null;
   pack_size?: string | null;
   dose_form_variant?: string | null;
+  unit_of_measurement?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -495,6 +496,7 @@ export const getMedicineDetailsApi = (
   );
 };
 
+let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1,
@@ -503,6 +505,8 @@ export const searchMedicineApi = async (
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
@@ -517,6 +521,9 @@ export const searchMedicineApi = async (
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
+    cancelToken: new CancelToken((c) => {
+      cancelSearchMedicineApi247 = c;
+    }),
   });
 };
 

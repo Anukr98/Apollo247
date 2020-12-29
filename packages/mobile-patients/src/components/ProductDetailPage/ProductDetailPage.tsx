@@ -142,7 +142,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setMedicineDetails(productDetails || {});
-          // console.log('medicine details: ', productDetails);
+          // console.log('medicine details: ', JSON.stringify(productDetails));
           if (productDetails?.dc_availability === 'No' && productDetails?.is_in_contract === 'No') {
             setIsInStock(false);
           }
@@ -156,11 +156,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             image: productDetails.thumbnail,
           });
 
-          if (_deliveryError) {
-            setTimeout(() => {
-              scrollViewRef.current && scrollViewRef.current.scrollToEnd();
-            }, 20);
-          }
+          // if (_deliveryError) {
+          //   setTimeout(() => {
+          //     scrollViewRef.current && scrollViewRef.current.scrollToEnd();
+          //   }, 20);
+          // }
         } else if (data && data.message) {
           setMedicineError(data.message);
         }
@@ -186,9 +186,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               Array.isArray(data.products)
             ) {
               setSubstitutes(data.products);
-              setTimeout(() => {
-                scrollViewRef.current && scrollViewRef.current.scrollToEnd();
-              }, 20);
+              // setTimeout(() => {
+              //   scrollViewRef.current && scrollViewRef.current.scrollToEnd();
+              // }, 20);
             }
           }
         } catch (error) {
@@ -468,6 +468,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isInStock={isInStock}
                 packForm={medicineDetails?.pack_form || 'Quantity'}
                 packSize={medicineDetails?.pack_size}
+                unit={medicineDetails.unit_of_measurement || ''}
                 sku={medicineDetails?.sku}
                 onAddCartItem={onAddCartItem}
                 name={medicineDetails?.name}
@@ -480,14 +481,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               description={medicineDetails?.description}
               isReturnable={medicineDetails.is_returnable === 'Yes'}
             />
-            {!!medicineDetails.similar_products.length && (
+            {!!medicineDetails?.similar_products?.length && (
               <SimilarProducts
                 typeOfProducts={'similar'}
                 similarProducts={medicineDetails?.similar_products}
                 navigation={props.navigation}
               />
             )}
-            {!!medicineDetails.crosssell_products.length && (
+            {!!medicineDetails?.crosssell_products?.length && (
               <SimilarProducts
                 typeOfProducts={'crosssell'}
                 similarProducts={medicineDetails?.crosssell_products}
@@ -510,6 +511,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             price={medicineDetails?.price}
             specialPrice={medicineDetails?.special_price}
             packForm={medicineDetails?.pack_form || 'Quantity'}
+            unit={medicineDetails.unit_of_measurement || ''}
             packSize={medicineDetails?.pack_size}
             packFormVariant={medicineDetails?.dose_form_variant}
             productQuantity={productQuantity}

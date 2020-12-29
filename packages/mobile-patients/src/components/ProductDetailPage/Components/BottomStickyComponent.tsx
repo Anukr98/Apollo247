@@ -14,6 +14,7 @@ export interface BottomStickyComponentProps {
   isInStock: boolean;
   packForm: string | null;
   packSize: string | null;
+  unit: string;
   packFormVariant: string | null;
   onAddCartItem: () => void;
   productQuantity: number;
@@ -29,6 +30,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     sku,
     packForm,
     packSize,
+    unit,
     packFormVariant,
     productQuantity,
     setShowAddedToCart,
@@ -113,7 +115,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
   const renderPackSize = () => (
     <Text
       style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0.35)}
-    >{`${packForm} of ${packSize} ${packFormVariant}`}</Text>
+    >{`${packForm} of ${packSize}${unit} ${packFormVariant}`}</Text>
   );
 
   return (

@@ -28,11 +28,11 @@ export const SimilarProducts: React.FC<SimilarProductsProps> = (props) => {
         addToCartSource={isSimilarProducts ? 'Similar Widget' : 'Pharmacy PDP'}
         movedFrom={ProductPageViewedSource.SIMILAR_PRODUCTS}
       />
-      <TouchableOpacity onPress={() => {}} style={styles.viewAllCTA}>
+      {/* <TouchableOpacity onPress={() => {}} style={styles.viewAllCTA}>
         <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 25, 0.35)}>
           VIEW ALL PRODUCTS
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
