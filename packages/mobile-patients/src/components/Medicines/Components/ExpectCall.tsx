@@ -12,8 +12,9 @@ export const ExpectCall: React.FC<ExpectCallProps> = (props) => {
       <View style={{ flex: 1 }}>
         <Text style={styles.headerTxt}>Expect a call from 140 3456789, that’s us!</Text>
         <Text style={styles.bodyTxt} numberOfLines={2}>
-          Our Pharmacists may call you to verify your prescription around{' '}
-          <Text style={styles.headerTxt}>2PM TODAY.</Text>
+          Our pharmacist will call you to verify the prescription in the next 15 minutes. Working
+          hours between 8 am and 9 pm
+          {/* <Text style={styles.headerTxt}>2PM TODAY.</Text> */}
         </Text>
       </View>
     );
