@@ -64,6 +64,7 @@ import {
   View,
   FlatList,
   ScrollView,
+  BackHandler,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -1474,6 +1475,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         props.navigation.goBack();
       }
     } catch (error) {}
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    moveBack();
+    return true;
   };
 
   const renderUpSellingProductsHeader = (sectionName: string) => {
