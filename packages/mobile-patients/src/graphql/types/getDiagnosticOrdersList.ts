@@ -37,7 +37,12 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics {
   __typename: "Diagnostics";
   id: string;
+  itemId: number;
+  itemName: string;
+  itemType: DIAGNOSTICS_TYPE | null;
   testDescription: string | null;
+  testPreparationData: string;
+  inclusions: (number | null)[] | null;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
 

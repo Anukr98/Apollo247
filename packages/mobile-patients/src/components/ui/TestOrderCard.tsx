@@ -19,7 +19,8 @@ import {
 } from 'react-native';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { colors } from '../../theme/colors';
+import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/DisclaimerSection';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -204,6 +205,7 @@ export interface TestOrderCardProps {
 
 export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(false);
   const isOrderWithProgressIcons =
     props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
@@ -448,7 +450,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         ) : (
           <>
             {props.showRescheduleCancel ? (
-              <View style={styles.rightButtonOuterView}>
+              <View style={[styles.rightButtonOuterView]}>
                 <TouchableOpacity activeOpacity={1} onPress={props.onPressCancel}>
                   <View style={{ flex: 0.4 }}>
                     <Text style={styles.rightButtonText}>CANCEL</Text>
@@ -459,6 +461,13 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                   <View style={{ flex: 0.5 }}>
                     <Text style={styles.rightButtonText}>RESCHEDULE</Text>
                   </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={_changeDisclaimer}>
+                  {showDisclaimer ? (
+                    <Up style={styles.arrowIconStyle} />
+                  ) : (
+                    <Down style={styles.arrowIconStyle} />
+                  )}
                 </TouchableOpacity>
               </View>
             ) : (
@@ -494,6 +503,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         {props.showTestPreparation ? renderTestPreparation() : null}
         {showDropDown ? renderPreTestingView() : null}
         {renderTestOptions()}
+        {showDisclaimer ? <DisclaimerSection content={string.diagnostics.disclaimerText} /> : null}
       </View>
     );
   };
@@ -525,9 +535,13 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
             ) => {
               return (
                 <>
-                  {item?.itemObj?.testPreparationData != '' && (
-                    <View style={styles.testNameView}>
-                      <Text style={styles.testNameText}>{item?.itemName!}:</Text>
+                  {(item?.itemObj
+                    ? item?.itemObj?.testPreparationData != ''
+                    : item?.diagnostics?.testPreparationData != '') && (
+                    <View style={[styles.testNameView]}>
+                      <Text style={styles.testNameText}>
+                        {item?.itemName! || item?.diagnostics?.itemName!}:
+                      </Text>
                       <Text
                         style={[
                           styles.testNameText,
@@ -537,7 +551,8 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                           },
                         ]}
                       >
-                        {item?.itemObj?.testPreparationData!}
+                        {item?.itemObj?.testPreparationData! ||
+                          item?.diagnostics?.testPreparationData}
                       </Text>
                     </View>
                   )}
@@ -579,14 +594,22 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 <View style={{}}>
                   {index < 3 && (
                     <Text style={[styles.titleStyle]}>
-                      {item?.itemName?.toLowerCase() || ''}
-                      {item?.itemObj?.itemType! == 'PACKAGE' &&
-                        item?.itemObj?.inclusions != null &&
-                        item?.itemObj?.inclusions?.length! > 0 && (
+                      {item?.itemName?.toLowerCase() ||
+                        item?.diagnostics?.itemName?.toLowerCase() ||
+                        ''}
+                      {(item?.itemObj?.itemType! == 'PACKAGE' ||
+                        item?.diagnostics?.itemName == 'PACKAGE') &&
+                        (item?.itemObj
+                          ? item?.itemObj?.inclusions != null &&
+                            item?.itemObj?.inclusions?.length! > 0
+                          : item?.diagnostics?.inclusions != null &&
+                            item?.diagnostics?.inclusions?.length! > 0) && (
                           <Text
                             style={[styles.titleStyle, { ...theme.fonts.IBMPlexSansMedium(11) }]}
                           >
-                            {'\n'} Inclusions : {item?.itemObj?.inclusions?.length}
+                            {'\n'} Inclusions :{' '}
+                            {item?.itemObj?.inclusions?.length ||
+                              item?.diagnostics?.inclusions!.length}
                           </Text>
                         )}
                       {index == 2 && testsPerOrder - 3 > 0 ? (
@@ -611,6 +634,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
 
   const _changeDropDownState = () => {
     setShowDropDown(!showDropDown);
+  };
+
+  const _changeDisclaimer = () => {
+    setShowDisclaimer(!showDisclaimer);
   };
 
   const renderTestPreparation = () => {

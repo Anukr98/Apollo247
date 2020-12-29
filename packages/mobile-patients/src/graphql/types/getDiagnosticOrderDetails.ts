@@ -37,6 +37,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics {
   __typename: "Diagnostics";
   id: string;
+  itemName: string;
   itemId: number;
   gender: string;
   rate: number;
@@ -47,6 +48,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   fromAgeInDays: number;
   collectionType: TEST_COLLECTION_TYPE | null;
   testDescription: string | null;
+  testPreparationData: string;
   inclusions: (number | null)[] | null;
   diagnosticPricing: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
@@ -56,6 +58,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   id: string;
   itemId: number | null;
   itemName: string | null;
+  itemType: DIAGNOSTICS_TYPE | null;
   price: number | null;
   quantity: number | null;
   groupPlan: string | null;

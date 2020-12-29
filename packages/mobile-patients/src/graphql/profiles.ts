@@ -1567,7 +1567,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           }
           diagnostics {
             id
+            itemId
+            itemName
+            itemType
             testDescription
+            testPreparationData
+            inclusions
             diagnosticPricing {
               mrp
               price
@@ -1586,6 +1591,21 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
 export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
   query getDiagnosticsOrderStatus($diagnosticOrderId: String) {
     getDiagnosticsOrderStatus(diagnosticOrderId: $diagnosticOrderId) {
+      ordersList {
+        statusDate
+        orderStatus
+        itemId
+        itemName
+        packageId
+        packageName
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS = gql`
+  query getDiagnosticCancelledOrderDetails($diagnosticOrderId: String, $patientId: String) {
+    getDiagnosticCancelledOrderDetails(diagnosticOrderId: $diagnosticOrderId, patientId: $patientId) {
       ordersList {
         statusDate
         orderStatus
@@ -1659,6 +1679,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           }
           diagnostics {
             id
+            itemName
             itemId
             gender
             rate
@@ -1669,6 +1690,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
             testDescription
+            testPreparationData
             inclusions
             diagnosticPricing {
               mrp

@@ -4,10 +4,7 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import {
-  DiagnosticsCartItem,
-  useDiagnosticsCart,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_STATUS,
@@ -241,9 +238,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
   >();
   const [error, setError] = useState(false);
-  const [scrollOffSet, setScrollOffSet] = useState<number>(0);
-  const [show, setShow] = useState<boolean>(true);
-
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
@@ -288,22 +282,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           variables: {
             patientId: currentPatient && currentPatient.id,
           },
-          fetchPolicy: 'cache-first',
+          fetchPolicy: 'no-cache',
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersList?.ordersList || [];
           setOrders(ordersList);
-          if (ordersList) {
-            orders?.map((order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) => {
-              if (
-                order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED &&
-                order?.diagnosticOrderLineItems?.length! >= 1
-              ) {
-                fetchOrderStatusForOrder(order?.id!, order); //set indicator
-                // fetchTestDetails(order!.id, order); //maybe for the pickup requested case/
-              }
-            });
-          }
+          setLoading!(false);
         })
         .catch((error) => {
           setLoading!(false);
@@ -315,65 +299,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
     }
-  };
-
-  const fetchOrderStatusForOrder = (
-    orderId: string,
-    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
-  ) => {
-    setLoading!(true);
-    client
-      .query<getDiagnosticsOrderStatus, getDiagnosticsOrderStatusVariables>({
-        query: GET_DIAGNOSTIC_ORDER_STATUS,
-        context: {
-          sourceHeaders,
-        },
-        variables: {
-          diagnosticOrderId: orderId,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const _testStatus = g(data, 'getDiagnosticsOrderStatus', 'ordersList') || [];
-        let maxStatus;
-        if (_testStatus.length == 1) {
-          order.maxStatus = _testStatus[0]?.orderStatus;
-          order.maxTime = _testStatus[0]?.statusDate;
-        } else {
-          if (calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED)) {
-            maxStatus = DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
-          } else if (calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB)) {
-            maxStatus = DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB;
-          } else if (calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED)) {
-            maxStatus = DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED;
-          } else {
-            maxStatus = DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED;
-          }
-          order.maxStatus = maxStatus;
-        }
-      })
-      .catch((e) => {
-        CommonBugFender(`${AppRoutes.YourOrdersTest}_getOrderStatus`, error);
-        setLoading!(false);
-      });
-  };
-
-  const calMaxStatus = (testStatus: any, status: string) => {
-    return testStatus.some((item: any) => item?.orderStatus == status);
-  };
-
-  const onScrolling = (offSet: number) => {
-    if (scrollOffSet > offSet) {
-      if (!show) {
-        setShow(true);
-      }
-    } else {
-      setShow(false);
-    }
-    if (offSet <= 0) {
-      setShow(true);
-    }
-    setScrollOffSet(offSet);
   };
 
   const onSubmitCancelOrder = (reason: string, comment: string) => {
@@ -398,6 +323,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           refetchOrders()
             .then((data: any) => {
               const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+              console.log({ _orders });
               setOrders(_orders);
               setLoading!(false);
             })
@@ -432,8 +358,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
   ) => {
     if (order != null) {
-      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter(
-        (items) => items?.itemObj?.testPreparationData != ''
+      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter((items) =>
+        items?.itemObj
+          ? items?.itemObj?.testPreparationData != ''
+          : items?.diagnostics?.testPreparationData != ''
       );
       return filterPreTestingData?.length == 0 ? false : true;
     }
@@ -520,31 +448,31 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     ) {
       return;
     }
+
     const getUTCDateTime = order?.slotDateTimeInUTC;
     const isHomeVisit = !!order.slotTimings;
-    const dt = moment(getUTCDateTime).format(`D MMM YYYY`);
-    const tm = moment(getUTCDateTime).format();
+    const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
+      `D MMM YYYY`
+    );
+    const tm =
+      getUTCDateTime != null
+        ? moment(getUTCDateTime).format()
+        : getSlotStartTime(order?.slotTimings);
     const dtTm = `${dt}${isHomeVisit ? `, ${tm}` : 'hh:mm A'}`;
 
     const currentStatus = order?.maxStatus! ? order?.maxStatus! : order?.orderStatus;
     const patientName = g(currentPatient, 'firstName');
 
-    const isSampleCollected = order?.maxStatus!
-      ? sequenceOfStatus.indexOf(order?.maxStatus!) >=
-        sequenceOfStatus.indexOf(DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED)
-      : false;
-    const showPreTesting = isSampleCollected ? false : checkIfPreTestingExists(order);
-
-    const isCancelRescheduleValid =
-      !isSampleCollected && moment(getUTCDateTime).diff(moment(), 'hours') > 2;
+    const isCancelRescheduleValid = moment(getUTCDateTime).diff(moment(), 'minutes') > 120;
+    const showPreTesting = isCancelRescheduleValid && checkIfPreTestingExists(order);
     const showRescheduleOption = isCancelRescheduleValid && order?.rescheduleCount! <= 3;
-
     /**
      *  1. show reports generated, if any of the status of the test goes into sample collected.
      *  2. if status is pickup requested, then show cancel - reschedule option prior 2hrs to pick up date-time
      *  3. if pickup confirmed, then don't show anything?
      *  4. if greater than this, then start showing view report option
      */
+
     return (
       <TestOrderCard
         key={`${order.id}`}
@@ -561,9 +489,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         dateTime={`Scheduled For: ${dtTm}`}
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
-        showViewReport={isSampleCollected}
+        showViewReport={false}
         onPress={() => {
-          // _navigateToYourTestDetails(order);
+          _navigateToYourTestDetails(order);
         }}
         status={currentStatus}
         statusText={mapStatusWithText(currentStatus)}
@@ -640,18 +568,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView
-          bounces={false}
-          onScroll={(i) => onScrolling(i.nativeEvent.contentOffset.y)}
-          scrollEventThrottle={1}
-        >
+        <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
           {/* {!loading && !error && renderChatWithUs()} */}
           {renderCancelPopUp()}
           {/* {renderReschedulePopUp()} */}
         </ScrollView>
-        {!loading && <ScrollableFooter show={show} />}
       </SafeAreaView>
       {loading && <Spinner />}
     </View>
