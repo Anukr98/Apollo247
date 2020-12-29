@@ -68,7 +68,7 @@ import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/Cons
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
-import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
+import { NeedHelp } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
 import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
@@ -309,7 +309,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: SplashScreen,
   },
   [AppRoutes.MobileHelp]: {
-    screen: MobileHelp,
+    screen: NeedHelp,
   },
   [AppRoutes.NeedHelpPharmacyOrder]: {
     screen: NeedHelpPharmacyOrder,
