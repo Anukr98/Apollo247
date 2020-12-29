@@ -1592,6 +1592,10 @@ export const CircleDiscountBadge: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/discountBadge.png')} />
 );
 
+export const Apollo247: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_Apollo.png')} />
+);
+
 export const HomeAddressIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/home_icon.png')} />
 );

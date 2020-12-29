@@ -136,6 +136,7 @@
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
   "uploadPrescription": "UPLOAD PRESCRIPTION",
   "proceedToPay": "PROCEED TO PAY",
+  "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "consultType": {
@@ -329,51 +330,27 @@
     "filter_data": [
       {
         "label": "City",
-        "options": [
-          "Hyderabad",
-          "Chennai"
-        ]
+        "options": ["Hyderabad", "Chennai"]
       },
       {
         "label": "Experience In Years",
-        "options": [
-          "0 - 5",
-          "6 - 10",
-          "11 - 15",
-          "15+"
-        ]
+        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
       },
       {
         "label": "Availability",
-        "options": [
-          "Now",
-          "Today",
-          "Tomorrow",
-          "Next 3 Days"
-        ]
+        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
       },
       {
         "label": "Fees In Rupees",
-        "options": [
-          "100 - 500",
-          "501 - 1000",
-          "1000+"
-        ]
+        "options": ["100 - 500", "501 - 1000", "1000+"]
       },
       {
         "label": "Gender",
-        "options": [
-          "Male",
-          "Female"
-        ]
+        "options": ["Male", "Female"]
       },
       {
         "label": "Language",
-        "options": [
-          "Hindi",
-          "English",
-          "Telugu"
-        ]
+        "options": ["Hindi", "English", "Telugu"]
       }
     ]
   },
@@ -544,12 +521,7 @@
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar",
-    "availabilityList": [
-      "Now",
-      "Today",
-      "Tomorrow",
-      "Next 3 days"
-    ],
+    "availabilityList": ["Now", "Today", "Tomorrow", "Next 3 days"],
     "appointmentStatus": [
       "Active",
       "Completed",
