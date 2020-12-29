@@ -823,27 +823,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   const getRadioButtonAction = () => {
     if (selectedMedicineOption === 'Call me for details') {
-      // return (
-      //   <View
-      //     style={{
-      //       backgroundColor: theme.colors.CARD_BG,
-      //       padding: 16,
-      //       margin: 0,
-      //       borderBottomRightRadius: 10,
-      //       borderBottomLeftRadius: 10,
-      //     }}
-      //   >
-      //     <Text
-      //       style={{
-      //         color: theme.colors.LIGHT_BLUE,
-      //         ...theme.fonts.IBMPlexSansMedium(13),
-      //         textAlign: 'center',
-      //       }}
-      //     >
-      //       Our pharmacist will call you within 2 hours to confirm medicines (8 AM to 8 PM).
-      //     </Text>
-      //   </View>
-      // );
     } else if (
       selectedMedicineOption === 'Need all medicine and for duration as per prescription'
     ) {
@@ -1108,26 +1087,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           {showMedicineDescription && renderExpectCall()}
         </ScrollView>
       </SafeAreaView>
-
-      {/* <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
-        <Button
-          disabled={disableSubmitButton()}
-          title={'SUBMIT'}
-          onPress={onSubmitOrder}
-          style={{ marginHorizontal: 60, flex: 1 }}
-        />
-      </StickyBottomComponent> */}
       {renderProceedBar()}
       {renderPrescriptionModal()}
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
-        // disabledOption={
-        //   EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0
-        //     ? 'NONE'
-        //     : EPrescriptions.length > 0
-        //     ? 'CAMERA_AND_GALLERY'
-        //     : 'E-PRESCRIPTION'
-        // }
         type={isComingFromReUpload ? undefined : 'nonCartFlow'}
         heading={isComingFromReUpload ? 'Re-Upload Prescription(s)' : 'Upload Prescription(s)'}
         instructionHeading={'Instructions For Uploading Prescriptions'}
