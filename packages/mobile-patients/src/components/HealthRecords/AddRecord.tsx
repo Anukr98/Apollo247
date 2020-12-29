@@ -1893,7 +1893,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     } else if (age && (parseInt(age) <= 0 || parseInt(age) > 100)) {
       showAphAlert!({
         title: 'Alert!',
-        description: 'Please select correct age',
+        description: 'Please enter correct age',
       });
     } else if (allergyCheckbox) {
       addAllergyRecord();
