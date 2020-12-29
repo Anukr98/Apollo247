@@ -13,7 +13,11 @@ export interface ProceedBarProps {
   onPressPlaceOrder?: () => void;
   onPressChangeAddress?: () => void;
   onPressTatCard?: () => void;
-  vdcType: string;
+  onPressProceed?: () => void;
+  vdcType?: string;
+  screen?: string;
+  disableButton?: boolean;
+  selectedMedicineOption?: string;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -25,11 +29,17 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     onPressTatCard,
     onPressChangeAddress,
     vdcType,
+    screen,
+    disableButton,
+    selectedMedicineOption,
+    onPressProceed,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
 
   function getTitle() {
-    return !deliveryAddressId
+    return selectedMedicineOption == 'search'
+      ? 'PROCEED'
+      : !deliveryAddressId
       ? addresses?.length
         ? string.selectDeliveryAddress
         : string.addDeliveryAddress
@@ -37,7 +47,9 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   }
 
   function onPressButton() {
-    return !deliveryAddressId
+    return selectedMedicineOption == 'search'
+      ? onPressProceed?.()
+      : !deliveryAddressId
       ? addresses?.length
         ? onPressSelectDeliveryAddress?.()
         : onPressAddDeliveryAddress?.()
@@ -45,10 +57,9 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   }
 
   const renderButton = () => {
-    console.log(deliveryAddressId);
     return (
       <Button
-        disabled={false}
+        disabled={disableButton}
         title={getTitle()}
         onPress={() => onPressButton()}
         titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
@@ -57,12 +68,13 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     );
   };
 
-  function getDeliveryMsg() {
-    return 'hi';
-  }
-
   const renderTatCard = () => {
-    if (selectedAddress && vdcType != '') {
+    if (
+      selectedAddress &&
+      vdcType != '' &&
+      screen != 'summary' &&
+      selectedMedicineOption != 'search'
+    ) {
       return (
         <TatCard
           vdcType={vdcType}
