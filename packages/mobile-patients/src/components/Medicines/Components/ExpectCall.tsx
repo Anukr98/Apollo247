@@ -14,7 +14,6 @@ export const ExpectCall: React.FC<ExpectCallProps> = (props) => {
         <Text style={styles.bodyTxt} numberOfLines={2}>
           Our pharmacist will call you to verify the prescription in the next 15 minutes. Working
           hours between 8 am and 9 pm
-          {/* <Text style={styles.headerTxt}>2PM TODAY.</Text> */}
         </Text>
       </View>
     );
