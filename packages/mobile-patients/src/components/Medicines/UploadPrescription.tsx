@@ -108,6 +108,16 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
+  textStyle: {
+    ...theme.fonts.IBMPlexSansMedium(11),
+    lineHeight: 14,
+    color: '#979797',
+  },
+  subtitleStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 20,
+    color: theme.colors.SHERPA_BLUE,
+  },
 });
 
 export interface UploadPrescriptionProps
@@ -155,15 +165,18 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const medicineDetailOptions = [
     {
       id: 'Need all medicine and for duration as per prescription',
-      title: 'All medicines from prescription',
+      title: 'Order all medicines from prescription',
+      subTitle: 'Cart would be prepared with all the medicines as prescribed by the doctor',
     },
     {
       id: 'search',
-      title: 'Search and add medicine(s)',
+      title: 'Add more medicines to the order',
+      subTitle: 'Browse and search medicines on the app to modify your order',
     },
     {
       id: 'Call me for details',
-      title: 'Call me for details',
+      title: 'Confirm order on call',
+      subTitle: 'Our agent would call you to confirm the order placed',
     },
   ];
   const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(
@@ -779,7 +792,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             return (
               <RadioSelectionItem
                 key={item.id}
-                title={item.title}
+                subtitle={item.title}
+                title={item.subTitle}
+                showMultiLine={true}
+                textStyle={styles.textStyle}
+                subtitleStyle={styles.subtitleStyle}
                 isSelected={selectedMedicineOption == item.id}
                 onPress={() => {
                   setSelectedMedicineOption(item.id);
@@ -809,9 +826,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     selectedMedicineOption ==
                       'Need all medicine and for duration as per prescription')
                 }
-                textStyle={{
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                }}
                 radioSubBody={selectedMedicineOption == item.id ? getRadioButtonAction() : <></>}
               />
             );
@@ -822,10 +836,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const getRadioButtonAction = () => {
-    if (selectedMedicineOption === 'Call me for details') {
-    } else if (
-      selectedMedicineOption === 'Need all medicine and for duration as per prescription'
-    ) {
+    if (selectedMedicineOption === 'Need all medicine and for duration as per prescription') {
       const isDurationDaysSelected = prescriptionOption === 'duration';
       return (
         <View
