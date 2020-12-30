@@ -407,11 +407,11 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           { alignSelf: hideLeftOption ? 'flex-end' : undefined },
         ]}
       >
-        {hideLeftOption ? null : (
-          <View style={{ flex: props.isComingFrom == 'individualTest' ? 1 : 0.6 }}>
+        {hideLeftOption || props.isComingFrom == 'individualTest' ? null : (
+          <View style={{ flex: 0.6 }}>
             <View
               style={{
-                alignItems: props.isComingFrom == 'individualTest' ? 'flex-end' : 'flex-start',
+                alignItems: 'flex-start',
               }}
             >
               <Text
@@ -420,7 +420,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 }}
                 onPress={props.onOptionPress}
               >
-                {props.isComingFrom == 'individualTest' ? 'ORDER STATUS' : 'VIEW DETAILS'}
+                {'ORDER SUMMARY'}
               </Text>
             </View>
           </View>
@@ -428,7 +428,8 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         {/** right view options */}
 
         {props.showViewReport ? (
-          <View style={{ flex: 0.4, alignItems: 'flex-end' }}>
+          //0.4
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansBold(13),
