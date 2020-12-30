@@ -353,10 +353,10 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b.date || b.billDateTime || b.startDateTime)
+      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
         .toDate()
         .getTime() -
-      moment(a.date || a.billDateTime || a.startDateTime)
+      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
         .toDate()
         .getTime()
   );
