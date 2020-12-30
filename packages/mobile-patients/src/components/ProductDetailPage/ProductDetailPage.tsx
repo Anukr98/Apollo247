@@ -69,6 +69,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ProductQuantity } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/ProductQuantity';
 import { ProductManufacturer } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/ProductManufacturer';
 import { ProductInfo } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/ProductInfo';
+import { PharmaManufacturer } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/PharmaManufacturer';
 import { SimilarProducts } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/SimilarProducts';
 import { BottomStickyComponent } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/BottomStickyComponent';
 import { Overlay } from 'react-native-elements';
@@ -150,12 +151,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
   const [productQuantity, setProductQuantity] = useState<number>(1);
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
+  const [showSubstituteInfo, setShowSubstituteInfo] = useState<boolean>(false);
 
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
+  const [isPharma, setIsPharma] = useState<boolean>(false);
 
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
@@ -174,6 +177,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           if (productDetails?.dc_availability === 'No' && productDetails?.is_in_contract === 'No') {
             setIsInStock(false);
           }
+          setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
           postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
           savePastSearch(client, {
@@ -646,6 +650,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               showPincodePopup={showPincodePopup}
               deliveryTime={deliveryTime}
               deliveryError={deliveryError}
+              isPharma={isPharma}
             />
             <View
               ref={buttonRef}
@@ -668,6 +673,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 setShowAddedToCart={setShowAddedToCart}
               />
             </View>
+            {isPharma && (
+              <PharmaManufacturer
+                manufacturer={medicineDetails?.manufacturer}
+                composition={medicineDetails?.composition}
+                consumeType={medicineDetails?.consume_type}
+              />
+            )}
             <ProductInfo
               description={medicineDetails?.description}
               isReturnable={medicineDetails?.is_returnable === 'Yes'}
@@ -679,12 +691,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               colour={medicineDetails?.colour}
               variant={medicineDetails?.variant}
               expiryDate={medicineDetails?.expiry_date}
+              isPharma={isPharma}
             />
             {!!substitutes.length && (
               <SimilarProducts
                 heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                 similarProducts={substitutes}
                 navigation={props.navigation}
+                composition={medicineDetails?.composition}
+                setShowSubstituteInfo={setShowSubstituteInfo}
               />
             )}
             {!!medicineDetails?.similar_products?.length && (
@@ -738,6 +753,41 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           </View>
         </Overlay>
       )}
+      {showSubstituteInfo && (
+        <Overlay
+          onRequestClose={() => {
+            setShowSubstituteInfo(false);
+          }}
+          onBackdropPress={() => setShowSubstituteInfo(false)}
+          isVisible={true}
+          windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+          overlayStyle={[styles.overlayStyle, styles.susbtituteOverlay]}
+        >
+          <View>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                setShowSubstituteInfo(false);
+              }}
+            >
+              <Text style={{ color: '#02475B' }}>X</Text>
+            </TouchableOpacity>
+            <Text style={styles.susbtituteHeading}>
+              {`Substitutes are product with same molecular composition`}
+            </Text>
+            <Text style={styles.susbtitutesubHeading}>
+              {`Substitute brands can only be ordered`}
+            </Text>
+            <Text style={styles.susbtituteText}>{`- If it’s mentioned on the prescription`}</Text>
+            <Text style={styles.susbtituteText}>
+              {`- Or if the doctor has prescribed the salt`}
+            </Text>
+            <Text style={styles.susbtituteText}>
+              {`- Or if the doctor has written on prescription that substitute is ok`}
+            </Text>
+          </View>
+        </Overlay>
+      )}
     </View>
   );
 };
@@ -775,6 +825,17 @@ const styles = StyleSheet.create({
   overlayText: {
     ...theme.viewStyles.text('R', 14, '#FFFFFF', 1, 25, 0.35),
   },
+  susbtituteHeading: {
+    ...theme.viewStyles.text('B', 15, '#02475B', 1, 17, 0.35),
+  },
+  susbtitutesubHeading: {
+    marginTop: 15,
+    marginBottom: 10,
+    ...theme.viewStyles.text('M', 15, '#02475B', 1, 17, 0.35),
+  },
+  susbtituteText: {
+    ...theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0.35),
+  },
   flexRow: {
     flexDirection: 'row',
   },
@@ -784,5 +845,22 @@ const styles = StyleSheet.create({
     height: 20,
     marginTop: 3,
     marginRight: 3,
+  },
+  closeButton: {
+    position: 'absolute',
+    backgroundColor: theme.colors.WHITE,
+    padding: 3,
+    paddingLeft: 8,
+    paddingRight: 8,
+    borderRadius: 30,
+    zIndex: 9,
+    top: -50,
+    right: -20,
+  },
+  susbtituteOverlay: {
+    backgroundColor: '#FFFFFF',
+    width: '75%',
+    paddingVertical: 20,
+    borderRadius: 10,
   },
 });

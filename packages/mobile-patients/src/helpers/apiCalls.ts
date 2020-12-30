@@ -39,6 +39,8 @@ export interface MedicineProduct {
   colour?: string | null;
   variant?: string | null;
   expiry_date?: string | null;
+  composition?: string | null;
+  consume_type?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {

@@ -15,6 +15,7 @@ export interface ProductInfoProps {
   colour?: string | null;
   variant?: string | null;
   expiryDate?: string | null;
+  isPharma: boolean;
 }
 
 export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
@@ -29,6 +30,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     colour,
     variant,
     expiryDate,
+    isPharma,
   } = props;
 
   const filterHtmlContent = (content: string = '') => {
@@ -134,7 +136,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>Product Detail</Text>
+      <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
       {!!description && renderDescription()}
       {!!vegetarian && renderVegetarianIcon()}
       {!!storage && renderStorage()}

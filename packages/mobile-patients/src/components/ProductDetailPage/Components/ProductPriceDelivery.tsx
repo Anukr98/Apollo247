@@ -19,6 +19,7 @@ export interface ProductPriceDeliveryProps {
   showPincodePopup: () => void;
   deliveryTime?: string;
   deliveryError?: string;
+  isPharma: boolean;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -31,6 +32,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     showPincodePopup,
     deliveryError,
     deliveryTime,
+    isPharma,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId } = useShoppingCart();
@@ -139,7 +141,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         {renderProductPrice()}
         {renderIsInStock()}
       </View>
-      {manufacturer && renderManufacturer()}
+      {!!manufacturer && !isPharma && renderManufacturer()}
       {renderDeliverTo()}
       {isExpress ? renderExpress() : renderDeliveryDateTime()}
     </View>
