@@ -67,6 +67,7 @@ import {
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -656,6 +657,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   };
 
+  const renderSpecialDiscountText = (styleObj?: any) => {
+    return (
+      <SpecialDiscountText text={string.diagnostics.specialDiscountText} styleObj={styleObj} />
+    );
+  };
+
   setTimeout(() => isItemAdded && setItemAdded(false), 2000);
 
   const renderItemAdded = () => {
@@ -926,6 +933,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                     marginTop: isDiagnosticCircleSubscription && promoteCircle ? 0 : 10,
                   }}
                 >
+                  {/**
+                   * special price text
+                   */}
+                  {promoteDiscount
+                    ? renderSpecialDiscountText({ marginTop: -10, marginBottom: 2 })
+                    : null}
+
                   {/**
                    * circle + promote
                    */}
