@@ -1,4 +1,4 @@
-import { isOrderCancelAllowed } from '@aph/mobile-patients/src/components/OrderDetailsScene';
+import { isOrderCancelNotAllowed } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   getFormattedTime,
@@ -30,6 +30,7 @@ export const OrderCard: React.FC<Props> = ({
   const isFailedOrCancelled =
     status === MEDICINE_ORDER_STATUS.CANCELLED ||
     status === MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+    status === MEDICINE_ORDER_STATUS.PAYMENT_ABORTED ||
     status === MEDICINE_ORDER_STATUS.PAYMENT_FAILED;
 
   const renderTitle = () => {
@@ -94,7 +95,7 @@ export const OrderCard: React.FC<Props> = ({
     );
   };
   const renderLinks = () => {
-    const enableCancel = isOrderCancelAllowed(orderDetail?.medicineOrdersStatus);
+    const disableCancel = isOrderCancelNotAllowed(orderDetail);
     return (
       <View style={styles.linkContainer}>
         <Text onPress={onPressHelp} style={styles.link}>
@@ -102,8 +103,8 @@ export const OrderCard: React.FC<Props> = ({
         </Text>
         <Divider style={styles.divider} />
         <Text
-          onPress={enableCancel ? onPressCancel : undefined}
-          style={[enableCancel ? styles.link : styles.disabledLink]}
+          onPress={disableCancel ? () => {} : onPressCancel}
+          style={[disableCancel ? styles.disabledLink : styles.link]}
         >
           {string.cancel.toUpperCase()}
         </Text>
