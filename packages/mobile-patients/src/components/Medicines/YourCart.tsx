@@ -12,7 +12,7 @@ import {
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { StoreDriveWayPickupPopup } from '@aph/mobile-patients/src/components/Medicines/StoreDriveWayPickupPopup';
@@ -1203,9 +1203,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
-    props.navigation.push(AppRoutes.AddAddress, {
+    props.navigation.push(AppRoutes.AddAddressNew, {
       KeyName: dataname,
-      DataAddress: address,
+      addressDetails: address,
       ComingFrom: comingFrom,
     });
   };
@@ -1259,8 +1259,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             onPress={() => {
               CommonLogEvent(AppRoutes.YourCart, 'Add new address');
               postPharmacyAddNewAddressClick('Cart');
-              props.navigation.navigate(AppRoutes.AddAddress, {
+              props.navigation.navigate(AppRoutes.AddAddressNew, {
                 source: 'Cart' as AddressSource,
+                addOnly: true,
               });
             }}
           >

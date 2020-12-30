@@ -1,19 +1,20 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, StyleProp, ViewStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { SympTrackerIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface SymptomTrackerProps {
   onPressTrack: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const SymptomTrackerCard: React.FC<SymptomTrackerProps> = (props) => {
-  const { onPressTrack } = props;
+  const { onPressTrack, style } = props;
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPressTrack}>
+    <TouchableOpacity style={[styles.container, style]} onPress={onPressTrack}>
       <SympTrackerIcon style={styles.symptomIcon} />
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.whichSpecialityTxt}>Not sure about which speciality to choose?</Text>
         <Text style={styles.TrackTxt}>BOOK DOCTOR BY SYMPTOMS</Text>
       </View>
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     marginTop: 12,
     color: theme.colors.SHERPA_BLUE,
+    flexWrap: 'wrap',
   },
   TrackTxt: {
     ...theme.fonts.IBMPlexSansBold(13),

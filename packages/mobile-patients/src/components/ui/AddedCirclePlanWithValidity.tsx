@@ -21,17 +21,19 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
           <Text style={theme.viewStyles.text('R', 11, theme.colors.LIGHT_BLUE)}>
             {string.circleDoctors.successfullyPurchashedCircleSubscription}
           </Text>
-          <Text
-            style={{ ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE), marginTop: 5 }}
-          >
-            You{' '}
-            <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
-              saved {string.common.Rs}
-              {circleSavings}{' '}
+          {!!circleSavings && (
+            <Text
+              style={{ ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE), marginTop: 5 }}
+            >
+              You{' '}
+              <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
+                saved {string.common.Rs}
+                {circleSavings}{' '}
+              </Text>
+              on your
+              {isConsult ? ` consult` : ` purchase`}
             </Text>
-            on your
-            {isConsult ? ` consult` : ` purchase`}
-          </Text>
+          )}
           <View style={[styles.spaceRow, { alignItems: 'flex-start' }]}>
             {circlePlanDetails?.end_date ? (
               <View>

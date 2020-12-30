@@ -30,6 +30,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import ApolloClient from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -73,20 +74,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         variables: { patientId: currentPatient?.id },
         fetchPolicy: 'no-cache',
       });
-      let skuResponse;
-      try {
-        skuResponse = await client.mutate<getPreviousOrdersSkus, getPreviousOrdersSkusVariables>({
-          mutation: GET_PREVIOUS_ORDERS_SKUS,
-          variables: {
-            previousOrdersSkus: {
-              patientId: currentPatient?.id,
-            },
-          },
-          fetchPolicy: 'no-cache',
-        });
-      } catch (error) {}
-
-      const skuArray = (skuResponse?.data?.getPreviousOrdersSkus?.SkuDetails || []) as string[];
+      const skuArray = await getBuyAgainSkuList(client, currentPatient?.id);
       setOrders(formatOrdersWithBuyAgain(ordersResponse?.data, skuArray));
       setSkuList(skuArray);
       setLoading(false);
@@ -356,4 +344,16 @@ export const formatOrdersWithBuyAgain = (orders: getMedicineOrdersOMSList, skuAr
   return formattedOrders?.length && skuArray?.length
     ? [...formattedOrders.slice(0, 1), { buyAgainSection: true }, ...formattedOrders.slice(1)]
     : formattedOrders;
+};
+
+export const getBuyAgainSkuList = async (client: ApolloClient<{}>, patientId: string) => {
+  const skuResponse = await client.mutate<getPreviousOrdersSkus, getPreviousOrdersSkusVariables>({
+    mutation: GET_PREVIOUS_ORDERS_SKUS,
+    variables: {
+      previousOrdersSkus: { patientId },
+    },
+    fetchPolicy: 'no-cache',
+  });
+  const skuArray = (skuResponse?.data?.getPreviousOrdersSkus?.SkuDetails || []) as string[];
+  return skuArray;
 };

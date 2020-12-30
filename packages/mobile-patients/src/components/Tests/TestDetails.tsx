@@ -13,7 +13,6 @@ import {
   aphConsole,
   postWebEngageEvent,
   g,
-  getDiscountPercentage,
   postAppsFlyerEvent,
   postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -194,6 +193,13 @@ const styles = StyleSheet.create({
     height: 50,
   },
   circlePriceView: { alignSelf: 'flex-start', marginTop: 5 },
+  priceTextSlashed: {
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+    textDecorationLine: 'line-through',
+    opacity: 0.5,
+    marginTop: -10,
+  },
 });
 
 var tabs = [
@@ -267,7 +273,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const discount =
     testDetails.source == 'Cart Page'
-      ? getDiscountPercentage(findItemFromCart?.price!, findItemFromCart?.specialPrice!)
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
+          findItemFromCart?.price!,
+          findItemFromCart?.specialPrice!
+        )
       : calculatePackageDiscounts(
           testDetails?.packageMrp!,
           testDetails?.Rate!,
@@ -275,7 +285,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         );
   const circleDiscount =
     testDetails.source == 'Cart Page'
-      ? getDiscountPercentage(findItemFromCart?.circlePrice!, findItemFromCart?.circleSpecialPrice!)
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
+          findItemFromCart?.circlePrice!,
+          findItemFromCart?.circleSpecialPrice!
+        )
       : calculatePackageDiscounts(
           testDetails?.packageMrp!,
           Number(testDetails?.circleRate!),
@@ -283,7 +297,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         );
   const specialDiscount =
     testDetails.source == 'Cart Page'
-      ? getDiscountPercentage(
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
           findItemFromCart?.discountPrice!,
           findItemFromCart?.discountSpecialPrice!
         )
@@ -760,7 +775,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         discountSpecialPriceToConsider &&
         mrpToDisplay != discountSpecialPriceToConsider);
 
-    let bottomPrice;
+    let bottomPrice, strikedPrice;
     if (isDiagnosticCircleSubscription) {
       if (promoteCircle) {
         bottomPrice = circleSpecialPriceToConsider;
@@ -771,7 +786,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     } else {
       if (promoteCircle) {
-        bottomPrice = mrpToDisplay;
+        strikedPrice = mrpToDisplay;
+        bottomPrice = circlePriceToConsider!;
       } else if (promoteDiscount) {
         bottomPrice = discountSpecialPriceToConsider;
       } else {
@@ -810,7 +826,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <View style={styles.circlePriceView}>
                   <Text style={styles.priceText}>
                     {string.common.Rs}
-                    {/* {findItemFromCart?.circleSpecialPrice! || testInfo?.circleSpecialPrice} */}
                     {circleSpecialPriceToConsider}
                   </Text>
                 </View>
@@ -827,7 +842,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View
                 style={[
                   styles.circlePriceView,
-                  { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  // { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  { alignSelf: 'flex-start' },
                 ]}
               >
                 <Text
@@ -836,7 +852,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
-              {/* {renderItemAdded()} */}
+              {renderItemAdded()}
             </View>
           )}
           {/**
@@ -864,7 +880,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View
                 style={[
                   styles.circlePriceView,
-                  { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  // { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  { alignSelf: 'flex-start' },
                 ]}
               >
                 <Text
@@ -873,7 +890,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
-              {/* {renderItemAdded()} */}
+              {renderItemAdded()}
             </View>
           )}
 
@@ -917,6 +934,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
                     </View>
                   ) : null}
+
+                  {/**added */}
+                  {promoteCircle && !!strikedPrice && strikedPrice! > bottomPrice && (
+                    <Text style={[styles.priceText, styles.priceTextSlashed]}>
+                      ({string.common.Rs}
+                      {strikedPrice})
+                    </Text>
+                  )}
                   <View style={{ flexDirection: 'row' }}>
                     <Text
                       style={[
@@ -930,18 +955,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       {string.common.Rs}
                       {bottomPrice}
                     </Text>
-                    {isDiagnosticCircleSubscription && promoteCircle && (
-                      <Text
-                        style={{
-                          ...theme.fonts.IBMPlexSansMedium(11),
-                          color: colors.APP_GREEN,
-                          lineHeight: 16,
-                          marginHorizontal: 10,
-                        }}
-                      >
-                        {Number(circleDiscount!).toFixed(0)}%off
-                      </Text>
-                    )}
+                    {promoteCircle &&
+                      (isDiagnosticCircleSubscription ? circleDiscount > 0 : discount > 0) && (
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(11),
+                            color: colors.APP_GREEN,
+                            lineHeight: 16,
+                            marginHorizontal: 10,
+                          }}
+                        >
+                          {Number(
+                            isDiagnosticCircleSubscription ? circleDiscount! : discount
+                          ).toFixed(0)}
+                          %off
+                        </Text>
+                      )}
                     {/**
                      * circle + not to promote  -- removed isDiagnosticCircleSubscription (to show discounts)
                      */}

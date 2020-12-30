@@ -26,6 +26,9 @@ import { HospitalizationScreen } from '@aph/mobile-patients/src/components/Healt
 import { InsuranceScreen } from '@aph/mobile-patients/src/components/HealthRecords/InsuranceScreen';
 import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddAddressNew } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
+import { LocationSearch } from '@aph/mobile-patients/src/components/AddressSelection/LocationSearch';
+import { EditAddress } from '@aph/mobile-patients/src/components/AddressSelection/EditAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
@@ -65,7 +68,7 @@ import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/Cons
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
-import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
+import { NeedHelp } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
 import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
@@ -122,7 +125,7 @@ import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSel
 import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
 import { CircleSubscription } from '@aph/mobile-patients/src/components/CirclePlan/CircleSubscription';
 import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionPaymentGateway';
-
+import { PrescriptionOrderSummary } from '@aph/mobile-patients/src/components/Medicines/PrescriptionOrderSummary';
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
   Login = 'Login',
@@ -165,6 +168,9 @@ export enum AppRoutes {
   TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
+  AddAddressNew = 'AddAddressNew',
+  LocationSearch = 'LocationSearch',
+  EditAddress = 'EditAddress',
   UploadPrescription = 'UploadPrescription',
   ChennaiNonCartOrderForm = 'ChennaiNonCartOrderForm',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
@@ -233,6 +239,7 @@ export enum AppRoutes {
   PaymentCheckout = 'PaymentCheckout',
   CircleSubscription = 'CircleSubscription',
   SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
+  PrescriptionOrderSummary = 'PrescriptionOrderSummary',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -302,7 +309,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: SplashScreen,
   },
   [AppRoutes.MobileHelp]: {
-    screen: MobileHelp,
+    screen: NeedHelp,
   },
   [AppRoutes.NeedHelpPharmacyOrder]: {
     screen: NeedHelpPharmacyOrder,
@@ -394,6 +401,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AddAddress]: {
     screen: AddAddress,
+  },
+  [AppRoutes.AddAddressNew]: {
+    screen: AddAddressNew,
+  },
+  [AppRoutes.LocationSearch]: {
+    screen: LocationSearch,
+  },
+  [AppRoutes.EditAddress]: {
+    screen: EditAddress,
   },
   [AppRoutes.SelectDeliveryAddress]: {
     screen: SelectDeliveryAddress,
@@ -594,6 +610,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SubscriptionPaymentGateway]: {
     screen: SubscriptionPaymentGateway,
+  },
+  [AppRoutes.PrescriptionOrderSummary]: {
+    screen: PrescriptionOrderSummary,
   },
 };
 

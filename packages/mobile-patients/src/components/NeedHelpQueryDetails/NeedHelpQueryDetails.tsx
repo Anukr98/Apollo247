@@ -4,6 +4,7 @@ import {
   Props as BreadcrumbProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Helpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -52,6 +53,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
+  const { getFilteredReasons, saveNeedHelpQuery } = Helpers;
   const queryReasons = getFilteredReasons(queryCategory, isOrderRelatedIssue);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -115,6 +117,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       setLoading!(true);
       const needHelp = AppConfig.Configuration.NEED_HELP;
       const category = needHelp.find(({ category }) => category === queryCategory);
+      const queryOrderId = Number(orderId) || null;
+      const orderType =
+        category?.id == 'pharmacy'
+          ? ORDER_TYPE.PHARMACY
+          : category?.id == 'virtualOnlineConsult'
+          ? ORDER_TYPE.CONSULT
+          : null;
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: queryCategory,
@@ -122,13 +131,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
-          orderId: Number(orderId) || null,
-          orderType:
-            category?.id == 'pharmacy'
-              ? ORDER_TYPE.PHARMACY
-              : category?.id == 'virtualOnlineConsult'
-              ? ORDER_TYPE.CONSULT
-              : null,
+          orderId: queryOrderId,
+          orderType,
         },
       };
       await client.query<SendHelpEmail, SendHelpEmailVariables>({
@@ -137,6 +141,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       });
       setLoading!(false);
       onSuccess();
+      if (orderType && queryOrderId) {
+        saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
+      }
     } catch (error) {
       setLoading!(false);
       onError();
@@ -246,20 +253,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       {renderReasons()}
     </SafeAreaView>
   );
-};
-
-const getFilteredReasons = (queryCategory: string, isOrderRelated?: boolean) => {
-  const needHelp = AppConfig.Configuration.NEED_HELP;
-  const category = needHelp.find(({ category }) => category === queryCategory);
-  const queryReasons = category?.options || [];
-
-  return category?.orderRelatedIndices
-    ? queryReasons.filter((_, index) =>
-        isOrderRelated
-          ? (category?.orderRelatedIndices || [])?.indexOf(index) > -1
-          : (category?.orderRelatedIndices || [])?.indexOf(index) === -1
-      )
-    : queryReasons;
 };
 
 const { text, container, card } = theme.viewStyles;

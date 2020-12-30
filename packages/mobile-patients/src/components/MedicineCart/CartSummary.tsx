@@ -52,7 +52,7 @@ import {
   postPharmacyAddNewAddressClick,
   postPhamracyCartAddressSelectedSuccess,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   makeAdressAsDefaultVariables,
@@ -379,16 +379,17 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
           onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddress, {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Cart' as AddressSource,
+              addOnly: true,
             });
             postPharmacyAddNewAddressClick('Cart');
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddress, {
+            props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
-              DataAddress: address,
+              addressDetails: address,
               ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();

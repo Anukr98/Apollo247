@@ -243,6 +243,8 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       typeId
       name
       image
+      specialty
+      symptoms
     }
   }
 `;
@@ -609,6 +611,24 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             id
             medicineName
           }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
+  query getPatientAllConsultedDoctors($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        doctorInfo {
+          id
+          displayName
+          specialty {
+            image
+            name
+          }
+          photoUrl
         }
       }
     }

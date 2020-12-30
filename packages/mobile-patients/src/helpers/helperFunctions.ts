@@ -144,7 +144,6 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICATION = 'MEDICATION',
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
-  FAMILY_HISTORY = 'FAMILY HISTORY',
 }
 
 export const getPhrHighlightText = (highlightText: string) => {
@@ -225,6 +224,34 @@ export const formatAddressWithLandmark = (
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
+};
+
+export const formatAddressBookAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = removeConsecutiveComma(
+    [address?.addressLine1, address?.addressLine2, address?.city].filter((v) => v).join(', ')
+  );
+  const landmark = [address?.landmark];
+  const state = [address?.state];
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
+  if (address?.landmark != '') {
+    return `${addrLine1},\n${landmark}\n${state}${formattedZipcode}`;
+  } else {
+    return `${addrLine1},\n${state}${formattedZipcode}`;
+  }
+};
+
+export const formatAddressForApi = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
+    .filter((v) => v)
+    .join(', ');
+  const state = [address?.state];
+  const formattedZipcode = address?.zipcode ? `- ${address?.zipcode}` : '';
+  const formattedAddress = removeConsecutiveComma(addrLine1 + ', ' + formattedZipcode);
+  return formattedAddress;
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
@@ -326,10 +353,10 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
+      moment(b.date || b.billDateTime || b.startDateTime)
         .toDate()
         .getTime() -
-      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
+      moment(a.date || a.billDateTime || a.startDateTime)
         .toDate()
         .getTime()
   );
@@ -1163,9 +1190,9 @@ export const addTestsToCart = async (
       const s = searchQueriesData[index];
       const testIncludedCount = detailQueriesData[index];
       return {
-        id: `${s.itemId}`,
-        name: s.itemName,
-        price: s.rate,
+        id: `${s?.itemId}`,
+        name: s?.itemName,
+        price: s?.rate,
         specialPrice: undefined,
         mou: testIncludedCount,
         thumbnail: '',

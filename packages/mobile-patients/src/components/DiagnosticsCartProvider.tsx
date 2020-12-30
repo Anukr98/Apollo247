@@ -66,6 +66,7 @@ export interface DiagnosticsCartContextProps {
     | null;
 
   cartTotal: number;
+  totalPriceExcludingAnyDiscounts: number;
   cartSaving: number;
   circleSaving: number;
   couponDiscount: number;
@@ -150,6 +151,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
+  totalPriceExcludingAnyDiscounts: 0,
   cartSaving: 0,
   circleSaving: 0,
   couponDiscount: 0,
@@ -409,6 +411,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
+    cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
+  );
+
+  //this takes packageMrp if exists or mrp
+  const totalPriceExcludingAnyDiscounts: DiagnosticsCartContextProps['totalPriceExcludingAnyDiscounts'] = parseFloat(
     cartItems
       ?.reduce(
         (currTotal, currItem) =>
@@ -443,9 +450,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
   const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
 
+  //carttotal
   const grandTotal = parseFloat(
     (
-      cartTotal +
+      totalPriceExcludingAnyDiscounts +
       deliveryCharges +
       (ppeKitCharges ? 0 : 0) -
       couponDiscount -
@@ -574,6 +582,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
+        totalPriceExcludingAnyDiscounts,
         cartSaving,
         circleSaving,
         grandTotal,
