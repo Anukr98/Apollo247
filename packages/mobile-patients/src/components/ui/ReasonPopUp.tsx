@@ -62,7 +62,7 @@ export interface ReasonPopUpProps {
   headingText: string;
   reasonForCancelText: string;
   reasonForCancelStyle?: StyleProp<TextStyle>;
-  dropDownOptions: [];
+  dropDownOptions: string[];
   onPressCross: () => void;
   otherReasonText?: string;
   buttonText?: string;

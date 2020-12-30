@@ -3,6 +3,7 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
+  GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS,
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -34,6 +35,11 @@ import {
   getDiagnosticsOrderStatusVariables,
   getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticCancelledOrderDetails,
+  getDiagnosticCancelledOrderDetailsVariables,
+} from '../../graphql/types/getDiagnosticCancelledOrderDetails';
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 
 export interface TestStatusObject {
@@ -128,18 +134,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface YourTestDetailsProps extends NavigationScreenProps {}
+export interface OrderedTestStatusProps extends NavigationScreenProps {}
 
-export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
+export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [statusForTest, setStatusForTest] = useState({});
 
-  const [apiLoading, setApiLoading] = useState(false);
   const orderSelectedId = props.navigation.getParam('orderId');
   const orderSelected = props.navigation.getParam('selectedOrder');
-  const [individualTestData, setIndividualTestData] = useState([]);
+  const [individualTestData, setIndividualTestData] = useState<any>([]);
 
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
@@ -164,7 +169,11 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
 
   useEffect(() => {
     setLoading!(true);
-    fetchOrderStatusForEachTest();
+    if (orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
+      fetchCancelledOrderTest();
+    } else {
+      fetchOrderStatusForEachTest();
+    }
   }, []);
 
   const fetchOrderStatusForEachTest = async () => {
@@ -182,19 +191,83 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
       })
       .then(({ data }) => {
         const _testStatus = g(data, 'getDiagnosticsOrderStatus', 'ordersList') || [];
-        console.log(_testStatus);
-        console.log({ orderSelected });
         getStatusForAllTests(_testStatus);
-
-        //check for the status and for the testItems
-
-        setLoading!(false);
       })
       .catch((e) => {
-        console.log('error in fetching the staus for each test' + e);
-        CommonBugFender('Tests_', e);
+        CommonBugFender('OrderedTestStatus_fetchTestStatus', e);
         setLoading!(false);
       });
+  };
+
+  const fetchCancelledOrderTest = async () => {
+    setLoading!(true);
+    client
+      .query<getDiagnosticCancelledOrderDetails, getDiagnosticCancelledOrderDetailsVariables>({
+        query: GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          diagnosticOrderId: orderSelectedId,
+          patientId: currentPatient?.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const _testStatus = g(data, 'getDiagnosticCancelledOrderDetails', 'ordersList') || [];
+        getStatusForAllTests(_testStatus);
+      })
+      .catch((e) => {
+        CommonBugFender('OrderedTestStatus_fetchTestStatus', e);
+        setLoading!(false);
+      });
+  };
+
+  const loadPackageDetails = async (
+    packageId: string,
+    index: number,
+    date: string,
+    time: string,
+    objArray: any,
+    itemIdObject: any,
+    key: string
+  ) => {
+    try {
+      setLoading!(true);
+      const arrayOfId = packageId.length == 1 ? [Number(packageId)] : packageId;
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        console.log({ data });
+        data?.map((test: any) => {
+          //call getPackage
+          objArray.push({
+            id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
+            displayId: orderSelected?.displayId,
+            slotTimings: time,
+            patientName: currentPatient?.firstName,
+            showDateTime: date,
+            itemId: test?.itemId,
+            // currentStatus: orderSelected.maxStatus,
+            currentStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+            packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
+            packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
+            itemName: test?.name,
+            statusDate: itemIdObject?.[key][0]?.statusDate,
+            testPreparationData:
+              orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.testPreparationData, //need to check
+          });
+        });
+        setLoading!(false);
+        return objArray;
+      } else {
+        setLoading!(false);
+      }
+    } catch (e) {
+      CommonBugFender('TestDetails', e);
+      setLoading!(false);
+      console.log('getPackageData Error \n', { e });
+    }
   };
 
   const getStatusForAllTests = (
@@ -202,7 +275,7 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   ) => {
     const testStatusData = createObject(data);
 
-    setIndividualTestData(testStatusData);
+    // setIndividualTestData(testStatusData);
   };
 
   const createObject = (
@@ -211,39 +284,39 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
     const itemIdObject = _.groupBy(statusData, 'itemId');
     setStatusForTest(itemIdObject);
 
-    var newArr: TestStatusObject[] = [];
-
-    //create interface
     let objArray: TestStatusObject[] = [];
-    const lengthOfItems = Object.keys(itemIdObject).length;
-    Object.keys(itemIdObject).forEach((key) => {
+    const lengthOfItems = Object.keys(itemIdObject)?.length;
+    Object.keys(itemIdObject).forEach(async (key) => {
       /**
        * key is null for all pickup requested + all the packages are pickup requested
        * we don't have the itemId,packageId so creating the object with the data from
        *  all the tests/packages (searchDiagnosticsById + getPackages).
        */
+      const getUTCDateTime = orderSelected?.slotDateTimeInUTC;
+      const dt = moment(
+        getUTCDateTime != null ? getUTCDateTime : orderSelected?.diagnosticDate!
+      ).format(`D MMM YYYY`);
+      const tm =
+        getUTCDateTime != null
+          ? moment(getUTCDateTime).format('hh:mm A')
+          : orderSelected?.slotTimings;
 
       if (key == 'null' && lengthOfItems == 1) {
-        for (let index = 0; index < orderSelected.diagnosticOrderLineItems.length; index++) {
-          orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.PackageInclussion?.map(
-            (test: any) => {
-              objArray.push({
-                id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
-                displayId: orderSelected?.displayId!,
-                slotTimings: orderSelected?.slotTimings,
-                patientName: currentPatient?.firstName,
-                showDateTime: orderSelected?.diagnosticDate,
-                itemId: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemId,
-                currentStatus: orderSelected?.maxStatus,
-                packageId: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemId,
-                packageName: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemName,
-                itemName: test?.name,
-                statusDate: itemIdObject[key][0]?.statusDate,
-                testPreparationData:
-                  orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.testPreparationData,
-              });
-            }
+        for (let index = 0; index < orderSelected?.diagnosticOrderLineItems?.length; index++) {
+          let inclusionVal =
+            orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.inclusions == null
+              ? [orderSelected?.diagnosticOrderLineItems?.[index]?.itemId]
+              : orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.inclusions!;
+          const createdObject = await loadPackageDetails(
+            inclusionVal,
+            index,
+            dt,
+            tm,
+            objArray,
+            itemIdObject,
+            key
           );
+          setIndividualTestData(createdObject);
         }
       } else {
         /**
@@ -262,32 +335,32 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
             orderSelected.diagnosticOrderLineItems.filter(
               (item: any) => item.itemId.toString() == key
             );
-          const sortedSelectedObj =
+          let sortedSelectedObj: any;
+          sortedSelectedObj =
             key != null &&
-            itemIdObject[key].sort(function(a, b) {
-              return new Date(b.statusDate) - new Date(a.statusDate);
+            itemIdObject[key].sort(function(a: any, b: any) {
+              return new Date(b.statusDate).valueOf() - new Date(a.statusDate).valueOf();
             });
 
           objArray.push({
             id: getSelectedObj?.id! || orderSelectedId,
-            displayId: orderSelected!.displayId!,
-            slotTimings: orderSelected!.slotTimings,
-            patientName: currentPatient.firstName,
-            showDateTime: orderSelected!.diagnosticDate,
+            displayId: orderSelected?.displayId!,
+            slotTimings: tm,
+            patientName: currentPatient?.firstName,
+            showDateTime: dt,
             itemId: key,
-            currentStatus: sortedSelectedObj[0].orderStatus,
-            packageId: sortedSelectedObj[0].packageId,
-            itemName: sortedSelectedObj[0].itemName,
-            packageName: sortedSelectedObj[0].packageName,
-            statusDate: sortedSelectedObj[0].statusDate,
+            currentStatus: sortedSelectedObj[0]?.orderStatus,
+            packageId: sortedSelectedObj[0]?.packageId,
+            itemName: sortedSelectedObj[0]?.itemName,
+            packageName: sortedSelectedObj[0]?.packageName,
+            statusDate: sortedSelectedObj[0]?.statusDate,
             testPreparationData: '',
           });
         }
+        setLoading!(false);
+        setIndividualTestData(objArray);
       }
     });
-
-    console.log({ objArray });
-    return objArray;
   };
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
@@ -298,36 +371,46 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
     return moment(time).format('hh:mm A');
   };
 
-  const renderOrder = (order: TestOrder, index: number) => {
+  const renderOrder = (order: any, index: number) => {
     console.log({ order });
-    const isHomeVisit = !!order.slotTimings;
-    const dt = moment(order!.statusDate).format(`D MMM YYYY`);
-    const tm = getSlotStartTime(order!.statusDate);
-    const statusTime = getFormattedTime(order!.statusDate);
+
+    const isHomeVisit = !!order?.slotTimings;
+
+    const dt = moment(order?.statusDate).format(`D MMM YYYY`); //status date
+    const tm = getSlotStartTime(order?.statusDate); //status time
+
+    //here schedule for date should be time when you selected slot for pickup requested.
+    const getScheduleDate = moment(order?.showDateTime).format(`D MMM YYYY`);
+    const getScheduleTime = order?.slotTimings;
+    const scheduledDtTm = `${getScheduleDate}${isHomeVisit ? `, ${getScheduleTime}` : ''}`;
+
+    const statusTime = getFormattedTime(order?.statusDate);
     const dtTm = `${dt}${isHomeVisit ? `, ${statusTime}` : ''}`;
-    const currentStatus = order.currentStatus;
+    const currentStatus = order?.currentStatus;
     return (
       <TestOrderCard
-        key={`${order.id}`}
-        orderId={`${order.displayId}`}
+        key={`${order?.id}`}
+        orderId={`${order?.displayId}`}
         showStatus={true}
-        patientName={order.patientName}
+        patientName={order?.patientName}
         isComingFrom={'individualTest'}
         showDateTime={true}
         showRescheduleCancel={false}
-        isTypeOfPackage={order.packageName != null ? true : false}
+        isTypeOfPackage={order?.packageName != null ? true : false}
         ordersData={order}
         dateTime={
           order.currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
             ? `Completed On: ${dtTm}`
+            : order?.currentStatus == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
+            ? `Scheduled For: ${scheduledDtTm}`
             : `Scheduled For: ${dtTm}`
         }
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
-        showViewReport={false}
+        showViewReport={currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED}
         onPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
-            orderId: orderSelected!.id,
+            orderId: orderSelected?.id,
             setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
               setOrders(orders),
             refetch: refetch,
@@ -357,8 +440,13 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
             comingFrom: AppRoutes.YourOrdersTest,
           });
         }}
+        onPressViewReport={() => _navigateToPHR()}
       />
     );
+  };
+
+  const _navigateToPHR = () => {
+    props.navigation.navigate(AppRoutes.HealthRecordsHome);
   };
 
   const mapStatusWithText = (val: string) => {
@@ -366,6 +454,7 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   };
 
   const renderOrders = () => {
+    console.log({ individualTestData });
     return (
       <FlatList
         bounces={false}

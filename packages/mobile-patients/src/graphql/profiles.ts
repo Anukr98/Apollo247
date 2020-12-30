@@ -1543,15 +1543,18 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         displayId
         createdDate
         areaId
+        slotDateTimeInUTC
         rescheduleCount
         isRescheduled
         collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
+          itemName
           quantity
           price
           groupPlan
+          itemType
           itemObj {
             itemType
             testPreparationData
@@ -1568,8 +1571,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             itemId
             itemName
             itemType
-            testPreparationData
             testDescription
+            testPreparationData
             inclusions
             diagnosticPricing {
               mrp
@@ -1589,6 +1592,21 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
 export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
   query getDiagnosticsOrderStatus($diagnosticOrderId: String) {
     getDiagnosticsOrderStatus(diagnosticOrderId: $diagnosticOrderId) {
+      ordersList {
+        statusDate
+        orderStatus
+        itemId
+        itemName
+        packageId
+        packageName
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS = gql`
+  query getDiagnosticCancelledOrderDetails($diagnosticOrderId: String, $patientId: String) {
+    getDiagnosticCancelledOrderDetails(diagnosticOrderId: $diagnosticOrderId, patientId: $patientId) {
       ordersList {
         statusDate
         orderStatus
@@ -1640,9 +1658,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         displayId
         createdDate
         collectionCharges
+        slotDateTimeInUTC
         diagnosticOrderLineItems {
           id
           itemId
+          itemName
+          itemType
           price
           quantity
           groupPlan
@@ -1659,8 +1680,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           }
           diagnostics {
             id
-            itemId
             itemName
+            itemId
             gender
             rate
             itemRemarks
@@ -1670,6 +1691,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
             testDescription
+            testPreparationData
             inclusions
             diagnosticPricing {
               mrp
@@ -1831,16 +1853,19 @@ export const VALIDATE_DIAGNOSTIC_COUPON = gql`
 `;
 
 export const CANCEL_DIAGNOSTIC_ORDER = gql`
-  mutation cancelDiagnosticOrder($diagnosticOrderId: Int) {
-    cancelDiagnosticOrder(diagnosticOrderId: $diagnosticOrderId) {
+  mutation cancelDiagnosticsOrder($cancellationDiagnosticsInput: CancellationDiagnosticsInput) {
+    cancelDiagnosticsOrder(cancellationDiagnosticsInput: $cancellationDiagnosticsInput) {
+      status
       message
     }
   }
 `;
 
-export const UPDATE_DIAGNOSTIC_ORDER = gql`
-  mutation updateDiagnosticOrder($updateDiagnosticOrderInput: UpdateDiagnosticOrderInput) {
-    updateDiagnosticOrder(updateDiagnosticOrderInput: $updateDiagnosticOrderInput) {
+export const RESCHEDULE_DIAGNOSTIC_ORDER = gql`
+  mutation rescheduleDiagnosticsOrder($rescheduleDiagnosticsInput: RescheduleDiagnosticsInput) {
+    rescheduleDiagnosticsOrder(rescheduleDiagnosticsInput: $rescheduleDiagnosticsInput) {
+      status
+      rescheduleCount
       message
     }
   }

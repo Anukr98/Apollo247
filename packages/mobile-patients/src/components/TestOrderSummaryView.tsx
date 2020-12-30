@@ -1,6 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -16,6 +16,8 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { Props } from 'react-native-image-zoom-viewer/built/image-viewer.type';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -114,13 +116,26 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginTop: 18,
   },
+  orderSummaryView: {
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    margin: 20,
+    padding: 16,
+  },
 });
 
 export interface TestOrderSummaryViewProps {
   orderDetails: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
+  showViewOrderDetails?: boolean;
+  onPressViewDetails?: () => void;
 }
 
-export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orderDetails }) => {
+export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
+  orderDetails,
+  showViewOrderDetails,
+  onPressViewDetails,
+}) => {
   const { currentPatient } = useAllCurrentPatients();
   const getFormattedDateTime = (time: string) => {
     return moment(time).format('D MMM YYYY | hh:mm A');
@@ -134,19 +149,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
   }, []);
-
-  const formatSlot = (slot: string /*07:00-07:30 */) => {
-    /**
-     * for showing 30 mins buffer time.
-     */
-    const startTime = slot.split('-')[0];
-    const endTime = moment(startTime, 'HH:mm')
-      .add(30, 'minutes')
-      .format('HH:mm');
-
-    const newSlot = [startTime, endTime];
-    return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
-  };
 
   const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
@@ -214,14 +216,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
     ) || [];
 
-  const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
-  const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
-  const totalDiscountSaving = discountSpecialPrice?.reduce(
-    (prevVal, currVal) => prevVal + currVal,
-    0
-  );
-  const totalSavings = totalCartSaving + totalDiscountSaving;
-
   //gross charges considering packageMrp (how to check for previous orders)
   const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map((item) =>
     item?.itemObj?.packageCalculatedMrp! && item?.itemObj?.packageCalculatedMrp > item?.price!
@@ -243,27 +237,52 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   //removed the savings (cart,circle,discounts)
   const grossCharges = totalIndividualDiagonsticsCharges!;
 
+  const totalCircleSaving =
+    grossCharges + HomeCollectionCharges - orderDetails?.totalPrice != 0
+      ? discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0)
+      : 0;
+  const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+  const totalDiscountSaving = discountSpecialPrice?.reduce(
+    (prevVal, currVal) => prevVal + currVal,
+    0
+  );
+
+  const totalSavings =
+    grossCharges + HomeCollectionCharges - orderDetails?.totalPrice != 0
+      ? totalCartSaving + totalDiscountSaving
+      : 0;
+
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
-  return (
-    <View
-      style={{
-        ...theme.viewStyles.cardContainer,
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        margin: 20,
-        padding: 16,
-      }}
-    >
-      <View style={{ marginHorizontal: 0 }}>
-        <View style={styles.subView}>
-          <Text style={styles.orderName}>Order ID</Text>
-          <Text style={styles.hideText}>#{orderDetails.displayId}</Text>
+
+  const renderOptions = () => {
+    return (
+      <TouchableOpacity onPress={onPressViewDetails}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', margin: 16 }}>
+          <Text
+            style={{
+              ...theme.viewStyles.yellowTextStyle,
+            }}
+          >
+            VIEW ORDER DETAILS
+          </Text>
         </View>
-        <View style={styles.subView}>
-          <Text style={styles.orderName}>Date/Time</Text>
-          <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.createdDate)}</Text>
-        </View>
-        {/* {!!orderDetails.slotTimings && (
+      </TouchableOpacity>
+    );
+  };
+
+  const renderSummaryDetails = () => {
+    return (
+      <>
+        <View style={{ marginHorizontal: 0 }}>
+          <View style={styles.subView}>
+            <Text style={styles.orderName}>Order ID</Text>
+            <Text style={styles.hideText}>#{orderDetails.displayId}</Text>
+          </View>
+          <View style={styles.subView}>
+            <Text style={styles.orderName}>Date/Time</Text>
+            <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.createdDate)}</Text>
+          </View>
+          {/* {!!orderDetails.slotTimings && (
           <View style={styles.subView}>
             <Text style={styles.orderName}>Pickup Date</Text>
             <Text style={styles.hideText}>
@@ -279,62 +298,39 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             )}`}</Text>
           </View>
         )} */}
-      </View>
-      <View style={styles.horizontalline} />
-      <View style={styles.headeingView}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.testsummeryHeading}>CONSULT DETAIL</Text>
         </View>
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          <Text style={styles.testsummeryHeading}>QTY</Text>
-        </View>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={styles.testsummeryHeading}>CHARGES</Text>
-        </View>
-      </View>
-      {orderLineItems.map((item) => (
-        <View style={styles.commonTax}>
+        <View style={styles.horizontalline} />
+        <View style={styles.headeingView}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.commonText}>{g(item, 'diagnostics', 'itemName')}</Text>
+            <Text style={styles.testsummeryHeading}>CONSULT DETAIL</Text>
           </View>
           <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <Text style={styles.commonText}>{g(item, 'quantity')}</Text>
+            <Text style={styles.testsummeryHeading}>QTY</Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>
-              {string.common.Rs}
-              {g(item, 'price')}
-            </Text>
+            <Text style={styles.testsummeryHeading}>CHARGES</Text>
           </View>
         </View>
-      ))}
-      {/**
-       * HOME COLLECTION CHARGES
-       */}
-      <View style={styles.lineSeparator} />
-      <View style={styles.commonTax}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.commonText}></Text>
-        </View>
-        <View style={{ width: '46%' }}>
-          <Text
-            style={[
-              styles.commonText,
-              { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
-            ]}
-          >
-            GROSS CHARGES
-          </Text>
-        </View>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={styles.commonText}>
-            {string.common.Rs}
-            {/* {totalIndividalDiagonsticsCharges} */}
-            {grossCharges}
-          </Text>
-        </View>
-      </View>
-      {!!HomeCollectionCharges && (
+        {orderLineItems.map((item) => (
+          <View style={styles.commonTax}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.commonText}>{g(item, 'diagnostics', 'itemName')}</Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+              <Text style={styles.commonText}>{g(item, 'quantity')}</Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={styles.commonText}>
+                {string.common.Rs}
+                {g(item, 'price')}
+              </Text>
+            </View>
+          </View>
+        ))}
+        {/**
+         * HOME COLLECTION CHARGES
+         */}
+        <View style={styles.lineSeparator} />
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
             <Text style={styles.commonText}></Text>
@@ -346,92 +342,129 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
                 { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
               ]}
             >
-              HOME COLLECTION CHARGES
+              GROSS CHARGES
             </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={styles.commonText}>
-              + {string.common.Rs}
-              {HomeCollectionCharges}
+              {string.common.Rs}
+              {/* {totalIndividalDiagonsticsCharges} */}
+              {grossCharges}
             </Text>
           </View>
         </View>
-      )}
-      {/**
-       * check with home collection
-       */}
-      {!!totalCircleSaving && (
-        <View style={styles.commonTax}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.commonText}></Text>
+        {!!HomeCollectionCharges && (
+          <View style={styles.commonTax}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.commonText}></Text>
+            </View>
+            <View style={{ width: '46%' }}>
+              <Text
+                style={[
+                  styles.commonText,
+                  { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+                ]}
+              >
+                HOME COLLECTION CHARGES
+              </Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={styles.commonText}>
+                + {string.common.Rs}
+                {HomeCollectionCharges}
+              </Text>
+            </View>
           </View>
-          <View style={{ width: '46%' }}>
-            <Text
-              style={[
-                styles.commonText,
-                {
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                  textAlign: 'right',
-                  color: colors.APP_GREEN,
-                },
-              ]}
-            >
-              CIRCLE SAVING
-            </Text>
+        )}
+        {/**
+         * check with home collection
+         */}
+        {!!totalCircleSaving && (
+          <View style={styles.commonTax}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.commonText}></Text>
+            </View>
+            <View style={{ width: '46%' }}>
+              <Text
+                style={[
+                  styles.commonText,
+                  {
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                    textAlign: 'right',
+                    color: colors.APP_GREEN,
+                  },
+                ]}
+              >
+                CIRCLE SAVING
+              </Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
+                - {string.common.Rs}
+                {totalCircleSaving}
+              </Text>
+            </View>
           </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
-              - {string.common.Rs}
-              {totalCircleSaving}
-            </Text>
+        )}
+        {!!totalSavings && (
+          <View style={styles.commonTax}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.commonText}></Text>
+            </View>
+            <View style={{ width: '46%' }}>
+              <Text
+                style={[
+                  styles.commonText,
+                  {
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                    textAlign: 'right',
+                    color: colors.APP_GREEN,
+                  },
+                ]}
+              >
+                CART SAVING
+              </Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
+                - {string.common.Rs}
+                {totalSavings}
+              </Text>
+            </View>
           </View>
-        </View>
-      )}
-      {!!totalSavings && (
-        <View style={styles.commonTax}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.commonText}></Text>
-          </View>
-          <View style={{ width: '46%' }}>
-            <Text
-              style={[
-                styles.commonText,
-                {
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                  textAlign: 'right',
-                  color: colors.APP_GREEN,
-                },
-              ]}
-            >
-              CART SAVING
-            </Text>
-          </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
-              - {string.common.Rs}
-              {totalSavings}
-            </Text>
-          </View>
-        </View>
-      )}
+        )}
 
-      <View style={styles.horizontalline1} />
-      <View style={styles.payment}>
-        <Text style={styles.paymentText1}> Total </Text>
-        <Text style={[styles.paymentText, { marginHorizontal: 20 }]}>
-          {' '}
-          {string.common.Rs} {orderDetails.totalPrice}{' '}
-        </Text>
-      </View>
-      {false && (
-        <Text style={[styles.deliveryText, { color: '#01475b', opacity: 0.6 }]}>
-          Disclaimer:{' '}
-          <Text style={{ fontStyle: 'italic' }}>
-            {/* Need to replace this with Disclaimer text */}
-            Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo minus
-            quod.
+        <View style={styles.horizontalline1} />
+        <View style={styles.payment}>
+          <Text style={styles.paymentText1}> Total </Text>
+          <Text style={[styles.paymentText, { marginHorizontal: 20 }]}>
+            {' '}
+            {string.common.Rs} {orderDetails.totalPrice}{' '}
           </Text>
-        </Text>
+        </View>
+        {false && (
+          <Text style={[styles.deliveryText, { color: '#01475b', opacity: 0.6 }]}>
+            Disclaimer:{' '}
+            <Text style={{ fontStyle: 'italic' }}>
+              {/* Need to replace this with Disclaimer text */}
+              Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo minus
+              quod.
+            </Text>
+          </Text>
+        )}
+        {showViewOrderDetails ? renderOptions() : null}
+      </>
+    );
+  };
+
+  return (
+    <View style={styles.orderSummaryView}>
+      {showViewOrderDetails ? (
+        <ScrollView showsVerticalScrollIndicator={false} style={{ height: height - 170 }}>
+          {renderSummaryDetails()}
+        </ScrollView>
+      ) : (
+        <>{renderSummaryDetails()}</>
       )}
     </View>
   );
