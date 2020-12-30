@@ -8,7 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { StepIndicatorProps } from './types';
+import { StepIndicatorProps } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const STEP_STATUS = {
