@@ -215,6 +215,7 @@ const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
 let timerId: any;
+let appointmentDiffMinTimerId: any;
 let notificationTimerId: any;
 let notificationIntervalId: any;
 let notify_async_key = 'notify_async';
@@ -615,6 +616,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
   const exotelCall = '^^#exotelCall';
   const vitalsCompletedByPatient = '^^#vitalsCompletedByPatient'; // ignore msg used by p-web
+  const doctorWillConnectShortly = '^^#DoctorWillConnectShortly';
+  const rescheduleOrCancelAppointment = '^^#RescheduleOrCancelAppointment';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -900,6 +903,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       handleVoipEventListeners();
     }
   }, []);
+
+  useEffect(() => {
+    checkAutoTriggerMessagePostAppointmentTime();
+    return function cleanup() {
+      BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+    };
+  }, []);
+
+  const checkAutoTriggerMessagePostAppointmentTime = () => {
+    const diffMin = Math.ceil(
+      moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+    );
+    if (diffMin <= 10 && diffMin >= -10) {
+      appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
+        const updatedDiffMin = Math.ceil(
+          moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        if (updatedDiffMin === -5) {
+          const doctorConnectShortly = insertText.filter((obj: any) => {
+            return obj.message === doctorWillConnectShortly;
+          });
+          if (doctorConnectShortly?.length === 0) {
+            doctorWillConnectShortlyAutomatedText();
+          }
+        }
+        if (updatedDiffMin === -10) {
+          const rescheduleOrCancelAppointmnt = insertText.filter((obj: any) => {
+            return obj.message === rescheduleOrCancelAppointment;
+          });
+          if (rescheduleOrCancelAppointmnt?.length === 0) {
+            rescheduleOrCancelAppointmentAutomatedText();
+          }
+          BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+        }
+      }, 60000);
+    }
+  };
 
   useEffect(() => {
     if (!currentPatientWithHistory) {
@@ -1552,27 +1592,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 2000);
   };
 
-  const describeYourMedicalConditionAutomatedText = () => {
-    setTimeout(() => {
-      const successSteps = [
-        'Please describe your medical condition and upload pictures if required ',
-      ];
-      pubnub.publish(
-        {
-          channel: channel,
-          message: {
-            message: consultPatientStartedMsg,
-            automatedText: successSteps,
-            id: doctorId,
-            isTyping: true,
-            messageDate: new Date(),
+  const describeYourMedicalConditionAutomatedText = (time?: number) => {
+    setTimeout(
+      () => {
+        const successSteps = [
+          'Please describe your medical condition and upload pictures if required ',
+        ];
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: consultPatientStartedMsg,
+              automatedText: successSteps,
+              id: doctorId,
+              isTyping: true,
+              messageDate: new Date(),
+            },
+            storeInHistory: true,
+            sendByPost: true,
           },
-          storeInHistory: true,
-          sendByPost: true,
-        },
-        (status, response) => {}
-      );
-    }, 10000);
+          (status, response) => {}
+        );
+      },
+      time ? time : 7000
+    );
   };
 
   const showAndUpdateNudgeScreenVisibility = async () => {
@@ -2658,6 +2701,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkAutomatedPatientText = () => {
+    console.log('insertText', insertText);
     const result = insertText.filter((obj: any) => {
       return obj.message === consultPatientStartedMsg;
     });
@@ -2671,7 +2715,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
     );
     if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
-      describeYourMedicalConditionAutomatedText();
+      describeYourMedicalConditionAutomatedText(5000);
+    }
+    const doctorConnectShortly = insertText.filter((obj: any) => {
+      return obj.message === doctorWillConnectShortly;
+    });
+    const rescheduleOrCancelAppointmnt = insertText.filter((obj: any) => {
+      return obj.message === rescheduleOrCancelAppointment;
+    });
+    if (doctorConnectShortly?.length === 0 && diffMin <= -5) {
+      doctorWillConnectShortlyAutomatedText();
+    }
+    if (rescheduleOrCancelAppointmnt?.length === 0 && diffMin <= -10) {
+      rescheduleOrCancelAppointmentAutomatedText();
     }
   };
 
@@ -2718,6 +2774,52 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       describeYourMedicalConditionAutomatedText();
     }
+  };
+
+  const doctorWillConnectShortlyAutomatedText = () => {
+    setTimeout(() => {
+      const automatedText = [
+        'Please wait while the doctor connects with you shortly. Thanks for your patience.',
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: doctorWillConnectShortly,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 2000);
+  };
+
+  const rescheduleOrCancelAppointmentAutomatedText = () => {
+    setTimeout(() => {
+      const automatedText = [
+        'We are sorry to keep you waiting. You can  reschedule/cancel this appointment by clicking on the icon at the top right of this screen.',
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: rescheduleOrCancelAppointment,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 4000);
   };
 
   const thirtySecondCall = () => {
@@ -3076,6 +3178,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         } catch (error) {}
         AsyncStorage.setItem('callDisconnected', 'true');
       } else if (message.message.message === exotelCall) {
+        addMessages(message);
+      } else {
         addMessages(message);
       }
     } else {
@@ -4650,7 +4754,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   ) : rowData.message === firstMessage ||
                     rowData.message === secondMessage ||
                     rowData.message === languageQue ||
-                    rowData.message === jdThankyou ? (
+                    rowData.message === jdThankyou ||
+                    rowData.message === doctorWillConnectShortly ||
+                    rowData.message === rescheduleOrCancelAppointment ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
@@ -5104,6 +5210,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
     const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
     const isPrescriptionReady = messages?.filter((item) => item?.message === followupconsult);
+    // checkAutomatedPatientText();
     if (textChange && !jrDoctorJoined.current) {
       // Consult in Progress
       currentProgressBarPosition.current = 1;
