@@ -31,6 +31,14 @@ export interface MedicineProduct {
   pack_size?: string | null;
   dose_form_variant?: string | null;
   unit_of_measurement?: string | null;
+  vegetarian?: 'Yes' | 'No';
+  storage?: string | null;
+  key_ingredient?: string | null;
+  size?: string | null;
+  flavour_fragrance?: string | null;
+  colour?: string | null;
+  variant?: string | null;
+  expiry_date?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {

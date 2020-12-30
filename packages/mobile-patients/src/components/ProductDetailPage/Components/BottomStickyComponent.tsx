@@ -129,10 +129,11 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
 const styles = StyleSheet.create({
   stickyBottomComponent: {
     ...theme.viewStyles.shadowStyle,
-    height: 'auto',
     flexDirection: 'row',
     borderTopWidth: 0.6,
     borderStyle: 'dashed',
+    position: 'absolute',
+    top: 56,
   },
   flexRow: {
     flexDirection: 'row',
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FCB716',
     paddingVertical: 7,
     paddingHorizontal: 30,
-    marginVertical: 10,
+    marginTop: 6,
   },
   addToCartText: {
     ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),

@@ -507,11 +507,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           }
         } catch (e) {
           setLoading!(false);
-          CommonBugFender('AddAddress_updateCityStateByPincode', e);
+          CommonBugFender('ProductDetailPage_updateCityStateByPincode', e);
         }
       })
       .catch((e) => {
-        CommonBugFender('AddAddress_updateCityStateByPincode', e);
+        CommonBugFender('ProductDetailPage_updateCityStateByPincode', e);
       })
       .finally(() => setLoading!(false));
   };
@@ -670,7 +670,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             </View>
             <ProductInfo
               description={medicineDetails?.description}
-              isReturnable={medicineDetails.is_returnable === 'Yes'}
+              isReturnable={medicineDetails?.is_returnable === 'Yes'}
+              vegetarian={medicineDetails?.vegetarian}
+              storage={medicineDetails?.storage}
+              key_ingredient={medicineDetails?.key_ingredient}
+              size={medicineDetails?.size}
+              flavour_fragrance={medicineDetails?.flavour_fragrance}
+              colour={medicineDetails?.colour}
+              variant={medicineDetails?.variant}
+              expiryDate={medicineDetails?.expiry_date}
             />
             {!!substitutes.length && (
               <SimilarProducts

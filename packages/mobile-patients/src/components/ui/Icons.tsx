@@ -1551,3 +1551,11 @@ export const CircleDiscountBadge: React.FC<IconProps> = (props) => (
 export const PrescriptionRequiredIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/PrescriptionIcon.png')} />
 );
+
+export const VegetarianIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/vegetarian.png')} />
+);
+
+export const NonVegetarianIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/non_vegetarian.png')} />
+);
