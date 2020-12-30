@@ -389,7 +389,8 @@
     "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
     "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
     "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
-    "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay."
+    "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
+    "specialDiscountText": "TESTS247 coupon pre-applied"
   },
   "orders": {
     "urOrders": "MY ORDERS",

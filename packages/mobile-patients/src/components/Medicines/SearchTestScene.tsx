@@ -703,6 +703,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         specialPrice={sellingPrice}
         packageMrp={packageMrpForItem}
         circlePrice={promoteCircle ? circleSpecialPrice : undefined}
+        isSpecialDiscount={promoteDiscount}
         isCareSubscribed={isDiagnosticCircleSubscription}
         unit={1}
         onPressAdd={() => {

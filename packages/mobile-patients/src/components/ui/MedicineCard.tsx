@@ -23,7 +23,7 @@ import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/fonts';
 import { Spearator } from './BasicComponents';
 import { CircleHeading } from './CircleHeading';
-import { calculateMrpToDisplay } from '../../utils/commonUtils';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -168,6 +168,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.04),
     marginLeft: 5,
   },
+  rowRightView: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+  },
 });
 
 export interface MedicineCardProps {
@@ -201,6 +205,7 @@ export interface MedicineCardProps {
   discount?: number | string;
   mrpToDisplay?: number | string;
   packageMrp?: number;
+  isSpecialDiscount?: boolean;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
@@ -233,6 +238,12 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
   const isSpecialPrice = specialPrice !== price && (!!specialPrice || specialPrice === 0);
   const priceToBeDisplayed = isSpecialPrice ? specialPrice : price;
+
+  const renderSpecialDiscountText = (styleObj?: any) => {
+    return (
+      <SpecialDiscountText text={strings.diagnostics.specialDiscountText} styleObj={styleObj} />
+    );
+  };
 
   const renderTitleAndIcon = () => {
     return (
@@ -510,7 +521,13 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
          */}
 
         {props.isCareSubscribed && (
-          <View style={{ alignSelf: 'flex-end' }}>
+          <View style={styles.rowRightView}>
+            {/**
+             * special price text
+             */}
+            {props.circlePrice! == undefined && props.isSpecialDiscount
+              ? renderSpecialDiscountText({ marginTop: '3%', paddingRight: 5 })
+              : null}
             <Text
               style={{
                 ...theme.viewStyles.text(
@@ -581,14 +598,22 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           )}
 
           {!props.isCareSubscribed && (
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
-                marginTop: 4,
-              }}
-            >
-              {strings.common.Rs} {specialPrice! || price!}
-            </Text>
+            <View style={styles.rowRightView}>
+              {/**
+               * special price text
+               */}
+              {props.circlePrice! == undefined && props.isSpecialDiscount
+                ? renderSpecialDiscountText({ marginTop: '3%', paddingRight: 5 })
+                : null}
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
+                  marginTop: 4,
+                }}
+              >
+                {strings.common.Rs} {specialPrice! || price!}
+              </Text>
+            </View>
           )}
         </View>
       </>
@@ -644,15 +669,30 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         {props.circlePrice == undefined && (
           <>
             {renderCartPagePackageMrp()}
-            <View style={styles.rightView}>
+            <View
+              style={[props.isSpecialDiscount ? { marginLeft: -32 } : { alignSelf: 'flex-end' }]}
+            >
               {props.specialPrice! && props.packageMrp! < price! && (
-                <Text style={styles.packageSlashedPrice}>
-                  ({strings.common.Rs} {price!.toFixed(2)})
-                </Text>
+                <View style={styles.rightView}>
+                  <Text style={[styles.packageSlashedPrice]}>
+                    ({strings.common.Rs} {price!.toFixed(2)})
+                  </Text>
+                </View>
               )}
-              <View style={{ flexDirection: 'row' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                {props.isSpecialDiscount ? renderSpecialDiscountText({}) : null}
                 {props.specialPrice! && props.discount! > 0 && (
-                  <Text style={styles.percentageDiscountText}>
+                  <Text
+                    style={[
+                      styles.percentageDiscountText,
+                      { marginLeft: props.isSpecialDiscount ? '20%' : 0 },
+                    ]}
+                  >
                     {Number(props.discount!).toFixed(0)}%off
                   </Text>
                 )}
