@@ -1957,7 +1957,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   const renderMoreMenu = () => {
-    if (isOrderCancelAllowed(orderStatusList)) {
+    if (isOrderCancelNotAllowed(order!)) {
       return <View style={{ width: 24 }} />;
     }
     return (
@@ -1985,9 +1985,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const showCancelOrder = () => {
-    const isOrderBilled = orderStatusList?.find(
-      (item) => item?.orderStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED
-    );
+    const isOrderBilled = order?.currentStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED;
     if (isOrderBilled) {
       showAphAlert!({
         title: string.common.uhOh,
@@ -2171,21 +2169,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   );
 };
 
-export const isOrderCancelAllowed = (orderStatusList: MedOrder['medicineOrdersStatus']) => {
-  const cancelNotApplicable = [
+export const isOrderCancelNotAllowed = (order: MedOrder) => {
+  const currentStatus = order?.currentStatus;
+  const statusIrrespectiveOfCurrent = [
     MEDICINE_ORDER_STATUS.DELIVERED,
     MEDICINE_ORDER_STATUS.CANCELLED,
-    MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
-    MEDICINE_ORDER_STATUS.ORDER_FAILED,
+    MEDICINE_ORDER_STATUS.ORDER_BILLED,
     MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
   ];
-  const isCancelNotApplicable = !!orderStatusList?.find((item) =>
-    cancelNotApplicable.includes(item?.orderStatus!)
+  const statusWrtCurrent = [
+    MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS,
+    MEDICINE_ORDER_STATUS.ORDER_INITIATED,
+    MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
+    MEDICINE_ORDER_STATUS.PAYMENT_PENDING,
+    MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+    MEDICINE_ORDER_STATUS.ORDER_FAILED,
+  ];
+  const cancelNotAllowedIrrespectiveOfCurrentStatus = order?.medicineOrdersStatus?.find((item) =>
+    statusIrrespectiveOfCurrent.includes(item?.orderStatus!)
   );
-  const isBeforePlacedStatus = !orderStatusList?.find(
-    (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED
-  );
-  return !orderStatusList?.length || isCancelNotApplicable || !isBeforePlacedStatus;
+  const cancelNotAllowedWrtCurrentStatus = statusWrtCurrent.includes(currentStatus!);
+
+  return cancelNotAllowedWrtCurrentStatus || cancelNotAllowedIrrespectiveOfCurrentStatus;
 };
 
 const { text } = theme.viewStyles;
