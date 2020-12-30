@@ -368,7 +368,7 @@ const getConsiderDate = (type: string, dataObject: any) => {
     case 'bills':
       return dataObject?.billDateTime;
     case 'health-conditions':
-      return dataObject?.startDateTime;
+      return dataObject?.startDateTime || dataObject?.recordDateTime;
   }
 };
 
@@ -1169,7 +1169,8 @@ export const addTestsToCart = async (
         specialPrice: undefined,
         mou: testIncludedCount,
         thumbnail: '',
-        collectionMethod: s.collectionType,
+        collectionMethod: s?.collectionType,
+        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
       } as DiagnosticsCartItem;
     });
 
