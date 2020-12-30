@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   statusContainer: {
-    marginLeft: -50,
+    marginLeft: -55,
   },
   consultType: {
     ...text('L', 12, LIGHT_BLUE),

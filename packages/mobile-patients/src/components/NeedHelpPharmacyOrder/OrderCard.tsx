@@ -42,7 +42,7 @@ export const OrderCard: React.FC<Props> = ({
     return (
       <View>
         <Text style={styles.orderAutoId}>{orderAutoId}</Text>
-        <Text style={styles.orderTitle} numberOfLines={1} ellipsizeMode="middle">
+        <Text onPress={onPress} style={styles.orderTitle} numberOfLines={1} ellipsizeMode="middle">
           {title}
         </Text>
         {/* <Text style={styles.listItemTitle}>{patient}</Text> */}
@@ -55,7 +55,8 @@ export const OrderCard: React.FC<Props> = ({
   const renderStatusBar = () => {
     const isDelivered =
       status === MEDICINE_ORDER_STATUS.DELIVERED ||
-      status === MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
+      status === MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
+      status === MEDICINE_ORDER_STATUS.PICKEDUP;
     const progress =
       status === MEDICINE_ORDER_STATUS.ORDER_PLACED ||
       status === MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
@@ -63,6 +64,7 @@ export const OrderCard: React.FC<Props> = ({
         : status === MEDICINE_ORDER_STATUS.ORDER_VERIFIED
         ? 2
         : status === MEDICINE_ORDER_STATUS.ORDER_BILLED ||
+          status === MEDICINE_ORDER_STATUS.READY_AT_STORE ||
           status === MEDICINE_ORDER_STATUS.SHIPPED ||
           status === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY
         ? 3
@@ -115,7 +117,7 @@ export const OrderCard: React.FC<Props> = ({
   return (
     <ListItem
       title={renderTitle()}
-      onPress={onPress}
+      onPress={onPressHelp}
       subtitle={renderStatusAndLinks()}
       pad={16}
       containerStyle={styles.listItemContainer}
@@ -154,8 +156,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   statusContainer: {
-    marginLeft: -34,
-    marginBottom: -16,
+    marginLeft: -40,
+    marginBottom: -18,
   },
   status: {
     ...text('L', 12, LIGHT_BLUE),
@@ -187,6 +189,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 20,
+    marginLeft: -40,
   },
   progressLineComplete: {
     flex: 1,
@@ -194,6 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: APP_GREEN,
     marginTop: 20,
     marginBottom: 20,
+    marginLeft: -40,
   },
   progressLineCompleteGray: {
     flex: 1,
@@ -202,6 +206,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
     marginTop: 20,
     marginBottom: 20,
+    marginLeft: -40,
   },
   progressLineBefore: {
     flex: 1,

@@ -11,10 +11,12 @@ interface Props extends ListItemProps {
 }
 
 export const PreviousQuery: React.FC<Props> = ({ query, ...listItemProps }) => {
+  const order = query.orderType === ORDER_TYPE.CONSULT ? 'Appointment' : 'Order';
+
   const renderRightElement = () => {
     const onPress = async () => {
       try {
-        const chatPreFilledMessage = 'I want to know the status of my help desk ticket';
+        const chatPreFilledMessage = `I want to know the status of my Help Ticket regarding ${order} ID - ${query.orderId}`;
         const phoneNumber = query.orderType === ORDER_TYPE.CONSULT ? '8047104009' : '4041894343';
         const whatsAppScheme = `whatsapp://send?text=${chatPreFilledMessage}&phone=91${phoneNumber}`;
         const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
@@ -33,8 +35,7 @@ export const PreviousQuery: React.FC<Props> = ({ query, ...listItemProps }) => {
     );
   };
 
-  const order = query.orderType === ORDER_TYPE.CONSULT ? 'Consultation' : 'Order';
-  const title = `You have raised a help ticket for your ${order} #${query.orderId}. To know the status - "Chat with us"`;
+  const title = `To know the status of the Help Ticket for your ${order} #${query.orderId}`;
 
   return (
     <>
