@@ -620,7 +620,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
-          showFreeConsultOverlay(params?.doctorName);
+          showFreeConsultOverlay(params);
         } else {
           overlyCallPermissions(
             currentPatient!.firstName!,
@@ -630,7 +630,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             true,
             () => {
               if (params?.doctorName) {
-                showFreeConsultOverlay(params?.doctorName);
+                showFreeConsultOverlay(params);
               }
             }
           );
@@ -684,11 +684,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const showFreeConsultOverlay = (doctorName: string) => {
+  const showFreeConsultOverlay = (params: any) => {
+    const { isJdQuestionsComplete, appointmentDateTime } = params?.appointmentData;
+    const { skipAutoQuestions } = params;
+    const doctorName = params?.doctorName?.includes('Dr')
+      ? params?.doctorName
+      : `Dr ${params?.doctorName}`;
+    const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
+    const appointmentTime = moment(appointmentDateTime).format('h:mm a');
+    let description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please be in the consult room before the appointment time.`;
+    if (!isJdQuestionsComplete && !skipAutoQuestions) {
+      description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
+    }
     showAphAlert!({
-      unDismissable: true,
+      unDismissable: false,
       title: 'Appointment Confirmation',
-      description: `Your appointment has been successfully booked with Dr. ${doctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`,
+      description: description,
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
           <TouchableOpacity
@@ -701,7 +712,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
             onPress={() => {
               hideAphAlert!();
-              props.navigation.navigate(AppRoutes.TabBar);
+              props.navigation.navigate(AppRoutes.ChatRoom, {
+                data: params?.appointmentData,
+              });
             }}
           >
             <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
