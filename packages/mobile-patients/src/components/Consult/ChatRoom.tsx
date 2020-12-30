@@ -413,6 +413,17 @@ const styles = StyleSheet.create({
   joinBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
   },
+  headerShadowView: {
+    borderBottomWidth: 0,
+    zIndex: 100,
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
+  },
+  headerView: {
+    borderBottomWidth: 0,
+    zIndex: 100,
+    borderRadius: 0,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -6806,27 +6817,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <Header
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
-          container={{
-            borderBottomWidth: 0,
-            zIndex: 100,
-            ...theme.viewStyles.cardViewStyle,
-            borderRadius: 0,
-          }}
+          container={showProgressBarOnHeader.current ? styles.headerView : styles.headerShadowView}
           onPressLeftIcon={() => {
             props.navigation.goBack();
             if (!fromSearchAppointmentScreen && callhandelBack) {
               setDoctorJoinedChat && setDoctorJoinedChat(false);
             }
           }}
-          component={
-            showProgressBarOnHeader.current ? (
-              <View style={{ marginTop: 12 }}>
-                {isProgressBarVisible.current &&
-                  renderProgressBar(currentProgressBarPosition.current)}
-              </View>
-            ) : null
-          }
         />
+        {showProgressBarOnHeader.current ? (
+          <View
+            style={{ backgroundColor: 'white', ...theme.viewStyles.cardViewStyle, borderRadius: 0 }}
+          >
+            {isProgressBarVisible.current && renderProgressBar(currentProgressBarPosition.current)}
+          </View>
+        ) : null}
         {renderChatHeader()}
         {doctorJoined ? (
           <View
