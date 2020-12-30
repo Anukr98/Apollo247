@@ -9,6 +9,7 @@ import {
   ApolloPartnerIcon,
   InfoBlue,
   CircleLogo,
+  ShareYellowDocIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   doctorNameStyles: {
-    paddingTop: 35,
+    paddingTop: 0,
     paddingLeft: 0,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -165,6 +166,7 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
   },
+  doctorNameViewStyle: { flexDirection: 'row', paddingTop: 35, justifyContent: 'space-between' },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -191,6 +193,13 @@ export interface DoctorCardProps extends NavigationScreenProps {
   callSaveSearch?: string;
   onPlanSelected?: (() => void) | null;
   selectedConsultMode?: ConsultMode | null;
+  onPressShare?: (
+    rowData:
+      | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
+      | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
+      | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
+      | any
+  ) => void;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -623,7 +632,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
+              <View style={styles.doctorNameViewStyle}>
+                <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => props.onPressShare && props.onPressShare(rowData)}
+                  style={{ paddingLeft: 5 }}
+                >
+                  <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
+                </TouchableOpacity>
+              </View>
               {renderSpecialities()}
               {isCircleDoctorOnSelectedConsultMode
                 ? renderCareDoctorsFee()

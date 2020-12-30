@@ -47,6 +47,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
+  getDoctorShareMessage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -76,6 +77,7 @@ import {
   Platform,
   Modal,
   Alert,
+  Share,
 } from 'react-native';
 import {
   NavigationActions,
@@ -91,6 +93,7 @@ import { SymptomTrackerCard } from '@aph/mobile-patients/src/components/ConsultR
 import { DefaultSearchComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DefaultSearchComponent';
 const { width } = Dimensions.get('window');
 import { getPatientAllAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -354,6 +357,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
   const [consultedDoctors, setConsultedDoctors] = useState<any>([]);
+  const [doctorShareData, setDoctorShareData] = useState<any>();
+  const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+
   useEffect(() => {
     newUserPastSearch();
     if (!currentPatient) {
@@ -1277,6 +1283,47 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
+  const onPressShareProfileButton = async (doctorData: any) => {
+    const shareDoctorMessage = getDoctorShareMessage(doctorData);
+    try {
+      const result = await Share.share({
+        message: shareDoctorMessage,
+      });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('// shared with activity type', result.activityType);
+          // shared with activity type of result.activityType
+        } else {
+          console.log('//shared', result.activityType);
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share.dismissedAction');
+        // dismissed
+      }
+    } catch (error) {
+      console.log('onPressShareProfileButton Error', error.message);
+    }
+  };
+
+  const renderDoctorShareComponent = () => {
+    return showDoctorSharePopup ? (
+      <DoctorShareComponent
+        doctorData={doctorShareData}
+        onPressGoBack={() => setShowDoctorSharePopup(false)}
+        onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
+        availableModes={doctorShareData?.consultMode}
+      />
+    ) : null;
+  };
+
+  const onClickDoctorShare = (doctorData: any) => {
+    if (doctorData) {
+      setShowDoctorSharePopup(true);
+      setDoctorShareData(doctorData);
+    }
+  };
+
   const renderSearchDoctorResultsRow = (rowId: number, rowData: any) => {
     if (rowData)
       return (
@@ -1310,6 +1357,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   callSaveSearch: 'true',
                 });
               }}
+              onPressShare={(doctorData) => onClickDoctorShare(doctorData)}
               onPressConsultNowOrBookAppointment={(type) => {
                 postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search', type);
               }}
@@ -1480,6 +1528,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: isSearchFocused ? 'white' : '#f0f1ec' }}>
         {doctorsList && renderSearch()}
+        {renderDoctorShareComponent()}
         {!showSpinner ? (
           isSearching ? (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

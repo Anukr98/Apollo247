@@ -75,6 +75,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   setWebEngageScreenNames,
+  getDoctorShareMessage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -100,6 +101,7 @@ import {
   ViewStyle,
   Platform,
   AsyncStorage,
+  Share,
 } from 'react-native';
 import {
   NavigationActions,
@@ -118,6 +120,7 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -291,6 +294,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
   const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
   const [filterActionTaken, setFilterActionTaken] = useState<boolean>(false);
+  const [doctorShareData, setDoctorShareData] = useState<any>();
+  const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
 
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
@@ -1122,6 +1127,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const onClickDoctorShare = (doctorData: any) => {
+    if (doctorData) {
+      setShowDoctorSharePopup(true);
+      setDoctorShareData(doctorData);
+    }
+  };
+
   const renderDoctorCard = (
     rowData: any,
     index: number,
@@ -1146,6 +1158,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             callSaveSearch: callSaveSearch,
           });
         }}
+        onPressShare={(doctorData) => onClickDoctorShare(doctorData)}
         onPressConsultNowOrBookAppointment={(type) => {
           postDoctorClickWEGEvent(rowData, 'List', type);
         }}
@@ -1535,6 +1548,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonViewStyle={{ overflow: 'hidden' }}
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
+          onPressShare={(doctorData) => onClickDoctorShare(doctorData)}
           onPress={() => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -1550,6 +1564,48 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         />
       </LinearGradientComponent>
     );
+  };
+
+  const onPressShareProfileButton = async (doctorData: any) => {
+    const shareDoctorMessage = getDoctorShareMessage(doctorData);
+    try {
+      const result = await Share.share({
+        message: shareDoctorMessage,
+      });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('// shared with activity type', result.activityType);
+          // shared with activity type of result.activityType
+        } else {
+          console.log('//shared', result.activityType);
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share.dismissedAction');
+        // dismissed
+      }
+    } catch (error) {
+      console.log('onPressShareProfileButton Error', error.message);
+    }
+  };
+
+  const renderDoctorShareComponent = () => {
+    const selectedMode = onlineCheckBox
+      ? physicalCheckBox
+        ? undefined
+        : ConsultMode.ONLINE
+      : physicalCheckBox
+      ? ConsultMode.PHYSICAL
+      : undefined;
+    return showDoctorSharePopup ? (
+      <DoctorShareComponent
+        doctorData={doctorShareData}
+        onPressGoBack={() => setShowDoctorSharePopup(false)}
+        onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
+        selectedConsultMode={selectedMode}
+        availableModes={doctorShareData?.consultMode}
+      />
+    ) : null;
   };
 
   const renderDoctorSearchBar = () => {
@@ -1941,6 +1997,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         {renderTopView()}
         {searchIconClicked && renderDoctorSearchBar()}
         {renderTopTabBar()}
+        {renderDoctorShareComponent()}
         <ScrollView bounces={false} ref={scrollViewRef} contentContainerStyle={{ flex: 1 }}>
           {showSpinner ? (
             renderSearchLoadingView()

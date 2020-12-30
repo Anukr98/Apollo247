@@ -42,6 +42,7 @@ import {
   timeDiffFromNow,
   setWebEngageScreenNames,
   nextAvailability,
+  getDoctorShareMessage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -80,6 +81,7 @@ import {
   CTGrayChat,
   InfoBlue,
   CircleLogo,
+  ShareYellowDocIcon,
 } from '../ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -91,6 +93,7 @@ import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/Ci
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 
 const { height, width } = Dimensions.get('window');
 
@@ -286,6 +289,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 13, theme.colors.WHITE, 1, 24),
     textTransform: 'uppercase',
   },
+  doctorNameViewStyle: { flexDirection: 'row', justifyContent: 'space-between' },
+  shareTextStyle: {
+    ...theme.viewStyles.text('B', 12, theme.colors.APP_YELLOW, 1, 16),
+    marginRight: 11,
+  },
+  shareViewStyle: { paddingLeft: 5, flexDirection: 'row', alignItems: 'center' },
 });
 type Appointments = {
   date: string;
@@ -342,6 +351,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const fromDeeplink = props.navigation.getParam('fromDeeplink');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
+  const [doctorShareData, setDoctorShareData] = useState<any>();
+  const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -778,7 +789,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {doctorDetails?.doctorsOfTheHourStatus ? renderPlatinumDoctorView() : null}
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
-              <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
+              <View style={styles.doctorNameViewStyle}>
+                <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => setShowDoctorSharePopup(true)}
+                  style={styles.shareViewStyle}
+                >
+                  <Text style={styles.shareTextStyle}>{'SHARE'}</Text>
+                  <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
+                </TouchableOpacity>
+              </View>
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
                 {doctorDetails.specialty && doctorDetails.specialty.name
@@ -1204,6 +1225,41 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return null;
   };
 
+  const onPressShareProfileButton = async (doctorData: any) => {
+    const shareDoctorMessage = getDoctorShareMessage(doctorData);
+    try {
+      const result = await Share.share({
+        message: shareDoctorMessage,
+      });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('// shared with activity type', result.activityType);
+          // shared with activity type of result.activityType
+        } else {
+          console.log('//shared', result.activityType);
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share.dismissedAction');
+        // dismissed
+      }
+    } catch (error) {
+      console.log('onPressShareProfileButton Error', error.message);
+    }
+  };
+
+  const renderDoctorShareComponent = () => {
+    return showDoctorSharePopup ? (
+      <DoctorShareComponent
+        doctorData={doctorDetails}
+        fromDoctorDetails
+        onPressGoBack={() => setShowDoctorSharePopup(false)}
+        onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
+        availableModes={doctorDetails?.availableModes}
+      />
+    ) : null;
+  };
+
   const renderDoctorTeam = () => {
     if (doctorDetails && doctorDetails.starTeam && doctorDetails.starTeam.length > 0)
       return (
@@ -1520,6 +1576,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {/* </ScrollView> */}
         </Animated.ScrollView>
         {doctorDetails && renderConsultNow()}
+        {renderDoctorShareComponent()}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (

@@ -201,6 +201,15 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
+export const getDoctorShareMessage = (doctorData: any) => {
+  return `Recommending ${doctorData?.displayName} \n${doctorData?.displayName} ${
+    doctorData?.doctorfacility ? 'from ' + doctorData?.doctorfacility : ''
+  } is one of the top ${doctorData?.specialtydisplayName ||
+    ''} in the country. \n\nI strongly recommend him/her for any relevant health issues!\n\nYou can easily consult with ${
+    doctorData?.displayName
+  } online over Apollo 247 App and Website. Click <link to doctor profile> to book!`;
+};
+
 export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
