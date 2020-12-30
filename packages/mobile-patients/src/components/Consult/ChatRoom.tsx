@@ -51,6 +51,7 @@ import {
   SEND_PATIENT_WAIT_NOTIFICATION,
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
   GET_APPOINTMENT_DATA,
+  GET_DOCTOR_DETAILS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -176,6 +177,8 @@ import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { ConsultProgressBar } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultProgressBar';
+import { getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 
 interface OpentokStreamObject {
   connection: {
@@ -212,6 +215,7 @@ const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
 let timerId: any;
+let appointmentDiffMinTimerId: any;
 let notificationTimerId: any;
 let notificationIntervalId: any;
 let notify_async_key = 'notify_async';
@@ -267,7 +271,7 @@ const styles = StyleSheet.create({
   },
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 12,
+    paddingTop: 10,
     paddingHorizontal: 20,
     ...theme.viewStyles.shadowStyle,
   },
@@ -284,9 +288,9 @@ const styles = StyleSheet.create({
   },
   doctorNameStyle: {
     paddingTop: 8,
-    paddingBottom: 0,
+    paddingBottom: 5,
     textTransform: 'capitalize',
-    ...theme.fonts.IBMPlexSansSemiBold(23),
+    ...theme.fonts.IBMPlexSansSemiBold(16),
     color: theme.colors.LIGHT_BLUE,
   },
   doctorSpecialityStyle: {
@@ -297,9 +301,9 @@ const styles = StyleSheet.create({
     lineHeight: 15,
   },
   timeStyle: {
-    paddingBottom: 20,
     ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.SKY_BLUE,
+    marginBottom: 11,
   },
   imageView: {
     width: 80,
@@ -337,16 +341,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   callHeaderView: {
-    backgroundColor: theme.colors.HEADER_GREY,
-    height: 60,
     ...theme.viewStyles.shadowStyle,
-    paddingHorizontal: 20,
     justifyContent: 'center',
+    marginBottom: 15,
   },
   joinRoomDescriptionText: {
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(13),
-    width: '65%',
+    width: '45%',
   },
   callHeaderRow: {
     flexDirection: 'row',
@@ -407,6 +409,9 @@ const styles = StyleSheet.create({
     bottom: 20,
     alignItems: 'center',
     paddingVertical: 5,
+  },
+  joinBtnTxt: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
   },
 });
 
@@ -611,6 +616,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
   const exotelCall = '^^#exotelCall';
   const vitalsCompletedByPatient = '^^#vitalsCompletedByPatient'; // ignore msg used by p-web
+  const doctorWillConnectShortly = '^^#DoctorWillConnectShortly';
+  const rescheduleOrCancelAppointment = '^^#RescheduleOrCancelAppointment';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -629,6 +636,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [url, setUrl] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [handlerMessage, setHandlerMessage] = useState('');
+  const skipAutoQuestions = useRef<boolean | null | undefined>(null);
+  const isProgressBarVisible = useRef<boolean>(true);
+  const currentProgressBarPosition = useRef<number>(0);
+  const showProgressBarOnHeader = useRef<boolean>(false);
+  const isJdAllowedToAssign = useRef<boolean | null | undefined>(null);
   const postAppointmentWEGEvent = (
     type:
       | WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS
@@ -893,6 +905,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    checkAutoTriggerMessagePostAppointmentTime();
+    return function cleanup() {
+      BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+    };
+  }, []);
+
+  const checkAutoTriggerMessagePostAppointmentTime = () => {
+    const diffMin = Math.ceil(
+      moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+    );
+    if (diffMin <= 10 && diffMin >= -10) {
+      appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
+        const updatedDiffMin = Math.ceil(
+          moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        if (updatedDiffMin === -5) {
+          const doctorConnectShortly = insertText.filter((obj: any) => {
+            return obj.message === doctorWillConnectShortly;
+          });
+          if (doctorConnectShortly?.length === 0) {
+            doctorWillConnectShortlyAutomatedText();
+          }
+        }
+        if (updatedDiffMin === -10) {
+          const rescheduleOrCancelAppointmnt = insertText.filter((obj: any) => {
+            return obj.message === rescheduleOrCancelAppointment;
+          });
+          if (rescheduleOrCancelAppointmnt?.length === 0) {
+            rescheduleOrCancelAppointmentAutomatedText();
+          }
+          BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+        }
+      }, 60000);
+    }
+  };
+
+  useEffect(() => {
     if (!currentPatientWithHistory) {
       getPatientApiCallWithHistory();
     }
@@ -913,7 +962,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
     }
     updateNumberOfParticipants();
+    fetchDoctorDetails();
+    isProgressBarVisible.current = appointmentData.status !== STATUS.COMPLETED;
   }, []);
+
+  const fetchDoctorDetails = async () => {
+    setLoading(true);
+    const input = {
+      id: doctorId,
+    };
+    const res = await client.query<getDoctorDetailsById>({
+      query: GET_DOCTOR_DETAILS_BY_ID,
+      variables: input,
+      fetchPolicy: 'no-cache',
+    });
+    const skipQuestions = res?.data?.getDoctorDetailsById?.skipAutoQuestions;
+    isJdAllowedToAssign.current = res?.data?.getDoctorDetailsById?.isJdAllowed;
+    skipAutoQuestions.current = skipQuestions;
+    checkVitalQuestionsStatus();
+    getHistory(0);
+  };
+
+  const checkVitalQuestionsStatus = () => {
+    if (appointmentData.isJdQuestionsComplete) {
+      requestToJrDoctor();
+      if (
+        !disableChat &&
+        status !== STATUS.COMPLETED &&
+        !appointmentData.hideHealthRecordNudge &&
+        !isVoipCall &&
+        !fromIncomingCall
+      ) {
+        showAndUpdateNudgeScreenVisibility();
+      }
+      // startJoinTimer(0);
+      // thirtySecondCall();
+      // minuteCaller();
+    } else {
+      setDisplayChatQuestions(skipAutoQuestions.current ? false : true);
+    }
+  };
 
   const getPatientApiCallWithHistory = async () => {
     if (!disableChat && status !== STATUS.COMPLETED && displayChatQuestions) {
@@ -1244,7 +1332,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (status, response) => {}
     );
   };
-  const setAnswerData = (value: { k: string; v: string[] }[]) => {
+  const setAnswerData = (value: { k: string; v: string[] }[], isQuestionaireComplete?: boolean) => {
     const data = userAnswers || ({} as ConsultQueueInput);
     value.forEach((item) => {
       switch (item.k) {
@@ -1469,9 +1557,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     });
     setUserAnswers(data);
+    if (isQuestionaireComplete) {
+      if (isJdAllowedToAssign.current) {
+        doctorWillJoinAutomatedText();
+      }
+      describeYourMedicalConditionAutomatedText();
+    }
+
     if (isSendAnswers.find((item) => item === false) === undefined) {
       requestToJrDoctor();
     }
+  };
+
+  const doctorWillJoinAutomatedText = () => {
+    setTimeout(() => {
+      const successSteps = [
+        `A doctor from ${appointmentData.doctorInfo.displayName}'s team will connect with you to gather details about your health and symptoms. We request your cooperation`,
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: consultPatientStartedMsg,
+            automatedText: successSteps,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 2000);
+  };
+
+  const describeYourMedicalConditionAutomatedText = (time?: number) => {
+    setTimeout(
+      () => {
+        const successSteps = [
+          'Please describe your medical condition and upload pictures if required ',
+        ];
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: consultPatientStartedMsg,
+              automatedText: successSteps,
+              id: doctorId,
+              isTyping: true,
+              messageDate: new Date(),
+            },
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
+      },
+      time ? time : 7000
+    );
   };
 
   const showAndUpdateNudgeScreenVisibility = async () => {
@@ -2131,7 +2275,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // withPresence: true,  // APP-2803: removed No show logic
     });
 
-    getHistory(0);
+    // getHistory(0);
 
     // registerForPushNotification();
 
@@ -2557,6 +2701,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkAutomatedPatientText = () => {
+    console.log('insertText', insertText);
     const result = insertText.filter((obj: any) => {
       return obj.message === consultPatientStartedMsg;
     });
@@ -2565,6 +2710,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     if (result.length === 0 && startConsultResult.length === 0) {
       automatedTextFromPatient();
+    }
+    const diffMin = Math.ceil(
+      moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+    );
+    if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
+      describeYourMedicalConditionAutomatedText(5000);
+    }
+    const doctorConnectShortly = insertText.filter((obj: any) => {
+      return obj.message === doctorWillConnectShortly;
+    });
+    const rescheduleOrCancelAppointmnt = insertText.filter((obj: any) => {
+      return obj.message === rescheduleOrCancelAppointment;
+    });
+    if (doctorConnectShortly?.length === 0 && diffMin <= -5) {
+      doctorWillConnectShortlyAutomatedText();
+    }
+    if (rescheduleOrCancelAppointmnt?.length === 0 && diffMin <= -10) {
+      rescheduleOrCancelAppointmentAutomatedText();
     }
   };
 
@@ -2577,16 +2740,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       step5 = `No follow Up via text is provided`;
     }
-    const successSteps = [
-      'Let’s get you feeling better by following simple steps :)\n',
-      '1. Answer some quick questions\n',
-      '2. Please be present in this consult room at the time of consult\n',
-      '3. Connect with your doctor via In-App Audio/Video call\n',
-      '4. Get a prescription and meds, if necessary\n',
-      `5. ${step5}\n\n`,
-      `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
+    let successSteps = [
+      'Please follow these simple steps for your appointment: \n',
+      '1. Answer a few questions about your medical history\n',
+      '2. Be present here in the consult room at the time of appointment \n',
+      '3. Wait for the doctor to connect with you via audio/video call\n',
     ];
-
+    if (appointmentData.isJdQuestionsComplete || skipAutoQuestions.current) {
+      successSteps = [
+        'Please follow these simple steps for your appointment: \n',
+        '1. Be present here in the consult room at the time of appointment \n',
+        '2. Wait for the doctor to connect with you via audio/video call  \n',
+      ];
+    }
     pubnub.publish(
       {
         channel: channel,
@@ -2602,28 +2768,59 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, response) => {}
     );
+    if (skipAutoQuestions.current) {
+      if (isJdAllowedToAssign.current) {
+        doctorWillJoinAutomatedText();
+      }
+      describeYourMedicalConditionAutomatedText();
+    }
   };
 
-  useEffect(() => {
-    if (appointmentData.isJdQuestionsComplete) {
-      console.log({});
-      requestToJrDoctor();
-      if (
-        !disableChat &&
-        status !== STATUS.COMPLETED &&
-        !appointmentData.hideHealthRecordNudge &&
-        !isVoipCall &&
-        !fromIncomingCall
-      ) {
-        showAndUpdateNudgeScreenVisibility();
-      }
-      // startJoinTimer(0);
-      // thirtySecondCall();
-      // minuteCaller();
-    } else {
-      setDisplayChatQuestions(true);
-    }
-  }, []);
+  const doctorWillConnectShortlyAutomatedText = () => {
+    setTimeout(() => {
+      const automatedText = [
+        'Please wait while the doctor connects with you shortly. Thanks for your patience.',
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: doctorWillConnectShortly,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 2000);
+  };
+
+  const rescheduleOrCancelAppointmentAutomatedText = () => {
+    setTimeout(() => {
+      const automatedText = [
+        'We are sorry to keep you waiting. You can  reschedule/cancel this appointment by clicking on the icon at the top right of this screen.',
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: rescheduleOrCancelAppointment,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 4000);
+  };
 
   const thirtySecondCall = () => {
     if (jrDoctorJoined.current == false) {
@@ -2981,6 +3178,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         } catch (error) {}
         AsyncStorage.setItem('callDisconnected', 'true');
       } else if (message.message.message === exotelCall) {
+        addMessages(message);
+      } else {
         addMessages(message);
       }
     } else {
@@ -4555,7 +4754,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   ) : rowData.message === firstMessage ||
                     rowData.message === secondMessage ||
                     rowData.message === languageQue ||
-                    rowData.message === jdThankyou ? (
+                    rowData.message === jdThankyou ||
+                    rowData.message === doctorWillConnectShortly ||
+                    rowData.message === rescheduleOrCancelAppointment ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
@@ -5008,63 +5209,55 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(moment(appointmentTime).diff(moment(), 'minutes', true));
     const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
     const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
+    const isPrescriptionReady = messages?.filter((item) => item?.message === followupconsult);
+    // checkAutomatedPatientText();
     if (textChange && !jrDoctorJoined.current) {
-      time = 'Consult is In-progress';
+      // Consult in Progress
+      currentProgressBarPosition.current = 1;
     } else {
       if (status === STATUS.COMPLETED) {
-        time = `Consult is completed`;
+        if (!isProgressBarVisible.current) {
+          time = `Consult is completed`;
+        }
+        currentProgressBarPosition.current = 2;
       } else if (diffMin <= 0) {
-        time = `Will be joining soon`;
+        time = `Joining soon. Please wait!`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+        time = `Expected to join in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours >= 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in ${convertMinsToHrsMins(diffMin)}`;
+        time = `Expected to join in ${convertMinsToHrsMins(diffMin)}`;
       } else {
         time = `Consult on ${moment(appointmentTime).format('DD/MM')} at ${moment(
           appointmentTime
         ).format('h:mm A')}`;
       }
     }
-    return (
-      <View style={styles.mainView}>
-        <View style={{ maxWidth: '40%' }}>
-          <Text style={styles.displayId} numberOfLines={1}>
-            #{appointmentData.displayId}
-          </Text>
-          <View style={styles.separatorStyle} />
+    if (isPrescriptionReady?.length > 0) {
+      currentProgressBarPosition.current = 3;
+    }
+    showProgressBarOnHeader.current =
+      !doctorJoinedChat &&
+      !time &&
+      !(currentProgressBarPosition.current === 0 || !isProgressBarVisible.current);
+    if (!showProgressBarOnHeader.current) {
+      return (
+        <View style={styles.mainView}>
+          {currentProgressBarPosition.current === 0 || !isProgressBarVisible.current ? (
+            <Text style={[styles.doctorNameStyle, { paddingBottom: time ? 5 : 11 }]}>
+              {appointmentData.doctorInfo.displayName}
+            </Text>
+          ) : (
+            <></>
+          )}
+          {time ? <Text style={styles.timeStyle}>{time}</Text> : <View />}
+          {!showProgressBarOnHeader.current &&
+            isProgressBarVisible.current &&
+            renderProgressBar(currentProgressBarPosition.current)}
+          {doctorJoinedChat && renderJoinCallHeader()}
         </View>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
-            <Text style={styles.doctorSpecialityStyle}>{`${g(
-              appointmentData,
-              'doctorInfo',
-              'specialty',
-              'userFriendlyNomenclature'
-            )} | MCI Reg. No. ${g(appointmentData, 'doctorInfo', 'registrationNumber')}`}</Text>
-            <Text style={styles.timeStyle}>{time}</Text>
-          </View>
-          <View style={styles.imageView}>
-            <View style={styles.imageContainer}>
-              {appointmentData.doctorInfo.thumbnailUrl &&
-              appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
-                <Image
-                  source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
-                  resizeMode={'contain'}
-                  style={styles.doctorImage}
-                />
-              ) : (
-                <DoctorPlaceholderImage style={styles.doctorImage} />
-              )}
-            </View>
-          </View>
-        </View>
-      </View>
-    );
+      );
+    }
+    return <></>;
   };
 
   const renderJoinCallHeader = () => {
@@ -5072,17 +5265,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View style={styles.callHeaderView}>
         <View style={styles.callHeaderRow}>
           <Text style={styles.joinRoomDescriptionText}>
-            {strings.common.joinConsultRoomDescription} {appointmentData.doctorInfo.displayName}
+            {appointmentData.doctorInfo.displayName} is online!
           </Text>
-          <Button
-            title="JOIN"
-            style={styles.joinBtn}
+          <TouchableOpacity
             onPress={() => {
               patientJoinedCall.current = true;
               joinCallHandler();
               postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
             }}
-          />
+          >
+            <Text style={styles.joinBtnTxt}>JOIN AUDIO/VIDEO ROOM</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -6501,6 +6694,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
   };
 
+  const renderProgressBar = (position: number) => {
+    return (
+      <ConsultProgressBar
+        style={{ marginTop: position === 0 ? 0 : 5 }}
+        currentPosition={position}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -6604,16 +6806,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <Header
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
-          container={{ borderBottomWidth: 0, zIndex: 100 }}
+          container={{
+            borderBottomWidth: 0,
+            zIndex: 100,
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+          }}
           onPressLeftIcon={() => {
             props.navigation.goBack();
             if (!fromSearchAppointmentScreen && callhandelBack) {
               setDoctorJoinedChat && setDoctorJoinedChat(false);
             }
           }}
+          component={
+            showProgressBarOnHeader.current ? (
+              <View style={{ marginTop: 12 }}>
+                {isProgressBarVisible.current &&
+                  renderProgressBar(currentProgressBarPosition.current)}
+              </View>
+            ) : null
+          }
         />
         {renderChatHeader()}
-        {doctorJoinedChat && renderJoinCallHeader()}
         {doctorJoined ? (
           <View
             style={{
@@ -6711,7 +6925,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setAnswerData([value]);
                   }}
                   onDonePress={(values: { k: string; v: string[] }[]) => {
-                    setAnswerData(values);
+                    setAnswerData(values, true);
                     setDisplayChatQuestions(false);
                     setDisplayUploadHealthRecords(true);
                   }}
@@ -6833,7 +7047,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setAnswerData([value]);
             }}
             onDonePress={(values: { k: string; v: string[] }[]) => {
-              setAnswerData(values);
+              setAnswerData(values, true);
               setDisplayChatQuestions(false);
               setDisplayUploadHealthRecords(true);
             }}

@@ -69,6 +69,7 @@ import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppo
 import {
   BOOK_APPOINTMENT,
   MAKE_APPOINTMENT_PAYMENT,
+  GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -82,6 +83,10 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import messaging from '@react-native-firebase/messaging';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -644,7 +649,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           )
         );
         setLoading!(false);
-        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`);
+        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
         setLoading!(false);
@@ -652,22 +657,53 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       });
   };
 
-  const handleOrderSuccess = (doctorName: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-            params: {
-              isFreeConsult: true,
-              doctorName: doctorName,
-            },
-          }),
-        ],
+  const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
+    setLoading && setLoading(true);
+    client
+      .query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId,
+        },
+        fetchPolicy: 'no-cache',
       })
-    );
+      .then((_data) => {
+        try {
+          setLoading && setLoading(false);
+          const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
+          if (appointmentData) {
+            try {
+              if (appointmentData?.[0]?.doctorInfo !== null) {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.ConsultRoom,
+                        params: {
+                          isFreeConsult: true,
+                          doctorName: doctorName,
+                          appointmentData: appointmentData[0],
+                          skipAutoQuestions: doctor?.skipAutoQuestions,
+                        },
+                      }),
+                    ],
+                  })
+                );
+              }
+            } catch (error) {}
+          }
+        } catch (error) {
+          setLoading && setLoading(false);
+          props.navigation.navigate('APPOINTMENTS');
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
+        setLoading && setLoading(false);
+        props.navigation.navigate('APPOINTMENTS');
+      });
   };
 
   const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
