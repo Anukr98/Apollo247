@@ -159,7 +159,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       <TextInputComponent
         value={comments}
         onChangeText={setComments}
-        placeholder={string.weAreSorryWhatWentWrong}
+        placeholder={string.pleaseProvideMoreDetails}
         conatinerstyles={styles.textInputContainer}
         autoFocus={true}
       />,
