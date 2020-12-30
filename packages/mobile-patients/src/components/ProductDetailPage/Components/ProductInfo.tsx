@@ -10,6 +10,12 @@ export interface ProductInfoProps {
 
 export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
   const { description, isReturnable } = props;
+  let productDescription: string = description;
+  const isHtmlTag = description.indexOf('&lt;');
+
+  if (isHtmlTag > -1) {
+    productDescription = description.substring(0, isHtmlTag);
+  }
 
   const filterHtmlContent = (content: string = '') => {
     return content
@@ -26,11 +32,14 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     return (
       <View>
         <Text style={styles.subHeading}>Description</Text>
-        <HTML
+        <Text style={[theme.viewStyles.text('R', 14, '#02475B', 1, 20), { marginBottom: 10 }]}>
+          {productDescription}
+        </Text>
+        {/* <HTML
           html={descriptionHtml}
           baseFontStyle={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
           imagesMaxWidth={Dimensions.get('window').width}
-        />
+        /> */}
       </View>
     );
   };

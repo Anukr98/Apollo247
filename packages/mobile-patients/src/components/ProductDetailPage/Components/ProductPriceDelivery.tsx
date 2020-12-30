@@ -7,6 +7,8 @@ import { Location, ExpressDeliveryLogo } from '@aph/mobile-patients/src/componen
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import moment from 'moment';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -15,10 +17,21 @@ export interface ProductPriceDeliveryProps {
   isInStock: boolean;
   manufacturer?: string;
   showPincodePopup: () => void;
+  deliveryTime?: string;
+  deliveryError?: string;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
-  const { price, specialPrice, isExpress, isInStock, manufacturer, showPincodePopup } = props;
+  const {
+    price,
+    specialPrice,
+    isExpress,
+    isInStock,
+    manufacturer,
+    showPincodePopup,
+    deliveryError,
+    deliveryTime,
+  } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId } = useShoppingCart();
   const { pharmacyLocation, locationDetails } = useAppCommonData();
@@ -107,6 +120,19 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     );
   };
 
+  const renderDeliveryDateTime = () => {
+    return !!deliveryTime ? (
+      <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0)}>
+        Delivery By{' '}
+        {moment(deliveryTime, AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT).format(
+          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+        )}
+      </Text>
+    ) : !!deliveryError ? (
+      <Text style={theme.viewStyles.text('R', 10, '#01475b')}>{deliveryError}</Text>
+    ) : null;
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.cardStyle}>
@@ -115,7 +141,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       </View>
       {manufacturer && renderManufacturer()}
       {renderDeliverTo()}
-      {isExpress && renderExpress()}
+      {isExpress ? renderExpress() : renderDeliveryDateTime()}
     </View>
   );
 };

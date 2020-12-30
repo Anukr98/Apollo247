@@ -5,22 +5,21 @@ import { ProductList } from '@aph/mobile-patients/src/components/Medicines/Produ
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface SimilarProductsProps {
-  typeOfProducts: string;
+  heading: string;
   similarProducts: any;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
 }
 
 export const SimilarProducts: React.FC<SimilarProductsProps> = (props) => {
-  const { similarProducts, typeOfProducts } = props;
-  const isSimilarProducts = typeOfProducts === 'similar';
+  const { similarProducts, heading } = props;
+  const isSimilarProducts = heading === string.productDetailPage.SIMILAR_PRODUCTS;
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>
-        {isSimilarProducts ? `View Similar Products` : `Customers Also Bought`}
-      </Text>
+      <Text style={styles.heading}>{heading}</Text>
       <ProductList
         data={similarProducts}
         Component={ProductUpSellingCard}
