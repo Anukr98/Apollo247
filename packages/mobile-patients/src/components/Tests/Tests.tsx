@@ -57,6 +57,7 @@ import {
   TestPackage,
   PackageInclusion,
   getPlaceInfoByPincode,
+  getLandingPageBanners,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -71,6 +72,7 @@ import {
   getDiscountPercentage,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -93,6 +95,7 @@ import {
   NativeScrollEvent,
   BackHandler,
   Platform,
+  Image as ImageNative,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -141,6 +144,7 @@ import {
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+import Carousel from 'react-native-snap-carousel';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -318,6 +322,26 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 15.6),
   },
+  sliderPlaceHolderStyle: {
+    ...theme.viewStyles.imagePlaceholderStyle,
+    width: '100%',
+    alignContent: 'center',
+    justifyContent: 'center',
+  },
+  sliderDotStyle: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    marginTop: 9,
+  },
+  landingBannerInnerView: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+  },
 });
 
 export interface TestsProps
@@ -394,6 +418,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationError, setLocationError] = useState(false);
   const [searchQuery, setSearchQuery] = useState({});
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
+
+  const [bannerLoading, setBannerLoading] = useState(true);
+  const [imgHeight, setImgHeight] = useState(150);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [banners, setBanners] = useState([]);
 
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchResult, setSearchResults] = useState<boolean>(false);
@@ -482,8 +511,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
+    getDiagnosticBanner();
     setBannerData && setBannerData([]); // default banners to be empty
   }, []);
+
+  useEffect(() => {
+    if (!loading && banners.length) {
+      banners?.map((item: any) => {
+        ImageNative.getSize(
+          item?.bannerImage,
+          (width, height) => {
+            setImgHeight(height * (winWidth / width));
+            setBannerLoading(false);
+          },
+          () => {
+            setBannerLoading(false);
+          }
+        );
+      });
+    }
+  }, [loading, banners]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -647,6 +694,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, []);
+
+  const getDiagnosticBanner = async () => {
+    const res: any = await getLandingPageBanners('diagnostic');
+    if (res && res?.data?.success) {
+      const bannerData = g(res, 'data', 'data');
+      setBanners && setBanners(bannerData);
+    } else {
+      setBanners && setBanners([]);
+      setBannerLoading(false);
+    }
+  };
 
   const getUserBanners = async () => {
     const res: any = await getUserBannersList(
@@ -2534,6 +2592,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             marginTop: 12,
             alignSelf: 'center',
           },
+      searchViewShadow: {
+        shadowColor: colors.SHADOW_GRAY,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 4,
+      },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -2571,7 +2636,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText.length > 2 && searchResult;
     return (
-      <View pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}>
+      <View
+        pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}
+        style={styles.searchViewShadow}
+      >
         <Input
           autoFocus={!locationDetails ? false : focusSearch}
           onSubmitEditing={() => {
@@ -2720,36 +2788,72 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderDot = (active: boolean) => (
+    <View
+      style={[styles.sliderDotStyle, { backgroundColor: active ? colors.APP_GREEN : '#d8d8d8' }]}
+    />
+  );
+
   const renderBanner = () => {
-    return (
-      <View
-        style={{
-          backgroundColor: theme.colors.APP_GREEN,
-          width: '100%',
-          paddingVertical: 16,
-          paddingHorizontal: 20,
-          flexDirection: 'row',
-        }}
-      >
-        <ShieldIcon />
-        <View
-          style={{
-            borderRightWidth: 1,
-            borderRightColor: 'rgba(2, 71, 91, 0.5)',
-            marginHorizontal: 19.5,
-          }}
-        />
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
-            Most trusted diagnostics from the comfort of your home!
-          </Text>
+    if (loading || bannerLoading) {
+      return (
+        <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
+          <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
         </View>
-      </View>
+      );
+    } else if (banners.length) {
+      return (
+        <View style={{ marginBottom: 10 }}>
+          <Carousel
+            onSnapToItem={setSlideIndex}
+            data={banners}
+            renderItem={renderSliderItem}
+            sliderWidth={winWidth}
+            itemWidth={winWidth}
+            loop={true}
+            autoplay={true}
+            autoplayDelay={3000}
+            autoplayInterval={3000}
+          />
+          <View style={styles.landingBannerInnerView}>
+            {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+          </View>
+        </View>
+      );
+    }
+  };
+
+  const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
+    const handleOnPress = () => {
+      if (item?.redirectUrl) {
+        const data = item?.redirectUrl.split('=')[1];
+        const extractData = data?.replace('apollopatients://', '');
+        const getNavigationDetails = extractData.split('?');
+        const route = getNavigationDetails[0];
+        let itemId = '';
+        try {
+          if (getNavigationDetails.length >= 2) {
+            itemId = getNavigationDetails[1].split('&');
+            if (itemId.length > 0) {
+              itemId = itemId[0];
+            }
+          }
+        } catch (error) {}
+        if (route == 'TestDetails') {
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: itemId,
+          });
+        }
+      }
+    };
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
+        <ImageNative
+          resizeMode="stretch"
+          style={{ width: '100%', minHeight: imgHeight }}
+          source={{ uri: item.bannerImage }}
+        />
+      </TouchableOpacity>
     );
   };
 
