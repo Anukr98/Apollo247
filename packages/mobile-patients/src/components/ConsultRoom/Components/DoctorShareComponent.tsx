@@ -12,7 +12,7 @@ import { Overlay } from 'react-native-elements';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
-import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ConsultMode, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   phrOverlayStyle: {
@@ -213,7 +213,9 @@ export const DoctorShareComponent: React.FC<DoctorShareComponentProps> = (props)
   const doctorDescription = `${doctorData?.displayName} ${
     !!clinicAddress ? 'from ' + clinicAddress : ''
   } is one of the top ${doctorData?.specialtydisplayName ||
-    ''} in the country. \n\nI strongly recommend him/her for any relevant health issues!\n\nYou can easily consult with ${
+    ''} in the country. \n\nI strongly recommend ${
+    doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
+  } for any relevant health issues!\n\nYou can easily consult with ${
     doctorData?.displayName
   } online over Apollo 247 App and Website.`;
 

@@ -20,6 +20,7 @@ import {
   MEDICINE_UNIT,
   SaveSearchInput,
   STATUS,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
@@ -205,7 +206,9 @@ export const getDoctorShareMessage = (doctorData: any) => {
   return `Recommending ${doctorData?.displayName} \n${doctorData?.displayName} ${
     doctorData?.doctorfacility ? 'from ' + doctorData?.doctorfacility : ''
   } is one of the top ${doctorData?.specialtydisplayName ||
-    ''} in the country. \n\nI strongly recommend him/her for any relevant health issues!\n\nYou can easily consult with ${
+    ''} in the country. \n\nI strongly recommend ${
+    doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
+  } for any relevant health issues!\n\nYou can easily consult with ${
     doctorData?.displayName
   } online over Apollo 247 App and Website. Click <link to doctor profile> to book!`;
 };
