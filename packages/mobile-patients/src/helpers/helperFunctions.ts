@@ -203,7 +203,7 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
 };
 
 export const getDoctorShareMessage = (doctorData: any) => {
-  return `Recommending ${doctorData?.displayName} \n${doctorData?.displayName} ${
+  return `Recommending ${doctorData?.displayName} \n\n${doctorData?.displayName} ${
     doctorData?.doctorfacility ? 'from ' + doctorData?.doctorfacility : ''
   } is one of the top ${doctorData?.specialtydisplayName ||
     ''} in the country. \n\nI strongly recommend ${
@@ -1472,6 +1472,28 @@ export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
 export const postWEGReferralCodeEvent = (ReferralCode: string) => {
   console.log(ReferralCode, 'Referral Code');
   webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
+};
+
+export const postDoctorShareWEGEvents = (
+  doctorData: any,
+  eventName: WebEngageEventName,
+  currentPatient: any,
+  specialityId: string,
+  rank: number = 1
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Doctor ID': g(doctorData, 'id')!,
+    'Doctor Name': g(doctorData, 'displayName')!,
+    'Speciality Name': g(doctorData, 'specialtydisplayName')!,
+    'Doctor card rank': rank,
+    'Speciality ID': specialityId,
+  };
+  postWebEngageEvent(eventName, eventAttributes);
 };
 
 export const permissionHandler = (

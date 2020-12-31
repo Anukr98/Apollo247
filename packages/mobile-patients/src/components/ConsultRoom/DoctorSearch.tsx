@@ -48,6 +48,7 @@ import {
   postWebEngageEvent,
   postWEGNeedHelpEvent,
   getDoctorShareMessage,
+  postDoctorShareWEGEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -359,6 +360,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [consultedDoctors, setConsultedDoctors] = useState<any>([]);
   const [doctorShareData, setDoctorShareData] = useState<any>();
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
 
   useEffect(() => {
     newUserPastSearch();
@@ -1284,43 +1286,61 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const onPressShareProfileButton = async (doctorData: any) => {
+    console.log('');
     const shareDoctorMessage = getDoctorShareMessage(doctorData);
     try {
       const result = await Share.share({
         message: shareDoctorMessage,
       });
       if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log('// shared with activity type', result.activityType);
-          // shared with activity type of result.activityType
-        } else {
-          console.log('//shared', result.activityType);
-          // shared
-        }
+        postDoctorShareWEGEvents(
+          doctorData,
+          WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_LIST,
+          currentPatient,
+          g(doctorData, 'specialty', 'id')!,
+          doctorShareRank
+        );
       } else if (result.action === Share.dismissedAction) {
-        console.log('Share.dismissedAction');
-        // dismissed
       }
     } catch (error) {
       console.log('onPressShareProfileButton Error', error.message);
     }
   };
 
+  const onPressGoBackShareDoctor = (doctorData: any) => {
+    setShowDoctorSharePopup(false);
+    postDoctorShareWEGEvents(
+      doctorData,
+      WebEngageEventName.GO_BACK_CLICKED_DOC_LIST,
+      currentPatient,
+      g(doctorData, 'specialty', 'id')!,
+      doctorShareRank
+    );
+  };
+
   const renderDoctorShareComponent = () => {
     return showDoctorSharePopup ? (
       <DoctorShareComponent
         doctorData={doctorShareData}
-        onPressGoBack={() => setShowDoctorSharePopup(false)}
+        onPressGoBack={(doctorData) => onPressGoBackShareDoctor(doctorData)}
         onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
         availableModes={doctorShareData?.consultMode}
       />
     ) : null;
   };
 
-  const onClickDoctorShare = (doctorData: any) => {
+  const onClickDoctorShare = (doctorData: any, rank: number) => {
     if (doctorData) {
+      postDoctorShareWEGEvents(
+        doctorData,
+        WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN,
+        currentPatient,
+        g(doctorData, 'specialty', 'id')!,
+        rank
+      );
       setShowDoctorSharePopup(true);
       setDoctorShareData(doctorData);
+      setDoctorShareRank(rank);
     }
   };
 
@@ -1357,7 +1377,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   callSaveSearch: 'true',
                 });
               }}
-              onPressShare={(doctorData) => onClickDoctorShare(doctorData)}
+              onPressShare={(doctorData) => onClickDoctorShare(doctorData, rowId)}
               onPressConsultNowOrBookAppointment={(type) => {
                 postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search', type);
               }}

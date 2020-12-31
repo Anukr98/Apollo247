@@ -762,6 +762,28 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     );
   };
 
+  const postDoctorShareWEGEvents = (eventName: WebEngageEventName) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
+  const onClickDoctorShare = () => {
+    setShowDoctorSharePopup(true);
+    postDoctorShareWEGEvents(WebEngageEventName.SHARE_CLICKED_DOC_PROFILE_SCREEN);
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -793,7 +815,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
                 <TouchableOpacity
                   activeOpacity={1}
-                  onPress={() => setShowDoctorSharePopup(true)}
+                  onPress={() => onClickDoctorShare()}
                   style={styles.shareViewStyle}
                 >
                   <Text style={styles.shareTextStyle}>{'SHARE'}</Text>
@@ -1232,20 +1254,18 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         message: shareDoctorMessage,
       });
       if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log('// shared with activity type', result.activityType);
-          // shared with activity type of result.activityType
-        } else {
-          console.log('//shared', result.activityType);
-          // shared
-        }
+        postDoctorShareWEGEvents(WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_PROFILE);
       } else if (result.action === Share.dismissedAction) {
         console.log('Share.dismissedAction');
-        // dismissed
       }
     } catch (error) {
       console.log('onPressShareProfileButton Error', error.message);
     }
+  };
+
+  const onPressGoBackShareDoctor = () => {
+    setShowDoctorSharePopup(false);
+    postDoctorShareWEGEvents(WebEngageEventName.GO_BACK_CLICKED_DOC_PROFILE);
   };
 
   const renderDoctorShareComponent = () => {
@@ -1253,7 +1273,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       <DoctorShareComponent
         doctorData={doctorDetails}
         fromDoctorDetails
-        onPressGoBack={() => setShowDoctorSharePopup(false)}
+        onPressGoBack={onPressGoBackShareDoctor}
         onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
         availableModes={doctorDetails?.availableModes}
       />

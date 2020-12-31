@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
 export interface DoctorShareComponentProps {
   doctorData: any;
   onPressSharePropfile: (doctorData: any) => void;
-  onPressGoBack: () => void;
+  onPressGoBack: (doctorData: any) => void;
   selectedConsultMode?: ConsultMode | null;
   fromDoctorDetails?: boolean;
   availableModes?: ConsultMode | null;
@@ -222,7 +222,7 @@ export const DoctorShareComponent: React.FC<DoctorShareComponentProps> = (props)
   return (
     <Overlay
       isVisible
-      onRequestClose={() => props.onPressGoBack()}
+      onRequestClose={() => props.onPressGoBack(doctorData)}
       windowBackgroundColor={'rgba(0, 0, 0, 0.3)'}
       containerStyle={{ marginBottom: 0 }}
       fullScreen
@@ -286,7 +286,7 @@ export const DoctorShareComponent: React.FC<DoctorShareComponentProps> = (props)
             <View style={styles.separatorLineViewStyle} />
             <Text style={styles.doctorDescriptionTextStyle}>{doctorDescription}</Text>
             <View style={styles.shareGoBackViewStyle}>
-              <Text style={styles.goBackTextStyle} onPress={props.onPressGoBack}>
+              <Text style={styles.goBackTextStyle} onPress={() => props.onPressGoBack(doctorData)}>
                 {'GO BACK'}
               </Text>
               <Button
