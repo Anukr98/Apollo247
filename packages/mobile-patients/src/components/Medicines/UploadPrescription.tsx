@@ -1051,6 +1051,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         onPressChangeAddress={showAddressPopup}
         onPressProceed={onPressProceed}
         onPressTatCard={() =>
+          !disableSubmitButton() &&
           props.navigation.navigate(AppRoutes.PrescriptionOrderSummary, {
             ePrescription: EPrescriptions,
             physicalPrescription: PhysicalPrescriptions,

@@ -160,6 +160,9 @@ import {
   postWebEngageEvent,
   nameFormater,
   followUpChatDaysCaseSheet,
+  addTestsToCart,
+  doRequestAndAccessLocation,
+  handleGraphQlError,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -172,11 +175,20 @@ import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { EPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription } from '@aph/mobile-patients/src/graphql/types/getSDLatestCompletedCaseSheet';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { ConsultProgressBar } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultProgressBar';
 import { getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 
@@ -410,6 +422,61 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 5,
   },
+  MsgCont: {
+    backgroundColor: 'transparent',
+    width: 282,
+    borderRadius: 10,
+    marginVertical: 2,
+    alignSelf: 'flex-start',
+  },
+  iconCont: {
+    width: 32,
+    height: 32,
+    bottom: 0,
+    position: 'absolute',
+    left: 0,
+  },
+  iconStyle: {
+    width: 32,
+    height: 32,
+    bottom: 0,
+    position: 'absolute',
+    left: 0,
+  },
+  MsgTextCont: {
+    width: 244,
+    backgroundColor: '#fff',
+    marginLeft: 38,
+    borderRadius: 10,
+    marginBottom: 4,
+    paddingHorizontal: 15,
+  },
+  MsgText: {
+    marginTop: 12,
+    lineHeight: 22,
+    color: '#0087BA',
+    ...theme.fonts.IBMPlexSansMedium(15),
+    marginBottom: 5,
+  },
+  stickyButtonCont: {
+    paddingHorizontal: 0,
+    marginBottom: 4,
+    backgroundColor: 'transparent',
+    shadowColor: 'transparent',
+  },
+  buttonStyle: {
+    marginVertical: 5,
+    backgroundColor: '#fff',
+  },
+  timeStamp: {
+    color: '#0087BA',
+    marginLeft: 27,
+    textAlign: 'right',
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 24,
+    letterSpacing: 0.04,
+    marginTop: 5,
+  },
   joinBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
   },
@@ -490,7 +557,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-  const { setDoctorJoinedChat, doctorJoinedChat, locationDetails } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
+  const {
+    setDoctorJoinedChat,
+    doctorJoinedChat,
+    locationDetails,
+    setLocationDetails,
+    diagnosticLocation,
+    pharmacyLocation,
+  } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
+  const {
+    addMultipleCartItems: addMultipleTestCartItems,
+    addMultipleEPrescriptions: addMultipleTestEPrescriptions,
+  } = useDiagnosticsCart();
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
@@ -3532,7 +3610,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {rowData.message === rescheduleConsultMsg ? (
               <View>{checkReschudule && reschduleLoadView(rowData, index, 'Reschedule')}</View>
             ) : (
-              <View>{followUpView(rowData, index, 'Followup')}</View>
+              <View>
+                {followUpView(rowData, index, 'Followup')}
+                {orderMedicine(rowData, index)}
+              </View>
             )}
           </>
         )}
@@ -3644,6 +3725,142 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               {convertChatTime(rowData)}
             </Text>
+          </View>
+        </View>
+      </>
+    );
+  };
+
+  const onAddToCart = () => {
+    const medPrescription = (caseSheet[0]?.medicinePrescription || []).filter((item) => item!.id);
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheet[0]?.blobName!);
+    const presToAdd = {
+      id: caseSheet[0]?.id,
+      date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: appointmentData?.doctorInfo?.displayName || '',
+      forPatient: currentPatient?.firstName || '',
+      medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
+      uploadedUrl: docUrl,
+    } as EPrescription;
+
+    props.navigation.navigate(AppRoutes.UploadPrescription, {
+      ePrescriptionsProp: [presToAdd],
+      type: 'E-Prescription',
+    });
+  };
+
+  const onAddTestsToCart = async () => {
+    let location: LocationData | null = null;
+    setLoading && setLoading(true);
+
+    if (!locationDetails) {
+      try {
+        location = await doRequestAndAccessLocation();
+        location && setLocationDetails!(location);
+      } catch (error) {
+        setLoading && setLoading(false);
+        Alert.alert(
+          'Uh oh.. :(',
+          'Unable to get location. We need your location in order to add tests to your cart.'
+        );
+        return;
+      }
+    }
+
+    const testPrescription = (caseSheet[0]?.diagnosticPrescription ||
+      []) as getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription[];
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheet[0]?.blobName!);
+
+    if (!testPrescription.length) {
+      Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
+      setLoading && setLoading(false);
+      return;
+    }
+    const presToAdd = {
+      id: caseSheet[0]?.id,
+      date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: appointmentData?.doctorInfo?.displayName || '',
+      forPatient: (currentPatient && currentPatient.firstName) || '',
+      medicines: '',
+      uploadedUrl: docUrl,
+    } as EPrescription;
+    // Adding tests to DiagnosticsCart
+    addTestsToCart(
+      testPrescription,
+      client,
+      g(diagnosticLocation || pharmacyLocation || locationDetails || location, 'pincode') || ''
+    )
+      .then((tests: DiagnosticsCartItem[]) => {
+        // Adding ePrescriptions to DiagnosticsCart
+        const unAvailableItemsArray = testPrescription.filter(
+          (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
+        );
+        console.log({ unAvailableItemsArray });
+        const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+
+        if (tests.length) {
+          addMultipleTestCartItems!(tests);
+          addMultipleTestEPrescriptions!([
+            {
+              ...presToAdd,
+              medicines: (tests as DiagnosticsCartItem[]).map((item) => item.name).join(', '),
+            },
+          ]);
+        }
+        if (testPrescription.length == unAvailableItemsArray.length) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Unfortunately, we do not have any diagnostic(s) available right now.`
+          );
+        } else if (unAvailableItems) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
+          );
+        }
+        setLoading!(false);
+        props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+      })
+      .catch((e) => {
+        setLoading!(false);
+        handleGraphQlError(e);
+      });
+  };
+
+  const orderMedicine = (rowData: any, index: number) => {
+    console.log('rowdata', rowData);
+
+    return (
+      <>
+        <View style={styles.MsgCont}>
+          {leftComponent === 1 && (
+            <View style={styles.iconCont}>
+              <Mascot style={styles.iconStyle} />
+            </View>
+          )}
+          <View style={styles.MsgTextCont}>
+            <Text style={styles.MsgText}>
+              {
+                'Order Medicines in one click and get free home delivery in 2-4 hours. We also have home sample collections for diagnostic tests.'
+              }
+            </Text>
+            {caseSheet[0]?.medicinePrescription && (
+              <Button
+                title={'ORDER MEDICINES'}
+                titleTextStyle={{ color: '#FC9916' }}
+                style={styles.buttonStyle}
+                onPress={() => onAddToCart()}
+              />
+            )}
+            {caseSheet[0]?.diagnosticPrescription && (
+              <Button
+                title={'BOOK DIAGNOSTIC TESTS'}
+                titleTextStyle={{ color: '#FC9916' }}
+                style={{ ...styles.buttonStyle, marginBottom: 0 }}
+                onPress={() => onAddTestsToCart()}
+              />
+            )}
+            <Text style={styles.timeStamp}>{convertChatTime(rowData)}</Text>
           </View>
         </View>
       </>
