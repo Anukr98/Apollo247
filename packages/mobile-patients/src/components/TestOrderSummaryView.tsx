@@ -232,15 +232,33 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     ) || [];
 
   //gross charges considering packageMrp (how to check for previous orders)
-  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map((item) =>
-    item?.itemObj?.packageCalculatedMrp! && item?.itemObj?.packageCalculatedMrp > item?.price!
-      ? item?.itemObj?.packageCalculatedMrp! * item?.quantity!
-      : item?.price! * item?.quantity!
+
+  let newArr: any[] = [];
+  newCircleArray.map((item) =>
+    newArr.push(
+      item?.packageMrp! > item?.pricingObj?.[0]?.mrp
+        ? item?.packageMrp
+        : item?.pricingObj?.[0].mrp! || 0
+    )
   );
 
-  const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
-    (prevVal, currVal) => prevVal + currVal
+  newAllArray.map((item) =>
+    newArr.push(
+      item?.packageMrp! > item?.pricingObj?.[0]?.mrp
+        ? item?.packageMrp!
+        : item?.pricingObj?.[0].mrp! || 0
+    )
   );
+
+  newSpecialArray.map((item) =>
+    newArr.push(
+      item?.packageMrp! > item?.pricingObj?.[0]?.mrp
+        ? item?.packageMrp!
+        : item?.pricingObj?.[0].mrp! || 0
+    )
+  );
+
+  const totalIndividualDiagonsticsCharges = newArr?.reduce((prevVal, currVal) => prevVal + currVal);
 
   const HomeCollectionCharges =
     orderDetails?.collectionCharges != null
@@ -256,14 +274,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     grossCharges + HomeCollectionCharges - orderDetails?.totalPrice != 0
       ? discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0)
       : 0;
-  const totalCartSaving =
-    grossCharges + HomeCollectionCharges - orderDetails?.totalPrice != 0
-      ? discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0)
-      : 0;
-  const totalDiscountSaving =
-    grossCharges + HomeCollectionCharges - orderDetails?.totalPrice != 0
-      ? discountSpecialPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0)
-      : 0;
+  const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+  const totalDiscountSaving = discountSpecialPrice?.reduce(
+    (prevVal, currVal) => prevVal + currVal,
+    0
+  );
 
   const totalSavings =
     grossCharges + HomeCollectionCharges - orderDetails?.totalPrice != 0
@@ -430,7 +445,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               </View>
             </View>
           )}
-          {!!totalCartSaving && (
+          {!!totalSavings && (
             <View style={styles.commonTax}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.commonText}></Text>
@@ -452,34 +467,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalCartSaving}
-                </Text>
-              </View>
-            </View>
-          )}
-          {!!totalDiscountSaving && (
-            <View style={styles.commonTax}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.commonText}></Text>
-              </View>
-              <View style={{ width: '46%' }}>
-                <Text
-                  style={[
-                    styles.commonText,
-                    {
-                      ...theme.fonts.IBMPlexSansMedium(10),
-                      textAlign: 'right',
-                      color: colors.APP_GREEN,
-                    },
-                  ]}
-                >
-                  {string.diagnostics.specialDiscountText}
-                </Text>
-              </View>
-              <View style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
-                  - {string.common.Rs}
-                  {totalDiscountSaving}
+                  {totalSavings}
                 </Text>
               </View>
             </View>

@@ -355,6 +355,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDiagnosticAreas,
     clearDiagnoticCartInfo,
     cartSaving,
+    discountSaving,
+    normalSaving,
     circleSaving,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
@@ -1961,13 +1963,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>{string.common.Rs} 500.00</Text>
             </View>
           )} */}
-          {selectedTab == tabs[0].title && cartSaving > 0 && (
+
+          {selectedTab == tabs[0].title && normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 Cart Saving
               </Text>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                - {string.common.Rs} {cartSaving.toFixed(2)}
+                - {string.common.Rs} {normalSaving.toFixed(2)}
               </Text>
             </View>
           )}
@@ -1989,6 +1992,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </View>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 - {string.common.Rs} {circleSaving.toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {selectedTab == tabs[0].title && discountSaving > 0 && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                {string.diagnostics.specialDiscountText}
+              </Text>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                - {string.common.Rs} {discountSaving.toFixed(2)}
               </Text>
             </View>
           )}
