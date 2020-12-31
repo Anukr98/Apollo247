@@ -3,7 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { PreviousQuery } from '@aph/mobile-patients/src/components/NeedHelp';
 import { Helpers, Query } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { EditIconNewOrange } from '@aph/mobile-patients/src/components/ui/Icons';
+import { GrayEditIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -25,6 +25,8 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 
+const { text } = theme.viewStyles;
+const { LIGHT_BLUE } = theme.colors;
 const styles = StyleSheet.create({
   subViewPopup: {
     marginTop: 24,
@@ -60,8 +62,13 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     color: '#0087ba',
-    ...theme.fonts.IBMPlexSansMedium(17),
+    ...theme.fonts.IBMPlexSansMedium(18),
     marginVertical: 10,
+  },
+  email: {
+    ...text('L', 15, LIGHT_BLUE),
+    marginTop: 10,
+    marginBottom: 10,
   },
   categoryWrapper: {
     flexWrap: 'wrap',
@@ -69,7 +76,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   contentContainer: { paddingHorizontal: 15, paddingBottom: 20 },
-  editIconNewOrange: { height: 18, width: 18, resizeMode: 'contain' },
+  editIcon: { height: 25, width: 25, resizeMode: 'contain' },
+  emailInput: { paddingBottom: 5 },
+  emailInputContainer: { marginBottom: 10 },
 });
 
 export interface Props extends NavigationScreenProps {}
@@ -133,15 +142,16 @@ export const NeedHelp: React.FC<Props> = (props) => {
   const renderEmailField = () => {
     return (
       <View>
-        <Text style={styles.fieldLabel}>Please enter your email address</Text>
+        <Text style={styles.email}>{'Your email address '}</Text>
         <TextInputComponent
           placeholder={'Enter email address'}
           value={email}
           autoCapitalize="none"
           keyboardType="email-address"
           onChangeText={(text: string) => _setEmail(text)}
-          icon={!isFocused && <EditIconNewOrange style={styles.editIconNewOrange} />}
-          inputStyle={{ paddingBottom: 5 }}
+          icon={!isFocused && <GrayEditIcon style={styles.editIcon} />}
+          inputStyle={styles.emailInput}
+          conatinerstyles={styles.emailInputContainer}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -150,10 +160,14 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const renderContent = () => {
+    const whatYouNeedHelp = 'Tell us what you need help with?';
+    const toReportAnIssue = 'To report an issue:';
+
     return (
       <View style={styles.contentContainer}>
+        <Text style={styles.fieldLabel}>{toReportAnIssue}</Text>
         {renderEmailField()}
-        <Text style={[styles.fieldLabel]}>{needHelpForQuery}</Text>
+        <Text style={[styles.fieldLabel]}>{whatYouNeedHelp}</Text>
         <View style={styles.categoryWrapper}>{NeedHelp.map((item) => renderCategory(item))}</View>
       </View>
     );
@@ -201,10 +215,6 @@ export const NeedHelp: React.FC<Props> = (props) => {
   const renderPreviousTicketView = () => {
     return !!ongoingQuery && <PreviousQuery query={ongoingQuery} />;
   };
-
-  const needHelpForQuery = !!ongoingQuery
-    ? 'New issue? Tell us what you need help with?'
-    : 'What do you need help with?';
 
   return (
     <View style={theme.viewStyles.container}>
