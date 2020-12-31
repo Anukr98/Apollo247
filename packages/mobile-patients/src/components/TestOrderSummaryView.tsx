@@ -445,7 +445,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               </View>
             </View>
           )}
-          {!!totalSavings && (
+          {!!totalCartSaving && (
             <View style={styles.commonTax}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.commonText}></Text>
@@ -467,7 +467,35 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalSavings}
+                  {totalCartSaving}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {!!totalDiscountSaving && (
+            <View style={styles.commonTax}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.commonText}></Text>
+              </View>
+              <View style={{ width: '51%' }}>
+                <Text
+                  style={[
+                    styles.commonText,
+                    {
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                      textAlign: 'right',
+                      color: colors.APP_GREEN,
+                    },
+                  ]}
+                >
+                  {string.diagnostics.specialDiscountText}
+                </Text>
+              </View>
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
+                  - {string.common.Rs}
+                  {totalDiscountSaving}
                 </Text>
               </View>
             </View>
