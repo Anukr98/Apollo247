@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+const width = Dimensions.get('window').width;
 
 interface CircleHeadingProps {
   isSubscribed?: boolean;
@@ -13,14 +14,16 @@ export const CircleHeading: React.FC<CircleHeadingProps> = (props) => {
       {props.isSubscribed && (
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
           <CircleLogo style={[styles.circleIconStyle, { marginLeft: -3 }]} />
-          <Text style={[styles.circleText, { marginLeft: -1 }]}>coupon pre applied</Text>
+          <Text style={[styles.circleText, { marginLeft: width > 380 ? -1 : 0 }]}>
+            coupon pre applied
+          </Text>
         </View>
       )}
       {!props.isSubscribed && (
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-          <Text style={styles.circleText}>For</Text>
+          <Text style={[styles.circleText, { marginRight: width > 380 ? 0 : 2 }]}>For</Text>
           <CircleLogo style={styles.circleIconStyle} />
-          <Text style={[styles.circleText, { marginLeft: -3 }]}>Members</Text>
+          <Text style={[styles.circleText, { marginLeft: width > 380 ? -3 : 0 }]}>Members</Text>
         </View>
       )}
     </>
@@ -29,10 +32,15 @@ export const CircleHeading: React.FC<CircleHeadingProps> = (props) => {
 
 const styles = StyleSheet.create({
   circleText: {
-    ...theme.viewStyles.text('M', 10.5, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', width > 380 ? 10.5 : 10, theme.colors.SHERPA_BLUE),
     lineHeight: 13,
     textAlign: 'center',
     alignSelf: 'center',
   },
-  circleIconStyle: { height: 20, width: 36, resizeMode: 'contain', marginRight: 2 },
+  circleIconStyle: {
+    height: 20,
+    width: width > 380 ? 36 : 32,
+    resizeMode: 'contain',
+    marginRight: 2,
+  },
 });
