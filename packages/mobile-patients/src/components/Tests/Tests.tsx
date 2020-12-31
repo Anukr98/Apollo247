@@ -516,7 +516,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (!loading && banners.length) {
+    if (!loading && banners?.length > 0) {
       banners?.map((item: any) => {
         ImageNative.getSize(
           item?.bannerImage,
@@ -699,9 +699,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const res: any = await getLandingPageBanners('diagnostic');
     if (res && res?.data?.success) {
       const bannerData = g(res, 'data', 'data');
-      setBanners && setBanners(bannerData);
+      setBanners(bannerData);
     } else {
-      setBanners && setBanners([]);
+      setBanners([]);
       setBannerLoading(false);
     }
   };
