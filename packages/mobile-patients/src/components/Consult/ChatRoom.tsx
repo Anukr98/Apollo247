@@ -3743,7 +3743,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       uploadedUrl: docUrl,
     } as EPrescription;
 
-    console.log('presToAdd >>>', presToAdd);
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
@@ -3785,9 +3784,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       medicines: '',
       uploadedUrl: docUrl,
     } as EPrescription;
-    console.log('presToAdd >>>', presToAdd);
-    console.log('testPrescription >>>', testPrescription);
-
     // Adding tests to DiagnosticsCart
     addTestsToCart(
       testPrescription,
