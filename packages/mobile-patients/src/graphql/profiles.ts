@@ -604,6 +604,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           }
         }
         caseSheet {
+          id
           followUpAfterInDays
           version
           doctorType
@@ -611,6 +612,11 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             id
             medicineName
           }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
         }
       }
     }
