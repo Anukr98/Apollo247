@@ -992,3 +992,16 @@ export const searchPHRApiWithAuthToken = (
   const searchPHRUrlWithAuthToke = `${AppConfig.Configuration.PHR_BASE_URL}/searchhealthrecord?authToken=${authToken}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
   return Axios.get(searchPHRUrlWithAuthToke);
 };
+
+export const getLandingPageBanners = (
+  pageName: string,
+): Promise<AxiosResponse<any>> => {
+  const baseurl =config.DRUPAL_BANNER_CONFIG[0];
+  const getBanners = `${baseurl}/${pageName}`
+  return Axios.get(getBanners, {
+    headers: {
+      Authorization: config.DRUPAL_BANNER_CONFIG[1]
+    },
+  });
+};
+

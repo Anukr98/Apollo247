@@ -280,9 +280,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           findItemFromCart?.specialPrice!
         )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          testDetails?.Rate!,
-          Number(testDetails?.specialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          testDetails?.Rate! || testInfo?.Rate!,
+          Number(testDetails?.specialPrice! || testInfo?.specialPrice!)
         );
   const circleDiscount =
     testDetails.source == 'Cart Page'
@@ -292,9 +292,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           findItemFromCart?.circleSpecialPrice!
         )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          Number(testDetails?.circleRate!),
-          Number(testDetails?.circleSpecialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.circleRate! || testInfo?.circleRate),
+          Number(testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!)
         );
   const specialDiscount =
     testDetails.source == 'Cart Page'
@@ -304,9 +304,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           findItemFromCart?.discountSpecialPrice!
         )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          Number(testDetails?.discountPrice!),
-          Number(testDetails?.discountSpecialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.discountPrice! || testInfo?.discountPrice!),
+          Number(testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!)
         );
 
   const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
@@ -420,16 +420,49 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         toAgeInDays,
         testPreparationData,
         packageCalculatedMrp,
+        diagnosticPricing,
+        inclusions,
+        testDescription,
+        itemType,
       } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
+
+      const getDiagnosticPricingForItem = diagnosticPricing;
+      const getItems = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics');
+      const packageMrpForItem = packageCalculatedMrp!;
+      const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+
+      if (!pricesForItem?.itemActive) {
+        //disable add to cart
+        return !isAddedToCart;
+      }
+      const specialPrice = pricesForItem?.specialPrice!;
+      const price = pricesForItem?.price!; //more than price (black)
+      const circlePrice = pricesForItem?.circlePrice!;
+      const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+      const discountPrice = pricesForItem?.discountPrice!;
+      const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+      const mrpToDisplay = pricesForItem?.mrpToDisplay;
+
       const partialTestDetails = {
-        Rate: rate,
+        Rate: price,
         Gender: gender,
         ItemID: `${itemId}`,
         ItemName: itemName,
         collectionType: collectionType!,
+        mou: inclusions == null ? 1 : inclusions.length,
+        testDescription: testDescription,
+        type: itemType,
         FromAgeInDays: fromAgeInDays,
         ToAgeInDays: toAgeInDays,
         preparation: testPreparationData,
+        packageMrp: packageCalculatedMrp,
+        specialPrice: specialPrice,
+        circleRate: circlePrice,
+        circleSpecialPrice: circleSpecialPrice,
+        discountPrice: discountPrice,
+        discountSpecialPrice: discountSpecialPrice,
+        mrpToDisplay: mrpToDisplay,
+        inclusions: inclusions == null ? Number([itemId]) : inclusions,
       };
 
       try {
@@ -458,7 +491,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       </View>
     );
   };
-
   const renderHeader = () => {
     return (
       <View>
@@ -759,13 +791,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountSpecialPriceToConsider = findItemFromCart?.discountSpecialPrice!;
       itemPackageMrpToConsider = findItemFromCart?.packageMrp!;
     } else {
-      priceToConsider = testDetails?.Rate;
-      specialPriceToConsider = testDetails?.specialPrice;
-      circlePriceToConsider = testDetails?.circleRate!;
-      circleSpecialPriceToConsider = testDetails?.circleSpecialPrice!;
-      discountPriceToConsider = testDetails?.discountPrice!;
-      discountSpecialPriceToConsider = testDetails?.discountSpecialPrice!;
-      itemPackageMrpToConsider = testDetails?.packageMrp!;
+      priceToConsider = testDetails?.Rate || testInfo?.Rate;
+      specialPriceToConsider = testDetails?.specialPrice || testInfo?.specialPrice;
+      circlePriceToConsider = testDetails?.circleRate! || testInfo?.circleRate!;
+      circleSpecialPriceToConsider =
+        testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!;
+      discountPriceToConsider = testDetails?.discountPrice! || testInfo?.discountPrice!;
+      discountSpecialPriceToConsider =
+        testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!;
+      itemPackageMrpToConsider = testDetails?.packageMrp! || testInfo?.packageMrp!;
     }
 
     const mrpToDisplay = calculateMrpToDisplay(
