@@ -1387,7 +1387,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       patientId: currentPatient?.id || '',
       diseaseName: medicalHistoryName,
       familyMember: selectedRelationName,
-      notes: showMedicalConditionDetails ? medicalConditionAdditionalNotes : '',
+      notes: showFamilyHistoryDetails ? familyHistoryAdditionalNotes : '',
       recordDate:
         dateOfTest !== ''
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
