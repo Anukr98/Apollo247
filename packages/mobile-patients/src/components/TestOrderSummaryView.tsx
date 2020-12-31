@@ -234,7 +234,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
   //gross charges considering packageMrp (how to check for previous orders)
 
   let newArr: any[] = [];
-  newCircleArray.map((item) =>
+  newCircleArray?.map((item) =>
     newArr.push(
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
         ? item?.packageMrp
@@ -242,7 +242,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     )
   );
 
-  newAllArray.map((item) =>
+  newAllArray?.map((item) =>
     newArr.push(
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
         ? item?.packageMrp!
@@ -250,7 +250,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     )
   );
 
-  newSpecialArray.map((item) =>
+  newSpecialArray?.map((item) =>
     newArr.push(
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
         ? item?.packageMrp!
