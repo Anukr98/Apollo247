@@ -18,7 +18,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  useShoppingCart,
+  BreadcrumbLink,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -90,11 +93,6 @@ export interface ProductDetailPageProps
     sectionName?: string;
   }> {}
 
-interface BreadcrumbLink {
-  title: string;
-  onPress?: () => void;
-}
-
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
@@ -109,6 +107,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmacyCircleAttributes,
     setDeliveryAddressId,
     addCartItem,
+    pdpBreadCrumbs,
+    setPdpBreadCrumbs,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -126,19 +126,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
 
-  const homeBreadCrumb: BreadcrumbLink = {
-    title: 'Home',
-    onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.Medicine })],
-      });
-      props.navigation.dispatch(resetAction);
-    },
-  };
-
   //use states
-  const [breadCrumbData, setBreadCrumbData] = useState<BreadcrumbLink[]>([homeBreadCrumb]);
   const [loading, setLoading] = useState<boolean>(false);
   const [medicineDetails, setMedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
@@ -206,6 +194,82 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       fetchDeliveryTime(false);
     }
   }, []);
+
+  const homeBreadCrumb: BreadcrumbLink = {
+    title: 'Home',
+    onPress: () => {
+      const resetAction = StackActions.reset({
+        index: 0,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      });
+      props.navigation.dispatch(resetAction);
+    },
+  };
+
+  useEffect(() => {
+    let breadcrumb: BreadcrumbLink[] = [homeBreadCrumb];
+    if (!!movedFrom) {
+      if (
+        movedFrom === ProductPageViewedSource.PARTIAL_SEARCH ||
+        movedFrom === ProductPageViewedSource.SUBSTITUTES ||
+        movedFrom === ProductPageViewedSource.CROSS_SELLING_PRODUCTS ||
+        movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS ||
+        movedFrom === ProductPageViewedSource.NOTIFICATION ||
+        movedFrom === ProductPageViewedSource.BANNER ||
+        movedFrom === ProductPageViewedSource.BUY_AGAIN ||
+        movedFrom === ProductPageViewedSource.HOME_PAGE
+      ) {
+        breadcrumb.push({
+          title: 'Medicines',
+          onPress: () => {
+            const resetAction = StackActions.reset({
+              index: 0,
+              actions: [NavigationActions.navigate({ routeName: 'MEDICINES' })],
+            });
+            props.navigation.dispatch(resetAction);
+          },
+        });
+      }
+      if (
+        movedFrom === ProductPageViewedSource.FULL_SEARCH ||
+        movedFrom === ProductPageViewedSource.CATEGORY_OR_LISTING
+      ) {
+        breadcrumb.push({
+          title: 'Medicines',
+          onPress: () => {
+            const resetAction = StackActions.reset({
+              index: 0,
+              actions: [NavigationActions.navigate({ routeName: 'MEDICINES' })],
+            });
+            props.navigation.dispatch(resetAction);
+          },
+        });
+        breadcrumb.push({
+          title: 'Medicine Search',
+          onPress: () => {
+            // props.navigation.navigate(AppRoutes.MedicineListing);
+          },
+        });
+      }
+      if (movedFrom === ProductPageViewedSource.CART) {
+        breadcrumb.push({
+          title: 'Cart',
+          onPress: () => {
+            const resetAction = StackActions.reset({
+              index: 0,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.MedicineCart })],
+            });
+            props.navigation.dispatch(resetAction);
+          },
+        });
+      }
+      breadcrumb.push({
+        title: medicineDetails?.name,
+        onPress: () => {},
+      });
+      setPdpBreadCrumbs && setPdpBreadCrumbs(breadcrumb);
+    }
+  }, [movedFrom, medicineDetails?.name]);
 
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
@@ -633,7 +697,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             }}
           >
             <Breadcrumb
-              links={breadCrumbData}
+              links={pdpBreadCrumbs}
               containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#E5E5E5' }}
             />
             <ProductNameImage
