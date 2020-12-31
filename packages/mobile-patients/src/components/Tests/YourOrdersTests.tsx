@@ -33,6 +33,7 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -108,7 +109,8 @@ export interface DiagnosticsOrderList
   maxStatus: string;
   maxTime?: string | undefined | null;
 }
-
+const width = Dimensions.get('window').width;
+const isSmallDevice = width < 380;
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 const styles = StyleSheet.create({
   noDataCard: {
@@ -185,7 +187,11 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
-  orderSummaryOuterView: { marginHorizontal: 20, flexDirection: 'row', marginVertical: '15%' },
+  orderSummaryOuterView: {
+    marginHorizontal: isSmallDevice ? 16 : 20,
+    flexDirection: 'row',
+    marginVertical: '15%',
+  },
 });
 
 export interface YourOrdersTestProps extends NavigationScreenProps {}
@@ -216,7 +222,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<
     getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList
   >();
-
+  const [outOfReschedule, setOutOfReschedule] = useState<boolean>(false);
   const [selectedReasonForCancel, setSelectedReasonForCancel] = useState('');
   const [commentForCancel, setCommentForCancel] = useState('');
 
@@ -291,8 +297,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersList?.ordersList || [];
+
           setOrders(ordersList);
-          setLoading!(false);
+          console.log({ ordersList });
+          console.log({ orders });
+
+          setTimeout(() => setLoading!(false), 10000);
         })
         .catch((error) => {
           setLoading!(false);
@@ -451,7 +461,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             />
           </View>
           <TouchableOpacity style={{ marginTop: 20 }} onPress={() => setSummaryPopup(false)}>
-            <CrossPopup />
+            <CrossPopup
+              style={{ height: isSmallDevice ? 20 : 28, width: isSmallDevice ? 20 : 28 }}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -576,28 +588,36 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const onPressTestReschedule = (item: any) => {
+    console.log({ item });
     setSelectedOrderId(item.id);
     setSelectedOrder(item);
     setReschedulePopUp(true);
   };
+  console.log({ selectedOrder });
 
   const renderReschedulePopUp = () => {
+    // outOfReschedule && setOutOfReschedule(false);
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
     const setRescheduleCount = !!selectedOrderRescheduleCount
       ? 2 - selectedOrderRescheduleCount
       : 2;
+
     return (
       <AlertPopup
         visible={showReschedulePopUp}
         onDismiss={() => setReschedulePopUp(false)}
-        title={`You can reschedule to a maximum of 3 times. If you click ok, you will have ${setRescheduleCount} reschedule attempt(s) left.`}
+        title={
+          selectedOrderRescheduleCount == 3
+            ? "You have rescheduled thrice. You're out of reschedule attempts."
+            : `You can reschedule to a maximum of 3 times. If you click ok, you will have ${setRescheduleCount} reschedule attempt(s) left.`
+        }
         leftButton={'CANCEL'}
         rightButton={'OK, GOT IT'}
         showCloseIcon={false}
         onContinue={() => {
           //call the cancel
           setReschedulePopUp(false);
-          setRescheduleReasonPopUp(true);
+          selectedOrderRescheduleCount == 3 ? null : setRescheduleReasonPopUp(true);
         }}
       />
     );
