@@ -66,7 +66,7 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
     <View style={styles.cardStyle}>
       <Text style={styles.name}>{name}</Text>
       {!!images.length && renderImageCarousel()}
-      {!isPrescriptionRequired && renderPrescriptionRequired()}
+      {isPrescriptionRequired && renderPrescriptionRequired()}
     </View>
   );
 };

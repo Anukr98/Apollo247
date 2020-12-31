@@ -222,11 +222,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         breadcrumb.push({
           title: 'Medicines',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: 'MEDICINES' })],
-            });
-            props.navigation.dispatch(resetAction);
+            props.navigation.navigate('MEDICINES');
           },
         });
       }

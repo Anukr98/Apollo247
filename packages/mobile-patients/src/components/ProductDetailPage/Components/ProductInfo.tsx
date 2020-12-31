@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import HTML from 'react-native-render-html';
 import { VegetarianIcon, NonVegetarianIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -33,13 +33,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     isPharma,
   } = props;
 
+  const [numberOfLines, setNumberOfLines] = useState<number>(2);
+  const [maxLines, setMaxLines] = useState<number>(2);
+
   const filterHtmlContent = (content: string = '') => {
-    let descriptionContent = content;
-    const marketerAddressIndex = description.indexOf('&lt;br&gt;&lt;p&gt;&lt;strong&gt;Marketer');
-    if (marketerAddressIndex > -1) {
-      descriptionContent = content.substring(0, marketerAddressIndex);
-    }
-    return descriptionContent
+    return content
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;rn/g, '>')
@@ -48,17 +46,33 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
       .replace(/\.t/g, '.');
   };
 
+  const onTextLayout = (e) => {
+    setNumberOfLines(e.nativeEvent.lines.length);
+  };
+
   const renderDescription = () => {
     const descriptionHtml = filterHtmlContent(description);
+    const text = descriptionHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
     return (
-      !!descriptionHtml.length && (
+      !!text.length && (
         <View>
           <Text style={styles.subHeading}>Description</Text>
-          <HTML
-            html={descriptionHtml}
-            baseFontStyle={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
-            imagesMaxWidth={Dimensions.get('window').width}
-          />
+          <TouchableOpacity
+            onPress={() => {
+              setMaxLines(numberOfLines);
+            }}
+          >
+            <Text
+              numberOfLines={maxLines}
+              onTextLayout={onTextLayout}
+              style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
+            >
+              {text}
+            </Text>
+            {numberOfLines > 2 && numberOfLines != maxLines && (
+              <Text style={styles.readMoreText}>READ MORE</Text>
+            )}
+          </TouchableOpacity>
         </View>
       )
     );
@@ -178,5 +192,10 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 30,
     height: 30,
+    marginTop: 7,
+  },
+  readMoreText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 30),
+    textAlign: 'right',
   },
 });
