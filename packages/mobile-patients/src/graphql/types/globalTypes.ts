@@ -130,8 +130,11 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -814,6 +817,13 @@ export interface CancelAppointmentInput {
   cancelledById: string;
 }
 
+export interface CancellationDiagnosticsInput {
+  comment?: string | null;
+  orderId: string;
+  patientId: string;
+  reason: string;
+}
+
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
@@ -1343,6 +1353,16 @@ export interface Range {
   maximum?: number | null;
 }
 
+export interface RescheduleDiagnosticsInput {
+  comment?: string | null;
+  date: any;
+  dateTimeInUTC: any;
+  orderId: string;
+  patientId: string;
+  reason?: string | null;
+  slotId: string;
+}
+
 export interface SUBSCRIPTION_DETAILS {
   userSubscriptionId?: string | null;
   plan?: PLAN | null;
@@ -1393,21 +1413,6 @@ export interface ShopAddress {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
-}
-
-export interface UpdateDiagnosticOrderInput {
-  id?: string | null;
-  slotTimings: string;
-  employeeSlotId: number;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
 }
 
 export interface UpdatePatientAddressInput {

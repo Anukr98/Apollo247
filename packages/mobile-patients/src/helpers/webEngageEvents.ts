@@ -139,7 +139,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to Cart',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
 
   // Health Records

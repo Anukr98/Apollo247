@@ -13,7 +13,6 @@ import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
-import DeviceInfo from 'react-native-device-info';
 
 import {
   CartIcon,
@@ -141,6 +140,7 @@ import {
   getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -1096,27 +1096,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
         },
       });
       return (
-        <View style={styles.priceView}>
+        <>
           {/**
-           * if promote circle - sub/non-sub don't show top view price
+           * if special discount exists
            */}
-          {promoteCircle ? null : (
-            <View style={{ flexDirection: 'row' }}>
-              {/**
-               * if special price exists or any special discount exist
-               */}
-              {(specialPrice != price || discountSpecialPrice != discountPrice) && (
-                <Text style={styles.discountPriceText}>
-                  {string.common.Rs} {price}
+          {promoteDiscount
+            ? renderSpecialDiscountText({ marginTop: '2%', marginBottom: -10 })
+            : null}
+          <View style={[styles.priceView]}>
+            {/**
+             * if promote circle - sub/non-sub don't show top view price
+             */}
+            {promoteCircle ? null : (
+              <View style={{ flexDirection: 'row' }}>
+                {/**
+                 * if special price exists or any special discount exist
+                 */}
+                {(specialPrice != price || discountSpecialPrice != discountPrice) && (
+                  <Text style={styles.discountPriceText}>
+                    {string.common.Rs} {price}
+                  </Text>
+                )}
+                <Text style={styles.sellingPriceText}>
+                  {string.common.Rs}
+                  {promoteDiscount ? discountSpecialPrice : specialPrice || price}
                 </Text>
-              )}
-              <Text style={styles.sellingPriceText}>
-                {string.common.Rs}
-                {promoteDiscount ? discountSpecialPrice : specialPrice || price}
-              </Text>
-            </View>
-          )}
-        </View>
+              </View>
+            )}
+          </View>
+        </>
       );
     };
 
@@ -1463,6 +1471,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //   );
   // };
 
+  const renderSpecialDiscountText = (styleObj?: any) => {
+    return (
+      <SpecialDiscountText text={string.diagnostics.specialDiscountText} styleObj={styleObj} />
+    );
+  };
+
   const renderPackageCard = (
     title: string,
     subtitle: string,
@@ -1602,6 +1616,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 )}
               </View>
             )}
+            {/**
+             * show a text if special discount exists
+             */}
+            {promoteDiscount ? renderSpecialDiscountText({}) : null}
+
             {/**
              * original price (main price to be shown)
              */}
@@ -2365,23 +2384,46 @@ export const Tests: React.FC<TestsProps> = (props) => {
              * non circle + non-promote circle
              */}
             {!isDiagnosticCircleSubscription && !data?.promoteCircle && (
-              <Text style={styles.normalPrice}>
-                {string.common.Rs}
+              <View style={{ flexDirection: 'row' }}>
+                {/**
+                 * special price text
+                 */}
+
                 {data?.promoteDiscount
-                  ? data?.discountSpecialPrice
-                  : data?.specialPrice! || data?.mrpToDisplay}
-              </Text>
+                  ? renderSpecialDiscountText({ marginTop: '2%', paddingRight: 5 })
+                  : null}
+
+                <Text style={styles.normalPrice}>
+                  {string.common.Rs}
+                  {data?.promoteDiscount
+                    ? data?.discountSpecialPrice
+                    : data?.specialPrice! || data?.mrpToDisplay}{' '}
+                </Text>
+              </View>
             )}
             {/**
              * circle + non-promote circle
              */}
             {isDiagnosticCircleSubscription && !data?.promoteCircle && (
-              <Text style={styles.normalPrice}>
-                {string.common.Rs}
+              <View style={{ flexDirection: 'row' }}>
+                {/**
+                 * special price text
+                 */}
+
                 {data?.promoteDiscount
-                  ? data?.discountSpecialPrice
-                  : data?.specialPrice! || data?.mrpToDisplay}
-              </Text>
+                  ? renderSpecialDiscountText({
+                      marginTop: '2%',
+                      paddingRight: 5,
+                    })
+                  : null}
+
+                <Text style={[styles.normalPrice]}>
+                  {string.common.Rs}
+                  {data?.promoteDiscount
+                    ? data?.discountSpecialPrice
+                    : data?.specialPrice! || data?.mrpToDisplay}{' '}
+                </Text>
+              </View>
             )}
             {/**
              * sub + promote

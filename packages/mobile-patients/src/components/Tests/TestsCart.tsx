@@ -785,8 +785,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const getPinCodeServiceability = async () => {
-    console.log('ye chala');
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
     const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
     if (!!pinCodeFromAddress) {
       setPinCode!(pinCodeFromAddress);
@@ -1287,6 +1286,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               specialPrice={sellingPrice}
               packageMrp={itemPackageMrp}
               circlePrice={promoteCircle ? circleSpecialPrice! : undefined}
+              isSpecialDiscount={promoteDiscount}
               discount={
                 promoteCircle && isDiagnosticCircleSubscription
                   ? circleDiscount!

@@ -13,7 +13,7 @@ export const CircleHeading: React.FC<CircleHeadingProps> = (props) => {
       {props.isSubscribed && (
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
           <CircleLogo style={[styles.circleIconStyle, { marginLeft: -3 }]} />
-          <Text style={[styles.circleText, { marginLeft: -1 }]}>Coupon pre applied</Text>
+          <Text style={[styles.circleText, { marginLeft: -1 }]}>coupon pre applied</Text>
         </View>
       )}
       {!props.isSubscribed && (

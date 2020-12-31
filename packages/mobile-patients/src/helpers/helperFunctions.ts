@@ -233,7 +233,7 @@ export const formatAddressBookAddress = (
     [address?.addressLine1, address?.addressLine2, address?.city].filter((v) => v).join(', ')
   );
   const landmark = [address?.landmark];
-  const state =[address?.state];
+  const state = [address?.state];
   const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   if (address?.landmark != '') {
     return `${addrLine1},\n${landmark}\n${state}${formattedZipcode}`;
@@ -242,15 +242,17 @@ export const formatAddressBookAddress = (
   }
 };
 
-
-export const formatAddressForApi = (address: savePatientAddress_savePatientAddress_patientAddress)=>{
-  const addrLine1 = 
-    [address?.addressLine1, address?.addressLine2, address?.landmark,address?.city].filter((v) => v).join(', ');
-  const state =[address?.state];
+export const formatAddressForApi = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
+    .filter((v) => v)
+    .join(', ');
+  const state = [address?.state];
   const formattedZipcode = address?.zipcode ? `- ${address?.zipcode}` : '';
-  const formattedAddress = removeConsecutiveComma(addrLine1 + ', ' +formattedZipcode);
+  const formattedAddress = removeConsecutiveComma(addrLine1 + ', ' + formattedZipcode);
   return formattedAddress;
-}
+};
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   if (address.name!) {
@@ -351,10 +353,10 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b.date || b.billDateTime || b.startDateTime)
+      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
         .toDate()
         .getTime() -
-      moment(a.date || a.billDateTime || a.startDateTime)
+      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
         .toDate()
         .getTime()
   );
@@ -393,7 +395,7 @@ const getConsiderDate = (type: string, dataObject: any) => {
     case 'bills':
       return dataObject?.billDateTime;
     case 'health-conditions':
-      return dataObject?.startDateTime;
+      return dataObject?.startDateTime || dataObject?.recordDateTime;
   }
 };
 
@@ -1163,7 +1165,8 @@ export const addTestsToCart = async (
       },
       fetchPolicy: 'no-cache',
     });
-  const detailQuery = async (itemId: string) => await getPackageInclusions(apolloClient, [Number(itemId)]);
+  const detailQuery = async (itemId: string) =>
+    await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
@@ -1179,7 +1182,7 @@ export const addTestsToCart = async (
       searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
     );
     const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'getInclusionsOfMultipleItems','inclusions',  'length') || 1 // updating testsIncluded
+      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData.length,
@@ -1194,8 +1197,7 @@ export const addTestsToCart = async (
         mou: testIncludedCount,
         thumbnail: '',
         collectionMethod: s?.collectionType,
-        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions
-
+        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
       } as DiagnosticsCartItem;
     });
 
