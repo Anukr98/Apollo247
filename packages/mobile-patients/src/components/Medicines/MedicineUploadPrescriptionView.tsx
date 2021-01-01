@@ -18,11 +18,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import {
-  postWebEngageEvent,
-  g,
-  isSmallDevice,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postShowPrescriptionAtStoreSelected } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -390,7 +386,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               >
                 <Text
                   style={{
-                    ...theme.fonts.IBMPlexSansMedium(isTest && isSmallDevice ? 14.5 : 16),
+                    ...theme.fonts.IBMPlexSansMedium(16),
                     lineHeight: 24,
                     color: theme.colors.SKY_BLUE,
                     padding: 16,

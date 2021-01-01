@@ -16,14 +16,11 @@ import {
   View,
   ViewStyle,
   TouchableOpacityProps,
-  Platform,
-  Dimensions,
 } from 'react-native';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/DisclaimerSection';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-const width = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -127,15 +124,10 @@ const styles = StyleSheet.create({
   },
   rightButtonText: {
     ...theme.viewStyles.yellowTextStyle,
-    fontSize: width > 390 ? 13 : 12,
   },
   separatorLine: {
     borderLeftWidth: 1,
     backgroundColor: theme.colors.LIGHT_BLUE,
-    marginTop: 3,
-    marginLeft: 2,
-    marginRight: 3,
-    marginBottom: 2,
     opacity: 0.2,
   },
   packageNameText: {
@@ -422,7 +414,12 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 alignItems: 'flex-start',
               }}
             >
-              <Text style={styles.rightButtonText} onPress={props.onOptionPress}>
+              <Text
+                style={{
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+                onPress={props.onOptionPress}
+              >
                 {'ORDER SUMMARY'}
               </Text>
             </View>
