@@ -15,6 +15,7 @@ export interface getInclusionsOfMultipleItems_getInclusionsOfMultipleItems_inclu
   sampleTypeName: string;
   testParameters: string;
   name: string;
+  testPreparationData: string | null;
 }
 
 export interface getInclusionsOfMultipleItems_getInclusionsOfMultipleItems {
