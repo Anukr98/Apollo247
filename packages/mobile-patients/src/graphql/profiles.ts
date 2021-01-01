@@ -1637,6 +1637,7 @@ export const GET_PACKAGE_INCLUSIONS = gql`
         sampleTypeName
         testParameters
         name
+        testPreparationData
       }
     }
   }

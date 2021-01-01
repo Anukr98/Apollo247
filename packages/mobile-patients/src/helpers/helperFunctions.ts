@@ -97,6 +97,7 @@ import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
+const width = Dimensions.get('window').width
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -2250,3 +2251,5 @@ export const isProductInStock = (product: MedicineProduct) => {
     return true;
   }
 };
+
+export const isSmallDevice = width < 370;

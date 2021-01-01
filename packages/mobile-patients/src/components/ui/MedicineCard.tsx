@@ -24,7 +24,10 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getMaxQtyForMedicineItem,
+  isSmallDevice,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { string } from '../../strings/string';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '../../theme/colors';
@@ -33,7 +36,7 @@ import { Spearator } from './BasicComponents';
 import { CircleHeading } from './CircleHeading';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 const width = Dimensions.get('window').width;
-const isSmallDevice = width < 380;
+
 const styles = StyleSheet.create({
   containerStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -165,11 +168,11 @@ const styles = StyleSheet.create({
   },
   rightView: { alignSelf: 'flex-end' },
   percentageDiscountText: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 10 : 11),
+    ...theme.fonts.IBMPlexSansMedium(width > 380 ? 11 : 9),
     color: colors.APP_GREEN,
     lineHeight: 16,
-    marginTop: width > 380 ? 0 : 2,
-    marginHorizontal: width > 380 ? 10 : 5,
+    marginTop: isSmallDevice ? 2 : 0,
+    marginHorizontal: isSmallDevice ? 5 : 10,
   },
   circlePriceTextSub: {
     ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, '#02475B', 1, 20, 0.04),

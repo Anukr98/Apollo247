@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const width = Dimensions.get('window').width;
 
 interface SpecialTextProps {
@@ -20,7 +21,7 @@ export const SpecialDiscountText: React.FC<SpecialTextProps> = (props) => {
 
 const styles = StyleSheet.create({
   specialDiscountText: {
-    ...theme.viewStyles.text('M', width > 380 ? 10.5 : 10, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', isSmallDevice ? 10 : 10.5, theme.colors.SHERPA_BLUE),
     lineHeight: 13,
     textAlign: 'left',
     alignSelf: 'flex-start',

@@ -8,6 +8,7 @@ import {
   g,
   formatTestSlotWithBuffer,
   postWebEngageEvent,
+  isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -24,7 +25,7 @@ export interface LineItemPricing {
   pricingObj: any;
 }
 
-const { height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -39,26 +40,25 @@ const styles = StyleSheet.create({
     marginTop: height * 0.04, //0.22
   },
   hideText: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
     color: '#02475b',
     textAlign: 'right',
-    marginLeft: 20,
+    marginLeft: isSmallDevice ? 16 : 20,
   },
   orderName: {
     opacity: 0.6,
     paddingRight: 10,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
     color: '#02475b',
   },
   subView: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
     alignItems: 'center',
   },
   commonText: {
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
     color: '#01475b',
     marginBottom: 5,
     marginTop: 5,
@@ -77,11 +77,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   deliveryText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
     color: '#0087ba',
   },
   testsummeryHeading: {
-    ...theme.fonts.IBMPlexSansMedium(10),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
     letterSpacing: 0.25,
     color: '#02475b',
     marginTop: 6,
@@ -98,11 +98,11 @@ const styles = StyleSheet.create({
   },
   paymentText1: {
     color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
   },
   paymentText: {
     color: '#01475b',
-    ...theme.fonts.IBMPlexSansBold(14),
+    ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14),
   },
   lineSeparator: {
     borderBottomColor: '#02475b',
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 0,
   },
   orderSummaryText: {
-    ...theme.fonts.IBMPlexSansSemiBold(16),
+    ...theme.fonts.IBMPlexSansSemiBold(isSmallDevice ? 15 : 16),
     color: '#02475b',
     textAlign: 'left',
     marginTop: 15,
