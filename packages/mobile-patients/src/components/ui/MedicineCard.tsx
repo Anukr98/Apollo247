@@ -727,7 +727,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                         ),
                       }}
                     >
-                      {strings.common.Rs} {(1200! || price!).toFixed(2)}
+                      {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
                     </Text>
                   )}
                 </View>
