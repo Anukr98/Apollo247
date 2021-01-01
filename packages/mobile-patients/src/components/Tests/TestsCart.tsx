@@ -15,6 +15,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   setCircleMembershipType,
+  isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   blueTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
   },
@@ -2133,7 +2134,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{
               marginHorizontal: 10,
               color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               alignSelf: 'center',
             }}
@@ -3087,6 +3088,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
+    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
+    const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
+    setPinCode!(pinCode);
     setLoading!(true);
     try {
       const HomeCollectionChargesApi = await client.query<
@@ -3101,7 +3105,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           itemIDs: itemWithId,
           totalCharges: cartTotal,
           slotID: slotVal!,
-          pincode: parseInt(pinCode, 10),
+          pincode: parseInt(pinCodeFromAddress, 10),
         },
         fetchPolicy: 'no-cache',
       });
@@ -3141,7 +3145,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ></ProfileList>
           <Text
             style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               marginTop: 8,
               color: theme.colors.SKY_BLUE,
