@@ -154,7 +154,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   useEffect(() => {
-    // set product details
+    getMedicineDetails();
+  }, []);
+
+  useEffect(() => {
+    if (!_deliveryError) {
+      fetchDeliveryTime(false);
+    }
+  }, []);
+
+  const getMedicineDetails = () => {
     setLoading(true);
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
@@ -187,13 +196,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         setLoading(false);
       });
     fetchSubstitutes();
-  }, []);
-
-  useEffect(() => {
-    if (!_deliveryError) {
-      fetchDeliveryTime(false);
-    }
-  }, []);
+  };
 
   const homeBreadCrumb: BreadcrumbLink = {
     title: 'Home',
@@ -741,6 +744,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               />
             )}
             <ProductInfo
+              name={medicineDetails?.name}
               description={medicineDetails?.description}
               isReturnable={medicineDetails?.is_returnable === 'Yes'}
               vegetarian={medicineDetails?.vegetarian}
@@ -752,6 +756,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               variant={medicineDetails?.variant}
               expiryDate={medicineDetails?.expiry_date}
               isPharma={isPharma}
+              pharmaOverview={
+                isPharma ? medicineDetails?.PharmaOverview[0]?.NewPharmaOverview : null
+              }
             />
             {!!substitutes.length && (
               <SimilarProducts

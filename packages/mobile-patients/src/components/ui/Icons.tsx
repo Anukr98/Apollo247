@@ -1559,3 +1559,27 @@ export const VegetarianIcon: React.FC<IconProps> = (props) => (
 export const NonVegetarianIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/non_vegetarian.png')} />
 );
+
+export const AlcoholIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/alcoholIcon.png')} />
+);
+
+export const PrengancyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/pregnancyIcon.png')} />
+);
+
+export const BreastfeedingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/breastfeedingIcon.png')} />
+);
+
+export const DrivingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/drivingIcon.png')} />
+);
+
+export const LiverIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/liverIcon.png')} />
+);
+
+export const KidneyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/kidneyIcon.png')} />
+);

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import HTML from 'react-native-render-html';
 import { VegetarianIcon, NonVegetarianIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NewPharmaOverview } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { filterHtmlContent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { PharmaMedicineInfo } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/PharmaMedicineInfo';
 
 export interface ProductInfoProps {
+  name: string;
   description: string;
   isReturnable: boolean;
   vegetarian?: 'Yes' | 'No';
@@ -16,10 +19,12 @@ export interface ProductInfoProps {
   variant?: string | null;
   expiryDate?: string | null;
   isPharma: boolean;
+  pharmaOverview?: NewPharmaOverview | null;
 }
 
 export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
   const {
+    name,
     description,
     isReturnable,
     vegetarian,
@@ -31,20 +36,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     variant,
     expiryDate,
     isPharma,
+    pharmaOverview,
   } = props;
 
   const [numberOfLines, setNumberOfLines] = useState<number>(2);
   const [maxLines, setMaxLines] = useState<number>(2);
-
-  const filterHtmlContent = (content: string = '') => {
-    return content
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;rn/g, '>')
-      .replace(/&gt;r/g, '>')
-      .replace(/&gt;/g, '>')
-      .replace(/\.t/g, '.');
-  };
 
   const onTextLayout = (e) => {
     setNumberOfLines(e.nativeEvent.lines.length);
@@ -78,12 +74,14 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     );
   };
 
-  const renderStorage = () => (
-    <View>
-      <Text style={styles.subHeading}>Storage</Text>
-      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{storage}</Text>
-    </View>
-  );
+  const renderStorage = () => {
+    return (
+      <View>
+        <Text style={styles.subHeading}>Storage</Text>
+        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{storage}</Text>
+      </View>
+    );
+  };
 
   const renderKeyIngrediant = () => (
     <View>
@@ -152,13 +150,28 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     <View style={styles.cardStyle}>
       <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
       {!!description && renderDescription()}
-      {!!vegetarian && renderVegetarianIcon()}
-      {!!storage && renderStorage()}
-      {!!key_ingredient && renderKeyIngrediant()}
-      {!!size && renderSize()}
-      {!!flavour_fragrance && renderFlavour()}
-      {!!colour && renderColor()}
-      {!!variant && renderVariant()}
+      {isPharma ? (
+        <PharmaMedicineInfo
+          name={name}
+          pharmaOverview={pharmaOverview}
+          vegetarian={vegetarian === 'Yes'}
+          key_ingredient={key_ingredient}
+          size={size}
+          flavour_fragrance={flavour_fragrance}
+          colour={colour}
+          variant={variant}
+        />
+      ) : (
+        <>
+          {!!storage && renderStorage()}
+          {!!vegetarian && renderVegetarianIcon()}
+          {!!key_ingredient && renderKeyIngrediant()}
+          {!!size && renderSize()}
+          {!!flavour_fragrance && renderFlavour()}
+          {!!colour && renderColor()}
+          {!!variant && renderVariant()}
+        </>
+      )}
       {renderOtherInformation()}
     </View>
   );

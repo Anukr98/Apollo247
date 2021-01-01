@@ -68,6 +68,35 @@ interface PharmaOverview {
     Caption: string;
     CaptionDesc: string;
   }[]; // type can be string if information not available
+  NewPharmaOverview: NewPharmaOverview;
+}
+
+export interface NewPharmaOverview {
+  Storage: string;
+  StoragePlace: string;
+  ColdChain: string;
+  AboutProduct: string;
+  HowToTake: string;
+  LiverTag: string;
+  LiverContent: string;
+  KidneyTag: string;
+  KidneyContent: string;
+  PregnancyTag: string;
+  PregnancyContent: string;
+  BreastfeedingMothersTag: string;
+  BreastfeedingMothersContent: string;
+  AlcoholTag: string;
+  AlcoholContent: string;
+  DrivingTag: string;
+  DrivingContent: string;
+  WarningsAndPrecautions: string;
+  CompositionContentFAQs: PharmaFAQ[];
+  SideEffects: string;
+}
+
+interface PharmaFAQ {
+  field_question: string;
+  field_answer: string;
 }
 
 export interface MedicineProductDetailsResponse {

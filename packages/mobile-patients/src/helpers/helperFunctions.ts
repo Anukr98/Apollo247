@@ -2194,3 +2194,14 @@ export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
   }
   return circleMembershipType;
 };
+
+export const filterHtmlContent = (content: string = '') => {
+  return content
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;rn/g, '>')
+    .replace(/&gt;r/g, '>')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, '</>')
+    .replace(/\.t/g, '.');
+};
