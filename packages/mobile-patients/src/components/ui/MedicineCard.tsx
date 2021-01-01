@@ -539,7 +539,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
               ? renderSpecialDiscountText({
                   marginTop: '3%',
                   paddingRight: 5,
-                  backgroundColor: 'blue',
                 })
               : null}
             <Text
@@ -749,7 +748,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 marginLeft: -40,
                 justifyContent:
                   props.specialPrice! && props.discount! > 0 ? 'center' : 'space-between',
-                // backgroundColor: 'orange',
               }}
             >
               <View style={{ flexDirection: 'row' }}>
