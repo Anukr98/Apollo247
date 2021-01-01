@@ -255,6 +255,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             itemName: test?.name,
             statusDate: itemIdObject?.[key][0]?.statusDate,
             testPreparationData:
+              test?.testPreparationData! ||
               orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.testPreparationData, //need to check
           });
         });
@@ -402,7 +403,9 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           order.currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
             ? `Completed On: ${dtTm}`
             : order?.currentStatus == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
-            ? `Scheduled For: ${scheduledDtTm}`
+            ? orderSelected?.isRescheduled == true
+              ? `Rescheduled For: ${scheduledDtTm}`
+              : `Scheduled For: ${scheduledDtTm}`
             : `Scheduled For: ${dtTm}`
         }
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
@@ -427,7 +430,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           index < individualTestData.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        showTestPreparation={order.testPreparationData != ''} //call the service
+        showTestPreparation={order?.testPreparationData != ''} //call the service
         onOptionPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
             orderId: orderSelected!.id,
