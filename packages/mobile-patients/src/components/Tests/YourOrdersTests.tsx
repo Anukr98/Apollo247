@@ -33,7 +33,6 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -109,8 +108,7 @@ export interface DiagnosticsOrderList
   maxStatus: string;
   maxTime?: string | undefined | null;
 }
-const width = Dimensions.get('window').width;
-const isSmallDevice = width < 380;
+
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 const styles = StyleSheet.create({
   noDataCard: {
@@ -187,11 +185,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
-  orderSummaryOuterView: {
-    marginHorizontal: isSmallDevice ? 16 : 20,
-    flexDirection: 'row',
-    marginVertical: '15%',
-  },
+  orderSummaryOuterView: { marginHorizontal: 20, flexDirection: 'row', marginVertical: '15%' },
 });
 
 export interface YourOrdersTestProps extends NavigationScreenProps {}
@@ -222,8 +216,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<
     getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList
   >();
-  const [rescheduleCount, setRescheduleCount] = useState<any>(null);
-  const [rescheduledTime, setRescheduledTime] = useState<any>('');
+
   const [selectedReasonForCancel, setSelectedReasonForCancel] = useState('');
   const [commentForCancel, setCommentForCancel] = useState('');
 
@@ -262,8 +255,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  const setInitialState = () => {
+    setLoading!(false);
+    // setCancelPopUp(false);
+    // setReschedulePopUp(false);
+  };
+
   useEffect(() => {
-    fetchOrders(false);
+    fetchOrders();
   }, []);
 
   useEffect(() => {
@@ -273,10 +272,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, [currentPatient]);
 
   const refetchOrders = async () => {
-    fetchOrders(true);
+    fetchOrders();
   };
 
-  const fetchOrders = async (isRefetch: boolean) => {
+  const fetchOrders = async () => {
     try {
       setLoading!(true);
       client
@@ -293,7 +292,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersList?.ordersList || [];
           setOrders(ordersList);
-          setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
+          setLoading!(false);
         })
         .catch((error) => {
           setLoading!(false);
@@ -397,7 +396,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setLoading!(false);
           showAphAlert!({
             unDismissable: true,
-            title: string.common.uhOh,
+            title: 'Uh oh! :(',
             description: cancelResponse?.message,
           });
         }
@@ -452,9 +451,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             />
           </View>
           <TouchableOpacity style={{ marginTop: 20 }} onPress={() => setSummaryPopup(false)}>
-            <CrossPopup
-              style={{ height: isSmallDevice ? 20 : 28, width: isSmallDevice ? 20 : 28 }}
-            />
+            <CrossPopup />
           </TouchableOpacity>
         </View>
       </View>
@@ -558,7 +555,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
         if (noHubSlots) {
           showAphAlert!({
-            title: string.common.uhOh,
+            title: 'Uh oh.. :(',
             description: `Sorry! There are no slots available on ${moment(date).format(
               'DD MMM, YYYY'
             )}. Please choose another date.`,
@@ -570,15 +567,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         } else {
           //not trigger
           showAphAlert!({
-            title: string.common.uhOh,
-            description: string.diagnostics.areaNotAvailableMessage,
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
           });
         }
       });
   };
 
   const onPressTestReschedule = (item: any) => {
-    console.log({ item });
     setSelectedOrderId(item.id);
     setSelectedOrder(item);
     setReschedulePopUp(true);
@@ -589,26 +586,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const setRescheduleCount = !!selectedOrderRescheduleCount
       ? 2 - selectedOrderRescheduleCount
       : 2;
-
     return (
       <AlertPopup
         visible={showReschedulePopUp}
         onDismiss={() => setReschedulePopUp(false)}
-        title={
-          selectedOrderRescheduleCount == 3
-            ? string.diagnostics.reschduleCountExceed
-            : string.diagnostics.rescheduleCountText.replace(
-                '{{setRescheduleCount}}',
-                String(setRescheduleCount)
-              )
-        }
+        title={`You can reschedule to a maximum of 3 times. If you click ok, you will have ${setRescheduleCount} reschedule attempt(s) left.`}
         leftButton={'CANCEL'}
         rightButton={'OK, GOT IT'}
         showCloseIcon={false}
         onContinue={() => {
           //call the cancel
           setReschedulePopUp(false);
-          selectedOrderRescheduleCount == 3 ? null : setRescheduleReasonPopUp(true);
+          setRescheduleReasonPopUp(true);
         }}
       />
     );
@@ -651,10 +640,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setLoading!(true);
     const formattedDate = moment(diagnosticSlot?.date || rescheduleDate).format('YYYY-MM-DD');
     const formatTime = diagnosticSlot?.slotStartTime || rescheduleSlotObject?.slotStartTime;
-    const employeeSlot =
-      diagnosticSlot?.employeeSlotId?.toString() ||
-      rescheduleSlotObject?.employeeSlotId?.toString() ||
-      '0';
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
 
     console.log({ dateTimeInUTC });
@@ -665,7 +650,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       orderId: String(selectedOrderId),
       patientId: g(currentPatient, 'id'),
       reason: selectedReasonForReschedule,
-      slotId: employeeSlot,
+      slotId: diagnosticSlot?.employeeSlotId?.toString() || '0',
     };
 
     console.log({ rescheduleDiagnosticsInput });
@@ -675,9 +660,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         console.log({ rescheduleResponse });
         if (rescheduleResponse?.status == 'true' && rescheduleResponse.rescheduleCount <= 3) {
-          setTimeout(() => refetchOrders(), 2000);
-          setRescheduleCount(rescheduleResponse?.rescheduleCount);
-          setRescheduledTime(dateTimeInUTC);
+          refetchOrders();
         } else {
           setLoading!(false);
           showAphAlert!({
@@ -688,17 +671,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         }
       })
       .catch((error) => {
+        // DIAGNOSTIC_CANCELLATION_ALLOWED_BEFORE_IN_HOURS
         console.log('error' + error);
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
         setLoading!(false);
-        if (error == 'RESCHEDULE_COUNT_EXCEEDED') {
-          showAphAlert!({
-            unDismissable: true,
-            title: 'Uh oh! :(',
-            description: string.diagnostics.reschduleCountExceed,
-          });
-        }
       });
   };
 
@@ -784,14 +761,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
     const tm =
       getUTCDateTime != null
-        ? moment(getUTCDateTime).format('hh:mm A')
+        ? moment(getUTCDateTime).format()
         : getSlotStartTime(order?.slotTimings);
     const dtTm = `${dt}${isHomeVisit ? `, ${tm}` : 'hh:mm A'}`;
 
-    const currentStatus = order?.orderStatus;
+    const currentStatus = order?.maxStatus! ? order?.maxStatus! : order?.orderStatus;
     const patientName = g(currentPatient, 'firstName');
 
-    const showDateTime = order?.isRescheduled ? true : false;
     const isCancelRescheduleValid = moment(getUTCDateTime).diff(moment(), 'minutes') > 120;
     const showPreTesting = isCancelRescheduleValid && checkIfPreTestingExists(order);
     const showRescheduleOption = isCancelRescheduleValid && order?.rescheduleCount! <= 3;
@@ -800,7 +776,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
      *  2. if status is pickup requested, then show cancel - reschedule option prior 2hrs to pick up date-time
      *  3. if pickup confirmed, then don't show anything?
      *  4. if greater than this, then start showing view report option
-     *  5. only showing if reschedule is showing + !orderCancelled + done reschedule
      */
 
     return (
@@ -810,16 +785,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         showStatus={false}
         patientName={patientName}
         isComingFrom={'individualOrders'}
-        showDateTime={
-          isCancelRescheduleValid && order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
-            ? showDateTime
-            : false
-        }
+        showDateTime={false}
+        showRescheduleOption={showRescheduleOption}
         showRescheduleCancel={
           isCancelRescheduleValid && order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
         ordersData={order?.diagnosticOrderLineItems!}
-        dateTime={`Rescheduled For: ${dtTm}`}
+        dateTime={`Scheduled For: ${dtTm}`}
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         showViewReport={false}
@@ -858,7 +830,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
-          heading={string.common.uhOh}
+          heading={'Uh oh! :('}
           description={'No Orders Found!'}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
@@ -880,7 +852,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
-          heading={string.common.uhOh}
+          heading={'Uh oh! :('}
           description={'Something went wrong.'}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
