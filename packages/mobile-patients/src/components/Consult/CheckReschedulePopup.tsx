@@ -129,7 +129,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
   const getAppointmentNextSlotInitiatedByDoctor = async () => {
     try {
       setLoading!(true);
-      const response = await getRescheduleAppointmentDetails(client, data.id);
+      const response = await getRescheduleAppointmentDetails(client, data?.id);
       const slot = g(response, 'data', 'getAppointmentRescheduleDetails', 'rescheduledDateTime');
       setNextSlotAvailable(slot || '');
       setLoading!(false);
@@ -154,19 +154,19 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((_data: any) => {
-          const result = _data.data.checkIfReschedule;
+          const result = _data?.data?.checkIfReschedule;
           setLoading!(false);
 
           try {
             const data: rescheduleType = {
-              rescheduleCount: result.rescheduleCount + 1,
-              appointmentState: result.appointmentState,
-              isCancel: result.isCancel,
-              isFollowUp: result.isFollowUp,
-              isPaid: result.isPaid,
+              rescheduleCount: result?.rescheduleCount + 1,
+              appointmentState: result?.appointmentState,
+              isCancel: result?.isCancel,
+              isFollowUp: result?.isFollowUp,
+              isPaid: result?.isPaid,
             };
 
-            if (result.rescheduleCount < 3) {
+            if (result?.rescheduleCount < 3) {
               setBelowThree(true);
             } else {
               setBelowThree(false);
@@ -191,11 +191,11 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
 
   const fetchNextDoctorAvailableData = () => {
     setLoading!(true);
-    getNextAvailableSlots(client, doctorDetails ? [doctorDetails.id] : [], todayDate)
+    getNextAvailableSlots(client, [doctorDetails?.id] || [], todayDate)
       .then(({ data }: any) => {
         setLoading!(false);
         try {
-          data[0] && setNextSlotAvailable(data[0].availableSlot);
+          data[0] && setNextSlotAvailable(data?.[0]?.availableSlot);
         } catch (error) {
           CommonBugFender('AppointmentOnlineDetails_fetchNextDoctorAvailableData_try', error);
           setNextSlotAvailable('');
@@ -228,20 +228,20 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
 
   const rescheduleAPI = (availability: any) => {
     const bookRescheduleInput = {
-      appointmentId: data.id,
-      doctorId: doctorDetails.id,
+      appointmentId: data?.id,
+      doctorId: doctorDetails?.id,
       newDateTimeslot: availability,
       initiatedBy:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
-        (data.status == STATUS.PENDING && minutes <= -30)
+        data?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data?.status == STATUS.PENDING && minutes <= -30)
           ? TRANSFER_INITIATED_TYPE.DOCTOR
           : TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
-        (data.status == STATUS.PENDING && minutes <= -30)
-          ? doctorDetails.id
-          : data.patientId,
-      patientId: data.patientId,
+        data?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data?.status == STATUS.PENDING && minutes <= -30)
+          ? doctorDetails?.id
+          : data?.patientId,
+      patientId: data?.patientId,
       rescheduledId: '',
     };
 
@@ -285,10 +285,10 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
     const appointmentTransferInput = {
-      appointmentId: data.id,
+      appointmentId: data?.id,
       cancelReason: '',
       cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
-      cancelledById: userId ? userId : data.patientId,
+      cancelledById: userId ? userId : data?.patientId,
     };
 
     client
@@ -314,13 +314,13 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
       .catch((e: any) => {
         CommonBugFender('AppointmentOnlineDetails_cancelAppointmentApi', e);
         setLoading!(false);
-        const message = e.message ? e.message.split(':')[1].trim() : '';
+        const message = e?.message?.split(':')?.[1]?.trim() || '';
         if (
           message == 'INVALID_APPOINTMENT_ID' ||
           message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
         ) {
           showAphAlert!({
-            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+            title: `Hi, ${currentPatient?.firstName || ''} :)`,
             description: 'Ongoing / Completed appointments cannot be cancelled.',
           });
         }
@@ -350,15 +350,15 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
           }}
           navigation={props.navigation}
           doctor={doctorDetails ? doctorDetails : null}
-          patientId={currentPatient ? currentPatient.id : ''}
-          clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
-          doctorId={doctorDetails && doctorDetails.id}
+          patientId={currentPatient?.id || ''}
+          clinics={doctorDetails?.doctorHospital || []}
+          doctorId={doctorDetails?.id}
           isbelowthree={belowThree}
           setdisplayoverlay={() => reshedulePopUpMethod()}
           acceptChange={() => acceptChange()}
           appadatetime={data?.appointmentDateTime}
           reschduleDateTime={nextSlotAvailable}
-          rescheduleCount={newRescheduleCount ? newRescheduleCount.rescheduleCount : 1}
+          rescheduleCount={newRescheduleCount?.rescheduleCount || 1}
           data={data}
           cancelAppointmentApi={cancelAppointmentApi}
         />

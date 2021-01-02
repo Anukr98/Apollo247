@@ -103,7 +103,7 @@ export const CancelReasonPopup: React.FC<CancelReasonProps> = (props) => {
       appointmentId: data?.id,
       cancelReason: reasonForCancellation,
       cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
-      cancelledById: userId ? userId : data.patientId,
+      cancelledById: userId ? userId : data?.patientId,
     };
 
     client
@@ -129,7 +129,7 @@ export const CancelReasonPopup: React.FC<CancelReasonProps> = (props) => {
       .catch((e: any) => {
         CommonBugFender('AppointmentOnlineDetails_cancelAppointmentApi', e);
         setLoading!(false);
-        const message = e.message ? e.message.split(':')[1].trim() : '';
+        const message = e?.message?.split(':')?.[1]?.trim() || '';
         if (
           message == 'INVALID_APPOINTMENT_ID' ||
           message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
