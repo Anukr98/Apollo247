@@ -331,6 +331,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
+      AsyncStorage.removeItem('isCircleMember');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);

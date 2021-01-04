@@ -1149,6 +1149,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const paymentRef = data?.APOLLO?.[0]?.payment_reference;
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
+          AsyncStorage.setItem('isCircleMember', 'yes');
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1163,6 +1164,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
         } else {
+          AsyncStorage.setItem('isCircleMember', 'no');
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
