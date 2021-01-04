@@ -117,12 +117,18 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   };
 
   const renderExpress = () => {
+    const momentDiff = moment(deliveryTime).diff(moment());
+    const hoursMoment = moment.duration(momentDiff);
+    const hours = hoursMoment.asHours().toFixed();
     return (
       <View style={styles.flexRow}>
         <ExpressDeliveryLogo style={styles.expressLogo} />
-        <Text
-          style={theme.viewStyles.text('SB', 14, '#02475B', 1, 25, 0.35)}
-        >{`  within 1 hour`}</Text>
+        {!!hours && (
+          <Text style={theme.viewStyles.text('SB', 14, '#02475B', 1, 25, 0.35)}>
+            {`  within ${hours} `}
+            {parseInt(hours) > 1 ? `hours` : `hour`}
+          </Text>
+        )}
       </View>
     );
   };

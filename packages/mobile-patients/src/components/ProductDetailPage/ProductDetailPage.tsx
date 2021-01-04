@@ -168,6 +168,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   }, []);
 
+  useEffect(() => {
+    try {
+      if (medicineDetails?.price && tatEventData) {
+        const eventAttributes: PharmacyTatApiCalled = {
+          ...tatEventData,
+          Input_MRP: medicineDetails.price,
+          Response_MRP: tatEventData.Response_MRP * Number(medicineDetails.mou || 1),
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+      }
+    } catch (error) {}
+  }, [medicineDetails, tatEventData]);
+
   const getMedicineDetails = () => {
     setLoading(true);
     getMedicineDetailsApi(sku)
