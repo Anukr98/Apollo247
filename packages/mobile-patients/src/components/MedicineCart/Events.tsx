@@ -225,5 +225,5 @@ export const fireCirclePurchaseEvent = (currentPatient: any, endDate: string) =>
     Type: 'From HC',
     Source: 'from banner',
   };
-  postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+  !!endDate && postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
 };
