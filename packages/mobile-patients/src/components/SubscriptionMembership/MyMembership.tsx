@@ -241,21 +241,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     }
   }, [upgradePlans]);
 
-  useEffect(() => {
-    const didFocus = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-    return () => {
-      didFocus && didFocus.remove();
-      _willBlur && _willBlur.remove();
-    };
-  });
-
   const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (source) {
       props.navigation.navigate('MY ACCOUNT');
     } else {

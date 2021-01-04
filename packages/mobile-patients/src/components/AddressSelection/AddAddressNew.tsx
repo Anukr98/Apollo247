@@ -123,13 +123,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     longitudeDelta: longitudeDelta,
   });
 
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
-  }, []);
-
   const handleBack = () => {
     props.navigation.goBack();
     return true;
