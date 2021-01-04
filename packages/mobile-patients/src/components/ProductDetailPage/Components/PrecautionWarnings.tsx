@@ -12,6 +12,7 @@ import {
   KidneyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { FaqComponent } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FaqComponent';
+import { SafetyAdvice } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/SafetyAdvice';
 
 export interface PrecautionWarningsProps {
   name: string;
@@ -82,95 +83,53 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
     );
   };
 
-  const renderAlcoholWarning = () => {
-    const warning = replaceName(alcoholContent);
-    return (
-      <View style={styles.flexRow}>
-        <View style={styles.iconContainer}>
-          <AlcoholIcon style={styles.warningIcons} />
-          <Text style={styles.warningHeading}>Alcohol</Text>
-        </View>
-        <View style={styles.warningContainer}>
-          <Text style={styles.contentStyle}>{warning}</Text>
-        </View>
-      </View>
-    );
-  };
+  const renderAlcoholWarning = () => (
+    <SafetyAdvice
+      name={'Alcohol'}
+      warning={alcoholContent}
+      iconComponent={<AlcoholIcon style={styles.warningIcons} />}
+    />
+  );
 
-  const renderPregnancyWarning = () => {
-    const warning = replaceName(pregnancyContent);
-    return (
-      <View style={styles.flexRow}>
-        <View style={styles.iconContainer}>
-          <PrengancyIcon style={styles.warningIcons} />
-          <Text style={styles.warningHeading}>Pregnancy</Text>
-        </View>
-        <View style={styles.warningContainer}>
-          <Text style={styles.contentStyle}>{warning}</Text>
-        </View>
-      </View>
-    );
-  };
+  const renderPregnancyWarning = () => (
+    <SafetyAdvice
+      name={'Pregnancy'}
+      warning={pregnancyContent}
+      iconComponent={<PrengancyIcon style={styles.warningIcons} />}
+    />
+  );
 
-  const renderDrivingWarning = () => {
-    const warning = replaceName(drivingContent);
-    return (
-      <View style={styles.flexRow}>
-        <View style={styles.iconContainer}>
-          <DrivingIcon style={styles.warningIcons} />
-          <Text style={styles.warningHeading}>Driving</Text>
-        </View>
-        <View style={styles.warningContainer}>
-          <Text style={styles.contentStyle}>{warning}</Text>
-        </View>
-      </View>
-    );
-  };
+  const renderDrivingWarning = () => (
+    <SafetyAdvice
+      name={'Driving'}
+      warning={drivingContent}
+      iconComponent={<DrivingIcon style={styles.warningIcons} />}
+    />
+  );
 
-  const renderLiverWarning = () => {
-    const warning = replaceName(liverContent);
-    return (
-      <View style={styles.flexRow}>
-        <View style={styles.iconContainer}>
-          <LiverIcon style={styles.warningIcons} />
-          <Text style={styles.warningHeading}>Liver</Text>
-        </View>
-        <View style={styles.warningContainer}>
-          <Text style={styles.contentStyle}>{warning}</Text>
-        </View>
-      </View>
-    );
-  };
+  const renderLiverWarning = () => (
+    <SafetyAdvice
+      name={'Liver'}
+      warning={liverContent}
+      iconComponent={<LiverIcon style={styles.warningIcons} />}
+    />
+  );
 
-  const renderKidneyWarning = () => {
-    const warning = replaceName(kidneyContent);
-    return (
-      <View style={styles.flexRow}>
-        <View style={styles.iconContainer}>
-          <KidneyIcon style={styles.warningIcons} />
-          <Text style={styles.warningHeading}>Liver</Text>
-        </View>
-        <View style={styles.warningContainer}>
-          <Text style={styles.contentStyle}>{warning}</Text>
-        </View>
-      </View>
-    );
-  };
+  const renderKidneyWarning = () => (
+    <SafetyAdvice
+      name={'Kidney'}
+      warning={kidneyContent}
+      iconComponent={<KidneyIcon style={styles.warningIcons} />}
+    />
+  );
 
-  const renderBreastfeedingWarning = () => {
-    const warning = replaceName(breastfeedingContent);
-    return (
-      <View style={styles.flexRow}>
-        <View style={styles.iconContainer}>
-          <BreastfeedingIcon style={styles.warningIcons} />
-          <Text style={styles.warningHeading}>Breastfeeding</Text>
-        </View>
-        <View style={styles.warningContainer}>
-          <Text style={styles.contentStyle}>{warning}</Text>
-        </View>
-      </View>
-    );
-  };
+  const renderBreastfeedingWarning = () => (
+    <SafetyAdvice
+      name={'Breastfeeding'}
+      warning={breastfeedingContent}
+      iconComponent={<BreastfeedingIcon style={styles.warningIcons} />}
+    />
+  );
 
   return (
     <View style={styles.cardStyle}>
@@ -213,21 +172,4 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, '#02475B', 1, 30),
     textAlign: 'right',
   },
-  flexRow: {
-    flexDirection: 'row',
-    marginBottom: 15,
-  },
-  warningHeading: {
-    ...theme.viewStyles.text('R', 15, '#02475B', 1, 20),
-    marginTop: 8,
-  },
-  iconContainer: {
-    width: '25%',
-    alignItems: 'center',
-  },
-  warningContainer: {
-    width: '70%',
-    marginLeft: 10,
-  },
-  contentStyle: theme.viewStyles.text('R', 15, '#02475B', 1, 20),
 });

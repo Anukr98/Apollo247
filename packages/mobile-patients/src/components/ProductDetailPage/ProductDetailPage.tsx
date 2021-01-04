@@ -44,6 +44,7 @@ import {
   postwebEngageAddToCartEvent,
   postFirebaseAddToCartEvent,
   postAppsFlyerAddToCartEvent,
+  getCareCashback,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -148,6 +149,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const [isPharma, setIsPharma] = useState<boolean>(false);
 
+  const { special_price, price, type_id } = medicineDetails;
+  const finalPrice = price - special_price ? special_price : price;
+  const cashback = getCareCashback(Number(finalPrice), type_id);
+
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
@@ -170,7 +175,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setMedicineDetails(productDetails || {});
-          // console.log('medicine details: ', JSON.stringify(productDetails));
           if (productDetails?.dc_availability === 'No' && productDetails?.is_in_contract === 'No') {
             setIsInStock(false);
           }
@@ -638,17 +642,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <Header
           leftIcon="backArrow"
           onPressLeftIcon={() => moveBack()}
-          // leftComponent={
-          //   <Image
-          //     style={{
-          //       resizeMode: 'contain',
-          //       width: 40,
-          //       height: 40,
-          //     }}
-          //     source={require('@aph/mobile-patients/src/images/apollo/splashLogo.png')}
-          //   />
-          // }
-          // title={'PRODUCT DETAIL'}
           titleStyle={{ marginHorizontal: 10 }}
           container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
           rightComponent={
@@ -714,6 +707,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               deliveryTime={deliveryTime}
               deliveryError={deliveryError}
               isPharma={isPharma}
+              cashback={cashback}
+              finalPrice={finalPrice}
             />
             <View
               ref={buttonRef}

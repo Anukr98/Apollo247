@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { VegetarianIcon, NonVegetarianIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NewPharmaOverview } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -30,6 +30,7 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     variant,
   } = props;
 
+  const [showAllContent, setShowAllContent] = useState<boolean>(false);
   const pharmaUses = pharmaOverview?.HowToTake;
   const pharmaSideEffects = pharmaOverview?.SideEffects;
   const storagePlace = pharmaOverview?.StoragePlace;
@@ -117,18 +118,32 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     <PrecautionWarnings name={name} pharmaOverview={pharmaOverview} />
   );
 
+  const renderShowMore = () => {
+    return (
+      <TouchableOpacity onPress={() => setShowAllContent(true)}>
+        <Text style={styles.showMoreText}>Show more</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.cardStyle}>
       {!!pharmaUses && renderUses(pharmaUses)}
-      {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
-      {renderVegetarianIcon()}
-      {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
-      {!!key_ingredient && renderKeyIngrediant()}
-      {!!size && renderSize()}
-      {!!flavour_fragrance && renderFlavour()}
-      {!!colour && renderColor()}
-      {!!variant && renderVariant()}
-      {renderPrecautionsAndWarnings()}
+      {showAllContent ? (
+        <>
+          {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
+          {renderVegetarianIcon()}
+          {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
+          {!!key_ingredient && renderKeyIngrediant()}
+          {!!size && renderSize()}
+          {!!flavour_fragrance && renderFlavour()}
+          {!!colour && renderColor()}
+          {!!variant && renderVariant()}
+          {!!pharmaOverview && renderPrecautionsAndWarnings()}
+        </>
+      ) : (
+        renderShowMore()
+      )}
     </View>
   );
 };
@@ -146,5 +161,9 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginTop: 10,
+  },
+  showMoreText: {
+    ...theme.viewStyles.text('SB', 13, '#FC9916', 1, 25, 0.35),
+    textAlign: 'right',
   },
 });

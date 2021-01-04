@@ -9,6 +9,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -20,6 +21,8 @@ export interface ProductPriceDeliveryProps {
   deliveryTime?: string;
   deliveryError?: string;
   isPharma: boolean;
+  cashback: number;
+  finalPrice: number;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -33,9 +36,11 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     deliveryError,
     deliveryTime,
     isPharma,
+    cashback,
+    finalPrice,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
-  const { addresses, deliveryAddressId } = useShoppingCart();
+  const { addresses, deliveryAddressId, circleSubscriptionId } = useShoppingCart();
   const { pharmacyLocation, locationDetails } = useAppCommonData();
 
   const renderProductPrice = () => {
@@ -135,12 +140,33 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     ) : null;
   };
 
+  const renderCareCashback = () => {
+    return (
+      <>
+        <CareCashbackBanner
+          bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
+          textStyle={styles.circleText}
+          logoStyle={styles.circleLogo}
+        />
+        <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17)}>
+          Effective price for you
+          <Text style={{ fontWeight: 'bold' }}>
+            {' '}
+            {string.common.Rs}
+            {(finalPrice - cashback).toFixed(2)}
+          </Text>
+        </Text>
+      </>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.cardStyle}>
         {renderProductPrice()}
         {renderIsInStock()}
       </View>
+      {!!circleSubscriptionId && !!cashback && renderCareCashback()}
       {!!manufacturer && !isPharma && renderManufacturer()}
       {renderDeliverTo()}
       {isExpress ? renderExpress() : renderDeliveryDateTime()}
@@ -192,6 +218,15 @@ const styles = StyleSheet.create({
   expressLogo: {
     resizeMode: 'contain',
     width: 60,
+    height: 30,
+  },
+  circleText: {
+    ...theme.viewStyles.text('M', 12, '#00A0E3', 1, 15),
+    paddingVertical: 8,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 38,
     height: 30,
   },
 });
