@@ -25,6 +25,9 @@ const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
+const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==' ;
+const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
+
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -225,9 +228,11 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
+    DRUPAL_BANNER_CONFIG : ['https://uatcms.apollo247.com/api/banner', drupalAuthTokenDev]
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
+    DRUPAL_BANNER_CONFIG :['https://uatcms.apollo247.com/api/banner',drupalAuthTokenProd]
   },
 };
 

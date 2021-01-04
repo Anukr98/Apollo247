@@ -935,6 +935,10 @@ export const DriveWayIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/driveway.png')} />
 );
 
+export const GrayEditIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_mode_edit.png')} />
+);
+
 export const EditIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_edit.png')} />
 );
@@ -1601,4 +1605,17 @@ export const HomeAddressIcon: React.FC<IconProps> = (props) => (
 );
 export const OfficeAddressIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/office_icon.png')} />
+);
+
+export const ActiveCalenderIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/activeCalender.png')} />
+);
+
+export const InactiveCalenderIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    resizeMode="contain"
+    size="sm"
+    {...props}
+    source={require('./icons/inactiveCalender.png')}
+  />
 );

@@ -98,6 +98,8 @@ const Common = {
   CAROUSEL_INACTIVE_DOT: '#C4C4C4',
   ORANGE_BORDER: '#FA9E3E',
   GRAY: '#6A6A6A',
+  DISABLE_TEXT: '#BCBCBC',
+  RED: '#C5411E',
 };
 
 const Header = {

@@ -15,6 +15,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   setCircleMembershipType,
+  isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   blueTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
   },
@@ -355,6 +356,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDiagnosticAreas,
     clearDiagnoticCartInfo,
     cartSaving,
+    discountSaving,
+    normalSaving,
     circleSaving,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
@@ -1961,13 +1964,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>{string.common.Rs} 500.00</Text>
             </View>
           )} */}
-          {selectedTab == tabs[0].title && cartSaving > 0 && (
+
+          {selectedTab == tabs[0].title && normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 Cart Saving
               </Text>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                - {string.common.Rs} {cartSaving.toFixed(2)}
+                - {string.common.Rs} {normalSaving.toFixed(2)}
               </Text>
             </View>
           )}
@@ -1989,6 +1993,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </View>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 - {string.common.Rs} {circleSaving.toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {selectedTab == tabs[0].title && discountSaving > 0 && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                {string.diagnostics.specialDiscountText}
+              </Text>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                - {string.common.Rs} {discountSaving.toFixed(2)}
               </Text>
             </View>
           )}
@@ -2120,7 +2134,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{
               marginHorizontal: 10,
               color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               alignSelf: 'center',
             }}
@@ -3074,6 +3088,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
+    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
+    const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
+    setPinCode!(pinCode);
     setLoading!(true);
     try {
       const HomeCollectionChargesApi = await client.query<
@@ -3088,7 +3105,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           itemIDs: itemWithId,
           totalCharges: cartTotal,
           slotID: slotVal!,
-          pincode: parseInt(pinCode, 10),
+          pincode: parseInt(pinCodeFromAddress, 10),
         },
         fetchPolicy: 'no-cache',
       });
@@ -3128,7 +3145,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ></ProfileList>
           <Text
             style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               marginTop: 8,
               color: theme.colors.SKY_BLUE,
