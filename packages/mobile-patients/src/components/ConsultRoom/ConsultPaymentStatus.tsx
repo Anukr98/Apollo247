@@ -782,7 +782,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       Type: 'Consult',
       Source: 'Consult',
     };
-    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+    !!circlePlanSelected?.valid_duration &&
+      !!circlePlanSelected?.currentSellingPrice &&
+      postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const renderAddedCirclePlanWithValidity = () => {
