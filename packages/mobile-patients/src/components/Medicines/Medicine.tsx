@@ -1828,17 +1828,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderSearchResults = () => {
-    // if (medicineList.length == 0) return null;
+    const showResults = !!searchText && searchText.length > 2 && medicineList.length > 0;
+    const isLoading = searchSate == 'load';
     return (
       <>
-        {searchSate == 'load' ? (
+        {isLoading ? (
           <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
-            {renderSectionLoader(266)}
+            {renderSectionLoader(330)}
           </View>
         ) : (
-          !!searchText &&
-          searchText.length > 2 &&
-          medicineList.length > 0 && (
+          !!showResults && (
             <View>
               <FlatList
                 keyboardShouldPersistTaps="always"
