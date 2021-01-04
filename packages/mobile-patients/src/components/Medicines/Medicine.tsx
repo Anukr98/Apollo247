@@ -1127,7 +1127,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           title: item.name || 'Products',
         });
       } else if (item.sku) {
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        props.navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: item.sku,
           movedFrom: ProductPageViewedSource.BANNER,
         });
@@ -1793,7 +1793,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <MedicineSearchSuggestionItem
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });

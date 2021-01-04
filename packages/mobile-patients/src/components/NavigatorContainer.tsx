@@ -35,6 +35,7 @@ import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSear
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { MedicineBuyAgain } from '@aph/mobile-patients/src/components/MedicineBuyAgain/MedicineBuyAgain';
 import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
+import { ProductDetailPage } from '@aph/mobile-patients/src/components/ProductDetailPage/ProductDetailPage';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
@@ -157,6 +158,7 @@ export enum AppRoutes {
   MedicineListing = 'MedicineListing',
   MedicineBuyAgain = 'MedicineBuyAgain',
   MedicineDetailsScene = 'MedicineDetailsScene',
+  ProductDetailPage = 'ProductDetailPage',
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
@@ -354,6 +356,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineDetailsScene]: {
     screen: MedicineDetailsScene,
+  },
+  [AppRoutes.ProductDetailPage]: {
+    screen: ProductDetailPage,
   },
   [AppRoutes.ApplyCouponScene]: {
     screen: ApplyCouponScene,

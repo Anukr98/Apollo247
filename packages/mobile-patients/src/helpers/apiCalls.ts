@@ -25,6 +25,19 @@ export interface MedicineProduct {
   is_express?: 'Yes' | 'No';
   dc_availability?: 'Yes' | 'No';
   is_in_contract?: 'Yes' | 'No';
+  is_returnable?: 'Yes' | 'No';
+  marketer_address?: string | null;
+  unit_of_measurement?: string | null;
+  vegetarian?: 'Yes' | 'No';
+  storage?: string | null;
+  key_ingredient?: string | null;
+  size?: string | null;
+  flavour_fragrance?: string | null;
+  colour?: string | null;
+  variant?: string | null;
+  expiry_date?: string | null;
+  composition?: string | null;
+  consume_type?: string | null;
   dose_form_variant?: string | null;
   pack_form?: string | null;
   pack_size?: string | null;
@@ -55,6 +68,35 @@ interface PharmaOverview {
     Caption: string;
     CaptionDesc: string;
   }[]; // type can be string if information not available
+  NewPharmaOverview: NewPharmaOverview;
+}
+
+export interface NewPharmaOverview {
+  Storage: string;
+  StoragePlace: string;
+  ColdChain: string;
+  AboutProduct: string;
+  HowToTake: string;
+  LiverTag: string;
+  LiverContent: string;
+  KidneyTag: string;
+  KidneyContent: string;
+  PregnancyTag: string;
+  PregnancyContent: string;
+  BreastfeedingMothersTag: string;
+  BreastfeedingMothersContent: string;
+  AlcoholTag: string;
+  AlcoholContent: string;
+  DrivingTag: string;
+  DrivingContent: string;
+  WarningsAndPrecautions: string;
+  CompositionContentFAQs: PharmaFAQ[];
+  SideEffects: string;
+}
+
+export interface PharmaFAQ {
+  field_question: string;
+  field_answer: string;
 }
 
 export interface MedicineProductDetailsResponse {
@@ -360,7 +402,7 @@ export interface PackageInclusion {
   sampleRemarks: string;
   sampleTypeName: string;
   testParameters: string;
-  name?: string; 
+  name?: string;
 }
 
 export interface TestPackage {
@@ -495,6 +537,7 @@ export const getMedicineDetailsApi = (
   );
 };
 
+let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1,
@@ -503,6 +546,8 @@ export const searchMedicineApi = async (
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
@@ -517,6 +562,9 @@ export const searchMedicineApi = async (
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
+    cancelToken: new CancelToken((c) => {
+      cancelSearchMedicineApi247 = c;
+    }),
   });
 };
 
@@ -993,15 +1041,12 @@ export const searchPHRApiWithAuthToken = (
   return Axios.get(searchPHRUrlWithAuthToke);
 };
 
-export const getLandingPageBanners = (
-  pageName: string,
-): Promise<AxiosResponse<any>> => {
-  const baseurl =config.DRUPAL_BANNER_CONFIG[0];
-  const getBanners = `${baseurl}/${pageName}`
+export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_BANNER_CONFIG[0];
+  const getBanners = `${baseurl}/${pageName}`;
   return Axios.get(getBanners, {
     headers: {
-      Authorization: config.DRUPAL_BANNER_CONFIG[1]
+      Authorization: config.DRUPAL_BANNER_CONFIG[1],
     },
   });
 };
-

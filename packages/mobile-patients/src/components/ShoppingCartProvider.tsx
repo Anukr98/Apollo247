@@ -114,6 +114,11 @@ export interface PharmacyCircleEvent {
   'Circle Membership Value': number | null;
 }
 
+export interface BreadcrumbLink {
+  title: string;
+  onPress?: () => void;
+}
+
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -216,6 +221,8 @@ export interface ShoppingCartContextProps {
   circlePaymentReference: any;
   setCirclePaymentReference: ((payment: any) => void) | any;
   pharmacyCircleAttributes: PharmacyCircleEvent | null;
+  pdpBreadCrumbs: BreadcrumbLink[];
+  setPdpBreadCrumbs: ((items: BreadcrumbLink[]) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -315,6 +322,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   circlePaymentReference: null,
   setCirclePaymentReference: null,
   pharmacyCircleAttributes: null,
+  pdpBreadCrumbs: [],
+  setPdpBreadCrumbs: null,
 });
 
 const AsyncStorageKeys = {
@@ -415,6 +424,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >('');
   const [circlePaymentReference, setCirclePaymentReference] = useState<
     ShoppingCartContextProps['circlePaymentReference']
+  >();
+
+  const [pdpBreadCrumbs, setPdpBreadCrumbs] = useState<
+    ShoppingCartContextProps['pdpBreadCrumbs']
   >();
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
@@ -958,6 +971,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         circlePaymentReference,
         setCirclePaymentReference,
         pharmacyCircleAttributes,
+        pdpBreadCrumbs,
+        setPdpBreadCrumbs,
       }}
     >
       {props.children}
