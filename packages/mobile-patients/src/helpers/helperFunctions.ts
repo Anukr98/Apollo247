@@ -2,6 +2,7 @@ import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPackageData,
@@ -91,9 +92,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
+const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -142,6 +146,10 @@ export enum HEALTH_CONDITIONS_TITLE {
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
 }
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
+};
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
@@ -217,6 +225,34 @@ export const formatAddressWithLandmark = (
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
+};
+
+export const formatAddressBookAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = removeConsecutiveComma(
+    [address?.addressLine1, address?.addressLine2, address?.city].filter((v) => v).join(', ')
+  );
+  const landmark = [address?.landmark];
+  const state = [address?.state];
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
+  if (address?.landmark != '') {
+    return `${addrLine1},\n${landmark}\n${state}${formattedZipcode}`;
+  } else {
+    return `${addrLine1},\n${state}${formattedZipcode}`;
+  }
+};
+
+export const formatAddressForApi = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
+    .filter((v) => v)
+    .join(', ');
+  const state = [address?.state];
+  const formattedZipcode = address?.zipcode ? `- ${address?.zipcode}` : '';
+  const formattedAddress = removeConsecutiveComma(addrLine1 + ', ' + formattedZipcode);
+  return formattedAddress;
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
@@ -318,10 +354,10 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b.date || b.billDateTime || b.startDateTime)
+      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
         .toDate()
         .getTime() -
-      moment(a.date || a.billDateTime || a.startDateTime)
+      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
         .toDate()
         .getTime()
   );
@@ -360,7 +396,7 @@ const getConsiderDate = (type: string, dataObject: any) => {
     case 'bills':
       return dataObject?.billDateTime;
     case 'health-conditions':
-      return dataObject?.startDateTime;
+      return dataObject?.startDateTime || dataObject?.recordDateTime;
   }
 };
 
@@ -1118,13 +1154,20 @@ export const addTestsToCart = async (
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+      context: {
+        headers: {
+          source: Platform.OS,
+          source_version: DeviceInfo.getVersion(),
+        },
+      },
       variables: {
         searchText: name,
         cityID: 9, //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });
-  const detailQuery = (itemId: string) => getPackageData(itemId);
+  const detailQuery = async (itemId: string) =>
+    await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
@@ -1140,22 +1183,22 @@ export const addTestsToCart = async (
       searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
     );
     const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
-
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData.length,
     }).map((_, index) => {
       const s = searchQueriesData[index];
       const testIncludedCount = detailQueriesData[index];
       return {
-        id: `${s.itemId}`,
-        name: s.itemName,
-        price: s.rate,
+        id: `${s?.itemId}`,
+        name: s?.itemName,
+        price: s?.rate,
         specialPrice: undefined,
         mou: testIncludedCount,
         thumbnail: '',
-        collectionMethod: s.collectionType,
+        collectionMethod: s?.collectionType,
+        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
       } as DiagnosticsCartItem;
     });
 
@@ -2205,3 +2248,18 @@ export const filterHtmlContent = (content: string = '') => {
     .replace(/&nbsp;/g, '</>')
     .replace(/\.t/g, '.');
 };
+export const isProductInStock = (product: MedicineProduct) => {
+  const { dc_availability, is_in_contract } = product;
+  if (
+    !!dc_availability &&
+    !!is_in_contract &&
+    dc_availability.toLowerCase() === 'no' &&
+    is_in_contract.toLowerCase() === 'no'
+  ) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
+export const isSmallDevice = width < 370;

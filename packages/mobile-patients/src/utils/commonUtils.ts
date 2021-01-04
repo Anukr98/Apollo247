@@ -1,4 +1,4 @@
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   CommonBugFender,
@@ -11,6 +11,7 @@ import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getPatientByMobileNumber } from '../graphql/types/getPatientByMobileNumber';
+import DeviceInfo from 'react-native-device-info';
 
 export const handleDeepLink = (navigationProps: any) => {
   try {
@@ -177,7 +178,11 @@ export const isUpperCase = (str: string) => {
   return str === str.toUpperCase();
 };
 
-export const calculateCircleDoctorPricing = (data: any) => {
+export const calculateCircleDoctorPricing = (
+  data: any,
+  isOnlineConsult?: boolean,
+  isPhysicalConsult?: boolean
+) => {
   const circleDoctors = data?.doctorPricing?.filter(
     (item: any) => item.available_to === PLAN.CARE_PLAN
   );
@@ -209,6 +214,16 @@ export const calculateCircleDoctorPricing = (data: any) => {
   // discount % will be same on both consult
   const minSlashedPrice = slashedPriceArr?.[0]?.slashed_price;
   const minDiscountedPrice = minMrp - minSlashedPrice;
+
+  let isCircleDoctorOnSelectedConsultMode = isCircleDoctor;
+  if (isOnlineConsult) {
+    isCircleDoctorOnSelectedConsultMode = isCircleDoctor && onlineConsultMRPPrice > 0;
+  } else if (isPhysicalConsult) {
+    isCircleDoctorOnSelectedConsultMode = isCircleDoctor && physicalConsultMRPPrice > 0;
+  } else {
+    isCircleDoctorOnSelectedConsultMode = isCircleDoctor;
+  }
+
   return {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -220,13 +235,14 @@ export const calculateCircleDoctorPricing = (data: any) => {
     minMrp,
     minSlashedPrice,
     minDiscountedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   };
 };
 
 //check if test is active for the given Date
 const isItemPriceActive = (fromDate: string, toDate: string, currentDate: string) => {
   //start & end date comes null
-  if (fromDate == null || toDate== null) {
+  if (fromDate == null || toDate == null) {
     return true;
   }
   var startDate, endDate, currDate;
@@ -241,51 +257,54 @@ const isItemPriceActive = (fromDate: string, toDate: string, currentDate: string
 };
 
 //calculate diagnostics discounts
-export const getActiveTestItems = (pricingObjectForItem: any,itemWithPackageMrp: string | number) => {
-  //1. get the diff in price + grroupPlan + active + start-end Date
-  //2. now filter the items for active and start-endDate (this will be the main plans to consider)
-  //3. if after filter at 2. we don't have anything left, then return that item is not active
-  //4. after step 2. whatever i am left with, consider it to promote circle/ discount/ don't promote.
-
+export const getActiveTestItems = (
+  pricingObjectForItem: any,
+  itemWithPackageMrp: string | number
+) => {
   //1.
   const currentDate = moment(new Date()).format('YYYY-MM-DD');
-  var diffPriceForItem: 
-  { 
-    discountPercent: number; 
-    groupPlan: string; 
-    status: string; 
-    startDate: string; 
-    endDate: string 
+  var diffPriceForItem: {
+    discountPercent: number;
+    groupPlan: string;
+    status: string;
+    startDate: string;
+    endDate: string;
   }[] = [];
-    pricingObjectForItem?.forEach((item: any) =>
-      diffPriceForItem.push({
-        "discountPercent": getDiscountPercentage(!!itemWithPackageMrp && itemWithPackageMrp > item?.mrp ? itemWithPackageMrp :item?.mrp!,item?.price!), 
-        "groupPlan": item?.groupPlan,
-        "status": item?.status, 
-        "startDate": item?.startDate,
-        "endDate": item?.endDate
-      })
-  ) 
+  pricingObjectForItem?.forEach((item: any) =>
+    diffPriceForItem.push({
+      discountPercent: getDiscountPercentage(
+        !!itemWithPackageMrp && itemWithPackageMrp > item?.mrp ? itemWithPackageMrp : item?.mrp!,
+        item?.price!
+      ),
+      groupPlan: item?.groupPlan,
+      status: item?.status,
+      startDate: item?.startDate,
+      endDate: item?.endDate,
+    })
+  );
 
   //2. filter out elements which lie in range and are active
-  const activeGroupPlansForItem = diffPriceForItem?.filter((item)=>
-    (item?.status).toLowerCase() == 'active' &&
-        isItemPriceActive(item?.startDate!, item?.endDate!, currentDate)
-  )
+  const activeGroupPlansForItem = diffPriceForItem?.filter(
+    (item) =>
+      (item?.status).toLowerCase() == 'active' &&
+      isItemPriceActive(item?.startDate!, item?.endDate!, currentDate)
+  );
 
   //3. if no items are there then set it as not active.
   const isItemInActive = activeGroupPlansForItem?.length == 0;
 
   //descending order
-  var sortedDiffPriceForItem =  activeGroupPlansForItem?.sort(function (a, b) {
+  var sortedDiffPriceForItem = activeGroupPlansForItem?.sort(function(a, b) {
     return b.discountPercent - a.discountPercent;
   });
 
-//4. now use plan to promote.
-//4.1 get the price of the lowest one
-  const groupPlanToConsider = activeGroupPlansForItem?.find((item:any)=> item?.groupPlan == sortedDiffPriceForItem?.[0].groupPlan)
-  const promoteCircle = groupPlanToConsider?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE ;
- 
+  //4. now use plan to promote.
+  //4.1 get the price of the lowest one
+  const groupPlanToConsider = activeGroupPlansForItem?.find(
+    (item: any) => item?.groupPlan == sortedDiffPriceForItem?.[0].groupPlan
+  );
+  const promoteCircle = groupPlanToConsider?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE;
+
   const itemWithAll = pricingObjectForItem?.find(
     (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
@@ -308,18 +327,45 @@ export const getActiveTestItems = (pricingObjectForItem: any,itemWithPackageMrp:
   return activeItemsObject;
 };
 
-export const calculatePackageDiscounts = (itemPackageMrp: string | number , mrp: number , discountedPrice : number) =>{
-  const discount = getDiscountPercentage(!!itemPackageMrp && itemPackageMrp > mrp ? itemPackageMrp : mrp, discountedPrice);
+export const calculatePackageDiscounts = (
+  itemPackageMrp: string | number,
+  mrp: number,
+  discountedPrice: number
+) => {
+  const discount = getDiscountPercentage(
+    !!itemPackageMrp && itemPackageMrp > mrp ? itemPackageMrp : mrp,
+    discountedPrice
+  );
   return discount;
-}
+};
 
-export const calculateMrpToDisplay = (promoteCircle: boolean,promoteDiscount: boolean,itemPackageMrp: string | number, normalMrp: number, circleMrp: number, discountMrp: number)=>{
-  const mrpToDisplay =  promoteCircle ? (!!itemPackageMrp && itemPackageMrp > circleMrp ? itemPackageMrp:  circleMrp) : promoteDiscount ? (!!itemPackageMrp && itemPackageMrp > discountMrp ? itemPackageMrp : discountMrp) : (!!itemPackageMrp && itemPackageMrp > normalMrp ? itemPackageMrp : normalMrp);
+export const calculateMrpToDisplay = (
+  promoteCircle: boolean,
+  promoteDiscount: boolean,
+  itemPackageMrp: string | number,
+  normalMrp: number,
+  circleMrp: number,
+  discountMrp: number
+) => {
+  const mrpToDisplay = promoteCircle
+    ? !!itemPackageMrp && itemPackageMrp > circleMrp
+      ? itemPackageMrp
+      : circleMrp
+    : promoteDiscount
+    ? !!itemPackageMrp && itemPackageMrp > discountMrp
+      ? itemPackageMrp
+      : discountMrp
+    : !!itemPackageMrp && itemPackageMrp > normalMrp
+    ? itemPackageMrp
+    : normalMrp;
   return mrpToDisplay;
-}
+};
 
-export const getPricesForItem = (getDiagnosticPricingForItem: any, itemPackageMrp: string | number) => {
-  const getActiveItemsObject = getActiveTestItems(getDiagnosticPricingForItem,itemPackageMrp);
+export const getPricesForItem = (
+  getDiagnosticPricingForItem: any,
+  itemPackageMrp: string | number
+) => {
+  const getActiveItemsObject = getActiveTestItems(getDiagnosticPricingForItem, itemPackageMrp);
   const itemActive = getActiveItemsObject?.isItemActive;
   const itemWithAll = getActiveItemsObject?.itemWithAll;
   const itemWithSub = getActiveItemsObject?.itemWithSub;
@@ -335,15 +381,26 @@ export const getPricesForItem = (getDiagnosticPricingForItem: any, itemPackageMr
   const planToConsider = getActiveItemsObject?.groupPlanToConsider;
 
   //if change here then change in the testCart
-  const discount = calculatePackageDiscounts( itemPackageMrp, price, specialPrice);
-  const circleDiscount = calculatePackageDiscounts(itemPackageMrp ,circlePrice, circleSpecialPrice);
-  const specialDiscount = calculatePackageDiscounts(itemPackageMrp , discountPrice, discountSpecialPrice);
+  const discount = calculatePackageDiscounts(itemPackageMrp, price, specialPrice);
+  const circleDiscount = calculatePackageDiscounts(itemPackageMrp, circlePrice, circleSpecialPrice);
+  const specialDiscount = calculatePackageDiscounts(
+    itemPackageMrp,
+    discountPrice,
+    discountSpecialPrice
+  );
 
   const promoteCircle = getActiveItemsObject?.promoteCircle; //if circle discount is more
   const promoteDiscount = promoteCircle ? false : discount < specialDiscount; // if special discount is more than others.
 
-  const mrpToDisplay =  calculateMrpToDisplay(promoteCircle, promoteDiscount,itemPackageMrp, price, circlePrice, discountPrice)
-  
+  const mrpToDisplay = calculateMrpToDisplay(
+    promoteCircle,
+    promoteDiscount,
+    itemPackageMrp,
+    price,
+    circlePrice,
+    discountPrice
+  );
+
   const discountToDisplay = promoteCircle
     ? circleSpecialPrice
     : promoteDiscount
@@ -367,4 +424,11 @@ export const getPricesForItem = (getDiagnosticPricingForItem: any, itemPackageMr
     mrpToDisplay,
     discountToDisplay,
   };
+};
+
+export const sourceHeaders = {
+  headers: {
+    source: Platform.OS,
+    source_version: DeviceInfo.getVersion(),
+  },
 };

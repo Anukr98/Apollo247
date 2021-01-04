@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE } from "./globalTypes";
+import { ZoneType, ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPlatinumDoctor
@@ -56,4 +56,7 @@ export interface getPlatinumDoctor {
 
 export interface getPlatinumDoctorVariables {
   specialtyId?: string | null;
+  zoneType?: ZoneType | null;
+  zone?: string | null;
+  partnerDoctor?: boolean | null;
 }

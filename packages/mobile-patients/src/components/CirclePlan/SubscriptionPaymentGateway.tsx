@@ -99,7 +99,9 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       Type: 'Direct Payment',
       Source: from,
     };
-    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+    !!circlePlanSelected?.valid_duration &&
+      !!circlePlanSelected?.currentSellingPrice &&
+      postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const handleBack = () => {

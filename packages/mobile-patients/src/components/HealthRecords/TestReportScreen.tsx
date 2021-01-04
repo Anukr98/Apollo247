@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   View,
@@ -7,13 +7,22 @@ import {
   ScrollView,
   SectionList,
   BackHandler,
+  TextInput,
+  Keyboard,
+  TouchableOpacity,
+  FlatList,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Filter } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Filter,
+  PhrSearchIcon,
+  SearchDarkPhrIcon,
+  LabTestPhrSearchIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -29,7 +38,10 @@ import {
   AddLabTestRecordInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
-import { ADD_PATIENT_LAB_TEST_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  ADD_PATIENT_LAB_TEST_RECORD,
+  GET_PRISM_AUTH_TOKEN,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   g,
@@ -40,6 +52,8 @@ import {
   handleGraphQlError,
   postWebEngagePHR,
   phrSortByDate,
+  getPhrHighlightText,
+  isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -50,6 +64,12 @@ import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  getPrismAuthTokenVariables,
+  getPrismAuthToken,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -80,6 +100,44 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23.4),
     marginBottom: 3,
   },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+    paddingBottom: 10,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center',
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    marginLeft: 18,
+  },
+  textInputStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
+  },
+  loaderViewStyle: { justifyContent: 'center', flex: 1, alignItems: 'center' },
+  loaderStyle: { height: 100, backgroundColor: 'transparent', alignSelf: 'center' },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
+  searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
+  phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
+  searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
 });
 
 export enum FILTER_TYPE {
@@ -109,6 +167,7 @@ export interface TestReportScreenProps
   extends NavigationScreenProps<{
     testReportsData: any;
     onPressBack: () => void;
+    authToken: string;
     callTestReportsApi: () => void;
   }> {}
 
@@ -125,6 +184,16 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   }> | null>(null);
   const [callApi, setCallApi] = useState(false);
   const [callPhrMainApi, setCallPhrMainApi] = useState(false);
+  const [isSearchFocus, SetIsSearchFocus] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchInputFocus, setSearchInputFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const _searchInputRef = useRef(null);
+  const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
+  const [prismAuthToken, setPrismAuthToken] = useState<string>(
+    props.navigation?.getParam('authToken') || ''
+  );
 
   const gotoPHRHomeScreen = () => {
     if (!callApi && !callPhrMainApi) {
@@ -197,6 +266,56 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, [callApi, callPhrMainApi]);
+
+  const getAuthToken = async () => {
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+      });
+  };
+
+  const onSearchHealthRecords = (_searchText: string) => {
+    setSearchLoading(true);
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken, 'LabTest')
+      .then(({ data }) => {
+        setHealthRecordSearchResults([]);
+        if (data?.response) {
+          const recordData = data.response;
+          const finalData: any[] = [];
+          recordData.forEach((recordData: any) => {
+            const { healthrecordType } = recordData;
+            if (healthrecordType === 'LABTEST') {
+              finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
+            }
+          });
+          setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
+        } else {
+          getAuthToken();
+          setSearchLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.log('searchPHRApiWithAuthToken Error', error);
+        getAuthToken();
+        setSearchLoading(false);
+      });
+  };
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
@@ -337,36 +456,109 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     );
   };
 
-  const renderSearchAndFilterView = () => {
+  const onSearchTextChange = (value: string) => {
+    SetIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 2)) {
+        setHealthRecordSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      const search = _.debounce(onSearchHealthRecords, 300);
+      search(value);
+    }
+  };
+
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      setSearchText('');
+      SetIsSearchFocus(false);
+      setShowSearchBar(false);
+      _searchInputRef?.current?.clear();
+      setHealthRecordSearchResults([]);
+      Keyboard.dismiss();
+    }
+  };
+
+  const renderSearchBar = () => {
+    return (
+      <View style={styles.searchBarMainView}>
+        <View style={styles.searchBarMainViewStyle}>
+          <View style={styles.searchBarViewStyle}>
+            <PhrSearchIcon style={{ width: 20, height: 20 }} />
+            <TextInput
+              placeholder={'Search lab reports'}
+              autoCapitalize={'none'}
+              autoFocus={searchInputFocus}
+              style={styles.textInputStyle}
+              selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+              numberOfLines={1}
+              ref={_searchInputRef}
+              onFocus={() => SetIsSearchFocus(true)}
+              value={searchText}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(value) => onSearchTextChange(value)}
+            />
+          </View>
+          {isSearchFocus ? (
+            <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+              {'Cancel'}
+            </Text>
+          ) : null}
+          {searchText?.length > 2 ? null : renderFilterView()}
+        </View>
+      </View>
+    );
+  };
+
+  const renderFilterView = () => {
     const testFilterData = ConsultRxFilterArray.map((i) => {
       return { key: i.key, value: i.title };
     });
+    return (
+      <MaterialMenu
+        options={testFilterData}
+        selectedText={filterApplied}
+        menuContainerStyle={styles.menuContainerStyle}
+        itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
+        itemTextStyle={styles.itemTextStyle}
+        firstOptionText={true}
+        selectedTextStyle={styles.selectedTextStyle}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 10 }}
+        onPress={(selectedFilter) => {
+          if (selectedFilter.key !== FILTER_TYPE.SORT_BY) {
+            setFilterApplied(selectedFilter.key);
+          }
+        }}
+      >
+        <View style={{ paddingLeft: 16 }}>
+          <Filter style={{ width: 24, height: 24 }} />
+        </View>
+      </MaterialMenu>
+    );
+  };
+
+  const renderSearchAndFilterView = () => {
     return (
       <View style={styles.searchFilterViewStyle}>
         <Text style={{ ...theme.viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
           {'Test Reports'}
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialMenu
-            options={testFilterData}
-            selectedText={filterApplied}
-            menuContainerStyle={styles.menuContainerStyle}
-            itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
-            itemTextStyle={styles.itemTextStyle}
-            firstOptionText={true}
-            selectedTextStyle={styles.selectedTextStyle}
-            lastContainerStyle={{ borderBottomWidth: 0 }}
-            bottomPadding={{ paddingBottom: 10 }}
-            onPress={(selectedFilter) => {
-              if (selectedFilter.key !== FILTER_TYPE.SORT_BY) {
-                setFilterApplied(selectedFilter.key);
-              }
+        <View style={styles.searchBarMainView}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setShowSearchBar(true);
+              setSearchInputFocus(true);
             }}
+            style={{ paddingLeft: 11 }}
           >
-            <View style={{ paddingLeft: 16 }}>
-              <Filter style={{ width: 24, height: 24 }} />
-            </View>
-          </MaterialMenu>
+            <SearchDarkPhrIcon style={{ width: 17.49, height: 17.49 }} />
+          </TouchableOpacity>
+          {renderFilterView()}
         </View>
       </View>
     );
@@ -560,6 +752,78 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     );
   };
 
+  const renderSearchLoader = () => {
+    return (
+      <View style={styles.loaderViewStyle}>
+        <Spinner style={styles.loaderStyle} />
+      </View>
+    );
+  };
+
+  const searchListHeaderView = () => {
+    const search_result_text =
+      healthRecordSearchResults?.length === 1
+        ? `${healthRecordSearchResults?.length} search result for \‘${searchText}\’`
+        : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
+    return (
+      <View style={styles.searchListHeaderViewStyle}>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+      </View>
+    );
+  };
+
+  const onClickSearchHealthCard = (item: any) => {
+    const { healthrecordId } = item?.value;
+    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+      healthrecordId: healthrecordId,
+      healthRecordType: MedicalRecordType.TEST_REPORT,
+      labResults: true,
+    });
+  };
+
+  const renderHealthRecordSearchItem = (item: any, index: number) => {
+    const healthCardTopView = () => {
+      return (
+        <View style={styles.healthRecordTypeViewStyle}>
+          <LabTestPhrSearchIcon style={{ width: 14, height: 15 }} />
+          <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+            {'Test Reports'}
+          </Text>
+        </View>
+      );
+    };
+    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
+    return (
+      <SearchHealthRecordCard
+        dateText={dateText}
+        healthRecordTitle={item?.value?.title}
+        healthRecordMoreText={healthMoreText}
+        searchHealthCardTopView={healthCardTopView()}
+        item={item}
+        index={index}
+        onSearchHealthCardPress={(item) => onClickSearchHealthCard(item)}
+      />
+    );
+  };
+
+  const renderHealthRecordSearchResults = () => {
+    return searchLoading ? (
+      renderSearchLoader()
+    ) : (
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        bounces={false}
+        data={healthRecordSearchResults}
+        ListEmptyComponent={
+          <PhrNoDataComponent mainViewStyle={styles.phrNodataMainViewStyle} phrSearchList />
+        }
+        ListHeaderComponent={searchListHeaderView}
+        renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
+      />
+    );
+  };
+
   const onRecordAdded = () => {
     setCallApi(true);
   };
@@ -587,16 +851,28 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     );
   };
 
+  const renderTestReportsMainView = () => {
+    return (
+      <>
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {renderTestReports()}
+        </ScrollView>
+        {renderAddButton()}
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {testReportMainData?.length > 0 ? renderSearchAndFilterView() : null}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderTestReports()}
-        </ScrollView>
-        {renderAddButton()}
+        {testReportMainData?.length > 0
+          ? showSearchBar
+            ? renderSearchBar()
+            : renderSearchAndFilterView()
+          : null}
+        {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderTestReportsMainView()}
       </SafeAreaView>
     </View>
   );

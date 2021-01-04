@@ -27,9 +27,6 @@ export interface MedicineProduct {
   is_in_contract?: 'Yes' | 'No';
   is_returnable?: 'Yes' | 'No';
   marketer_address?: string | null;
-  pack_form?: string | null;
-  pack_size?: string | null;
-  dose_form_variant?: string | null;
   unit_of_measurement?: string | null;
   vegetarian?: 'Yes' | 'No';
   storage?: string | null;
@@ -41,6 +38,9 @@ export interface MedicineProduct {
   expiry_date?: string | null;
   composition?: string | null;
   consume_type?: string | null;
+  dose_form_variant?: string | null;
+  pack_form?: string | null;
+  pack_size?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -396,11 +396,13 @@ export interface MedicinePageAPiResponse {
 }
 
 export interface PackageInclusion {
+  requiredAttachment?: string;
+  itemId?: number;
   TestInclusion: string;
-  SampleRemarks: string;
-  SampleTypeName: string;
-  TestParameters: string;
-  TestName?: string; // getting TestInclusion value in TestName from API
+  sampleRemarks: string;
+  sampleTypeName: string;
+  testParameters: string;
+  name?: string;
 }
 
 export interface TestPackage {
@@ -1017,6 +1019,34 @@ export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
     },
     headers: {
       Authorization: config.GET_SKU[1],
+    },
+  });
+};
+
+export const searchPHRApi = (
+  searchText: string,
+  uhid: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrl = `${AppConfig.Configuration.PHR_BASE_URL}/apollo/healthrecord/search?accessToken=KeyOf247&uhid=${uhid}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrl);
+};
+
+export const searchPHRApiWithAuthToken = (
+  searchText: string,
+  authToken: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrlWithAuthToke = `${AppConfig.Configuration.PHR_BASE_URL}/searchhealthrecord?authToken=${authToken}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrlWithAuthToke);
+};
+
+export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_BANNER_CONFIG[0];
+  const getBanners = `${baseurl}/${pageName}`;
+  return Axios.get(getBanners, {
+    headers: {
+      Authorization: config.DRUPAL_BANNER_CONFIG[1],
     },
   });
 };

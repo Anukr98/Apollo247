@@ -69,7 +69,10 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { CommonBugFender, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
@@ -1120,7 +1123,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
-          userSubscriptionId={hdfcSubscriptionId}
+          userSubscriptionId={isCirclePlan ? circleSubscriptionId : hdfcSubscriptionId}
         />
       )}
       {showAvailPopup && (

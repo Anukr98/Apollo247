@@ -7,6 +7,7 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import DeviceInfo from 'react-native-device-info';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -62,18 +63,15 @@ import stripHtml from 'string-strip-html';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import {
-  DIAGNOSTIC_GROUP_PLAN,
-  getPackageData,
-  PackageInclusion,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -203,6 +201,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     client
       .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
         query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           patientId: g(currentPatient, 'id') || '',
           type: SEARCH_TYPE.TEST,
@@ -234,6 +235,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             searchText: name,
             cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
@@ -260,26 +264,27 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
-  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
-    setGlobalLoading!(true);
-    getPackageData(id)
-      .then(({ data }) => {
-        console.log('getPackageData\n', { data });
-        const product = g(data, 'data');
+  const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
+    try {
+      const arrayOfId = [Number(id)];
+      setGlobalLoading!(true);
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        setGlobalLoading!(false);
+        const product = data;
         if (product && product.length) {
           func && func(product);
         } else {
           errorAlert();
         }
-      })
-      .catch((e) => {
-        CommonBugFender('SearchTestScene_fetchPackageInclusion', e);
-        console.log({ e });
-        errorAlert();
-      })
-      .finally(() => {
-        setGlobalLoading!(false);
-      });
+      }
+    } catch (e) {
+      CommonBugFender('Tests_fetchPackageInclusion', e);
+      setGlobalLoading!(false);
+      console.log('getPackageData Error\n', { e });
+      errorAlert();
+    }
   };
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
@@ -308,6 +313,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     client
       .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
         query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           searchText: _searchText,
           cityID: parseInt(locationForDiagnostics?.cityId!, 10),
@@ -457,14 +465,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={{ marginLeft: 10 }}
               disabled={true}
               activeOpacity={1}
-              onPress={() => setFilterVisible(true)}
+              onPress={() => console.log('filter press')}
             >
               <Filter />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -690,11 +698,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         }}
         medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
-        // price={price}
-        price={Number(mrpToDisplay!)}
+        price={price}
+        mrpToDisplay={Number(mrpToDisplay!)}
         specialPrice={sellingPrice}
-        // specialPrice={!promoteCircle && price != specialPrice ? specialPrice : undefined}
+        packageMrp={packageMrpForItem}
         circlePrice={promoteCircle ? circleSpecialPrice : undefined}
+        isSpecialDiscount={promoteDiscount}
         isCareSubscribed={isDiagnosticCircleSubscription}
         unit={1}
         onPressAdd={() => {

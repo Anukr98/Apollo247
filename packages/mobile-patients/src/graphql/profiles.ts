@@ -243,6 +243,8 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       typeId
       name
       image
+      specialty
+      symptoms
     }
   }
 `;
@@ -426,6 +428,33 @@ export const GET_PATIENT_APPOINTMENTS = gql`
   }
 `;
 
+export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
+  query GetPatientAllAppointmentsForHelp($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        actualAmount
+        appointmentType
+        appointmentDateTime
+        displayId
+        doctorInfo {
+          thumbnailUrl
+          displayName
+          experience
+          specialty {
+            name
+          }
+          doctorHospital {
+            facility {
+              name
+              city
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   query getPatientAllAppointments($patientId: String!) {
     getPatientAllAppointments(patientId: $patientId) {
@@ -575,6 +604,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           }
         }
         caseSheet {
+          id
           followUpAfterInDays
           version
           doctorType
@@ -582,6 +612,29 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             id
             medicineName
           }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
+  query getPatientAllConsultedDoctors($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        doctorInfo {
+          id
+          displayName
+          specialty {
+            image
+            name
+          }
+          photoUrl
         }
       }
     }
@@ -764,6 +817,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
   query getDoctorDetailsById($id: String!) {
     getDoctorDetailsById(id: $id) {
       id
+      skipAutoQuestions
+      isJdAllowed
       salutation
       firstName
       lastName
@@ -879,8 +934,18 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
 `;
 
 export const GET_PLATINUM_DOCTOR = gql`
-  query getPlatinumDoctor($specialtyId: ID) {
-    getPlatinumDoctor(specialtyId: $specialtyId) {
+  query getPlatinumDoctor(
+    $specialtyId: ID
+    $zoneType: ZoneType
+    $zone: String
+    $partnerDoctor: Boolean
+  ) {
+    getPlatinumDoctor(
+      specialtyId: $specialtyId
+      zoneType: $zoneType
+      zone: $zone
+      partnerDoctor: $partnerDoctor
+    ) {
       doctors {
         id
         displayName
@@ -1486,15 +1551,19 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         displayId
         createdDate
         areaId
+        slotDateTimeInUTC
         rescheduleCount
         isRescheduled
+        collectionCharges
         diagnosticOrderLineItems {
           id
           itemId
+          itemName
           quantity
           price
           groupPlan
-          itemObj{
+          itemType
+          itemObj {
             itemType
             testPreparationData
             packageCalculatedMrp
@@ -1510,8 +1579,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             itemId
             itemName
             itemType
-            testPreparationData
             testDescription
+            testPreparationData
             inclusions
             diagnosticPricing {
               mrp
@@ -1543,6 +1612,37 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
   }
 `;
 
+export const GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS = gql`
+  query getDiagnosticCancelledOrderDetails($diagnosticOrderId: String, $patientId: String) {
+    getDiagnosticCancelledOrderDetails(diagnosticOrderId: $diagnosticOrderId, patientId: $patientId) {
+      ordersList {
+        statusDate
+        orderStatus
+        itemId
+        itemName
+        packageId
+        packageName
+      }
+    }
+  }
+`;
+
+export const GET_PACKAGE_INCLUSIONS = gql`
+  query getInclusionsOfMultipleItems($itemID: [Int]!) {
+    getInclusionsOfMultipleItems(itemID: $itemID) {
+      inclusions {
+        itemId
+        requiredAttachment
+        sampleRemarks
+        sampleTypeName
+        testParameters
+        name
+        testPreparationData
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
   query getDiagnosticOrderDetails($diagnosticOrderId: String) {
     getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
@@ -1566,13 +1666,17 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         orderType
         displayId
         createdDate
+        collectionCharges
+        slotDateTimeInUTC
         diagnosticOrderLineItems {
           id
           itemId
+          itemName
+          itemType
           price
           quantity
           groupPlan
-          itemObj{
+          itemObj {
             itemType
             testPreparationData
             packageCalculatedMrp
@@ -1585,8 +1689,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           }
           diagnostics {
             id
-            itemId
             itemName
+            itemId
             gender
             rate
             itemRemarks
@@ -1596,6 +1700,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
             testDescription
+            testPreparationData
             inclusions
             diagnosticPricing {
               mrp
@@ -1643,38 +1748,6 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         id
         itemId
         itemName
-        itemType
-        rate
-        gender
-        itemRemarks
-        city
-        state
-        collectionType
-        fromAgeInDays
-        toAgeInDays
-        testPreparationData
-        packageCalculatedMrp
-        testDescription
-        inclusions
-        diagnosticPricing {
-          mrp
-          price
-          groupPlan
-          status
-          startDate
-          endDate
-        }
-      }
-    }
-  }
-`;
-
-export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
-  query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
-    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID) {
-      diagnostics {
-        itemName
-        rate
         itemType
         rate
         gender
@@ -1789,16 +1862,19 @@ export const VALIDATE_DIAGNOSTIC_COUPON = gql`
 `;
 
 export const CANCEL_DIAGNOSTIC_ORDER = gql`
-  mutation cancelDiagnosticOrder($diagnosticOrderId: Int) {
-    cancelDiagnosticOrder(diagnosticOrderId: $diagnosticOrderId) {
+  mutation cancelDiagnosticsOrder($cancellationDiagnosticsInput: CancellationDiagnosticsInput) {
+    cancelDiagnosticsOrder(cancellationDiagnosticsInput: $cancellationDiagnosticsInput) {
+      status
       message
     }
   }
 `;
 
-export const UPDATE_DIAGNOSTIC_ORDER = gql`
-  mutation updateDiagnosticOrder($updateDiagnosticOrderInput: UpdateDiagnosticOrderInput) {
-    updateDiagnosticOrder(updateDiagnosticOrderInput: $updateDiagnosticOrderInput) {
+export const RESCHEDULE_DIAGNOSTIC_ORDER = gql`
+  mutation rescheduleDiagnosticsOrder($rescheduleDiagnosticsInput: RescheduleDiagnosticsInput) {
+    rescheduleDiagnosticsOrder(rescheduleDiagnosticsInput: $rescheduleDiagnosticsInput) {
+      status
+      rescheduleCount
       message
     }
   }
@@ -1939,108 +2015,20 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
-    getMedicineOrderOMSDetails(
+export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
+  query GetMedicineOrderShipmentDetails(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
+    getMedicineOrderOMSDetailsWithAddress(
       patientId: $patientId
       orderAutoId: $orderAutoId
       billNumber: $billNumber
     ) {
       medicineOrderDetails {
-        id
-        createdDate
-        orderAutoId
-        billNumber
-        devliveryCharges
-        couponDiscount
-        productDiscount
-        redeemedAmount
-        estimatedAmount
-        prescriptionImageUrl
-        oldOrderTat
-        orderTat
-        oldOrderTat
-        orderType
-        shopAddress
-        packagingCharges
-        deliveryType
-        currentStatus
-        patientAddressId
-        alertStore
-        prescriptionOptionSelected
-        totalCashBack
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-          statusMessage
-        }
-        medicineOrderLineItems {
-          medicineSKU
-          medicineName
-          price
-          mrp
-          quantity
-          isMedicine
-          mou
-          isPrescriptionNeeded
-        }
-        medicineOrderPayments {
-          id
-          paymentType
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-          healthCreditsRedeemed
-          paymentMode
-        }
-        medicineOrderRefunds {
-          refundAmount
-          refundStatus
-          refundId
-          orderId
-          createdDate
-        }
         medicineOrderShipments {
-          id
-          siteId
-          siteName
           apOrderNo
-          updatedDate
-          currentStatus
-          itemDetails
-          medicineOrdersStatus {
-            id
-            orderStatus
-            statusDate
-            hideStatus
-          }
-          medicineOrderInvoice {
-            id
-            siteId
-            remarks
-            requestType
-            vendorName
-            billDetails
-            itemDetails
-          }
-        }
-        patient {
-          firstName
-          lastName
-          addressList {
-            id
-            addressLine1
-            addressLine2
-            city
-            state
-            zipcode
-          }
         }
       }
     }
@@ -2323,9 +2311,30 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
+export const GET_PRISM_AUTH_TOKEN = gql`
+  query getPrismAuthToken($uhid: String!) {
+    getPrismAuthToken(uhid: $uhid) {
+      errorCode
+      errorMsg
+      errorType
+      response
+    }
+  }
+`;
+
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
-  query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
-    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
+  query getPatientPrismMedicalRecords_V2(
+    $patientId: ID!
+    $records: [MedicalRecordType]
+    $recordId: String
+    $source: String
+  ) {
+    getPatientPrismMedicalRecords_V2(
+      patientId: $patientId
+      records: $records
+      recordId: $recordId
+      source: $source
+    ) {
       labResults {
         response {
           id
@@ -2585,6 +2594,30 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           }
         }
       }
+      familyHistory {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          diseaseName
+          authToken
+          source
+          fileUrl
+          familyMember
+          notes
+          recordDateTime
+          age
+          familyHistoryFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
     }
   }
 `;
@@ -2699,6 +2732,14 @@ export const DELETE_PATIENT_PRISM_MEDICAL_RECORD = gql`
     deletePatientPrismMedicalRecord(
       deletePatientPrismMedicalRecordInput: $deletePatientPrismMedicalRecordInput
     ) {
+      status
+    }
+  }
+`;
+
+export const ADD_FAMILY_HISTORY_RECORD = gql`
+  mutation savePatientFamilyHistoryToPRISM($familyHistoryParameters: FamilyHistoryParameters) {
+    savePatientFamilyHistoryToPRISM(familyHistoryParameters: $familyHistoryParameters) {
       status
     }
   }

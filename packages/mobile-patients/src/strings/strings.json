@@ -7,6 +7,7 @@
     "edit_profile_imp_text": "You cannot edit Name, Age, Date of Birth \nand Gender!",
     "new_profile_confirmation_text": "You cannot edit these details once you \nhave saved them. They will appear on all \nyour medical documents. Do you wish to \nconfirm?",
     "uhOh": "Uh oh.. :(",
+    "hiWithSmiley": "Hi :)",
     "date_placeholder_text": "DD MMM, YYYY",
     "select_text": "Select",
     "doctor_name_text": "Doctor name",
@@ -20,6 +21,7 @@
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "best_doctor_text": "Here are our best ",
+    "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
     "distance": "Distance",
     "consult_now": "CONSULT NOW",
@@ -78,7 +80,10 @@
     "careMembership": "CIRCLE Membership",
     "tryAgainLater": "Something went wrong, please try again after sometime",
     "weAreHereToHelpYou": "Always caring about your health, we are here to help you!",
-    "consultFee": "Consult Fee"
+    "consultFee": "Consult Fee",
+    "consultedDoctors": "Consulted Doctors",
+    "pastSearches": "Past Searches",
+    "topSpecialities": "Top Specialities"
   },
   "components": {
     "medicineDetails": {
@@ -98,11 +103,31 @@
     }
   },
   "lookingForBoughtPreviously": "Looking for an item you bought previously?",
+  "trackYourShipment": "TRACK YOUR SHIPMENT",
+  "reportIssue": "REPORT ISSUE",
+  "submit": "Submit",
+  "retry": "Retry",
+  "help": "Help",
+  "cancel": "Cancel",
+  "needHelp": "Need Help",
+  "needHelpSubmitMessage": "Thank you for bringing this to our notice. We’ll gather the details regarding your issue and immediately after that someone from our team will call you.",
+  "recentConsults": "RECENT CONSULTS",
+  "recentOrders": "RECENT ORDERS",
+  "pharmacy": "Pharmacy",
+  "productDetail": "Product Detail",
+  "pleaseProvideMoreDetails": "Please provide more details",
+  "chooseFromPreviousConsults": "Choose from previous consultations",
+  "otherIssueNotMyConsults": "Other issue not related to consult",
+  "chooseFromPreviousOrders": "Choose from previous orders",
+  "otherIssueNotMyOrders": "Other issue not related to My Orders",
+  "ifYourOrderFailed": "If your order transaction failed report issue in this section:",
+  "ifYourConsultTransactionFailed": "If your consult transaction failed you may find your issue in this section:",
   "buyAgain": "Buy Again",
   "sorryNoProductsHere": "Sorry, no products available here.",
   "genericError": "Oops! seems like we are having an issue. Please try again.",
   "selectFromOrderedItems": "Select from your previously ordered items",
-  "proceedToCheckout": "Proceed to Checkout ({0} items)",
+  "proceedToCheckoutItems": "Proceed to Checkout ({0} items)",
+  "proceedToCheckout": "Proceed to Checkout",
   "specialOffers": "Special Offers",
   "notInStockInYourArea": "Not in stock in your area",
   "notForSale": "Not for sale",
@@ -112,6 +137,7 @@
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
   "uploadPrescription": "UPLOAD PRESCRIPTION",
   "proceedToPay": "PROCEED TO PAY",
+  "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "consultType": {
@@ -358,7 +384,15 @@
     "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
     "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
     "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
-    "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay."
+    "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
+    "specialDiscountText": "TESTS247 coupon pre-applied",
+    "disclaimerText": [{
+      "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
+    }, {
+      "text": "Rescheduling can be done upto 3 times only"
+    }],
+    "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
+    "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left."
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -560,6 +594,7 @@
     "ONE_TOUCH": "ONE-TOUCH",
     "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
     "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
+    "ABSOLUTE_URL": "ABSOLUTE_URL",
     "ADVANCED_DIABETES": "POP-UP",
     "FILL_FORM": "LEAD-FORM",
     "DIABETES_CONSENT": {
@@ -680,7 +715,8 @@
     "healthCreditsRemaining": "Health Credits remaining",
     "returnToHomepage": "RETURN TO HOMEPAGE",
     "availableHealthCredits": "*Available Health Credits",
-    "upgradeWithHC": "UPGRADE FOR {hc} HEALTH CREDITS"
+    "upgradeWithHC": "UPGRADE WITH {hc} HC",
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
@@ -766,6 +802,12 @@
         "question": "Will some of these features be part of the Apollo Hospital experience as well?",
         "answer": "Not as of now, but we are working towards it so you get the best out of Circle"
       }
+    ],
+    "video_links": [
+      "https://www.youtube.com/embed/vTEJT52hNRw",
+      "https://www.youtube.com/embed/c0egNatC16I",
+      "https://www.youtube.com/embed/rsFlGsOBMuM",
+      "https://www.youtube.com/embed/0-TlHa7rLxo"
     ]
   },
   "banner_context": {
@@ -789,5 +831,12 @@
     "SIMILAR_PRODUCTS": "View Similar Products",
     "ALSO_BOUGHT": "Customers Also Bought",
     "PRODUCT_SUBSTITUTES": "Product Substitutes"
+  },
+  "addressSelection": {
+    "USE_CURRENT_LOCATION_TEXT": "Use current location",
+    "USE_GPS_TEXT": "Using GPS",
+    "NO_RESULTS_FOUND": "No Results Found",
+    "MARKER_TEXT": "MOVE MAP TO ADJUST",
+    "HELP_US_LOCATE_TEXT": "Help us locate your address"
   }
 }

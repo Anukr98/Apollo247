@@ -647,13 +647,18 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                   '{hc}',
                   circlePlanSelected?.currentSellingPrice
                 )
-              : string.circleDoctors.upgrade
+              : !circlePlanSelected
+              ? string.circleDoctors.upgrade
+              : string.circleDoctors.upgradeWithPrice.replace(
+                  '{price}',
+                  circlePlanSelected?.currentSellingPrice
+                )
             : string.circleDoctors.addToCart
         }
         style={[
           styles.buyNowBtn,
           {
-            width: purchaseWithHC ? 270 : 212,
+            width: purchaseWithHC ? 230 : 212,
           },
         ]}
         onPress={() => {

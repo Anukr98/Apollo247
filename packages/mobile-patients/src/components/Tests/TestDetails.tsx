@@ -6,18 +6,13 @@ import { CartIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/component
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  DIAGNOSTIC_GROUP_PLAN,
-  getPackageData,
-  TestPackage,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { DIAGNOSTIC_GROUP_PLAN, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
 import {
   aphConsole,
   postWebEngageEvent,
   g,
-  getDiscountPercentage,
   postAppsFlyerEvent,
   postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -33,6 +28,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -68,7 +64,10 @@ import {
   calculateMrpToDisplay,
   calculatePackageDiscounts,
   getPricesForItem,
+  sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -195,6 +194,13 @@ const styles = StyleSheet.create({
     height: 50,
   },
   circlePriceView: { alignSelf: 'flex-start', marginTop: 5 },
+  priceTextSlashed: {
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+    textDecorationLine: 'line-through',
+    opacity: 0.5,
+    marginTop: -10,
+  },
 });
 
 var tabs = [
@@ -268,30 +274,39 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const discount =
     testDetails.source == 'Cart Page'
-      ? getDiscountPercentage(findItemFromCart?.price!, findItemFromCart?.specialPrice!)
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
+          findItemFromCart?.price!,
+          findItemFromCart?.specialPrice!
+        )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          testDetails?.Rate!,
-          Number(testDetails?.specialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          testDetails?.Rate! || testInfo?.Rate!,
+          Number(testDetails?.specialPrice! || testInfo?.specialPrice!)
         );
   const circleDiscount =
     testDetails.source == 'Cart Page'
-      ? getDiscountPercentage(findItemFromCart?.circlePrice!, findItemFromCart?.circleSpecialPrice!)
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
+          findItemFromCart?.circlePrice!,
+          findItemFromCart?.circleSpecialPrice!
+        )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          Number(testDetails?.circleRate!),
-          Number(testDetails?.circleSpecialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.circleRate! || testInfo?.circleRate),
+          Number(testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!)
         );
   const specialDiscount =
     testDetails.source == 'Cart Page'
-      ? getDiscountPercentage(
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
           findItemFromCart?.discountPrice!,
           findItemFromCart?.discountSpecialPrice!
         )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          Number(testDetails?.discountPrice!),
-          Number(testDetails?.discountSpecialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.discountPrice! || testInfo?.discountPrice!),
+          Number(testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!)
         );
 
   const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
@@ -301,20 +316,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (itemId) {
       loadTestDetails(itemId);
     } else {
-      !TestDetailsDiscription &&
-        getPackageData(currentItemId)
-          .then(({ data }) => {
-            setsearchSate('success');
-            aphConsole.log('getPackageData \n', { data });
-            setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
-          })
-          .catch((e) => {
-            CommonBugFender('TestDetails', e);
-            aphConsole.log('getPackageData Error \n', { e });
-            setsearchSate('fail');
-          });
+      !TestDetailsDiscription && fetchPackageInclusions(currentItemId);
     }
   }, []);
+
+  const fetchPackageInclusions = async (currentItemId: string) => {
+    try {
+      const arrayOfId = [Number(currentItemId)];
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        aphConsole.log('getPackageData \n', { data });
+        setTestInfo({ ...testInfo, PackageInClussion: data || [] });
+      }
+    } catch (e) {
+      CommonBugFender('TestDetails', e);
+      aphConsole.log('getPackageData Error \n', { e });
+      setsearchSate('fail');
+    }
+  };
 
   useEffect(() => {
     if (testInfo?.testDescription != null) {
@@ -382,6 +402,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         findDiagnosticsByItemIDsAndCityIDVariables
       >({
         query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
           itemIDs: listOfIds,
@@ -397,27 +420,65 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         toAgeInDays,
         testPreparationData,
         packageCalculatedMrp,
+        diagnosticPricing,
+        inclusions,
+        testDescription,
+        itemType,
       } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
+
+      const getDiagnosticPricingForItem = diagnosticPricing;
+      const getItems = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics');
+      const packageMrpForItem = packageCalculatedMrp!;
+      const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+
+      if (!pricesForItem?.itemActive) {
+        //disable add to cart
+        return !isAddedToCart;
+      }
+      const specialPrice = pricesForItem?.specialPrice!;
+      const price = pricesForItem?.price!; //more than price (black)
+      const circlePrice = pricesForItem?.circlePrice!;
+      const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+      const discountPrice = pricesForItem?.discountPrice!;
+      const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+      const mrpToDisplay = pricesForItem?.mrpToDisplay;
+
       const partialTestDetails = {
-        Rate: rate,
+        Rate: price,
         Gender: gender,
         ItemID: `${itemId}`,
         ItemName: itemName,
         collectionType: collectionType!,
+        mou: inclusions == null ? 1 : inclusions.length,
+        testDescription: testDescription,
+        type: itemType,
         FromAgeInDays: fromAgeInDays,
         ToAgeInDays: toAgeInDays,
         preparation: testPreparationData,
+        packageMrp: packageCalculatedMrp,
+        specialPrice: specialPrice,
+        circleRate: circlePrice,
+        circleSpecialPrice: circleSpecialPrice,
+        discountPrice: discountPrice,
+        discountSpecialPrice: discountSpecialPrice,
+        mrpToDisplay: mrpToDisplay,
+        inclusions: inclusions == null ? Number([itemId]) : inclusions,
       };
 
-      const {
-        data: { data },
-      } = await getPackageData(itemId);
-
-      setTestInfo({
-        ...partialTestDetails,
-        PackageInClussion: data || [],
-      } as TestPackageForDetails);
-      setsearchSate('success');
+      try {
+        const arrayOfId = [Number(itemId)];
+        const res: any = await getPackageInclusions(client, arrayOfId);
+        if (res) {
+          const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+          aphConsole.log('getPackageData \n', { data });
+          setTestInfo({ ...partialTestDetails, ...testInfo, PackageInClussion: data || [] });
+          setsearchSate('success');
+        }
+      } catch (e) {
+        CommonBugFender('TestDetails', e);
+        aphConsole.log('getPackageData Error \n', { e });
+        setsearchSate('fail');
+      }
     } catch (error) {
       setsearchSate('fail');
     }
@@ -430,7 +491,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       </View>
     );
   };
-
   const renderHeader = () => {
     return (
       <View>
@@ -487,7 +547,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
               <Text style={styles.personDetailStyles}>
-                {testInfo.PackageInClussion.map((item) => item.SampleTypeName)
+                {testInfo?.PackageInClussion.map((item) => item?.sampleTypeName)
                   .filter((i) => i)
                   .filter((i, idx, array) => array.indexOf(i) >= idx)
                   .join(', ')}
@@ -535,7 +595,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {testInfo.PackageInClussion.map((item, i) => (
           <View key={i}>
             <Text style={styles.descriptionTextStyles}>
-              {i + 1}. {item.TestInclusion || item.TestName}
+              {i + 1}. {item?.TestInclusion || item?.name}
             </Text>
           </View>
         ))}
@@ -586,6 +646,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        context: {
+          sourceHeaders,
+        },
         fetchPolicy: 'no-cache',
         variables: query,
       });
@@ -624,6 +687,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     } catch (error) {
       CommonBugFender('Diagnositic_DetailsPage_GetSubscriptionsOfUserByStatus', error);
     }
+  };
+
+  const renderSpecialDiscountText = (styleObj?: any) => {
+    return (
+      <SpecialDiscountText text={string.diagnostics.specialDiscountText} styleObj={styleObj} />
+    );
   };
 
   setTimeout(() => isItemAdded && setItemAdded(false), 2000);
@@ -722,13 +791,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountSpecialPriceToConsider = findItemFromCart?.discountSpecialPrice!;
       itemPackageMrpToConsider = findItemFromCart?.packageMrp!;
     } else {
-      priceToConsider = testDetails?.Rate;
-      specialPriceToConsider = testDetails?.specialPrice;
-      circlePriceToConsider = testDetails?.circleRate!;
-      circleSpecialPriceToConsider = testDetails?.circleSpecialPrice!;
-      discountPriceToConsider = testDetails?.discountPrice!;
-      discountSpecialPriceToConsider = testDetails?.discountSpecialPrice!;
-      itemPackageMrpToConsider = testDetails?.packageMrp!;
+      priceToConsider = testDetails?.Rate || testInfo?.Rate;
+      specialPriceToConsider = testDetails?.specialPrice || testInfo?.specialPrice;
+      circlePriceToConsider = testDetails?.circleRate! || testInfo?.circleRate!;
+      circleSpecialPriceToConsider =
+        testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!;
+      discountPriceToConsider = testDetails?.discountPrice! || testInfo?.discountPrice!;
+      discountSpecialPriceToConsider =
+        testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!;
+      itemPackageMrpToConsider = testDetails?.packageMrp! || testInfo?.packageMrp!;
     }
 
     const mrpToDisplay = calculateMrpToDisplay(
@@ -745,7 +816,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         discountSpecialPriceToConsider &&
         mrpToDisplay != discountSpecialPriceToConsider);
 
-    let bottomPrice;
+    let bottomPrice, strikedPrice;
     if (isDiagnosticCircleSubscription) {
       if (promoteCircle) {
         bottomPrice = circleSpecialPriceToConsider;
@@ -756,7 +827,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     } else {
       if (promoteCircle) {
-        bottomPrice = mrpToDisplay;
+        strikedPrice = mrpToDisplay;
+        bottomPrice = circlePriceToConsider!;
       } else if (promoteDiscount) {
         bottomPrice = discountSpecialPriceToConsider;
       } else {
@@ -795,7 +867,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <View style={styles.circlePriceView}>
                   <Text style={styles.priceText}>
                     {string.common.Rs}
-                    {/* {findItemFromCart?.circleSpecialPrice! || testInfo?.circleSpecialPrice} */}
                     {circleSpecialPriceToConsider}
                   </Text>
                 </View>
@@ -812,7 +883,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View
                 style={[
                   styles.circlePriceView,
-                  { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  // { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  { alignSelf: 'flex-start' },
                 ]}
               >
                 <Text
@@ -821,7 +893,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
-              {/* {renderItemAdded()} */}
+              {renderItemAdded()}
             </View>
           )}
           {/**
@@ -849,7 +921,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View
                 style={[
                   styles.circlePriceView,
-                  { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  // { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
+                  { alignSelf: 'flex-start' },
                 ]}
               >
                 <Text
@@ -858,7 +931,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {string.common.Rs} {mrpToDisplay}
                 </Text>
               </View>
-              {/* {renderItemAdded()} */}
+              {renderItemAdded()}
             </View>
           )}
 
@@ -895,6 +968,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   }}
                 >
                   {/**
+                   * special price text
+                   */}
+                  {promoteDiscount
+                    ? renderSpecialDiscountText({ marginTop: -10, marginBottom: 2 })
+                    : null}
+
+                  {/**
                    * circle + promote
                    */}
                   {isDiagnosticCircleSubscription && promoteCircle ? (
@@ -902,6 +982,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
                     </View>
                   ) : null}
+
+                  {/**added */}
+                  {promoteCircle && !!strikedPrice && strikedPrice! > bottomPrice && (
+                    <Text style={[styles.priceText, styles.priceTextSlashed]}>
+                      ({string.common.Rs}
+                      {strikedPrice})
+                    </Text>
+                  )}
                   <View style={{ flexDirection: 'row' }}>
                     <Text
                       style={[
@@ -915,18 +1003,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       {string.common.Rs}
                       {bottomPrice}
                     </Text>
-                    {isDiagnosticCircleSubscription && promoteCircle && (
-                      <Text
-                        style={{
-                          ...theme.fonts.IBMPlexSansMedium(11),
-                          color: colors.APP_GREEN,
-                          lineHeight: 16,
-                          marginHorizontal: 10,
-                        }}
-                      >
-                        {Number(circleDiscount!).toFixed(0)}%off
-                      </Text>
-                    )}
+                    {promoteCircle &&
+                      (isDiagnosticCircleSubscription ? circleDiscount > 0 : discount > 0) && (
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(11),
+                            color: colors.APP_GREEN,
+                            lineHeight: 16,
+                            marginHorizontal: 10,
+                          }}
+                        >
+                          {Number(
+                            isDiagnosticCircleSubscription ? circleDiscount! : discount
+                          ).toFixed(0)}
+                          %off
+                        </Text>
+                      )}
                     {/**
                      * circle + not to promote  -- removed isDiagnosticCircleSubscription (to show discounts)
                      */}

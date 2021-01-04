@@ -130,8 +130,11 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -335,6 +338,7 @@ export enum MedicalRecordType {
   ALLERGY = "ALLERGY",
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  FAMILY_HISTORY = "FAMILY_HISTORY",
   HEALTHCHECK = "HEALTHCHECK",
   HEALTHRESTRICTION = "HEALTHRESTRICTION",
   HOSPITALIZATION = "HOSPITALIZATION",
@@ -357,6 +361,11 @@ export enum ONE_APOLLO_STORE_CODE {
   ANDCUS = "ANDCUS",
   IOSCUS = "IOSCUS",
   WEBCUS = "WEBCUS",
+}
+
+export enum ORDER_TYPE {
+  CONSULT = "CONSULT",
+  PHARMACY = "PHARMACY",
 }
 
 export enum OTP_STATUS {
@@ -562,6 +571,11 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum ZoneType {
+  CITY = "CITY",
+  STATE = "STATE",
 }
 
 export enum mediaPrescriptionSource {
@@ -803,6 +817,13 @@ export interface CancelAppointmentInput {
   cancelledById: string;
 }
 
+export interface CancellationDiagnosticsInput {
+  comment?: string | null;
+  orderId: string;
+  patientId: string;
+  reason: string;
+}
+
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
@@ -876,7 +897,7 @@ export interface DiagnosticBookHomeCollectionInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
   areaId: number;
-  homeCollectionCharges: number;
+  collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
   totalPriceExcludingDiscounts?: number | null;
@@ -974,6 +995,23 @@ export interface EndAppointmentSessionInput {
   isReferred?: boolean | null;
 }
 
+export interface FamilyHistoryFilesProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface FamilyHistoryParameters {
+  patientId: string;
+  diseaseName?: string | null;
+  id?: string | null;
+  familyMember?: Relation | null;
+  notes?: string | null;
+  age?: number | null;
+  recordDate?: any | null;
+  attachmentList?: (FamilyHistoryFilesProperties | null)[] | null;
+}
+
 export interface FilterDoctorInput {
   patientId?: string | null;
   specialty?: string | null;
@@ -1009,6 +1047,8 @@ export interface HelpEmailInput {
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
 }
 
 export interface HospitalizationFileProperties {
@@ -1313,6 +1353,16 @@ export interface Range {
   maximum?: number | null;
 }
 
+export interface RescheduleDiagnosticsInput {
+  comment?: string | null;
+  date: any;
+  dateTimeInUTC: any;
+  orderId: string;
+  patientId: string;
+  reason?: string | null;
+  slotId: string;
+}
+
 export interface SUBSCRIPTION_DETAILS {
   userSubscriptionId?: string | null;
   plan?: PLAN | null;
@@ -1363,21 +1413,6 @@ export interface ShopAddress {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
-}
-
-export interface UpdateDiagnosticOrderInput {
-  id?: string | null;
-  slotTimings: string;
-  employeeSlotId: number;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
 }
 
 export interface UpdatePatientAddressInput {

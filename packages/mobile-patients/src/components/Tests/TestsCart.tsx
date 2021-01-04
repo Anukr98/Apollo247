@@ -15,7 +15,9 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   setCircleMembershipType,
+  isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -129,7 +131,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { getAreas, getAreasVariables } from '@aph/mobile-patients/src/graphql/types/getAreas';
 import {
   getDiagnosticSlotsWithAreaID,
@@ -162,6 +164,7 @@ import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEv
 import {
   calculateMrpToDisplay,
   getPricesForItem,
+  sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -184,7 +187,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   blueTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
   },
@@ -320,6 +323,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDeliveryAddressCityId,
     deliveryAddressCityId,
     cartTotal,
+    totalPriceExcludingAnyDiscounts,
     couponDiscount,
     grandTotal,
     uploadPrescriptionRequired,
@@ -352,6 +356,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDiagnosticAreas,
     clearDiagnoticCartInfo,
     cartSaving,
+    discountSaving,
+    normalSaving,
     circleSaving,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
@@ -419,12 +425,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
       mutation: SAVE_DIAGNOSTIC_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderInput: orderInfo },
     });
 
   const saveHomeCollectionBookingOrder = (orderInfo: DiagnosticBookHomeCollectionInput) =>
     client.mutate<DiagnosticBookHomeCollection, DiagnosticBookHomeCollectionVariables>({
       mutation: SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderInput: orderInfo },
     });
 
@@ -744,6 +756,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         getPatientAddressListVariables
       >({
         query: GET_PATIENT_ADDRESS_LIST,
+        context: {
+          sourceHeaders,
+        },
         variables: { patientId: userId },
         fetchPolicy: 'no-cache',
       });
@@ -773,8 +788,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const getPinCodeServiceability = async () => {
-    console.log('ye chala');
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
     const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
     if (!!pinCodeFromAddress) {
       setPinCode!(pinCodeFromAddress);
@@ -782,6 +796,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             pincode: parseInt(pinCodeFromAddress, 10),
           },
@@ -918,6 +935,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               thumbnail: cartItem?.thumbnail,
               groupPlan: planToConsider?.groupPlan,
               packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
+              inclusions:
+                results?.[isItemInCart]?.inclusions == null
+                  ? [Number(results?.[isItemInCart]?.itemId)]
+                  : results?.[isItemInCart]?.inclusions,
             });
           }
         }
@@ -1027,6 +1048,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             //if address is not selected then from pincode bar otherwise from address
             cityID: cityIdToPass,
@@ -1102,6 +1126,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setLoading!(true);
     client
       .query<getAreas, getAreasVariables>({
+        context: {
+          sourceHeaders,
+        },
         query: GET_DIAGNOSTIC_AREAS,
         fetchPolicy: 'no-cache',
         variables: {
@@ -1248,7 +1275,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         testDescription: product?.testDescription,
                         source: 'Cart Page',
                         type: product?.itemType,
-                        packageMrp: product?.packageCalculatedMrp,
+                        packageMrp: itemPackageMrp,
                         mrpToDisplay: mrpToDisplay,
                       } as TestPackageForDetails,
                     });
@@ -1257,12 +1284,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 );
               }}
               medicineName={test.name!}
-              // price={price}
-              price={Number(mrpToDisplay!)}
+              price={price}
+              mrpToDisplay={Number(mrpToDisplay!)}
               specialPrice={sellingPrice}
+              packageMrp={itemPackageMrp}
               circlePrice={promoteCircle ? circleSpecialPrice! : undefined}
+              isSpecialDiscount={promoteDiscount}
               discount={
-                promoteCircle ? circleDiscount! : promoteDiscount ? specialDiscount! : discount!
+                promoteCircle && isDiagnosticCircleSubscription
+                  ? circleDiscount!
+                  : promoteDiscount
+                  ? specialDiscount!
+                  : discount!
               }
               imageUrl={imageUrl}
               onPressAdd={() => {}}
@@ -1294,6 +1327,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
         query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+        context: {
+          sourceHeaders,
+        },
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(date).format('YYYY-MM-DD'),
@@ -1366,9 +1402,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
-    props.navigation.push(AppRoutes.AddAddress, {
+    props.navigation.push(AppRoutes.AddAddressNew, {
       KeyName: dataname,
-      DataAddress: address,
+      addressDetails: address,
       ComingFrom: comingFrom,
     });
   };
@@ -1449,7 +1485,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={styles.yellowTextStyle}
             onPress={() => {
               postPharmacyAddNewAddressClick('Diagnostics Cart');
-              props.navigation.navigate(AppRoutes.AddAddress, {
+              props.navigation.navigate(AppRoutes.AddAddressNew, {
                 addOnly: true,
                 source: 'Diagnostics Cart' as AddressSource,
               });
@@ -1903,7 +1939,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
             <Text style={styles.blueTextStyle}>
-              {string.common.Rs} {cartTotal.toFixed(2)}
+              {string.common.Rs} {totalPriceExcludingAnyDiscounts.toFixed(2)}
             </Text>
           </View>
           {couponDiscount > 0 && (
@@ -1928,13 +1964,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>{string.common.Rs} 500.00</Text>
             </View>
           )} */}
-          {selectedTab == tabs[0].title && cartSaving > 0 && (
+
+          {selectedTab == tabs[0].title && normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 Cart Saving
               </Text>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                - {string.common.Rs} {cartSaving.toFixed(2)}
+                - {string.common.Rs} {normalSaving.toFixed(2)}
               </Text>
             </View>
           )}
@@ -1956,6 +1993,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </View>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 - {string.common.Rs} {circleSaving.toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {selectedTab == tabs[0].title && discountSaving > 0 && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                {string.diagnostics.specialDiscountText}
+              </Text>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                - {string.common.Rs} {discountSaving.toFixed(2)}
               </Text>
             </View>
           )}
@@ -2087,7 +2134,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{
               marginHorizontal: 10,
               color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               alignSelf: 'center',
             }}
@@ -2319,6 +2366,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       findDiagnosticsByItemIDsAndCityIDVariables
     >({
       query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+      context: {
+        sourceHeaders,
+      },
       variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
       fetchPolicy: 'no-cache',
     });
@@ -2477,11 +2527,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
     );
-    //consider the  package prices to show the savings (~cartTotal)
-    const totalPriceWithoutAnyDiscount = cartItems?.reduce(
-      (prevVal, currVal) => prevVal + currVal?.price,
-      0
-    );
 
     const bookingOrderInfo: DiagnosticBookHomeCollectionInput = {
       uniqueID: validateCouponUniqueId,
@@ -2520,9 +2565,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ),
       slotId: employeeSlotId?.toString() || '0',
       areaId: (areaSelected || ({} as any)).key!,
-      homeCollectionCharges: hcCharges,
-      // totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
-      totalPriceExcludingDiscounts: cartTotal + hcCharges,
+      collectionCharges: hcCharges,
+      totalPriceExcludingDiscounts: totalPriceExcludingAnyDiscounts + hcCharges,
       subscriptionInclusionId: null,
       userSubscriptionId: circleSubscriptionId,
       // prismPrescriptionFileId: [
@@ -3016,6 +3060,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           vaidateDiagnosticCouponVariables
         >({
           query: VALIDATE_DIAGNOSTIC_COUPON,
+          context: {
+            sourceHeaders,
+          },
           variables: {
             couponInput: CouponInput,
           },
@@ -3041,6 +3088,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
+    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
+    const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
+    setPinCode!(pinCode);
     setLoading!(true);
     try {
       const HomeCollectionChargesApi = await client.query<
@@ -3048,11 +3098,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         getDiagnosticsHCChargesVariables
       >({
         query: GET_DIAGNOSTICS_HC_CHARGES,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           itemIDs: itemWithId,
           totalCharges: cartTotal,
           slotID: slotVal!,
-          pincode: parseInt(pinCode, 10),
+          pincode: parseInt(pinCodeFromAddress, 10),
         },
         fetchPolicy: 'no-cache',
       });
@@ -3092,7 +3145,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ></ProfileList>
           <Text
             style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               marginTop: 8,
               color: theme.colors.SKY_BLUE,

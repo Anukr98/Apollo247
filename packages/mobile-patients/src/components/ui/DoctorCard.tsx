@@ -190,27 +190,61 @@ export interface DoctorCardProps extends NavigationScreenProps {
   availableModes?: ConsultMode | null;
   callSaveSearch?: string;
   onPlanSelected?: (() => void) | null;
+  selectedConsultMode?: ConsultMode | null;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
+  const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const circleDoctorDetails = calculateCircleDoctorPricing(rowData);
+  const isOnlineConsultSelected = selectedConsultMode === ConsultMode.ONLINE;
+  const isPhysicalConsultSelected = selectedConsultMode === ConsultMode.PHYSICAL;
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    rowData,
+    isOnlineConsultSelected,
+    isPhysicalConsultSelected
+  );
   const {
-    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
-    minMrp,
-    minSlashedPrice,
     minDiscountedPrice,
     onlineConsultDiscountedPrice,
+    isCircleDoctorOnSelectedConsultMode,
+    physicalConsultSlashedPrice,
+    physicalConsultDiscountedPrice,
   } = circleDoctorDetails;
-
+  const { availableModes } = props;
   const { showCircleSubscribed } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
+  const isPhysical = availableModes
+    ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(availableModes)
+    : false;
+  const isOnline = availableModes
+    ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(availableModes)
+    : false;
+  const isBoth = availableModes ? [ConsultMode.BOTH].includes(availableModes) : false;
+  let nonCircleDoctorFees = rowData?.onlineConsultationFees || rowData?.fee; // default fee
+  if (isPhysicalConsultSelected) {
+    nonCircleDoctorFees = rowData?.physicalConsultationFees || rowData?.fee;
+  } else {
+    nonCircleDoctorFees = rowData?.onlineConsultationFees || rowData?.fee;
+  }
+  const isCircleAvailForOnline = isOnlineConsultSelected && onlineConsultMRPPrice > 0;
+  const circleDoctorFees =
+    !selectedConsultMode || isCircleAvailForOnline
+      ? onlineConsultMRPPrice
+      : physicalConsultMRPPrice;
+  const circleDoctorSlashedPrice =
+    !selectedConsultMode || isCircleAvailForOnline
+      ? onlineConsultSlashedPrice
+      : physicalConsultSlashedPrice;
+  const circleDoctorDiscountedPrice =
+    !selectedConsultMode || isCircleAvailForOnline
+      ? onlineConsultDiscountedPrice
+      : physicalConsultDiscountedPrice;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -243,17 +277,26 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           console.log('Error occured', { error });
         });
     }
-
-    props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
-      DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
-      DoctorId: id,
-      nextSlot: rowData ? rowData.slot : null,
-      ConsultType: props.availableModes,
-      callSaveSearch: props.callSaveSearch,
-      params: params,
-      availNowText: ctaBannerText?.AVAILABLE_NOW || '',
-      consultNowText: ctaBannerText?.CONSULT_NOW || '',
-    });
+    if (isBoth) {
+      props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
+        DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
+        DoctorId: id,
+        nextSlot: rowData ? rowData.slot : null,
+        ConsultType: props.availableModes,
+        callSaveSearch: props.callSaveSearch,
+        params: params,
+        availNowText: ctaBannerText?.AVAILABLE_NOW || '',
+        consultNowText: ctaBannerText?.CONSULT_NOW || '',
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.DoctorDetails, {
+        doctorId: id,
+        consultModeSelected: isOnline ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+        externalConnect: null,
+        callSaveSearch: props.callSaveSearch,
+        ...params,
+      });
+    }
   };
 
   const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
@@ -263,7 +306,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {string.common.Rs}
         </Text>
         <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
-          {rowData.fee}
+          {nonCircleDoctorFees}
         </Text>
       </View>
     );
@@ -276,13 +319,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={styles.rowContainer}>
             <Text style={styles.carePrice}>
               {string.common.Rs}
-              {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
+              {circleDoctorFees}
             </Text>
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
-              {physicalConsultMRPPrice === onlineConsultMRPPrice
-                ? onlineConsultSlashedPrice
-                : minSlashedPrice}
+              {circleDoctorSlashedPrice}
             </Text>
           </View>
         </View>
@@ -302,7 +343,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </Text>
             <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
               {string.common.Rs}
-              {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
+              {circleDoctorFees}
             </Text>
           </View>
           <View style={styles.seperatorLine} />
@@ -322,9 +363,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
                 {string.common.Rs}
-                {physicalConsultMRPPrice === onlineConsultMRPPrice
-                  ? onlineConsultSlashedPrice
-                  : minSlashedPrice}
+                {circleDoctorSlashedPrice}
               </Text>
 
               <InfoBlue style={styles.infoIcon} />
@@ -384,7 +423,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const renderDoctorProfile = () => {
     return (
-      <View style={{ marginLeft: isCircleDoctor ? 3.3 : 0 }}>
+      <View style={{ marginLeft: isCircleDoctorOnSelectedConsultMode ? 3.3 : 0 }}>
         {!!g(rowData, 'thumbnailUrl') ? (
           <Image
             style={styles.doctorProfile}
@@ -433,17 +472,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   if (rowData) {
     const clinicAddress = rowData?.doctorfacility;
-    const isPhysical = props.availableModes
-      ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(props.availableModes)
-      : false;
-    const isOnline = props.availableModes
-      ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(props.availableModes)
-      : false;
-    const isBoth = props.availableModes ? [ConsultMode.BOTH].includes(props.availableModes) : false;
-    const discountedPrice =
-      physicalConsultMRPPrice === onlineConsultMRPPrice
-        ? onlineConsultDiscountedPrice
-        : minDiscountedPrice;
     return (
       <TouchableOpacity
         key={rowData.id}
@@ -471,7 +499,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           try {
             if (rowData.doctorType === DoctorType.PAYROLL) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
-                Fee: Number(rowData?.fee),
+                Fee: Number(nonCircleDoctorFees),
                 'Doctor Speciality': g(rowData, 'specialty', 'name')!,
                 'Doctor Name': g(rowData, 'fullName')!,
                 Source: 'List',
@@ -525,33 +553,38 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               )}
             </View>
             <View>
-              {isCircleDoctor ? (
+              {isCircleDoctorOnSelectedConsultMode ? (
                 <ImageBackground
                   source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
                   style={[
                     styles.drImageBackground,
                     styles.drImageMargins,
-                    { marginBottom: isCircleDoctor ? 0 : 22 },
+                    { marginBottom: isCircleDoctorOnSelectedConsultMode ? 0 : 22 },
                   ]}
                   resizeMode="cover"
                 >
                   {renderDoctorProfile()}
                 </ImageBackground>
               ) : (
-                <View style={[styles.drImageMargins, { marginBottom: isCircleDoctor ? 0 : 22 }]}>
+                <View
+                  style={[
+                    styles.drImageMargins,
+                    { marginBottom: isCircleDoctorOnSelectedConsultMode ? 0 : 22 },
+                  ]}
+                >
                   {renderDoctorProfile()}
                 </View>
               )}
 
               {/* </TouchableOpacity> */}
-              {isCircleDoctor && renderCareLogo()}
+              {isCircleDoctorOnSelectedConsultMode && renderCareLogo()}
               <View
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginHorizontal: 20,
-                  marginTop: isCircleDoctor ? 3 : 0,
+                  marginTop: isCircleDoctorOnSelectedConsultMode ? 3 : 0,
                 }}
               >
                 {isOnline && (
@@ -592,19 +625,29 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {renderSpecialities()}
-              {isCircleDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {isCircleDoctor && discountedPrice > -1 && showCircleSubscribed ? (
+              {isCircleDoctorOnSelectedConsultMode
+                ? renderCareDoctorsFee()
+                : calculatefee(rowData, isBoth, isOnline)}
+              {isCircleDoctorOnSelectedConsultMode &&
+              circleDoctorDiscountedPrice > -1 &&
+              showCircleSubscribed ? (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
                     marginTop: 2,
                   }}
                 >
-                  {string.circleDoctors.circleSavings.replace('{amount}', `${discountedPrice}`)}
+                  {string.circleDoctors.circleSavings.replace(
+                    '{amount}',
+                    `${circleDoctorDiscountedPrice}`
+                  )}
                 </Text>
               ) : null}
               <Text
-                style={[styles.educationTextStyles, { marginTop: isCircleDoctor ? 10 : 0 }]}
+                style={[
+                  styles.educationTextStyles,
+                  { marginTop: isCircleDoctorOnSelectedConsultMode ? 10 : 0 },
+                ]}
                 numberOfLines={props.numberOfLines}
               >
                 {rowData.qualification}

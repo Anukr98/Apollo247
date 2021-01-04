@@ -708,7 +708,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             <ProductNameImage
               name={medicineDetails?.name}
               images={medicineDetails?.image}
-              isPrescriptionRequired={medicineDetails?.is_prescription_required}
+              isPrescriptionRequired={medicineDetails?.is_prescription_required == 1}
             />
             <ProductPriceDelivery
               price={medicineDetails?.price}

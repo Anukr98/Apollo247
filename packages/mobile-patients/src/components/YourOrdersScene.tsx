@@ -30,6 +30,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import ApolloClient from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -46,24 +47,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const formatOrders = (orders: getMedicineOrdersOMSList, skuArray: string[]) => {
-  const formattedOrders = (
-    (orders?.getMedicineOrdersOMSList?.medicineOrdersList as MedOrder[]) || []
-  ).filter(
-    (item) =>
-      !(
-        item.medicineOrdersStatus?.length == 1 &&
-        item.medicineOrdersStatus?.find((s) => !s!.hideStatus)
-      )
-  );
-
-  return formattedOrders?.length && skuArray?.length
-    ? [...formattedOrders.slice(0, 1), { buyAgainSection: true }, ...formattedOrders.slice(1)]
-    : formattedOrders;
-};
-
-type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
 type AppSection = { buyAgainSection: true };
+export type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
 export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
@@ -89,21 +74,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         variables: { patientId: currentPatient?.id },
         fetchPolicy: 'no-cache',
       });
-      let skuResponse;
-      try {
-        skuResponse = await client.mutate<getPreviousOrdersSkus, getPreviousOrdersSkusVariables>({
-          mutation: GET_PREVIOUS_ORDERS_SKUS,
-          variables: {
-            previousOrdersSkus: {
-              patientId: currentPatient?.id,
-            },
-          },
-          fetchPolicy: 'no-cache',
-        });
-      } catch (error) {}
-
-      const skuArray = (skuResponse?.data?.getPreviousOrdersSkus?.SkuDetails || []) as string[];
-      setOrders(formatOrders(ordersResponse?.data, skuArray));
+      const skuArray = await getBuyAgainSkuList(client, currentPatient?.id);
+      setOrders(formatOrdersWithBuyAgain(ordersResponse?.data, skuArray));
       setSkuList(skuArray);
       setLoading(false);
       setError(false);
@@ -124,61 +96,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
   ];
 
-  const getDeliverTypeOrDescription = (order: MedOrder) => {
-    const getStore = () => {
-      const shopAddress = order?.shopAddress;
-      const parsedShopAddress = JSON.parse(shopAddress || '{}');
-      return (
-        (parsedShopAddress?.storename &&
-          [parsedShopAddress.storename, parsedShopAddress.city, parsedShopAddress.zipcode]
-            .filter((a) => a)
-            .join(', ')) ||
-        ''
-      );
-    };
-
-    if (order?.billNumber) {
-      return getStore();
-    }
-
-    const type = order?.deliveryType;
-
-    if (type === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
-      return 'Home Delivery';
-    } else if (type === MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
-      return 'Store Pickup';
-    } else {
-      return '';
-    }
-  };
-
-  const getFormattedTime = (time: string) => {
-    return moment(time).format('D MMM YY, hh:mm A');
-  };
-
-  const getOrderTitle = (order: MedOrder) => {
-    // use billedItems for delivered orders
-    const billedItems = order?.medicineOrderShipments?.[0]?.medicineOrderInvoice?.[0]?.itemDetails;
-    const billedLineItems = billedItems
-      ? (JSON.parse(billedItems) as { itemName: string }[])
-      : null;
-    const lineItems = (billedLineItems || order?.medicineOrderLineItems || []) as {
-      itemName?: string;
-      medicineName?: string;
-    }[];
-    let title = 'Medicines';
-
-    if (lineItems.length) {
-      const firstItem = lineItems?.[0]?.[billedLineItems ? 'itemName' : 'medicineName']!;
-      const lineItemsLength = lineItems.length;
-      title =
-        lineItemsLength > 1
-          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
-          : firstItem;
-    }
-
-    return title;
-  };
   const checkIsJSON = (val: string) => {
     try {
       JSON.parse(val);
@@ -347,4 +264,96 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       {loading && <Spinner />}
     </View>
   );
+};
+
+export const getDeliverTypeOrDescription = (order: MedOrder) => {
+  const getStore = () => {
+    const shopAddress = order?.shopAddress;
+    const parsedShopAddress = JSON.parse(shopAddress || '{}');
+    return (
+      (parsedShopAddress?.storename &&
+        [parsedShopAddress.storename, parsedShopAddress.city, parsedShopAddress.zipcode]
+          .filter((a) => a)
+          .join(', ')) ||
+      ''
+    );
+  };
+
+  if (order?.billNumber) {
+    return getStore();
+  }
+
+  const type = order?.deliveryType;
+
+  if (type === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
+    return 'Home Delivery';
+  } else if (type === MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
+    return 'Store Pickup';
+  } else {
+    return '';
+  }
+};
+
+export const getFormattedTime = (time: string) => {
+  return moment(time).format('D MMM YY, hh:mm A');
+};
+
+export const getOrderTitle = (order: MedOrder) => {
+  // use billedItems for delivered orders
+  const billedItems = order?.medicineOrderShipments?.[0]?.medicineOrderInvoice?.[0]?.itemDetails;
+  const billedLineItems = billedItems ? (JSON.parse(billedItems) as { itemName: string }[]) : null;
+  const lineItems = (billedLineItems || order?.medicineOrderLineItems || []) as {
+    itemName?: string;
+    medicineName?: string;
+  }[];
+  let title = 'Medicines';
+
+  if (lineItems.length) {
+    const firstItem = lineItems?.[0]?.[billedLineItems ? 'itemName' : 'medicineName']!;
+    const lineItemsLength = lineItems.length;
+    title =
+      lineItemsLength > 1
+        ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
+        : firstItem;
+  }
+
+  return title;
+};
+
+export const formatOrders = (orders?: getMedicineOrdersOMSList) => {
+  return (orders?.getMedicineOrdersOMSList?.medicineOrdersList || []).filter(
+    (item) =>
+      !(
+        item?.medicineOrdersStatus?.length == 1 &&
+        item?.medicineOrdersStatus?.find((s) => !s!.hideStatus)
+      )
+  );
+};
+
+export const formatOrdersWithBuyAgain = (orders: getMedicineOrdersOMSList, skuArray: string[]) => {
+  const formattedOrders = (
+    (orders?.getMedicineOrdersOMSList?.medicineOrdersList as MedOrder[]) || []
+  ).filter(
+    (item) =>
+      !(
+        item.medicineOrdersStatus?.length == 1 &&
+        item.medicineOrdersStatus?.find((s) => !s!.hideStatus)
+      )
+  );
+
+  return formattedOrders?.length && skuArray?.length
+    ? [...formattedOrders.slice(0, 1), { buyAgainSection: true }, ...formattedOrders.slice(1)]
+    : formattedOrders;
+};
+
+export const getBuyAgainSkuList = async (client: ApolloClient<{}>, patientId: string) => {
+  const skuResponse = await client.mutate<getPreviousOrdersSkus, getPreviousOrdersSkusVariables>({
+    mutation: GET_PREVIOUS_ORDERS_SKUS,
+    variables: {
+      previousOrdersSkus: { patientId },
+    },
+    fetchPolicy: 'no-cache',
+  });
+  const skuArray = (skuResponse?.data?.getPreviousOrdersSkus?.SkuDetails || []) as string[];
+  return skuArray;
 };

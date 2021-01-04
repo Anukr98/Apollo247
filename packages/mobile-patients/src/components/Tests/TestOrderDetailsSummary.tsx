@@ -10,6 +10,7 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 // import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
   CANCEL_DIAGNOSTIC_ORDER,
@@ -121,6 +122,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   const refetchOrders =
     props.navigation.getParam('refetch') ||
     useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
+      context: {
+        sourceHeaders,
+      },
       variables: {
         patientId: currentPatient && currentPatient.id,
       },
@@ -137,6 +141,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     getDiagnosticOrderDetails,
     getDiagnosticOrderDetailsVariables
   >(GET_DIAGNOSTIC_ORDER_LIST_DETAILS, {
+    context: {
+      sourceHeaders,
+    },
     variables: { diagnosticOrderId: orderId },
   });
   const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
@@ -150,9 +157,17 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   // }, []);
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
 
@@ -273,6 +288,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     setApiLoading(true);
     const api = client.mutate<cancelDiagnosticOrder, cancelDiagnosticOrderVariables>({
       mutation: CANCEL_DIAGNOSTIC_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables: { diagnosticOrderId: orderDetails.displayId },
     });
     callApiAndRefetchOrderDetails(api);
@@ -313,6 +331,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
 
     const api = client.mutate<updateDiagnosticOrder, updateDiagnosticOrderVariables>({
       mutation: UPDATE_DIAGNOSTIC_ORDER,
+      context: {
+        sourceHeaders,
+      },
       variables,
     });
     callApiAndRefetchOrderDetails(api);

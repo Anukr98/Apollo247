@@ -480,6 +480,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('ConsultDetails', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'CircleMembershipDetails':
+            getData('CircleMembershipDetails');
+            break;
+
           default:
             getData('ConsultRoom', undefined, true);
             // webengage event
@@ -879,6 +883,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'MedicineByName':
         getMedicineSKU(id);
         break;
+      case 'CircleMembershipDetails':
+        props.navigation.navigate(AppRoutes.MembershipDetails, {
+          membershipType: string.Circle.planName,
+          isActive: true,
+        });
       default:
         break;
     }
@@ -1018,6 +1027,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Doctors_Page_Size',
     },
     Need_Help: {
+      QA: 'QA_Need_Help',
       PROD: 'Need_Help',
     },
   };

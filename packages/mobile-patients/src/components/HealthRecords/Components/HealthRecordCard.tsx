@@ -38,6 +38,9 @@ const styles = StyleSheet.create({
   prescriptionNameTextStyle: {
     ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 20.8),
   },
+  familyMemberTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.APP_YELLOW_COLOR, 1, 16),
+  },
   doctorTextStyle: { ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) },
   sourceNameTextStyle: { ...theme.viewStyles.text('R', 12, '#67909C', 1, 15.8), paddingRight: 16 },
 });
@@ -61,6 +64,7 @@ export interface HealthRecordCardProps {
   healthConditionCard?: boolean;
   healthCondtionCardTopView?: React.ReactElement;
   hideUpdateDeleteOption?: boolean;
+  familyMember?: string;
 }
 
 export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
@@ -83,6 +87,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     healthCondtionCardTopView,
     showUpdateDeleteOption,
     hideUpdateDeleteOption,
+    familyMember,
   } = props;
   return (
     <TouchableOpacity
@@ -124,6 +129,11 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
         {healthConditionCard ? healthCondtionCardTopView : null}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={{ marginRight: 55 }}>
+            {familyMember ? (
+              <Text numberOfLines={1} style={styles.familyMemberTextStyle}>
+                {familyMember}
+              </Text>
+            ) : null}
             <Text numberOfLines={1} style={styles.prescriptionNameTextStyle}>
               {prescriptionName}
             </Text>

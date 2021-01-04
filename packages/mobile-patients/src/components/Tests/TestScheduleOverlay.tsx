@@ -5,6 +5,7 @@ import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDow
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_BY_ID,
@@ -115,11 +116,17 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
 
   const getAddressById = client.query<getPatientAddressById, getPatientAddressByIdVariables>({
     query: GET_PATIENT_ADDRESS_BY_ID,
+    context: {
+      sourceHeaders,
+    },
     variables: { id: addressId },
   });
   const getSlots = client.query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
     query: GET_DIAGNOSTIC_SLOTS,
     fetchPolicy: 'no-cache',
+    context: {
+      sourceHeaders,
+    },
     variables: {
       patientId: g(currentPatient, 'id'),
       hubCode: 'HYD_HUB1',

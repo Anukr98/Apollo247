@@ -29,6 +29,7 @@ import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native'
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { isProductInStock } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export type SortByOption = {
   id: string;
@@ -195,10 +196,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     productsApiResponse: MedicineProductsResponse
   ) => {
     const { products } = productsApiResponse;
+    const filteredProducts = products
+      ? products.filter((product: MedicineProduct) => isProductInStock(product))
+      : [];
     if (pageId == 1) {
-      setProducts(products || []);
+      setProducts(filteredProducts || []);
     } else {
-      setProducts([...existingProducts, ...(products || [])]);
+      setProducts([...existingProducts, ...(filteredProducts || [])]);
     }
   };
 

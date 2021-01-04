@@ -15,6 +15,8 @@ export interface getPatientPastSearches_getPatientPastSearches {
   typeId: string | null;
   name: string | null;
   image: string | null;
+  specialty: string | null;
+  symptoms: string | null;
 }
 
 export interface getPatientPastSearches {

@@ -16,9 +16,14 @@ import {
   View,
   ViewStyle,
   TouchableOpacityProps,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/DisclaimerSection';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+const width = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -122,10 +127,15 @@ const styles = StyleSheet.create({
   },
   rightButtonText: {
     ...theme.viewStyles.yellowTextStyle,
+    fontSize: width > 380 ? 13 : 12,
   },
   separatorLine: {
     borderLeftWidth: 1,
     backgroundColor: theme.colors.LIGHT_BLUE,
+    marginTop: 3,
+    marginLeft: 2,
+    marginRight: 3,
+    marginBottom: 2,
     opacity: 0.2,
   },
   packageNameText: {
@@ -182,7 +192,7 @@ export interface TestOrderCardProps {
   showDateTime: boolean;
   showRescheduleCancel: boolean;
   isTypeOfPackage?: boolean;
-  ordersData: [];
+  ordersData: any;
   dateTime: string;
   statusDesc?: string;
   isCancelled: boolean;
@@ -203,12 +213,12 @@ export interface TestOrderCardProps {
 
 export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(false);
   const isOrderWithProgressIcons =
     props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB ||
     props.status == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
 
   const getProgressWidth = (
@@ -222,10 +232,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 2;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
         return 3; //4
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB
-      ) {
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 4;
       } else {
         return 5;
@@ -237,10 +244,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 4;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
         return 3;
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB
-      ) {
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 2;
       } else {
         return 0;
@@ -281,13 +285,41 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           </Text>
         </View>
       );
+    } else if (props.isCancelled) {
+      return (
+        <View style={{ marginLeft: -20 }}>
+          <View style={styles.progressLineContainer}>
+            <View style={[styles.progressLineBefore, { flex: 0 }]} />
+            <OrderPlacedIcon
+              style={[styles.statusIconStyle, { opacity: 0.6, tintColor: '#c2bcbc' }]}
+            />
+            <View
+              style={[
+                styles.progressLineAfter,
+                { flex: 5, backgroundColor: '#c2bcbc', opacity: 0.2 },
+              ]}
+            />
+          </View>
+          <Text
+            style={[
+              {
+                ...theme.fonts.IBMPlexSansMedium(12),
+                lineHeight: 24,
+                color: '#c2bcbc',
+                opacity: 1,
+                textTransform: 'capitalize',
+              },
+            ]}
+          >
+            Pickup Requested
+          </Text>
+        </View>
+      );
     }
     return <View style={styles.separator} />;
   };
 
   const getTextAlign = (status: TestOrderCardProps['status']) => {
-    let textAlign = 'left';
-    let marginLeft = '1%';
     switch (status) {
       case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
         return {
@@ -347,7 +379,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 : {},
             ]}
           >
-            {props.statusDesc.replace('_', ' ')}
+            {props.statusDesc?.replace('_', ' ')}
           </Text>
           <Text
             style={{
@@ -375,27 +407,32 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   };
 
   const renderTestOptions = () => {
+    const hideLeftOption = props.isCancelled && props.isComingFrom == 'individualTest';
     return (
-      <View style={styles.testOptionsOuterView}>
-        <View style={{ flex: props.isComingFrom == 'individualTest' ? 1 : 0.6 }}>
-          <View
-            style={{
-              alignItems: props.isComingFrom == 'individualTest' ? 'flex-end' : 'flex-start',
-            }}
-          >
-            <Text
+      <View
+        style={[
+          styles.testOptionsOuterView,
+          { alignSelf: hideLeftOption ? 'flex-end' : undefined },
+        ]}
+      >
+        {hideLeftOption || props.isComingFrom == 'individualTest' ? null : (
+          <View style={{ flex: 0.6 }}>
+            <View
               style={{
-                ...theme.viewStyles.yellowTextStyle,
+                alignItems: 'flex-start',
               }}
-              onPress={props.onOptionPress}
             >
-              {props.isComingFrom == 'individualTest' ? 'ORDER STATUS' : 'VIEW DETAILS'}
-            </Text>
+              <Text style={styles.rightButtonText} onPress={props.onOptionPress}>
+                {'ORDER SUMMARY'}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
         {/** right view options */}
+
         {props.showViewReport ? (
-          <View style={{ flex: 0.4 }}>
+          //0.4
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansBold(13),
@@ -417,7 +454,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         ) : (
           <>
             {props.showRescheduleCancel ? (
-              <View style={styles.rightButtonOuterView}>
+              <View style={[styles.rightButtonOuterView]}>
                 <TouchableOpacity activeOpacity={1} onPress={props.onPressCancel}>
                   <View style={{ flex: 0.4 }}>
                     <Text style={styles.rightButtonText}>CANCEL</Text>
@@ -429,8 +466,31 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                     <Text style={styles.rightButtonText}>RESCHEDULE</Text>
                   </View>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={_changeDisclaimer}>
+                  {showDisclaimer ? (
+                    <Up style={styles.arrowIconStyle} />
+                  ) : (
+                    <Down style={styles.arrowIconStyle} />
+                  )}
+                </TouchableOpacity>
               </View>
-            ) : null}
+            ) : (
+              <>
+                {props.isCancelled ? (
+                  <View style={{ flex: 0.4, alignItems: 'flex-end' }}>
+                    <Text
+                      style={{
+                        ...theme.fonts.IBMPlexSansBold(13),
+                        color: theme.colors.INPUT_FAILURE_TEXT,
+                        lineHeight: 24,
+                      }}
+                    >
+                      Test Cancelled
+                    </Text>
+                  </View>
+                ) : null}
+              </>
+            )}
           </>
         )}
       </View>
@@ -447,6 +507,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         {props.showTestPreparation ? renderTestPreparation() : null}
         {showDropDown ? renderPreTestingView() : null}
         {renderTestOptions()}
+        {showDisclaimer ? <DisclaimerSection content={string.diagnostics.disclaimerText} /> : null}
       </View>
     );
   };
@@ -478,9 +539,13 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
             ) => {
               return (
                 <>
-                  {item?.diagnostics?.testPreparationData != '' && (
-                    <View style={styles.testNameView}>
-                      <Text style={styles.testNameText}>{item?.diagnostics?.itemName!}:</Text>
+                  {(item?.itemObj
+                    ? item?.itemObj?.testPreparationData != ''
+                    : item?.diagnostics?.testPreparationData != '') && (
+                    <View style={[styles.testNameView]}>
+                      <Text style={styles.testNameText}>
+                        {item?.itemName! || item?.diagnostics?.itemName!}:
+                      </Text>
                       <Text
                         style={[
                           styles.testNameText,
@@ -490,7 +555,8 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                           },
                         ]}
                       >
-                        {item?.diagnostics?.testPreparationData!}
+                        {item?.itemObj?.testPreparationData! ||
+                          item?.diagnostics?.testPreparationData}
                       </Text>
                     </View>
                   )}
@@ -500,7 +566,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           )
         ) : (
           <View style={styles.testNameView}>
-            <Text style={styles.testNameText}>{props.ordersData.itemName!}:</Text>
+            <Text style={styles.testNameText}>{props.ordersData?.itemName!}:</Text>
             <Text
               style={[
                 styles.testNameText,
@@ -519,26 +585,35 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   };
 
   const renderTestInOrder = () => {
-    const testsPerOrder = props.isComingFrom == 'individualTest' ? 0 : props.ordersData.length;
+    const testsPerOrder = props.isComingFrom == 'individualTest' ? 0 : props.ordersData?.length;
     return (
       <View style={{ marginTop: '5%' }}>
         {props.isComingFrom != 'individualTest' ? (
-          props.ordersData.map(
+          props.ordersData?.map(
             (
               item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
-              index
+              index: any
             ) => {
               return (
                 <View style={{}}>
                   {index < 3 && (
                     <Text style={[styles.titleStyle]}>
-                      {item?.diagnostics?.itemName!.toLowerCase() || ''}
-                      {item?.diagnostics?.itemType == 'PACKAGE' &&
-                        item?.diagnostics?.PackageInclussion?.length > 0 && (
+                      {item?.itemName?.toLowerCase() ||
+                        item?.diagnostics?.itemName?.toLowerCase() ||
+                        ''}
+                      {(item?.itemObj?.itemType! == 'PACKAGE' ||
+                        item?.diagnostics?.itemName == 'PACKAGE') &&
+                        (item?.itemObj
+                          ? item?.itemObj?.inclusions != null &&
+                            item?.itemObj?.inclusions?.length! > 0
+                          : item?.diagnostics?.inclusions != null &&
+                            item?.diagnostics?.inclusions?.length! > 0) && (
                           <Text
                             style={[styles.titleStyle, { ...theme.fonts.IBMPlexSansMedium(11) }]}
                           >
-                            {'\n'} Inclusions : {item?.diagnostics?.PackageInclussion?.length}
+                            {'\n'} Inclusions :{' '}
+                            {item?.itemObj?.inclusions?.length ||
+                              item?.diagnostics?.inclusions!.length}
                           </Text>
                         )}
                       {index == 2 && testsPerOrder - 3 > 0 ? (
@@ -563,6 +638,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
 
   const _changeDropDownState = () => {
     setShowDropDown(!showDropDown);
+  };
+
+  const _changeDisclaimer = () => {
+    setShowDisclaimer(!showDisclaimer);
   };
 
   const renderTestPreparation = () => {

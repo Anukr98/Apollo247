@@ -37,6 +37,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     ? props.navigation.getParam('bankCode')
     : null;
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const selectedTab = props.navigation.getParam('selectedTab');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
@@ -50,8 +51,15 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
-  const { isCircleDoctor } = circleDoctorDetails;
+  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
+  const { isCircleDoctorOnSelectedConsultMode } = circleDoctorDetails;
   const { circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
@@ -94,7 +102,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       appsflyerEventAttributes: appsflyerEventAttributes,
       paymentTypeID: paymentTypeID,
       isDoctorsOfTheHourStatus,
-      isCircleDoctor: isCircleDoctor,
+      isCircleDoctor: isCircleDoctorOnSelectedConsultMode,
     });
   };
 
@@ -118,7 +126,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
     }`;
-    if (planSelected && isCircleDoctor && circleSubscriptionId == '') {
+    if (planSelected && isCircleDoctorOnSelectedConsultMode && circleSubscriptionId == '') {
       url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
     }
     console.log(url);

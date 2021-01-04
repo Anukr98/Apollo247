@@ -70,7 +70,7 @@ import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicine
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
 import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   postwebEngageProceedToPayEvent,
@@ -137,6 +137,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     pharmacyCircleAttributes,
+    newAddressAdded,
+    setNewAddressAdded,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -210,6 +212,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       isfocused && availabilityTat(false, true);
     }
   }, [deliveryAddressId]);
+
+  useEffect(() => {
+    // call servicability api if new address is added from cart
+    const addressLength = addresses.length;
+    if (!!addressLength && !!newAddressAdded) {
+      const newAddress = addresses.filter((value) => value.id === newAddressAdded);
+      checkServicability(newAddress[0]);
+      setNewAddressAdded && setNewAddressAdded('');
+    }
+  }, [newAddressAdded]);
 
   useEffect(() => {
     if (isfocused) {
@@ -324,7 +336,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
-    if (deliveryAddressId && deliveryAddressId == address.id) {
+    if (deliveryAddressId && deliveryAddressId == address.id && !newAddressAdded) {
       return;
     }
     try {
@@ -336,6 +348,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
+        setloading(false);
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
         setloading(false);
@@ -796,14 +809,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           onPressAddAddress={() => {
             props.navigation.navigate(AppRoutes.AddAddress, {
               source: 'Cart' as AddressSource,
+              addOnly: true,
             });
             postPharmacyAddNewAddressClick('Cart');
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddress, {
+            props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
-              DataAddress: address,
+              addressDetails: address,
               ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
@@ -1092,6 +1106,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressAddDeliveryAddress={() => {
           props.navigation.navigate(AppRoutes.AddAddress, {
             source: 'Cart' as AddressSource,
+            addOnly: true,
           });
           postPharmacyAddNewAddressClick('Cart');
         }}
