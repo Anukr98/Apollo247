@@ -7019,9 +7019,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const onPressCalender = () => {
     setShowRescheduleCancel(true);
-    const diffMin = Math.ceil(
-      moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
-    );
     if (isAppointmentStartsInFifteenMin) {
       autoTriggerFifteenMinToAppointmentTimeMsg();
     }

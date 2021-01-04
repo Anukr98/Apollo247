@@ -21,14 +21,7 @@ export const CancelAppointmentPopup: React.FC<CancelAppointmentProps> = (props) 
       description={title}
       onPressBack={onPressBack}
     >
-      <View
-        style={{
-          flexDirection: 'row',
-          marginHorizontal: 20,
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-        }}
-      >
+      <View style={styles.container}>
         <View style={{ height: 60 }}>
           <TouchableOpacity
             style={styles.gotItStyles}
@@ -62,5 +55,11 @@ const styles = StyleSheet.create({
   gotItTextStyles: {
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
+  },
+  container: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
 });
