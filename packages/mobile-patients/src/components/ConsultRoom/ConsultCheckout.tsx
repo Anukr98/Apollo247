@@ -569,7 +569,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
-          props.navigation.navigate(AppRoutes.DoctorSearch);
+          props.navigation.goBack();
         },
       },
     ]);
