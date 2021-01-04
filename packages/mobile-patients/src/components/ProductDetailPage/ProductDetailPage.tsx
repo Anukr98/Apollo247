@@ -127,7 +127,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
 
   //use states
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [medicineDetails, setMedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );

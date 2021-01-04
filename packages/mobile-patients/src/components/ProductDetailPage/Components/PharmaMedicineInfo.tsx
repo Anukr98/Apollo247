@@ -30,8 +30,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     variant,
   } = props;
 
-  // console.log('PharmaMedicineInfo Storage------- ', pharmaOverview?.StoragePlace);
-
   const pharmaUses = pharmaOverview?.HowToTake;
   const pharmaSideEffects = pharmaOverview?.SideEffects;
   const storagePlace = pharmaOverview?.StoragePlace;

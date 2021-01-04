@@ -11,6 +11,7 @@ import {
   LiverIcon,
   KidneyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { FaqComponent } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FaqComponent';
 
 export interface PrecautionWarningsProps {
   name: string;
@@ -26,10 +27,10 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
   const drivingContent = pharmaOverview?.DrivingContent;
   const liverContent = pharmaOverview?.LiverContent;
   const kidneyContent = pharmaOverview?.KidneyContent;
+  const faqContent = pharmaOverview?.CompositionContentFAQs;
 
   const [numberOfLines, setNumberOfLines] = useState<number>(2);
   const [maxLines, setMaxLines] = useState<number>(2);
-  console.log('pharmaOverview warning: ', kidneyContent);
 
   const onTextLayout = (e) => {
     setNumberOfLines(e.nativeEvent.lines.length);
@@ -90,7 +91,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <Text style={styles.warningHeading}>Alcohol</Text>
         </View>
         <View style={styles.warningContainer}>
-          <Text style={theme.viewStyles.text('R', 15, '#02475B', 1, 20)}>{warning}</Text>
+          <Text style={styles.contentStyle}>{warning}</Text>
         </View>
       </View>
     );
@@ -105,7 +106,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <Text style={styles.warningHeading}>Pregnancy</Text>
         </View>
         <View style={styles.warningContainer}>
-          <Text style={theme.viewStyles.text('R', 15, '#02475B', 1, 20)}>{warning}</Text>
+          <Text style={styles.contentStyle}>{warning}</Text>
         </View>
       </View>
     );
@@ -120,7 +121,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <Text style={styles.warningHeading}>Driving</Text>
         </View>
         <View style={styles.warningContainer}>
-          <Text style={theme.viewStyles.text('R', 15, '#02475B', 1, 20)}>{warning}</Text>
+          <Text style={styles.contentStyle}>{warning}</Text>
         </View>
       </View>
     );
@@ -135,7 +136,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <Text style={styles.warningHeading}>Liver</Text>
         </View>
         <View style={styles.warningContainer}>
-          <Text style={theme.viewStyles.text('R', 15, '#02475B', 1, 20)}>{warning}</Text>
+          <Text style={styles.contentStyle}>{warning}</Text>
         </View>
       </View>
     );
@@ -150,7 +151,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <Text style={styles.warningHeading}>Liver</Text>
         </View>
         <View style={styles.warningContainer}>
-          <Text style={theme.viewStyles.text('R', 15, '#02475B', 1, 20)}>{warning}</Text>
+          <Text style={styles.contentStyle}>{warning}</Text>
         </View>
       </View>
     );
@@ -165,7 +166,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <Text style={styles.warningHeading}>Breastfeeding</Text>
         </View>
         <View style={styles.warningContainer}>
-          <Text style={theme.viewStyles.text('R', 15, '#02475B', 1, 20)}>{warning}</Text>
+          <Text style={styles.contentStyle}>{warning}</Text>
         </View>
       </View>
     );
@@ -178,6 +179,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
       {!!drugWarning && renderWarning()}
       {renderSafetyAdvice()}
       <View style={styles.lineBreak} />
+      {!!faqContent && faqContent.length && <FaqComponent faqs={faqContent} name={name} />}
     </View>
   );
 };
@@ -227,4 +229,5 @@ const styles = StyleSheet.create({
     width: '70%',
     marginLeft: 10,
   },
+  contentStyle: theme.viewStyles.text('R', 15, '#02475B', 1, 20),
 });

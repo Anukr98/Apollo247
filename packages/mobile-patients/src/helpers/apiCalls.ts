@@ -94,7 +94,7 @@ export interface NewPharmaOverview {
   SideEffects: string;
 }
 
-interface PharmaFAQ {
+export interface PharmaFAQ {
   field_question: string;
   field_answer: string;
 }
