@@ -754,8 +754,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   } else {
     cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
   }
-  const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 10;
-  const isAppointmentStartsInTenMin = appointmentDiffMin <= 10 && appointmentDiffMin > -10;
+  const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
+  const isAppointmentStartsInTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
 
   const postAppointmentWEGEvent = (
     type:
@@ -7463,6 +7463,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           closeModal={() => setShowRescheduleCancel(false)}
           appointmentDiffMin={appointmentDiffMin}
           appointmentDateTime={appointmentData?.appointmentDateTime}
+          isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
+          isAppointmentStartsInTenMin={isAppointmentStartsInTenMin}
         />
       )}
       {showCancelPopup && (

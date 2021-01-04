@@ -11,6 +11,8 @@ interface RescheduleCancelProps {
   closeModal: () => void;
   appointmentDiffMin: number;
   appointmentDateTime: string;
+  isAppointmentStartsInTenMin: boolean;
+  isAppointmentStartsInFifteenMin: boolean;
 }
 export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) => {
   const {
@@ -19,9 +21,9 @@ export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) =>
     onPressRescheduleAppointment,
     appointmentDiffMin,
     appointmentDateTime,
+    isAppointmentStartsInTenMin,
+    isAppointmentStartsInFifteenMin,
   } = props;
-  const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 10;
-  const isAppointmentStartsInTenMin = appointmentDiffMin <= 10 && appointmentDiffMin > -10;
   const btnDisable = isAppointmentStartsInFifteenMin || isAppointmentStartsInTenMin;
   const btnTextColor = btnDisable ? theme.colors.DISABLE_TEXT : theme.colors.APP_YELLOW;
   const postTenMinAppointmentTime = moment(appointmentDateTime)
