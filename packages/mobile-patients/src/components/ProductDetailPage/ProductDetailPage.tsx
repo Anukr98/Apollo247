@@ -5,10 +5,7 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
-  Modal,
-  BackHandler,
   Keyboard,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -195,11 +192,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
           savePastSearch(client, {
-            typeId: productDetails.sku,
-            typeName: productDetails.name,
+            typeId: productDetails?.sku,
+            typeName: productDetails?.name,
             type: SEARCH_TYPE.MEDICINE,
             patient: currentPatient?.id,
-            image: productDetails.thumbnail,
+            image: productDetails?.thumbnail,
           });
         } else if (data && data.message) {
           setMedicineError(data.message);
@@ -360,18 +357,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         props.navigation.goBack();
       }
     } catch (error) {}
-  };
-
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
-  }, []);
-
-  const handleBack = () => {
-    moveBack();
-    return true;
   };
 
   const fetchDeliveryTime = async (checkButtonClicked?: boolean) => {

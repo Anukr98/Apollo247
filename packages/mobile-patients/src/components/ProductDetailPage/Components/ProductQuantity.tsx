@@ -103,9 +103,9 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     setTimeout(() => {
       setShowAddedToCart(false);
     }, 2000);
-    const existingCartItem = cartItems.filter((item) => item.id === sku);
-    if (existingCartItem.length) {
-      existingCartItem[0].quantity = productQuantity;
+    const existingCartItem = cartItems?.filter((item) => item?.id === sku);
+    if (existingCartItem?.length) {
+      existingCartItem?.[0]?.quantity = productQuantity;
       // updateCartItem && updateCartItem({ id: sku, quantity });
     } else {
       onAddCartItem();
