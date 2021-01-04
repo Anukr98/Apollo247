@@ -121,7 +121,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  BackHandler,
   Dimensions,
   FlatList,
   Image as ImageNative,
@@ -526,38 +525,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
-      _willBlur && _willBlur.remove();
     };
   });
-
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    setBannerData && setBannerData([]);
-
-    if (comingFrom == AppRoutes.MembershipDetails) {
-      props.navigation.navigate(AppRoutes.MembershipDetails, {
-        membershipType: string.Circle.planName,
-        source: AppRoutes.Medicine,
-      });
-    } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
-    }
-
-    return false;
-  };
 
   useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');

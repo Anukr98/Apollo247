@@ -93,7 +93,6 @@ import {
   ViewStyle,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  BackHandler,
   Platform,
   Image as ImageNative,
 } from 'react-native';
@@ -536,38 +535,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
-      _willBlur && _willBlur.remove();
     };
   });
-
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    setBannerData && setBannerData([]);
-
-    if (comingFrom == AppRoutes.MembershipDetails) {
-      props.navigation.navigate(AppRoutes.MembershipDetails, {
-        membershipType: string.Circle.planName,
-        source: AppRoutes.Tests,
-      });
-    } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
-    }
-
-    return false;
-  };
 
   const checkLocation = () => {
     !locationDetails &&
