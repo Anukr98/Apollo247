@@ -232,7 +232,7 @@ const Apollo247Config = {
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
-    DRUPAL_BANNER_CONFIG :['https://uatcms.apollo247.com/api/banner',drupalAuthTokenProd]
+    DRUPAL_BANNER_CONFIG :['https://cms.apollo247.com/api/banner',drupalAuthTokenProd]
   },
 };
 
