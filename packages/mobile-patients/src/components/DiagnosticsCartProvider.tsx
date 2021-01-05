@@ -396,7 +396,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const withDiscount = cartItems?.filter(
     (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
-  const withAll = cartItems?.filter((item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL);
+
+  const withAll = cartItems?.filter((item) =>
+    isDiagnosticCircleSubscription
+      ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+      : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  );
   const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
     (currTotal, currItem) =>
       currTotal +
