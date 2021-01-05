@@ -1431,7 +1431,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {renderCarouselBanners()}
         <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
@@ -1860,11 +1859,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (!data) {
       return null;
     }
-    const metaData = g(data, 'metadata') || [];
+    const metaData = [
+      ...(data?.metadata || []),
+      { section_key: 'circleBanners', section_name: '', section_position: 4, visible: true },
+    ];
     const staticSectionKeys = [
       'banners',
       'orders',
       'upload_prescription',
+      'circleBanners',
       'recommended_products',
       'shop_by_brand',
     ];
@@ -1880,6 +1883,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ? renderYourOrders()
             : section_key === 'upload_prescription'
             ? renderUploadPrescriptionSection()
+            : section_key === 'circleBanners'
+            ? renderCarouselBanners()
             : section_key === 'recommended_products'
             ? renderHotSellers(section_name, recommendedProducts, -1)
             : section_key === 'shop_by_brand'
