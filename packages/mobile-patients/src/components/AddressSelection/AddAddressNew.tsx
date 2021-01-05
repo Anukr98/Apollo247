@@ -109,7 +109,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     KeyName == 'Update' ? addressDetails?.latitude || 0 : 0
   );
   const [longitude, setLongitude] = useState<number>(
-    KeyName == 'Update' ? addressDetails?.latitude || 0 : 0
+    KeyName == 'Update' ? addressDetails?.longitude || 0 : 0
   );
   const [latitudeDelta, setLatitudeDelta] = useState<number>(0.002);
   const [longitudeDelta, setLongitudeDelta] = useState<number>(0.002);
