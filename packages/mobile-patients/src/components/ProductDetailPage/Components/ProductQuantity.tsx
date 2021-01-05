@@ -19,6 +19,7 @@ export interface ProductQuantityProps {
   productQuantity: number;
   setProductQuantity: (qty: number) => void;
   setShowAddedToCart: (show: boolean) => void;
+  isSellOnline: boolean;
 }
 
 export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
@@ -34,6 +35,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     productQuantity,
     setProductQuantity,
     setShowAddedToCart,
+    isSellOnline,
   } = props;
   const { cartItems, updateCartItem } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -118,7 +120,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
         {renderQuantity()}
         {!!packSize && renderPackSize()}
       </View>
-      {renderCartCTA()}
+      {isSellOnline && renderCartCTA()}
     </View>
   );
 };

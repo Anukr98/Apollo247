@@ -16,6 +16,7 @@ export interface ProductPriceDeliveryProps {
   specialPrice: number | null;
   isExpress: boolean;
   isInStock: boolean;
+  isSellOnline: boolean;
   manufacturer?: string;
   showPincodePopup: () => void;
   deliveryTime?: string;
@@ -38,6 +39,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     isPharma,
     cashback,
     finalPrice,
+    isSellOnline,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId, circleSubscriptionId } = useShoppingCart();
@@ -72,7 +74,11 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   };
 
   const renderIsInStock = () => {
-    return isInStock ? (
+    return !isSellOnline ? (
+      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+        <Text style={styles.stockText}>Not for Sale</Text>
+      </View>
+    ) : isInStock ? (
       <View style={styles.inStockContainer}>
         <Text style={styles.stockText}>In Stock</Text>
       </View>
