@@ -755,7 +755,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
   }
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
-  const isAppointmentStartsInTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
+  const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
 
   const postAppointmentWEGEvent = (
     type:
@@ -7017,7 +7017,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isAppointmentStartsInFifteenMin) {
       autoTriggerFifteenMinToAppointmentTimeMsg();
     }
-    if (isAppointmentStartsInTenMin) {
+    if (isAppointmentExceedsTenMin) {
       autoTriggerTenMinToAppointmentTimeMsg();
     }
   };
@@ -7464,7 +7464,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           appointmentDiffMin={appointmentDiffMin}
           appointmentDateTime={appointmentData?.appointmentDateTime}
           isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
-          isAppointmentStartsInTenMin={isAppointmentStartsInTenMin}
+          isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}
         />
       )}
       {showCancelPopup && (
