@@ -415,6 +415,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       }
+    } else if (type == hdfc_values.ABSOLUTE_URL && action) {
+      props.navigation.navigate(AppRoutes.CommonWebView, {
+        url: action,
+      });
     } else {
       if (type == hdfc_values.REDIRECT) {
         if (action == hdfc_values.SPECIALITY_LISTING) {
