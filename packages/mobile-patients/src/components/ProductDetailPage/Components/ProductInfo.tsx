@@ -13,6 +13,8 @@ export interface ProductInfoProps {
   vegetarian?: 'Yes' | 'No';
   storage?: string | null;
   key_ingredient?: string | null;
+  key_benefits?: string | null;
+  safety_information?: string | null;
   size?: string | null;
   flavour_fragrance?: string | null;
   colour?: string | null;
@@ -30,6 +32,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     vegetarian,
     storage,
     key_ingredient,
+    key_benefits,
     size,
     flavour_fragrance,
     colour,
@@ -37,6 +40,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     expiryDate,
     isPharma,
     pharmaOverview,
+    safety_information,
   } = props;
 
   const [numberOfLines, setNumberOfLines] = useState<number>(2);
@@ -55,7 +59,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
           <Text style={styles.subHeading}>Description</Text>
           <TouchableOpacity
             onPress={() => {
-              setMaxLines(numberOfLines);
+              if (numberOfLines != maxLines) {
+                setMaxLines(numberOfLines);
+              } else {
+                setMaxLines(2);
+              }
             }}
           >
             <Text
@@ -68,9 +76,34 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
             {numberOfLines > 2 && numberOfLines != maxLines && (
               <Text style={styles.readMoreText}>READ MORE</Text>
             )}
+            {numberOfLines > 2 && numberOfLines === maxLines && (
+              <Text style={styles.readMoreText}>READ LESS</Text>
+            )}
           </TouchableOpacity>
         </View>
       )
+    );
+  };
+
+  const renderKeyBenefits = () => {
+    const text = key_benefits?.replace(/u2022/, '');
+    const keyBenefit = text?.replace(/u2022/gi, '.').trim();
+    return (
+      <View>
+        <Text style={styles.subHeading}>Key Benefits</Text>
+        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{keyBenefit}</Text>
+      </View>
+    );
+  };
+
+  const renderSafetyInfo = () => {
+    const text = safety_information?.replace(/u2022/, '');
+    const safetyInfo = text?.replace(/u2022/gi, '.').trim();
+    return (
+      <View>
+        <Text style={styles.subHeading}>Key Benefits</Text>
+        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{safetyInfo}</Text>
+      </View>
     );
   };
 
@@ -165,11 +198,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
         <>
           {!!storage && renderStorage()}
           {!!vegetarian && renderVegetarianIcon()}
+          {!!key_benefits && renderKeyBenefits()}
           {!!key_ingredient && renderKeyIngrediant()}
           {!!size && renderSize()}
           {!!flavour_fragrance && renderFlavour()}
           {!!colour && renderColor()}
           {!!variant && renderVariant()}
+          {!!safety_information && renderSafetyInfo()}
         </>
       )}
       {renderOtherInformation()}

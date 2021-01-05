@@ -1,20 +1,29 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Image, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Carousel from 'react-native-snap-carousel';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { PrescriptionRequiredIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface ProductNameImageProps {
   name: string;
   images: string[];
   isPrescriptionRequired?: boolean | number;
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>;
+  sku: string;
 }
 
 const { width } = Dimensions.get('window');
 
 export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
-  const { name, isPrescriptionRequired, images } = props;
+  const { name, isPrescriptionRequired, images, sku } = props;
   const [slideIndex, setSlideIndex] = useState(0);
 
   const renderImageCarousel = () => {
@@ -44,14 +53,33 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
 
   const renderSliderItem = ({ item }) => {
     return (
-      <Image
-        style={{
-          height: 200,
-          width: '100%',
-          resizeMode: 'contain',
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          if (images.length) {
+            props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+              images: (images || []).map(
+                (imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`
+              ),
+              heading: name,
+            });
+          }
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK] = {
+            'Product ID': sku,
+            'Product Name': name,
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK, eventAttributes);
         }}
-        source={{ uri: `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${item}` }}
-      />
+      >
+        <Image
+          style={{
+            height: 220,
+            width: '93%',
+            resizeMode: 'contain',
+          }}
+          source={{ uri: `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${item}` }}
+        />
+      </TouchableOpacity>
     );
   };
 

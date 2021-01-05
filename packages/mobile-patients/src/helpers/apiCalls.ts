@@ -31,6 +31,8 @@ export interface MedicineProduct {
   vegetarian?: 'Yes' | 'No';
   storage?: string | null;
   key_ingredient?: string | null;
+  key_benefits?: string | null;
+  safety_information?: string | null;
   size?: string | null;
   flavour_fragrance?: string | null;
   colour?: string | null;
@@ -524,11 +526,17 @@ export interface SymptomsSpecialities {
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
-  productSku: string
+  productSku: string,
+  axdcCode?: string,
+  pincode?: string
 ): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
   return Axios.post(
     `${config.MED_DETAIL[0]}/popcsrchpdp_api.php`,
-    { params: productSku },
+    {
+      params: productSku,
+      axdcCode: axdcCode || '',
+      pincode: pincode || '',
+    },
     {
       headers: {
         Authorization: config.MED_DETAIL[1],

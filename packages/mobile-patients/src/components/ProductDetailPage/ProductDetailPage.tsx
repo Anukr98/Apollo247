@@ -121,6 +121,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmacyLocation,
     setAxdcCode,
     isPharmacyLocationServiceable,
+    axdcCode,
   } = useAppCommonData();
 
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -190,7 +191,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const getMedicineDetails = () => {
     setLoading(true);
-    getMedicineDetailsApi(sku)
+    getMedicineDetailsApi(sku, axdcCode, pincode)
       .then(({ data }) => {
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
@@ -474,6 +475,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               )
             );
             setdeliveryError('');
+            getMedicineDetails();
           } else {
             setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
@@ -731,12 +733,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               name={medicineDetails?.name}
               images={medicineDetails?.image}
               isPrescriptionRequired={medicineDetails?.is_prescription_required == 1}
+              navigation={props.navigation}
+              sku={medicineDetails?.sku}
             />
             <ProductPriceDelivery
               price={medicineDetails?.price}
               specialPrice={medicineDetails?.special_price}
               isExpress={medicineDetails?.is_express === 'Yes'}
               isInStock={isInStock}
+              isSellOnline={medicineDetails?.sell_online === 1}
               manufacturer={medicineDetails?.manufacturer}
               showPincodePopup={showPincodePopup}
               deliveryTime={deliveryTime}
@@ -764,6 +769,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 productQuantity={productQuantity}
                 setProductQuantity={setProductQuantity}
                 setShowAddedToCart={setShowAddedToCart}
+                isSellOnline={medicineDetails?.sell_online === 1}
               />
             </View>
             {isPharma && (
@@ -780,6 +786,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               vegetarian={medicineDetails?.vegetarian}
               storage={medicineDetails?.storage}
               key_ingredient={medicineDetails?.key_ingredient}
+              key_benefits={medicineDetails?.key_benefits}
+              safety_information={medicineDetails?.safety_information}
               size={medicineDetails?.size}
               flavour_fragrance={medicineDetails?.flavour_fragrance}
               colour={medicineDetails?.colour}
@@ -821,21 +829,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ) : (
           renderEmptyData()
         )}
-        {!loading && !isEmptyObject(medicineDetails) && !!medicineDetails.id && showBottomBar && (
-          <BottomStickyComponent
-            isInStock={isInStock}
-            sku={medicineDetails?.sku}
-            onAddCartItem={onAddCartItem}
-            price={medicineDetails?.price}
-            specialPrice={medicineDetails?.special_price}
-            packForm={medicineDetails?.pack_form || 'Quantity'}
-            unit={medicineDetails.unit_of_measurement || ''}
-            packSize={medicineDetails?.pack_size}
-            packFormVariant={medicineDetails?.dose_form_variant}
-            productQuantity={productQuantity}
-            setShowAddedToCart={setShowAddedToCart}
-          />
-        )}
+        {!loading &&
+          !isEmptyObject(medicineDetails) &&
+          !!medicineDetails.id &&
+          showBottomBar &&
+          medicineDetails?.sell_online === 1 && (
+            <BottomStickyComponent
+              isInStock={isInStock}
+              sku={medicineDetails?.sku}
+              onAddCartItem={onAddCartItem}
+              price={medicineDetails?.price}
+              specialPrice={medicineDetails?.special_price}
+              packForm={medicineDetails?.pack_form || 'Quantity'}
+              unit={medicineDetails.unit_of_measurement || ''}
+              packSize={medicineDetails?.pack_size}
+              packFormVariant={medicineDetails?.dose_form_variant}
+              productQuantity={productQuantity}
+              setShowAddedToCart={setShowAddedToCart}
+            />
+          )}
         {!loading &&
           !isEmptyObject(medicineDetails) &&
           !!medicineDetails.id &&
