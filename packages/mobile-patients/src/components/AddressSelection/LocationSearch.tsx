@@ -154,7 +154,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
         try {
           const addrComponents = g(data, 'result', 'address_components') || [];
           const coordinates = g(data, 'result', 'geometry', 'location')! || {};
-          const loc = getFormattedLocation(addrComponents, coordinates);
+          const loc = getFormattedLocation(addrComponents, coordinates, '', true);
           console.log({ loc });
 
           props.navigation.goBack(); //pass the new location.

@@ -807,7 +807,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
           onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddress, {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Cart' as AddressSource,
               addOnly: true,
             });
@@ -1104,7 +1104,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return (
       <ProceedBar
         onPressAddDeliveryAddress={() => {
-          props.navigation.navigate(AppRoutes.AddAddress, {
+          props.navigation.navigate(AppRoutes.AddAddressNew, {
             source: 'Cart' as AddressSource,
             addOnly: true,
           });

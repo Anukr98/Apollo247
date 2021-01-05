@@ -70,6 +70,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -257,7 +258,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       if (locationResponse) {
         setcity(locationResponse?.city!);
         setstate(locationResponse?.state!);
-        setpincode(locationResponse?.zipcode!);
+        setpincode(locationResponse?.pincode! || locationResponse?.zipcode!);
         setaddressLine1(locationResponse?.displayName);
         setareaDetails(locationResponse?.area);
         // setlandMark(addressData?.landmark!);
@@ -417,6 +418,18 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         handleGraphQlError(error);
       }
     }
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    props.navigation.goBack();
+    return true;
   };
 
   const onAlertError = (source: string) => {

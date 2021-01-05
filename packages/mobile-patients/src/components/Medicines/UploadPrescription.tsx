@@ -72,7 +72,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/ChooseAddress';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   pinCodeServiceabilityApi247,
@@ -995,15 +995,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
           onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddress, {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Upload Prescription' as AddressSource,
+              addOnly: true,
             });
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddress, {
+            props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
-              DataAddress: address,
+              addressDetails: address,
               ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
@@ -1042,8 +1043,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         }}
         selectedMedicineOption={selectedMedicineOption}
         onPressAddDeliveryAddress={() => {
-          props.navigation.navigate(AppRoutes.AddAddress, {
+          props.navigation.navigate(AppRoutes.AddAddressNew, {
             source: 'Cart' as AddressSource,
+            addOnly: true,
           });
         }}
         vdcType={vdcType}
