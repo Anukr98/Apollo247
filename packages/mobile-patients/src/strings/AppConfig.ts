@@ -1068,24 +1068,24 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
-    'Home Collection Charges are too high',
-    'Need to change the payment mode',
-    'Need to modify the order details',
-    'I am getting lesser price elsewhere',
-    'Home Collection not occuring at desired time slot',
-    'No need for diagnosis now',
-    'Order created by mistake',
-    'Others (Please specify)s',
+    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
+    string.diagnostics.reasonForCancel_TestOrder.chargesTooHigh,
+    string.diagnostics.reasonForCancel_TestOrder.editOrder,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.noSlot,
+    string.diagnostics.reasonForCancel_TestOrder.changePaymentMode,
+    string.diagnostics.reasonForCancel_TestOrder.highPrice,
+    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 
 export const TestReschedulingReasons = {
   reasons: [
-    'Not present at home',
-    'Did not follow preparation guidelines (Fasting etc.)',
-    'Not in a condition to provide sample',
-    'Slot picked by mistake',
-    'Others (please specify)',
+    string.diagnostics.reasonForReschedule_TestOrder.unavailable,
+    string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
+    string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
+    string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
+    string.diagnostics.reasonForReschedule_TestOrder.otherReasons,
   ],
 };
 

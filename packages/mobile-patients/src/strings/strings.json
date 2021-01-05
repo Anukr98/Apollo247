@@ -392,7 +392,24 @@
       "text": "Rescheduling can be done upto 3 times only"
     }],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
-    "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left."
+    "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
+    "reasonForCancel_TestOrder": {
+      "latePhelbo": "Phlebo didn't arrive on time",
+      "chargesTooHigh": "Home Collection charges are too high",
+      "editOrder": "Need to edit order details",
+      "userUnavailable": "I am not available",
+      "noSlot":"Required slot is not available",
+      "changePaymentMode":"Need to change payment mode",
+      "highPrice":"High price issue",
+      "otherReasons": "Others (Please specify)"
+    },
+    "reasonForReschedule_TestOrder": {
+      "unavailable": "Not present at home",
+      "guidelinesNotFollowed": "Did not follow preparation guidelines (Fasting etc.)",
+      "unableToProvideSample": "Not in a condition to provide sample",
+      "slotMistake": "Slot picked by mistake",
+      "otherReasons": "Others (Please specify)"
+    }
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -685,7 +702,7 @@
     "bookedForWrongUser": "Booked with wrong user details",
     "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons": "Others (Please specifiy)"
+    "otherReasons": "Others (Please specify)"
   },
   "circleDoctors": {
     "care": "CARE",
