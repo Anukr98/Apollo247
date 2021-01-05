@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { APPOINTMENT_STATE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -46,7 +46,7 @@ import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceH
 const { width, height } = Dimensions.get('window');
 
 interface CheckRescheduleProps {
-  data: getPatientAllAppointments_getPatientAllAppointments_appointments;
+  data: getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   closeModal: () => void;
   cancelSuccessCallback: () => void;

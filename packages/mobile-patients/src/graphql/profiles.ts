@@ -458,165 +458,188 @@ export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   query getPatientAllAppointments($patientId: String!) {
     getPatientAllAppointments(patientId: $patientId) {
-      appointments {
-        appointmentPayments {
-          id
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-          orderId
-        }
+      cancelledAppointments {
         id
-        hideHealthRecordNudge
         patientId
         doctorId
-        appointmentDateTime
+        actualAmount
         appointmentType
-        hospitalId
-        status
-        bookingDate
-        rescheduleCount
-        isFollowUp
+        appointmentDateTime
         appointmentState
-        displayId
+        status
         isConsultStarted
-        isSeniorConsultStarted
         isJdQuestionsComplete
-        symptoms
-        doctorInfo {
-          awards
-          city
-          country
-          chatDays
-          dateOfBirth
-          displayName
+        isFollowUp
+        displayId
+        appointmentPayments {
+          amountPaid
+        }
+        caseSheet {
           doctorType
-          delegateNumber
-          emailAddress
-          experience
-          firebaseToken
-          firstName
-          fullName
-          gender
-          isActive
-          id
-          languages
-          lastName
-          mobileNumber
-          onlineConsultationFees
-          onlineStatus
-          photoUrl
-          physicalConsultationFees
-          qualification
-          registrationNumber
-          salutation
-          signature
-          specialization
-          state
-          streetLine1
-          streetLine2
-          streetLine3
-          thumbnailUrl
-          zip
-          bankAccount {
-            accountHolderName
-            accountNumber
-            accountType
-            bankName
-            city
-            id
-            IFSCcode
-            state
-            streetLine1
+          version
+          followUpAfterInDays
+          medicinePrescription {
+            medicineName
           }
-          consultHours {
-            consultMode
-            consultType
-            endTime
-            facility {
-              city
-              country
-              facilityType
-              id
-              imageUrl
-              latitude
-              longitude
-              name
-              state
-              streetLine1
-              streetLine2
-              streetLine3
-              zipcode
-            }
+        }
+        doctorInfo {
+          fullName
+          doctorType
+          city
+          id
+          thumbnailUrl
+          displayName
+          experience
+          onlineConsultationFees
+          physicalConsultationFees
+          specialty {
             id
-            isActive
-            startTime
-            weekDay
-            consultDuration
-            consultBuffer
+            name
           }
           doctorHospital {
             facility {
+              name
               city
-              country
-              facilityType
-              id
-              imageUrl
-              latitude
-              longitude
-              name
-              state
-              streetLine1
-              streetLine2
-              streetLine3
-              zipcode
             }
-          }
-          doctorSecretary {
-            secretary {
-              id
-              name
-              mobileNumber
-              isActive
-            }
-          }
-          packages {
-            fees
-            id
-            name
-          }
-          specialty {
-            createdDate
-            id
-            image
-            name
-            specialistSingularTerm
-            specialistPluralTerm
-            userFriendlyNomenclature
-            displayOrder
-          }
-          starTeam {
-            isActive
           }
         }
+      }
+      followUpAppointments {
+        id
+        patientId
+        doctorId
+        actualAmount
+        appointmentType
+        appointmentDateTime
+        appointmentState
+        status
+        isConsultStarted
+        isJdQuestionsComplete
+        isFollowUp
+        displayId
+        appointmentPayments {
+          amountPaid
+        }
         caseSheet {
-          id
-          followUpAfterInDays
-          version
           doctorType
+          version
+          followUpAfterInDays
           medicinePrescription {
-            id
             medicineName
           }
-          diagnosticPrescription {
-            itemname
-            testInstruction
+        }
+        doctorInfo {
+          fullName
+          doctorType
+          city
+          id
+          thumbnailUrl
+          displayName
+          experience
+          onlineConsultationFees
+          physicalConsultationFees
+          specialty {
+            id
+            name
           }
-          blobName
+          doctorHospital {
+            facility {
+              name
+              city
+            }
+          }
+        }
+      }
+      activeAppointments {
+        id
+        patientId
+        doctorId
+        actualAmount
+        appointmentType
+        appointmentDateTime
+        appointmentState
+        status
+        isConsultStarted
+        isJdQuestionsComplete
+        isFollowUp
+        displayId
+        appointmentPayments {
+          amountPaid
+        }
+        caseSheet {
+          doctorType
+          version
+          followUpAfterInDays
+          medicinePrescription {
+            medicineName
+          }
+        }
+        doctorInfo {
+          fullName
+          doctorType
+          city
+          id
+          thumbnailUrl
+          displayName
+          experience
+          onlineConsultationFees
+          physicalConsultationFees
+          specialty {
+            id
+            name
+          }
+          doctorHospital {
+            facility {
+              name
+              city
+            }
+          }
+        }
+      }
+      completedAppointments {
+        id
+        patientId
+        doctorId
+        actualAmount
+        appointmentType
+        appointmentDateTime
+        appointmentState
+        status
+        isConsultStarted
+        isJdQuestionsComplete
+        isFollowUp
+        displayId
+        appointmentPayments {
+          amountPaid
+        }
+        caseSheet {
+          doctorType
+          version
+          followUpAfterInDays
+          medicinePrescription {
+            medicineName
+          }
+        }
+        doctorInfo {
+          fullName
+          doctorType
+          city
+          id
+          thumbnailUrl
+          displayName
+          experience
+          onlineConsultationFees
+          physicalConsultationFees
+          specialty {
+            id
+            name
+          }
+          doctorHospital {
+            facility {
+              name
+              city
+            }
+          }
         }
       }
     }
@@ -1614,7 +1637,10 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
 
 export const GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS = gql`
   query getDiagnosticCancelledOrderDetails($diagnosticOrderId: String, $patientId: String) {
-    getDiagnosticCancelledOrderDetails(diagnosticOrderId: $diagnosticOrderId, patientId: $patientId) {
+    getDiagnosticCancelledOrderDetails(
+      diagnosticOrderId: $diagnosticOrderId
+      patientId: $patientId
+    ) {
       ordersList {
         statusDate
         orderStatus

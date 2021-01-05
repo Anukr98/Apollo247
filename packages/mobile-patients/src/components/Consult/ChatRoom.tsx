@@ -184,7 +184,7 @@ import {
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { EPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription } from '@aph/mobile-patients/src/graphql/types/getSDLatestCompletedCaseSheet';
 import {
@@ -5593,7 +5593,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   ) => {
     const medicinePrescription = g(item, 'caseSheet', '0' as any, 'medicinePrescription');
     const getMedicines = (
-      medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
+      medicines: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[]
     ) =>
       medicines
         ? medicines

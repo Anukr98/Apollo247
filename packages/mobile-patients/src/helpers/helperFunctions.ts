@@ -42,8 +42,8 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
@@ -265,9 +265,9 @@ export const formatNameNumber = (address: savePatientAddress_savePatientAddress_
 
 export const isPastAppointment = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null,
-  item: getPatientAllAppointments_getPatientAllAppointments_appointments
+  item: getPatientAllAppointments_getPatientAllAppointments_activeAppointments
 ) => {
   const case_sheet = followUpChatDaysCaseSheet(caseSheet);
   const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
@@ -288,7 +288,7 @@ export const isPastAppointment = (
 
 export const followUpChatDaysCaseSheet = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null
 ) => {
   const case_sheet =

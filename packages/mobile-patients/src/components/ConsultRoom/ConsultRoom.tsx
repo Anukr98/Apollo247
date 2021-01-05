@@ -70,7 +70,7 @@ import {
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   GetSubscriptionsOfUserByStatus,
@@ -478,7 +478,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
 
