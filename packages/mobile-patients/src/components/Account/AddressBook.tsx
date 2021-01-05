@@ -30,7 +30,7 @@ import {
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
   DeleteIconWhite,
   EditAddressIcon,

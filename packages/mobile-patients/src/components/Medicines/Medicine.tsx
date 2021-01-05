@@ -3,7 +3,7 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { CategoryAndSpecialOffers } from '@aph/mobile-patients/src/components/Medicines/CategoryAndSpecialOffers';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import { PincodeInput } from '@aph/mobile-patients/src/components/Medicines/Components/PicodeInput';
