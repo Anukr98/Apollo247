@@ -451,7 +451,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     error: any
   ) {
     // remove applied circle subscription if tat api returns error
-    if (!circleSubscriptionId) {
+    if (!circleSubscriptionId && !physicalPrescriptions.length) {
       setIsCircleSubscription && setIsCircleSubscription(false);
     }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
