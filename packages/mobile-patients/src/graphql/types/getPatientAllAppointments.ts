@@ -176,12 +176,21 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   medicineName: string | null;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
+  testInstruction: string | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet {
   __typename: "CaseSheet";
+  id: string | null;
   followUpAfterInDays: string | null;
   version: number | null;
   doctorType: DoctorType | null;
   medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[] | null;
+  diagnosticPrescription: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_diagnosticPrescription | null)[] | null;
+  blobName: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments {

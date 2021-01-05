@@ -60,6 +60,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
   const [loading, setLoading] = useState(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { cartItems, clearDiagnoticCartInfo, coupon } = useDiagnosticsCart();
+  const paymentId = props.navigation.getParam('paymentId');
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Do you want to go back?', [
@@ -259,48 +260,53 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
   };
 
   const onWebViewStateChange = (data: NavState) => {
+    console.log('webView state change');
     const redirectedUrl = data.url;
     console.log({ data, redirectedUrl });
-    console.log(`RedirectedUrl: ${redirectedUrl}`);
+    console.log(`redirectedUrl >>>>>>>>> ${redirectedUrl}`);
 
-    const isMatchesSuccessUrl =
-      (redirectedUrl &&
-        redirectedUrl.indexOf(AppConfig.Configuration.DIAGNOSTICS_PG_SUCCESS_PATH) > -1) ||
-      false;
-    const isMatchesFailUrl =
-      (redirectedUrl &&
-        (redirectedUrl.indexOf(AppConfig.Configuration.DIAGNOSTICS_PG_ERROR_PATH) > -1 ||
-          redirectedUrl.indexOf(AppConfig.Configuration.DIAGNOSTICS_PG_CANCEL_PATH) > -1)) ||
-      false;
+    const isTxnCompleted = (redirectedUrl && redirectedUrl.indexOf('ordersuccess') > -1) || false;
+    // const isMatchesSuccessUrl =
+    //   (redirectedUrl &&
+    //     redirectedUrl.indexOf(AppConfig.Configuration.DIAGNOSTICS_PG_SUCCESS_PATH) > -1) ||
+    //   false;
+    // const isMatchesFailUrl =
+    //   (redirectedUrl &&
+    //     (redirectedUrl.indexOf(AppConfig.Configuration.DIAGNOSTICS_PG_ERROR_PATH) > -1 ||
+    //       redirectedUrl.indexOf(AppConfig.Configuration.DIAGNOSTICS_PG_CANCEL_PATH) > -1)) ||
+    //   false;
 
-    if (isMatchesSuccessUrl) {
-      // BOOKING SUCCESSFULL
-      const tk = getParameterByName('tk', redirectedUrl!);
-      const status = getParameterByName('status', redirectedUrl!);
-      console.log({ tk, status });
-      handleOrderSuccess();
-    }
-    if (isMatchesFailUrl) {
-      // BOOKING FAILED
-      handleOrderFailure();
+    // if (isMatchesSuccessUrl) {
+    //   // BOOKING SUCCESSFULL
+    //   const tk = getParameterByName('tk', redirectedUrl!);
+    //   const status = getParameterByName('status', redirectedUrl!);
+    //   console.log({ tk, status });
+    //   handleOrderSuccess();
+    // }
+    // if (isMatchesFailUrl) {
+    //   // BOOKING FAILED
+    //   handleOrderFailure();
+    // }
+    if (isTxnCompleted) {
+      props.navigation.navigate(AppRoutes.TestPaymentStatus);
     }
   };
 
   const renderWebView = () => {
     const baseUrl = AppConfig.Configuration.DIAGNOSTICS_PG_BASE_URL;
-    const url = `${baseUrl}/diagnosticpayment?patientId=${currentPatiendId}&orderId=${orderId}&price=${price}`;
+    const url = `https://qapatients.apollo247.com/payment/${paymentId}`;
     // const url =
     //   'https://aph.dev.pmt.popcornapps.com/diagnosticpayment?patientId=1d75146c-029e-4eb9-badb-0574d93c0d9f&orderId=b4548315-1129-4de2-a82d-8c9e5c9695bb&price=100';
-    console.log(`%cDIAGNOSTICS_PG_URL:\t${url}`, 'color: #bada55');
+    // console.log(`%cDIAGNOSTICS_PG_URL:\t${url}`, 'color: #bada55');
     return (
       <WebView
         onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         bounces={false}
-        useWebKit={true}
+        // useWebKit={true}
         source={{ uri: url }}
-        domStorageEnabled={true}
-        onNavigationStateChange={onWebViewStateChange}
+        // domStorageEnabled={true}
+        onNavigationStateChange={(data) => onWebViewStateChange(data)}
       />
     );
   };
@@ -308,14 +314,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          title="PAYMENT"
-          leftText={{
-            isBack: false,
-            title: 'Cancel',
-            onPress: handleBack,
-          }}
-        />
+        <Header title="PAYMENT" leftIcon="backArrow" onPressLeftIcon={() => handleBack()} />
         <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
       {loading && <Spinner />}

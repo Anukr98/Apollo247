@@ -1194,6 +1194,19 @@ export interface MessageInput {
   source?: TRANSFER_INITIATED_TYPE | null;
 }
 
+export interface OrderCreate {
+  orders: OrderVerticals;
+  total_amount: number;
+  return_url?: string | null;
+  customer_id?: string | null;
+  gateway_id?: number | null;
+}
+
+export interface OrderInputEntity {
+  order_id?: string | null;
+  amount?: number | null;
+}
+
 export interface OrderLineItems {
   itemId: string;
   mrp: number;
@@ -1202,6 +1215,13 @@ export interface OrderLineItems {
   quantity: number;
   specialPrice: number;
   couponFree?: number | null;
+}
+
+export interface OrderVerticals {
+  pharma?: (OrderInputEntity | null)[] | null;
+  consult?: (OrderInputEntity | null)[] | null;
+  diagnostics?: (OrderInputEntity | null)[] | null;
+  subscription?: (OrderInputEntity | null)[] | null;
 }
 
 export interface OtpVerificationInput {
@@ -1372,6 +1392,26 @@ export interface SUBSCRIPTION_DETAILS {
 
 export interface SUBSCRIPTION_DETAILS_PHARMA {
   userSubscriptionId?: string | null;
+}
+
+export interface SaveBookHomeCollectionOrderInput {
+  patientId: string;
+  patientAddressId: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  slotId: string;
+  areaId: number;
+  collectionCharges: number;
+  uniqueID?: string | null;
+  slotDateTimeInUTC?: any | null;
+  totalPriceExcludingDiscounts?: number | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
+  attachmentData?: (Attachments | null)[] | null;
 }
 
 export interface SaveDeviceTokenInput {

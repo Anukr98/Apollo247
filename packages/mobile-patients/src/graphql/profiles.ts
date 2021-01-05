@@ -1614,7 +1614,10 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
 
 export const GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS = gql`
   query getDiagnosticCancelledOrderDetails($diagnosticOrderId: String, $patientId: String) {
-    getDiagnosticCancelledOrderDetails(diagnosticOrderId: $diagnosticOrderId, patientId: $patientId) {
+    getDiagnosticCancelledOrderDetails(
+      diagnosticOrderId: $diagnosticOrderId
+      patientId: $patientId
+    ) {
       ordersList {
         statusDate
         orderStatus
@@ -3202,6 +3205,24 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
       errorMessage
       orderId
       displayId
+    }
+  }
+`;
+
+export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
+  mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
+    saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      orderId
+      displayId
+    }
+  }
+`;
+
+export const CREATE_INTERNAL_ORDER = gql`
+  mutation createOrderInternal($order: OrderCreate) {
+    createOrderInternal(order: $order) {
+      payment_order_id
+      success
     }
   }
 `;

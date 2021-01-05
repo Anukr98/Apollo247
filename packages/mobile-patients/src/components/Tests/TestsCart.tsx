@@ -68,6 +68,8 @@ import {
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_DIAGNOSTIC_ORDER,
   SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
+  SAVE_DIAGNOSTIC_ORDER_NEW,
+  CREATE_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -86,6 +88,9 @@ import {
   DiagnosticOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   TEST_COLLECTION_TYPE,
+  SaveBookHomeCollectionOrderInput,
+  OrderCreate,
+  OrderVerticals,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
@@ -154,6 +159,14 @@ import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveDiagnosticOrder';
+import {
+  saveDiagnosticBookHCOrder,
+  saveDiagnosticBookHCOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveDiagnosticBookHCOrder';
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import {
   DiagnosticBookHomeCollection,
   DiagnosticBookHomeCollectionVariables,
@@ -428,13 +441,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       variables: { diagnosticOrderInput: orderInfo },
     });
 
-  const saveHomeCollectionBookingOrder = (orderInfo: DiagnosticBookHomeCollectionInput) =>
-    client.mutate<DiagnosticBookHomeCollection, DiagnosticBookHomeCollectionVariables>({
-      mutation: SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
+  const saveHomeCollectionBookingOrder = (orderInfo: SaveBookHomeCollectionOrderInput) =>
+    client.mutate<saveDiagnosticBookHCOrder, saveDiagnosticBookHCOrderVariables>({
+      mutation: SAVE_DIAGNOSTIC_ORDER_NEW,
       context: {
         sourceHeaders,
       },
       variables: { diagnosticOrderInput: orderInfo },
+    });
+
+  const createOrderInternal = (orders: OrderCreate) =>
+    client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      context: {
+        sourceHeaders,
+      },
+      variables: { order: orders },
     });
 
   useEffect(() => {
@@ -2360,11 +2382,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
-  const redirectToPaymentGateway = (orderId: string, displayId: string) => {
+  const redirectToPaymentGateway = (orderId: string, paymentId: string) => {
     props.navigation.navigate(AppRoutes.TestPayment, {
       orderId,
-      displayId,
       price: grandTotal,
+      paymentId: paymentId,
     });
   };
 
@@ -2445,40 +2467,41 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     saveOrder(orderInfo)
       .then(({ data }) => {
-        const { orderId, displayId, errorCode, errorMessage } =
-          g(data, 'SaveDiagnosticOrder')! || {};
-        if (errorCode || errorMessage) {
-          // Order-failed
-          setshowSpinner(false);
-          setLoading!(false);
-          showAphAlert!({
-            unDismissable: true,
-            title: string.common.uhOh,
-            description: string.diagnostics.bookingOrderFailedMessage,
-          });
-          fireOrderFailedEvent(orderId);
-        } else {
-          // Order-Success
-          if (!isCashOnDelivery) {
-            // PG order, redirect to web page
-            redirectToPaymentGateway(orderId!, displayId!);
-            return;
-          }
-          // COD order, show popup here & clear cart info
-          postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
+        // const { orderId, displayId, errorCode, errorMessage } =
+        //   g(data, 'SaveDiagnosticOrder')! || {};
+        console.log('data >>>>', data);
+        // if (errorCode || errorMessage) {
+        //   // Order-failed
+        //   setshowSpinner(false);
+        //   setLoading!(false);
+        //   showAphAlert!({
+        //     unDismissable: true,
+        //     title: string.common.uhOh,
+        //     description: string.diagnostics.bookingOrderFailedMessage,
+        //   });
+        //   fireOrderFailedEvent(orderId);
+        // } else {
+        //   // Order-Success
+        //   if (!isCashOnDelivery) {
+        //     // PG order, redirect to web page
+        //     redirectToPaymentGateway(orderId!, displayId!);
+        //     return;
+        //   }
+        //   // COD order, show popup here & clear cart info
+        //   postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
 
-          setModalVisible(true);
-          firePurchaseEvent(orderId!);
-          setOrderDetails({
-            orderId: orderId,
-            displayId: displayId,
-            diagnosticDate: date!,
-            slotTime: slotTimings!,
-            cartSaving: cartSaving,
-            circleSaving: circleSaving,
-          });
-          clearDiagnoticCartInfo && clearDiagnoticCartInfo();
-        }
+        //   setModalVisible(true);
+        //   firePurchaseEvent(orderId!);
+        //   setOrderDetails({
+        //     orderId: orderId,
+        //     displayId: displayId,
+        //     diagnosticDate: date!,
+        //     slotTime: slotTimings!,
+        //     cartSaving: cartSaving,
+        //     circleSaving: circleSaving,
+        //   });
+        //   clearDiagnoticCartInfo && clearDiagnoticCartInfo();
+        // }
       })
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
@@ -2514,11 +2537,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
     );
 
-    const bookingOrderInfo: DiagnosticBookHomeCollectionInput = {
+    const bookingOrderInfo: SaveBookHomeCollectionOrderInput = {
       uniqueID: validateCouponUniqueId,
       patientId: (currentPatient && currentPatient.id) || '',
       patientAddressId: deliveryAddressId!,
-      slotTimings: slotTimings,
+      // slotTimings: slotTimings,
       slotDateTimeInUTC: dateTimeInUTC,
       totalPrice: grandTotal,
       prescriptionUrl: [
@@ -2528,9 +2551,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       diagnosticDate: formattedDate,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-      paymentType: isCashOnDelivery
-        ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
-        : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
+      // paymentType: isCashOnDelivery
+      //   ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+      //   : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
       items: cartItems.map(
         (item) =>
           ({
@@ -2564,47 +2587,62 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
     postPaymentInitiatedWebengage();
     saveHomeCollectionBookingOrder(bookingOrderInfo)
-      .then(({ data }) => {
-        console.log({ data });
-        const { orderId, displayId, errorCode, errorMessage } =
-          g(data, 'DiagnosticBookHomeCollection')! || {};
-        console.log({ errorMessage });
-        if (errorCode || errorMessage) {
-          setLoading!(false);
-          setshowSpinner!(false);
-          let descriptionText = string.diagnostics.bookingOrderFailedMessage;
-          if (errorCode == -1 && errorMessage?.indexOf('duplicate') != -1) {
-            descriptionText = string.diagnostics.bookingOrderDuplicateFailedMessage;
-          }
-          // Order-failed
-          showAphAlert!({
-            unDismissable: true,
-            title: string.common.uhOh,
-            description: descriptionText,
-          });
-          fireOrderFailedEvent(orderId);
-        } else {
-          // Order-Success
-          if (!isCashOnDelivery) {
-            // PG order, redirect to web page
-            redirectToPaymentGateway(orderId!, displayId!);
-            return;
-          }
-          // COD order, show popup here & clear cart info
-          postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
-          setModalVisible(true);
-          firePurchaseEvent(orderId!);
-          setOrderDetails({
-            orderId: orderId,
-            displayId: displayId,
-            diagnosticDate: date!,
-            slotTime: slotTimings!,
-            cartSaving: cartSaving,
-            circleSaving: circleSaving,
-            cartHasAll: allItems != undefined ? true : false,
-          });
-          clearDiagnoticCartInfo && clearDiagnoticCartInfo!();
+      .then(async ({ data }) => {
+        console.log('data >>>>', data);
+        const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
+        const orders: OrderVerticals = {
+          diagnostics: [{ order_id: orderId, amount: grandTotal }],
+        };
+        const orderInput: OrderCreate = {
+          orders: orders,
+          total_amount: grandTotal,
+        };
+        console.log('orderInput >>>>', orderInput);
+        const response = await createOrderInternal(orderInput);
+        console.log('response >>>', response);
+        if (response?.data?.createOrderInternal?.success) {
+          // setModalVisible(true);
+          redirectToPaymentGateway(orderId, response?.data?.createOrderInternal?.payment_order_id!);
         }
+        // const { orderId, displayId, errorCode, errorMessage } =
+        //   g(data, 'DiagnosticBookHomeCollection')! || {};
+        // console.log({ errorMessage });
+        // if (errorCode || errorMessage) {
+        //   setLoading!(false);
+        //   setshowSpinner!(false);
+        //   let descriptionText = string.diagnostics.bookingOrderFailedMessage;
+        //   if (errorCode == -1 && errorMessage?.indexOf('duplicate') != -1) {
+        //     descriptionText = string.diagnostics.bookingOrderDuplicateFailedMessage;
+        //   }
+        //   // Order-failed
+        //   showAphAlert!({
+        //     unDismissable: true,
+        //     title: string.common.uhOh,
+        //     description: descriptionText,
+        //   });
+        //   fireOrderFailedEvent(orderId);
+        // } else {
+        //   // Order-Success
+        //   if (!isCashOnDelivery) {
+        //     // PG order, redirect to web page
+        //     redirectToPaymentGateway(orderId!, displayId!);
+        //     return;
+        //   }
+        //   // COD order, show popup here & clear cart info
+        //   postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
+        //   setModalVisible(true);
+        //   firePurchaseEvent(orderId!);
+        //   setOrderDetails({
+        //     orderId: orderId,
+        //     displayId: displayId,
+        //     diagnosticDate: date!,
+        //     slotTime: slotTimings!,
+        //     cartSaving: cartSaving,
+        //     circleSaving: circleSaving,
+        //     cartHasAll: allItems != undefined ? true : false,
+        //   });
+        //   clearDiagnoticCartInfo && clearDiagnoticCartInfo!();
+        // }
       })
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
@@ -3075,6 +3113,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
     setLoading!(true);
+    // console.log('pinCode >>>>>', pinCode);
+    // const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
+    // console.log('selectedAddress >>>>', selectedAddress);
     try {
       const HomeCollectionChargesApi = await client.query<
         getDiagnosticsHCCharges,
@@ -3100,7 +3141,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setLoading!(false);
     } catch (error) {
       setLoading!(false);
-      renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
+      // renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
     }
   };
 

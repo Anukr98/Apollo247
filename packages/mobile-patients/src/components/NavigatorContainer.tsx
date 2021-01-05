@@ -119,7 +119,7 @@ import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/M
 import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
 import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
 import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
-
+import { TestPaymentStatus } from '@aph/mobile-patients/src/components/Tests/TestPaymentStatus';
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
@@ -240,6 +240,7 @@ export enum AppRoutes {
   CircleSubscription = 'CircleSubscription',
   SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
+  TestPaymentStatus = 'TestPaymentStatus',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -613,6 +614,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PrescriptionOrderSummary]: {
     screen: PrescriptionOrderSummary,
+  },
+  [AppRoutes.TestPaymentStatus]: {
+    screen: TestPaymentStatus,
   },
 };
 
