@@ -1606,3 +1606,6 @@ export const HomeAddressIcon: React.FC<IconProps> = (props) => (
 export const OfficeAddressIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/office_icon.png')} />
 );
+export const Cash: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 32, width: 32 }} {...props} source={require('./icons/cash.png')} />
+);

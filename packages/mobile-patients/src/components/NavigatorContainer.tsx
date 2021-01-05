@@ -127,6 +127,7 @@ import { CircleSubscription } from '@aph/mobile-patients/src/components/CirclePl
 import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionPaymentGateway';
 import { PrescriptionOrderSummary } from '@aph/mobile-patients/src/components/Medicines/PrescriptionOrderSummary';
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
+import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -241,6 +242,7 @@ export enum AppRoutes {
   SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
   TestPaymentStatus = 'TestPaymentStatus',
+  PaymentMethods = 'PaymentMethods',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -617,6 +619,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestPaymentStatus]: {
     screen: TestPaymentStatus,
+  },
+  [AppRoutes.PaymentMethods]: {
+    screen: PaymentMethods,
   },
 };
 

@@ -2598,11 +2598,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           total_amount: grandTotal,
         };
         console.log('orderInput >>>>', orderInput);
+        props.navigation.navigate(AppRoutes.PaymentMethods, {
+          amount: grandTotal,
+        });
         const response = await createOrderInternal(orderInput);
         console.log('response >>>', response);
         if (response?.data?.createOrderInternal?.success) {
           // setModalVisible(true);
-          redirectToPaymentGateway(orderId, response?.data?.createOrderInternal?.payment_order_id!);
+          // redirectToPaymentGateway(orderId, response?.data?.createOrderInternal?.payment_order_id!);
+          props.navigation.navigate(AppRoutes.PaymentMethods, {
+            paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+            amount: grandTotal,
+          });
         }
         // const { orderId, displayId, errorCode, errorMessage } =
         //   g(data, 'DiagnosticBookHomeCollection')! || {};
