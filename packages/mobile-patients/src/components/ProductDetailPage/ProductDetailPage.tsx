@@ -18,6 +18,7 @@ import {
 import {
   useShoppingCart,
   BreadcrumbLink,
+  ShoppingCartItem,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -76,6 +77,7 @@ import { BottomStickyComponent } from '@aph/mobile-patients/src/components/Produ
 import { Overlay } from 'react-native-elements';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -145,6 +147,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const [isPharma, setIsPharma] = useState<boolean>(false);
+  const [skuInCart, setSkuInCart] = useState<ShoppingCartItem[]>([]);
 
   const { special_price, price, type_id } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
@@ -166,6 +169,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    if (cartItems.length) {
+      const filteredCartItems = cartItems.filter((item) => item.id == medicineDetails.sku);
+      setSkuInCart(filteredCartItems);
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
     try {
       if (medicineDetails?.price && tatEventData) {
         const eventAttributes: PharmacyTatApiCalled = {
@@ -185,6 +195,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setMedicineDetails(productDetails || {});
+          // console.log('medcine details>>>>>>>>>>> ', productDetails);
           if (productDetails?.dc_availability === 'No' && productDetails?.is_in_contract === 'No') {
             setIsInStock(false);
           }
@@ -633,6 +644,32 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     postAppsFlyerAddToCartEvent(medicineDetails, id, pharmacyCircleAttributes!);
   };
 
+  const renderBottomButton = () => {
+    const item = skuInCart?.[0];
+    const quantity = item?.quantity;
+    const finalPrice = item?.specialPrice
+      ? item?.price - item?.specialPrice
+        ? item?.specialPrice
+        : item?.price
+      : item?.price;
+    const total = finalPrice * quantity;
+    return (
+      <StickyBottomComponent style={styles.stickyBottomComponent}>
+        <TouchableOpacity
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MedicineCart);
+          }}
+          activeOpacity={0.7}
+          style={styles.bottomCta}
+        >
+          <Text style={styles.bottomCtaText}>
+            {`Proceed to Checkout (${quantity} items) ${string.common.Rs}${total}`}
+          </Text>
+        </TouchableOpacity>
+      </StickyBottomComponent>
+    );
+  };
+
   let buttonRef = React.useRef<View>(null);
   return (
     <View style={{ flex: 1 }}>
@@ -799,6 +836,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             setShowAddedToCart={setShowAddedToCart}
           />
         )}
+        {!loading &&
+          !isEmptyObject(medicineDetails) &&
+          !!medicineDetails.id &&
+          !!skuInCart.length &&
+          renderBottomButton()}
       </SafeAreaView>
       {showAddedToCart && (
         <Overlay
@@ -922,5 +964,24 @@ const styles = StyleSheet.create({
     width: '75%',
     paddingVertical: 20,
     borderRadius: 10,
+  },
+  stickyBottomComponent: {
+    ...theme.viewStyles.shadowStyle,
+    borderTopWidth: 0.6,
+    borderStyle: 'dashed',
+    position: 'absolute',
+    bottom: 0,
+    justifyContent: 'center',
+  },
+  bottomCta: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#FCB716',
+    marginVertical: 10,
+    width: '90%',
+    justifyContent: 'center',
+  },
+  bottomCtaText: {
+    ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),
+    textAlign: 'center',
   },
 });
