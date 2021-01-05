@@ -102,6 +102,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showPaymentOptions, setShowPaymentOptions] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
     deliveryAddressId,
@@ -963,6 +964,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   };
 
   useEffect(() => {
+    // hide payment options if to pay (after hc) is zero
+    setShowPaymentOptions(grandTotal - burnHC != 0);
+  }, [burnHC]);
+
+  useEffect(() => {
     if (isOneApolloSelected) {
       setCashOnDelivery(false);
     }
@@ -1205,7 +1211,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         style={{
           marginTop: 0.05 * windowHeight,
           height: 0.12 * windowHeight,
-          backgroundColor: theme.colors.HEX_WHITE,
           justifyContent: 'center',
           alignItems: 'center',
         }}
@@ -1248,8 +1253,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {availableHC != 0 && renderOneApolloOption()}
             {renderNewCOD()}
             {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()}
-            {renderPaymentOptions()}
-            {bankOptions.length > 0 && renderNetBanking()}
+            {showPaymentOptions && (
+              <>
+                {renderPaymentOptions()}
+                {bankOptions.length > 0 && renderNetBanking()}
+              </>
+            )}
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (
