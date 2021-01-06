@@ -83,7 +83,8 @@
     "consultFee": "Consult Fee",
     "consultedDoctors": "Consulted Doctors",
     "pastSearches": "Past Searches",
-    "topSpecialities": "Top Specialities"
+    "topSpecialities": "Top Specialities",
+    "HdfcHealthLifeText": "Explore HDFC HealthyLife"
   },
   "components": {
     "medicineDetails": {

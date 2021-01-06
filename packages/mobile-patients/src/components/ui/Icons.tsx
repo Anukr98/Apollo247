@@ -1655,3 +1655,11 @@ export const InactiveCalenderIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/inactiveCalender.png')}
   />
 );
+export const HealthyLife: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/healthyLifeIcon.png')}
+    resizeMode="contain"
+  />
+);
