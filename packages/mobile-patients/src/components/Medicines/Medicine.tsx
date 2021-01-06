@@ -1,9 +1,9 @@
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { CategoryAndSpecialOffers } from '@aph/mobile-patients/src/components/Medicines/CategoryAndSpecialOffers';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import { PincodeInput } from '@aph/mobile-patients/src/components/Medicines/Components/PicodeInput';
@@ -79,6 +79,7 @@ import {
   getMedicineSearchSuggestionsApi,
   getNearByStoreDetailsApi,
   getPlaceInfoByPincode,
+  medCartItemsDetailsApi,
   MedicinePageAPiResponse,
   MedicinePageSection,
   MedicineProduct,
@@ -294,6 +295,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
   const [buyAgainSkuList, setBuyAgainSkuList] = useState<string[]>([]);
+  const [buyAgainProducts, setBuyAgainProducts] = useState<MedicineProduct[]>([]);
   const [buyAgainLoading, setBuyAgainLoading] = useState<boolean>(true);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
@@ -829,6 +831,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     try {
       const skuArray = await getBuyAgainSkuList(client, currentPatient?.id);
       setBuyAgainSkuList(skuArray);
+      const productsResponse = await medCartItemsDetailsApi(skuArray.slice(0, 2));
+      const products = productsResponse?.data?.productdp?.filter(({ sku, id }) => sku && id) || [];
+      setBuyAgainProducts(products);
       setBuyAgainLoading(false);
     } catch (e) {
       setBuyAgainLoading(false);
@@ -1237,7 +1242,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
     return (
       !!buyAgainSkuList.length && (
-        <BuyAgainSection onPress={onPress} topDivider containerStyle={styles.buyAgain} />
+        <BuyAgainSection
+          products={buyAgainProducts}
+          onPress={onPress}
+          topDivider
+          containerStyle={styles.buyAgain}
+        />
       )
     );
   };
