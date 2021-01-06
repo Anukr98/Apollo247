@@ -43,6 +43,7 @@ import {
   postFirebaseAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   getCareCashback,
+  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -78,6 +79,9 @@ import { Overlay } from 'react-native-elements';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -109,6 +113,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     addCartItem,
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
+    addresses,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -153,6 +158,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const { special_price, price, type_id } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
   const cashback = getCareCashback(Number(finalPrice), type_id);
+  type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
 
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
@@ -537,26 +543,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     );
   };
 
-  const showPincodePopup = () => {
-    return showAphAlert!({
-      unDismissable: false,
-      removeTopIcon: true,
-      children: (
-        <PincodeInput
-          onPressApply={(pincode) => {
-            if (pincode?.length == 6) {
-              hideAphAlert!();
-              updatePlaceInfoByPincode(pincode);
-            }
-          }}
-          onPressBack={() => {
-            hideAphAlert!();
-          }}
-        />
-      ),
-    });
-  };
-
   const updatePlaceInfoByPincode = (pincode: string) => {
     setLoading!(true);
     getPlaceInfoByPincode(pincode)
@@ -582,7 +568,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 {
                   text: 'CHANGE PINCODE',
                   type: 'orange-link',
-                  onPress: () => showPincodePopup(),
+                  onPress: () => showAccessAccessLocationPopup(true),
                 },
               ],
             });
@@ -672,6 +658,88 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     );
   };
 
+  const showAccessAccessLocationPopup = (pincodeInput?: boolean) => {
+    return showAphAlert!({
+      unDismissable: false,
+      removeTopIcon: true,
+      children: !pincodeInput ? (
+        <AccessLocation
+          addresses={addresses}
+          onPressSelectAddress={(address) => {
+            updatePlaceInfoByPincode(address?.zipcode);
+            hideAphAlert!();
+          }}
+          onPressEditAddress={(address) => {
+            props.navigation.push(AppRoutes.AddAddressNew, {
+              KeyName: 'Update',
+              addressDetails: address,
+              source: 'Medicine' as AddressSource,
+              ComingFrom: AppRoutes.Medicine,
+            });
+            hideAphAlert!();
+          }}
+          onPressAddAddress={() => {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
+              source: 'Medicine' as AddressSource,
+              addOnly: true,
+            });
+            hideAphAlert!();
+          }}
+          onPressCurrentLocaiton={() => {
+            hideAphAlert!();
+            autoDetectLocation(addresses);
+          }}
+          onPressPincode={() => {
+            hideAphAlert!();
+            showAccessAccessLocationPopup(true);
+          }}
+        />
+      ) : (
+        <PincodeInput
+          onPressApply={(pincode) => {
+            if (pincode?.length == 6) {
+              hideAphAlert!();
+              updatePlaceInfoByPincode(pincode);
+            }
+          }}
+          onPressBack={() => showAccessAccessLocationPopup(false)}
+        />
+      ),
+    });
+  };
+
+  const autoDetectLocation = (addresses: addressListType) => {
+    setLoading!(true);
+    doRequestAndAccessLocationModified()
+      .then((response) => {
+        setLoading!(false);
+        response && setPharmacyLocation!(response);
+        response && !locationDetails && setLocationDetails!(response);
+        setDeliveryAddressId!('');
+        updatePlaceInfoByPincode(response?.pincode);
+      })
+      .catch((e) => {
+        setLoading!(false);
+        checkLocation(addresses);
+        CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
+        e &&
+          typeof e == 'string' &&
+          !e.includes('denied') &&
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: e,
+          });
+      });
+  };
+
+  const checkLocation = (addresses: addressListType) => {
+    const defaultAddress = addresses.find((item) => item?.defaultAddress);
+    !defaultAddress &&
+      !locationDetails &&
+      !pharmacyLocation &&
+      showAccessAccessLocationPopup(false);
+  };
+
   let buttonRef = React.useRef<View>(null);
   return (
     <View style={{ flex: 1 }}>
@@ -743,7 +811,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               isInStock={isInStock}
               isSellOnline={medicineDetails?.sell_online === 1}
               manufacturer={medicineDetails?.manufacturer}
-              showPincodePopup={showPincodePopup}
+              showPincodePopup={showAccessAccessLocationPopup}
               deliveryTime={deliveryTime}
               deliveryError={deliveryError}
               isPharma={isPharma}
