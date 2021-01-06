@@ -392,14 +392,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   }, []);
 
-  const loadTestDetails = async (itemId: string) => {
+  const loadTestDetails = async (itemId: string | number) => {
     let listOfIds = [];
-    if (source == 'Partial Search') {
-      listOfIds = [Number(itemId)];
-    } else {
-      const removeSpaces = itemId?.replace(/\s/g, '');
+    if (typeof itemId == 'string') {
+      const removeSpaces = typeof itemId == 'string' ? itemId?.replace(/\s/g, '') : itemId;
       const arrayOfId = removeSpaces.split(',');
       listOfIds = arrayOfId.map((item) => parseInt(item!));
+    } else {
+      listOfIds = [Number(itemId)];
     }
 
     try {
