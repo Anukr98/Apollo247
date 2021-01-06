@@ -231,7 +231,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         name,
         parseInt(locationForDiagnostics?.cityId!, 10)
       );
-      if (res && res?.data?.success) {
+      if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         func && func(product);
       } else {
@@ -298,7 +298,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         parseInt(locationForDiagnostics?.cityId!, 10)
       );
 
-      if (res && res?.data?.success) {
+      if (res?.data?.success) {
         console.log({ res });
         const products = g(res, 'data', 'data') || [];
         setDiagnosticResults(

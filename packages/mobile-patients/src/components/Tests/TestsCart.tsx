@@ -1085,7 +1085,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const planToConsider = pricesForItem?.planToConsider;
 
                 updateCartItem!({
-                  id: item?.itemId!.toString() || product[0]?.id!,
+                  id: item?.itemId!.toString() || product?.[0]?.id!,
                   name: item?.itemName,
                   price: price,
                   thumbnail: '',
@@ -1100,7 +1100,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   mou: item?.inclusions == null ? 1 : item?.inclusions?.length,
                   inclusions:
                     item?.inclusions == null
-                      ? [Number(item?.itemId || product[0]?.id)]
+                      ? [Number(item?.itemId || product?.[0]?.id)]
                       : item?.inclusions,
                 });
               });

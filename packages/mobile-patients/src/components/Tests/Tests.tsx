@@ -672,7 +672,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const getDiagnosticBanner = async () => {
     const res: any = await getLandingPageBanners('diagnostic');
-    if (res && res?.data?.success) {
+    if (res?.data?.success) {
       const bannerData = g(res, 'data', 'data');
       setBanners(bannerData);
     } else {
@@ -2157,7 +2157,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           _searchText,
           parseInt(locationForDiagnostics?.cityId!, 10)
         );
-        if (res && res?.data?.success) {
+        if (res?.data?.success) {
           const products = g(res, 'data', 'data') || [];
           setDiagnosticResults(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
@@ -2604,10 +2604,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         data={item}
         loading={true}
-        showSeparator={index !== diagnosticResults.length - 1}
+        showSeparator={index !== diagnosticResults?.length - 1}
         style={{
           marginHorizontal: 20,
-          paddingBottom: index == diagnosticResults.length - 1 ? 20 : 0,
+          paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
       />
