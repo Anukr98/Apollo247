@@ -18,7 +18,7 @@ export interface ProductPriceDeliveryProps {
   isInStock: boolean;
   isSellOnline: boolean;
   manufacturer?: string;
-  showPincodePopup: () => void;
+  showPincodePopup: (show: boolean) => void;
   deliveryTime?: string;
   deliveryError?: string;
   isPharma: boolean;
@@ -110,7 +110,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     return (
       <TouchableOpacity
         onPress={() => {
-          showPincodePopup();
+          showPincodePopup(true);
         }}
         style={styles.deliveryTo}
       >

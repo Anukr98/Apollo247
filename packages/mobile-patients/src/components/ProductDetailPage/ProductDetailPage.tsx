@@ -78,6 +78,7 @@ import { Overlay } from 'react-native-elements';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -141,6 +142,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [productQuantity, setProductQuantity] = useState<number>(1);
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
   const [showSubstituteInfo, setShowSubstituteInfo] = useState<boolean>(false);
+  const [showPincodePopup, setShowPincodePopup] = useState<boolean>(false);
 
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
@@ -537,26 +539,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     );
   };
 
-  const showPincodePopup = () => {
-    return showAphAlert!({
-      unDismissable: false,
-      removeTopIcon: true,
-      children: (
-        <PincodeInput
-          onPressApply={(pincode) => {
-            if (pincode?.length == 6) {
-              hideAphAlert!();
-              updatePlaceInfoByPincode(pincode);
-            }
-          }}
-          onPressBack={() => {
-            hideAphAlert!();
-          }}
-        />
-      ),
-    });
-  };
-
   const updatePlaceInfoByPincode = (pincode: string) => {
     setLoading!(true);
     getPlaceInfoByPincode(pincode)
@@ -571,6 +553,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             !locationDetails && setLocationDetails!(response);
             setpincode(pincode);
             fetchDeliveryTime(true);
+            setShowPincodePopup(false);
             setLoading!(false);
           } else {
             setLoading!(false);
@@ -582,7 +565,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 {
                   text: 'CHANGE PINCODE',
                   type: 'orange-link',
-                  onPress: () => showPincodePopup(),
+                  onPress: () => setShowPincodePopup(true),
                 },
               ],
             });
@@ -743,7 +726,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               isInStock={isInStock}
               isSellOnline={medicineDetails?.sell_online === 1}
               manufacturer={medicineDetails?.manufacturer}
-              showPincodePopup={showPincodePopup}
+              showPincodePopup={setShowPincodePopup}
               deliveryTime={deliveryTime}
               deliveryError={deliveryError}
               isPharma={isPharma}
@@ -901,6 +884,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             </Text>
           </View>
         </Overlay>
+      )}
+      {showPincodePopup && (
+        <PincodePopup
+          onClickClose={() => {
+            setShowPincodePopup(false);
+          }}
+          toBeShownOn={'Diagnostics'}
+          onComplete={() => {}}
+          onPressSubmit={(pincode) => {
+            if (pincode?.length == 6) {
+              setShowPincodePopup(false);
+              updatePlaceInfoByPincode(pincode);
+            }
+          }}
+          subText={'Allow us to serve you better by entering your area pincode below.'}
+        />
       )}
     </View>
   );
