@@ -367,6 +367,8 @@
     "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification"
   },
   "diagnostics": {
+    "locationPermissionText":"Allow us to serve you better by entering your area pincode below.",
+    "serviceabilityFailureText":"Something went wrong. We're unable to check diagnostics serviceability for your location.",
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
     "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
     "nonServiceableConfigPinCodeMsg": "Diagnostic services are not available in Pincode - {{pincode}} for now.",
