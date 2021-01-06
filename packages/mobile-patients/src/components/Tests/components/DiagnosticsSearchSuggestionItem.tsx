@@ -45,7 +45,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
   const { data } = props;
   const name = data?.diagnostic_item_name || '';
   const imageUri = false;
-  const isAddedToCart = !!cartItems.find(
+  const isAddedToCart = !!cartItems?.find(
     (item) => Number(item?.id) == Number(data?.diagnostic_item_id)
   );
 
