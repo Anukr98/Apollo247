@@ -14,7 +14,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -25,7 +25,7 @@ const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
-const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==' ;
+const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 
 const testApiCredentialsDev = {
@@ -228,11 +228,11 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
-    DRUPAL_BANNER_CONFIG : ['https://uatcms.apollo247.com/api/banner', drupalAuthTokenDev]
+    DRUPAL_BANNER_CONFIG: ['https://uatcms.apollo247.com/api/banner', drupalAuthTokenDev],
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
-    DRUPAL_BANNER_CONFIG :['https://cms.apollo247.com/api/banner',drupalAuthTokenProd]
+    DRUPAL_BANNER_CONFIG: ['https://cms.apollo247.com/api/banner', drupalAuthTokenProd],
   },
 };
 
