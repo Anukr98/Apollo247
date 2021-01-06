@@ -22,7 +22,7 @@ import {
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -251,7 +251,9 @@ export const formatAddressForApi = (
     .join(', ');
   const state = [address?.state];
   const formattedZipcode = address?.zipcode ? `${address?.zipcode}` : '';
-  const formattedAddress = removeConsecutiveComma(addrLine1 + ', ' + state +', ' + formattedZipcode);
+  const formattedAddress = removeConsecutiveComma(
+    addrLine1 + ', ' + state + ', ' + formattedZipcode
+  );
   return formattedAddress;
 };
 
@@ -912,7 +914,7 @@ const getlocationData = (
 
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: false, timeout: 5000 }
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
@@ -1790,21 +1792,19 @@ export const getFormattedLocation = (
 ) => {
   const { lat, lng } = latLang || {};
 
-  let area: any[] = []
-  if(isComingFromMaps){
-    area= [
+  let area: any[] = [];
+  if (isComingFromMaps) {
+    area = [
       findAddrComponents('route', addrComponents),
       findAddrComponents('sublocality_level_2', addrComponents),
     ].filter((i) => i);
-  } 
-  else{
-    area= [
+  } else {
+    area = [
       findAddrComponents('route', addrComponents),
       findAddrComponents('sublocality_level_2', addrComponents),
       findAddrComponents('sublocality_level_1', addrComponents),
     ].filter((i) => i);
   }
-
 
   return {
     displayName:
@@ -1820,7 +1820,7 @@ export const getFormattedLocation = (
     state: findAddrComponents('administrative_area_level_1', addrComponents),
     stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
-    pincode: pincode !="" && pincode || findAddrComponents('postal_code', addrComponents),
+    pincode: (pincode != '' && pincode) || findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };
