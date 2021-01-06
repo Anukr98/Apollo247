@@ -665,10 +665,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           patientId: currentPatient?.id,
         },
       });
-      if (res?.data?.getPatientFutureAppointmentCount) {
-        const inProgressAppointments =
-          g(res, 'data', 'getPatientFutureAppointmentCount', 'activeAndInProgressConsultsCount') ||
-          0;
+      const appointmentCount = res?.data?.getPatientFutureAppointmentCount;
+      if (appointmentCount) {
+        const inProgressAppointments = appointmentCount?.activeConsultsCount || 0;
         if (inProgressAppointments > 0) {
           overlyCallPermissions(
             currentPatient!.firstName!,

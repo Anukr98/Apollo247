@@ -354,8 +354,7 @@ export const GET_AVAILABLE_SLOTS = gql`
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
-      consultsCount
-      activeAndInProgressConsultsCount
+      activeConsultsCount
     }
   }
 `;
