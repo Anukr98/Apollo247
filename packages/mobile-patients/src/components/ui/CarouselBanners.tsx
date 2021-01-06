@@ -231,10 +231,11 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         activeOpacity={1}
         onPress={() =>
           handleOnBannerClick(
-            cta_action.type,
-            cta_action.meta.action,
-            cta_action.meta.message,
-            cta_action?.url
+            cta_action?.type,
+            cta_action?.meta.action,
+            cta_action?.meta.message,
+            cta_action?.url,
+            cta_action?.meta
           )
         }
         style={[
@@ -287,7 +288,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
               cta_action?.type,
               cta_action?.meta?.action,
               cta_action?.meta?.message,
-              cta_action?.url
+              cta_action?.url,
+              cta_action?.meta
             )
           }
         >
@@ -378,7 +380,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     );
   };
 
-  const handleOnBannerClick = (type: any, action: any, message: any, url: string) => {
+  const handleOnBannerClick = (type: any, action: any, message: any, url: string, meta: any) => {
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
@@ -415,7 +417,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       }
-    } else if (type == hdfc_values.ABSOLUTE_URL && action) {
+    } else if (type == hdfc_values.WEB_VIEW && action) {
       props.navigation.navigate(AppRoutes.CommonWebView, {
         url: action,
       });
@@ -444,6 +446,15 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           fireBannerClickedWebengageEvent(hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: Circle.planName,
+          });
+        } else if (
+          action === hdfc_values.MEDICINE_LISTING &&
+          !!meta?.category_id &&
+          !!meta?.category_name
+        ) {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            category_id: meta?.category_id,
+            title: meta?.category_name,
           });
         } else {
           props.navigation.navigate(AppRoutes.ConsultRoom);
