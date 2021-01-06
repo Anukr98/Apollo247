@@ -28,6 +28,7 @@ import {
   FemaleCircleIcon,
   FemaleIcon,
   KavachIcon,
+  HealthyLife,
   LatestArticle,
   LinkedUhidIcon,
   MaleCircleIcon,
@@ -433,6 +434,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcPlanId,
     setCircleStatus,
     setHdfcStatus,
+    hdfcStatus,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -1997,6 +1999,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           'Take a mental health scan'
         )} */}
         {renderCovidBlueButtons(
+          onPressHealthyLife,
+          <HealthyLife style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.HdfcHealthLifeText}`
+        )}
+        {renderCovidBlueButtons(
           onPressKavach,
           <KavachIcon style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HOME_SCREEN_KAVACH_TEXT}`
@@ -2163,6 +2170,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         covidUrl: openUrl,
       });
     } catch (e) {}
+  };
+
+  const onPressHealthyLife = () => {
+    postHomeWEGEvent(WebEngageEventName.HDFC_HEALTHY_LIFE);
+    if (hdfcUserSubscriptions != null && hdfcStatus == 'active') {
+      props.navigation.navigate(AppRoutes.MembershipDetails, {
+        membershipType: g(hdfcUserSubscriptions, 'name'),
+        isActive: g(hdfcUserSubscriptions, 'isActive'),
+      });
+    } else {
+      try {
+        const openUrl = AppConfig.Configuration.HDFC_HEALTHY_LIFE_URL;
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: openUrl,
+        });
+      } catch (e) {}
+    }
   };
 
   const renderCovidScanBanner = () => {

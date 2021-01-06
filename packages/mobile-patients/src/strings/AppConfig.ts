@@ -84,6 +84,7 @@ const appStaticVariables = {
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
+  HdfcHealthLifeText: string.common.HdfcHealthLifeText
 };
 
 const DEV_top_specialties = [
@@ -512,6 +513,7 @@ const ConfigurationDev = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 
 // QA
@@ -564,6 +566,7 @@ const ConfigurationQA = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 
 // QA2
@@ -616,6 +619,7 @@ const ConfigurationQA2 = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 
 // QA3
@@ -661,6 +665,7 @@ const ConfigurationQA3 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 
 // VAPT
@@ -713,6 +718,7 @@ const ConfigurationVAPT = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 //Production
 const ConfigurationProd = {
@@ -762,6 +768,7 @@ const ConfigurationProd = {
   CIRCLE_LANDING_URL: 'https://www.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 
 //PERFORMANCE
@@ -815,6 +822,7 @@ const ConfigurationPERFORM = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 
 //DevelopmentReplica
@@ -868,6 +876,7 @@ const ConfigurationDevReplica = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
 };
 
 const Configuration =
