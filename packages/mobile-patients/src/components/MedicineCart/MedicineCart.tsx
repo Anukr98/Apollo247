@@ -238,6 +238,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [cartItems]);
 
   useEffect(() => {
+    // when app is repoened and if circle is added to cart, then set circle subscription data
+    if (!!circleMembershipCharges) {
+      setIsCircleSubscription && setIsCircleSubscription(true);
+      if (circlePlanSelected?.subPlanId) {
+        setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
+      }
+    }
+  }, [circleMembershipCharges]);
+
+  useEffect(() => {
     if (couponProducts && couponProducts.length) {
       getMedicineDetailsOfCouponProducts();
     }
@@ -457,6 +467,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     // remove applied circle subscription if tat api returns error
     if (!circleSubscriptionId && !physicalPrescriptions.length) {
       setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCirclePlanSelected && setCirclePlanSelected(null);
+      AsyncStorage.removeItem('circlePlanSelected');
     }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
     setdeliveryTime?.(genericServiceableDate);
