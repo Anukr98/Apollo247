@@ -233,11 +233,13 @@ export interface TestDetailsProps
   extends NavigationScreenProps<{
     testDetails?: TestPackageForDetails;
     itemId?: string;
+    source?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
+  const source = props.navigation.getParam('source');
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
@@ -269,7 +271,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
-  const findItemFromCart = cartItems.find((item) => item.id == testInfo.ItemID);
+  const findItemFromCart = cartItems.find((item) => item?.id == testInfo?.ItemID);
   console.log(findItemFromCart);
 
   const discount =
@@ -391,9 +393,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
-    const removeSpaces = itemId.replace(/\s/g, '');
-    const arrayOfId = removeSpaces.split(',');
-    const listOfIds = arrayOfId.map((item) => parseInt(item!));
+    let listOfIds = [];
+    if (source == 'Partial Search') {
+      listOfIds = [Number(itemId)];
+    } else {
+      const removeSpaces = itemId?.replace(/\s/g, '');
+      const arrayOfId = removeSpaces.split(',');
+      listOfIds = arrayOfId.map((item) => parseInt(item!));
+    }
+
     try {
       const {
         data: { findDiagnosticsByItemIDsAndCityID },

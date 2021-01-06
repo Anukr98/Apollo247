@@ -80,7 +80,7 @@ import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
-import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
+import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/SearchTestScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
 import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';

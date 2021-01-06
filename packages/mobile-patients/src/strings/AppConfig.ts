@@ -228,11 +228,11 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
-    DRUPAL_BANNER_CONFIG : ['https://uatcms.apollo247.com/api/banner', drupalAuthTokenDev]
+    DRUPAL_CONFIG : ['https://uatcms.apollo247.com/api', drupalAuthTokenDev]
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
-    DRUPAL_BANNER_CONFIG :['https://cms.apollo247.com/api/banner',drupalAuthTokenProd]
+    DRUPAL_CONFIG :['https://cms.apollo247.com/api',drupalAuthTokenProd]
   },
 };
 
@@ -1001,7 +1001,6 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
 ];
 

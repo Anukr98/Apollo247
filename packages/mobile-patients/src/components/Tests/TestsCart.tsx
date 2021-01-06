@@ -522,6 +522,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [hcCharges]);
 
+
   const postwebEngageProceedToPayEvent = () => {
     const diffInDays = date.getDate() - new Date().getDate();
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
@@ -1096,6 +1097,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   collectionMethod: item?.collectionType!,
                   groupPlan: planToConsider?.groupPlan,
                   packageMrp: packageMrp,
+                  mou: item?.inclusions == null ? 1 : item?.inclusions?.length,
+                  inclusions:
+                    item?.inclusions == null
+                      ? [Number(item?.itemId || product[0]?.id)]
+                      : item?.inclusions,
                 });
               });
             }
