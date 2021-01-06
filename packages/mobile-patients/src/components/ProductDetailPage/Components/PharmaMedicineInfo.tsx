@@ -120,8 +120,8 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
 
   const renderShowMore = () => {
     return (
-      <TouchableOpacity onPress={() => setShowAllContent(true)}>
-        <Text style={styles.showMoreText}>Show more</Text>
+      <TouchableOpacity onPress={() => setShowAllContent(!showAllContent)}>
+        <Text style={styles.showMoreText}>{showAllContent ? `SHOW LESS` : `SHOW MORE`}</Text>
       </TouchableOpacity>
     );
   };
@@ -129,7 +129,7 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   return (
     <View style={styles.cardStyle}>
       {!!pharmaUses && renderUses(pharmaUses)}
-      {showAllContent ? (
+      {showAllContent && (
         <>
           {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
           {renderVegetarianIcon()}
@@ -141,9 +141,8 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
           {!!variant && renderVariant()}
           {!!pharmaOverview && renderPrecautionsAndWarnings()}
         </>
-      ) : (
-        renderShowMore()
       )}
+      {renderShowMore()}
     </View>
   );
 };

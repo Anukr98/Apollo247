@@ -25,10 +25,7 @@ import {
   CommonLogEvent,
   isIphone5s,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { GET_PATIENT_ALL_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
@@ -64,11 +61,13 @@ import {
   SectionList,
   Platform,
   Dimensions,
+  SectionListData,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
   getPatientAllAppointments,
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
+  getPatientAllAppointmentsVariables,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import {
   APPOINTMENT_STATE,
@@ -410,52 +409,44 @@ export interface AppointmentFilterObject {
   specialtyList: string[] | null;
 }
 
+export type Appointment = getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
+
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
-  const tabs = [{ title: 'Today' }, { title: 'Upcoming' }, { title: 'Past' }];
+  const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
 
-  const [consultations, setconsultations] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
+  const [activeFollowUpAppointments, setActiveFollowUpAppointments] = useState<
+    {
+      type: string;
+      data: Appointment[];
+    }[]
   >([]);
-  const [activeConsultations, setActiveConsultations] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
-  >([]);
-  const [pastConsultations, setPastConsultations] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
-  >([]);
-  const [upcomingConsultations, setUpcomingConsultatons] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
-  >([]);
-  const [todaysConsultations, setTodaysConsultations] = useState<
-    { type: string; data: getPatientAllAppointments_getPatientAllAppointments_appointments }[] | any
-  >();
+  const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
+  const [followUpAppointments, setFollowUpAppointments] = useState<Appointment[]>([]);
+  const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
+  const [cancelledAppointments, setCancelledAppointments] = useState<Appointment[]>([]);
+
   const initialAppointmentFilterObject: AppointmentFilterObject = {
     appointmentStatus: [],
     availability: [],
     doctorsList: [],
     specialtyList: [],
   };
-  const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
-  const [filterSpecialtyList, setFilterSpecialtyList] = React.useState<string[]>([]);
-  const [filter, setFilter] = React.useState<AppointmentFilterObject>(
-    initialAppointmentFilterObject
-  );
-  const [isFilterOpen, setIsFilterOpen] = React.useState<boolean>(false);
-  const [filteredAppointmentsList, setFilteredAppointmentsList] = React.useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
-  >([]);
-  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [filterDoctorsList, setFilterDoctorsList] = useState<string[]>([]);
+  const [filterSpecialtyList, setFilterSpecialtyList] = useState<string[]>([]);
+  const [filter, setFilter] = useState<AppointmentFilterObject>(initialAppointmentFilterObject);
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [filteredAppointmentsList, setFilteredAppointmentsList] = useState<Appointment[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState(true);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
-  const [
-    appointmentItem,
-    setAppoinmentItem,
-  ] = useState<getPatientAllAppointments_getPatientAllAppointments_appointments | null>();
+  const [appointmentItem, setAppoinmentItem] = useState<Appointment | null>();
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
@@ -533,10 +524,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       filter.doctorsList === [] &&
       filter.specialtyList === []
     ) {
-      setFilteredAppointmentsList(consultations || []);
+      setFilteredAppointmentsList(allAppointments || []);
     } else {
-      let localFilteredList: getPatientAllAppointments_getPatientAllAppointments_appointments[] =
-        consultations || [];
+      let localFilteredList: Appointment[] = allAppointments || [];
       if (appointmentStatus && appointmentStatus?.length > 0) {
         localFilteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
       }
@@ -555,11 +545,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const getAppointmentStatusFilteredList = (
     appointmentStatus: string[],
-    localFilteredAppointmentsList: getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    localFilteredAppointmentsList: Appointment[]
   ) => {
-    let finalList: getPatientAllAppointments_getPatientAllAppointments_appointments[] = [];
+    let finalList: Appointment[] = [];
     if (appointmentStatus.includes('Active')) {
-      finalList = activeConsultations;
+      finalList = [...activeAppointments, ...followUpAppointments];
     }
     if (appointmentStatus.includes('Rescheduled')) {
       const filteredList = localFilteredAppointmentsList.filter(
@@ -592,7 +582,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const getGenericFilteredList = (
     list: string[],
-    localFilteredAppointmentsList: getPatientAllAppointments_getPatientAllAppointments_appointments[],
+    localFilteredAppointmentsList: Appointment[],
     type: string
   ) => {
     const finalList = localFilteredAppointmentsList.filter((appointment) => {
@@ -610,9 +600,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const getAvailabilityFilteredList = (
     availabilityList: string[],
-    localFilteredAppointmentsList: getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    localFilteredAppointmentsList: Appointment[]
   ) => {
-    let finalList: getPatientAllAppointments_getPatientAllAppointments_appointments[] = [];
+    let finalList: Appointment[] = [];
     if (availabilityList.includes('Now')) {
       finalList = localFilteredAppointmentsList.filter((appointment) => {
         const diffInMinutes = getDiffInMinutes(appointment.appointmentDateTime);
@@ -676,7 +666,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const postConsultCardEvents = (
     type: 'Card Click' | 'Continue Consult' | 'Chat with Doctor' | 'Fill Medical Details',
-    data: getPatinetAppointments_getPatinetAppointments_patinetAppointments
+    data: Appointment
   ) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
@@ -716,148 +706,71 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const fetchAppointments = async () => {
-    let userId: any = await AsyncStorage.getItem('selectedProfileId');
-    userId = JSON.parse(userId || 'null');
-    console.log('userId', userId);
+    try {
+      let userId = await AsyncStorage.getItem('selectedProfileId');
+      userId = JSON.parse(userId || 'null');
 
-    setLoading && setLoading(true);
-    getNetStatus()
-      .then((status) => {
-        console.log(status, 'status');
-
-        if (status) {
-          console.log('inputdata', inputData);
-          client
-            .query<getPatientAllAppointments>({
-              query: GET_PATIENT_ALL_APPOINTMENTS,
-              fetchPolicy: 'no-cache',
-              variables: {
-                patientId:
-                  userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
-              },
-            })
-            .then(({ data }) => {
-              if (
-                data &&
-                data.getPatientAllAppointments &&
-                data.getPatientAllAppointments.appointments &&
-                consultations !== data.getPatientAllAppointments.appointments
-              ) {
-                console.log(
-                  'data.getPatientAllAppointments.appointments',
-                  data.getPatientAllAppointments.appointments
-                );
-                let pastAppointments:
-                  | getPatientAllAppointments_getPatientAllAppointments_appointments
-                  | any = [];
-                let activeAppointments:
-                  | getPatientAllAppointments_getPatientAllAppointments_appointments
-                  | any = [];
-                let todaysAppointments:
-                  | getPatientAllAppointments_getPatientAllAppointments_appointments
-                  | any = [];
-                let upcomingAppointments:
-                  | getPatientAllAppointments_getPatientAllAppointments_appointments
-                  | any = [];
-                let followUpAppointments:
-                  | getPatientAllAppointments_getPatientAllAppointments_appointments
-                  | any = [];
-                let combinationActiveFollowUp: any = [];
-                let doctorsList: string[] = [];
-                let specialtyList: string[] = [];
-                data.getPatientAllAppointments.appointments.forEach((item) => {
-                  doctorsList.push(item?.doctorInfo?.fullName || '');
-                  specialtyList.push(item?.doctorInfo?.specialty?.name || '');
-
-                  if (isPastAppointment(item?.caseSheet, item)) {
-                    pastAppointments.push(item);
-                  } else {
-                    const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
-                    const tomorrowAvailabilityTime = moment()
-                      .add('days', 1)
-                      .set({
-                        hour: tomorrowAvailabilityHourTime.get('hour'),
-                        minute: tomorrowAvailabilityHourTime.get('minute'),
-                      });
-                    const diffInHoursForTomorrowAvailabilty = moment(
-                      item?.appointmentDateTime
-                    ).diff(tomorrowAvailabilityTime, 'minutes');
-                    diffInHoursForTomorrowAvailabilty < 1
-                      ? todaysAppointments.push(item)
-                      : upcomingAppointments.push(item);
-                    if (diffInHoursForTomorrowAvailabilty < 1) {
-                      item?.status === STATUS.COMPLETED
-                        ? followUpAppointments.push(item)
-                        : activeAppointments.push(item);
-                    }
-                  }
-                });
-                activeAppointments.length > 0 &&
-                  combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
-                followUpAppointments.length > 0 &&
-                  combinationActiveFollowUp.push({
-                    type: 'Follow-up Chat',
-                    data: followUpAppointments,
-                  });
-                setFilterDoctorsList(_.uniq(doctorsList));
-                setFilterSpecialtyList(_.uniq(specialtyList));
-                setTodaysConsultations(combinationActiveFollowUp);
-                setUpcomingConsultatons(
-                  upcomingAppointments.sort(
-                    (a: any, b: any) =>
-                      moment(a.appointmentDateTime)
-                        .toDate()
-                        .getTime() -
-                      moment(b.appointmentDateTime)
-                        .toDate()
-                        .getTime()
-                  )
-                );
-                setFilter(initialAppointmentFilterObject);
-                setFilteredAppointmentsList(data.getPatientAllAppointments.appointments);
-                setconsultations(data.getPatientAllAppointments.appointments);
-                setActiveConsultations(activeAppointments);
-                setPastConsultations(pastAppointments);
-                const inProgressAppointments = activeAppointments?.filter((item: any) => {
-                  return item.status !== STATUS.COMPLETED;
-                });
-                if (inProgressAppointments && inProgressAppointments.length > 0) {
-                  if (Platform.OS === 'ios') {
-                    callPermissions();
-                  } else {
-                    callPermissions(() => {
-                      overlyCallPermissions(
-                        currentPatient!.firstName!,
-                        activeAppointments[0].doctorInfo.displayName,
-                        showAphAlert,
-                        hideAphAlert,
-                        true
-                      );
-                    });
-                  }
-                }
-              } else {
-                setconsultations([]);
-                setFilteredAppointmentsList([]);
-              }
-              // setLoading && setLoading(false);
-            })
-            .catch((e) => {
-              CommonBugFender('Consult_fetchAppointments', e);
-              console.log('Error occured in GET_PATIENT_ALL_APPOINTMENTS', e);
-            })
-            .finally(() => {
-              console.log('finally');
-
-              setLoading && setLoading(false);
-            });
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Consult_getNetStatus', e);
+      const { data } = await client.query<
+        getPatientAllAppointments,
+        getPatientAllAppointmentsVariables
+      >({
+        query: GET_PATIENT_ALL_APPOINTMENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: userId !== currentPatient?.id ? currentPatient?.id || userId : userId,
+        },
       });
+      const appointments = data?.getPatientAllAppointments;
+
+      const activeFollowUpAppointments =
+        appointments?.activeAppointments?.length || appointments?.followUpAppointments?.length
+          ? [
+              { type: 'Active', data: appointments?.activeAppointments! || [] },
+              { type: 'Follow-up Chat', data: appointments?.followUpAppointments! || [] },
+            ]
+          : [];
+      const activeAppointments = appointments?.activeAppointments! || [];
+      const followUpAppointments = appointments?.followUpAppointments! || [];
+      const completedAppointments = appointments?.completedAppointments! || [];
+      const cancelledAppointments = appointments?.cancelledAppointments! || [];
+      const allAppointments = [
+        ...activeAppointments,
+        ...followUpAppointments,
+        ...completedAppointments,
+        ...cancelledAppointments,
+      ];
+      const doctorsList = allAppointments.map((item) => item?.doctorInfo?.fullName!);
+      const specialtyList = allAppointments.map((item) => item?.doctorInfo?.specialty?.name!);
+      setActiveFollowUpAppointments(activeFollowUpAppointments);
+      setActiveAppointments(activeAppointments);
+      setFollowUpAppointments(followUpAppointments);
+      setCancelledAppointments(cancelledAppointments);
+      setCompletedAppointments(completedAppointments);
+      setFilterDoctorsList(_.uniq(doctorsList));
+      setFilterSpecialtyList(_.uniq(specialtyList));
+      setFilter(initialAppointmentFilterObject);
+      setFilteredAppointmentsList(allAppointments);
+      setAllAppointments(allAppointments);
+      setLoading(false);
+
+      if (activeAppointments?.length || followUpAppointments?.length) {
+        if (Platform.OS === 'ios') {
+          callPermissions();
+        } else {
+          callPermissions(() => {
+            overlyCallPermissions(
+              currentPatient!.firstName!,
+              activeAppointments[0]?.doctorInfo?.displayName || '',
+              showAphAlert,
+              hideAphAlert,
+              true
+            );
+          });
+        }
+      }
+    } catch (error) {
+      setLoading(false);
+    }
   };
 
   const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
@@ -872,8 +785,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     filterLength === 0 && setSelectedDate(null);
   }, [filterLength]);
 
-  const renderSectionHeader = (section: any) => {
-    return (
+  const renderSectionHeader = (section: SectionListData<Appointment>) => {
+    return section?.data?.length ? (
       <Text
         style={[
           styles.sectionHeaderTitleStyle,
@@ -882,7 +795,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       >
         {section.type}
       </Text>
-    );
+    ) : null;
   };
 
   const renderTodaysConsultations = () => {
@@ -891,7 +804,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 0 }}
         bounces={false}
-        sections={selectedTab === tabs[0].title ? todaysConsultations : []}
+        sections={selectedTab === tabs[0].title ? activeFollowUpAppointments : []}
         ListEmptyComponent={renderNoAppointments()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
         renderItem={({ item, index }) => renderConsultationCard(item, index)}
@@ -922,10 +835,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
-  const renderConsultationCard = (
-    item: getPatientAllAppointments_getPatientAllAppointments_appointments,
-    index: number
-  ) => {
+  const renderConsultationCard = (item: Appointment, index: number) => {
     let tomorrowDate = moment(new Date())
       .add(1, 'days')
       .format('DD MMM');
@@ -989,9 +899,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       '(' + day1.diff(day2, 'days') + (day1.diff(day2, 'days') == 1 ? ' day left)' : ' days left)');
     const prevItem =
       selectedTab === tabs[1].title
-        ? upcomingConsultations[index - 1]
+        ? completedAppointments[index - 1]
         : selectedTab !== tabs[0].title
-        ? pastConsultations[index - 1]
+        ? cancelledAppointments[index - 1]
         : null;
     const prevItemDateTime = moment
       .utc(prevItem?.appointmentDateTime)
@@ -1007,7 +917,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
-      medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
+      medicines:
+        | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[]
+        | null
     ) =>
       medicines
         ? medicines
@@ -1082,10 +994,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       );
     };
 
-    const fireWebengageEvent = (
-      item: getPatinetAppointments_getPatinetAppointments_patinetAppointments,
-      eventType: string
-    ) => {
+    const fireWebengageEvent = (item: Appointment, eventType: string) => {
       const eventAttributesFollowUp:
         | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
         | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
@@ -1439,7 +1348,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <FlatList
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
-        data={selectedTab === tabs[1].title ? upcomingConsultations : pastConsultations}
+        data={selectedTab === tabs[1].title ? completedAppointments : cancelledAppointments}
         bounces={false}
         removeClippedSubviews={true}
         showsHorizontalScrollIndicator={false}
@@ -1541,10 +1450,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       filterLength > 0
         ? 'You have ' + (filteredAppointmentsList.length || 'no') + ' appointment(s)!'
         : selectedTab === tabs[0].title
-        ? 'You have ' + (activeConsultations.length || 'no') + ' active appointment(s)!'
+        ? 'You have ' + (activeFollowUpAppointments.length || 'no') + ' active appointment(s)!'
         : selectedTab === tabs[1].title
-        ? 'You have ' + (upcomingConsultations.length || 'no') + ' upcoming appointment(s)!'
-        : 'You have ' + (pastConsultations.length || 'no') + ' past appointment(s)!';
+        ? 'You have ' + (completedAppointments.length || 'no') + ' completed appointment(s)!'
+        : 'You have ' + (cancelledAppointments.length || 'no') + ' cancelled appointment(s)!';
     return (
       <View style={{ flexDirection: 'row', flex: 1, marginRight: 20 }}>
         <Text style={styles.descriptionTextStyle}>{numberOfAppoinmentText}</Text>
@@ -1553,7 +1462,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             activeOpacity={1}
             onPress={() =>
               props.navigation.navigate(AppRoutes.SearchAppointmentScreen, {
-                allAppointments: consultations,
+                allAppointments: allAppointments,
                 onPressBack: searchAppointmentBackPressed,
               })
             }

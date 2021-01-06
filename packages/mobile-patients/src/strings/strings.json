@@ -400,9 +400,9 @@
       "chargesTooHigh": "Home Collection charges are too high",
       "editOrder": "Need to edit order details",
       "userUnavailable": "I am not available",
-      "noSlot":"Required slot is not available",
-      "changePaymentMode":"Need to change payment mode",
-      "highPrice":"High price issue",
+      "noSlot": "Required slot is not available",
+      "changePaymentMode": "Need to change payment mode",
+      "highPrice": "High price issue",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
@@ -614,6 +614,8 @@
     "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
     "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
     "ABSOLUTE_URL": "ABSOLUTE_URL",
+    "WEB_VIEW": "WEB_VIEW",
+    "MEDICINE_LISTING": "MEDICINE_LISTING",
     "ADVANCED_DIABETES": "POP-UP",
     "FILL_FORM": "LEAD-FORM",
     "DIABETES_CONSENT": {

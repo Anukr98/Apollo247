@@ -101,6 +101,7 @@ import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareC
 import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
 import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -230,8 +231,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     // remove circle subscription applied(for non member) if cart items are empty
     if (cartItems.length < 1 && !circleSubscriptionId) {
       setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCirclePlanSelected && setCirclePlanSelected(null);
+      AsyncStorage.removeItem('circlePlanSelected');
     }
   }, [cartItems]);
+
+  useEffect(() => {
+    // when app is repoened and if circle is added to cart, then set circle subscription data
+    if (!!circleMembershipCharges) {
+      setIsCircleSubscription && setIsCircleSubscription(true);
+      if (circlePlanSelected?.subPlanId) {
+        setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
+      }
+    }
+  }, [circleMembershipCharges]);
 
   useEffect(() => {
     if (couponProducts && couponProducts.length) {
@@ -253,7 +267,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [coupon]);
 
   useEffect(() => {
-    setIsFreeDelivery && setIsFreeDelivery(!!circleMembershipCharges);
+    if (!!circleMembershipCharges) {
+      setIsFreeDelivery && setIsFreeDelivery(true);
+    }
   }, [circleMembershipCharges]);
 
   useEffect(() => {
@@ -453,6 +469,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     // remove applied circle subscription if tat api returns error
     if (!circleSubscriptionId && !physicalPrescriptions.length) {
       setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCirclePlanSelected && setCirclePlanSelected(null);
+      AsyncStorage.removeItem('circlePlanSelected');
     }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
     setdeliveryTime?.(genericServiceableDate);
@@ -807,7 +826,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
           onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddress, {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Cart' as AddressSource,
               addOnly: true,
             });
@@ -1104,7 +1123,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return (
       <ProceedBar
         onPressAddDeliveryAddress={() => {
-          props.navigation.navigate(AppRoutes.AddAddress, {
+          props.navigation.navigate(AppRoutes.AddAddressNew, {
             source: 'Cart' as AddressSource,
             addOnly: true,
           });

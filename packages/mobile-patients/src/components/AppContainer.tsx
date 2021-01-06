@@ -18,7 +18,6 @@ const codePushOptions: CodePushOptions = {
     Platform.OS == 'android'
       ? AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_ANDROID
       : AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_IOS,
-  updateDialog: {},
 };
 
 export type CodePushInfo = {
@@ -42,6 +41,10 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
     (TouchableOpacity as any).defaultProps.activeOpacity = 1;
   }
 
+  /**
+   * Enable silent code push updates
+   */
+  /*
   codePushStatusDidChange(status: codePush.SyncStatus) {
     this.setState({ codePushInfo: { ...this.state.codePushInfo, syncStatus: status } });
   }
@@ -49,6 +52,7 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
   codePushDownloadDidProgress(progress: DownloadProgress) {
     this.setState({ codePushInfo: { ...this.state.codePushInfo, downloadProgress: progress } });
   }
+  */
 
   renderCodePushUi = () => {
     return <CodePushInfoUi codePushInfo={this.state.codePushInfo} />;

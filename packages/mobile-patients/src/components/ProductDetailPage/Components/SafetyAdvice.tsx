@@ -47,6 +47,16 @@ export const SafetyAdvice: React.FC<SafetyAdviceProps> = (props) => {
             Read more
           </Text>
         )}
+        {numberOfLines > 3 && numberOfLines === maxLines && (
+          <Text
+            style={styles.readMoreText}
+            onPress={() => {
+              setMaxLines(3);
+            }}
+          >
+            Read less
+          </Text>
+        )}
       </View>
     </View>
   );

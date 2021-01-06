@@ -10,7 +10,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { dataSavedUserID, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { REQUEST_ROLES } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   cancelAppointment,
@@ -34,7 +34,7 @@ const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
 interface CancelReasonProps {
   isCancelVisible: boolean;
   closePopup: () => void;
-  data: getPatientAllAppointments_getPatientAllAppointments_appointments;
+  data: getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
   cancelSuccessCallback: () => void;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
 }
