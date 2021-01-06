@@ -176,6 +176,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     }
   }, []);
 
+  const calMaxStatus = (statusForTest: any, status: string) => {
+    return statusForTest?.find((item: any) => item?.orderStatus == status);
+  };
+
   const fetchOrderStatusForEachTest = async () => {
     setLoading!(true);
     client
@@ -337,11 +341,42 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
               (item: any) => item.itemId.toString() == key
             );
           let sortedSelectedObj: any;
-          sortedSelectedObj =
+          //when backend will be fixed use this logic.
+          // sortedSelectedObj =
+          //   key != null &&
+          //   itemIdObject[key].sort(function(a: any, b: any) {
+          //     return new Date(b.statusDate).valueOf() - new Date(a.statusDate).valueOf();
+          //   });
+
+          if (
             key != null &&
-            itemIdObject[key].sort(function(a: any, b: any) {
-              return new Date(b.statusDate).valueOf() - new Date(a.statusDate).valueOf();
-            });
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
+            );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB
+            );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED
+            );
+          } else {
+            sortedSelectedObj =
+              key != null &&
+              calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED);
+          }
 
           objArray.push({
             id: getSelectedObj?.id! || orderSelectedId,
@@ -350,11 +385,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             patientName: currentPatient?.firstName,
             showDateTime: dt,
             itemId: key,
-            currentStatus: sortedSelectedObj[0]?.orderStatus,
-            packageId: sortedSelectedObj[0]?.packageId,
-            itemName: sortedSelectedObj[0]?.itemName,
-            packageName: sortedSelectedObj[0]?.packageName,
-            statusDate: sortedSelectedObj[0]?.statusDate,
+            currentStatus: sortedSelectedObj?.orderStatus,
+            packageId: sortedSelectedObj?.packageId,
+            itemName: sortedSelectedObj?.itemName,
+            packageName: sortedSelectedObj?.packageName,
+            statusDate: sortedSelectedObj?.statusDate,
             testPreparationData: '',
           });
         }
