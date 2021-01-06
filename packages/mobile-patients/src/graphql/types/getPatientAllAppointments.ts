@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS, DoctorType } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType, Gender, DOCTOR_ONLINE_STATUS, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientAllAppointments
@@ -11,32 +11,76 @@ import { APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS, DoctorType } from "./globa
 
 export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_appointmentPayments {
   __typename: "AppointmentPayment";
-  amountPaid: number;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet_medicinePrescription {
-  __typename: "MedicinePrescription";
-  medicineName: string | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet {
-  __typename: "CaseSheet";
-  doctorType: DoctorType | null;
-  version: number | null;
-  followUpAfterInDays: string | null;
-  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet_medicinePrescription | null)[] | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_specialty {
-  __typename: "DoctorSpecialties";
   id: string;
+  amountPaid: number;
+  paymentRefId: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_bankAccount {
+  __typename: "BankAccount";
+  accountHolderName: string | null;
+  accountNumber: string | null;
+  accountType: AccountType | null;
+  bankName: string | null;
+  city: string | null;
+  id: string | null;
+  IFSCcode: string | null;
+  state: string | null;
+  streetLine1: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_consultHours_facility {
+  __typename: "Facility";
+  city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
   name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_consultHours {
+  __typename: "ConsultHours";
+  consultMode: ConsultMode;
+  consultType: ConsultType;
+  endTime: string;
+  facility: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_consultHours_facility | null;
+  id: string;
+  isActive: boolean;
+  startTime: string;
+  weekDay: WeekDay;
+  consultDuration: number | null;
+  consultBuffer: number | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorHospital_facility {
   __typename: "Facility";
-  name: string;
   city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorHospital {
@@ -44,68 +88,207 @@ export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAp
   facility: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorHospital_facility;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorSecretary_secretary {
+  __typename: "Secretary";
+  id: string;
+  name: string;
+  mobileNumber: string;
+  isActive: boolean;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorSecretary {
+  __typename: "DoctorSecretaryDetails";
+  secretary: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorSecretary_secretary | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_packages {
+  __typename: "Packages";
+  fees: string;
+  id: string;
+  name: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  createdDate: string | null;
+  id: string;
+  image: string | null;
+  name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
+  displayOrder: number | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_starTeam {
+  __typename: "StarTeam";
+  isActive: boolean | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
-  fullName: string | null;
-  doctorType: DoctorType;
+  awards: string | null;
   city: string | null;
-  id: string;
-  thumbnailUrl: string | null;
+  country: string | null;
+  chatDays: number | null;
+  dateOfBirth: string | null;
   displayName: string | null;
+  doctorType: DoctorType;
+  delegateNumber: string | null;
+  emailAddress: string | null;
   experience: string | null;
+  firebaseToken: string | null;
+  firstName: string;
+  fullName: string | null;
+  gender: Gender | null;
+  isActive: boolean;
+  id: string;
+  languages: string | null;
+  lastName: string;
+  mobileNumber: string;
   onlineConsultationFees: string;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
+  photoUrl: string | null;
   physicalConsultationFees: string;
-  specialty: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_specialty | null;
+  qualification: string | null;
+  registrationNumber: string;
+  salutation: string | null;
+  signature: string | null;
+  specialization: string | null;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  thumbnailUrl: string | null;
+  zip: string | null;
+  bankAccount: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_bankAccount | null)[] | null;
+  consultHours: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_consultHours | null)[] | null;
   doctorHospital: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorHospital[];
+  doctorSecretary: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_doctorSecretary | null;
+  packages: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_packages | null)[] | null;
+  specialty: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_specialty | null;
+  starTeam: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo_starTeam | null)[] | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
+  testInstruction: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet {
+  __typename: "CaseSheet";
+  id: string | null;
+  followUpAfterInDays: string | null;
+  version: number | null;
+  doctorType: DoctorType | null;
+  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet_medicinePrescription | null)[] | null;
+  diagnosticPrescription: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet_diagnosticPrescription | null)[] | null;
+  blobName: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments {
   __typename: "PatinetAppointments";
+  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_appointmentPayments | null)[] | null;
   id: string;
+  hideHealthRecordNudge: boolean | null;
   patientId: string;
   doctorId: string;
-  actualAmount: number | null;
-  appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
-  appointmentState: APPOINTMENT_STATE | null;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string | null;
   status: STATUS;
-  isConsultStarted: boolean | null;
-  isJdQuestionsComplete: boolean | null;
+  bookingDate: any | null;
+  rescheduleCount: number | null;
   isFollowUp: string;
+  appointmentState: APPOINTMENT_STATE | null;
   displayId: number | null;
-  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_appointmentPayments | null)[] | null;
-  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet | null)[] | null;
+  isConsultStarted: boolean | null;
+  isSeniorConsultStarted: boolean | null;
+  isJdQuestionsComplete: boolean | null;
+  symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo | null;
+  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet | null)[] | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_appointmentPayments {
   __typename: "AppointmentPayment";
-  amountPaid: number;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet_medicinePrescription {
-  __typename: "MedicinePrescription";
-  medicineName: string | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet {
-  __typename: "CaseSheet";
-  doctorType: DoctorType | null;
-  version: number | null;
-  followUpAfterInDays: string | null;
-  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet_medicinePrescription | null)[] | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_specialty {
-  __typename: "DoctorSpecialties";
   id: string;
+  amountPaid: number;
+  paymentRefId: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_bankAccount {
+  __typename: "BankAccount";
+  accountHolderName: string | null;
+  accountNumber: string | null;
+  accountType: AccountType | null;
+  bankName: string | null;
+  city: string | null;
+  id: string | null;
+  IFSCcode: string | null;
+  state: string | null;
+  streetLine1: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_consultHours_facility {
+  __typename: "Facility";
+  city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
   name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_consultHours {
+  __typename: "ConsultHours";
+  consultMode: ConsultMode;
+  consultType: ConsultType;
+  endTime: string;
+  facility: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_consultHours_facility | null;
+  id: string;
+  isActive: boolean;
+  startTime: string;
+  weekDay: WeekDay;
+  consultDuration: number | null;
+  consultBuffer: number | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorHospital_facility {
   __typename: "Facility";
-  name: string;
   city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorHospital {
@@ -113,68 +296,207 @@ export interface getPatientAllAppointments_getPatientAllAppointments_followUpApp
   facility: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorHospital_facility;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorSecretary_secretary {
+  __typename: "Secretary";
+  id: string;
+  name: string;
+  mobileNumber: string;
+  isActive: boolean;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorSecretary {
+  __typename: "DoctorSecretaryDetails";
+  secretary: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorSecretary_secretary | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_packages {
+  __typename: "Packages";
+  fees: string;
+  id: string;
+  name: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  createdDate: string | null;
+  id: string;
+  image: string | null;
+  name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
+  displayOrder: number | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_starTeam {
+  __typename: "StarTeam";
+  isActive: boolean | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
-  fullName: string | null;
-  doctorType: DoctorType;
+  awards: string | null;
   city: string | null;
-  id: string;
-  thumbnailUrl: string | null;
+  country: string | null;
+  chatDays: number | null;
+  dateOfBirth: string | null;
   displayName: string | null;
+  doctorType: DoctorType;
+  delegateNumber: string | null;
+  emailAddress: string | null;
   experience: string | null;
+  firebaseToken: string | null;
+  firstName: string;
+  fullName: string | null;
+  gender: Gender | null;
+  isActive: boolean;
+  id: string;
+  languages: string | null;
+  lastName: string;
+  mobileNumber: string;
   onlineConsultationFees: string;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
+  photoUrl: string | null;
   physicalConsultationFees: string;
-  specialty: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_specialty | null;
+  qualification: string | null;
+  registrationNumber: string;
+  salutation: string | null;
+  signature: string | null;
+  specialization: string | null;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  thumbnailUrl: string | null;
+  zip: string | null;
+  bankAccount: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_bankAccount | null)[] | null;
+  consultHours: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_consultHours | null)[] | null;
   doctorHospital: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorHospital[];
+  doctorSecretary: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_doctorSecretary | null;
+  packages: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_packages | null)[] | null;
+  specialty: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_specialty | null;
+  starTeam: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo_starTeam | null)[] | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
+  testInstruction: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet {
+  __typename: "CaseSheet";
+  id: string | null;
+  followUpAfterInDays: string | null;
+  version: number | null;
+  doctorType: DoctorType | null;
+  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet_medicinePrescription | null)[] | null;
+  diagnosticPrescription: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet_diagnosticPrescription | null)[] | null;
+  blobName: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments {
   __typename: "PatinetAppointments";
+  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_appointmentPayments | null)[] | null;
   id: string;
+  hideHealthRecordNudge: boolean | null;
   patientId: string;
   doctorId: string;
-  actualAmount: number | null;
-  appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
-  appointmentState: APPOINTMENT_STATE | null;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string | null;
   status: STATUS;
-  isConsultStarted: boolean | null;
-  isJdQuestionsComplete: boolean | null;
+  bookingDate: any | null;
+  rescheduleCount: number | null;
   isFollowUp: string;
+  appointmentState: APPOINTMENT_STATE | null;
   displayId: number | null;
-  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_appointmentPayments | null)[] | null;
-  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet | null)[] | null;
+  isConsultStarted: boolean | null;
+  isSeniorConsultStarted: boolean | null;
+  isJdQuestionsComplete: boolean | null;
+  symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo | null;
+  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet | null)[] | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_appointmentPayments {
   __typename: "AppointmentPayment";
-  amountPaid: number;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription {
-  __typename: "MedicinePrescription";
-  medicineName: string | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet {
-  __typename: "CaseSheet";
-  doctorType: DoctorType | null;
-  version: number | null;
-  followUpAfterInDays: string | null;
-  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[] | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_specialty {
-  __typename: "DoctorSpecialties";
   id: string;
+  amountPaid: number;
+  paymentRefId: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_bankAccount {
+  __typename: "BankAccount";
+  accountHolderName: string | null;
+  accountNumber: string | null;
+  accountType: AccountType | null;
+  bankName: string | null;
+  city: string | null;
+  id: string | null;
+  IFSCcode: string | null;
+  state: string | null;
+  streetLine1: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_consultHours_facility {
+  __typename: "Facility";
+  city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
   name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_consultHours {
+  __typename: "ConsultHours";
+  consultMode: ConsultMode;
+  consultType: ConsultType;
+  endTime: string;
+  facility: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_consultHours_facility | null;
+  id: string;
+  isActive: boolean;
+  startTime: string;
+  weekDay: WeekDay;
+  consultDuration: number | null;
+  consultBuffer: number | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorHospital_facility {
   __typename: "Facility";
-  name: string;
   city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorHospital {
@@ -182,68 +504,207 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   facility: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorHospital_facility;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorSecretary_secretary {
+  __typename: "Secretary";
+  id: string;
+  name: string;
+  mobileNumber: string;
+  isActive: boolean;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorSecretary {
+  __typename: "DoctorSecretaryDetails";
+  secretary: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorSecretary_secretary | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_packages {
+  __typename: "Packages";
+  fees: string;
+  id: string;
+  name: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  createdDate: string | null;
+  id: string;
+  image: string | null;
+  name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
+  displayOrder: number | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_starTeam {
+  __typename: "StarTeam";
+  isActive: boolean | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
-  fullName: string | null;
-  doctorType: DoctorType;
+  awards: string | null;
   city: string | null;
-  id: string;
-  thumbnailUrl: string | null;
+  country: string | null;
+  chatDays: number | null;
+  dateOfBirth: string | null;
   displayName: string | null;
+  doctorType: DoctorType;
+  delegateNumber: string | null;
+  emailAddress: string | null;
   experience: string | null;
+  firebaseToken: string | null;
+  firstName: string;
+  fullName: string | null;
+  gender: Gender | null;
+  isActive: boolean;
+  id: string;
+  languages: string | null;
+  lastName: string;
+  mobileNumber: string;
   onlineConsultationFees: string;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
+  photoUrl: string | null;
   physicalConsultationFees: string;
-  specialty: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_specialty | null;
+  qualification: string | null;
+  registrationNumber: string;
+  salutation: string | null;
+  signature: string | null;
+  specialization: string | null;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  thumbnailUrl: string | null;
+  zip: string | null;
+  bankAccount: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_bankAccount | null)[] | null;
+  consultHours: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_consultHours | null)[] | null;
   doctorHospital: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorHospital[];
+  doctorSecretary: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_doctorSecretary | null;
+  packages: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_packages | null)[] | null;
+  specialty: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_specialty | null;
+  starTeam: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo_starTeam | null)[] | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
+  testInstruction: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet {
+  __typename: "CaseSheet";
+  id: string | null;
+  followUpAfterInDays: string | null;
+  version: number | null;
+  doctorType: DoctorType | null;
+  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[] | null;
+  diagnosticPrescription: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_diagnosticPrescription | null)[] | null;
+  blobName: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments {
   __typename: "PatinetAppointments";
+  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_appointmentPayments | null)[] | null;
   id: string;
+  hideHealthRecordNudge: boolean | null;
   patientId: string;
   doctorId: string;
-  actualAmount: number | null;
-  appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
-  appointmentState: APPOINTMENT_STATE | null;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string | null;
   status: STATUS;
-  isConsultStarted: boolean | null;
-  isJdQuestionsComplete: boolean | null;
+  bookingDate: any | null;
+  rescheduleCount: number | null;
   isFollowUp: string;
+  appointmentState: APPOINTMENT_STATE | null;
   displayId: number | null;
-  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_appointmentPayments | null)[] | null;
-  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[] | null;
+  isConsultStarted: boolean | null;
+  isSeniorConsultStarted: boolean | null;
+  isJdQuestionsComplete: boolean | null;
+  symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo | null;
+  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[] | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_appointmentPayments {
   __typename: "AppointmentPayment";
-  amountPaid: number;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet_medicinePrescription {
-  __typename: "MedicinePrescription";
-  medicineName: string | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet {
-  __typename: "CaseSheet";
-  doctorType: DoctorType | null;
-  version: number | null;
-  followUpAfterInDays: string | null;
-  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet_medicinePrescription | null)[] | null;
-}
-
-export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_specialty {
-  __typename: "DoctorSpecialties";
   id: string;
+  amountPaid: number;
+  paymentRefId: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_bankAccount {
+  __typename: "BankAccount";
+  accountHolderName: string | null;
+  accountNumber: string | null;
+  accountType: AccountType | null;
+  bankName: string | null;
+  city: string | null;
+  id: string | null;
+  IFSCcode: string | null;
+  state: string | null;
+  streetLine1: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_consultHours_facility {
+  __typename: "Facility";
+  city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
   name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_consultHours {
+  __typename: "ConsultHours";
+  consultMode: ConsultMode;
+  consultType: ConsultType;
+  endTime: string;
+  facility: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_consultHours_facility | null;
+  id: string;
+  isActive: boolean;
+  startTime: string;
+  weekDay: WeekDay;
+  consultDuration: number | null;
+  consultBuffer: number | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorHospital_facility {
   __typename: "Facility";
-  name: string;
   city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorHospital {
@@ -251,38 +712,133 @@ export interface getPatientAllAppointments_getPatientAllAppointments_completedAp
   facility: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorHospital_facility;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorSecretary_secretary {
+  __typename: "Secretary";
+  id: string;
+  name: string;
+  mobileNumber: string;
+  isActive: boolean;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorSecretary {
+  __typename: "DoctorSecretaryDetails";
+  secretary: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorSecretary_secretary | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_packages {
+  __typename: "Packages";
+  fees: string;
+  id: string;
+  name: string;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  createdDate: string | null;
+  id: string;
+  image: string | null;
+  name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
+  displayOrder: number | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_starTeam {
+  __typename: "StarTeam";
+  isActive: boolean | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
-  fullName: string | null;
-  doctorType: DoctorType;
+  awards: string | null;
   city: string | null;
-  id: string;
-  thumbnailUrl: string | null;
+  country: string | null;
+  chatDays: number | null;
+  dateOfBirth: string | null;
   displayName: string | null;
+  doctorType: DoctorType;
+  delegateNumber: string | null;
+  emailAddress: string | null;
   experience: string | null;
+  firebaseToken: string | null;
+  firstName: string;
+  fullName: string | null;
+  gender: Gender | null;
+  isActive: boolean;
+  id: string;
+  languages: string | null;
+  lastName: string;
+  mobileNumber: string;
   onlineConsultationFees: string;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
+  photoUrl: string | null;
   physicalConsultationFees: string;
-  specialty: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_specialty | null;
+  qualification: string | null;
+  registrationNumber: string;
+  salutation: string | null;
+  signature: string | null;
+  specialization: string | null;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  thumbnailUrl: string | null;
+  zip: string | null;
+  bankAccount: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_bankAccount | null)[] | null;
+  consultHours: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_consultHours | null)[] | null;
   doctorHospital: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorHospital[];
+  doctorSecretary: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_doctorSecretary | null;
+  packages: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_packages | null)[] | null;
+  specialty: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_specialty | null;
+  starTeam: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo_starTeam | null)[] | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
+  testInstruction: string | null;
+}
+
+export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet {
+  __typename: "CaseSheet";
+  id: string | null;
+  followUpAfterInDays: string | null;
+  version: number | null;
+  doctorType: DoctorType | null;
+  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet_medicinePrescription | null)[] | null;
+  diagnosticPrescription: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet_diagnosticPrescription | null)[] | null;
+  blobName: string | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments {
   __typename: "PatinetAppointments";
+  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_appointmentPayments | null)[] | null;
   id: string;
+  hideHealthRecordNudge: boolean | null;
   patientId: string;
   doctorId: string;
-  actualAmount: number | null;
-  appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
-  appointmentState: APPOINTMENT_STATE | null;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string | null;
   status: STATUS;
-  isConsultStarted: boolean | null;
-  isJdQuestionsComplete: boolean | null;
+  bookingDate: any | null;
+  rescheduleCount: number | null;
   isFollowUp: string;
+  appointmentState: APPOINTMENT_STATE | null;
   displayId: number | null;
-  appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_appointmentPayments | null)[] | null;
-  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet | null)[] | null;
+  isConsultStarted: boolean | null;
+  isSeniorConsultStarted: boolean | null;
+  isJdQuestionsComplete: boolean | null;
+  symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo | null;
+  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet | null)[] | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments {
