@@ -101,7 +101,6 @@ import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareC
 import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
 import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
-import AsyncStorage from '@react-native-community/async-storage';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -231,9 +230,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     // remove circle subscription applied(for non member) if cart items are empty
     if (cartItems.length < 1 && !circleSubscriptionId) {
       setIsCircleSubscription && setIsCircleSubscription(false);
-      setCircleMembershipCharges && setCircleMembershipCharges(0);
-      setCirclePlanSelected && setCirclePlanSelected(null);
-      AsyncStorage.removeItem('circlePlanSelected');
     }
   }, [cartItems]);
 

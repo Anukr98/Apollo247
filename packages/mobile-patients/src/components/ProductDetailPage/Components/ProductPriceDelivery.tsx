@@ -110,7 +110,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     return (
       <TouchableOpacity
         onPress={() => {
-          showPincodePopup(true);
+          showPincodePopup(false);
         }}
         style={styles.deliveryTo}
       >
