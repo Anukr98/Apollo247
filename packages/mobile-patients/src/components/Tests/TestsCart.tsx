@@ -123,7 +123,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
 import {
   WebEngageEvents,

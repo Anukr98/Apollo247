@@ -71,7 +71,6 @@ target 'ApolloPatient' do
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
-  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
   pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
   pod 'RNFBAuth', :path => '../node_modules/@react-native-firebase/auth'
   pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
@@ -95,6 +94,7 @@ target 'ApolloPatient' do
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
   pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
   pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+  pod 'react-native-geolocation-service', path: '../node_modules/react-native-geolocation-service'
 
   # React Native Maps dependencies
   rn_maps_path = '../node_modules/react-native-maps'
