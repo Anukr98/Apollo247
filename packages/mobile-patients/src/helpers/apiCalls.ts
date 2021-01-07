@@ -665,6 +665,15 @@ export const availabilityApi247 = (
   });
 };
 
+export const nonCartTatApi247 = (pincode: string): Promise<AxiosResponse<>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/noncarttat?pin=${pincode}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
+};
+
 export const medCartItemsDetailsApi = (
   itemIds: string[]
 ): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
@@ -1059,8 +1068,11 @@ export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<a
   });
 };
 
-
-export const getDiagnosticsSearchResults = (pageName: string, keyword: string, cityId: number): Promise<AxiosResponse<any>> => {
+export const getDiagnosticsSearchResults = (
+  pageName: string,
+  keyword: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
   return Axios.get(getSearchResults, {
