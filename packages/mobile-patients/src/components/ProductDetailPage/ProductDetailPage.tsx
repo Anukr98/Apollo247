@@ -173,15 +173,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (cartItems.length) {
-      const filteredCartItems = cartItems.filter((item) => item?.id == medicineDetails?.sku);
+    if (cartItems?.length) {
+      const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
       setSkuInCart(filteredCartItems);
     }
   }, [medicineDetails]);
 
   useEffect(() => {
-    if (cartItems.length) {
-      const filteredCartItems = cartItems.filter((item) => item.id == medicineDetails.sku);
+    if (cartItems?.length) {
+      const filteredCartItems = cartItems?.filter((item) => item.id == medicineDetails.sku);
       setSkuInCart(filteredCartItems);
     }
   }, [cartItems]);
