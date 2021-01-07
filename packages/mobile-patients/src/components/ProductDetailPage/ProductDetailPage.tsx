@@ -167,9 +167,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     getMedicineDetails();
-  }, []);
-
-  useEffect(() => {
     if (!_deliveryError) {
       fetchDeliveryTime(false);
     }
@@ -178,6 +175,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   useEffect(() => {
     if (cartItems.length) {
       const filteredCartItems = cartItems.filter((item) => item?.id == medicineDetails?.sku);
+      setSkuInCart(filteredCartItems);
+    }
+  }, [medicineDetails]);
+
+  useEffect(() => {
+    if (cartItems.length) {
+      const filteredCartItems = cartItems.filter((item) => item.id == medicineDetails.sku);
       setSkuInCart(filteredCartItems);
     }
   }, [cartItems]);
@@ -843,7 +847,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             {isPharma && (
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
-                composition={medicineDetails?.composition}
+                composition={medicineDetails?.PharmaOverview?.[0]?.generic}
                 consumeType={medicineDetails?.consume_type}
               />
             )}
@@ -863,7 +867,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               expiryDate={medicineDetails?.expiry_date}
               isPharma={isPharma}
               pharmaOverview={
-                isPharma ? medicineDetails?.PharmaOverview[0]?.NewPharmaOverview : null
+                isPharma ? medicineDetails?.PharmaOverview?.[0]?.NewPharmaOverview : null
               }
             />
             {!!substitutes.length && (
@@ -871,7 +875,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                 similarProducts={substitutes}
                 navigation={props.navigation}
-                composition={medicineDetails?.composition}
+                composition={medicineDetails?.PharmaOverview?.[0]?.generic}
                 setShowSubstituteInfo={setShowSubstituteInfo}
               />
             )}
