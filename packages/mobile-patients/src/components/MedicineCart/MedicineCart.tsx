@@ -1195,7 +1195,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           {renderUnServiceable()}
           {renderCartItems()}
-          {!!circleMembershipCharges && <CircleCartItem />}
+          {!!circleMembershipCharges && <CircleCartItem currentPatient={currentPatient} />}
           {(!isCircleSubscription || showCareSelectPlans) &&
             !coupon &&
             !circleSubscriptionId &&
