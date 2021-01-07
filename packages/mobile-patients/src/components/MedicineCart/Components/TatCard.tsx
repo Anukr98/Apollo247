@@ -24,7 +24,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
     isNonCartOrder,
   } = props;
   const { cartItems } = useShoppingCart();
-  const unServiceable = isNonCartOrder ? false : cartItems.find((item) => item.unserviceable);
+  const unServiceable = isNonCartOrder ? false : cartItems?.find((item) => item?.unserviceable);
 
   function getGenericDate() {
     const genericServiceableDate = moment()
