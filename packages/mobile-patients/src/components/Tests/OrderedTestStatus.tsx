@@ -372,6 +372,14 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
               itemIdObject[key],
               DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED
             );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+            );
           } else {
             sortedSelectedObj =
               key != null &&
