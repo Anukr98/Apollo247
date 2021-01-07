@@ -1,9 +1,9 @@
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { CategoryAndSpecialOffers } from '@aph/mobile-patients/src/components/Medicines/CategoryAndSpecialOffers';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import { PincodeInput } from '@aph/mobile-patients/src/components/Medicines/Components/PicodeInput';
@@ -79,6 +79,7 @@ import {
   getMedicineSearchSuggestionsApi,
   getNearByStoreDetailsApi,
   getPlaceInfoByPincode,
+  medCartItemsDetailsApi,
   MedicinePageAPiResponse,
   MedicinePageSection,
   MedicineProduct,
@@ -121,7 +122,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  BackHandler,
   Dimensions,
   FlatList,
   Image as ImageNative,
@@ -295,6 +295,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
   const [buyAgainSkuList, setBuyAgainSkuList] = useState<string[]>([]);
+  const [buyAgainProducts, setBuyAgainProducts] = useState<MedicineProduct[]>([]);
   const [buyAgainLoading, setBuyAgainLoading] = useState<boolean>(true);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
@@ -526,38 +527,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
-      _willBlur && _willBlur.remove();
     };
   });
-
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    setBannerData && setBannerData([]);
-
-    if (comingFrom == AppRoutes.MembershipDetails) {
-      props.navigation.navigate(AppRoutes.MembershipDetails, {
-        membershipType: string.Circle.planName,
-        source: AppRoutes.Medicine,
-      });
-    } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
-    }
-
-    return false;
-  };
 
   useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
@@ -857,6 +831,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     try {
       const skuArray = await getBuyAgainSkuList(client, currentPatient?.id);
       setBuyAgainSkuList(skuArray);
+      const productsResponse = await medCartItemsDetailsApi(skuArray.slice(0, 2));
+      const products = productsResponse?.data?.productdp?.filter(({ sku, id }) => sku && id) || [];
+      setBuyAgainProducts(products);
       setBuyAgainLoading(false);
     } catch (e) {
       setBuyAgainLoading(false);
@@ -1127,7 +1104,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           title: item.name || 'Products',
         });
       } else if (item.sku) {
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        props.navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: item.sku,
           movedFrom: ProductPageViewedSource.BANNER,
         });
@@ -1265,7 +1242,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
     return (
       !!buyAgainSkuList.length && (
-        <BuyAgainSection onPress={onPress} topDivider containerStyle={styles.buyAgain} />
+        <BuyAgainSection
+          products={buyAgainProducts}
+          onPress={onPress}
+          topDivider
+          containerStyle={styles.buyAgain}
+        />
       )
     );
   };
@@ -1459,7 +1441,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {renderCarouselBanners()}
         <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
@@ -1793,7 +1774,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <MedicineSearchSuggestionItem
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
@@ -1828,17 +1809,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderSearchResults = () => {
-    // if (medicineList.length == 0) return null;
+    const showResults = !!searchText && searchText.length > 2 && medicineList.length > 0;
+    const isLoading = searchSate == 'load';
     return (
       <>
-        {searchSate == 'load' ? (
+        {isLoading ? (
           <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
-            {renderSectionLoader(266)}
+            {renderSectionLoader(330)}
           </View>
         ) : (
-          !!searchText &&
-          searchText.length > 2 &&
-          medicineList.length > 0 && (
+          !!showResults && (
             <View>
               <FlatList
                 keyboardShouldPersistTaps="always"
@@ -1889,11 +1869,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (!data) {
       return null;
     }
-    const metaData = g(data, 'metadata') || [];
+    const metaData = [
+      ...(data?.metadata || []),
+      { section_key: 'circleBanners', section_name: '', section_position: 4, visible: true },
+    ];
     const staticSectionKeys = [
       'banners',
       'orders',
       'upload_prescription',
+      'circleBanners',
       'recommended_products',
       'shop_by_brand',
     ];
@@ -1909,6 +1893,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ? renderYourOrders()
             : section_key === 'upload_prescription'
             ? renderUploadPrescriptionSection()
+            : section_key === 'circleBanners'
+            ? renderCarouselBanners()
             : section_key === 'recommended_products'
             ? renderHotSellers(section_name, recommendedProducts, -1)
             : section_key === 'shop_by_brand'

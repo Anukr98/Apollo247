@@ -73,7 +73,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -145,8 +145,8 @@ type rescheduleType = {
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
-  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
-    .state.params!.data;
+  const data: getPatientAllAppointments_getPatientAllAppointments_activeAppointments = props
+    .navigation.state.params!.data;
   const doctorDetails = data.doctorInfo!;
 
   const movedFrom = props.navigation.state.params!.from;

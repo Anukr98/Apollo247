@@ -42,8 +42,8 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
@@ -97,7 +97,7 @@ import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
-const width = Dimensions.get('window').width
+const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -265,9 +265,9 @@ export const formatNameNumber = (address: savePatientAddress_savePatientAddress_
 
 export const isPastAppointment = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null,
-  item: getPatientAllAppointments_getPatientAllAppointments_appointments
+  item: getPatientAllAppointments_getPatientAllAppointments_activeAppointments
 ) => {
   const case_sheet = followUpChatDaysCaseSheet(caseSheet);
   const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
@@ -288,7 +288,7 @@ export const isPastAppointment = (
 
 export const followUpChatDaysCaseSheet = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null
 ) => {
   const case_sheet =
@@ -1895,7 +1895,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.push(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.ProductDetailPage, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });
@@ -2249,6 +2249,16 @@ export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
   return circleMembershipType;
 };
 
+export const filterHtmlContent = (content: string = '') => {
+  return content
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;rn/g, '>')
+    .replace(/&gt;r/g, '>')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, '</>')
+    .replace(/\.t/g, '.');
+};
 export const isProductInStock = (product: MedicineProduct) => {
   const { dc_availability, is_in_contract } = product;
   if (

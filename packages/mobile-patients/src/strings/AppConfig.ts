@@ -14,7 +14,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -25,7 +25,7 @@ const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
-const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==' ;
+const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 
 const testApiCredentialsDev = {
@@ -228,11 +228,11 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
-    DRUPAL_BANNER_CONFIG : ['https://uatcms.apollo247.com/api/banner', drupalAuthTokenDev]
+    DRUPAL_CONFIG : ['https://uatcms.apollo247.com/api', drupalAuthTokenDev]
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
-    DRUPAL_BANNER_CONFIG :['https://cms.apollo247.com/api/banner',drupalAuthTokenProd]
+    DRUPAL_CONFIG :['https://cms.apollo247.com/api',drupalAuthTokenProd]
   },
 };
 
@@ -1001,7 +1001,6 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
 ];
 
@@ -1068,24 +1067,24 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
-    'Home Collection Charges are too high',
-    'Need to change the payment mode',
-    'Need to modify the order details',
-    'I am getting lesser price elsewhere',
-    'Home Collection not occuring at desired time slot',
-    'No need for diagnosis now',
-    'Order created by mistake',
-    'Others (Please specify)s',
+    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
+    string.diagnostics.reasonForCancel_TestOrder.chargesTooHigh,
+    string.diagnostics.reasonForCancel_TestOrder.editOrder,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.noSlot,
+    string.diagnostics.reasonForCancel_TestOrder.changePaymentMode,
+    string.diagnostics.reasonForCancel_TestOrder.highPrice,
+    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 
 export const TestReschedulingReasons = {
   reasons: [
-    'Not present at home',
-    'Did not follow preparation guidelines (Fasting etc.)',
-    'Not in a condition to provide sample',
-    'Slot picked by mistake',
-    'Others (please specify)',
+    string.diagnostics.reasonForReschedule_TestOrder.unavailable,
+    string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
+    string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
+    string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
+    string.diagnostics.reasonForReschedule_TestOrder.otherReasons,
   ],
 };
 

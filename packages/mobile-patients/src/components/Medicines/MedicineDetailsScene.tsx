@@ -1477,18 +1477,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     } catch (error) {}
   };
 
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
-  }, []);
-
-  const handleBack = () => {
-    moveBack();
-    return true;
-  };
-
   const renderUpSellingProductsHeader = (sectionName: string) => {
     const marginTop =
       !medicineOverview.length && !Substitutes.length && !medicineDetails.description ? 20 : 0;

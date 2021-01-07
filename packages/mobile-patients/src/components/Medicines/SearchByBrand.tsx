@@ -355,7 +355,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
@@ -492,7 +492,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
           });
@@ -564,7 +564,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
             productPageViewedEventProps: {

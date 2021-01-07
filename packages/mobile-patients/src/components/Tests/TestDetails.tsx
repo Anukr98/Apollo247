@@ -233,11 +233,13 @@ export interface TestDetailsProps
   extends NavigationScreenProps<{
     testDetails?: TestPackageForDetails;
     itemId?: string;
+    source?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
+  const source = props.navigation.getParam('source');
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
@@ -269,7 +271,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
-  const findItemFromCart = cartItems.find((item) => item.id == testInfo.ItemID);
+  const findItemFromCart = cartItems.find((item) => item?.id == testInfo?.ItemID);
   console.log(findItemFromCart);
 
   const discount =
@@ -390,10 +392,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   }, []);
 
-  const loadTestDetails = async (itemId: string) => {
-    const removeSpaces = itemId.replace(/\s/g, '');
-    const arrayOfId = removeSpaces.split(',');
-    const listOfIds = arrayOfId.map((item) => parseInt(item!));
+  const loadTestDetails = async (itemId: string | number) => {
+    let listOfIds = [];
+    if (typeof itemId == 'string') {
+      const removeSpaces = typeof itemId == 'string' ? itemId?.replace(/\s/g, '') : itemId;
+      const arrayOfId = removeSpaces.split(',');
+      listOfIds = arrayOfId.map((item) => parseInt(item!));
+    } else {
+      listOfIds = [Number(itemId)];
+    }
+
     try {
       const {
         data: { findDiagnosticsByItemIDsAndCityID },

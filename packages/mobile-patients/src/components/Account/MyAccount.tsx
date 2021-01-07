@@ -1,19 +1,23 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   Afternoon,
   CurrencyIcon,
   EditIconNew,
   Invoice,
+  LinkedUhidIcon,
   Location,
   ManageProfileIcon,
+  MyMembershipIcon,
   NeedHelpIcon,
   OneApollo,
-  LinkedUhidIcon,
-  MyMembershipIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -21,6 +25,8 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   g,
   getNetStatus,
@@ -28,17 +34,16 @@ import {
   postFirebaseEvent,
   statusBarHeight,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
-import Moment from 'moment';
 import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
-  BackHandler,
   Dimensions,
   Image,
   NativeScrollEvent,
@@ -51,6 +56,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import codePush from 'react-native-code-push';
 import WebEngage from 'react-native-webengage';
 import {
   NavigationActions,
@@ -58,14 +64,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import codePush from 'react-native-code-push';
-import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 const { width } = Dimensions.get('window');
 
@@ -245,31 +243,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return differenceInYears(now, age);
   };
 
-  useEffect(() => {
-    const didFocus = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-    return () => {
-      didFocus && didFocus.remove();
-      _willBlur && _willBlur.remove();
-    };
-  });
-
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
-    return false;
-  };
-
   const renderDetails = () => {
     if (profileDetails)
       return (
@@ -331,6 +304,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
+      AsyncStorage.removeItem('isCircleMember');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);

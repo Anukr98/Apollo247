@@ -114,7 +114,7 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
       break;
 
     case 'MedicineDetail':
-      navigationProps.navigate(AppRoutes.MedicineDetailsScene, {
+      navigationProps.navigate(AppRoutes.ProductDetailPage, {
         sku: id,
         movedFrom: ProductPageViewedSource.DEEP_LINK,
       });

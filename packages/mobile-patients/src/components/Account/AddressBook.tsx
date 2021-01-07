@@ -148,16 +148,8 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
 
   const client = useApolloClient();
 
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
-  }, []);
-
   const handleBack = () => {
     props.navigation.goBack();
-    return true;
   };
 
   const renderBottomButtons = () => {
