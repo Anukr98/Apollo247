@@ -61,14 +61,12 @@ export type AddressSource =
 // (+20) with header
 const mapHeight =
   screenHeight > 750
-    ? Platform.OS == 'android'
-      ? screenHeight / 1.65
-      : screenHeight / 1.72
+    ? screenHeight / 1.55
     : screenHeight > 650
     ? Platform.OS == 'android'
-      ? screenHeight / 1.82
-      : screenHeight / 1.69
-    : screenHeight / 1.89;
+      ? screenHeight / 1.7
+      : screenHeight / 1.62
+    : screenHeight / 1.8;
 
 export interface RegionObject {
   latitude: number;
