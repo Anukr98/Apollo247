@@ -1788,23 +1788,14 @@ export const getFormattedLocation = (
   addrComponents: PlacesApiResponse['results'][0]['address_components'],
   latLang: PlacesApiResponse['results'][0]['geometry']['location'],
   pincode?: string,
-  isComingFromMaps?: boolean
 ) => {
   const { lat, lng } = latLang || {};
 
-  let area: any[] = [];
-  if (isComingFromMaps) {
-    area = [
-      findAddrComponents('route', addrComponents),
-      findAddrComponents('sublocality_level_2', addrComponents),
-    ].filter((i) => i);
-  } else {
-    area = [
+   const area= [
       findAddrComponents('route', addrComponents),
       findAddrComponents('sublocality_level_2', addrComponents),
       findAddrComponents('sublocality_level_1', addrComponents),
     ].filter((i) => i);
-  }
 
   return {
     displayName:
@@ -1820,7 +1811,7 @@ export const getFormattedLocation = (
     state: findAddrComponents('administrative_area_level_1', addrComponents),
     stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
-    pincode: (pincode != '' && pincode) || findAddrComponents('postal_code', addrComponents),
+    pincode: pincode || findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };
