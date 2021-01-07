@@ -77,6 +77,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   pinCodeServiceabilityApi247,
   getPlaceInfoByPincode,
+  nonCartTatApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   makeAdressAsDefaultVariables,
@@ -89,6 +90,7 @@ import {
   updatePatientAddress,
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import moment from 'moment';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 16,
@@ -157,6 +159,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     storeId,
     stores,
     pinCode,
+    deliveryTime,
+    setdeliveryTime,
   } = useShoppingCart();
   const [prescriptionOption, setPrescriptionOption] = useState<string>('specified');
   const [durationDays, setDurationDays] = useState<string>('30');
@@ -196,7 +200,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   useEffect(() => {
     fetchAddress();
     checkServicability(selectedAddress!, true);
+    nonCartAvailabilityTat(selectedAddress?.zipcode);
   }, []);
+
+  useEffect(() => {
+    nonCartAvailabilityTat(selectedAddress?.zipcode);
+  }, [selectedAddress]);
 
   async function fetchAddress() {
     try {
@@ -1011,6 +1020,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           }}
           onPressSelectAddress={(address) => {
             checkServicability(address, false);
+            nonCartAvailabilityTat(address?.zipcode);
             hideAphAlert!();
           }}
         />
@@ -1064,9 +1074,28 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           })
         }
         disableButton={disableSubmitButton()}
+        deliveryTime={deliveryTime}
       />
     );
   };
+
+  async function nonCartAvailabilityTat(pincode: string) {
+    try {
+      const response = await nonCartTatApi247(pincode);
+      const tatResponse = g(response, 'data', 'response') || [];
+      const deliveryDate = tatResponse?.tat;
+      if (deliveryDate) {
+        setdeliveryTime && setdeliveryTime(deliveryDate);
+      }
+    } catch (error) {
+      const genericServiceableDate = moment()
+        .add(2, 'days')
+        .set('hours', 20)
+        .set('minutes', 0)
+        .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+      setdeliveryTime?.(genericServiceableDate);
+    }
+  }
 
   return (
     <View

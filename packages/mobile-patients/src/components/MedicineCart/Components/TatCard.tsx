@@ -12,12 +12,19 @@ export interface TatCardProps {
   deliveryAddress: string;
   onPressChangeAddress: () => void;
   onPressTatCard?: () => void;
+  isNonCartOrder?: boolean;
 }
 
 export const TatCard: React.FC<TatCardProps> = (props) => {
-  const { deliveryTime, deliveryAddress, onPressChangeAddress, onPressTatCard } = props;
+  const {
+    deliveryTime,
+    deliveryAddress,
+    onPressChangeAddress,
+    onPressTatCard,
+    isNonCartOrder,
+  } = props;
   const { cartItems } = useShoppingCart();
-  const unServiceable = cartItems.find((item) => item.unserviceable);
+  const unServiceable = isNonCartOrder ? false : cartItems.find((item) => item.unserviceable);
 
   function getGenericDate() {
     const genericServiceableDate = moment()
@@ -54,7 +61,8 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       >
         {!unServiceable && (
           <Text style={styles.delivery}>
-            Deliver by : {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            {!!isNonCartOrder ? `Expected Delivery by: ` : `Deliver by :`}
+            {deliveryTime ? getDeliveryDate() : getGenericDate()}
           </Text>
         )}
         <TouchableOpacity

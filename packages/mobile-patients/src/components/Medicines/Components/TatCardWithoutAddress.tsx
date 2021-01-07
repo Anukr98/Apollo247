@@ -2,14 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, StyleProp, ViewStyle, Text, View, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DeliveryIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { format } from 'date-fns';
 
 export interface TatCardwithoutAddressProps {
   style?: StyleProp<ViewStyle>;
   vdcType: string;
+  isNonCartOrder?: boolean;
 }
 
 export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (props) => {
-  const { style, vdcType } = props;
+  const { style, vdcType, isNonCartOrder } = props;
+  const { deliveryTime } = useShoppingCart();
+
+  function getNonCartDeliveryDate() {
+    let tommorowDate = new Date();
+    tommorowDate.setDate(tommorowDate.getDate() + 1);
+
+    if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
+      return `Expected Delivery by: ${format(deliveryTime, 'h:mm A')}, Today!`;
+    } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
+      return `Expected Delivery by: ${format(deliveryTime, 'h:mm A')}, Tomorrow!`;
+    } else {
+      return `Expected Delivery by: ${format(deliveryTime, 'D-MMM-YYYY')}`;
+    }
+  }
 
   function getDeliveryDate() {
     let hourOftheDay = new Date().getHours();
@@ -23,14 +40,16 @@ export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (prop
   }
 
   function getDeliveryMsg() {
-    return 'Your order would be verified & processed within the next 5-10 mins (Business hours) & you will be notified soon.';
+    return 'Exact Delivery timeline will be confirmed after order is verified, based on confirmed items.';
   }
 
   return (
     <View style={[styles.card, style]}>
       <DeliveryIcon />
       <View style={{ marginLeft: 10 }}>
-        <Text style={styles.boldTxt}>{getDeliveryDate()}</Text>
+        <Text style={styles.boldTxt}>
+          {!!isNonCartOrder ? getNonCartDeliveryDate() : getDeliveryDate()}
+        </Text>
         <Text style={styles.subText}>{getDeliveryMsg()}</Text>
       </View>
     </View>
@@ -62,9 +81,10 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   subText: {
-    ...theme.fonts.IBMPlexSansRegular(10),
-    lineHeight: 13,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 15,
     color: 'rgba(1,71,91,0.59)',
-    marginTop: 6,
+    marginTop: 4,
+    marginRight: 30,
   },
 });

@@ -25,6 +25,7 @@ import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicine
 import {
   pinCodeServiceabilityApi247,
   getPlaceInfoByPincode,
+  nonCartTatApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   SET_DEFAULT_ADDRESS,
@@ -72,6 +73,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import moment from 'moment';
 
 export interface PrescriptionOrderSummaryProps extends NavigationScreenProps {}
 
@@ -136,6 +138,10 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
       setLoading?.(false);
     }
   }
+
+  useEffect(() => {
+    nonCartAvailabilityTat(selectedAddress?.zipcode);
+  }, [selectedAddress]);
 
   const renderAlert = (message: string) => {
     showAphAlert!({
@@ -389,6 +395,24 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
     });
   };
 
+  async function nonCartAvailabilityTat(pincode: string) {
+    try {
+      const response = await nonCartTatApi247(pincode);
+      const tatResponse = g(response, 'data', 'response') || [];
+      const deliveryDate = tatResponse?.tat;
+      if (deliveryDate) {
+        setdeliveryTime && setdeliveryTime(deliveryDate);
+      }
+    } catch (error) {
+      const genericServiceableDate = moment()
+        .add(2, 'days')
+        .set('hours', 20)
+        .set('minutes', 0)
+        .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+      setdeliveryTime?.(genericServiceableDate);
+    }
+  }
+
   const renderErrorAlert = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -421,6 +445,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
           onPressSelectAddress={(address) => {
             checkServicability(address);
             hideAphAlert && hideAphAlert();
+            nonCartAvailabilityTat(address?.zipcode);
           }}
         />
       ),
@@ -457,7 +482,9 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   };
 
   const renderTatCard = () => {
-    return <TatCardwithoutAddress style={{ marginTop: 22 }} vdcType={vdcType} />;
+    return (
+      <TatCardwithoutAddress style={{ marginTop: 22 }} vdcType={vdcType} isNonCartOrder={true} />
+    );
   };
 
   const renderPrescriptions = () => {
