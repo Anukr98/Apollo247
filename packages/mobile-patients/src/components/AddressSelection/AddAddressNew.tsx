@@ -146,8 +146,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       address?.pincode,
       address?.country,
     ]
-      .filter((v) => v)
-      .join(', ');
+      ?.filter((v) => v)
+      ?.join(', ');
     return removeConsecutiveComma(newAddress);
   };
 
@@ -158,22 +158,22 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       findAddrComponents('sublocality_level_1', addrComponents) ||
         findAddrComponents('locality', addrComponents),
     ]
-      .filter((i) => i)
-      .join(', ');
+      ?.filter((i) => i)
+      ?.join(', ');
 
     const city = [
       findAddrComponents('locality', addrComponents) ||
         findAddrComponents('administrative_area_level_2', addrComponents),
     ]
-      .filter((i) => i)
-      .join(', ');
+      ?.filter((i) => i)
+      ?.join(', ');
 
     const state = [findAddrComponents('administrative_area_level_1', addrComponents)];
     const pincode = [findAddrComponents('postal_code', addrComponents)];
     const country = [findAddrComponents('country', addrComponents)];
 
     const localFormattedAddress = removeConsecutiveComma(
-      [area, city, state, pincode, country].filter((v) => v).join(', ')
+      [area, city, state, pincode, country]?.filter((v) => v)?.join(', ')
     );
     return localFormattedAddress;
   };
@@ -335,7 +335,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   };
 
   const showCurrentLocation = () => {
-    doRequestAndAccessLocationModified()
+    doRequestAndAccessLocationModified(true)
       .then((response) => {
         if (response) {
           const currentRegion = {
