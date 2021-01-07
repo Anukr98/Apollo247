@@ -702,7 +702,12 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 }}
               >
                 {props.isSpecialDiscount ? renderSpecialDiscountText({}) : null}
-                <View style={{ flexDirection: 'row' }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: isSmallDevice ? 'flex-start' : 'space-between',
+                  }}
+                >
                   {props.specialPrice! && props.discount! > 0 && (
                     <Text
                       style={[
@@ -718,7 +723,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                       style={{
                         ...theme.viewStyles.text(
                           'M',
-                          isSmallDevice ? 13 : 14,
+                          isSmallDevice ? 12 : 14,
                           '#02475B',
                           1,
                           20,
