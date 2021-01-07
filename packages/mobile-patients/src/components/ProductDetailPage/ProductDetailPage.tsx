@@ -177,7 +177,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     if (cartItems.length) {
-      const filteredCartItems = cartItems.filter((item) => item.id == medicineDetails.sku);
+      const filteredCartItems = cartItems.filter((item) => item?.id == medicineDetails?.sku);
       setSkuInCart(filteredCartItems);
     }
   }, [cartItems]);
