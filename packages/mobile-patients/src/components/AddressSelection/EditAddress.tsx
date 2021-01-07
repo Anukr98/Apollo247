@@ -255,11 +255,12 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
 
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
+      //needs to be shown only when editing the address (addressLine1)
       if (locationResponse) {
         setcity(locationResponse?.city!);
         setstate(locationResponse?.state!);
         setpincode(locationResponse?.pincode! || locationResponse?.zipcode!);
-        setaddressLine1(locationResponse?.displayName);
+        setaddressLine1('');
         setareaDetails(locationResponse?.area);
         // setlandMark(addressData?.landmark!);
         setAddressType(addressData?.addressType!);
@@ -285,8 +286,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     } else {
       if (locationResponse) {
         console.log({ locationResponse });
-        setaddressLine1(locationResponse?.displayName || '');
-        setareaDetails(locationResponse?.area || '');
+        setaddressLine1('');
+        setareaDetails(locationResponse?.area || locationResponse?.displayName || '');
         setstate(locationResponse?.state || '');
         setcity(locationResponse?.city || '');
         setpincode(locationResponse?.pincode || '');
@@ -631,7 +632,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           });
         //props.navigation.goBack();
       } else {
-        props.navigation.goBack();
+        // props.navigation.goBack();
+        props.navigation.pop(2, { immediate: true });
       }
     }
   };
@@ -728,7 +730,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                   ellipsizeMode="tail"
                   style={{
                     color: theme.colors.SHERPA_BLUE,
-                    marginBottom: Platform.OS == 'android' ? '9%' : '7%',
+                    marginBottom: Platform.OS == 'android' ? '9%' : '0%',
                     ...theme.fonts.IBMPlexSansMedium(14),
                   }}
                 >
