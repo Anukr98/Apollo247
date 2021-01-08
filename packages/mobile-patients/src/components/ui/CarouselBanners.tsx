@@ -448,7 +448,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             membershipType: Circle.planName,
           });
         } else if (
-          action === hdfc_values.MEDICINE_LISTING &&
+          (action === hdfc_values.MEDICINE_LISTING ||
+            meta?.app_action === hdfc_values.MEDICINE_LISTING) &&
           !!meta?.category_id &&
           !!meta?.category_name
         ) {
