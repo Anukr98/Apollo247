@@ -24,7 +24,6 @@ import {
   doRequestAndAccessLocationModified,
   removeConsecutiveComma,
   formatAddressForApi,
-  getFormattedLocation,
   findAddrComponents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -32,6 +31,7 @@ import {
   getLatLongFromAddress,
   getPlaceInfoByLatLng,
   getPlaceInfoByPincode,
+  PlacesApiResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -151,8 +151,12 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     return removeConsecutiveComma(newAddress);
   };
 
-  const createAddressToShow = (addrComponents: any) => {
-    const displayName = [findAddrComponents('administrative_area_level_2', addrComponents)];
+  const createAddressToShow = (
+    addrComponents: PlacesApiResponse['results'][0]['address_components'],
+    latLong: PlacesApiResponse['results'][0]['geometry']['location']
+  ) => {
+    const { lat, lng } = latLong || {};
+    const displayName = findAddrComponents('administrative_area_level_2', addrComponents);
     const area = [
       findAddrComponents('sublocality_level_2', addrComponents),
       findAddrComponents('sublocality_level_1', addrComponents) ||
@@ -168,14 +172,36 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       ?.filter((i) => i)
       ?.join(', ');
 
-    const state = [findAddrComponents('administrative_area_level_1', addrComponents)];
-    const pincode = [findAddrComponents('postal_code', addrComponents)];
-    const country = [findAddrComponents('country', addrComponents)];
+    const state = findAddrComponents('administrative_area_level_1', addrComponents);
+    const pincode = findAddrComponents('postal_code', addrComponents);
+    const country = findAddrComponents('country', addrComponents);
 
-    const localFormattedAddress = removeConsecutiveComma(
+    const setMapAddress = removeConsecutiveComma(
       [area, city, state, pincode, country]?.filter((v) => v)?.join(', ')
     );
-    return localFormattedAddress;
+    const formattedLocalAddress = {
+      displayName: displayName,
+      latitude: lat || 0,
+      longitude: lng || 0,
+      area: [
+        findAddrComponents('sublocality_level_2', addrComponents),
+        findAddrComponents('sublocality_level_1', addrComponents),
+        findAddrComponents('locality', addrComponents),
+      ]
+        ?.filter((i) => i)
+        ?.join(', '),
+      city: city,
+      state: state,
+      stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
+      pincode: pincode,
+      country: country,
+      lastUpdated: new Date().getTime(),
+    };
+
+    return {
+      setMapAddress,
+      formattedLocalAddress,
+    };
   };
 
   const createLocationResponse = (response: any) => {
@@ -261,11 +287,13 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
                   setLatitude(Number(coordinates?.lat));
                   setLongitude(Number(coordinates?.lng));
 
-                  const setMapAddress = createAddressToShow(addrComponents);
-                  setAddressString(setMapAddress);
+                  const { setMapAddress, formattedLocalAddress } = createAddressToShow(
+                    addrComponents,
+                    coordinates
+                  );
 
-                  const formatResponse = getFormattedLocation(addrComponents, coordinates, zipcode);
-                  setLocationResponse(formatResponse);
+                  setAddressString(setMapAddress);
+                  setLocationResponse(formattedLocalAddress);
 
                   isConfirmButtonDisabled && setConfirmButtonDisabled(false);
                   isMapDisabled && setMapDisabled(false);
@@ -335,7 +363,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   };
 
   const showCurrentLocation = () => {
-    doRequestAndAccessLocationModified(true)
+    doRequestAndAccessLocationModified()
       .then((response) => {
         if (response) {
           const currentRegion = {
@@ -349,7 +377,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
             setLatitude(response.latitude);
             setLongitude(response.longitude);
             setLocationResponse(response);
-
             const address = formatLocalAddress(response); //removed displayName
             setAddressString(address);
             isConfirmButtonDisabled && setConfirmButtonDisabled(false);
@@ -370,13 +397,13 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           console.log({ data });
           const addrComponents = data?.results[0]?.address_components || [];
           const coordinates = data?.results[0]?.geometry?.location || [];
-          const setMapAddress = createAddressToShow(addrComponents);
-
+          const { setMapAddress, formattedLocalAddress } = createAddressToShow(
+            addrComponents,
+            coordinates
+          );
           setAddressString(setMapAddress);
-
-          const formatResponse = getFormattedLocation(addrComponents, coordinates);
           checkConfirmDisability(addrComponents);
-          setLocationResponse(formatResponse);
+          setLocationResponse(formattedLocalAddress);
         } catch (e) {
           //show current location
           console.log({ e });
@@ -495,7 +522,16 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           </View>
           <Button
             title={isConfirmButtonDisabled ? 'SEARCH LOCATION' : 'CHANGE'}
-            style={styles.changeButton}
+            style={
+              isConfirmButtonDisabled
+                ? [
+                    styles.changeButton,
+                    {
+                      flex: 1,
+                    },
+                  ]
+                : [styles.changeButton, { width: '23%', height: 23 }]
+            }
             titleTextStyle={styles.changeButtonText}
             onPress={onChangePress}
           />
@@ -567,8 +603,6 @@ const styles = StyleSheet.create({
     top: '5%',
     marginHorizontal: '1%',
     // marginHorizontal: screenWidth - 110,
-    width: '23%',
-    height: 23,
     backgroundColor: theme.colors.LIGHT_YELLOW,
     shadowColor: 'transparent',
     elevation: 0,
