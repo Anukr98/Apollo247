@@ -417,10 +417,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       }
-    } else if (type == hdfc_values.WEB_VIEW && action) {
-      props.navigation.navigate(AppRoutes.CommonWebView, {
-        url: action,
-      });
     } else {
       if (type == hdfc_values.REDIRECT) {
         if (action == hdfc_values.SPECIALITY_LISTING) {
@@ -448,7 +444,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             membershipType: Circle.planName,
           });
         } else if (
-          action === hdfc_values.MEDICINE_LISTING &&
+          (action === hdfc_values.MEDICINE_LISTING ||
+            meta?.app_action === hdfc_values.MEDICINE_LISTING) &&
           !!meta?.category_id &&
           !!meta?.category_name
         ) {
@@ -480,9 +477,15 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
       } else if (action == hdfc_values.ABSOLUTE_URL) {
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          itemId: url.split('/').reverse()[0],
-        });
+        if (type == hdfc_values.WEB_VIEW) {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: url.split('/').reverse()[0],
+          });
+        }
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
