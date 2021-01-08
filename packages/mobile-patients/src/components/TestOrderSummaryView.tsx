@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     marginTop: height * 0.04, //0.22
   },
   hideText: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
     color: '#02475b',
     textAlign: 'right',
     marginLeft: isSmallDevice ? 16 : 20,
@@ -137,6 +137,18 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginTop: 15,
     marginLeft: 20,
+  },
+  viewOrderDetailsContainer: {
+    zIndex: 100,
+    height: 40,
+    width: '80%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  viewOrderDetailsTouch: {
+    height: '100%',
+    width: '100%',
   },
 });
 
@@ -289,17 +301,17 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
 
   const renderOptions = () => {
     return (
-      <TouchableOpacity onPress={onPressViewDetails}>
-        <View style={{ justifyContent: 'center', alignItems: 'center', margin: 16 }}>
-          <Text
-            style={{
-              ...theme.viewStyles.yellowTextStyle,
-            }}
-          >
+      <View style={styles.viewOrderDetailsContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={onPressViewDetails}
+          style={styles.viewOrderDetailsTouch}
+        >
+          <Text style={{ ...theme.viewStyles.yellowTextStyle, textAlign: 'center' }}>
             VIEW ORDER DETAILS
           </Text>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 

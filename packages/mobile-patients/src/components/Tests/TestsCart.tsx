@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   blueTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
+    ...theme.fonts.IBMPlexSansMedium(screenWidth < 380 ? 14 : 16),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
   },
@@ -420,7 +420,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const cartItemsWithId = cartItems?.map((item) => parseInt(item.id!));
+  const cartItemsWithId = cartItems?.map((item) => parseInt(item?.id!));
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -521,7 +521,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
     }
   }, [hcCharges]);
-
 
   const postwebEngageProceedToPayEvent = () => {
     const diffInDays = date.getDate() - new Date().getDate();
@@ -2804,6 +2803,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         on your purchase.
                       </Text>
                     )}
+
                     {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
                       <>
                         <Spearator style={{ margin: 5 }} />
