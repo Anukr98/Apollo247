@@ -170,17 +170,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     {
       id: 'Need all medicine and for duration as per prescription',
       title: 'Order all medicines from prescription',
-      subTitle: 'Cart would be prepared with all the medicines as prescribed by the doctor',
+      subTitle: 'Order will be prepared with all the medicines as prescribed by the doctor',
     },
     {
       id: 'search',
-      title: 'Add more medicines to the order',
-      subTitle: 'Browse and search medicines on the app to modify your order',
+      title: 'Search and select medicines by myself',
+      subTitle: 'Browse and select medicines which you wish to purchase',
     },
     {
       id: 'Call me for details',
-      title: 'Confirm order on call',
-      subTitle: 'Our agent would call you to confirm the order placed',
+      title: 'Call me confirm my order',
+      subTitle: 'Our pharmacist would call you to confirm the required items',
     },
   ];
   const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(
