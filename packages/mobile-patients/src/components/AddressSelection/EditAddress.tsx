@@ -218,6 +218,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const [isFocus, setIsFocus] = useState<boolean>(false);
   const [isStateEdit, setStateEditable] = useState<boolean>(false);
   const [isCityEdit, setCityEditable] = useState<boolean>(false);
+  const [isPincodeEdit, setPincodeEditable] = useState<boolean>(false);
+
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -236,6 +238,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
+  const pincodeCheck = ['', null, undefined];
 
   //in case of edit.
   const isChanged =
@@ -257,6 +260,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       //needs to be shown only when editing the address (addressLine1)
       if (locationResponse) {
+        const isPincodeNotPresent = pincodeCheck.includes(
+          locationResponse?.pincode! || locationResponse?.zipcode!
+        );
         setcity(locationResponse?.city!);
         setstate(locationResponse?.state!);
         setpincode(locationResponse?.pincode! || locationResponse?.zipcode!);
@@ -269,6 +275,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         setLongitude(locationResponse?.longitude!);
         setStateCode(locationResponse?.stateCode || '');
         setuserName(addressData?.name!);
+        setPincodeEditable(isPincodeNotPresent);
       } else {
         setcity(addressData?.city!);
         setstate(addressData?.state!);
@@ -282,6 +289,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         setLongitude(addressData?.longitude!);
         setStateCode(addressData?.stateCode || '');
         setuserName(addressData?.name!);
+        setPincodeEditable(pincodeCheck.includes(addressData?.zipcode));
       }
     } else {
       if (locationResponse) {
@@ -294,6 +302,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         setLatitude(locationResponse?.latitude || 0);
         setLongitude(locationResponse?.longitude || 0);
         setStateCode(locationResponse?.stateCode || '');
+        setPincodeEditable(pincodeCheck.includes(locationResponse?.pincode));
       } else {
         const _locationDetails =
           pharmacyLocation && source == 'Cart'
@@ -308,6 +317,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         setLatitude(_locationDetails?.latitude || 0);
         setLongitude(_locationDetails?.longitude || 0);
         setStateCode(_locationDetails?.stateCode || '');
+        setPincodeEditable(pincodeCheck.includes(_locationDetails?.pincode));
       }
     }
   }, []);
@@ -335,6 +345,31 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       mutation: SAVE_PATIENT_ADDRESS,
       variables: { PatientAddressInput: addressInput },
     });
+
+  useEffect(() => {
+    if (!!pincode && pincode != '') {
+      fetchStateCityForPincode();
+    }
+  }, [pincode]);
+
+  const fetchStateCityForPincode = async () => {
+    setshowSpinner!(true);
+    try {
+      const pincodeResult = await pinCodeServiceabilityApi247(pincode);
+      if (pincodeResult?.data?.response) {
+        const response = pincodeResult?.data?.response;
+        isCityEdit && setCityEditable(false);
+        setcity(response?.city! || city);
+      } else {
+        console.log({ pincodeResult });
+        pincodeCheck.includes(city) ? setCityEditable(true) : false;
+      }
+      setshowSpinner!(false);
+    } catch (error) {
+      console.log(error);
+      setshowSpinner!(false);
+    }
+  };
 
   const onSavePress = async () => {
     setEditName(false);
@@ -372,7 +407,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           saveAddress(addressInput),
           addOnly ? null : pinCodeServiceabilityApi247(pincode),
         ]);
-
         setshowSpinner(false);
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
         const isAddressServiceable = pinAvailabilityResult && pinAvailabilityResult?.data?.response;
@@ -389,8 +423,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             eventAttributes
           );
         }
-
+        //if pincode is changed.
         if (isAddressServiceable || addOnly) {
+          setcity(isAddressServiceable?.city || '');
           setDeliveryAddressId!(address.id || '');
           setNewAddressAdded!(address.id || '');
           setDiagnosticAddressId!(address.id || '');
@@ -401,6 +436,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             props.navigation.pop(2, { immediate: true });
           }
         } else {
+          setcity(isAddressServiceable?.city || '');
           setDeliveryAddressId!('');
           setNewAddressAdded!('');
           setDiagnosticAddressId!(address.id || '');
@@ -501,6 +537,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       setLongitude(0);
       setStateEditable(true);
       setCityEditable(true);
+      setPincodeEditable(true);
       CommonBugFender('EditAddress_updateCityStateByPincode', e);
     };
     const pincodeAndAddress = [pincode, addressLine1].filter((v) => (v || '').trim()).join(',');
@@ -1030,6 +1067,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
 
             <TextInputComponent
               value={pincode}
+              textInputprops={{ editable: isPincodeEdit }}
               onChangeText={(pincode) => validateAndSetPincode(pincode)}
               placeholder={'Enter pin code'}
               maxLength={6}
