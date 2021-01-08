@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     marginTop: height * 0.04, //0.22
   },
   hideText: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14 : 16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
     color: '#02475b',
     textAlign: 'right',
     marginLeft: isSmallDevice ? 16 : 20,
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   viewOrderDetailsContainer: {
+    zIndex: 100,
     height: 40,
     width: '80%',
     justifyContent: 'center',
