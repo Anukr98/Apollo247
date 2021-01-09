@@ -49,7 +49,6 @@ import {
 import {
   g,
   handleGraphQlError,
-  doRequestAndAccessLocationModified,
   formatAddress,
   getFormattedLocation,
   isValidPhoneNumber,
@@ -609,7 +608,10 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     let validationMessage = '';
     if (!userName || !/^[A-Za-z]/.test(userName)) {
       validationMessage = 'Enter Valid Name';
-    } else if (!phoneNumberIsValid || phoneNumber.length !== 10) {
+    } else if (
+      !phoneNumberIsValid ||
+      phoneNumber.length !== (phoneNumber.includes('+91') ? 13 : 10)
+    ) {
       validationMessage = 'Enter Valid Mobile Number';
     }
     if (validationMessage) {
