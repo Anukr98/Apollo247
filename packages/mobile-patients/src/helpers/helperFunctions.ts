@@ -1810,9 +1810,12 @@ export const getFormattedLocation = (
   }
   return {
     displayName:
-      (area || []).pop() ||
-      findAddrComponents('locality', addrComponents) ||
-      findAddrComponents('administrative_area_level_2', addrComponents),
+    isModifyAddress ? (findAddrComponents('locality', addrComponents) ||
+    findAddrComponents('administrative_area_level_2', addrComponents) )
+    : ((area || []).pop() ||
+    findAddrComponents('locality', addrComponents) ||
+    findAddrComponents('administrative_area_level_2', addrComponents)),
+     
     latitude: lat,
     longitude: lng,
     area: area?.join(', '),
