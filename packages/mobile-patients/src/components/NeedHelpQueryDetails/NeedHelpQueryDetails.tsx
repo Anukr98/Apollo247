@@ -43,6 +43,7 @@ export interface Props
     orderId?: string;
     isOrderRelatedIssue?: boolean;
     medicineOrderStatus?: MEDICINE_ORDER_STATUS;
+    isConsult?: boolean;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -59,7 +60,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const { needHelpToContactInMessage } = useAppCommonData();
-
+  const isConsult = navigation.getParam('isConsult') || false;
   const [queryIndex, setQueryIndex] = useState<number>();
   const [comments, setComments] = useState<string>('');
 
@@ -240,7 +241,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderHeading = () => {
     const text = orderId
-      ? `HELP WITH ORDER #${orderId}`
+      ? `HELP WITH ${isConsult ? 'APPOINTMENT' : 'ORDER'} #${orderId}`
       : `HELP WITH ${queryCategory.toUpperCase()}`;
     return <Text style={styles.heading}>{text}</Text>;
   };
