@@ -179,8 +179,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     },
     {
       id: 'Call me for details',
-      title: 'Call me confirm my order',
-      subTitle: 'Our pharmacist would call you to confirm the required items',
+      title: 'Call me to confirm my order',
+      subTitle: 'Our pharmacist will call you to confirm the required items',
     },
   ];
   const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(
