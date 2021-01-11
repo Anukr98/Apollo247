@@ -1663,3 +1663,11 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
     resizeMode="contain"
   />
 );
+
+export const CameraClickButton: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_camera_button.png')} />
+);
+
+export const GalleryIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/galleryIconWhite.png')} />
+);

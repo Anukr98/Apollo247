@@ -1183,7 +1183,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
               };
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
-              setShowPopop(true);
+              // setShowPopop(true);
+              props.navigation.navigate(AppRoutes.UploadPrescriptionView);
             }}
             style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
             titleTextStyle={{
