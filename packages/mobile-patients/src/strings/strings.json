@@ -413,7 +413,7 @@
       "slotMistake": "Slot picked by mistake",
       "otherReasons": "Others (Please specify)"
     },
-    "minorAgeText": "Lab tests cannot be booked for below 18 yrs"
+    "minorAgeText": "Lab tests cannot be booked for below 10 yrs"
   },
   "orders": {
     "urOrders": "MY ORDERS",
