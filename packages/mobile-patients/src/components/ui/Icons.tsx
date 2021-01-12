@@ -1642,6 +1642,17 @@ export const HomeAddressIcon: React.FC<IconProps> = (props) => (
 export const OfficeAddressIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/office_icon.png')} />
 );
+export const Cash: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 32, width: 32 }} {...props} source={require('./icons/cash.png')} />
+);
+
+export const YellowTickIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/yellowTick.png')} />
+);
+
+export const FailedTxn: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/Failed.png')} />
+);
 
 export const ActiveCalenderIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/activeCalender.png')} />
@@ -1653,5 +1664,13 @@ export const InactiveCalenderIcon: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('./icons/inactiveCalender.png')}
+  />
+);
+export const HealthyLife: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/healthyLifeIcon.png')}
+    resizeMode="contain"
   />
 );

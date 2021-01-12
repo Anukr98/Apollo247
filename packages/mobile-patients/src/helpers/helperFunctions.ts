@@ -22,7 +22,7 @@ import {
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -42,8 +42,8 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
@@ -93,6 +93,7 @@ import {
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
@@ -250,8 +251,10 @@ export const formatAddressForApi = (
     .filter((v) => v)
     .join(', ');
   const state = [address?.state];
-  const formattedZipcode = address?.zipcode ? `- ${address?.zipcode}` : '';
-  const formattedAddress = removeConsecutiveComma(addrLine1 + ', ' + formattedZipcode);
+  const formattedZipcode = address?.zipcode ? `${address?.zipcode}` : '';
+  const formattedAddress = removeConsecutiveComma(
+    addrLine1 + ', ' + state + ', ' + formattedZipcode
+  );
   return formattedAddress;
 };
 
@@ -265,9 +268,9 @@ export const formatNameNumber = (address: savePatientAddress_savePatientAddress_
 
 export const isPastAppointment = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null,
-  item: getPatientAllAppointments_getPatientAllAppointments_appointments
+  item: getPatientAllAppointments_getPatientAllAppointments_activeAppointments
 ) => {
   const case_sheet = followUpChatDaysCaseSheet(caseSheet);
   const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
@@ -288,7 +291,7 @@ export const isPastAppointment = (
 
 export const followUpChatDaysCaseSheet = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null
 ) => {
   const case_sheet =
@@ -882,7 +885,8 @@ export const getlocationDataFromLatLang = async (latitude: number, longitude: nu
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void,
-  latLngOnly?: boolean
+  latLngOnly?: boolean,
+  modifyAddress?: boolean
 ) => {
   Geolocation.getCurrentPosition(
     (position) => {
@@ -899,7 +903,14 @@ const getlocationData = (
             console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
-            resolve(getFormattedLocation(addrComponents, { lat: latitude, lng: longitude }));
+            resolve(
+              getFormattedLocation(
+                addrComponents,
+                { lat: latitude, lng: longitude },
+                '',
+                modifyAddress
+              )
+            );
           }
         })
         .catch((e) => {
@@ -912,11 +923,14 @@ const getlocationData = (
 
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: false, timeout: 5000 }
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
-export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promise<LocationData> => {
+export const doRequestAndAccessLocationModified = (
+  latLngOnly?: boolean,
+  modifyAddress?: boolean
+): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -927,14 +941,14 @@ export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promis
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject, latLngOnly);
+                getlocationData(resolve, reject, latLngOnly, modifyAddress);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject, latLngOnly);
+            getlocationData(resolve, reject, latLngOnly, modifyAddress);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -966,7 +980,7 @@ export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promis
   });
 };
 
-export const doRequestAndAccessLocation = (): Promise<LocationData> => {
+export const doRequestAndAccessLocation = (isModifyAddress?: boolean): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -977,14 +991,14 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject);
+                getlocationData(resolve, reject, false, isModifyAddress);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject);
+            getlocationData(resolve, reject, false, isModifyAddress);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -1785,31 +1799,42 @@ export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
 export const getFormattedLocation = (
   addrComponents: PlacesApiResponse['results'][0]['address_components'],
   latLang: PlacesApiResponse['results'][0]['geometry']['location'],
-  pincode?: string
+  pincode?: string,
+  isModifyAddress?: boolean
 ) => {
   const { lat, lng } = latLang || {};
-
-  const area = [
-    findAddrComponents('route', addrComponents),
-    findAddrComponents('sublocality_level_2', addrComponents),
-    findAddrComponents('sublocality_level_1', addrComponents),
-  ].filter((i) => i);
-
+  let area;
+  if (isModifyAddress) {
+    area = [
+      findAddrComponents('sublocality_level_2', addrComponents),
+      findAddrComponents('sublocality_level_1', addrComponents),
+      findAddrComponents('locality', addrComponents),
+    ]?.filter((i) => i);
+  } else {
+    [
+      findAddrComponents('route', addrComponents),
+      findAddrComponents('sublocality_level_2', addrComponents),
+      findAddrComponents('sublocality_level_1', addrComponents),
+    ]?.filter((i) => i);
+  }
   return {
-    displayName:
-      (area || []).pop() ||
-      findAddrComponents('locality', addrComponents) ||
-      findAddrComponents('administrative_area_level_2', addrComponents),
+    displayName: isModifyAddress
+      ? findAddrComponents('locality', addrComponents) ||
+        findAddrComponents('administrative_area_level_2', addrComponents)
+      : (area || []).pop() ||
+        findAddrComponents('locality', addrComponents) ||
+        findAddrComponents('administrative_area_level_2', addrComponents),
+
     latitude: lat,
     longitude: lng,
-    area: area.join(', '),
+    area: area?.join(', '),
     city:
       findAddrComponents('locality', addrComponents) ||
       findAddrComponents('administrative_area_level_2', addrComponents),
     state: findAddrComponents('administrative_area_level_1', addrComponents),
     stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
-    pincode: pincode || findAddrComponents('postal_code', addrComponents),
+    pincode: (pincode != '' && pincode) || findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };
@@ -2262,4 +2287,17 @@ export const isProductInStock = (product: MedicineProduct) => {
   }
 };
 
+export const takeToHomePage = (props: any) => {
+  props.navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+        }),
+      ],
+    })
+  );
+};
 export const isSmallDevice = width < 370;

@@ -665,6 +665,15 @@ export const availabilityApi247 = (
   });
 };
 
+export const nonCartTatApi247 = (pincode: string): Promise<AxiosResponse<>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/noncarttat?pin=${pincode}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
+};
+
 export const medCartItemsDetailsApi = (
   itemIds: string[]
 ): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
@@ -1050,11 +1059,25 @@ export const searchPHRApiWithAuthToken = (
 };
 
 export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<any>> => {
-  const baseurl = config.DRUPAL_BANNER_CONFIG[0];
-  const getBanners = `${baseurl}/${pageName}`;
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getBanners = `${baseurl}/banner/${pageName}`;
   return Axios.get(getBanners, {
     headers: {
-      Authorization: config.DRUPAL_BANNER_CONFIG[1],
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getDiagnosticsSearchResults = (
+  pageName: string,
+  keyword: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
+  return Axios.get(getSearchResults, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
     },
   });
 };

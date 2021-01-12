@@ -28,6 +28,7 @@ import {
   FemaleCircleIcon,
   FemaleIcon,
   KavachIcon,
+  HealthyLife,
   LatestArticle,
   LinkedUhidIcon,
   MaleCircleIcon,
@@ -70,7 +71,7 @@ import {
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   GetSubscriptionsOfUserByStatus,
@@ -147,6 +148,10 @@ import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
+import {
+  preFetchSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 const { Vitals } = NativeModules;
 
@@ -433,6 +438,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcPlanId,
     setCircleStatus,
     setHdfcStatus,
+    hdfcStatus,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -478,7 +484,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
 
@@ -519,6 +525,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     } catch (error) {}
   };
+
+  useEffect(() => {
+    preFetchSDK(currentPatient?.id);
+    createHyperServiceObject();
+  }, []);
 
   useEffect(() => {
     if (currentPatient?.id) {
@@ -665,10 +676,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           patientId: currentPatient?.id,
         },
       });
-      if (res?.data?.getPatientFutureAppointmentCount) {
-        const inProgressAppointments =
-          g(res, 'data', 'getPatientFutureAppointmentCount', 'activeAndInProgressConsultsCount') ||
-          0;
+      const appointmentCount = res?.data?.getPatientFutureAppointmentCount;
+      if (appointmentCount) {
+        const inProgressAppointments = appointmentCount?.activeConsultsCount || 0;
         if (inProgressAppointments > 0) {
           overlyCallPermissions(
             currentPatient!.firstName!,
@@ -1162,6 +1172,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const paymentRef = data?.APOLLO?.[0]?.payment_reference;
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
+          AsyncStorage.setItem('isCircleMember', 'yes');
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1176,6 +1187,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
         } else {
+          AsyncStorage.setItem('isCircleMember', 'no');
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -1996,6 +2008,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           'Take a mental health scan'
         )} */}
         {renderCovidBlueButtons(
+          onPressHealthyLife,
+          <HealthyLife style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.HdfcHealthLifeText}`
+        )}
+        {renderCovidBlueButtons(
           onPressKavach,
           <KavachIcon style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HOME_SCREEN_KAVACH_TEXT}`
@@ -2162,6 +2179,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         covidUrl: openUrl,
       });
     } catch (e) {}
+  };
+
+  const onPressHealthyLife = () => {
+    postHomeWEGEvent(WebEngageEventName.HDFC_HEALTHY_LIFE);
+    if (hdfcUserSubscriptions != null && hdfcStatus == 'active') {
+      props.navigation.navigate(AppRoutes.MembershipDetails, {
+        membershipType: g(hdfcUserSubscriptions, 'name'),
+        isActive: g(hdfcUserSubscriptions, 'isActive'),
+      });
+    } else {
+      try {
+        const openUrl = AppConfig.Configuration.HDFC_HEALTHY_LIFE_URL;
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: openUrl,
+        });
+      } catch (e) {}
+    }
   };
 
   const renderCovidScanBanner = () => {

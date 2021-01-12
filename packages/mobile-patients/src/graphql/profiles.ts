@@ -354,8 +354,7 @@ export const GET_AVAILABLE_SLOTS = gql`
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
-      consultsCount
-      activeAndInProgressConsultsCount
+      activeConsultsCount
     }
   }
 `;
@@ -458,7 +457,490 @@ export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   query getPatientAllAppointments($patientId: String!) {
     getPatientAllAppointments(patientId: $patientId) {
-      appointments {
+      cancelledAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
+        id
+        hideHealthRecordNudge
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        symptoms
+        doctorInfo {
+          awards
+          city
+          country
+          chatDays
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          languages
+          lastName
+          mobileNumber
+          onlineConsultationFees
+          onlineStatus
+          photoUrl
+          physicalConsultationFees
+          qualification
+          registrationNumber
+          salutation
+          signature
+          specialization
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          thumbnailUrl
+          zip
+          bankAccount {
+            accountHolderName
+            accountNumber
+            accountType
+            bankName
+            city
+            id
+            IFSCcode
+            state
+            streetLine1
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
+          }
+        }
+        caseSheet {
+          id
+          followUpAfterInDays
+          version
+          doctorType
+          medicinePrescription {
+            id
+            medicineName
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
+        }
+      }
+      followUpAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
+        id
+        hideHealthRecordNudge
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        symptoms
+        doctorInfo {
+          awards
+          city
+          country
+          chatDays
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          languages
+          lastName
+          mobileNumber
+          onlineConsultationFees
+          onlineStatus
+          photoUrl
+          physicalConsultationFees
+          qualification
+          registrationNumber
+          salutation
+          signature
+          specialization
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          thumbnailUrl
+          zip
+          bankAccount {
+            accountHolderName
+            accountNumber
+            accountType
+            bankName
+            city
+            id
+            IFSCcode
+            state
+            streetLine1
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
+          }
+        }
+        caseSheet {
+          id
+          followUpAfterInDays
+          version
+          doctorType
+          medicinePrescription {
+            id
+            medicineName
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
+        }
+      }
+      activeAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
+        id
+        hideHealthRecordNudge
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        symptoms
+        doctorInfo {
+          awards
+          city
+          country
+          chatDays
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          languages
+          lastName
+          mobileNumber
+          onlineConsultationFees
+          onlineStatus
+          photoUrl
+          physicalConsultationFees
+          qualification
+          registrationNumber
+          salutation
+          signature
+          specialization
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          thumbnailUrl
+          zip
+          bankAccount {
+            accountHolderName
+            accountNumber
+            accountType
+            bankName
+            city
+            id
+            IFSCcode
+            state
+            streetLine1
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
+          }
+        }
+        caseSheet {
+          id
+          followUpAfterInDays
+          version
+          doctorType
+          medicinePrescription {
+            id
+            medicineName
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
+        }
+      }
+      completedAppointments {
         appointmentPayments {
           id
           amountPaid
@@ -1614,7 +2096,10 @@ export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
 
 export const GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS = gql`
   query getDiagnosticCancelledOrderDetails($diagnosticOrderId: String, $patientId: String) {
-    getDiagnosticCancelledOrderDetails(diagnosticOrderId: $diagnosticOrderId, patientId: $patientId) {
+    getDiagnosticCancelledOrderDetails(
+      diagnosticOrderId: $diagnosticOrderId
+      patientId: $patientId
+    ) {
       ordersList {
         statusDate
         orderStatus
@@ -3207,6 +3692,24 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
+  mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
+    saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      orderId
+      displayId
+    }
+  }
+`;
+
+export const CREATE_INTERNAL_ORDER = gql`
+  mutation createOrderInternal($order: OrderCreate) {
+    createOrderInternal(order: $order) {
+      payment_order_id
+      success
+    }
+  }
+`;
+
 export const SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER = gql`
   mutation DiagnosticBookHomeCollection($diagnosticOrderInput: DiagnosticBookHomeCollectionInput) {
     DiagnosticBookHomeCollection(diagnosticOrderInput: $diagnosticOrderInput) {
@@ -3963,6 +4466,44 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
   mutation addDiabeticQuestionnaire($addDiabeticQuestionnaireInput: AddDiabeticQuestionnaireInput) {
     addDiabeticQuestionnaire(addDiabeticQuestionnaireInput: $addDiabeticQuestionnaireInput) {
       success
+    }
+  }
+`;
+
+export const GET_BANK_OPTIONS = gql`
+  query getPaymentMethods {
+    getPaymentMethods {
+      name
+      featured_banks {
+        bank
+        method
+        image_url
+      }
+    }
+  }
+`;
+
+export const CREATE_ORDER = gql`
+  mutation createOrder($order_input: OrderInput) {
+    createOrder(order_input: $order_input) {
+      ... on OrderSuccessResponsePrepaid {
+        status_id
+        status
+        id
+        payment_links {
+          mobile
+          web
+        }
+        order_id
+        juspay {
+          client_auth_token_expiry
+          client_auth_token
+        }
+      }
+      ... on OrderSuccessResponseCOD {
+        order_id
+        success
+      }
     }
   }
 `;

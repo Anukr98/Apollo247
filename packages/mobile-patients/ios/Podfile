@@ -71,7 +71,6 @@ target 'ApolloPatient' do
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
-  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
   pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
   pod 'RNFBAuth', :path => '../node_modules/@react-native-firebase/auth'
   pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
@@ -82,7 +81,7 @@ target 'ApolloPatient' do
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
-  pod 'WebEngage'
+  pod 'WebEngage', '~> 5.0.2'
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
@@ -95,6 +94,7 @@ target 'ApolloPatient' do
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
   pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
   pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+  pod 'react-native-geolocation-service', path: '../node_modules/react-native-geolocation-service'
 
   # React Native Maps dependencies
   rn_maps_path = '../node_modules/react-native-maps'
@@ -111,6 +111,8 @@ target 'ApolloPatient' do
   pod 'react-native-progress-bar-android', :path => '../node_modules/@react-native-community/progress-bar-android'
 
   pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
+
+  pod 'hyper-sdk-react', :path => '../node_modules/hyper-sdk-react'
 
   target 'NotificationService' do
       platform :ios, '10.0'

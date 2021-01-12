@@ -83,7 +83,8 @@
     "consultFee": "Consult Fee",
     "consultedDoctors": "Consulted Doctors",
     "pastSearches": "Past Searches",
-    "topSpecialities": "Top Specialities"
+    "topSpecialities": "Top Specialities",
+    "HdfcHealthLifeText": "Explore HDFC HealthyLife"
   },
   "components": {
     "medicineDetails": {
@@ -367,6 +368,8 @@
     "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification"
   },
   "diagnostics": {
+    "locationPermissionText":"Allow us to serve you better by entering your area pincode below.",
+    "serviceabilityFailureText":"Something went wrong. We're unable to check diagnostics serviceability for your location.",
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
     "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
     "nonServiceableConfigPinCodeMsg": "Diagnostic services are not available in Pincode - {{pincode}} for now.",
@@ -392,7 +395,25 @@
       "text": "Rescheduling can be done upto 3 times only"
     }],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
-    "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left."
+    "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
+    "reasonForCancel_TestOrder": {
+      "latePhelbo": "Phlebo didn't arrive on time",
+      "chargesTooHigh": "Home Collection charges are too high",
+      "editOrder": "Need to edit order details",
+      "userUnavailable": "I am not available",
+      "noSlot": "Required slot is not available",
+      "changePaymentMode": "Need to change payment mode",
+      "highPrice": "High price issue",
+      "otherReasons": "Others (Please specify)"
+    },
+    "reasonForReschedule_TestOrder": {
+      "unavailable": "Not present at home",
+      "guidelinesNotFollowed": "Did not follow preparation guidelines (Fasting etc.)",
+      "unableToProvideSample": "Not in a condition to provide sample",
+      "slotMistake": "Slot picked by mistake",
+      "otherReasons": "Others (Please specify)"
+    },
+    "minorAgeText": "Lab tests cannot be booked for below 10 yrs"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -595,6 +616,8 @@
     "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
     "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
     "ABSOLUTE_URL": "ABSOLUTE_URL",
+    "WEB_VIEW": "WEB_VIEW",
+    "MEDICINE_LISTING": "MEDICINE_LISTING",
     "ADVANCED_DIABETES": "POP-UP",
     "FILL_FORM": "LEAD-FORM",
     "DIABETES_CONSENT": {
@@ -685,7 +708,7 @@
     "bookedForWrongUser": "Booked with wrong user details",
     "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons": "Others (Please specifiy)"
+    "otherReasons": "Others (Please specify)"
   },
   "circleDoctors": {
     "care": "CARE",

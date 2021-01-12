@@ -60,7 +60,6 @@ import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEven
 import MapView, { Marker, PROVIDER_GOOGLE, Coordinate, MapEvent, Circle } from 'react-native-maps';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
-import Geolocation from '@react-native-community/geolocation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from 'react-native-elements';
 
@@ -558,7 +557,7 @@ export const Maps: React.FC<MapProps> = (props) => {
 
   /** for getting current position */
   const showCurrentLocation = () => {
-    doRequestAndAccessLocationModified()
+    doRequestAndAccessLocationModified(true)
       .then((response) => {
         if (response) {
           const currentRegion = {

@@ -11,6 +11,8 @@ interface RescheduleCancelProps {
   closeModal: () => void;
   appointmentDiffMin: number;
   appointmentDateTime: string;
+  isAppointmentExceedsTenMin: boolean;
+  isAppointmentStartsInFifteenMin: boolean;
 }
 export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) => {
   const {
@@ -19,10 +21,10 @@ export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) =>
     onPressRescheduleAppointment,
     appointmentDiffMin,
     appointmentDateTime,
+    isAppointmentExceedsTenMin,
+    isAppointmentStartsInFifteenMin,
   } = props;
-  const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 10;
-  const isAppointmentStartsInTenMin = appointmentDiffMin <= 10 && appointmentDiffMin > -10;
-  const btnDisable = isAppointmentStartsInFifteenMin || isAppointmentStartsInTenMin;
+  const btnDisable = isAppointmentStartsInFifteenMin || isAppointmentExceedsTenMin;
   const btnTextColor = btnDisable ? theme.colors.DISABLE_TEXT : theme.colors.APP_YELLOW;
   const postTenMinAppointmentTime = moment(appointmentDateTime)
     .add(10, 'minutes')
@@ -30,7 +32,7 @@ export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) =>
   let appointmentInfoText = '';
   if (isAppointmentStartsInFifteenMin) {
     appointmentInfoText = 'Appointment starts in less than 15 minutes';
-  } else if (isAppointmentStartsInTenMin) {
+  } else if (isAppointmentExceedsTenMin) {
     appointmentInfoText = `Please wait till ${moment(postTenMinAppointmentTime).format(
       'h:mm a'
     )} for doctor to start consult.`;

@@ -79,7 +79,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   __typename: "DiagnosticOrders";
   id: string;
   patientAddressId: string;
-  city: string;
+  city: string | null;
   slotTimings: string;
   employeeSlotId: string;
   diagnosticEmployeeCode: string;

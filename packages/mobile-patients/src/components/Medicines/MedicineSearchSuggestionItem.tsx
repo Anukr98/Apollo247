@@ -40,6 +40,11 @@ const styles = StyleSheet.create({
   flexRow: {
     flexDirection: 'row',
   },
+  quantityView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 25,
+  },
 });
 
 export interface MedicineSearchSuggestionItemProps {
@@ -162,7 +167,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
 
   const renderQuantityView = () => {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={styles.quantityView}>
         <QuantityButton text={'-'} onPress={props.onPressSubstract} />
         <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
         <QuantityButton text={'+'} onPress={props.onPressAdd} />

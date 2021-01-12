@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
   },
   orderSummaryOuterView: {
-    marginHorizontal: isSmallDevice ? 16 : 20,
+    marginHorizontal: 20,
     flexDirection: 'row',
     marginVertical: '15%',
   },
@@ -628,6 +628,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           otherReasonText={OTHER_REASON}
           optionPlaceholderText={'Select reason for rescheduling'}
           submitOthersWithoutComment={true}
+          showSkip={true}
         />
       </View>
     ) : null;
