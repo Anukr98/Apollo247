@@ -259,6 +259,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED,
         CircleEventAttributes
       );
+    isConsultJourney && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_REMOVES_CART);
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {

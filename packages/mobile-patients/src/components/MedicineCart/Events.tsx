@@ -225,5 +225,18 @@ export const fireCirclePurchaseEvent = (currentPatient: any, endDate: string) =>
     Type: 'From HC',
     Source: 'from banner',
   };
-  postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+  !!endDate && postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+};
+
+export const fireCirclePlanRemovedEvent = (currentPatient: any) => {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    'Circle Member': 'No',
+  };
+  postWebEngageEvent(
+    WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED,
+    CircleEventAttributes
+  );
 };

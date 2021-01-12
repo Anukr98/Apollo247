@@ -40,6 +40,11 @@ const styles = StyleSheet.create({
   flexRow: {
     flexDirection: 'row',
   },
+  quantityView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 25,
+  },
 });
 
 export interface MedicineSearchSuggestionItemProps {
@@ -64,7 +69,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const isOutOfStock = !isProductInStock(data);
   const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = Number(data.special_price) || undefined;
-  const { dose_form_variant, pack_form, pack_size } = data;
+  const { dose_form_variant, pack_form, pack_size, unit_of_measurement } = data;
 
   function getDiscountPercent() {
     return (((data.price - specialPrice) / data.price) * 100).toFixed(1);
@@ -79,10 +84,10 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
         >
           {data.name}
         </Text>
-        {!!dose_form_variant && !!pack_form && !!pack_size && (
+        {!!dose_form_variant && !!pack_form && !!pack_size && !!unit_of_measurement && (
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 0.7, 20)}>
-              {`${pack_form} of ${pack_size} ${dose_form_variant}`}
+              {`${pack_form} of ${pack_size}${unit_of_measurement} ${dose_form_variant}`}
             </Text>
           </View>
         )}
@@ -162,7 +167,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
 
   const renderQuantityView = () => {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={styles.quantityView}>
         <QuantityButton text={'-'} onPress={props.onPressSubstract} />
         <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
         <QuantityButton text={'+'} onPress={props.onPressAdd} />

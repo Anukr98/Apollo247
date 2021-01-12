@@ -15,6 +15,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   setCircleMembershipType,
+  isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -101,6 +102,7 @@ import {
   getPlaceInfoByPincode,
   searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { differenceInYears, parse } from 'date-fns';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -127,7 +129,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
 import {
   WebEngageEvents,
@@ -200,7 +202,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   blueTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(screenWidth < 380 ? 14 : 16),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
   },
@@ -369,6 +371,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDiagnosticAreas,
     clearDiagnoticCartInfo,
     cartSaving,
+    discountSaving,
+    normalSaving,
     circleSaving,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
@@ -396,7 +400,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const sourceScreen = props.navigation.getParam('comingFrom');
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
-
+  const [isMinor, setIsMinor] = useState<boolean>(false);
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
@@ -431,7 +435,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const cartItemsWithId = cartItems?.map((item) => parseInt(item.id!));
+  const cartItemsWithId = cartItems?.map((item) => parseInt(item?.id!));
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -462,7 +466,32 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     fetchAddresses();
+    checkPatientAge();
   }, [currentPatient]);
+
+  const getAge = (dob: string) => {
+    const now = new Date();
+    let age = parse(dob);
+    return differenceInYears(now, age);
+  };
+
+  const checkPatientAge = () => {
+    let age = getAge(currentPatient?.dateOfBirth);
+    if (age <= 10) {
+      renderAlert(string.diagnostics.minorAgeText);
+      setIsMinor(true);
+      setDeliveryAddressId!('');
+      setDiagnosticAreas!([]);
+      setAreaSelected!({});
+      setselectedTimeSlot(undefined);
+    } else {
+      isMinor && setIsMinor(false);
+    }
+  };
+
+  const handleBack = () => {
+    props.navigation.goBack();
+  };
 
   useEffect(() => {
     if (cartItemsWithId.length > 0) {
@@ -763,7 +792,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       description: message,
     });
   };
-
   const fetchAddresses = async () => {
     try {
       if (addresses.length) {
@@ -1020,7 +1048,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             </TouchableOpacity>
           </View>
         }
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
@@ -1104,7 +1132,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const planToConsider = pricesForItem?.planToConsider;
 
                 updateCartItem!({
-                  id: item?.itemId!.toString() || product[0]?.id!,
+                  id: item?.itemId!.toString() || product?.[0]?.id!,
                   name: item?.itemName,
                   price: price,
                   thumbnail: '',
@@ -1116,6 +1144,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   collectionMethod: item?.collectionType!,
                   groupPlan: planToConsider?.groupPlan,
                   packageMrp: packageMrp,
+                  mou: item?.inclusions == null ? 1 : item?.inclusions?.length,
+                  inclusions:
+                    item?.inclusions == null
+                      ? [Number(item?.itemId || product?.[0]?.id)]
+                      : item?.inclusions,
                 });
               });
             }
@@ -1457,7 +1490,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
-        pointerEvents={cartItems?.length > 0 ? 'auto' : 'none'}
+        pointerEvents={cartItems?.length > 0 && !isMinor ? 'auto' : 'none'}
       >
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
@@ -1984,13 +2017,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>{string.common.Rs} 500.00</Text>
             </View>
           )} */}
-          {selectedTab == tabs[0].title && cartSaving > 0 && (
+
+          {selectedTab == tabs[0].title && normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 Cart Saving
               </Text>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                - {string.common.Rs} {cartSaving.toFixed(2)}
+                - {string.common.Rs} {normalSaving.toFixed(2)}
               </Text>
             </View>
           )}
@@ -2012,6 +2046,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </View>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                 - {string.common.Rs} {circleSaving.toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {selectedTab == tabs[0].title && discountSaving > 0 && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                {string.diagnostics.specialDiscountText}
+              </Text>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                - {string.common.Rs} {discountSaving.toFixed(2)}
               </Text>
             </View>
           )}
@@ -2143,7 +2187,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{
               marginHorizontal: 10,
               color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               alignSelf: 'center',
             }}
@@ -2672,9 +2716,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           visible={isModalVisible}
           onRequestClose={() => {
             setModalVisible(false);
+            onPressCross();
           }}
           onDismiss={() => {
             setModalVisible(false);
+            onPressCross();
           }}
         >
           <View
@@ -2798,6 +2844,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         on your purchase.
                       </Text>
                     )}
+
                     {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
                       <>
                         <Spearator style={{ margin: 5 }} />
@@ -3088,6 +3135,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
+    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
+    const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
+    setPinCode!(pinCode);
     setLoading!(true);
     // console.log('pinCode >>>>>', pinCode);
     // const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
@@ -3105,7 +3155,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           itemIDs: itemWithId,
           totalCharges: cartTotal,
           slotID: slotVal!,
-          pincode: parseInt(pinCode, 10),
+          pincode: parseInt(pinCodeFromAddress, 10),
         },
         fetchPolicy: 'no-cache',
       });
@@ -3145,7 +3195,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ></ProfileList>
           <Text
             style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
+              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
               lineHeight: 24,
               marginTop: 8,
               color: theme.colors.SKY_BLUE,

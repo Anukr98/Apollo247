@@ -86,8 +86,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 try {
                     NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     Boolean isDndOn = Settings.Global.getInt(getContentResolver(), "zen_mode") != 0;
-                    Boolean isVibrationOn = isDndOn ? false
-                            : (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
+                    Boolean isVibrationOn = !isDndOn && (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
                             (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1));
                     if (isVibrationOn) {
                         long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};

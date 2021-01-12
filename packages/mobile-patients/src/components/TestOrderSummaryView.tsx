@@ -8,6 +8,7 @@ import {
   g,
   formatTestSlotWithBuffer,
   postWebEngageEvent,
+  isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -24,7 +25,7 @@ export interface LineItemPricing {
   pricingObj: any;
 }
 
-const { height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -39,26 +40,25 @@ const styles = StyleSheet.create({
     marginTop: height * 0.04, //0.22
   },
   hideText: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
     color: '#02475b',
     textAlign: 'right',
-    marginLeft: 20,
+    marginLeft: isSmallDevice ? 16 : 20,
   },
   orderName: {
     opacity: 0.6,
     paddingRight: 10,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
     color: '#02475b',
   },
   subView: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
     alignItems: 'center',
   },
   commonText: {
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
     color: '#01475b',
     marginBottom: 5,
     marginTop: 5,
@@ -77,11 +77,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   deliveryText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
     color: '#0087ba',
   },
   testsummeryHeading: {
-    ...theme.fonts.IBMPlexSansMedium(10),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
     letterSpacing: 0.25,
     color: '#02475b',
     marginTop: 6,
@@ -98,11 +98,11 @@ const styles = StyleSheet.create({
   },
   paymentText1: {
     color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
   },
   paymentText: {
     color: '#01475b',
-    ...theme.fonts.IBMPlexSansBold(14),
+    ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14),
   },
   lineSeparator: {
     borderBottomColor: '#02475b',
@@ -132,11 +132,23 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 0,
   },
   orderSummaryText: {
-    ...theme.fonts.IBMPlexSansSemiBold(16),
+    ...theme.fonts.IBMPlexSansSemiBold(isSmallDevice ? 15 : 16),
     color: '#02475b',
     textAlign: 'left',
     marginTop: 15,
     marginLeft: 20,
+  },
+  viewOrderDetailsContainer: {
+    zIndex: 100,
+    height: 40,
+    width: '80%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  viewOrderDetailsTouch: {
+    height: '100%',
+    width: '100%',
   },
 });
 
@@ -232,15 +244,33 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     ) || [];
 
   //gross charges considering packageMrp (how to check for previous orders)
-  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map((item) =>
-    item?.itemObj?.packageCalculatedMrp! && item?.itemObj?.packageCalculatedMrp > item?.price!
-      ? item?.itemObj?.packageCalculatedMrp! * item?.quantity!
-      : item?.price! * item?.quantity!
+
+  let newArr: any[] = [];
+  newCircleArray?.map((item) =>
+    newArr.push(
+      item?.packageMrp! > item?.pricingObj?.[0]?.mrp
+        ? item?.packageMrp
+        : item?.pricingObj?.[0].mrp! || 0
+    )
   );
 
-  const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
-    (prevVal, currVal) => prevVal + currVal
+  newAllArray?.map((item) =>
+    newArr.push(
+      item?.packageMrp! > item?.pricingObj?.[0]?.mrp
+        ? item?.packageMrp!
+        : item?.pricingObj?.[0].mrp! || 0
+    )
   );
+
+  newSpecialArray?.map((item) =>
+    newArr.push(
+      item?.packageMrp! > item?.pricingObj?.[0]?.mrp
+        ? item?.packageMrp!
+        : item?.pricingObj?.[0].mrp! || 0
+    )
+  );
+
+  const totalIndividualDiagonsticsCharges = newArr?.reduce((prevVal, currVal) => prevVal + currVal);
 
   const HomeCollectionCharges =
     orderDetails?.collectionCharges != null
@@ -271,17 +301,17 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
 
   const renderOptions = () => {
     return (
-      <TouchableOpacity onPress={onPressViewDetails}>
-        <View style={{ justifyContent: 'center', alignItems: 'center', margin: 16 }}>
-          <Text
-            style={{
-              ...theme.viewStyles.yellowTextStyle,
-            }}
-          >
+      <View style={styles.viewOrderDetailsContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={onPressViewDetails}
+          style={styles.viewOrderDetailsTouch}
+        >
+          <Text style={{ ...theme.viewStyles.yellowTextStyle, textAlign: 'center' }}>
             VIEW ORDER DETAILS
           </Text>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -427,7 +457,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               </View>
             </View>
           )}
-          {!!totalSavings && (
+          {!!totalCartSaving && (
             <View style={styles.commonTax}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.commonText}></Text>
@@ -449,7 +479,35 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalSavings}
+                  {totalCartSaving}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {!!totalDiscountSaving && (
+            <View style={styles.commonTax}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.commonText}></Text>
+              </View>
+              <View style={{ width: '51%' }}>
+                <Text
+                  style={[
+                    styles.commonText,
+                    {
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                      textAlign: 'right',
+                      color: colors.APP_GREEN,
+                    },
+                  ]}
+                >
+                  {string.diagnostics.specialDiscountText}
+                </Text>
+              </View>
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
+                  - {string.common.Rs}
+                  {totalDiscountSaving}
                 </Text>
               </View>
             </View>

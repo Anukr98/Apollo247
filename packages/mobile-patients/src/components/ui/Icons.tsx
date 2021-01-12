@@ -1596,6 +1596,42 @@ export const CircleDiscountBadge: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/discountBadge.png')} />
 );
 
+export const PrescriptionRequiredIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/PrescriptionIcon.png')} />
+);
+
+export const VegetarianIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/vegetarian.png')} />
+);
+
+export const NonVegetarianIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/non_vegetarian.png')} />
+);
+
+export const AlcoholIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/alcoholIcon.png')} />
+);
+
+export const PrengancyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/pregnancyIcon.png')} />
+);
+
+export const BreastfeedingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/breastfeedingIcon.png')} />
+);
+
+export const DrivingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/drivingIcon.png')} />
+);
+
+export const LiverIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/liverIcon.png')} />
+);
+
+export const KidneyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/kidneyIcon.png')} />
+);
+
 export const Apollo247: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_Apollo.png')} />
 );
@@ -1616,4 +1652,25 @@ export const YellowTickIcon: React.FC<IconProps> = (props) => (
 
 export const FailedTxn: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Failed.png')} />
+);
+
+export const ActiveCalenderIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/activeCalender.png')} />
+);
+
+export const InactiveCalenderIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    resizeMode="contain"
+    size="sm"
+    {...props}
+    source={require('./icons/inactiveCalender.png')}
+  />
+);
+export const HealthyLife: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/healthyLifeIcon.png')}
+    resizeMode="contain"
+  />
 );

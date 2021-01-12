@@ -24,13 +24,14 @@ import {
   doRequestAndAccessLocationModified,
   removeConsecutiveComma,
   formatAddressForApi,
-  getFormattedLocation,
+  findAddrComponents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getLatLongFromAddress,
   getPlaceInfoByLatLng,
   getPlaceInfoByPincode,
+  PlacesApiResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -60,14 +61,14 @@ export type AddressSource =
 // (+20) with header
 const mapHeight =
   screenHeight > 750
-    ? Platform.OS == 'android'
-      ? screenHeight / 1.66
-      : screenHeight / 1.73
+    ? screenHeight / 1.55
+    : screenHeight > 700
+    ? screenHeight / 1.52
     : screenHeight > 650
     ? Platform.OS == 'android'
-      ? screenHeight / 1.83
-      : screenHeight / 1.7
-    : screenHeight / 1.9;
+      ? screenHeight / 1.7
+      : screenHeight / 1.62
+    : screenHeight / 1.8;
 
 export interface RegionObject {
   latitude: number;
@@ -104,17 +105,21 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const source = props.navigation.getParam('source');
 
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [latitude, setLatitude] = useState<number>(0);
-  const [longitude, setLongitude] = useState<number>(0);
-  const [latitudeDelta, setLatitudeDelta] = useState<number>(0.01);
-  const [longitudeDelta, setLongitudeDelta] = useState<number>(0.01);
+  const [latitude, setLatitude] = useState<number>(
+    KeyName == 'Update' ? addressDetails?.latitude || 0 : 0
+  );
+  const [longitude, setLongitude] = useState<number>(
+    KeyName == 'Update' ? addressDetails?.longitude || 0 : 0
+  );
+  const [latitudeDelta, setLatitudeDelta] = useState<number>(0.002);
+  const [longitudeDelta, setLongitudeDelta] = useState<number>(0.002);
   const [addressString, setAddressString] = useState<string>('');
   const [isMapDragging, setMapDragging] = useState<boolean>(false);
   const [locationResponse, setLocationResponse] = useState<any>();
   const [isMapDisabled, setMapDisabled] = useState<boolean>(false);
   const [isConfirmButtonDisabled, setConfirmButtonDisabled] = useState<boolean>(false);
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
-  const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
+  const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
+  const { pharmacyLocation, diagnosticLocation } = useAppCommonData();
   const _map = useRef(null);
   const [region, setRegion] = useState({
     latitude: latitude,
@@ -137,16 +142,68 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
 
   const formatLocalAddress = (address: any) => {
     const newAddress = [
-      address?.displayName,
       address?.area,
       address?.city,
       address?.state,
       address?.pincode,
       address?.country,
     ]
-      .filter((v) => v)
-      .join(', ');
+      ?.filter((v) => v)
+      ?.join(', ');
     return removeConsecutiveComma(newAddress);
+  };
+
+  const createAddressToShow = (
+    addrComponents: PlacesApiResponse['results'][0]['address_components'],
+    latLong: PlacesApiResponse['results'][0]['geometry']['location']
+  ) => {
+    const { lat, lng } = latLong || {};
+    const displayName = findAddrComponents('administrative_area_level_2', addrComponents);
+    const area = [
+      findAddrComponents('sublocality_level_2', addrComponents),
+      findAddrComponents('sublocality_level_1', addrComponents) ||
+        findAddrComponents('locality', addrComponents),
+    ]
+      ?.filter((i) => i)
+      ?.join(', ');
+
+    const city = [
+      findAddrComponents('locality', addrComponents) ||
+        findAddrComponents('administrative_area_level_2', addrComponents),
+    ]
+      ?.filter((i) => i)
+      ?.join(', ');
+
+    const state = findAddrComponents('administrative_area_level_1', addrComponents);
+    const pincode = findAddrComponents('postal_code', addrComponents);
+    const country = findAddrComponents('country', addrComponents);
+
+    const setMapAddress = removeConsecutiveComma(
+      [area, city, state, pincode, country]?.filter((v) => v)?.join(', ')
+    );
+    const formattedLocalAddress = {
+      displayName: displayName,
+      latitude: lat || 0,
+      longitude: lng || 0,
+      area: [
+        findAddrComponents('sublocality_level_2', addrComponents),
+        findAddrComponents('sublocality_level_1', addrComponents),
+        findAddrComponents('locality', addrComponents),
+      ]
+        ?.filter((i) => i)
+        ?.join(', '),
+      city: city,
+      state: state,
+      stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
+      pincode: pincode,
+      country: country,
+      lastUpdated: new Date().getTime(),
+    };
+
+    return {
+      setMapAddress,
+      formattedLocalAddress,
+    };
   };
 
   const createLocationResponse = (response: any) => {
@@ -162,14 +219,34 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     setLocationResponse(object);
   };
 
+  const checkConfirmDisability = (response: any) => {
+    const pincode = findAddrComponents('postal_code', response);
+    if (pincode == '') {
+      setConfirmButtonDisabled(true);
+    } else {
+      isConfirmButtonDisabled && setConfirmButtonDisabled(false);
+    }
+  };
+
   useEffect(() => {
     if (KeyName == 'Update') {
       const getAddress = formatAddressForApi(addressDetails);
-      fetchLatLongFromGoogleApi(getAddress, addressDetails);
+      if (addressDetails?.latitude > 0 && addressDetails?.longitude > 0) {
+        setRegion({
+          latitude: addressDetails?.latitude,
+          longitude: addressDetails?.longitude,
+          latitudeDelta: latitudeDelta,
+          longitudeDelta: longitudeDelta,
+        });
+        setAddressString(getAddress);
+        // createLocationResponse(addressDetails);
+      } else {
+        fetchLatLongFromGoogleApi(getAddress, addressDetails);
+      }
     } else {
       setLoadingContext!(true);
       //if no location permissions are given then prompt for the permission
-      doRequestAndAccessLocation()
+      doRequestAndAccessLocation(true)
         .then((response) => {
           //after getting permission, navigate to map screen
           console.log({ response });
@@ -177,24 +254,27 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           if (response) {
             const address = formatLocalAddress(response);
             setAddressString(address);
+
             setLatitude(Number(response?.latitude));
             setLongitude(Number(response?.longitude));
             setRegion({
               latitude: Number(response?.latitude),
               longitude: Number(response?.longitude),
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
+              latitudeDelta: latitudeDelta,
+              longitudeDelta: longitudeDelta,
             });
+
             isConfirmButtonDisabled && setConfirmButtonDisabled(false);
             isMapDisabled && setMapDisabled(false);
             createLocationResponse(response);
           }
           //if user denied the permission
           else {
-            if (pharmacyLocation) {
+            const checkPinCodeFrom =
+              source == 'Diagnostics Cart' ? diagnosticLocation : pharmacyLocation;
+            if (checkPinCodeFrom) {
               //get pincode from pharam's pincode.
-              console.log({ pharmacyLocation });
-              const zipcode = pharmacyLocation?.pincode;
+              const zipcode = checkPinCodeFrom?.pincode;
               //call the api to get lat,long + address from pincode.
               getPlaceInfoByPincode(zipcode)
                 .then((data) => {
@@ -202,20 +282,22 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
                   const addrComponents = data?.data?.results[0]?.address_components || [];
                   const coordinates = data?.data?.results[0]?.geometry?.location || [];
 
-                  const formatted_address = data?.data?.results[0]?.formatted_address;
                   setRegion({
                     latitude: coordinates?.lat,
                     longitude: coordinates?.lng,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
+                    latitudeDelta: latitudeDelta,
+                    longitudeDelta: longitudeDelta,
                   });
-                  //create location response.
                   setLatitude(Number(coordinates?.lat));
                   setLongitude(Number(coordinates?.lng));
-                  setAddressString(removeConsecutiveComma(formatted_address));
 
-                  const formatResponse = getFormattedLocation(addrComponents, coordinates, zipcode);
-                  setLocationResponse(formatResponse);
+                  const { setMapAddress, formattedLocalAddress } = createAddressToShow(
+                    addrComponents,
+                    coordinates
+                  );
+
+                  setAddressString(setMapAddress);
+                  setLocationResponse(formattedLocalAddress);
 
                   isConfirmButtonDisabled && setConfirmButtonDisabled(false);
                   isMapDisabled && setMapDisabled(false);
@@ -232,8 +314,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
               setRegion({
                 latitude: 0,
                 longitude: 0,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
+                latitudeDelta: latitudeDelta,
+                longitudeDelta: longitudeDelta,
               });
               setLatitude(Number(0));
               setLongitude(Number(0));
@@ -241,6 +323,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           }
         })
         .catch((e) => {
+          renderAlert(e);
           CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
         })
         .finally(() => {
@@ -257,18 +340,17 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           console.log({ data });
           const addrComponents = data?.results[0]?.address_components || [];
           const coordinates = data?.results[0]?.geometry?.location || [];
-          const formattedAdddressResponse = data?.results[0]?.formatted_address;
           setRegion({
-            latitude: coordinates.lat,
-            longitude: coordinates.lng,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+            latitude: coordinates?.lat,
+            longitude: coordinates?.lng,
+            latitudeDelta: latitudeDelta,
+            longitudeDelta: longitudeDelta,
           });
           //to show previous or new from api.
           addressDetailObject.latitude = coordinates?.lat || addressDetailObject?.latitude;
           addressDetailObject.longitude = coordinates?.lng || addressDetailObject?.longitude;
 
-          setAddressString(address); // to set prev one from edit or new from response?
+          setAddressString(address); // to set prev one from edit or new from response? //3
           createLocationResponse(addressDetailObject);
         } catch (e) {
           //show current location
@@ -286,24 +368,29 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   };
 
   const showCurrentLocation = () => {
-    doRequestAndAccessLocationModified()
+    doRequestAndAccessLocationModified(false, true)
       .then((response) => {
         if (response) {
           const currentRegion = {
             latitude: response?.latitude!,
             longitude: response?.longitude!,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+            latitudeDelta: latitudeDelta,
+            longitudeDelta: longitudeDelta,
           };
           setRegion(currentRegion);
           if (response?.latitude && response?.longitude) {
             setLatitude(response.latitude);
             setLongitude(response.longitude);
             setLocationResponse(response);
+            const address = formatLocalAddress(response); //removed displayName
+            setAddressString(address);
+            isConfirmButtonDisabled && setConfirmButtonDisabled(false);
+            isMapDisabled && setMapDisabled(false);
           }
         }
       })
       .catch((e) => {
+        renderAlert(e);
         CommonBugFender('MapAddress_doRequestAndAccessLocationModified', e);
       });
   };
@@ -316,11 +403,13 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           console.log({ data });
           const addrComponents = data?.results[0]?.address_components || [];
           const coordinates = data?.results[0]?.geometry?.location || [];
-          const getFormattedAddress = data?.results[0]?.formatted_address;
-
-          setAddressString(getFormattedAddress);
-          const formatResponse = getFormattedLocation(addrComponents, coordinates);
-          setLocationResponse(formatResponse);
+          const { setMapAddress, formattedLocalAddress } = createAddressToShow(
+            addrComponents,
+            coordinates
+          );
+          setAddressString(setMapAddress);
+          checkConfirmDisability(addrComponents);
+          setLocationResponse(formattedLocalAddress);
         } catch (e) {
           //show current location
           console.log({ e });
@@ -337,8 +426,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
 
   const _onRegionChangeComplete = (region: RegionObject) => {
     /**since double tap does not work in ios */
-
-    if (isMapDragging || Platform.OS == 'ios') {
+    //remove Platform.OS == 'ios'
+    if (isMapDragging) {
       setMapDragging(false);
       setRegion(region);
       setLatitude(region?.latitude);
@@ -363,18 +452,16 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const goBackCallback = (selectedAddress: any, comingFrom?: string) => {
     isConfirmButtonDisabled && setConfirmButtonDisabled(false);
     isMapDisabled && setMapDisabled(false);
-    console.log({ selectedAddress });
-    const setSelectedAddress = formatLocalAddress(selectedAddress);
+
+    fetchAdressFromLatLongGoogleApi(selectedAddress?.latitude, selectedAddress?.longitude);
     setRegion({
       latitude: selectedAddress?.latitude,
       longitude: selectedAddress?.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
+      latitudeDelta: latitudeDelta,
+      longitudeDelta: longitudeDelta,
     });
     setLatitude(selectedAddress?.latitude);
     setLongitude(selectedAddress?.latitude);
-    setAddressString(setSelectedAddress);
-    setLocationResponse(selectedAddress);
   };
 
   const onChangePress = () => {
@@ -393,6 +480,15 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     });
   };
 
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
+    setConfirmButtonDisabled(true);
+    setMapDisabled(true);
+  };
+
   const renderMap = () => {
     return (
       <MapView
@@ -401,7 +497,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         region={region}
         ref={_map}
         zoomEnabled={true}
-        minZoomLevel={18}
+        minZoomLevel={5}
         onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
         onDoublePress={_setMapDragging}
@@ -429,20 +525,31 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const renderAddressBanner = () => {
     return (
       <View style={styles.bannerOuterView}>
-        <Button
-          title={'CHANGE'}
-          style={styles.changeButton}
-          titleTextStyle={styles.changeButtonText}
-          onPress={onChangePress}
-        />
         <View style={styles.addressView}>
           <LocationIcon style={styles.locationIcon} />
           <Text style={styles.addressHeading}> {string.addressSelection.HELP_US_LOCATE_TEXT}</Text>
         </View>
-        <View style={{ margin: '5%', marginTop: '3%' }}>
-          <Text numberOfLines={3} style={styles.addressText}>
-            {addressString}
-          </Text>
+        <View style={styles.addressOuterView}>
+          <View style={{ width: '78%' }}>
+            <Text numberOfLines={3} style={styles.addressText}>
+              {isConfirmButtonDisabled ? 'Location not found' : addressString}
+            </Text>
+          </View>
+          <Button
+            title={isConfirmButtonDisabled ? 'SEARCH LOCATION' : 'CHANGE'}
+            style={
+              isConfirmButtonDisabled
+                ? [
+                    styles.changeButton,
+                    {
+                      flex: 1,
+                    },
+                  ]
+                : [styles.changeButton, { width: '23%', height: 23 }]
+            }
+            titleTextStyle={styles.changeButtonText}
+            onPress={onChangePress}
+          />
         </View>
         <Button
           title={'CONFIRM LOCATION'}
@@ -490,7 +597,9 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
             {renderMarker()}
           </>
         ) : (
-          <View style={{ backgroundColor: '#d8d8d8', height: mapHeight }}></View>
+          <View style={{ backgroundColor: '#d8d8d8', height: mapHeight }}>
+            {renderCurrentLocation()}
+          </View>
         )}
 
         {renderAddressBanner()}
@@ -507,13 +616,12 @@ const styles = StyleSheet.create({
   },
   changeButton: {
     top: '5%',
-    marginHorizontal: screenWidth - 110,
-    width: '23%',
-    height: 23,
+    marginHorizontal: '1%',
+    // marginHorizontal: screenWidth - 110,
     backgroundColor: theme.colors.LIGHT_YELLOW,
     shadowColor: 'transparent',
     elevation: 0,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   changeButtonText: {
     color: theme.colors.SHERPA_BLUE,
@@ -570,10 +678,10 @@ const styles = StyleSheet.create({
   },
   currentLocationView: {
     backgroundColor: 'white',
-    height: 40,
-    width: 40,
+    height: 50,
+    width: 50,
     position: 'absolute',
-    bottom: '45%',
+    bottom: '35%',
     right: '3%',
     borderRadius: 40 / 2,
     shadowColor: 'rgba(0,0,0,0.2)',
@@ -584,8 +692,8 @@ const styles = StyleSheet.create({
   },
   currentLocationIcon: {
     marginTop: 6,
-    width: 25,
-    height: 25,
+    width: 35,
+    height: 35,
     alignSelf: 'center',
     justifyContent: 'center',
     tintColor: theme.colors.SHERPA_BLUE,
@@ -605,4 +713,5 @@ const styles = StyleSheet.create({
     color: 'white',
     ...theme.fonts.IBMPlexSansSemiBold(12),
   },
+  addressOuterView: { margin: '5%', marginTop: 4, flexDirection: 'row' },
 });

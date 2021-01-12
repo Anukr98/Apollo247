@@ -24,12 +24,13 @@ import {
   Mascot,
   MissedCallIcon,
   MuteIcon,
-  PickCallIcon,
   UnMuteIcon,
   VideoOffIcon,
   UploadHealthRecords,
   FreeArrowIcon,
   VideoOnIcon,
+  ActiveCalenderIcon,
+  InactiveCalenderIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -160,6 +161,7 @@ import {
   postWebEngageEvent,
   nameFormater,
   followUpChatDaysCaseSheet,
+  statusBarHeight,
   addTestsToCart,
   doRequestAndAccessLocation,
   handleGraphQlError,
@@ -182,7 +184,7 @@ import {
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { EPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription } from '@aph/mobile-patients/src/graphql/types/getSDLatestCompletedCaseSheet';
 import {
@@ -191,6 +193,10 @@ import {
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { ConsultProgressBar } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultProgressBar';
 import { getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { RescheduleCancelPopup } from '@aph/mobile-patients/src/components/Consult/RescheduleCancelPopup';
+import { CancelAppointmentPopup } from '@aph/mobile-patients/src/components/Consult/CancelAppointmentPopup';
+import { CancelReasonPopup } from '@aph/mobile-patients/src/components/Consult/CancelReasonPopup';
+import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consult/CheckReschedulePopup';
 
 interface OpentokStreamObject {
   connection: {
@@ -491,6 +497,10 @@ const styles = StyleSheet.create({
     zIndex: 100,
     borderRadius: 0,
   },
+  calenderIcon: {
+    width: 20,
+    height: 22,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -570,6 +580,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
   const [name, setname] = useState<string>('');
+  const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
+  const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
+  const [showReschedulePopup, setShowReschedulePopup] = useState<boolean>(false);
+  const [isCancelVisible, setCancelVisible] = useState<boolean>(false);
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -707,6 +721,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const vitalsCompletedByPatient = '^^#vitalsCompletedByPatient'; // ignore msg used by p-web
   const doctorWillConnectShortly = '^^#DoctorWillConnectShortly';
   const rescheduleOrCancelAppointment = '^^#RescheduleOrCancelAppointment';
+  const appointmentStartsInFifteenMin = '^^#appointmentStartsInFifteenMin';
+  const appointmentStartsInTenMin = '^^#appointmentStartsInTenMin';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -730,6 +746,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const currentProgressBarPosition = useRef<number>(0);
   const showProgressBarOnHeader = useRef<boolean>(false);
   const isJdAllowedToAssign = useRef<boolean | null | undefined>(null);
+  const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+  let cancelAppointmentTitle = '';
+  if (appointmentDiffMin >= 15) {
+    cancelAppointmentTitle =
+      "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+  } else {
+    cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+  }
+  const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
+  const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
+
   const postAppointmentWEGEvent = (
     type:
       | WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS
@@ -1004,11 +1031,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(
       moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
     );
-    if (diffMin <= 10 && diffMin >= -10) {
+    setAppointmentDiffMin(diffMin);
+    if (diffMin <= 30 && diffMin >= -10) {
       appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
         const updatedDiffMin = Math.ceil(
           moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
         );
+        console.log('setAppointmentDiffMin', updatedDiffMin);
+        setAppointmentDiffMin(updatedDiffMin);
         if (updatedDiffMin === -5) {
           const doctorConnectShortly = insertText.filter((obj: any) => {
             return obj.message === doctorWillConnectShortly;
@@ -1026,7 +1056,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
         }
-      }, 60000);
+      }, 40000);
     }
   };
 
@@ -4984,7 +5014,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     rowData.message === languageQue ||
                     rowData.message === jdThankyou ||
                     rowData.message === doctorWillConnectShortly ||
-                    rowData.message === rescheduleOrCancelAppointment ? (
+                    rowData.message === rescheduleOrCancelAppointment ||
+                    rowData.message === appointmentStartsInFifteenMin ||
+                    rowData.message === appointmentStartsInTenMin ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
@@ -5448,12 +5480,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           time = `Consult is completed`;
         }
         currentProgressBarPosition.current = 2;
-      } else if (diffMin <= 0) {
+      } else if (appointmentDiffMin <= 0) {
         time = `Joining soon. Please wait!`;
-      } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Expected to join in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+      } else if (appointmentDiffMin > 0 && appointmentDiffMin < 60 && diffHours <= 1) {
+        time = `Expected to join in ${appointmentDiffMin} minute${
+          appointmentDiffMin === 1 ? '' : 's'
+        }`;
       } else if (diffHours >= 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Expected to join in ${convertMinsToHrsMins(diffMin)}`;
+        time = `Expected to join in ${convertMinsToHrsMins(appointmentDiffMin)}`;
       } else {
         time = `Consult on ${moment(appointmentTime).format('DD/MM')} at ${moment(
           appointmentTime
@@ -5559,7 +5593,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   ) => {
     const medicinePrescription = g(item, 'caseSheet', '0' as any, 'medicinePrescription');
     const getMedicines = (
-      medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
+      medicines: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[]
     ) =>
       medicines
         ? medicines
@@ -5592,7 +5626,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM, eventAttributesFollowUp);
   };
-
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
@@ -6539,11 +6572,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setIsAudioCall(true);
     } else {
       setIsCall(true);
-      if (patientJoinedCall.current) {
-        setTimeout(() => {
-          setShowVideo(false);
-        }, 1000);
-      }
     }
     setLoading(false);
   };
@@ -6922,6 +6950,59 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
   };
 
+  const postAppointmentWEGEvents = (
+    type:
+      | WebEngageEventName.RESCHEDULE_CLICKED
+      | WebEngageEventName.CANCEL_CONSULTATION_CLICKED
+      | WebEngageEventName.CONTINUE_CONSULTATION_CLICKED
+      | WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER
+      | WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.RESCHEDULE_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CANCEL_CONSULTATION_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER] = {
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+      'Consult Mode':
+        g(appointmentData, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      )!,
+      'Hospital City': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'city'
+      )!,
+      'Consult ID': g(appointmentData, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Secretary Name': g(secretaryData, 'name'),
+      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
+      'Doctor Mobile Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
   const renderProgressBar = (position: number) => {
     return (
       <ConsultProgressBar
@@ -6929,6 +7010,74 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         currentPosition={position}
       />
     );
+  };
+
+  const onPressCalender = () => {
+    setShowRescheduleCancel(true);
+    if (isAppointmentStartsInFifteenMin) {
+      autoTriggerFifteenMinToAppointmentTimeMsg();
+    }
+    if (isAppointmentExceedsTenMin) {
+      autoTriggerTenMinToAppointmentTimeMsg();
+    }
+  };
+
+  const autoTriggerTenMinToAppointmentTimeMsg = () => {
+    const checkMsgResult = messages.filter((obj: any) => {
+      return obj.message === appointmentStartsInTenMin;
+    });
+    if (checkMsgResult?.length === 0) {
+      const postTenMinAppointmentTime = moment(appointmentData?.appointmentDateTime)
+        .add(10, 'minutes')
+        .toDate();
+
+      const automatedText = [
+        `You are requested to wait till ${moment(postTenMinAppointmentTime).format(
+          'h:mm a'
+        )} for the doctor to start the consult.`,
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: appointmentStartsInTenMin,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }
+  };
+
+  const autoTriggerFifteenMinToAppointmentTimeMsg = () => {
+    const checkMsgResult = messages.filter((obj: any) => {
+      return obj.message === appointmentStartsInFifteenMin;
+    });
+    if (checkMsgResult?.length === 0) {
+      const automatedText = [
+        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in 15 mins you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: appointmentStartsInFifteenMin,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }
   };
 
   return (
@@ -7041,6 +7190,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setDoctorJoinedChat && setDoctorJoinedChat(false);
             }
           }}
+          rightIcon={
+            <TouchableOpacity
+              disabled={doctorJoinedChat || status === STATUS.COMPLETED}
+              onPress={() => onPressCalender()}
+            >
+              {doctorJoinedChat || status === STATUS.COMPLETED ? (
+                <InactiveCalenderIcon style={styles.calenderIcon} />
+              ) : (
+                <ActiveCalenderIcon style={styles.calenderIcon} />
+              )}
+            </TouchableOpacity>
+          }
         />
         {showProgressBarOnHeader.current ? (
           <View
@@ -7050,6 +7211,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         ) : null}
         {renderChatHeader()}
+        {isCancelVisible && (
+          <CancelReasonPopup
+            isCancelVisible={isCancelVisible}
+            closePopup={() => setCancelVisible(false)}
+            data={appointmentData}
+            cancelSuccessCallback={() => {
+              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+            }}
+            navigation={props.navigation}
+          />
+        )}
         {doctorJoined ? (
           <View
             style={{
@@ -7276,6 +7448,59 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           />
         )}
       </SafeAreaView>
+      {showRescheduleCancel && (
+        <RescheduleCancelPopup
+          onPressCancelAppointment={() => {
+            CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
+            setShowCancelPopup(true);
+            setShowRescheduleCancel(false);
+          }}
+          onPressRescheduleAppointment={() => {
+            postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+            setShowReschedulePopup(true);
+            setShowRescheduleCancel(false);
+          }}
+          closeModal={() => setShowRescheduleCancel(false)}
+          appointmentDiffMin={appointmentDiffMin}
+          appointmentDateTime={appointmentData?.appointmentDateTime}
+          isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
+          isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}
+        />
+      )}
+      {showCancelPopup && (
+        <CancelAppointmentPopup
+          data={appointmentData}
+          navigation={props.navigation}
+          title={cancelAppointmentTitle}
+          onPressBack={() => setShowCancelPopup(false)}
+          onPressReschedule={() => {
+            postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+            CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
+            setShowCancelPopup(false);
+            setShowReschedulePopup(true);
+          }}
+          onPressCancel={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
+            CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
+            setShowCancelPopup(false);
+            setCancelVisible(true); //to show the reasons for cancelling the consultation
+          }}
+        />
+      )}
+      {showReschedulePopup && (
+        <CheckReschedulePopup
+          data={appointmentData}
+          navigation={props.navigation}
+          closeModal={() => setShowReschedulePopup(false)}
+          cancelSuccessCallback={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+            setShowCancelPopup(false);
+          }}
+          rescheduleSuccessCallback={() =>
+            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER)
+          }
+        />
+      )}
       {isCall && VideoCall()}
       {isAudioCall && AudioCall()}
       {transferAccept && (

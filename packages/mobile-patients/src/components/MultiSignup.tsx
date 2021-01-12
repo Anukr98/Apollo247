@@ -656,7 +656,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 key: null,
                 actions: [
                   NavigationActions.navigate({
-                    routeName: AppRoutes.MedicineDetailsScene,
+                    routeName: AppRoutes.ProductDetailPage,
                     params: {
                       sku: id,
                       movedFrom: ProductPageViewedSource.REGISTRATION,

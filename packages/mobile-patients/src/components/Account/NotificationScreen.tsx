@@ -585,7 +585,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
 
       case 'MedicineDetail':
         console.log('MedicineDetail');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        props.navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: id,
           movedFrom: ProductPageViewedSource.NOTIFICATION,
         });

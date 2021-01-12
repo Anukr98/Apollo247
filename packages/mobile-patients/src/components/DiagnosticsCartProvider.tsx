@@ -68,6 +68,8 @@ export interface DiagnosticsCartContextProps {
   cartTotal: number;
   totalPriceExcludingAnyDiscounts: number;
   cartSaving: number;
+  normalSaving: number;
+  discountSaving: number;
   circleSaving: number;
   couponDiscount: number;
   deliveryCharges: number;
@@ -153,6 +155,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   cartTotal: 0,
   totalPriceExcludingAnyDiscounts: 0,
   cartSaving: 0,
+  normalSaving: 0,
+  discountSaving: 0,
   circleSaving: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
@@ -392,8 +396,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const withDiscount = cartItems?.filter(
     (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
-  const withAll = cartItems?.filter((item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL);
-  const savingWithDisc = withDiscount?.reduce(
+
+  const withAll = cartItems?.filter((item) =>
+    isDiagnosticCircleSubscription
+      ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+      : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  );
+  const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
     (currTotal, currItem) =>
       currTotal +
       (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
@@ -401,7 +411,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         : currItem?.price! - currItem?.discountSpecialPrice!),
     0
   );
-  const savingWithAll = withAll?.reduce(
+  const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
     (currTotal, currItem) =>
       currTotal +
       (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
@@ -426,7 +436,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
-  const cartSaving: DiagnosticsCartContextProps['cartTotal'] = savingWithDisc + savingWithAll;
+  const cartSaving: DiagnosticsCartContextProps['cartTotal'] = discountSaving + normalSaving;
   const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
     cartItems
       ?.reduce(
@@ -584,6 +594,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         cartTotal,
         totalPriceExcludingAnyDiscounts,
         cartSaving,
+        discountSaving,
+        normalSaving,
         circleSaving,
         grandTotal,
         couponDiscount,
