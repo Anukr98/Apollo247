@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -24,6 +24,7 @@ export interface ProductPriceDeliveryProps {
   isPharma: boolean;
   cashback: number;
   finalPrice: number;
+  showDeliverySpinner: boolean;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -40,6 +41,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     cashback,
     finalPrice,
     isSellOnline,
+    showDeliverySpinner,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId, circleSubscriptionId } = useShoppingCart();
@@ -74,7 +76,14 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   };
 
   const renderIsInStock = () => {
-    return !isSellOnline ? (
+    return showDeliverySpinner ? (
+      <ActivityIndicator
+        style={{ alignItems: 'flex-end', marginRight: 20 }}
+        animating={true}
+        size="small"
+        color="green"
+      />
+    ) : !isSellOnline ? (
       <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
         <Text style={styles.stockText}>Not for Sale</Text>
       </View>
@@ -140,15 +149,19 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   };
 
   const renderDeliveryDateTime = () => {
-    return !!deliveryTime ? (
+    return !!deliveryError ? (
+      <Text style={theme.viewStyles.text('R', 10, '#01475b')}>{deliveryError}</Text>
+    ) : !isInStock ? (
+      <Text
+        style={theme.viewStyles.text('R', 10, '#01475b')}
+      >{`Sorry, this item is out of stock in your area.`}</Text>
+    ) : !!deliveryTime ? (
       <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0)}>
         Delivery By{' '}
         {moment(deliveryTime, AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT).format(
           AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
         )}
       </Text>
-    ) : !!deliveryError ? (
-      <Text style={theme.viewStyles.text('R', 10, '#01475b')}>{deliveryError}</Text>
     ) : null;
   };
 
@@ -221,6 +234,7 @@ const styles = StyleSheet.create({
   deliveryTo: {
     flexDirection: 'row',
     marginVertical: 10,
+    marginRight: 10,
   },
   locationIcon: {
     resizeMode: 'contain',
