@@ -121,7 +121,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         </Text>
         <Spearator style={styles.horizontalSeparator} />
         <View style={styles.pickUpInfo}>
-          {pickupDate && pickupYear && (
+          {!!pickupDate && !!pickupYear && (
             <View>
               <Text style={styles.placeholderText}>PICKUP DATE</Text>
               <Text style={styles.date}>
@@ -129,7 +129,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               </Text>
             </View>
           )}
-          {pickupTime && (
+          {!!pickupTime && (
             <View>
               <Text style={styles.placeholderText}>PICKUP TIME</Text>
               <Text style={styles.date}>{pickupTime}</Text>
@@ -159,14 +159,17 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View style={styles.totalSavingOuterView}>
         {renderAmount()}
-        {savings && (
+        {!!savings && (
           <Text style={{ ...styles.savedTxt, marginTop: 8 }}>
             You {''}
             <Text style={styles.savedAmt}>saved ₹ {savings}</Text>
             {''} on your purchase.
           </Text>
         )}
-        <Spearator style={{ marginVertical: 10 }} />
+        {isDiagnosticCircleSubscription &&
+          orderCircleSaving > 0 &&
+          showCartSaving &&
+          couldBeSaved && <Spearator style={{ marginVertical: 10 }} />}
         {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
           <>
             <View style={styles.circleSaving}>

@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CardInfo } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+
 export interface CardsProps {
   onPressPayNow: (cardInfo: any) => void;
+  cardTypes: any;
 }
 
 export const Cards: React.FC<CardsProps> = (props) => {
-  const { onPressPayNow } = props;
+  const { onPressPayNow, cardTypes } = props;
   const [cardNumber, setCardNumber] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [validity, setValidity] = useState<string>('');
@@ -37,6 +39,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
       response && setCardbin(response?.data);
       response?.data?.brand == '' && setisValid(false);
     } else if (number.length < 6) {
+      setCardbin({});
       setisValid(true);
     }
   };
@@ -54,6 +57,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
     } else {
       setCardNumber(text);
     }
+    console.log(cardbin);
   }
 
   function updateValidity(text: string) {
@@ -96,6 +100,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
         secureTextEntry={value == CVV ? true : false}
         keyboardType={keyboardType}
         maxLength={maxLength}
+        icon={value == cardNumber && renderCardIcon()}
       />
     );
   };
@@ -107,6 +112,14 @@ export const Cards: React.FC<CardsProps> = (props) => {
         {InputComponent(cardNumber, updateCard, 'numeric', 19, inputStyle)}
         {renderInvalidCardNumber()}
       </View>
+    );
+  };
+
+  const renderCardIcon = () => {
+    const cardInfo =
+      cardbin?.brand && cardTypes?.find((item: any) => item?.method == cardbin?.brand);
+    return (
+      <Image source={{ uri: cardInfo?.image_url }} resizeMode={'contain'} style={styles.cardIcon} />
     );
   };
 
@@ -215,5 +228,10 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(10),
     lineHeight: 14,
     color: '#FF748E',
+  },
+  cardIcon: {
+    height: 27,
+    width: 27,
+    marginBottom: 2,
   },
 });

@@ -2069,7 +2069,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
         {/* {isDiagnosticCircleSubscription ? null : circleSaving > 0 && renderSavedBanner()} */}
-        {renderPaymentCard()}
       </View>
     );
   };
@@ -2163,51 +2162,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{ justifyContent: 'flex-end', height: 20, width: 36, resizeMode: 'contain' }}
           />
         )}
-      </View>
-    );
-  };
-
-  const renderPaymentCard = () => {
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          marginHorizontal: 20,
-          // marginTop: 4,
-          marginBottom: 12,
-          padding: 16,
-          marginTop: 10,
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-        }}
-      >
-        <View style={{ flexDirection: 'row' }}>
-          <RadioButtonIcon style={{ tintColor: theme.colors.SHERPA_BLUE, opacity: 0.3 }} />
-          <Text
-            style={{
-              marginHorizontal: 10,
-              color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
-              lineHeight: 24,
-              alignSelf: 'center',
-            }}
-          >
-            Cash on delivery
-          </Text>
-        </View>
-        <Text
-          style={{
-            marginHorizontal: 15,
-            color: theme.colors.APP_GREEN,
-            ...theme.fonts.IBMPlexSansMedium(10.5),
-            marginVertical: 2,
-            lineHeight: 24,
-            alignSelf: 'flex-start',
-            width: '91%',
-          }}
-        >
-          {string.diagnostics.cashOnDeliverySubText}
-        </Text>
       </View>
     );
   };
@@ -3260,7 +3214,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={'PLACE ORDER'}
+            title={'MAKE PAYMENT'}
             onPress={() => onPressProceedToPay()}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
