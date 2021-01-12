@@ -81,7 +81,7 @@ target 'ApolloPatient' do
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
-  pod 'WebEngage'
+  pod 'WebEngage', '~> 5.0.2'
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
