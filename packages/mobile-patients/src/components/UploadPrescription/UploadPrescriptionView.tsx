@@ -16,10 +16,12 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { RNCamera as Camera } from 'react-native-camera';
 import {
   CameraClickButton,
-  PhrGalleryIcon,
   PreviousPrescriptionIcon,
   GalleryIconWhite,
   PendingIcon,
+  DeleteIconWhite,
+  WhiteArrowRight,
+  WhiteTickIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const { width, height } = Dimensions.get('window');
@@ -80,18 +82,54 @@ const styles = StyleSheet.create({
     height: 20,
     marginRight: 7,
   },
+  cameraActionContainer: {
+    flex: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    top: height / 2.1,
+  },
+  cameraActionButton: {
+    padding: 10,
+    borderRadius: 30,
+    backgroundColor: 'rgba(52, 52, 52, 0.6)',
+  },
+  deleteIcon: {
+    resizeMode: 'contain',
+    width: 35,
+    height: 35,
+  },
+  correctIcon: {
+    resizeMode: 'contain',
+    width: 40,
+    height: 40,
+  },
+  cameraDisableButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 40,
+    borderWidth: 13,
+    borderColor: '#C4C4C4',
+    marginTop: 10,
+  },
 });
 
 export interface UploadPrescriptionViewProps extends NavigationScreenProps {}
 
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
+  const [photoBase64, setPhotoBase64] = useState<string>('');
   const _camera = useRef(null);
 
   const clickPhoto = async () => {
-    console.log('in clickPhoto>>>>>>>>>> ');
-    const options = { quality: 0.5, base64: true };
+    const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
     const data = await _camera?.current?.takePictureAsync(options);
-    console.log(data);
+    setPhotoBase64(data?.base64);
+    // console.log(data);
+  };
+
+  const removeClickedPhoto = () => {
+    setPhotoBase64('');
+    _camera?.current?.resumePreview();
   };
 
   const renderCameraView = () => {
@@ -106,16 +144,38 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           buttonNegative: 'Cancel',
         }}
         captureAudio={false}
-      ></Camera>
+      >
+        {!!photoBase64 && (
+          <View style={styles.cameraActionContainer}>
+            <TouchableOpacity
+              style={styles.cameraActionButton}
+              onPress={() => removeClickedPhoto()}
+            >
+              <DeleteIconWhite style={styles.deleteIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cameraActionButton}
+              onPress={() => removeClickedPhoto()}
+            >
+              <WhiteTickIcon style={styles.correctIcon} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </Camera>
     );
   };
 
   const renderActionButtons = () => {
     return (
       <View style={styles.cameraActionsContainer}>
-        <TouchableOpacity activeOpacity={0.3} onPress={clickPhoto}>
-          <CameraClickButton style={styles.cameraClickIcon} />
-        </TouchableOpacity>
+        {!!photoBase64 ? (
+          <View style={styles.cameraDisableButton} />
+        ) : (
+          <TouchableOpacity activeOpacity={0.3} onPress={clickPhoto}>
+            <CameraClickButton style={styles.cameraClickIcon} />
+          </TouchableOpacity>
+        )}
+
         <View style={styles.flexRow}>
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity style={styles.iconContainer} activeOpacity={0.3} onPress={() => {}}>
@@ -129,7 +189,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
               <PreviousPrescriptionIcon style={styles.galleryIcon} />
             </TouchableOpacity>
             <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>SELECT FROM</Text>
-            <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>E-PRESCRIPTION</Text>
+            <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>E-PRESCRIPTIO</Text>
           </View>
         </View>
       </View>
@@ -153,6 +213,20 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     );
   };
 
+  const renderInstructions = () => {
+    return (
+      <View
+        style={{
+          padding: 20,
+        }}
+      >
+        <Text style={theme.viewStyles.text('R', 14, '#01475B', 1, 17)}>
+          Make sure the prescription you upload contains the following elements:
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -162,8 +236,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        {renderCameraView()}
+        {renderInstructions()}
         <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 20 }}>
+          {renderCameraView()}
           {renderActionButtons()}
           {renderMessage()}
         </ScrollView>
