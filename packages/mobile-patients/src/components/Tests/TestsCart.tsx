@@ -3139,9 +3139,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
     setPinCode!(pinCode);
     setLoading!(true);
-    // console.log('pinCode >>>>>', pinCode);
-    // const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
-    // console.log('selectedAddress >>>>', selectedAddress);
     try {
       const HomeCollectionChargesApi = await client.query<
         getDiagnosticsHCCharges,

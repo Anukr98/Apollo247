@@ -18,6 +18,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { CREATE_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
 import { InitiateNetBankingTxn } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface OtherBanksProps extends NavigationScreenProps {}
 
@@ -36,7 +37,7 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
       payment_order_id: paymentId,
       payment_mode: paymentMode,
       is_mobile_sdk: true,
-      return_url: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
+      return_url: AppConfig.Configuration.returnUrl,
     };
     return client.mutate({
       mutation: CREATE_ORDER,

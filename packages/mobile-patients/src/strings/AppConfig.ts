@@ -89,6 +89,8 @@ const appStaticVariables = {
   merchantId: 'apollo247',
   jusPayService: 'in.juspay.ec',
   returnUrl: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
+  jusPaybaseUrl: 'https://api.juspay.in/cardbins',
+  jusPayenvironment: 'sandbox',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
 };
 

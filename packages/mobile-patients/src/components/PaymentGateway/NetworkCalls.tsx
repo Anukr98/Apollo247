@@ -31,7 +31,7 @@ export const initiateSDK = (customerId: string, requestId: string) => {
       merchantId: AppConfig.Configuration.merchantId,
       clientId: AppConfig.Configuration.clientId,
       customerId: customerId, //Any unique refrences to current customer
-      environment: 'sandbox',
+      environment: AppConfig.Configuration.jusPayenvironment,
     },
   };
   //It is highly recommended to initiate SDK from the order summary page
@@ -149,7 +149,7 @@ export const InitiateWalletTxn = (
 };
 
 export const CardInfo = (sixdigits: string) => {
-  const url = `https://api.juspay.in/cardbins/${sixdigits}?merchant_id=${AppConfig.Configuration.merchantId}`;
+  const url = `${AppConfig.Configuration.jusPaybaseUrl}/${sixdigits}?merchant_id=${AppConfig.Configuration.merchantId}`;
   return Axios.get(url);
 };
 
