@@ -1671,3 +1671,7 @@ export const CameraClickButton: React.FC<IconProps> = (props) => (
 export const GalleryIconWhite: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/galleryIconWhite.png')} />
 );
+
+export const MomAndBaby: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_mom&baby.png')} />
+);

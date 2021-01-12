@@ -1,17 +1,7 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState, useRef } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Platform,
-  Dimensions,
-} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { RNCamera as Camera } from 'react-native-camera';
 import {
@@ -20,9 +10,13 @@ import {
   GalleryIconWhite,
   PendingIcon,
   DeleteIconWhite,
-  WhiteArrowRight,
   WhiteTickIcon,
+  DoctorIcon,
+  PrescriptionPad,
+  HealthLogo,
+  MomAndBaby,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -111,6 +105,21 @@ const styles = StyleSheet.create({
     borderWidth: 13,
     borderColor: '#C4C4C4',
     marginTop: 10,
+  },
+  rowSpaceAround: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  instructionsContainer: {
+    backgroundColor: 'rgba(0, 179, 142, 0.25)',
+    padding: 10,
+    borderRadius: 30,
+    marginVertical: 7,
+  },
+  instructionIcons: {
+    resizeMode: 'contain',
+    width: 40,
+    height: 40,
   },
 });
 
@@ -206,7 +215,12 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             all government regulations.
           </Text>
         </View>
-        <TouchableOpacity activeOpacity={0.5} onPress={() => {}}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.SamplePrescription);
+          }}
+        >
           <Text style={styles.samplePrescription}>VIEW SAMPLE PRESCRIPTION</Text>
         </TouchableOpacity>
       </View>
@@ -215,14 +229,40 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
 
   const renderInstructions = () => {
     return (
-      <View
-        style={{
-          padding: 20,
-        }}
-      >
+      <View style={{ padding: 20 }}>
         <Text style={theme.viewStyles.text('R', 14, '#01475B', 1, 17)}>
           Make sure the prescription you upload contains the following elements:
         </Text>
+        <View style={styles.rowSpaceAround}>
+          <View style={{ alignItems: 'center' }}>
+            <View style={styles.instructionsContainer}>
+              <DoctorIcon style={styles.instructionIcons} />
+            </View>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Doctor</Text>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Details</Text>
+          </View>
+          <View style={{ alignItems: 'center' }}>
+            <View style={styles.instructionsContainer}>
+              <PrescriptionPad style={styles.instructionIcons} />
+            </View>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Date of</Text>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Prescription</Text>
+          </View>
+          <View style={{ alignItems: 'center' }}>
+            <View style={styles.instructionsContainer}>
+              <MomAndBaby style={styles.instructionIcons} />
+            </View>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Patient</Text>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Details</Text>
+          </View>
+          <View style={{ alignItems: 'center' }}>
+            <View style={styles.instructionsContainer}>
+              <HealthLogo style={styles.instructionIcons} />
+            </View>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Medicine</Text>
+            <Text style={theme.viewStyles.text('M', 14, '#01475B', 1, 17)}>Details</Text>
+          </View>
+        </View>
       </View>
     );
   };
@@ -236,7 +276,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        {renderInstructions()}
+        {!!photoBase64 && renderInstructions()}
         <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 20 }}>
           {renderCameraView()}
           {renderActionButtons()}
