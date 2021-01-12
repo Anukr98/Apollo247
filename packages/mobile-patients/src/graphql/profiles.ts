@@ -3692,6 +3692,24 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
+  mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
+    saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      orderId
+      displayId
+    }
+  }
+`;
+
+export const CREATE_INTERNAL_ORDER = gql`
+  mutation createOrderInternal($order: OrderCreate) {
+    createOrderInternal(order: $order) {
+      payment_order_id
+      success
+    }
+  }
+`;
+
 export const SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER = gql`
   mutation DiagnosticBookHomeCollection($diagnosticOrderInput: DiagnosticBookHomeCollectionInput) {
     DiagnosticBookHomeCollection(diagnosticOrderInput: $diagnosticOrderInput) {
@@ -4448,6 +4466,44 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
   mutation addDiabeticQuestionnaire($addDiabeticQuestionnaireInput: AddDiabeticQuestionnaireInput) {
     addDiabeticQuestionnaire(addDiabeticQuestionnaireInput: $addDiabeticQuestionnaireInput) {
       success
+    }
+  }
+`;
+
+export const GET_BANK_OPTIONS = gql`
+  query getPaymentMethods {
+    getPaymentMethods {
+      name
+      featured_banks {
+        bank
+        method
+        image_url
+      }
+    }
+  }
+`;
+
+export const CREATE_ORDER = gql`
+  mutation createOrder($order_input: OrderInput) {
+    createOrder(order_input: $order_input) {
+      ... on OrderSuccessResponsePrepaid {
+        status_id
+        status
+        id
+        payment_links {
+          mobile
+          web
+        }
+        order_id
+        juspay {
+          client_auth_token_expiry
+          client_auth_token
+        }
+      }
+      ... on OrderSuccessResponseCOD {
+        order_id
+        success
+      }
     }
   }
 `;
