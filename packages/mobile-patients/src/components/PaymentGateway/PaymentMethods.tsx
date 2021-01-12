@@ -50,6 +50,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [loading, setloading] = useState<boolean>(true);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
   const [paymentMethods, setPaymentMethods] = useState<any>([]);
+  const [cardTypes, setCardTypes] = useState<any>([]);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { clearDiagnoticCartInfo } = useDiagnosticsCart();
@@ -115,6 +116,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const { getPaymentMethods } = data;
     console.log('getPaymentMethods >>', getPaymentMethods);
     setPaymentMethods(getPaymentMethods);
+    const types = getPaymentMethods.find((item: any) => item?.name == 'CARD');
+    setCardTypes(types?.featured_banks);
     setloading(false);
   };
 
@@ -183,8 +186,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   const navigatetoOrderStatus = (isCOD: boolean) => {
-    clearDiagnoticCartInfo?.();
     props.navigation.navigate(AppRoutes.OrderStatus, { orderDetails: orderDetails, isCOD: isCOD });
+    clearDiagnoticCartInfo?.();
   };
 
   const renderHeader = () => {
@@ -203,20 +206,22 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const showPaymentOptions = () => {
-    return paymentMethods.map((item: any, index: number) => {
-      switch (item?.name) {
-        case 'COD':
-          return renderPayByCash();
-        case 'CARD':
-          return renderCards();
-        case 'WALLET':
-          return renderWallets(item?.featured_banks || []);
-        case 'UPI':
-          return renderUPIPayments(item?.featured_banks || []);
-        case 'NB':
-          return renderNetBanking(item?.featured_banks || []);
-      }
-    });
+    return !!paymentMethods?.length
+      ? paymentMethods.map((item: any, index: number) => {
+          switch (item?.name) {
+            case 'COD':
+              return renderPayByCash();
+            case 'CARD':
+              return renderCards();
+            case 'WALLET':
+              return renderWallets(item?.featured_banks || []);
+            case 'UPI':
+              return renderUPIPayments(item?.featured_banks || []);
+            case 'NB':
+              return renderNetBanking(item?.featured_banks || []);
+          }
+        })
+      : renderPayByCash();
   };
 
   const renderWallets = (wallets: any) => {
@@ -230,7 +235,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderCards = () => {
-    return <Cards onPressPayNow={onPressCardPay} />;
+    return <Cards onPressPayNow={onPressCardPay} cardTypes={cardTypes} />;
   };
 
   const renderNetBanking = (topBanks: any) => {
