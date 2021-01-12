@@ -62,6 +62,8 @@ export type AddressSource =
 const mapHeight =
   screenHeight > 750
     ? screenHeight / 1.55
+    : screenHeight > 700
+    ? screenHeight / 1.52
     : screenHeight > 650
     ? Platform.OS == 'android'
       ? screenHeight / 1.7
@@ -116,7 +118,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const [locationResponse, setLocationResponse] = useState<any>();
   const [isMapDisabled, setMapDisabled] = useState<boolean>(false);
   const [isConfirmButtonDisabled, setConfirmButtonDisabled] = useState<boolean>(false);
-  const { setLoading: setLoadingContext } = useUIElements();
+  const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
   const { pharmacyLocation, diagnosticLocation } = useAppCommonData();
   const _map = useRef(null);
   const [region, setRegion] = useState({
@@ -221,6 +223,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     const pincode = findAddrComponents('postal_code', response);
     if (pincode == '') {
       setConfirmButtonDisabled(true);
+    } else {
+      isConfirmButtonDisabled && setConfirmButtonDisabled(false);
     }
   };
 
@@ -242,13 +246,13 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     } else {
       setLoadingContext!(true);
       //if no location permissions are given then prompt for the permission
-      doRequestAndAccessLocation()
+      doRequestAndAccessLocation(true)
         .then((response) => {
           //after getting permission, navigate to map screen
           console.log({ response });
           //undefined in the case, if user has denied the permission.
           if (response) {
-            const address = formatLocalAddress(response); //removed displayName
+            const address = formatLocalAddress(response);
             setAddressString(address);
 
             setLatitude(Number(response?.latitude));
@@ -266,59 +270,12 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           }
           //if user denied the permission
           else {
-            const checkPinCodeFrom =
-              source == 'Diagnostics Cart' ? diagnosticLocation : pharmacyLocation;
-            if (checkPinCodeFrom) {
-              //get pincode from pharam's pincode.
-              const zipcode = checkPinCodeFrom?.pincode;
-              //call the api to get lat,long + address from pincode.
-              getPlaceInfoByPincode(zipcode)
-                .then((data) => {
-                  console.log({ data });
-                  const addrComponents = data?.data?.results[0]?.address_components || [];
-                  const coordinates = data?.data?.results[0]?.geometry?.location || [];
-
-                  setRegion({
-                    latitude: coordinates?.lat,
-                    longitude: coordinates?.lng,
-                    latitudeDelta: latitudeDelta,
-                    longitudeDelta: longitudeDelta,
-                  });
-                  setLatitude(Number(coordinates?.lat));
-                  setLongitude(Number(coordinates?.lng));
-
-                  const { setMapAddress, formattedLocalAddress } = createAddressToShow(
-                    addrComponents,
-                    coordinates
-                  );
-
-                  setAddressString(setMapAddress);
-                  setLocationResponse(formattedLocalAddress);
-
-                  isConfirmButtonDisabled && setConfirmButtonDisabled(false);
-                  isMapDisabled && setMapDisabled(false);
-                })
-                .catch((error) => {
-                  console.log({ error });
-                  CommonBugFender('AddAddress_getPlaceInfoByPincode_error', error);
-                });
-            }
-            //if nothing is present in pharma homepage (greyed out map + confirm button disable)
-            else {
-              setConfirmButtonDisabled(true);
-              setMapDisabled(true);
-              setRegion({
-                latitude: 0,
-                longitude: 0,
-                latitudeDelta: latitudeDelta,
-                longitudeDelta: longitudeDelta,
-              });
-              setLatitude(Number(0));
-              setLongitude(Number(0));
-            }
+            setAddressFromHomepage();
           }
         })
         .catch((e) => {
+          // renderAlert(e);
+          setAddressFromHomepage();
           CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
         })
         .finally(() => {
@@ -326,6 +283,58 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         });
     }
   }, []);
+
+  const setAddressFromHomepage = () => {
+    const checkPinCodeFrom = source == 'Diagnostics Cart' ? diagnosticLocation : pharmacyLocation;
+    if (checkPinCodeFrom) {
+      //get pincode from pharam's pincode.
+      const zipcode = checkPinCodeFrom?.pincode;
+      //call the api to get lat,long + address from pincode.
+      getPlaceInfoByPincode(zipcode)
+        .then((data) => {
+          console.log({ data });
+          const addrComponents = data?.data?.results[0]?.address_components || [];
+          const coordinates = data?.data?.results[0]?.geometry?.location || [];
+
+          setRegion({
+            latitude: coordinates?.lat,
+            longitude: coordinates?.lng,
+            latitudeDelta: latitudeDelta,
+            longitudeDelta: longitudeDelta,
+          });
+          setLatitude(Number(coordinates?.lat));
+          setLongitude(Number(coordinates?.lng));
+
+          const { setMapAddress, formattedLocalAddress } = createAddressToShow(
+            addrComponents,
+            coordinates
+          );
+
+          setAddressString(setMapAddress);
+          setLocationResponse(formattedLocalAddress);
+
+          isConfirmButtonDisabled && setConfirmButtonDisabled(false);
+          isMapDisabled && setMapDisabled(false);
+        })
+        .catch((error) => {
+          console.log({ error });
+          CommonBugFender('AddAddress_getPlaceInfoByPincode_error', error);
+        });
+    }
+    //if nothing is present in pharma homepage (greyed out map + confirm button disable)
+    else {
+      setConfirmButtonDisabled(true);
+      setMapDisabled(true);
+      setRegion({
+        latitude: 0,
+        longitude: 0,
+        latitudeDelta: latitudeDelta,
+        longitudeDelta: longitudeDelta,
+      });
+      setLatitude(Number(0));
+      setLongitude(Number(0));
+    }
+  };
 
   const fetchLatLongFromGoogleApi = (address: string, addressDetailObject?: any) => {
     setLoadingContext!(true);
@@ -363,7 +372,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   };
 
   const showCurrentLocation = () => {
-    doRequestAndAccessLocationModified()
+    doRequestAndAccessLocationModified(false, true)
       .then((response) => {
         if (response) {
           const currentRegion = {
@@ -385,6 +394,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         }
       })
       .catch((e) => {
+        renderAlert(e);
         CommonBugFender('MapAddress_doRequestAndAccessLocationModified', e);
       });
   };
@@ -472,6 +482,15 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       source: source,
       DataAddress: addressDetails,
     });
+  };
+
+  const renderAlert = (message: string) => {
+    // showAphAlert!({
+    //   title: string.common.uhOh,
+    //   description: message,
+    // });
+    setConfirmButtonDisabled(true);
+    setMapDisabled(true);
   };
 
   const renderMap = () => {

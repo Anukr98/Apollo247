@@ -847,7 +847,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             {isPharma && (
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
-                composition={medicineDetails?.PharmaOverview?.[0]?.generic}
+                composition={medicineDetails?.composition}
                 consumeType={medicineDetails?.consume_type}
               />
             )}
@@ -875,7 +875,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                 similarProducts={substitutes}
                 navigation={props.navigation}
-                composition={medicineDetails?.PharmaOverview?.[0]?.generic}
+                composition={medicineDetails?.composition}
                 setShowSubstituteInfo={setShowSubstituteInfo}
               />
             )}

@@ -49,7 +49,6 @@ import {
 import {
   g,
   handleGraphQlError,
-  doRequestAndAccessLocationModified,
   formatAddress,
   getFormattedLocation,
   isValidPhoneNumber,
@@ -609,7 +608,10 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     let validationMessage = '';
     if (!userName || !/^[A-Za-z]/.test(userName)) {
       validationMessage = 'Enter Valid Name';
-    } else if (!phoneNumberIsValid || phoneNumber.length !== 10) {
+    } else if (
+      !phoneNumberIsValid ||
+      phoneNumber.length !== (phoneNumber.includes('+91') ? 13 : 10)
+    ) {
       validationMessage = 'Enter Valid Mobile Number';
     }
     if (validationMessage) {
@@ -1054,13 +1056,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           placeholder={'Enter Area Details'}
           inputStyle={styles.addressFieldsText}
         />
-        <Text style={[styles.addressLabel, { marginTop: '3%' }]}>LandMark</Text>
-        <TextInputComponent
-          value={landMark}
-          onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
-          placeholder={'Enter LandMark'}
-          inputStyle={styles.addressFieldsText}
-        />
         <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
           <View style={styles.pincodeView}>
             <Text style={styles.addressLabel}>*Pincode</Text>
@@ -1089,6 +1084,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             />
           </View>
         </View>
+        <Text style={[styles.addressLabel, { marginTop: '4%' }]}>LandMark</Text>
+        <TextInputComponent
+          value={landMark}
+          onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
+          placeholder={'Enter LandMark'}
+          inputStyle={styles.addressFieldsText}
+        />
+
         {/* state*/}
         <Text style={[styles.addressLabel, { marginTop: 12 }]}>*State</Text>
         <TextInputComponent

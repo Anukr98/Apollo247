@@ -412,7 +412,8 @@
       "unableToProvideSample": "Not in a condition to provide sample",
       "slotMistake": "Slot picked by mistake",
       "otherReasons": "Others (Please specify)"
-    }
+    },
+    "minorAgeText": "Lab tests cannot be booked for below 10 yrs"
   },
   "orders": {
     "urOrders": "MY ORDERS",

@@ -884,7 +884,8 @@ export const getlocationDataFromLatLang = async (latitude: number, longitude: nu
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void,
-  latLngOnly?: boolean
+  latLngOnly?: boolean,
+  modifyAddress?: boolean
 ) => {
   Geolocation.getCurrentPosition(
     (position) => {
@@ -901,7 +902,7 @@ const getlocationData = (
             console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
-            resolve(getFormattedLocation(addrComponents, { lat: latitude, lng: longitude }));
+              resolve(getFormattedLocation(addrComponents, { lat: latitude, lng: longitude },'',modifyAddress));
           }
         })
         .catch((e) => {
@@ -918,7 +919,7 @@ const getlocationData = (
   );
 };
 
-export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promise<LocationData> => {
+export const doRequestAndAccessLocationModified = (latLngOnly?: boolean,modifyAddress?:boolean): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -929,14 +930,14 @@ export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promis
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject, latLngOnly);
+                getlocationData(resolve, reject, latLngOnly,modifyAddress);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject, latLngOnly);
+            getlocationData(resolve, reject, latLngOnly,modifyAddress);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -968,7 +969,7 @@ export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promis
   });
 };
 
-export const doRequestAndAccessLocation = (): Promise<LocationData> => {
+export const doRequestAndAccessLocation = (isModifyAddress?: boolean): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -979,14 +980,14 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject);
+                getlocationData(resolve, reject, false, isModifyAddress);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject);
+            getlocationData(resolve, reject,false,isModifyAddress);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -1788,30 +1789,43 @@ export const getFormattedLocation = (
   addrComponents: PlacesApiResponse['results'][0]['address_components'],
   latLang: PlacesApiResponse['results'][0]['geometry']['location'],
   pincode?: string,
+  isModifyAddress?:boolean,
 ) => {
   const { lat, lng } = latLang || {};
-
-   const area= [
+  let area;
+  if(isModifyAddress){
+    area = [
+      findAddrComponents('sublocality_level_2', addrComponents),
+      findAddrComponents('sublocality_level_1', addrComponents),
+      findAddrComponents('locality', addrComponents),
+    ]
+      ?.filter((i) => i)
+  }
+  else{
+    [
       findAddrComponents('route', addrComponents),
       findAddrComponents('sublocality_level_2', addrComponents),
       findAddrComponents('sublocality_level_1', addrComponents),
-    ].filter((i) => i);
-
+    ]?.filter((i) => i);
+  }
   return {
     displayName:
-      (area || []).pop() ||
-      findAddrComponents('locality', addrComponents) ||
-      findAddrComponents('administrative_area_level_2', addrComponents),
+    isModifyAddress ? (findAddrComponents('locality', addrComponents) ||
+    findAddrComponents('administrative_area_level_2', addrComponents) )
+    : ((area || []).pop() ||
+    findAddrComponents('locality', addrComponents) ||
+    findAddrComponents('administrative_area_level_2', addrComponents)),
+     
     latitude: lat,
     longitude: lng,
-    area: area.join(', '),
+    area: area?.join(', '),
     city:
       findAddrComponents('locality', addrComponents) ||
       findAddrComponents('administrative_area_level_2', addrComponents),
     state: findAddrComponents('administrative_area_level_1', addrComponents),
     stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
-    pincode: pincode || findAddrComponents('postal_code', addrComponents),
+    pincode:  (pincode!="" && pincode) || findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };

@@ -60,6 +60,13 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
 
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
   const handleBack = () => {
     props.navigation.goBack();
     return true;
@@ -68,7 +75,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
   const onPressCurrentLocation = () => {
     //if no permission then request
     setshowSpinner!(true);
-    doRequestAndAccessLocation()
+    doRequestAndAccessLocation(true)
       .then((response) => {
         //after getting permission, navigate to map screen (response undefined in case of deny)
         if (response) {

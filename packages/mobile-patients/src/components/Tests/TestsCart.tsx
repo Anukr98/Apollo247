@@ -97,6 +97,7 @@ import {
   getPlaceInfoByPincode,
   searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { differenceInYears, parse } from 'date-fns';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -385,7 +386,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const sourceScreen = props.navigation.getParam('comingFrom');
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
-
+  const [isMinor, setIsMinor] = useState<boolean>(false);
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
@@ -442,7 +443,32 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     fetchAddresses();
+    checkPatientAge();
   }, [currentPatient]);
+
+  const getAge = (dob: string) => {
+    const now = new Date();
+    let age = parse(dob);
+    return differenceInYears(now, age);
+  };
+
+  const checkPatientAge = () => {
+    let age = getAge(currentPatient?.dateOfBirth);
+    if (age <= 10) {
+      renderAlert(string.diagnostics.minorAgeText);
+      setIsMinor(true);
+      setDeliveryAddressId!('');
+      setDiagnosticAreas!([]);
+      setAreaSelected!({});
+      setselectedTimeSlot(undefined);
+    } else {
+      isMinor && setIsMinor(false);
+    }
+  };
+
+  const handleBack = () => {
+    props.navigation.goBack();
+  };
 
   useEffect(() => {
     if (cartItemsWithId.length > 0) {
@@ -743,7 +769,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       description: message,
     });
   };
-
   const fetchAddresses = async () => {
     try {
       if (addresses.length) {
@@ -1000,7 +1025,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             </TouchableOpacity>
           </View>
         }
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
@@ -1442,7 +1467,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
-        pointerEvents={cartItems?.length > 0 ? 'auto' : 'none'}
+        pointerEvents={cartItems?.length > 0 && !isMinor ? 'auto' : 'none'}
       >
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
@@ -2677,9 +2702,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           visible={isModalVisible}
           onRequestClose={() => {
             setModalVisible(false);
+            onPressCross();
           }}
           onDismiss={() => {
             setModalVisible(false);
+            onPressCross();
           }}
         >
           <View
