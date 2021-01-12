@@ -2,6 +2,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
 import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { Platform } from 'react-native';
 
 export enum AppEnv {
   DEV = 'DEV',
@@ -14,7 +15,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -81,6 +82,9 @@ const appStaticVariables = {
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
+  clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
+  merchantId: 'apollo247',
+  jusPayService: 'in.juspay.ec',
 };
 
 const DEV_top_specialties = [

@@ -147,6 +147,10 @@ import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
+import {
+  preFetchSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 const { Vitals } = NativeModules;
 
@@ -519,6 +523,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     } catch (error) {}
   };
+
+  useEffect(() => {
+    preFetchSDK(currentPatient?.id);
+    createHyperServiceObject();
+  }, []);
 
   useEffect(() => {
     if (currentPatient?.id) {

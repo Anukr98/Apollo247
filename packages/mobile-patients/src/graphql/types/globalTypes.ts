@@ -392,6 +392,14 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_JUSPAY {
+  CARD = "CARD",
+  COD = "COD",
+  NB = "NB",
+  UPI = "UPI",
+  WALLET = "WALLET",
+}
+
 export enum PAYMENT_METHODS_REVERSE {
   COD = "COD",
   CREDIT_CARD = "CREDIT_CARD",
@@ -401,6 +409,11 @@ export enum PAYMENT_METHODS_REVERSE {
   PAYTM_POSTPAID = "PAYTM_POSTPAID",
   PAYTM_WALLET = "PAYTM_WALLET",
   UPI = "UPI",
+}
+
+export enum PAYMENT_MODE {
+  COD = "COD",
+  PREPAID = "PREPAID",
 }
 
 export enum PLAN {
@@ -1198,7 +1211,14 @@ export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
   return_url?: string | null;
-  customer_id?: string | null;
+  gateway_id?: number | null;
+}
+
+export interface OrderInput {
+  payment_order_id: string;
+  payment_mode: PAYMENT_MODE;
+  is_mobile_sdk?: boolean | null;
+  return_url?: string | null;
   gateway_id?: number | null;
 }
 

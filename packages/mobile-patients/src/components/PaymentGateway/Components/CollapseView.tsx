@@ -10,13 +10,16 @@ export interface CollapseViewProps {
 
 export const CollapseView: React.FC<CollapseViewProps> = (props) => {
   const { Heading, ChildComponent } = props;
-  const [dropDown, setdropDown] = useState<boolean>(false);
+  const [dropDown, setdropDown] = useState<boolean>(true);
 
   const renderHeader = () => {
     return (
-      <TouchableOpacity style={styles.header} onPress={() => setdropDown(!dropDown)}>
+      <TouchableOpacity
+        style={{ ...styles.header, borderBottomWidth: dropDown ? 0 : 1 }}
+        onPress={() => setdropDown(!dropDown)}
+      >
         <Text style={styles.heading}>{Heading}</Text>
-        <ArrowRight style={{ transform: [{ rotate: dropDown ? '90deg' : '270deg' }] }} />
+        <ArrowRight style={{ transform: [{ rotate: dropDown ? '270deg' : '90deg' }] }} />
       </TouchableOpacity>
     );
   };
@@ -38,8 +41,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 20,
     flexDirection: 'row',
-    marginBottom: 10,
+    paddingBottom: 10,
     marginTop: 20,
+    borderColor: 'rgba(0,0,0,0.1)',
   },
   heading: {
     ...theme.fonts.IBMPlexSansBold(13),

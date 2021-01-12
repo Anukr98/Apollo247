@@ -128,6 +128,8 @@ import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/
 import { PrescriptionOrderSummary } from '@aph/mobile-patients/src/components/Medicines/PrescriptionOrderSummary';
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
+import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/OtherBanks';
+import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -243,6 +245,8 @@ export enum AppRoutes {
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
   TestPaymentStatus = 'TestPaymentStatus',
   PaymentMethods = 'PaymentMethods',
+  OtherBanks = 'OtherBanks',
+  OrderStatus = 'OrderStatus',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -622,6 +626,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PaymentMethods]: {
     screen: PaymentMethods,
+  },
+  [AppRoutes.OtherBanks]: {
+    screen: OtherBanks,
+  },
+  [AppRoutes.OrderStatus]: {
+    screen: OrderStatus,
   },
 };
 

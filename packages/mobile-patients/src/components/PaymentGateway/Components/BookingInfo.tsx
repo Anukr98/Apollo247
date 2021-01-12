@@ -23,6 +23,7 @@ export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
     const subTxt = LOB == 'Diag' ? formatSelectedAddress(selectedAddress!).slice(0, 60) : '';
     return <Text style={styles.subTxt}>{subTxt}</Text>;
   };
+
   return (
     <View style={styles.card}>
       {renderHeading()}

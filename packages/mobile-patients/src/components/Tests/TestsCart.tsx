@@ -178,7 +178,8 @@ import {
   getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-
+import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
@@ -2588,8 +2589,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     postPaymentInitiatedWebengage();
     saveHomeCollectionBookingOrder(bookingOrderInfo)
       .then(async ({ data }) => {
-        console.log('data >>>>', data);
         const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
+        const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
         const orders: OrderVerticals = {
           diagnostics: [{ order_id: orderId, amount: grandTotal }],
         };
@@ -2597,59 +2598,27 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           orders: orders,
           total_amount: grandTotal,
         };
-        console.log('orderInput >>>>', orderInput);
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
-          amount: grandTotal,
-        });
         const response = await createOrderInternal(orderInput);
-        console.log('response >>>', response);
         if (response?.data?.createOrderInternal?.success) {
-          // setModalVisible(true);
-          // redirectToPaymentGateway(orderId, response?.data?.createOrderInternal?.payment_order_id!);
+          const isInitiated: boolean = await isSDKInitialised();
+          !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
+          const orderInfo = {
+            orderId: orderId,
+            displayId: displayId,
+            diagnosticDate: date!,
+            slotTime: slotTimings!,
+            cartSaving: cartSaving,
+            circleSaving: circleSaving,
+            cartHasAll: allItems != undefined ? true : false,
+            amount: grandTotal,
+          };
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: grandTotal,
+            orderId: orderId,
+            orderDetails: orderInfo,
           });
         }
-        // const { orderId, displayId, errorCode, errorMessage } =
-        //   g(data, 'DiagnosticBookHomeCollection')! || {};
-        // console.log({ errorMessage });
-        // if (errorCode || errorMessage) {
-        //   setLoading!(false);
-        //   setshowSpinner!(false);
-        //   let descriptionText = string.diagnostics.bookingOrderFailedMessage;
-        //   if (errorCode == -1 && errorMessage?.indexOf('duplicate') != -1) {
-        //     descriptionText = string.diagnostics.bookingOrderDuplicateFailedMessage;
-        //   }
-        //   // Order-failed
-        //   showAphAlert!({
-        //     unDismissable: true,
-        //     title: string.common.uhOh,
-        //     description: descriptionText,
-        //   });
-        //   fireOrderFailedEvent(orderId);
-        // } else {
-        //   // Order-Success
-        //   if (!isCashOnDelivery) {
-        //     // PG order, redirect to web page
-        //     redirectToPaymentGateway(orderId!, displayId!);
-        //     return;
-        //   }
-        //   // COD order, show popup here & clear cart info
-        //   postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
-        //   setModalVisible(true);
-        //   firePurchaseEvent(orderId!);
-        //   setOrderDetails({
-        //     orderId: orderId,
-        //     displayId: displayId,
-        //     diagnosticDate: date!,
-        //     slotTime: slotTimings!,
-        //     cartSaving: cartSaving,
-        //     circleSaving: circleSaving,
-        //     cartHasAll: allItems != undefined ? true : false,
-        //   });
-        //   clearDiagnoticCartInfo && clearDiagnoticCartInfo!();
-        // }
       })
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
