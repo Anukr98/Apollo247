@@ -34,6 +34,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '../NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 const { HyperSdkReact } = NativeModules;
 
@@ -88,7 +89,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           setloading(false);
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
           payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false);
-          payload?.payload?.status == ('PENDING_VBV' || 'AUTHORIZATION_FAILED') &&
+          (payload?.payload?.status == 'PENDING_VBV' ||
+            payload?.payload?.status == 'AUTHORIZATION_FAILED') &&
             showTxnFailurePopUP();
         }
         break;
@@ -121,7 +123,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       payment_order_id: paymentId,
       payment_mode: paymentMode,
       is_mobile_sdk: true,
-      return_url: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
+      return_url: AppConfig.Configuration.returnUrl,
     };
     return client.mutate({
       mutation: CREATE_ORDER,

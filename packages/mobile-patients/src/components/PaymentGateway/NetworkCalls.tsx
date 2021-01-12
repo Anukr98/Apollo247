@@ -94,7 +94,7 @@ export const InitiateNetBankingTxn = (
       action: 'nbTxn',
       orderId: paymentOrderId,
       paymentMethod: bankCode,
-      endUrls: ['https://aph.staging.web-patients.popcornapps.com/ordersuccess'],
+      endUrls: [AppConfig.Configuration.returnUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -114,7 +114,7 @@ export const InitiateCardTxn = (
     payload: {
       action: 'cardTxn',
       orderId: paymentOrderId,
-      endUrls: ['https://aph.staging.web-patients.popcornapps.com/ordersuccess'],
+      endUrls: [AppConfig.Configuration.returnUrl],
       paymentMethod: cardInfo?.cardType,
       cardNumber: cardInfo?.cardNumber,
       cardExpMonth: cardInfo?.ExpMonth,
@@ -140,7 +140,7 @@ export const InitiateWalletTxn = (
       action: 'walletTxn',
       orderId: paymentOrderId,
       paymentMethod: wallet,
-      endUrls: ['https://aph.staging.web-patients.popcornapps.com/ordersuccess'],
+      endUrls: [AppConfig.Configuration.returnUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -168,7 +168,7 @@ export const InitiateUPIIntentTxn = (
       orderId: paymentOrderId,
       paymentMethod: paymentMethod,
       sdkPresent: sdkPresent,
-      endUrls: ['https://aph.staging.web-patients.popcornapps.com/ordersuccess'],
+      endUrls: [AppConfig.Configuration.returnUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -193,7 +193,7 @@ export const InitiateVPATxn = (
       orderId: paymentOrderId,
       custVpa: VPA,
       upiSdkPresent: true,
-      endUrls: ['https://aph.staging.web-patients.popcornapps.com/ordersuccess'],
+      endUrls: [AppConfig.Configuration.returnUrl],
       displayNote: 'UPI Collect',
       clientAuthToken: clientAuthToken,
     },
