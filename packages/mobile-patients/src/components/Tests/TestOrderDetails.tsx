@@ -33,6 +33,7 @@ import {
 import {
   g,
   handleGraphQlError,
+  nameFormater,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -122,11 +123,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansSemiBold(16),
     letterSpacing: 0.0,
-    color: theme.colors.SHERPA_BLUE,
     flex: 1,
-    textTransform: 'capitalize',
   },
   lineSeparator: {
     height: 1,
@@ -210,6 +209,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
 
+  const negativeStatus = [
+    DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+    DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  ];
+
   const statusBeforeCollection = [
     DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
     DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
@@ -253,6 +257,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const sizeOfIndividualTestStatus = _.size(individualTestStatus);
 
   Object.entries(individualTestStatus).filter((item: any) => {
+    console.log({ item });
     if (item[0] == 'null') {
       if (sizeOfIndividualTestStatus == 1) {
         orderStatusList?.push(item[1]);
@@ -263,6 +268,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       orderStatusList.push(item[1]);
     }
   });
+
+  console.log({ orderStatusList });
 
   const showReportsGenerated =
     sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
@@ -331,6 +338,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     const isStatusDone =
       sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
       sequenceOfStatus.indexOf(order?.orderStatus);
+    const isNegativeCase = negativeStatus.includes(order?.orderStatus);
     return (
       <View style={styles.graphicalStatusViewStyle}>
         {isStatusDone ? (
@@ -339,14 +347,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           <OrderTrackerSmallIcon style={[styles.statusIconSmallStyle]} />
         )}
         {/**
-         * change the length of the status whenever change the sequenceOfStatus
+         * change the length of the status whenever change the sequenceOfStatus (minus is total no of status in app config start index is 0)
          */}
+
         <View
           style={[
             styles.verticalProgressLine,
             {
               backgroundColor:
-                index == sequenceOfStatus.length - 4
+                index == sequenceOfStatus.length - (isNegativeCase ? 11 : 8)
                   ? 'transparent'
                   : isStatusDone
                   ? theme.colors.SKY_BLUE
@@ -387,6 +396,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         },
         {
           orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+        },
+      ];
+    } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED) {
+      statusList = [
+        {
+          orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+        },
+        {
+          orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
         },
       ];
     } else {
@@ -431,8 +449,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 {renderGraphicalStatus(order, index)}
                 <View style={{ marginBottom: 8, flex: 1 }}>
                   <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
-                    <Text style={styles.statusTextStyle}>
-                      {mapStatusWithText(order.orderStatus)}
+                    <Text
+                      style={
+                        ([styles.statusTextStyle],
+                        {
+                          color: negativeStatus.includes(order?.orderStatus)
+                            ? theme.colors.INPUT_FAILURE_TEXT
+                            : theme.colors.SHERPA_BLUE,
+                        })
+                      }
+                    >
+                      {nameFormater(mapStatusWithText(order?.orderStatus), 'title')}
                     </Text>
                     {isStatusDone ? <View style={styles.lineSeparator} /> : null}
                     {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}

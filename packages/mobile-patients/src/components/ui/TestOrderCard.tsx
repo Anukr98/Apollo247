@@ -121,9 +121,7 @@ const styles = StyleSheet.create({
   },
   rightButtonOuterView: {
     flex: 0.7,
-
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
   },
   rightButtonText: {
     ...theme.viewStyles.yellowTextStyle,
@@ -179,6 +177,11 @@ const styles = StyleSheet.create({
     tintColor: '#B3C8CE',
   },
   testIconStyle: { marginTop: '2%', height: 24, width: 24, resizeMode: 'contain' },
+  failureText: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    color: theme.colors.INPUT_FAILURE_TEXT,
+    lineHeight: 24,
+  },
 });
 
 type OrderStatusType = DIAGNOSTIC_ORDER_STATUS;
@@ -351,6 +354,13 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           marginLeft: 0,
         };
         break;
+
+      case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
+        return {
+          textAlign: 'right',
+          marginLeft: 0,
+        };
+        break;
     }
   };
   const renderStatusAndTime = () => {
@@ -454,18 +464,32 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         ) : (
           <>
             {props.showRescheduleCancel ? (
-              <View style={[styles.rightButtonOuterView]}>
+              <View
+                style={[
+                  styles.rightButtonOuterView,
+                  {
+                    justifyContent:
+                      props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL
+                        ? 'flex-end'
+                        : 'space-evenly',
+                  },
+                ]}
+              >
                 <TouchableOpacity activeOpacity={1} onPress={props.onPressCancel}>
                   <View style={{ flex: 0.4 }}>
                     <Text style={styles.rightButtonText}>CANCEL</Text>
                   </View>
                 </TouchableOpacity>
-                <View style={styles.separatorLine}></View>
-                <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
-                  <View style={{ flex: 0.5 }}>
-                    <Text style={styles.rightButtonText}>RESCHEDULE</Text>
-                  </View>
-                </TouchableOpacity>
+                {props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL ? null : (
+                  <>
+                    <View style={styles.separatorLine}></View>
+                    <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
+                      <View style={{ flex: 0.5 }}>
+                        <Text style={styles.rightButtonText}>RESCHEDULE</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </>
+                )}
                 <TouchableOpacity onPress={_changeDisclaimer}>
                   {showDisclaimer ? (
                     <Up style={styles.arrowIconStyle} />
@@ -476,17 +500,19 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
               </View>
             ) : (
               <>
+                {props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED && (
+                  <View
+                    style={{
+                      flex: props.isComingFrom == 'individualTest' ? 1 : 0.4,
+                      alignItems: 'flex-end',
+                    }}
+                  >
+                    <Text style={styles.failureText}>Payment Failed</Text>
+                  </View>
+                )}
                 {props.isCancelled ? (
                   <View style={{ flex: 0.4, alignItems: 'flex-end' }}>
-                    <Text
-                      style={{
-                        ...theme.fonts.IBMPlexSansBold(13),
-                        color: theme.colors.INPUT_FAILURE_TEXT,
-                        lineHeight: 24,
-                      }}
-                    >
-                      Test Cancelled
-                    </Text>
+                    <Text style={styles.failureText}>Test Cancelled</Text>
                   </View>
                 ) : null}
               </>

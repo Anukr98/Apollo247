@@ -147,6 +147,14 @@ export enum DOCTOR_ONLINE_STATUS {
   ONLINE = "ONLINE",
 }
 
+export enum DiagnosticsBookingSource {
+  MOBILE = "MOBILE",
+  OP_CALL_CENTER = "OP_CALL_CENTER",
+  OP_OMT_TEAM = "OP_OMT_TEAM",
+  OP_WHATSAPP = "OP_WHATSAPP",
+  WEB = "WEB",
+}
+
 export enum DiscountType {
   FLATPRICE = "FLATPRICE",
   PERCENT = "PERCENT",
@@ -449,6 +457,14 @@ export enum REFUND_STATUS {
   REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
   REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
   REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
+}
+
+export enum REFUND_STATUSES {
+  FAILURE = "FAILURE",
+  MANUAL_REVIEW = "MANUAL_REVIEW",
+  PENDING = "PENDING",
+  REFUND_REQUEST_NOT_SENT = "REFUND_REQUEST_NOT_SENT",
+  SUCCESS = "SUCCESS",
 }
 
 export enum REQUEST_ROLES {
@@ -1420,7 +1436,7 @@ export interface SaveBookHomeCollectionOrderInput {
   totalPrice: number;
   prescriptionUrl: string;
   diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: DiagnosticsBookingSource | null;
   deviceType?: DEVICETYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;

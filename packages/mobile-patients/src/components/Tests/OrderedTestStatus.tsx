@@ -6,6 +6,7 @@ import {
   GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS,
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_STATUS,
+  GET_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersList,
@@ -22,7 +23,10 @@ import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import _ from 'lodash';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  DIAGNOSTIC_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -39,7 +43,11 @@ import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCal
 import {
   getDiagnosticCancelledOrderDetails,
   getDiagnosticCancelledOrderDetailsVariables,
-} from '../../graphql/types/getDiagnosticCancelledOrderDetails';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticCancelledOrderDetails';
+import {
+  getOrderInternal,
+  getOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 
 export interface TestStatusObject {
@@ -145,8 +153,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const orderSelectedId = props.navigation.getParam('orderId');
   const orderSelected = props.navigation.getParam('selectedOrder');
   const [individualTestData, setIndividualTestData] = useState<any>([]);
+  const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
 
-  const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
 
   const [orders, setOrders] = useState<
@@ -171,6 +179,9 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     setLoading!(true);
     if (orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
       fetchCancelledOrderTest();
+      orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+        ? fetchRefundForOrder()
+        : null;
     } else {
       fetchOrderStatusForEachTest();
     }
@@ -222,7 +233,34 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         getStatusForAllTests(_testStatus);
       })
       .catch((e) => {
-        CommonBugFender('OrderedTestStatus_fetchTestStatus', e);
+        CommonBugFender('OrderedTestStatus_fetchCancelledOrderTest', e);
+        setLoading!(false);
+      });
+  };
+
+  const fetchRefundForOrder = async () => {
+    setRefundStatusArr(null);
+    setLoading!(true);
+    client
+      .query<getOrderInternal, getOrderInternalVariables>({
+        query: GET_INTERNAL_ORDER,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          order_id: orderSelected?.paymentOrderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const refundData = g(data, 'getOrderInternal', 'refunds');
+        console.log({ refundData });
+        if (refundData?.length! > 0) {
+          setRefundStatusArr(refundData);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
         setLoading!(false);
       });
   };
@@ -243,6 +281,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       if (res) {
         const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
         console.log({ data });
+        console.log({ itemIdObject });
         data?.map((test: any) => {
           //call getPackage
           objArray.push({
@@ -253,7 +292,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             showDateTime: date,
             itemId: test?.itemId,
             // currentStatus: orderSelected.maxStatus,
-            currentStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+            currentStatus:
+              orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
             packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
             packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
             itemName: test?.name,
@@ -278,9 +320,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const getStatusForAllTests = (
     data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList | any
   ) => {
-    const testStatusData = createObject(data);
-
-    // setIndividualTestData(testStatusData);
+    createObject(data);
   };
 
   const createObject = (
@@ -288,7 +328,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   ) => {
     const itemIdObject = _.groupBy(statusData, 'itemId');
     setStatusForTest(itemIdObject);
-
+    console.log({ itemIdObject });
     let objArray: TestStatusObject[] = [];
     const lengthOfItems = Object.keys(itemIdObject)?.length;
     Object.keys(itemIdObject).forEach(async (key) => {
@@ -337,8 +377,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         } else {
           const getSelectedObj =
             key != 'null' &&
-            orderSelected.diagnosticOrderLineItems.filter(
-              (item: any) => item.itemId.toString() == key
+            orderSelected?.diagnosticOrderLineItems?.filter(
+              (item: any) => item?.itemId?.toString() == key
             );
           let sortedSelectedObj: any;
           //when backend will be fixed use this logic.
@@ -512,7 +552,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const renderNoOrders = () => {
-    if (!loading && !error) {
+    if (!loading && !error && individualTestData?.length == 0) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}

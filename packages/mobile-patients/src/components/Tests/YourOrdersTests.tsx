@@ -236,6 +236,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
+  const statusForCancelReschedule = [
+    DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+    DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+    DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+  ];
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -793,7 +798,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const patientName = g(currentPatient, 'firstName');
 
     const showDateTime = order?.isRescheduled ? true : false;
-    const isCancelRescheduleValid = moment(getUTCDateTime).diff(moment(), 'minutes') > 120;
+    const isCancelRescheduleValid =
+      moment(getUTCDateTime).diff(moment(), 'minutes') > 120 &&
+      statusForCancelReschedule.includes(currentStatus);
     const showPreTesting = isCancelRescheduleValid && checkIfPreTestingExists(order);
     const showRescheduleOption = isCancelRescheduleValid && order?.rescheduleCount! <= 3;
     /**

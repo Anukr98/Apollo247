@@ -2037,6 +2037,9 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         rescheduleCount
         isRescheduled
         collectionCharges
+        paymentType
+        visitNo
+        paymentOrderId
         diagnosticOrderLineItems {
           id
           itemId
@@ -4506,4 +4509,25 @@ export const CREATE_ORDER = gql`
       }
     }
   }
+`;
+
+export const GET_INTERNAL_ORDER = gql`
+query getOrderInternal($order_id: String!) {
+  getOrderInternal(order_id: $order_id) {
+   id
+   txn_uuid
+   txn_id
+   status_id
+   payment_order_id
+   refunds{
+     status
+     unique_request_id
+     sent_to_gateway
+     initiated_by
+     created_at
+     updated_at
+     amount
+   }
+  }
+}
 `;
