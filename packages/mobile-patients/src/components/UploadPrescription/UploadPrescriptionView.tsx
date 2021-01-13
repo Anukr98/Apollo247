@@ -1,7 +1,16 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState, useRef } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+  Platform,
+  Alert,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { RNCamera as Camera } from 'react-native-camera';
 import {
@@ -17,6 +26,24 @@ import {
   MomAndBaby,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
+import {
+  storagePermissions,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import ImageResizer from 'react-native-image-resizer';
+import RNFetchBlob from 'rn-fetch-blob';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -128,6 +155,7 @@ export interface UploadPrescriptionViewProps extends NavigationScreenProps {}
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const _camera = useRef(null);
+  let actionSheetRef: ActionSheet;
 
   const clickPhoto = async () => {
     const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
@@ -187,7 +215,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
 
         <View style={styles.flexRow}>
           <View style={{ alignItems: 'center' }}>
-            <TouchableOpacity style={styles.iconContainer} activeOpacity={0.3} onPress={() => {}}>
+            <TouchableOpacity
+              style={styles.iconContainer}
+              activeOpacity={0.3}
+              onPress={() => {
+                actionSheetRef.show();
+              }}
+            >
               <GalleryIconWhite style={styles.galleryIcon} />
             </TouchableOpacity>
             <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>CHOOSE FROM</Text>
@@ -267,6 +301,82 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     );
   };
 
+  const options = [
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Photo Library</Text>,
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Upload Pdf</Text>,
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Cancel</Text>,
+  ];
+
+  const postUPrescriptionWEGEvent = (
+    source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
+      Source: source,
+      'Upload Source': 'Upload Flow',
+    };
+    postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
+  };
+
+  const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
+    return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
+      const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+      uri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+      let compressedImageUri = '';
+      if (!isPdf) {
+        // Image Quality 0-100
+        compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
+          .uri;
+        compressedImageUri =
+          Platform.OS === 'ios' ? compressedImageUri.replace('file://', '') : compressedImageUri;
+      }
+      return RNFetchBlob.fs.readFile(!isPdf ? compressedImageUri : uri, 'base64');
+    });
+  };
+
+  const onBrowseClicked = async () => {
+    const MAX_FILE_SIZE = 2000000; // 2MB
+    postUPrescriptionWEGEvent('Choose Gallery');
+    CommonLogEvent('UPLOAD_PRESCRIPTION_POPUP', 'Gallery opened');
+    const eventAttributes: WebEngageEvents['Upload Photo'] = {
+      Source: 'Gallery',
+    };
+    postWebEngageEvent('Upload Photo', eventAttributes);
+    try {
+      // setshowSpinner(true);
+      const documents = await DocumentPicker.pickMultiple({
+        type: [DocumentPicker.types.pdf],
+        copyTo: 'documentDirectory',
+      });
+      const isValidPdf = documents.find(({ name }) => name.toLowerCase().endsWith('.pdf'));
+      const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
+      if (!isValidPdf || !isValidSize) {
+        // setshowSpinner(false);
+        Alert.alert(
+          strings.common.uhOh,
+          !isValidPdf
+            ? `Invalid File Type. File type must be PDF.`
+            : `Invalid File Size. File size must be less than 2MB.`
+        );
+        return;
+      }
+      const base64Array = await Promise.all(getBase64(documents));
+      const base64FormattedArray = base64Array.map(
+        (base64, index) =>
+          ({
+            mime: documents[index].type,
+            data: base64,
+          } as ImageCropPickerResponse)
+      );
+      // props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
+      // setshowSpinner(false);
+    } catch (e) {
+      // setshowSpinner(false);
+      if (DocumentPicker.isCancel(e)) {
+        CommonBugFender('UploadPrescriprionView_onClickGallery', e);
+      }
+    }
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -281,6 +391,31 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           {renderCameraView()}
           {renderActionButtons()}
           {renderMessage()}
+          <ActionSheet
+            ref={(o: ActionSheet) => (actionSheetRef = o)}
+            title={''}
+            options={options}
+            cancelButtonIndex={2}
+            onPress={(index: number) => {
+              /* do something */
+              console.log('index', index);
+              if (index === 0) {
+                setTimeout(() => {
+                  // openGallery();
+                }, 100);
+              } else if (index === 1) {
+                setTimeout(() => {
+                  if (Platform.OS === 'android') {
+                    storagePermissions(() => {
+                      onBrowseClicked();
+                    });
+                  } else {
+                    onBrowseClicked();
+                  }
+                }, 100);
+              }
+            }}
+          />
         </ScrollView>
       </SafeAreaView>
     </View>
