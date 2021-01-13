@@ -166,10 +166,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {''} on your purchase.
           </Text>
         )}
-        {isDiagnosticCircleSubscription &&
-          orderCircleSaving > 0 &&
-          showCartSaving &&
-          couldBeSaved && <Spearator style={{ marginVertical: 10 }} />}
+        {((isDiagnosticCircleSubscription && orderCircleSaving > 0) ||
+          !!showCartSaving ||
+          couldBeSaved) && <Spearator style={{ marginVertical: 10 }} />}
         {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
           <>
             <View style={styles.circleSaving}>
@@ -183,7 +182,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             </View>
           </>
         )}
-        {showCartSaving! && (
+        {!!showCartSaving! && (
           <>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
               <Text style={styles.cartSavings}>Cart Saving</Text>
@@ -247,6 +246,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   name: {
     ...theme.fonts.IBMPlexSansSemiBold(24),

@@ -27,10 +27,6 @@ export const Cards: React.FC<CardsProps> = (props) => {
     CVV: CVV,
   };
 
-  useEffect(() => {
-    // fetchCardInfo();
-  }, [cardNumber]);
-
   const fetchCardInfo = async (text: any) => {
     const oldNumber = cardNumber.replace(/\-/g, '');
     const number = text.replace(/\-/g, '');
@@ -51,13 +47,12 @@ export const Cards: React.FC<CardsProps> = (props) => {
       .replace(',', '');
     const newlength = text.length;
     const oldLength = cardNumber.length;
-    fetchCardInfo(text);
     if ((newlength == 4 || newlength == 9 || newlength == 14) && oldLength < newlength) {
       setCardNumber(text + '-');
     } else {
       setCardNumber(text);
     }
-    console.log(cardbin);
+    fetchCardInfo(text);
   }
 
   function updateValidity(text: string) {
@@ -84,32 +79,20 @@ export const Cards: React.FC<CardsProps> = (props) => {
     );
   }
 
-  const InputComponent = (
-    value: string,
-    setValue: any,
-    keyboardType: any,
-    maxLength: number,
-    inputStyle?: any
-  ) => {
-    return (
-      <TextInputComponent
-        conatinerstyles={styles.conatinerstyles}
-        inputStyle={inputStyle ? inputStyle : styles.inputStyle}
-        value={value}
-        onChangeText={(text) => setValue(text)}
-        secureTextEntry={value == CVV ? true : false}
-        keyboardType={keyboardType}
-        maxLength={maxLength}
-        icon={value == cardNumber && renderCardIcon()}
-      />
-    );
-  };
   const cardNumberInput = () => {
     const inputStyle = { ...styles.inputStyle, borderBottomColor: isValid ? '#00B38E' : '#FF748E' };
     return (
       <View>
         <Text style={styles.cardNumberTxt}>Card number</Text>
-        {InputComponent(cardNumber, updateCard, 'numeric', 19, inputStyle)}
+        <TextInputComponent
+          conatinerstyles={styles.conatinerstyles}
+          inputStyle={inputStyle}
+          value={cardNumber}
+          onChangeText={(text) => updateCard(text)}
+          keyboardType={'numeric'}
+          maxLength={19}
+          icon={renderCardIcon()}
+        />
         {renderInvalidCardNumber()}
       </View>
     );
@@ -135,7 +118,14 @@ export const Cards: React.FC<CardsProps> = (props) => {
     return (
       <View style={{ marginTop: 6 }}>
         <Text style={styles.cardNumberTxt}>Full name</Text>
-        {InputComponent(name, setName, 'default', 50)}
+        <TextInputComponent
+          conatinerstyles={styles.conatinerstyles}
+          inputStyle={styles.inputStyle}
+          value={name}
+          onChangeText={(text) => setName(text)}
+          keyboardType={'default'}
+          maxLength={50}
+        />
       </View>
     );
   };
@@ -144,7 +134,14 @@ export const Cards: React.FC<CardsProps> = (props) => {
     return (
       <View style={{ marginTop: 20, flex: 0.45 }}>
         <Text style={styles.cardNumberTxt}>Valid through (MM/YY)</Text>
-        {InputComponent(validity, updateValidity, 'numeric', 5)}
+        <TextInputComponent
+          conatinerstyles={styles.conatinerstyles}
+          inputStyle={styles.inputStyle}
+          value={validity}
+          onChangeText={(text) => updateValidity(text)}
+          keyboardType={'numeric'}
+          maxLength={5}
+        />
       </View>
     );
   };
@@ -153,7 +150,15 @@ export const Cards: React.FC<CardsProps> = (props) => {
     return (
       <View style={{ marginTop: 20, flex: 0.3 }}>
         <Text style={styles.cardNumberTxt}>CVV</Text>
-        {InputComponent(CVV, setCVV, 'number-pad', 4, true)}
+        <TextInputComponent
+          conatinerstyles={styles.conatinerstyles}
+          inputStyle={styles.inputStyle}
+          value={CVV}
+          onChangeText={(text) => setCVV(text)}
+          keyboardType={'numeric'}
+          maxLength={4}
+          secureTextEntry={true}
+        />
       </View>
     );
   };
