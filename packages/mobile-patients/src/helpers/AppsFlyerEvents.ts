@@ -290,6 +290,7 @@ export interface AppsFlyerEvents {
     'coupon applied': boolean;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    'Circle Cashback amount': number;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -307,6 +308,7 @@ export interface AppsFlyerEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Circle discount': number;
   };
   [AppsFlyerEventName.PRODUCT_PAGE_VIEWED]: {
     source: ProductPageViewedSource;
@@ -447,6 +449,7 @@ export interface AppsFlyerEvents {
     af_currency: string;
     'consult id': string;
     'coupon applied': boolean;
+    'Circle discount': number;
   };
 
   [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {

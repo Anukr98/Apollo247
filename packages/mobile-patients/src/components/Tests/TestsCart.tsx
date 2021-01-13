@@ -611,26 +611,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string) => {
-    const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
-    const store = clinicId && clinics.find((item) => item.CentreCode == clinicId);
-    const shippingInformation = addr
-      ? formatAddress(addr)
-      : store
-      ? `${store.CentreName}\n${store.Locality},${store.City},${store.State}`
-      : '';
-
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
-      'Order ID': orderAutoId,
-      Pincode: parseInt(selectedAddr?.zipcode!),
-      'Patient UHID': g(currentPatient, 'id'),
-      'Total items in cart': cartItems.length,
-      'Order Amount': grandTotal,
-      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, eventAttributes);
-  };
-
   const setWebEngageEventForAreaSelection = (item: areaObject) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
       'Address Pincode': parseInt(selectedAddr?.zipcode!),
@@ -2610,11 +2590,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             cartHasAll: allItems != undefined ? true : false,
             amount: grandTotal,
           };
+          const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+          const store = clinicId && clinics.find((item) => item.CentreCode == clinicId);
+          const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+            'Order ID': orderId,
+            Pincode: parseInt(selectedAddr?.zipcode!),
+            'Patient UHID': g(currentPatient, 'id'),
+            'Total items in cart': cartItems.length,
+            'Order Amount': grandTotal,
+            'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+          };
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: grandTotal,
             orderId: orderId,
             orderDetails: orderInfo,
+            eventAttributes
           });
         }
       })

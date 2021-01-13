@@ -1,49 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  Dimensions,
-  BackHandler,
-  Modal,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Linking,
-} from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import {
-  ArrowRight,
-  CalendarShow,
-  CheckedIcon,
-  CircleLogo,
-  CouponIcon,
-  CrossYellow,
-  DropdownGreen,
-  OrderPlacedCheckedIcon,
-  RadioButtonIcon,
-  TestsIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo, OrderPlacedCheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import moment from 'moment';
-import { formatTestSlotWithBuffer } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
-  DiagnosticsCartItem,
-  useDiagnosticsCart,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+  formatTestSlotWithBuffer,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-
-const screenHeight = Dimensions.get('window').height;
-const { width: screenWidth } = Dimensions.get('window');
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
 export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const orderDetails = props.navigation.getParam('orderDetails');
+  const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const { currentPatient } = useAllCurrentPatients();
   const pickupDate = moment(orderDetails?.diagnosticDate!).format('DD MMM');
@@ -53,6 +30,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const orderCircleSaving = orderDetails?.circleSaving!;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const { circleSubscriptionId } = useShoppingCart();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const savings = isDiagnosticCircleSubscription
     ? Number(orderCartSaving) + Number(orderCircleSaving)
@@ -71,11 +49,20 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   useEffect(() => {
+    postwebEngageCheckoutCompletedEvent();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const postwebEngageCheckoutCompletedEvent = () => {
+    let attributes = {
+      ...eventAttributes,
+      'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
+  };
 
   const handleBack = () => {
     navigateToHome();
