@@ -55,7 +55,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { clearDiagnoticCartInfo } = useDiagnosticsCart();
   const client = useApolloClient();
-
+  const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -90,9 +90,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           setloading(false);
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
           payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false);
-          (payload?.payload?.status == 'PENDING_VBV' ||
-            payload?.payload?.status == 'AUTHORIZATION_FAILED') &&
-            showTxnFailurePopUP();
+          FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
         }
         break;
       default:
