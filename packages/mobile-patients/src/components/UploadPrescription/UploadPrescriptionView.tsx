@@ -44,6 +44,12 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 import ImageResizer from 'react-native-image-resizer';
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
+import {
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -152,8 +158,13 @@ const styles = StyleSheet.create({
 
 export interface UploadPrescriptionViewProps extends NavigationScreenProps {}
 
+const MAX_FILE_SIZE = 2000000; // 2MB
+
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
+  const { ePrescriptions, setEPrescriptions } = useShoppingCart();
   const [photoBase64, setPhotoBase64] = useState<string>('');
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState<boolean>(false);
   const _camera = useRef(null);
   let actionSheetRef: ActionSheet;
 
@@ -161,7 +172,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
     const data = await _camera?.current?.takePictureAsync(options);
     setPhotoBase64(data?.base64);
-    // console.log(data);
   };
 
   const removeClickedPhoto = () => {
@@ -228,7 +238,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>GALLERY</Text>
           </View>
           <View style={{ alignItems: 'center' }}>
-            <TouchableOpacity style={styles.iconContainer} activeOpacity={0.3} onPress={() => {}}>
+            <TouchableOpacity
+              style={styles.iconContainer}
+              activeOpacity={0.3}
+              onPress={() => {
+                setSelectPrescriptionVisible(true);
+              }}
+            >
               <PreviousPrescriptionIcon style={styles.galleryIcon} />
             </TouchableOpacity>
             <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>SELECT FROM</Text>
@@ -334,7 +350,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   };
 
   const onBrowseClicked = async () => {
-    const MAX_FILE_SIZE = 2000000; // 2MB
     postUPrescriptionWEGEvent('Choose Gallery');
     CommonLogEvent('UPLOAD_PRESCRIPTION_POPUP', 'Gallery opened');
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -342,7 +357,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     };
     postWebEngageEvent('Upload Photo', eventAttributes);
     try {
-      // setshowSpinner(true);
+      setShowSpinner(true);
       const documents = await DocumentPicker.pickMultiple({
         type: [DocumentPicker.types.pdf],
         copyTo: 'documentDirectory',
@@ -350,7 +365,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       const isValidPdf = documents.find(({ name }) => name.toLowerCase().endsWith('.pdf'));
       const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
       if (!isValidPdf || !isValidSize) {
-        // setshowSpinner(false);
+        setShowSpinner(false);
         Alert.alert(
           strings.common.uhOh,
           !isValidPdf
@@ -367,14 +382,86 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             data: base64,
           } as ImageCropPickerResponse)
       );
-      // props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
-      // setshowSpinner(false);
+      setShowSpinner(false);
     } catch (e) {
-      // setshowSpinner(false);
+      setShowSpinner(false);
       if (DocumentPicker.isCancel(e)) {
         CommonBugFender('UploadPrescriprionView_onClickGallery', e);
       }
     }
+  };
+
+  const openGallery = () => {
+    postUPrescriptionWEGEvent('Choose Gallery');
+    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
+
+    const eventAttributes: WebEngageEvents['Upload Photo'] = {
+      Source: 'Gallery',
+    };
+    postWebEngageEvent('Upload Photo', eventAttributes);
+
+    setShowSpinner(true);
+    ImagePicker.openPicker({
+      cropping: true,
+      hideBottomControls: true,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+      freeStyleCropEnabled: false,
+    })
+      .then((response) => {
+        const images = response as ImageCropPickerResponse[];
+        const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
+        setShowSpinner(false);
+        if (isGreaterThanSpecifiedSize) {
+          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 2MB.`);
+          return;
+        }
+        console.log('GALLERY IMAGE>>>>>>>>>>>>>>> ', JSON.stringify(formatResponse(images)));
+      })
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
+        //aphConsole.log({ e });
+        setShowSpinner(false);
+      });
+  };
+
+  const formatResponse = (response: ImageCropPickerResponse[]) => {
+    if (response.length == 0) return [];
+
+    return response.map((item) => {
+      const isPdf = item.mime == 'application/pdf';
+      const fileUri = item!.path || `folder/file.jpg`;
+      const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+      const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
+
+      return {
+        base64: item.data,
+        fileType: fileType,
+        title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
+      } as PhysicalPrescription;
+    });
+  };
+
+  const renderPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
+        onSubmit={(selectedEPres) => {
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
+          setEPrescriptions && setEPrescriptions([...selectedEPres]);
+        }}
+        selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
+        isVisible={isSelectPrescriptionVisible}
+      />
+    );
   };
 
   return (
@@ -391,17 +478,16 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           {renderCameraView()}
           {renderActionButtons()}
           {renderMessage()}
+          {isSelectPrescriptionVisible && renderPrescriptionModal()}
           <ActionSheet
             ref={(o: ActionSheet) => (actionSheetRef = o)}
             title={''}
             options={options}
             cancelButtonIndex={2}
             onPress={(index: number) => {
-              /* do something */
-              console.log('index', index);
               if (index === 0) {
                 setTimeout(() => {
-                  // openGallery();
+                  openGallery();
                 }, 100);
               } else if (index === 1) {
                 setTimeout(() => {
@@ -417,6 +503,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             }}
           />
         </ScrollView>
+        {showSpinner && <Spinner />}
       </SafeAreaView>
     </View>
   );
