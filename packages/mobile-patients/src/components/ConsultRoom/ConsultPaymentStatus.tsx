@@ -272,7 +272,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
     console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-    fireCirclePurchaseEvent(amountBreakup);
+    isCircleDoctor && amountBreakup?.slashed_price && fireCirclePurchaseEvent(amountBreakup);
   };
 
   const fireCirclePurchaseEvent = (amountBreakup: any) => {
