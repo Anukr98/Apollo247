@@ -3496,6 +3496,14 @@ export const GET_APPOINTMENT_DATA = gql`
           id
           blobName
           sentToPatient
+          medicinePrescription {
+            id
+            medicineName
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
         }
       }
     }
