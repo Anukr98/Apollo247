@@ -4507,3 +4507,13 @@ export const CREATE_ORDER = gql`
     }
   }
 `;
+
+export const PROCESS_DIAG_COD_ORDER = gql`
+  mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
+    processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
+      status
+      preBookingID
+      message
+    }
+  }
+`;

@@ -29,7 +29,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const { isDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
   const { circleSubscriptionId } = useShoppingCart();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const savings = isDiagnosticCircleSubscription
@@ -49,6 +49,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   useEffect(() => {
+    clearDiagnoticCartInfo?.();
     postwebEngageCheckoutCompletedEvent();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {

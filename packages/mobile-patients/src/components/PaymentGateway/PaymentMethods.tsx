@@ -29,13 +29,30 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
-import { GET_BANK_OPTIONS, CREATE_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_BANK_OPTIONS,
+  CREATE_ORDER,
+  PROCESS_DIAG_COD_ORDER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '../NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  processDiagnosticHCOrder,
+  processDiagnosticHCOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
+import {
+  ProcessDiagnosticHCOrderInput,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  OrderInput,
+  PAYMENT_MODE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  createOrder,
+  createOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrder';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {}
@@ -54,7 +71,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [cardTypes, setCardTypes] = useState<any>([]);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { clearDiagnoticCartInfo } = useDiagnosticsCart();
   const client = useApolloClient();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
@@ -120,27 +136,45 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     setloading(false);
   };
 
-  const createJusPayOrder = (paymentMode: 'PREPAID' | 'COD') => {
-    const orderInput = {
+  const createJusPayOrder = (paymentMode: PAYMENT_MODE) => {
+    const orderInput: OrderInput = {
       payment_order_id: paymentId,
       payment_mode: paymentMode,
       is_mobile_sdk: true,
       return_url: AppConfig.Configuration.returnUrl,
     };
-    return client.mutate({
+    return client.mutate<createOrder, createOrderVariables>({
       mutation: CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
     });
   };
 
+  const processCODOrder = () => {
+    const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
+      orderID: orderId,
+      paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
+      amount: amount,
+    };
+    return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
+      mutation: PROCESS_DIAG_COD_ORDER,
+      variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const getClientToken = async () => {
     setisTxnProcessing(true);
-    const response = await createJusPayOrder('PREPAID');
-    const { data } = response;
-    const { createOrder } = data;
-    const token = createOrder?.juspay?.client_auth_token;
-    return token;
+    try {
+      const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
+      const { data } = response;
+      const { createOrder } = data;
+      const token = createOrder?.juspay?.client_auth_token;
+      return token;
+    } catch (e) {
+      setisTxnProcessing(true);
+      showTxnFailurePopUP();
+    }
   };
 
   async function onPressBank(bankCode: string) {
@@ -176,16 +210,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   async function onPressPayByCash() {
     setisTxnProcessing(true);
-    const response = await createJusPayOrder('COD');
-    const { data } = response;
-    const { createOrder } = data;
-    setisTxnProcessing(false);
-    console.log('createOrder >>', createOrder);
-    data?.createOrder?.success && navigatetoOrderStatus(true);
+    try {
+      const response = await createJusPayOrder(PAYMENT_MODE.COD);
+      const { data } = response;
+      if (data?.createOrder?.success) {
+        const response = await processCODOrder();
+        const { data } = response;
+        data?.processDiagnosticHCOrder?.status
+          ? navigatetoOrderStatus(true)
+          : showTxnFailurePopUP();
+      } else {
+        showTxnFailurePopUP();
+      }
+    } catch (e) {
+      showTxnFailurePopUP();
+    }
   }
 
   const navigatetoOrderStatus = (isCOD: boolean) => {
-    clearDiagnoticCartInfo?.();
     props.navigation.navigate(AppRoutes.OrderStatus, {
       orderDetails: orderDetails,
       isCOD: isCOD,
@@ -262,6 +304,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const showTxnFailurePopUP = () => {
+    setisTxnProcessing(false);
     showAphAlert?.({
       removeTopIcon: true,
       children: <TxnFailed onPressRetry={() => hideAphAlert?.()} />,
