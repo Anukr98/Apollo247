@@ -107,6 +107,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const {
     cartItems,
+    cartTotal,
     pharmacyCircleAttributes,
     setDeliveryAddressId,
     addCartItem,
@@ -644,14 +645,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const renderBottomButton = () => {
-    const item = skuInCart?.[0];
-    const quantity = item?.quantity;
-    const finalPrice = item?.specialPrice
-      ? item?.price - item?.specialPrice
-        ? item?.specialPrice
-        : item?.price
-      : item?.price;
-    const total = finalPrice * quantity;
     return (
       <StickyBottomComponent style={styles.stickyBottomComponent}>
         <TouchableOpacity
@@ -662,7 +655,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           style={styles.bottomCta}
         >
           <Text style={styles.bottomCtaText}>
-            {`Proceed to Checkout (${quantity} items) ${string.common.Rs}${total}`}
+            {`Proceed to Checkout (${cartItems?.length} items) ${string.common.Rs}${cartTotal}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -1068,7 +1061,10 @@ const styles = StyleSheet.create({
   bottomCta: {
     ...theme.viewStyles.cardViewStyle,
     backgroundColor: '#FCB716',
+    paddingVertical: 5,
+    marginTop: 0,
     marginVertical: 10,
+    marginBottom: 15,
     width: '90%',
     justifyContent: 'center',
   },

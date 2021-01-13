@@ -92,6 +92,7 @@ const appStaticVariables = {
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   jusPayenvironment: 'sandbox',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
+  EXPRESS_MAXIMUM_HOURS: 6,
 };
 
 const DEV_top_specialties = [
