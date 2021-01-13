@@ -147,6 +147,14 @@ export enum DOCTOR_ONLINE_STATUS {
   ONLINE = "ONLINE",
 }
 
+export enum DiagnosticsBookingSource {
+  MOBILE = "MOBILE",
+  OP_CALL_CENTER = "OP_CALL_CENTER",
+  OP_OMT_TEAM = "OP_OMT_TEAM",
+  OP_WHATSAPP = "OP_WHATSAPP",
+  WEB = "WEB",
+}
+
 export enum DiscountType {
   FLATPRICE = "FLATPRICE",
   PERCENT = "PERCENT",
@@ -1420,7 +1428,7 @@ export interface SaveBookHomeCollectionOrderInput {
   totalPrice: number;
   prescriptionUrl: string;
   diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: DiagnosticsBookingSource | null;
   deviceType?: DEVICETYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
