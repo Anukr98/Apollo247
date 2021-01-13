@@ -62,6 +62,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const amount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
+  const eventAttributes = props.navigation.getParam('eventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -227,7 +228,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   const navigatetoOrderStatus = (isCOD: boolean) => {
-    props.navigation.navigate(AppRoutes.OrderStatus, { orderDetails: orderDetails, isCOD: isCOD });
+    props.navigation.navigate(AppRoutes.OrderStatus, {
+      orderDetails: orderDetails,
+      isCOD: isCOD,
+      eventAttributes,
+    });
   };
 
   const renderHeader = () => {

@@ -778,6 +778,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (eventName == WebEngageEventName.BUY_MEDICINES) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
     }
+    if (eventName == WebEngageEventName.BOOK_DOCTOR_APPOINTMENT) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
     postWebEngageEvent(eventName, eventAttributes);
   };
 

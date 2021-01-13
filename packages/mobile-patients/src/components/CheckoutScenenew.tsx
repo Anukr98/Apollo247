@@ -285,6 +285,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
         af_currency: 'INR',
+        'Circle Cashback amount': circleSubscriptionId ? Number(cartTotalCashback) : 0,
         ...pharmacyCircleAttributes!,
       };
       if (store) {
@@ -307,6 +308,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       af_currency: 'INR',
       'order id': orderId,
       'coupon applied': coupon ? true : false,
+      'Circle Cashback amount': circleSubscriptionId ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
     };
     return appsflyerEventAttributes;
