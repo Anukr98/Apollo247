@@ -171,6 +171,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   const clickPhoto = async () => {
     const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
     const data = await _camera?.current?.takePictureAsync(options);
+    console.log('data>>>>>>>>>>>>>>>>>> ', JSON.stringify(data));
     setPhotoBase64(data?.base64);
   };
 
@@ -202,7 +203,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.cameraActionButton}
-              onPress={() => removeClickedPhoto()}
+              onPress={() => {
+                // console.log('photoBase64 >>>>>>>>>>>>>>>> ', photoBase64.length);
+                // props.navigation.navigate(AppRoutes.UploadPrescription, {
+                //   phyPrescriptionsProp: photoBase64,
+                //   type: 'Camera',
+                // });
+              }}
             >
               <WhiteTickIcon style={styles.correctIcon} />
             </TouchableOpacity>
@@ -383,6 +390,10 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           } as ImageCropPickerResponse)
       );
       setShowSpinner(false);
+      props.navigation.navigate(AppRoutes.UploadPrescription, {
+        phyPrescriptionsProp: photoBase64,
+        type: 'Camera',
+      });
     } catch (e) {
       setShowSpinner(false);
       if (DocumentPicker.isCancel(e)) {
@@ -420,11 +431,16 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 2MB.`);
           return;
         }
-        console.log('GALLERY IMAGE>>>>>>>>>>>>>>> ', JSON.stringify(formatResponse(images)));
+        const uploadedImages = formatResponse(images);
+        console.log('GALLERY IMAGE>>>>>>>>>>>>>>> ', JSON.stringify(uploadedImages));
+        props.navigation.navigate(AppRoutes.UploadPrescription, {
+          phyPrescriptionsProp: uploadedImages,
+          type: 'Gallery',
+        });
       })
       .catch((e: Error) => {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
-        //aphConsole.log({ e });
+        console.log({ e });
         setShowSpinner(false);
       });
   };
@@ -433,13 +449,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     if (response.length == 0) return [];
 
     return response.map((item) => {
-      const isPdf = item.mime == 'application/pdf';
-      const fileUri = item!.path || `folder/file.jpg`;
+      const isPdf = item?.mime == 'application/pdf';
+      const fileUri = item?.path || `folder/file.jpg`;
       const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
       const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
 
       return {
-        base64: item.data,
+        base64: item?.data,
         fileType: fileType,
         title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
       } as PhysicalPrescription;
