@@ -24,6 +24,7 @@ import {
   PrescriptionPad,
   HealthLogo,
   MomAndBaby,
+  PhrCameraIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
@@ -50,6 +51,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import Permissions from 'react-native-permissions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -154,6 +156,36 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
+  permissionContainer: {
+    height: height / 1.7,
+    backgroundColor: '#000000',
+  },
+  permissionBox: {
+    width: width / 1.4,
+    backgroundColor: '#01475B',
+    alignSelf: 'center',
+    borderRadius: 10,
+    padding: 10,
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  cameraIcon: {
+    resizeMode: 'contain',
+    width: 22,
+    height: 22,
+    marginTop: 5,
+    marginRight: 5,
+  },
+  cameraText: {
+    ...theme.viewStyles.text('M', 17, '#FFFFFF', 1, 29),
+    paddingBottom: 5,
+  },
+  cameraSubText: {
+    ...theme.viewStyles.text('R', 14, '#FFFFFF', 1, 16),
+    textAlign: 'center',
+  },
 });
 
 export interface UploadPrescriptionViewProps extends NavigationScreenProps {}
@@ -165,19 +197,75 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState<boolean>(false);
+  const [imageClickData, setImageClickData] = useState<any>({});
+  const [isCameraAccessGranted, setIsCameraAccessGranted] = useState<boolean>(true);
   const _camera = useRef(null);
   let actionSheetRef: ActionSheet;
 
   const clickPhoto = async () => {
     const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
     const data = await _camera?.current?.takePictureAsync(options);
-    console.log('data>>>>>>>>>>>>>>>>>> ', JSON.stringify(data));
+    const clickedPhotoResponse = formatResponse([data], true);
+    setImageClickData(clickedPhotoResponse);
     setPhotoBase64(data?.base64);
   };
 
   const removeClickedPhoto = () => {
     setPhotoBase64('');
     _camera?.current?.resumePreview();
+  };
+
+  const renderPermissionContainer = () => (
+    <View style={styles.permissionContainer}>
+      <TouchableOpacity
+        style={{ marginTop: height / 4 }}
+        onPress={() => {
+          Permissions.request('camera')
+            .then((message) => {
+              _camera?.current?.refreshAuthorizationStatus();
+              if (message === 'authorized') {
+                setIsCameraAccessGranted(true);
+              } else if (message === 'denied' || message === 'restricted') {
+                setIsCameraAccessGranted(false);
+              }
+            })
+            .catch((e) => console.log(e, 'dsvunacimkl'));
+        }}
+      >
+        <View style={styles.permissionBox}>
+          <View style={styles.rowCenter}>
+            <PhrCameraIcon style={styles.cameraIcon} />
+            <Text style={styles.cameraText}>Allow Camera Access</Text>
+          </View>
+          <Text style={styles.cameraSubText}>
+            Allow Apollo 247 access to your camera to take photos of your prescription
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderCameraActions = () => {
+    return (
+      !!photoBase64 && (
+        <View style={styles.cameraActionContainer}>
+          <TouchableOpacity style={styles.cameraActionButton} onPress={() => removeClickedPhoto()}>
+            <DeleteIconWhite style={styles.deleteIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.cameraActionButton}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.UploadPrescription, {
+                phyPrescriptionsProp: imageClickData,
+                type: 'Camera',
+              });
+            }}
+          >
+            <WhiteTickIcon style={styles.correctIcon} />
+          </TouchableOpacity>
+        </View>
+      )
+    );
   };
 
   const renderCameraView = () => {
@@ -193,28 +281,14 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         }}
         captureAudio={false}
       >
-        {!!photoBase64 && (
-          <View style={styles.cameraActionContainer}>
-            <TouchableOpacity
-              style={styles.cameraActionButton}
-              onPress={() => removeClickedPhoto()}
-            >
-              <DeleteIconWhite style={styles.deleteIcon} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cameraActionButton}
-              onPress={() => {
-                // console.log('photoBase64 >>>>>>>>>>>>>>>> ', photoBase64.length);
-                // props.navigation.navigate(AppRoutes.UploadPrescription, {
-                //   phyPrescriptionsProp: photoBase64,
-                //   type: 'Camera',
-                // });
-              }}
-            >
-              <WhiteTickIcon style={styles.correctIcon} />
-            </TouchableOpacity>
-          </View>
-        )}
+        {({ camera, status, recordAudioPermissionStatus }) => {
+          console.log(status);
+          setIsCameraAccessGranted(status === 'READY');
+          if (status !== 'READY') {
+            renderPermissionContainer();
+          }
+          renderCameraActions();
+        }}
       </Camera>
     );
   };
@@ -225,7 +299,11 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         {!!photoBase64 ? (
           <View style={styles.cameraDisableButton} />
         ) : (
-          <TouchableOpacity activeOpacity={0.3} onPress={clickPhoto}>
+          <TouchableOpacity
+            disabled={!isCameraAccessGranted}
+            activeOpacity={0.3}
+            onPress={clickPhoto}
+          >
             <CameraClickButton style={styles.cameraClickIcon} />
           </TouchableOpacity>
         )}
@@ -234,6 +312,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity
               style={styles.iconContainer}
+              disabled={!isCameraAccessGranted}
               activeOpacity={0.3}
               onPress={() => {
                 actionSheetRef.show();
@@ -445,7 +524,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       });
   };
 
-  const formatResponse = (response: ImageCropPickerResponse[]) => {
+  const formatResponse = (response: ImageCropPickerResponse[], isCameraImage?: boolean) => {
     if (response.length == 0) return [];
 
     return response.map((item) => {
@@ -455,7 +534,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
 
       return {
-        base64: item?.data,
+        base64: !!isCameraImage ? item?.base64 : item?.data,
         fileType: fileType,
         title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
       } as PhysicalPrescription;
