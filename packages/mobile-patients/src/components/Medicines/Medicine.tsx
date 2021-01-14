@@ -16,7 +16,6 @@ import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/component
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
@@ -252,7 +251,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setBannerData,
     bannerData,
   } = useAppCommonData();
-  const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
@@ -283,6 +281,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPinCode,
     setCirclePlanValidity,
     pharmacyCircleAttributes,
+    setEPrescriptions,
+    setPhysicalPrescriptions,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -1046,6 +1046,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
+          setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',
@@ -1053,41 +1054,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         selectedEprescriptionIds={[]}
         isVisible={isSelectPrescriptionVisible}
-      />
-    );
-  };
-
-  const renderUploadPrescriprionPopup = () => {
-    return (
-      <UploadPrescriprionPopup
-        isVisible={ShowPopop}
-        disabledOption="NONE"
-        type="nonCartFlow"
-        heading={'Upload Prescription(s)'}
-        instructionHeading={'Instructions For Uploading Prescriptions'}
-        instructions={[
-          'Take clear picture of your entire prescription.',
-          'Doctor details & date of the prescription should be clearly visible.',
-          'Medicines will be dispensed as per prescription.',
-        ]}
-        optionTexts={{
-          camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE\nFROM GALLERY',
-          prescription: 'SELECT FROM\nE-PRESCRIPTION',
-        }}
-        onClickClose={() => setShowPopop(false)}
-        onResponse={(selectedType, response, type) => {
-          setShowPopop(false);
-          if (selectedType == 'CAMERA_AND_GALLERY') {
-            if (response.length == 0) return;
-            props.navigation.navigate(AppRoutes.UploadPrescription, {
-              phyPrescriptionsProp: response,
-              type,
-            });
-          } else {
-            setSelectPrescriptionVisible(true);
-          }
-        }}
       />
     );
   };
@@ -1183,7 +1149,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
               };
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
-              // setShowPopop(true);
+              setEPrescriptions && setEPrescriptions([]);
+              setPhysicalPrescriptions && setPhysicalPrescriptions([]);
               props.navigation.navigate(AppRoutes.UploadPrescriptionView);
             }}
             style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
@@ -2211,7 +2178,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
-      {ShowPopop && renderUploadPrescriprionPopup()}
       {showCirclePopup && renderCircleMembershipPopup()}
     </View>
   );

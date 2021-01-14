@@ -193,13 +193,18 @@ export interface UploadPrescriptionViewProps extends NavigationScreenProps {}
 const MAX_FILE_SIZE = 2000000; // 2MB
 
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
-  const { ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const {
+    ePrescriptions,
+    setEPrescriptions,
+    physicalPrescriptions,
+    setPhysicalPrescriptions,
+  } = useShoppingCart();
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState<boolean>(false);
   const [imageClickData, setImageClickData] = useState<any>({});
   const [isCameraAccessGranted, setIsCameraAccessGranted] = useState<boolean>(true);
-  const _camera = useRef(null);
+  let _camera = useRef(null);
   let actionSheetRef: ActionSheet;
 
   const clickPhoto = async () => {
@@ -255,6 +260,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           <TouchableOpacity
             style={styles.cameraActionButton}
             onPress={() => {
+              setPhysicalPrescriptions &&
+                setPhysicalPrescriptions([...physicalPrescriptions, ...imageClickData]);
+              removeClickedPhoto();
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 phyPrescriptionsProp: imageClickData,
                 type: 'Camera',
@@ -287,7 +295,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           if (status !== 'READY') {
             renderPermissionContainer();
           }
-          renderCameraActions();
+          return renderCameraActions();
         }}
       </Camera>
     );
@@ -334,7 +342,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
               <PreviousPrescriptionIcon style={styles.galleryIcon} />
             </TouchableOpacity>
             <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>SELECT FROM</Text>
-            <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>E-PRESCRIPTIO</Text>
+            <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>E-PRESCRIPTIONS</Text>
           </View>
         </View>
       </View>
@@ -354,6 +362,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() => {
+            _camera = useRef(null);
             props.navigation.navigate(AppRoutes.SamplePrescription);
           }}
         >
@@ -468,10 +477,20 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             data: base64,
           } as ImageCropPickerResponse)
       );
+      const documentData = base64Array.map(
+        (base64, index) =>
+          ({
+            title: documents[index].name,
+            fileType: documents[index].type,
+            base64: base64,
+          } as PhysicalPrescription)
+      );
       setShowSpinner(false);
+      setPhysicalPrescriptions &&
+        setPhysicalPrescriptions([...physicalPrescriptions, ...documentData]);
       props.navigation.navigate(AppRoutes.UploadPrescription, {
-        phyPrescriptionsProp: photoBase64,
-        type: 'Camera',
+        phyPrescriptionsProp: documentData,
+        type: 'Gallery',
       });
     } catch (e) {
       setShowSpinner(false);
@@ -512,6 +531,8 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         }
         const uploadedImages = formatResponse(images);
         console.log('GALLERY IMAGE>>>>>>>>>>>>>>> ', JSON.stringify(uploadedImages));
+        setPhysicalPrescriptions &&
+          setPhysicalPrescriptions([...physicalPrescriptions, ...uploadedImages]);
         props.navigation.navigate(AppRoutes.UploadPrescription, {
           phyPrescriptionsProp: uploadedImages,
           type: 'Gallery',
@@ -551,7 +572,11 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           if (selectedEPres.length == 0) {
             return;
           }
-          setEPrescriptions && setEPrescriptions([...selectedEPres]);
+          setEPrescriptions && setEPrescriptions([...ePrescriptions, ...selectedEPres]);
+          props.navigation.navigate(AppRoutes.UploadPrescription, {
+            ePrescriptionsProp: selectedEPres,
+            type: 'E-Prescription',
+          });
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={isSelectPrescriptionVisible}
