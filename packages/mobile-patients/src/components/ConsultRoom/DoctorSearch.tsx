@@ -1,6 +1,5 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   ArrowRight,
@@ -46,7 +45,6 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
-  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -91,6 +89,12 @@ import { SymptomTrackerCard } from '@aph/mobile-patients/src/components/ConsultR
 import { DefaultSearchComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DefaultSearchComponent';
 const { width } = Dimensions.get('window');
 import { getPatientAllAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { SearchResultCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/SearchResultCard';
+import {
+  searchProceduresAndSymptoms,
+  ProceduresAndSymptomsParams,
+  ProceduresAndSymptomsResult,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -317,6 +321,36 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     marginBottom: 6,
   },
+  lightGrayText: {
+    ...theme.viewStyles.text('M', 11, theme.colors.LIGHTISH_GRAY),
+    marginTop: 12,
+    lineHeight: 24,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  viewAllBtnTxt: {
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
+    marginRight: 20,
+  },
+  sectionHeader: {
+    marginBottom: 0,
+    paddingBottom: 5,
+    borderBottomWidth: 0.4,
+    borderBottomColor: theme.colors.LIGHT_BLUE,
+  },
+  specialityCard: {
+    marginHorizontal: 20,
+    marginVertical: 8,
+  },
+  specialityIcon: {
+    height: 40,
+    width: 40,
+    marginVertical: 16,
+    marginLeft: 16,
+  },
 });
 
 let timeout: NodeJS.Timeout;
@@ -354,6 +388,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
   const [consultedDoctors, setConsultedDoctors] = useState<any>([]);
+  const [showAllSearchedDoctorData, setShowAllSearchedDoctorData] = useState<boolean>(false);
+  const [showAllSearchedSymptomsData, setShowAllSearchedSymptomsData] = useState<boolean>(false);
+  const [showAllSearchedSymptoms, setShowAllSearchedSymptoms] = useState<boolean>(false);
+  const [showAllSearchedProcedures, setShowAllSearchedProcedures] = useState<boolean>(false);
+  const [procedures, setProcedures] = useState<ProceduresAndSymptomsResult[]>([]);
+  const [symptoms, setSymptoms] = useState<ProceduresAndSymptomsResult[]>([]);
+
   useEffect(() => {
     newUserPastSearch();
     if (!currentPatient) {
@@ -436,6 +477,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const fetchSearchData = (searchTextString: string = searchText) => {
     if (searchTextString.length > 2) {
+      fetchProceduresAndSymptoms(searchTextString);
       postSearchEvent(searchTextString);
       setisSearching(true);
       client
@@ -725,11 +767,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 : {}
             }
             value={searchText}
-            placeholder="Search doctors or specialities"
+            placeholder="Search doctors, specialities or symptoms"
             underlineColorAndroid="transparent"
             onChangeText={(value) => {
               if (isValidSearch(value)) {
                 setSearchText(value);
+                setShowAllSearchedDoctorData(false);
+                setShowAllSearchedSymptomsData(false);
+                setShowAllSearchedSymptoms(false);
+                setShowAllSearchedProcedures(false);
                 const search = _.debounce(fetchSearchData, 300);
                 setSearchQuery((prevSearch: any) => {
                   if (prevSearch.cancel) {
@@ -746,6 +792,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   setdisplaySpeialist(false);
                   setisSearching(false);
                   setIsSearchFocused(true);
+                  setProcedures([]);
+                  setSymptoms([]);
                 }
               }
             }}
@@ -786,6 +834,26 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         </View>
       </View>
     );
+  };
+
+  const fetchProceduresAndSymptoms = async (searchString: string) => {
+    const queryParams: ProceduresAndSymptomsParams = {
+      text: searchString,
+    };
+    try {
+      const res = await searchProceduresAndSymptoms(queryParams);
+      const result = res?.data?.results;
+      const procedures = result?.filter(
+        (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'PROCEDURE'
+      );
+      const symptoms = result?.filter(
+        (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
+      );
+      setProcedures(procedures);
+      setSymptoms(symptoms);
+    } catch (error) {
+      CommonBugFender('DoctorSearch_fetchProceduresAndSymptoms', error);
+    }
   };
 
   const renderPastSearch = () => {
@@ -985,47 +1053,74 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (SpecialitiesList && SpecialitiesList.length > 0 && displaySpeialist) {
       return (
         <View>
-          <SectionHeaderComponent
-            sectionTitle={
-              searchText.length > 2
-                ? `Matching Specialities — ${searchSpecialities && searchSpecialities.length}`
-                : 'OTHER SPECIALTIES'
-            }
-            style={{
-              marginBottom: 0,
-              marginTop:
-                PastSearches.length > 0
-                  ? searchText.length > 0 && doctorsList && doctorsList.length === 0
-                    ? 24
-                    : 8
-                  : 24,
-              paddingBottom: 5,
-              borderBottomWidth: 0.4,
-              borderBottomColor: theme.colors.LIGHT_BLUE,
-            }}
-          />
-          <View style={{ flexDirection: 'row' }}>
-            <FlatList
-              bounces={false}
+          <View style={styles.row}>
+            <SectionHeaderComponent
+              sectionTitle={
+                searchText.length > 2
+                  ? `Matching Specialities - ${searchSpecialities && searchSpecialities.length}`
+                  : 'OTHER SPECIALTIES'
+              }
+              style={[
+                styles.sectionHeader,
+                {
+                  marginTop:
+                    PastSearches?.length > 0
+                      ? searchText?.length > 0 && doctorsList?.length === 0
+                        ? 24
+                        : 8
+                      : 24,
+                  borderBottomWidth: searchText.length > 2 ? 0 : 0.4,
+                },
+              ]}
+            />
+            {searchText.length > 2 && !showAllSearchedSymptomsData && SpecialitiesList?.length > 2 && (
+              <TouchableOpacity onPress={() => setShowAllSearchedSymptomsData(true)}>
+                <Text style={styles.viewAllBtnTxt}>View All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {searchText.length > 2 ? (
+            <SearchResultCard
               data={SpecialitiesList}
-              onEndReachedThreshold={0.5}
-              renderItem={({ item, index }) => {
-                return (
-                  <View>
-                    {index == 2 && renderTrackSymptoms()}
-                    {renderSpecialistRow(
-                      item,
-                      index,
-                      SpecialitiesList.length,
-                      searchText.length > 2
-                    )}
-                  </View>
+              showAllData={showAllSearchedSymptomsData}
+              componentName="speciality"
+              navigation={props.navigation}
+              postSymptomTrackEvent={postSymptomTrackEvent}
+              onPressCallback={(item: any) => {
+                postSpecialityEvent(item?.name, item?.id);
+                onClickSearch(
+                  item?.id,
+                  item?.name,
+                  searchText.length > 2 ? 'true' : 'false',
+                  item?.specialistPluralTerm || ''
                 );
               }}
-              keyExtractor={(_, index) => index.toString()}
-              numColumns={1}
             />
-          </View>
+          ) : (
+            <View style={{ flexDirection: 'row' }}>
+              <FlatList
+                bounces={false}
+                data={SpecialitiesList}
+                onEndReachedThreshold={0.5}
+                renderItem={({ item, index }) => {
+                  return (
+                    <View>
+                      {index == 2 && renderTrackSymptoms()}
+                      {renderSpecialistRow(
+                        item,
+                        index,
+                        SpecialitiesList.length,
+                        searchText.length > 2
+                      )}
+                    </View>
+                  );
+                }}
+                keyExtractor={(_, index) => index.toString()}
+                numColumns={1}
+              />
+            </View>
+          )}
         </View>
       );
     }
@@ -1040,6 +1135,95 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         }}
       />
     );
+  };
+
+  const renderSpecialistRow = (
+    rowData: getAllSpecialties_getAllSpecialties | null,
+    rowID: number,
+    length: number,
+    isSearchResult?: boolean
+  ) => {
+    if (rowData) {
+      let itemSymptom = rowData?.symptoms || '';
+      itemSymptom = itemSymptom?.charAt(0)?.toUpperCase() + itemSymptom?.slice(1); // capitalize first character
+      const symptom = itemSymptom?.replace(/,\s*([a-z])/g, (d, e) => ', ' + e?.toUpperCase()); // capitalize first character after comma (,)
+      return (
+        <Mutation<saveSearch> mutation={SAVE_SEARCH}>
+          {(mutate, { loading, data, error }) => (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                CommonLogEvent(AppRoutes.DoctorSearch, rowData?.name);
+                postSpecialityEvent(rowData?.name, rowData?.id);
+                onClickSearch(
+                  rowData?.id,
+                  rowData?.name,
+                  isSearchResult ? 'true' : 'false',
+                  rowData?.specialistPluralTerm || ''
+                );
+                const searchInput = {
+                  type: SEARCH_TYPE.SPECIALTY,
+                  typeId: rowData?.id,
+                  patient: currentPatient?.id || '',
+                };
+                if (isSearchResult) {
+                  try {
+                    mutate({
+                      variables: {
+                        saveSearchInput: searchInput,
+                      },
+                    });
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }
+              }}
+              style={[
+                styles.specialityCard,
+                {
+                  marginTop: rowID === 0 ? 16 : 6,
+                  marginBottom: length === rowID + 1 ? 16 : 6,
+                },
+              ]}
+              key={rowID}
+            >
+              <View style={styles.listSpecialistView}>
+                {rowData?.image?.length !== 0 ? (
+                  <Image
+                    source={{
+                      uri: rowData?.image!,
+                    }}
+                    resizeMode={'contain'}
+                    style={styles.specialityIcon}
+                  />
+                ) : null}
+                <View>
+                  <Text numberOfLines={1} style={styles.rowSpecialistStyles}>
+                    {rowData?.name}
+                  </Text>
+                  <View style={styles.descriptionCont}>
+                    <Text numberOfLines={2} style={styles.rowDescriptionSpecialistStyles}>
+                      {rowData?.shortDescription}
+                    </Text>
+                  </View>
+                  <Text numberOfLines={1} style={styles.rowUserFriendlySpecialistStyles}>
+                    {symptom}
+                  </Text>
+                </View>
+                <ArrowRight
+                  style={{
+                    height: 24,
+                    width: 24,
+                    marginVertical: 22,
+                  }}
+                  resizeMode={'contain'}
+                />
+              </View>
+            </TouchableOpacity>
+          )}
+        </Mutation>
+      );
+    } else return null;
   };
 
   const postSymptomTrackEvent = () => {
@@ -1142,102 +1326,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderSpecialistRow = (
-    rowData: getAllSpecialties_getAllSpecialties | null,
-    rowID: number,
-    length: number,
-    isSearchResult?: boolean
-  ) => {
-    if (rowData) {
-      let itemSymptom = rowData!.symptoms || '';
-      itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
-      const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
-      return (
-        <Mutation<saveSearch> mutation={SAVE_SEARCH}>
-          {(mutate, { loading, data, error }) => (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                CommonLogEvent(AppRoutes.DoctorSearch, rowData.name);
-                postSpecialityEvent(rowData.name, rowData.id);
-                onClickSearch(
-                  rowData.id,
-                  rowData.name,
-                  isSearchResult ? 'true' : 'false',
-                  rowData.specialistPluralTerm || ''
-                );
-                const searchInput = {
-                  type: SEARCH_TYPE.SPECIALTY,
-                  typeId: rowData.id,
-                  patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-                };
-                if (isSearchResult) {
-                  try {
-                    mutate({
-                      variables: {
-                        saveSearchInput: searchInput,
-                      },
-                    });
-                  } catch (error) {
-                    console.log(error);
-                  }
-                }
-              }}
-              style={{
-                marginHorizontal: 20,
-                marginVertical: 8,
-                marginTop: rowID === 0 ? 16 : 6,
-                marginBottom: length === rowID + 1 ? 16 : 6,
-                // height: 100,
-              }}
-              key={rowID}
-            >
-              <View style={styles.listSpecialistView}>
-                {rowData?.image?.length !== 0 ? (
-                  <Image
-                    source={{
-                      uri: rowData?.image!,
-                    }}
-                    resizeMode={'contain'}
-                    style={{
-                      height: 40,
-                      width: 40,
-                      marginVertical: 16,
-                      marginLeft: 16,
-                    }}
-                  />
-                ) : null}
-                <View>
-                  <Text numberOfLines={1} style={styles.rowSpecialistStyles}>
-                    {rowData.name}
-                  </Text>
-                  <View style={styles.descriptionCont}>
-                    <Text numberOfLines={2} style={styles.rowDescriptionSpecialistStyles}>
-                      {rowData.shortDescription}
-                    </Text>
-                  </View>
-                  <Text numberOfLines={1} style={styles.rowUserFriendlySpecialistStyles}>
-                    {symptom}
-                  </Text>
-                </View>
-                <ArrowRight
-                  style={{
-                    height: 24,
-                    width: 24,
-                    marginVertical: 22,
-                  }}
-                  resizeMode={'contain'}
-                />
-              </View>
-              {data ? console.log(data, 'savesearch data') : null}
-              {error ? console.log(error, 'savesearch error') : null}
-            </TouchableOpacity>
-          )}
-        </Mutation>
-      );
-    } else return null;
-  };
-
   const onClickSearch = (
     id: string,
     name: string,
@@ -1256,68 +1344,105 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
       return (
         <View>
-          <SectionHeaderComponent
-            sectionTitle={'Matching Doctors — ' + doctorsList.length}
-            style={{ marginBottom: 0 }}
-          />
-          <FlatList
-            keyExtractor={(_, index) => index.toString()}
-            contentContainerStyle={{
-              marginTop: 20,
-              marginBottom: 8,
-              paddingTop: Platform.OS == 'android' ? 10 : 1,
-            }}
-            bounces={false}
+          <View style={styles.row}>
+            <SectionHeaderComponent
+              sectionTitle={'Matching Doctors — ' + doctorsList.length}
+              style={{ marginBottom: 0 }}
+            />
+            {!showAllSearchedDoctorData && doctorsList?.length > 2 && (
+              <TouchableOpacity onPress={() => setShowAllSearchedDoctorData(true)}>
+                <Text style={[styles.viewAllBtnTxt, { marginTop: 24 }]}>View All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <SearchResultCard
             data={doctorsList}
-            onEndReachedThreshold={0.5}
-            renderItem={({ item, index }) => renderSearchDoctorResultsRow(index + 1, item)}
+            showAllData={showAllSearchedDoctorData}
+            componentName="doctor"
+            navigation={props.navigation}
+            onPressCallback={(item: any, index: number) => {
+              const itemNo = index + 1;
+              postDoctorClickWEGEvent({ ...item, itemNo }, 'Search');
+              CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
+              props.navigation.navigate(AppRoutes.DoctorDetails, {
+                doctorId: item?.id,
+                callSaveSearch: 'true',
+              });
+            }}
           />
         </View>
       );
     }
   };
 
-  const renderSearchDoctorResultsRow = (rowId: number, rowData: any) => {
-    if (rowData)
+  const renderProcedures = () => {
+    if (procedures?.length > 0) {
       return (
-        <Mutation<saveSearch> mutation={SAVE_SEARCH}>
-          {(mutate, { loading, data, error }) => (
-            <DoctorCard
-              saveSearch={true}
-              availableModes={rowData.consultMode}
-              rowId={rowId}
-              rowData={rowData}
-              navigation={props.navigation}
-              onPress={() => {
-                postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search');
-                CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
-                const searchInput = {
-                  type: SEARCH_TYPE.DOCTOR,
-                  typeId: rowData.id,
-                  patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-                };
-                try {
-                  mutate({
-                    variables: {
-                      saveSearchInput: searchInput,
-                    },
-                  });
-                } catch (error) {
-                  console.log(error);
-                }
-                props.navigation.navigate(AppRoutes.DoctorDetails, {
-                  doctorId: rowData.id,
-                  callSaveSearch: 'true',
-                });
-              }}
-              onPressConsultNowOrBookAppointment={(type) => {
-                postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search', type);
-              }}
-            ></DoctorCard>
-          )}
-        </Mutation>
+        <View>
+          <View style={styles.row}>
+            <SectionHeaderComponent
+              sectionTitle={'Matching Procedures — ' + procedures?.length}
+              style={{ marginBottom: 0 }}
+            />
+            {!showAllSearchedProcedures && procedures?.length > 2 && (
+              <TouchableOpacity onPress={() => setShowAllSearchedProcedures(true)}>
+                <Text style={[styles.viewAllBtnTxt, { marginTop: 24 }]}>View All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <SearchResultCard
+            data={procedures}
+            showAllData={showAllSearchedProcedures}
+            componentName="procedures"
+            navigation={props.navigation}
+            onPressCallback={(item: any) => {
+              onPressProcedure(item);
+            }}
+          />
+        </View>
       );
-    return null;
+    }
+  };
+
+  const renderSymptoms = () => {
+    if (symptoms?.length > 0) {
+      return (
+        <View>
+          <View style={styles.row}>
+            <SectionHeaderComponent
+              sectionTitle={'Matching Symptoms — ' + symptoms?.length}
+              style={{ marginBottom: 0 }}
+            />
+            {!showAllSearchedSymptoms && symptoms?.length > 2 && (
+              <TouchableOpacity onPress={() => setShowAllSearchedSymptoms(true)}>
+                <Text style={[styles.viewAllBtnTxt, { marginTop: 24 }]}>View All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <SearchResultCard
+            data={symptoms}
+            showAllData={showAllSearchedSymptoms}
+            componentName="symptoms"
+            navigation={props.navigation}
+            onPressCallback={(item: any) => {
+              onPressProcedure(item);
+            }}
+          />
+        </View>
+      );
+    }
+  };
+
+  const onPressProcedure = (item: any) => {
+    if (item?.speciality?.toUpperCase() === 'ABSENT') {
+      props.navigation.navigate(AppRoutes.SymptomTracker, {
+        symptomData: item,
+      });
+    } else {
+      props.navigation.navigate('DoctorSearchListing', {
+        specialities: [item?.speciality],
+      });
+    }
   };
 
   const selectUser = (selectedUser: any) => {
@@ -1478,7 +1603,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: isSearchFocused ? 'white' : '#f0f1ec' }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: isSearchFocused && searchText?.length < 3 ? 'white' : '#f0f1ec',
+        }}
+      >
         {doctorsList && renderSearch()}
         {!showSpinner ? (
           isSearching ? (
@@ -1489,11 +1619,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <>
               <ScrollView
                 style={{ flex: 1 }}
-                bounces={false}
                 keyboardDismissMode="on-drag"
                 onScrollBeginDrag={Keyboard.dismiss}
               >
-                {isSearchFocused ? (
+                {isSearchFocused && searchText?.length < 3 ? (
                   renderDefaultSearchScreen()
                 ) : (
                   <View>
@@ -1502,6 +1631,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     {renderTopSpecialities()}
                     {renderSpecialist()}
                     {renderDoctorSearches()}
+                    {renderProcedures()}
+                    {renderSymptoms()}
                   </View>
                 )}
               </ScrollView>
