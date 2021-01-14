@@ -1674,3 +1674,7 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
     resizeMode="contain"
   />
 );
+
+export const AddIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/AddIconBlue.png')} />
+);

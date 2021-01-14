@@ -47,7 +47,8 @@ export type AddressSource =
   | 'Upload Prescription'
   | 'Cart'
   | 'Diagnostics Cart'
-  | 'Medicine';
+  | 'Medicine'
+  | 'Tests';
 
 //check this for diff devices.
 //if header is not there...
