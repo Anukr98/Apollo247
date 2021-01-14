@@ -1,7 +1,7 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
-import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { DIAGNOSTIC_ORDER_STATUS, REFUND_STATUSES } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
 
 export enum AppEnv {
@@ -1023,6 +1023,18 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
 ];
+
+export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+]
+
+export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [
+  REFUND_STATUSES.FAILURE,
+  REFUND_STATUSES.PENDING,
+  REFUND_STATUSES.SUCCESS,
+]
 
 export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
 

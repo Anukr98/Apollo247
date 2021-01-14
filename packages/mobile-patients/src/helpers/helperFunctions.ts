@@ -20,6 +20,8 @@ import {
   MEDICINE_UNIT,
   SaveSearchInput,
   STATUS,
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -2301,3 +2303,56 @@ export const takeToHomePage = (props: any) => {
   );
 };
 export const isSmallDevice = width < 370;
+
+export const getTestOrderStatusText = (status: string) => {
+  let statusString = '';
+  switch (status) {
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
+      statusString = 'Order Cancelled';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
+      statusString = 'Order Failed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED:
+      statusString = 'Order Initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
+      statusString = 'Pickup Requested';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+      statusString = 'Pickup Confirmed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
+      statusString = 'Sample Collected';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
+      statusString = 'Sample Received in Lab';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
+      statusString = 'Report Generated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED:
+      statusString = 'Order Completed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING:
+      statusString = 'Payment Pending';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
+      statusString = 'Payment Failed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL:
+      statusString = 'Payment Successful';
+      break;
+    case REFUND_STATUSES.SUCCESS:
+        statusString = 'Refund Proccessed';
+        break;
+    case REFUND_STATUSES.PENDING:
+    case REFUND_STATUSES.FAILURE:
+        statusString = 'Refund Initiated';
+        break;
+    default:
+      statusString = (status || '')
+      statusString?.replace(/[_]/g, ' ');
+  }
+  return statusString;
+};

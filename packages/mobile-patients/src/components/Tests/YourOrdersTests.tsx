@@ -46,8 +46,8 @@ import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderC
 import { ReasonPopUp } from '@aph/mobile-patients/src/components/ui/ReasonPopUp';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  formatAddressWithLandmark,
   g,
+  getTestOrderStatusText,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
   handleGraphQlError,
@@ -420,10 +420,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
-  const mapStatusWithText = (val: string) => {
-    return val?.replace(/[_]/g, ' ');
-  };
-
   const checkIfPreTestingExists = (
     order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
   ) => {
@@ -514,6 +510,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const checkSlotSelection = () => {
+    const dt = moment(selectedOrder?.slotDateTimeInUTC).format('YYYY-MM-DD') || null;
+    const tm = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm') || null;
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
         query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
@@ -526,8 +524,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+
+        const updatedDiagnosticSlots =
+          moment(date).format('YYYY-MM-DD') == dt
+            ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
+            : diagnosticSlots;
+
         const slotsArray: TestSlot[] = [];
-        diagnosticSlots!.forEach((item) => {
+        updatedDiagnosticSlots!.forEach((item) => {
           if (isValidTestSlotWithArea(item!, date)) {
             slotsArray.push({
               employeeCode: 'apollo_employee_code',
@@ -689,7 +693,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           showAphAlert!({
             unDismissable: true,
             title: 'Uh oh! :(',
-            description: rescheduleResponse?.message,
+            description:
+              rescheduleResponse?.message == 'SLOT_ALREADY_BOOKED'
+                ? string.diagnostics.sameSlotError
+                : rescheduleResponse?.message,
           });
         }
       })
@@ -723,6 +730,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           slots={slots}
           zipCode={Number(pincode!)}
           slotInfo={selectedTimeSlot}
+          isReschdedule={true}
+          slotBooked={selectedOrder?.slotDateTimeInUTC}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
             rescheduleDate = date1;
             rescheduleSlotObject = {
@@ -776,13 +785,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderOrder = (order: DiagnosticsOrderList, index: number) => {
-    if (
-      order.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED ||
-      order?.diagnosticOrderLineItems?.length == 0
-    ) {
-      return;
+    if (order?.diagnosticOrderLineItems?.length == 0) {
+      return <View style={{ paddingTop: 4 }} />;
     }
-
     const getUTCDateTime = order?.slotDateTimeInUTC;
     const isHomeVisit = !!order.slotTimings;
     const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
@@ -828,14 +833,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         }
         ordersData={order?.diagnosticOrderLineItems!}
         dateTime={`Rescheduled For: ${dtTm}`}
-        statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
+        statusDesc={'Home Visit'}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         showViewReport={false}
         onPress={() => {
           _navigateToYourTestDetails(order);
         }}
         status={currentStatus}
-        statusText={mapStatusWithText(currentStatus)}
+        statusText={getTestOrderStatusText(currentStatus)}
         style={[
           { marginHorizontal: 20 },
           index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
