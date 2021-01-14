@@ -118,7 +118,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
             : diagnosticSlots;
 
         const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots!.forEach((item) => {
+        updatedDiagnosticSlots?.forEach((item) => {
           if (isValidTestSlotWithArea(item!, date)) {
             //all the hardcoded values are not returned by api.
             slotsArray.push({

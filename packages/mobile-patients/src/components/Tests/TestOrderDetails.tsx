@@ -523,7 +523,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
     const newList = statusList?.map(
       (obj) =>
-        orderStatusList?.[0].find(
+        orderStatusList?.[0]?.find(
           (o: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList) =>
             o?.orderStatus === obj?.orderStatus
         ) || obj
@@ -533,7 +533,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {newList.map((order, index, array) => {
+          {newList?.map((order, index, array) => {
             const isOrderFailedCase = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus);
             const isRefundCase = refundStatusArr?.length > 0;
             const compareStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(

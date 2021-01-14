@@ -531,7 +531,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             : diagnosticSlots;
 
         const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots!.forEach((item) => {
+        updatedDiagnosticSlots?.forEach((item) => {
           if (isValidTestSlotWithArea(item!, date)) {
             slotsArray.push({
               employeeCode: 'apollo_employee_code',
