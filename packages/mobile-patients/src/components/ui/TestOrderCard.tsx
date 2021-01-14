@@ -5,7 +5,10 @@ import {
   Up,
   Down,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
@@ -23,6 +26,14 @@ import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOr
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/DisclaimerSection';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  getTestOrderStatusText,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_JUSPAY_REFUND_STATUS,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 const width = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
@@ -121,9 +132,7 @@ const styles = StyleSheet.create({
   },
   rightButtonOuterView: {
     flex: 0.7,
-
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
   },
   rightButtonText: {
     ...theme.viewStyles.yellowTextStyle,
@@ -179,6 +188,11 @@ const styles = StyleSheet.create({
     tintColor: '#B3C8CE',
   },
   testIconStyle: { marginTop: '2%', height: 24, width: 24, resizeMode: 'contain' },
+  failureText: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    color: theme.colors.INPUT_FAILURE_TEXT,
+    lineHeight: 24,
+  },
 });
 
 type OrderStatusType = DIAGNOSTIC_ORDER_STATUS;
@@ -206,10 +220,10 @@ export interface TestOrderCardProps {
   showTestPreparation: boolean;
   onOptionPress: () => void;
   onPressViewReport?: () => void;
+  showRefund?: boolean;
+  refundStatus?: REFUND_STATUSES;
   // isReschedule?: boolean;
 }
-
-//check if reports are clickable or nit...
 
 export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
@@ -219,12 +233,12 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
+    props.status == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED ||
+    props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL ||
+    props.status == DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED ||
+    (props.showRefund && DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(props.refundStatus!));
 
-  const getProgressWidth = (
-    status: TestOrderCardProps['status'],
-    progresDirection: 'left' | 'right'
-  ) => {
+  const getProgressWidth = (status: string, progresDirection: 'left' | 'right') => {
     if (progresDirection == 'left') {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
         return 0; //0
@@ -233,6 +247,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
         return 3; //4
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
+        return 4;
+      } else if (status == REFUND_STATUSES.PENDING || status == REFUND_STATUSES.FAILURE) {
+        return 2;
+      } else if (status == REFUND_STATUSES.SUCCESS) {
         return 4;
       } else {
         return 5;
@@ -246,6 +264,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 3;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 2;
+      } else if (status == REFUND_STATUSES.PENDING || status == REFUND_STATUSES.FAILURE) {
+        return 2;
+      } else if (status == REFUND_STATUSES.SUCCESS) {
+        return 0;
       } else {
         return 0;
       }
@@ -257,17 +279,31 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     //   //Change once we get all the status list from API
     //   return <View style={styles.progressLineDone} />;
     // }
-
+    const statusToCheck = props.showRefund ? props.refundStatus! : props.status;
+    const statusTextToShow = props.showRefund ? props.refundStatus! : props.statusText;
     if (isOrderWithProgressIcons) {
       return (
         <View style={{ marginLeft: -20 }}>
           <View style={styles.progressLineContainer}>
             <View
-              style={[styles.progressLineBefore, { flex: getProgressWidth(props.status, 'left') }]}
+              style={[
+                styles.progressLineBefore,
+                { flex: getProgressWidth(statusToCheck!, 'left') },
+              ]}
             />
             <OrderPlacedIcon style={styles.statusIconStyle} />
             <View
-              style={[styles.progressLineAfter, { flex: getProgressWidth(props.status, 'right') }]}
+              style={[
+                styles.progressLineAfter,
+                {
+                  flex: getProgressWidth(statusToCheck!, 'right'),
+                  backgroundColor:
+                    statusToCheck == REFUND_STATUSES.PENDING ||
+                    statusToCheck == REFUND_STATUSES.FAILURE
+                      ? '#EF3A47'
+                      : '#00b38e',
+                },
+              ]}
             />
           </View>
           <Text
@@ -278,14 +314,14 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 color: theme.colors.SHERPA_BLUE,
                 textTransform: 'capitalize',
               },
-              getTextAlign(props.status),
+              getTextAlign(statusToCheck),
             ]}
           >
-            {props.statusText}
+            {getTestOrderStatusText(statusTextToShow!)}
           </Text>
         </View>
       );
-    } else if (props.isCancelled) {
+    } else if (props.isCancelled && !props.showRefund) {
       return (
         <View style={{ marginLeft: -20 }}>
           <View style={styles.progressLineContainer}>
@@ -319,7 +355,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     return <View style={styles.separator} />;
   };
 
-  const getTextAlign = (status: TestOrderCardProps['status']) => {
+  const getTextAlign = (status: string) => {
     switch (status) {
       case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
         return {
@@ -339,13 +375,38 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           marginLeft: 0,
         };
         break;
-      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB:
+      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
         return {
           textAlign: 'center',
           marginLeft: '20%',
         };
       case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
+        return {
+          textAlign: 'right',
+          marginLeft: 0,
+        };
+        break;
+
+      case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
+        return {
+          textAlign: 'right',
+          marginLeft: 0,
+        };
+        break;
+      case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
+        return {
+          textAlign: 'right',
+          marginLeft: 0,
+        };
+        break;
+      case REFUND_STATUSES.PENDING:
+      case REFUND_STATUSES.FAILURE:
+        return {
+          textAlign: 'center',
+          marginLeft: 0,
+        };
+        break;
+      case REFUND_STATUSES.SUCCESS:
         return {
           textAlign: 'right',
           marginLeft: 0,
@@ -363,6 +424,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     );
   };
 
+  const mapStatusWithText = (val: string) => {
+    return val?.replace(/[_]/g, ' ');
+  };
+
   const renderDescriptionAndId = () => {
     return (
       <View>
@@ -373,9 +438,6 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
               styles.statusStyle,
               props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
                 ? { ...theme.fonts.IBMPlexSansSemiBold(12) }
-                : {},
-              props.status == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
-                ? { color: theme.colors.INPUT_FAILURE_TEXT }
                 : {},
             ]}
           >
@@ -454,18 +516,32 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         ) : (
           <>
             {props.showRescheduleCancel ? (
-              <View style={[styles.rightButtonOuterView]}>
+              <View
+                style={[
+                  styles.rightButtonOuterView,
+                  {
+                    justifyContent:
+                      props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL
+                        ? 'flex-end'
+                        : 'space-evenly',
+                  },
+                ]}
+              >
                 <TouchableOpacity activeOpacity={1} onPress={props.onPressCancel}>
                   <View style={{ flex: 0.4 }}>
                     <Text style={styles.rightButtonText}>CANCEL</Text>
                   </View>
                 </TouchableOpacity>
-                <View style={styles.separatorLine}></View>
-                <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
-                  <View style={{ flex: 0.5 }}>
-                    <Text style={styles.rightButtonText}>RESCHEDULE</Text>
-                  </View>
-                </TouchableOpacity>
+                {props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL ? null : (
+                  <>
+                    <View style={styles.separatorLine}></View>
+                    <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
+                      <View style={{ flex: 0.5 }}>
+                        <Text style={styles.rightButtonText}>RESCHEDULE</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </>
+                )}
                 <TouchableOpacity onPress={_changeDisclaimer}>
                   {showDisclaimer ? (
                     <Up style={styles.arrowIconStyle} />
@@ -476,16 +552,15 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
               </View>
             ) : (
               <>
-                {props.isCancelled ? (
-                  <View style={{ flex: 0.4, alignItems: 'flex-end' }}>
-                    <Text
-                      style={{
-                        ...theme.fonts.IBMPlexSansBold(13),
-                        color: theme.colors.INPUT_FAILURE_TEXT,
-                        lineHeight: 24,
-                      }}
-                    >
-                      Test Cancelled
+                {DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.status!) ? (
+                  <View
+                    style={{
+                      flex: props.isComingFrom == 'individualTest' ? 1 : 0.4,
+                      alignItems: 'flex-end',
+                    }}
+                  >
+                    <Text style={styles.failureText}>
+                      {nameFormater(mapStatusWithText(props.status!), 'title')}
                     </Text>
                   </View>
                 ) : null}
@@ -666,13 +741,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     <TouchableOpacity
       activeOpacity={1}
       onPress={props.onPress}
-      style={[
-        styles.containerStyle,
-        props.style,
-        props.status == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
-          ? { backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }
-          : {},
-      ]}
+      style={[styles.containerStyle, props.style]}
     >
       {props.isTypeOfPackage ? renderPackageNameView() : null}
       <View style={{ flexDirection: 'row' }}>

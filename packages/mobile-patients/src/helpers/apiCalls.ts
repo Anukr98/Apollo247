@@ -812,7 +812,7 @@ export const getPlaceInfoByPlaceId = (
 export const getLatLongFromAddress = (
   address: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}&components=country:IN`;
   return Axios.get(url);
 };
 

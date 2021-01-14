@@ -705,14 +705,14 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 <View
                   style={{
                     flexDirection: 'row',
-                    justifyContent: isSmallDevice ? 'flex-start' : 'space-between',
+                    justifyContent: isSmallDevice ? 'flex-start' : 'flex-end',
                   }}
                 >
                   {props.specialPrice! && props.discount! > 0 && (
                     <Text
                       style={[
                         styles.percentageDiscountText,
-                        { marginLeft: props.isSpecialDiscount ? '20%' : 0 },
+                        { marginLeft: props.isSpecialDiscount ? '13%' : 0 },
                       ]}
                     >
                       {Number(props.discount!).toFixed(0)}%off

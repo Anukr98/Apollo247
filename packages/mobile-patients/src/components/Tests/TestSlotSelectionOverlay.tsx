@@ -76,6 +76,8 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   slotInfo?: TestSlot;
   slots: TestSlot[];
   areaId: string;
+  isReschdedule?: boolean;
+  slotBooked?: string;
   onSchedule: (date: Date, slotInfo: TestSlot) => void;
 }
 
@@ -90,6 +92,9 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const { zipCode, onSchedule, isVisible, ...attributes } = props;
   const aphOverlayProps: AphOverlayProps = { ...attributes, loading: spinner, isVisible };
   const uniqueSlots = getUniqueTestSlots(slots);
+  const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
+  const tm = moment(props.slotBooked!).format('hh:mm') || null;
+
   type UniqueSlotType = typeof uniqueSlots[0];
 
   const fetchSlots = () => {
@@ -107,9 +112,13 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+        const updatedDiagnosticSlots =
+          moment(date).format('YYYY-MM-DD') == dt && props.isReschdedule
+            ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
+            : diagnosticSlots;
 
         const slotsArray: TestSlot[] = [];
-        diagnosticSlots!.forEach((item) => {
+        updatedDiagnosticSlots?.forEach((item) => {
           if (isValidTestSlotWithArea(item!, date)) {
             //all the hardcoded values are not returned by api.
             slotsArray.push({

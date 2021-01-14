@@ -11,7 +11,11 @@ import {
   OrderTrackerSmallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
-import { SequenceForDiagnosticStatus } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  DIAGNOSTIC_JUSPAY_REFUND_STATUS,
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  SequenceForDiagnosticStatus,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
   GetPatientFeedbackVariables,
@@ -32,7 +36,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   g,
+  getTestOrderStatusText,
   handleGraphQlError,
+  nameFormater,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -46,16 +52,17 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   FEEDBACKTYPE,
+  REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
-
-const OTHER_REASON = string.Diagnostics_Feedback_Others;
+import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -122,11 +129,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansSemiBold(15),
     letterSpacing: 0.0,
-    color: theme.colors.SHERPA_BLUE,
     flex: 1,
-    textTransform: 'capitalize',
   },
   lineSeparator: {
     height: 1,
@@ -182,6 +187,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   selectedTest: any;
   individualTestStatus: any;
   selectedOrder: object;
+  refundStatusArr: any;
 }
 {
 }
@@ -193,6 +199,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const setOrders = props.navigation.getParam('setOrders');
   const selectedTest = props.navigation.getParam('selectedTest');
   const individualTestStatus = props.navigation.getParam('individualTestStatus');
+  const refundStatusArr = props.navigation.getParam('refundStatusArr');
+  const selectedOrder = props.navigation.getParam('selectedOrder');
+  const isPrepaid = selectedOrder?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -209,11 +218,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
-
-  const statusBeforeCollection = [
-    DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-    DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-  ];
 
   const sequenceOfStatus = SequenceForDiagnosticStatus;
 
@@ -250,9 +254,36 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
 
   var orderStatusList: any[] = [];
+  var refundArr: any[] = [];
   const sizeOfIndividualTestStatus = _.size(individualTestStatus);
 
+  const createRefundObject = () => {
+    refundArr = [];
+    var refundObj = {};
+    if (refundStatusArr?.[0]?.status == REFUND_STATUSES?.SUCCESS) {
+      refundObj = {
+        orderStatus: REFUND_STATUSES.PENDING,
+        statusDate: refundStatusArr?.[0]?.created_at,
+      };
+      refundArr.push(refundObj, {
+        orderStatus: refundStatusArr?.[0]?.status,
+        statusDate: refundStatusArr?.[0]?.updated_at,
+      });
+    } else {
+      refundArr.push({
+        orderStatus:
+          refundStatusArr?.[0]?.status == REFUND_STATUSES.FAILURE
+            ? REFUND_STATUSES.PENDING
+            : refundStatusArr?.[0]?.status,
+        statusDate: refundStatusArr?.[0]?.created_at,
+      });
+    }
+
+    return refundArr;
+  };
+
   Object.entries(individualTestStatus).filter((item: any) => {
+    console.log({ item });
     if (item[0] == 'null') {
       if (sizeOfIndividualTestStatus == 1) {
         orderStatusList?.push(item[1]);
@@ -263,6 +294,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       orderStatusList.push(item[1]);
     }
   });
+
+  if (refundStatusArr?.length > 0) {
+    const getObject = createRefundObject();
+    console.log({ getObject });
+    const isPresent = orderStatusList?.[0].find(
+      (item: any) => item?.orderStatus == getObject?.[0]?.orderStatus
+    );
+    if (!!isPresent && isPresent?.length > 0) {
+    } else {
+      getObject?.map((item) => orderStatusList?.[0]?.push(item));
+    }
+  }
+
+  console.log({ orderStatusList });
 
   const showReportsGenerated =
     sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
@@ -309,6 +354,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   };
 
+  const renderRefund = () => {
+    if (refundStatusArr?.length > 0) {
+      return <RefundCard refundArray={refundStatusArr} />;
+    }
+  };
+
   const getFormattedDate = (time: string) => {
     return moment(time).format('D MMM YYYY');
   };
@@ -317,20 +368,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return moment(time).format('hh:mm A');
   };
 
-  const mapStatusWithText = (val: string) => {
-    return val.replace(/[_]/g, ' ');
-  };
-
   const getFormattedDateTime = (time: string) => {
     let finalDateTime =
       moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
     return finalDateTime;
   };
 
-  const renderGraphicalStatus = (order: any, index: number) => {
-    const isStatusDone =
-      sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
-      sequenceOfStatus.indexOf(order?.orderStatus);
+  const renderGraphicalStatus = (
+    order: any,
+    index: number,
+    isStatusDone: boolean,
+    isFailureCase: boolean,
+    isRefundCase: boolean,
+    array: any
+  ) => {
     return (
       <View style={styles.graphicalStatusViewStyle}>
         {isStatusDone ? (
@@ -339,14 +390,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           <OrderTrackerSmallIcon style={[styles.statusIconSmallStyle]} />
         )}
         {/**
-         * change the length of the status whenever change the sequenceOfStatus
+         * change the length of the status whenever change the sequenceOfStatus (minus is total no of status in app config start index is 0)
          */}
+
         <View
           style={[
             styles.verticalProgressLine,
             {
               backgroundColor:
-                index == sequenceOfStatus.length - 4
+                // index == sequenceOfStatus.length - (isNegativeCase ? 11 : isRefundCase ? 10 : 8) // 10 : 7 (last)
+                index == array?.length - 1
                   ? 'transparent'
                   : isStatusDone
                   ? theme.colors.SKY_BLUE
@@ -378,19 +431,78 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    const currentStatus = selectedTest?.currentStatus;
+    const currentStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(selectedOrder?.orderStatus)
+      ? //  && isPrepaid
+        selectedOrder?.orderStatus
+      : selectedTest?.currentStatus;
+
     let statusList = [];
     if (currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
+      if (isPrepaid) {
+        statusList = [
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+          },
+          {
+            orderStatus: REFUND_STATUSES.PENDING,
+          },
+          {
+            orderStatus: REFUND_STATUSES.SUCCESS,
+          },
+        ];
+      } else {
+        statusList = [
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+          },
+        ];
+      }
+    } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) {
+      if (isPrepaid) {
+        statusList = [
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+          },
+          {
+            orderStatus: REFUND_STATUSES.PENDING,
+          },
+          {
+            orderStatus: REFUND_STATUSES.SUCCESS,
+          },
+        ];
+      } else {
+        statusList = [
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+          },
+        ];
+      }
+    } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED) {
       statusList = [
         {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
         },
         {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+          orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
         },
       ];
     } else {
       statusList = [
+        {
+          orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+        },
         {
           orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
         },
@@ -409,11 +521,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       ];
     }
 
-    const newList = statusList.map(
+    const newList = statusList?.map(
       (obj) =>
-        orderStatusList[0].find(
+        orderStatusList?.[0]?.find(
           (o: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList) =>
-            o.orderStatus === obj.orderStatus
+            o?.orderStatus === obj?.orderStatus
         ) || obj
     );
 
@@ -421,18 +533,50 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {newList.map((order, index, array) => {
-            const isStatusDone =
-              sequenceOfStatus.indexOf(currentStatus) >=
-              sequenceOfStatus.indexOf(order?.orderStatus);
+          {newList?.map((order, index, array) => {
+            const isOrderFailedCase = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus);
+            const isRefundCase = refundStatusArr?.length > 0;
+            const compareStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(
+              selectedOrder?.orderStatus
+            )
+              ? sequenceOfStatus.indexOf(selectedOrder?.orderStatus) >=
+                sequenceOfStatus.indexOf(order?.orderStatus)
+              : sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
+                sequenceOfStatus.indexOf(order?.orderStatus);
+
+            const isStatusCompletedForPrepaid =
+              isPrepaid && DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(order?.orderStatus)
+                ? order?.statusDate
+                  ? true
+                  : false
+                : compareStatus;
+            const isStatusDone = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(selectedOrder?.orderStatus)
+              ? isStatusCompletedForPrepaid
+              : compareStatus;
 
             return (
               <View style={{ flexDirection: 'row' }}>
-                {renderGraphicalStatus(order, index)}
+                {renderGraphicalStatus(
+                  order,
+                  index,
+                  isStatusDone,
+                  isOrderFailedCase,
+                  isRefundCase,
+                  array
+                )}
                 <View style={{ marginBottom: 8, flex: 1 }}>
                   <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
-                    <Text style={styles.statusTextStyle}>
-                      {mapStatusWithText(order.orderStatus)}
+                    <Text
+                      style={[
+                        styles.statusTextStyle,
+                        {
+                          color: DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)
+                            ? theme.colors.INPUT_FAILURE_TEXT
+                            : theme.colors.SHERPA_BLUE,
+                        },
+                      ]}
+                    >
+                      {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
                     </Text>
                     {isStatusDone ? <View style={styles.lineSeparator} /> : null}
                     {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
@@ -445,6 +589,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           {/**either reports generated :: rate your delivery will be shown or refund option would  bve shown */}
         </View>
         {renderBottomSection(order)}
+        {renderRefund()}
         {isReportGenerated ? (
           <View style={styles.statusLineSeperator}>
             <Text style={styles.reportsGeneratedText}>
