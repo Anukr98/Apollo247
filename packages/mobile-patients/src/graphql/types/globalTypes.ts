@@ -1404,6 +1404,13 @@ export interface PreviousOrdersSkus {
   toDate?: number | null;
 }
 
+export interface ProcessDiagnosticHCOrderInput {
+  orderID: string;
+  statusDate?: any | null;
+  paymentMode?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  amount: number;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;

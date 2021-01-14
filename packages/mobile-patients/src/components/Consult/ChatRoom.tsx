@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     width: 282,
     borderRadius: 10,
-    marginVertical: 2,
+    marginVertical: 8,
     alignSelf: 'flex-start',
   },
   iconCont: {
@@ -473,6 +473,7 @@ const styles = StyleSheet.create({
   buttonStyle: {
     marginVertical: 5,
     backgroundColor: '#fff',
+    ...theme.viewStyles.cardViewStyle,
   },
   timeStamp: {
     color: '#0087BA',
@@ -567,6 +568,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
+  const isMedicinePrescribed = useRef<any>();
+  const isTestPrescribed = useRef<any>();
+
   const {
     setDoctorJoinedChat,
     doctorJoinedChat,
@@ -1021,6 +1025,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    fetchAppointmentData();
     checkAutoTriggerMessagePostAppointmentTime();
     return function cleanup() {
       BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
@@ -3307,6 +3312,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const fetchAppointmentData = async () => {
+    try {
+      setLoading?.(true);
+      const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId: channel },
+        fetchPolicy: 'no-cache',
+      });
+      setLoading?.(false);
+      const appointmentCaseSheet =
+        response.data?.getAppointmentData?.appointmentsHistory?.[0]?.caseSheet;
+      isMedicinePrescribed.current = appointmentCaseSheet?.filter(
+        (item) => item?.medicinePrescription !== null
+      );
+      isTestPrescribed.current = appointmentCaseSheet?.filter(
+        (item) => item?.diagnosticPrescription !== null
+      );
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender(`${AppRoutes.ChatRoom}_fetchAppointmentData`, error);
+    }
+  };
+
   const addMessages = (message: Pubnub.MessageEvent) => {
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
@@ -3714,7 +3742,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <Button
                 title={'VIEW PRESCRIPTION'}
-                style={{ flex: 1, marginRight: 16, marginLeft: 16 }}
+                style={{ flex: 1, marginRight: 16, marginLeft: 16, marginTop: 5 }}
                 onPress={() => {
                   try {
                     postAppointmentWEGEvent(
@@ -3858,8 +3886,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const orderMedicine = (rowData: any, index: number) => {
-    console.log('rowdata', rowData);
-
     return (
       <>
         <View style={styles.MsgCont}>
@@ -3874,7 +3900,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 'Order Medicines in one click and get free home delivery in 2-4 hours. We also have home sample collections for diagnostic tests.'
               }
             </Text>
-            {caseSheet[0]?.medicinePrescription && (
+            {(caseSheet?.[0]?.medicinePrescription || isMedicinePrescribed.current?.length > 0) && (
               <Button
                 title={'ORDER MEDICINES'}
                 titleTextStyle={{ color: '#FC9916' }}
@@ -3882,7 +3908,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 onPress={() => onAddToCart()}
               />
             )}
-            {caseSheet[0]?.diagnosticPrescription && (
+            {(caseSheet?.[0]?.diagnosticPrescription || isTestPrescribed.current?.length > 0) && (
               <Button
                 title={'BOOK DIAGNOSTIC TESTS'}
                 titleTextStyle={{ color: '#FC9916' }}
@@ -7773,6 +7799,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={(ratingStatus, ratingOption) => {
+          fetchAppointmentData();
           postRatingGivenWEGEvent(ratingStatus!, ratingOption);
           setShowFeedback(false);
           showAphAlert!({

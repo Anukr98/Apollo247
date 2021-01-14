@@ -67,6 +67,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const patientId = props.navigation.getParam('patientId');
   const planSelected = props.navigation.getParam('planSelected');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const circleDiscountedPrice = props.navigation.getParam('circleDiscount');
 
   type bankOptions = {
     name: string;
@@ -180,6 +181,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_revenue: price,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      'Circle discount': circleDiscountedPrice,
     };
     return eventAttributes;
   };
@@ -194,6 +196,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_currency: 'INR',
       'consult id': id,
       'coupon applied': couponApplied,
+      'Circle discount': circleDiscountedPrice,
     };
     return eventAttributes;
   };
@@ -230,6 +233,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       Consult_ID: id,
       af_revenue: price,
       af_currency: 'INR',
+      'Circle discount': circleDiscountedPrice,
     };
     return eventAttributes;
   };

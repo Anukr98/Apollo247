@@ -3499,6 +3499,14 @@ export const GET_APPOINTMENT_DATA = gql`
           id
           blobName
           sentToPatient
+          medicinePrescription {
+            id
+            medicineName
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
         }
       }
     }
@@ -4530,4 +4538,13 @@ query getOrderInternal($order_id: String!) {
    }
   }
 }
+`;
+export const PROCESS_DIAG_COD_ORDER = gql`
+  mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
+    processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
+      status
+      preBookingID
+      message
+    }
+  }
 `;

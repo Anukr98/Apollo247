@@ -195,6 +195,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
+  const circleDiscount =
+    (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
   useEffect(() => {
     verifyCoupon();
@@ -607,6 +609,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         patientId: patientId,
         callSaveSearch: callSaveSearch,
         planSelected: circlePlanSelected,
+        circleDiscount,
       });
     }
   };
@@ -716,6 +719,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_currency: 'INR',
       'consult id': id,
       'coupon applied': coupon ? true : false,
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };
@@ -760,6 +764,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: amountToPay,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };

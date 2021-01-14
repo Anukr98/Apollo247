@@ -65,11 +65,25 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory_appoi
   orderId: string;
 }
 
+export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+}
+
+export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
+  testInstruction: string | null;
+}
+
 export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet {
   __typename: "CaseSheet";
   id: string | null;
   blobName: string | null;
   sentToPatient: boolean | null;
+  medicinePrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_medicinePrescription | null)[] | null;
+  diagnosticPrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_diagnosticPrescription | null)[] | null;
 }
 
 export interface getAppointmentData_getAppointmentData_appointmentsHistory {
