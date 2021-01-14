@@ -17,9 +17,9 @@ export const RefundCard: React.FC<RefundCardProps> = (props) => {
   };
 
   const dateToUse =
-    props.refundArray?.[0].status == REFUND_STATUSES.SUCCESS
-      ? props.refundArray?.[0].updated_at
-      : props.refundArray?.[0].created_at;
+    props.refundArray?.[0]?.status == REFUND_STATUSES.SUCCESS
+      ? props.refundArray?.[0]?.updated_at
+      : props.refundArray?.[0]?.created_at;
   const date = moment(dateToUse).format(`DD-MM-YYYY`);
   const time = getFormattedTime(dateToUse);
   const dtm = date + ', ' + time;
