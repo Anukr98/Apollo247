@@ -844,6 +844,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 setProductQuantity={setProductQuantity}
                 setShowAddedToCart={setShowAddedToCart}
                 isSellOnline={medicineDetails?.sell_online === 1}
+                isBanned={medicineDetails?.banned === 'Yes'}
               />
             </View>
             {isPharma && (
@@ -920,6 +921,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               packFormVariant={medicineDetails?.dose_form_variant}
               productQuantity={productQuantity}
               setShowAddedToCart={setShowAddedToCart}
+              isBanned={medicineDetails?.banned === 'Yes'}
             />
           )}
         {!loading &&

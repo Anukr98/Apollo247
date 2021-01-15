@@ -201,7 +201,8 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       {!!circleSubscriptionId && !!cashback && renderCareCashback()}
       {!!manufacturer && !isPharma && renderManufacturer()}
       {renderDeliverTo()}
-      {showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime()}
+      {!isBanned &&
+        (showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime())}
     </View>
   );
 };
