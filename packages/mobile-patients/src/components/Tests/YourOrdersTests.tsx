@@ -671,7 +671,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       diagnosticSlot?.employeeSlotId?.toString() ||
       '0';
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
-    const dateTimeToShow = formattedDate + ', ' + formatTime;
+    const dateTimeToShow = formattedDate + ', ' + formatTime.format('hh:mm A');
     console.log({ dateTimeInUTC });
     const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
       comment: commentForReschedule,
