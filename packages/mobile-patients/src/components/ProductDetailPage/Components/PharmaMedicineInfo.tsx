@@ -51,12 +51,12 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     const sideEffectsHtml = filterHtmlContent(medicineSideEffects);
     const text = sideEffectsHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
     const sideEffects = text.replace(/\$name/gi, name.toLocaleLowerCase());
-    return (
+    return !!sideEffects ? (
       <View>
         <Text style={styles.subHeading}>{`Side Effects of ${name.toLocaleLowerCase()}`}</Text>
         <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{sideEffects}</Text>
       </View>
-    );
+    ) : null;
   };
 
   const renderVegetarianIcon = () => {

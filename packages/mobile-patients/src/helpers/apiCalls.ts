@@ -43,6 +43,7 @@ export interface MedicineProduct {
   dose_form_variant?: string | null;
   pack_form?: string | null;
   pack_size?: string | null;
+  banned?: 'Yes' | 'No';
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
