@@ -31,9 +31,11 @@ export const Cards: React.FC<CardsProps> = (props) => {
     const oldNumber = cardNumber.replace(/\-/g, '');
     const number = text.replace(/\-/g, '');
     if (number.length == 6) {
-      const response = await CardInfo(number.slice(0, 6));
-      response && setCardbin(response?.data);
-      response?.data?.brand == '' && setisValid(false);
+      try {
+        const response = await CardInfo(number.slice(0, 6));
+        response && setCardbin(response?.data);
+        response?.data?.brand == '' && setisValid(false);
+      } catch (e) {}
     } else if (number.length < 6) {
       setCardbin({});
       setisValid(true);
@@ -219,7 +221,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(13),
+    ...theme.fonts.IBMPlexSansBold(14),
     lineHeight: 24,
     color: '#fff',
   },

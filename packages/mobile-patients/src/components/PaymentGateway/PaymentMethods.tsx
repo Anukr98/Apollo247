@@ -33,6 +33,7 @@ import {
   GET_BANK_OPTIONS,
   CREATE_ORDER,
   PROCESS_DIAG_COD_ORDER,
+  VERIFY_VPA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '../NavigatorContainer';
@@ -48,11 +49,13 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   OrderInput,
   PAYMENT_MODE,
+  VerifyVPA,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   createOrder,
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
+import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {}
@@ -69,6 +72,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
   const [paymentMethods, setPaymentMethods] = useState<any>([]);
   const [cardTypes, setCardTypes] = useState<any>([]);
+  const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -163,6 +167,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const verifyVPA = (VPA: string) => {
+    const verifyVPA: VerifyVPA = {
+      vpa: VPA,
+      merchant_id: AppConfig.Configuration.merchantId,
+    };
+    return client.mutate<verifyVPA, verifyVPAVariables>({
+      mutation: VERIFY_VPA,
+      variables: { verifyVPA: verifyVPA },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const getClientToken = async () => {
     setisTxnProcessing(true);
     try {
@@ -199,8 +215,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressVPAPay(VPA: string) {
-    const token = await getClientToken();
-    InitiateVPATxn(currentPatient?.id, token, paymentId, VPA);
+    try {
+      setisTxnProcessing(true);
+      const response = await verifyVPA(VPA);
+      console.log('response >>', response?.data?.verifyVPA);
+      if (response?.data?.verifyVPA?.status == 'VALID') {
+        const token = await getClientToken();
+        InitiateVPATxn(currentPatient?.id, token, paymentId, VPA);
+      } else {
+        setisTxnProcessing(false);
+        setisVPAvalid(false);
+      }
+    } catch (e) {
+      showTxnFailurePopUP();
+    }
   }
 
   async function onPressCardPay(cardInfo: any) {
@@ -275,7 +303,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const renderUPIPayments = (upiApps: any) => {
     return (
-      <UPIPayments upiApps={upiApps} onPressUPIApp={onPressUPIApp} onPressPay={onPressVPAPay} />
+      <UPIPayments
+        isVPAvalid={isVPAvalid}
+        upiApps={upiApps}
+        onPressUPIApp={onPressUPIApp}
+        onPressPay={onPressVPAPay}
+        setisVPAvalid={setisVPAvalid}
+      />
     );
   };
 
