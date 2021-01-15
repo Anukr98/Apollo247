@@ -228,7 +228,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         renderItem={renderItem}
         keyExtractor={(_, i) => `${i}`}
         bounces={false}
-        removeClippedSubviews={true}
         ItemSeparatorComponent={renderDivider}
         contentContainerStyle={styles.flatListContainer}
       />
