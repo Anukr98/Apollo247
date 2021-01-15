@@ -87,7 +87,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
         {!!dose_form_variant && !!pack_form && !!pack_size && (
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 0.7, 20)}>
-              {`${pack_form} of ${pack_size}${unit_of_measurement} ${dose_form_variant}`}
+              {`${pack_form} of ${pack_size}${unit_of_measurement || ''} ${dose_form_variant}`}
             </Text>
           </View>
         )}
