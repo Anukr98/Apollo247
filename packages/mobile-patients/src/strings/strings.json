@@ -417,7 +417,9 @@
     "sameSlotError" : "Cannot book same slot",
     "refundInitiateText": "Your refund for amount ₹{{refundAmount}} has been initiated. It takes 4-5 working days for processing.",
     "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
-    "collectionFromText" : "Sample collection address"
+    "collectionFromText" : "Sample collection address",
+    "orderCancelledSuccessText": "Your order has been cancelled successfully!",
+    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!"
   },
   "orders": {
     "urOrders": "MY ORDERS",

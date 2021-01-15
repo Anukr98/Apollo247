@@ -397,7 +397,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const cancelResponse = g(data, 'data', 'cancelDiagnosticsOrder', 'status');
         if (cancelResponse == 'true') {
           setLoading!(true);
-          refetchOrders();
+          setTimeout(() => refetchOrders(), 2000);
+          showAphAlert!({
+            unDismissable: true,
+            title: 'Hi! :)',
+            description: string.diagnostics.orderCancelledSuccessText,
+          });
         } else {
           setLoading!(false);
           showAphAlert!({
@@ -659,14 +664,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const onReschduleDoneSelected = () => {
     setLoading!(true);
-    const formattedDate = moment(diagnosticSlot?.date || rescheduleDate).format('YYYY-MM-DD');
-    const formatTime = diagnosticSlot?.slotStartTime || rescheduleSlotObject?.slotStartTime;
+    const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
+    const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
     const employeeSlot =
-      diagnosticSlot?.employeeSlotId?.toString() ||
       rescheduleSlotObject?.employeeSlotId?.toString() ||
+      diagnosticSlot?.employeeSlotId?.toString() ||
       '0';
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
-
+    const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
     console.log({ dateTimeInUTC });
     const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
       comment: commentForReschedule,
@@ -684,15 +689,23 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         console.log({ rescheduleResponse });
-        if (rescheduleResponse?.status == 'true' && rescheduleResponse.rescheduleCount <= 3) {
+        if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
           setTimeout(() => refetchOrders(), 2000);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
+          showAphAlert!({
+            unDismissable: true,
+            title: 'Hi! :)',
+            description: string.diagnostics.orderRescheduleSuccessText.replace(
+              '{{dateTime}}',
+              dateTimeToShow
+            ),
+          });
         } else {
           setLoading!(false);
           showAphAlert!({
             unDismissable: true,
-            title: 'Uh oh! :(',
+            title: string.common.uhOh,
             description:
               rescheduleResponse?.message == 'SLOT_ALREADY_BOOKED'
                 ? string.diagnostics.sameSlotError
@@ -703,14 +716,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .catch((error) => {
         console.log('error' + error);
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
-        handleGraphQlError(error);
         setLoading!(false);
-        if (error == 'RESCHEDULE_COUNT_EXCEEDED') {
+        if (
+          error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0 ||
+          error?.message?.indexOf('SLOT_ALREADY_BOOKED') > 0
+        ) {
           showAphAlert!({
             unDismissable: true,
-            title: 'Uh oh! :(',
-            description: string.diagnostics.reschduleCountExceed,
+            title: string.common.uhOh,
+            description:
+              error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0
+                ? string.diagnostics.sameSlotError
+                : string.diagnostics.reschduleCountExceed,
           });
+        } else {
+          handleGraphQlError(error);
         }
       });
   };
@@ -789,7 +809,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return <View style={{ paddingTop: 4 }} />;
     }
     const getUTCDateTime = order?.slotDateTimeInUTC;
-    const isHomeVisit = !!order.slotTimings;
     const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
       `D MMM YYYY`
     );
@@ -797,7 +816,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       getUTCDateTime != null
         ? moment(getUTCDateTime).format('hh:mm A')
         : getSlotStartTime(order?.slotTimings);
-    const dtTm = `${dt}${isHomeVisit ? `, ${tm}` : 'hh:mm A'}`;
+    const dtTm = `${dt}, ${tm}`;
 
     const currentStatus = order?.orderStatus;
     const patientName = g(currentPatient, 'firstName');
