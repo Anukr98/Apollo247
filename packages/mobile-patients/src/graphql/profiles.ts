@@ -4517,3 +4517,13 @@ export const PROCESS_DIAG_COD_ORDER = gql`
     }
   }
 `;
+
+export const VERIFY_VPA = gql`
+  mutation verifyVPA($verifyVPA: VerifyVPA) {
+    verifyVPA(verifyVPA: $verifyVPA) {
+      vpa
+      status
+      customer_name
+    }
+  }
+`;

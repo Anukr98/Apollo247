@@ -1532,6 +1532,11 @@ export interface UploadDocumentInput {
   category: PRISM_DOCUMENT_CATEGORY;
 }
 
+export interface VerifyVPA {
+  vpa: string;
+  merchant_id?: string | null;
+}
+
 export interface prescriptionPrismFileProperties {
   fileName?: string | null;
   mimeType?: string | null;

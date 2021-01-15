@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     height: 27,
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(13),
+    ...theme.fonts.IBMPlexSansBold(14),
     lineHeight: 24,
     color: '#FC9916',
   },

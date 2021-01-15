@@ -25,7 +25,6 @@ export const TxnFailed: React.FC<TxnFailedProps> = (props) => {
     return (
       <View style={{ alignItems: 'center' }}>
         <Button style={styles.button} title={'RETRY'} onPress={onPressRetry} />
-        <Text style={styles.tryOther}>TRY OTHER PAYMENT METHODS</Text>
       </View>
     );
   };
