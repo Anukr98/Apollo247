@@ -2838,9 +2838,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(
       moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
     );
-    if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
-      describeYourMedicalConditionAutomatedText(5000);
-    }
     const doctorConnectShortly = insertText.filter((obj: any) => {
       return obj.message === doctorWillConnectShortly;
     });
@@ -2897,6 +2894,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         doctorWillJoinAutomatedText();
       }
       describeYourMedicalConditionAutomatedText();
+    } else {
+      if (appointmentData.isJdQuestionsComplete) {
+        const result = insertText.filter((obj: any) => {
+          return obj.message === consultPatientStartedMsg;
+        });
+        const startConsultResult = insertText.filter((obj: any) => {
+          return obj.message === startConsultMsg;
+        });
+        const diffMin = Math.ceil(
+          moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
+          describeYourMedicalConditionAutomatedText(5000);
+        }
+      }
     }
   };
 
