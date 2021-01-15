@@ -293,7 +293,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           console.log(status);
           setIsCameraAccessGranted(status === 'READY');
           if (status !== 'READY') {
-            renderPermissionContainer();
+            return renderPermissionContainer();
           }
           return renderCameraActions();
         }}
