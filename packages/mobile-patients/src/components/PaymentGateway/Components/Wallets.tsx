@@ -20,12 +20,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
         }}
         onPress={() => onPressPayNow(item?.item?.method)}
       >
-        <Image
-          source={{ uri: item?.item?.image_url }}
-          resizeMode="contain"
-          style={styles.image}
-          resizeMethod="resize"
-        />
+        <Image source={{ uri: item?.item?.image_url }} resizeMode="contain" style={styles.image} />
         <Text style={styles.payNow}>PAY NOW</Text>
       </TouchableOpacity>
     );

@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,135,186,0.15)',
     padding: 10,
     borderRadius: 9,
-    margin: 20,
-    marginBottom: 5,
+    marginHorizontal: 20,
+    marginTop: 15,
   },
   heading: {
     ...theme.fonts.IBMPlexSansMedium(12),
