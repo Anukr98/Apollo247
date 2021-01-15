@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
-
+import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/Components/WalletIcon';
 export interface WalletsProps {
   onPressPayNow: (wallet: string) => void;
   wallets: any;
@@ -20,7 +20,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
         }}
         onPress={() => onPressPayNow(item?.item?.method)}
       >
-        <Image source={{ uri: item?.item?.image_url }} resizeMode="contain" style={styles.image} />
+        <WalletIcon imageUrl={item?.item?.image_url} />
         <Text style={styles.payNow}>PAY NOW</Text>
       </TouchableOpacity>
     );
@@ -49,10 +49,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     borderColor: 'rgba(0,0,0,0.1)',
     justifyContent: 'space-between',
-  },
-  image: {
-    width: 90,
-    height: 27,
   },
   payNow: {
     ...theme.fonts.IBMPlexSansBold(14),
