@@ -12,9 +12,11 @@ import {
   ManageProfileIcon,
   MyMembershipIcon,
   NeedHelpIcon,
+  Apollo247Icon,
   OneApollo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { ListCardAbout } from '@aph/mobile-patients/src/components/ui/ListCardAbout';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
@@ -510,7 +512,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
         />
         <ListCard
-          title={'OneApollo Membership'}
+          title={'OneApollo Memberships'}
           leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
@@ -533,6 +535,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           onPress={() => {
             props.navigation.navigate(AppRoutes.MobileHelp);
             fireProfileAccessedEvent('Need Help');
+          }}
+        />
+        <ListCardAbout
+          title={'About Apollo 24|7'}
+          leftIcon={<Apollo247Icon />}
+          onPress={() => {
+
           }}
         />
         {/* <ListCard

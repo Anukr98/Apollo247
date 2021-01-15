@@ -314,7 +314,7 @@ export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
 );
 
 export const ArrowRight: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')}/>
 );
 
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (
@@ -1060,6 +1060,9 @@ export const WhatsAppIcon: React.FC<IconProps> = (props) => (
 
 export const NeedHelpIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_round_live_help.png')} />
+);
+export const Apollo247Icon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_Apollo.png')} />
 );
 
 export const PrimaryIcon: React.FC<IconProps> = (props) => (
