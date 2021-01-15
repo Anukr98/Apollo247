@@ -671,7 +671,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       diagnosticSlot?.employeeSlotId?.toString() ||
       '0';
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
-    const dateTimeToShow = formattedDate + ', ' + formatTime.format('hh:mm A');
+    const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
     console.log({ dateTimeInUTC });
     const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
       comment: commentForReschedule,
@@ -689,7 +689,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         console.log({ rescheduleResponse });
-        if (rescheduleResponse?.status == 'true' && rescheduleResponse.rescheduleCount <= 3) {
+        if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
           setTimeout(() => refetchOrders(), 2000);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
@@ -716,17 +716,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .catch((error) => {
         console.log('error' + error);
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
-        handleGraphQlError(error);
         setLoading!(false);
-        if (error == 'RESCHEDULE_COUNT_EXCEEDED' || error == 'SLOT_ALREADY_BOOKED') {
+        if (
+          error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0 ||
+          error?.message?.indexOf('SLOT_ALREADY_BOOKED') > 0
+        ) {
           showAphAlert!({
             unDismissable: true,
             title: string.common.uhOh,
             description:
-              error == 'SLOT_ALREADY_BOOKED'
+              error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0
                 ? string.diagnostics.sameSlotError
                 : string.diagnostics.reschduleCountExceed,
           });
+        } else {
+          handleGraphQlError(error);
         }
       });
   };
