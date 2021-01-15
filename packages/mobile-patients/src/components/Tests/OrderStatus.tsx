@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  SafeAreaView,
+  StackActions,
+} from 'react-navigation';
 import { CircleLogo, OrderPlacedCheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -210,15 +215,17 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
-        <>
-          {renderHeader()}
-          {renderOrderPlacedMsg()}
-          {renderBookingInfo()}
-          {renderCartSavings()}
-          {backToHome()}
-        </>
-      </ScrollView>
+      <SafeAreaView style={styles.container}>
+        <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
+          <>
+            {renderHeader()}
+            {renderOrderPlacedMsg()}
+            {renderBookingInfo()}
+            {renderCartSavings()}
+            {backToHome()}
+          </>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 };
