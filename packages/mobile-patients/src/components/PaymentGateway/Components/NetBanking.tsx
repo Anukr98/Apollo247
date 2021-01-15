@@ -22,8 +22,9 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
   const { onPressOtherBanks, topBanks, onPressBank } = props;
 
   const renderBank = (item: any) => {
+    const marginLeft = item?.index == 0 ? 0 : (newWidth - 180) * 0.33;
     return (
-      <View style={styles.bankCont}>
+      <View style={{ ...styles.bankCont, marginLeft: marginLeft }}>
         <TouchableOpacity onPress={() => onPressBank(item?.item?.method)}>
           <Image
             source={{ uri: item?.item?.image_url }}
@@ -97,8 +98,8 @@ const styles = StyleSheet.create({
     width: 35,
   },
   bankCont: {
-    width: newWidth / 4,
+    width: 45,
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
 });

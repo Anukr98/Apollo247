@@ -350,7 +350,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {!loading ? (
-          <ScrollView style={styles.container}>
+          <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
             {showPaymentOptions()}
           </ScrollView>
@@ -365,7 +365,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 50,
+    paddingBottom: 24,
   },
   header: {
     ...theme.viewStyles.cardViewStyle,
