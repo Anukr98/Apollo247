@@ -154,9 +154,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
   const renderVegetarianIcon = () => {
     return vegetarian === 'Yes' ? (
       <VegetarianIcon style={styles.vegIcon} />
-    ) : (
+    ) : vegetarian === 'No' ? (
       <NonVegetarianIcon style={styles.vegIcon} />
-    );
+    ) : null;
   };
 
   const renderOtherInformation = () => (
@@ -187,7 +187,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
         <PharmaMedicineInfo
           name={name}
           pharmaOverview={pharmaOverview}
-          vegetarian={vegetarian === 'Yes'}
+          vegetarian={vegetarian}
           key_ingredient={key_ingredient}
           size={size}
           flavour_fragrance={flavour_fragrance}
