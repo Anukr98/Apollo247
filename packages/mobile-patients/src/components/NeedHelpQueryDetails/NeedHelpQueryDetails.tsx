@@ -174,12 +174,22 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         setLoading!(true);
         const url = AppConfig.Configuration.MED_TRACK_SHIPMENT_URL;
         const orderDetails = await getOrderDetails(orderId);
-        const shipmentNumber = orderDetails?.medicineOrderShipments?.[0]?.apOrderNo;
+        const shipmentNumber = orderDetails?.medicineOrderShipments?.[0]?.trackingNo;
+        const shipmentProvider = orderDetails?.medicineOrderShipments?.[0]?.trackingProvider;
+        const isTrackingAvailable = !!shipmentNumber && shipmentProvider === 'Delhivery Express';
+
         setLoading!(false);
-        navigation.navigate(AppRoutes.CommonWebView, {
-          url: url.replace('{{shipmentNumber}}', shipmentNumber!),
-          isGoBack: true,
-        });
+        if (isTrackingAvailable) {
+          navigation.navigate(AppRoutes.CommonWebView, {
+            url: url.replace('{{shipmentNumber}}', shipmentNumber!),
+            isGoBack: true,
+          });
+        } else {
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: 'Tracking details are only available for delivery via Courier.',
+          });
+        }
       } catch (error) {
         setLoading!(false);
         onError();
@@ -228,7 +238,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         renderItem={renderItem}
         keyExtractor={(_, i) => `${i}`}
         bounces={false}
-        removeClippedSubviews={true}
         ItemSeparatorComponent={renderDivider}
         contentContainerStyle={styles.flatListContainer}
       />
