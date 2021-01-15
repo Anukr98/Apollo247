@@ -822,6 +822,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               cashback={cashback}
               finalPrice={finalPrice}
               showDeliverySpinner={showDeliverySpinner}
+              isBanned={medicineDetails?.banned === 'Yes'}
             />
             <View
               ref={buttonRef}
@@ -848,7 +849,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             {isPharma && (
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
-                composition={medicineDetails?.composition}
+                composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
                 consumeType={medicineDetails?.consume_type}
               />
             )}
@@ -876,7 +877,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                 similarProducts={substitutes}
                 navigation={props.navigation}
-                composition={medicineDetails?.composition}
+                composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
                 setShowSubstituteInfo={setShowSubstituteInfo}
               />
             )}

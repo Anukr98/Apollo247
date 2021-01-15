@@ -25,6 +25,7 @@ export interface ProductPriceDeliveryProps {
   cashback: number;
   finalPrice: number;
   showDeliverySpinner: boolean;
+  isBanned: boolean;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -42,6 +43,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     finalPrice,
     isSellOnline,
     showDeliverySpinner,
+    isBanned,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId, circleSubscriptionId } = useShoppingCart();
@@ -87,6 +89,10 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         size="small"
         color="green"
       />
+    ) : isBanned ? (
+      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+        <Text style={styles.stockText}>Banned for Sale</Text>
+      </View>
     ) : !isSellOnline ? (
       <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
         <Text style={styles.stockText}>Not for Sale</Text>
