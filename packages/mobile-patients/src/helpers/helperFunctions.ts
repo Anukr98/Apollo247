@@ -2348,6 +2348,8 @@ export const getTestOrderStatusText = (status: string) => {
         break;
     case REFUND_STATUSES.PENDING:
     case REFUND_STATUSES.FAILURE:
+    case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
+    case REFUND_STATUSES.MANUAL_REVIEW:
         statusString = 'Refund Initiated';
         break;
     default:

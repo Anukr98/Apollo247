@@ -33,6 +33,7 @@ import {
 import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_JUSPAY_REFUND_STATUS,
+  DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 const width = Dimensions.get('window').width;
 
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type OrderStatusType = DIAGNOSTIC_ORDER_STATUS;
+type OrderStatusType = DIAGNOSTIC_ORDER_STATUS | REFUND_STATUSES;
 
 export interface TestOrderCardProps {
   key?: string;
@@ -238,7 +239,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     props.status == DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED ||
     (props.showRefund && DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(props.refundStatus!));
 
-  const getProgressWidth = (status: string, progresDirection: 'left' | 'right') => {
+  const getProgressWidth = (status: OrderStatusType, progresDirection: 'left' | 'right') => {
     if (progresDirection == 'left') {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
         return 0; //0
@@ -248,7 +249,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 3; //4
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 4;
-      } else if (status == REFUND_STATUSES.PENDING || status == REFUND_STATUSES.FAILURE) {
+      } else if (
+        status == REFUND_STATUSES.PENDING ||
+        DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(status)
+      ) {
         return 2;
       } else if (status == REFUND_STATUSES.SUCCESS) {
         return 4;
@@ -264,7 +268,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 3;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 2;
-      } else if (status == REFUND_STATUSES.PENDING || status == REFUND_STATUSES.FAILURE) {
+      } else if (
+        status == REFUND_STATUSES.PENDING ||
+        DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(status)
+      ) {
         return 2;
       } else if (status == REFUND_STATUSES.SUCCESS) {
         return 0;
@@ -299,7 +306,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                   flex: getProgressWidth(statusToCheck!, 'right'),
                   backgroundColor:
                     statusToCheck == REFUND_STATUSES.PENDING ||
-                    statusToCheck == REFUND_STATUSES.FAILURE
+                    DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(statusToCheck)
                       ? '#EF3A47'
                       : '#00b38e',
                 },
@@ -401,6 +408,8 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         break;
       case REFUND_STATUSES.PENDING:
       case REFUND_STATUSES.FAILURE:
+      case REFUND_STATUSES.MANUAL_REVIEW:
+      case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
         return {
           textAlign: 'center',
           marginLeft: 0,

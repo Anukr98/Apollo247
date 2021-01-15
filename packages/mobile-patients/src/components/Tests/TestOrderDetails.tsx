@@ -12,6 +12,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
+  DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_JUSPAY_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   SequenceForDiagnosticStatus,
@@ -271,10 +272,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       });
     } else {
       refundArr.push({
-        orderStatus:
-          refundStatusArr?.[0]?.status == REFUND_STATUSES.FAILURE
-            ? REFUND_STATUSES.PENDING
-            : refundStatusArr?.[0]?.status,
+        orderStatus: DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(refundStatusArr?.[0]?.status)
+          ? REFUND_STATUSES.PENDING
+          : refundStatusArr?.[0]?.status,
         statusDate: refundStatusArr?.[0]?.created_at,
       });
     }
@@ -459,9 +459,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       } else {
         statusList = [
           {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
-          },
-          {
             orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
           },
           {
@@ -492,33 +489,50 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED) {
       statusList = [
         {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
-        },
-        {
           orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
         },
       ];
     } else {
-      statusList = [
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
-        },
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-        },
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-        },
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-        },
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-        },
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
-        },
-      ];
+      if (isPrepaid) {
+        statusList = [
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+          },
+        ];
+      } else {
+        statusList = [
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+          },
+          {
+            orderStatus: DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+          },
+        ];
+      }
     }
 
     const newList = statusList?.map(
