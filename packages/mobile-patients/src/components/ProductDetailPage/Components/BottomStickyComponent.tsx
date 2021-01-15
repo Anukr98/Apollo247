@@ -19,6 +19,7 @@ export interface BottomStickyComponentProps {
   onAddCartItem: () => void;
   productQuantity: number;
   setShowAddedToCart: (show: boolean) => void;
+  isBanned: boolean;
 }
 
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
@@ -34,6 +35,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     packFormVariant,
     productQuantity,
     setShowAddedToCart,
+    isBanned,
   } = props;
   const { cartItems, updateCartItem } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -121,7 +123,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
   return (
     <StickyBottomComponent style={styles.stickyBottomComponent}>
       {renderProductPrice()}
-      {renderCartCTA()}
+      {!isBanned && renderCartCTA()}
     </StickyBottomComponent>
   );
 };
