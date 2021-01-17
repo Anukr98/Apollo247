@@ -95,6 +95,7 @@ import {
   ProceduresAndSymptomsParams,
   ProceduresAndSymptomsResult,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+var allSettled = require('promise.allsettled');
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -394,6 +395,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [showAllSearchedProcedures, setShowAllSearchedProcedures] = useState<boolean>(false);
   const [procedures, setProcedures] = useState<ProceduresAndSymptomsResult[]>([]);
   const [symptoms, setSymptoms] = useState<ProceduresAndSymptomsResult[]>([]);
+  const [savedSearchedSuggestions, setSearchSuggestions] = useState<string>('');
+  const [searchedBucket, setSearchedBucket] = useState<string>('');
 
   useEffect(() => {
     newUserPastSearch();
@@ -475,26 +478,35 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.DOCTOR_SEARCH, eventAttributesFirebase);
   };
 
+  const getDoctorList = (searchText: string) => {
+    return client.query<getDoctorList>({
+      query: GET_DOCTOR_LIST,
+      fetchPolicy: 'no-cache',
+      variables: {
+        filterInput: {
+          pageNo: 1,
+          pageSize: 50,
+          searchText,
+        },
+      },
+    });
+  };
+
+  const fetchProceduresAndSymptoms = (searchString: string) => {
+    const queryParams: ProceduresAndSymptomsParams = {
+      text: searchString,
+    };
+    return searchProceduresAndSymptoms(queryParams);
+  };
+
   const fetchSearchData = (searchTextString: string = searchText) => {
     if (searchTextString.length > 2) {
-      fetchProceduresAndSymptoms(searchTextString);
       postSearchEvent(searchTextString);
       setisSearching(true);
-      client
-        .query<getDoctorList>({
-          query: GET_DOCTOR_LIST,
-          fetchPolicy: 'no-cache',
-          variables: {
-            filterInput: {
-              pageNo: 1,
-              pageSize: 50,
-              searchText: searchTextString,
-            },
-          },
-        })
-        .then(({ data }) => {
+      allSettled([getDoctorList(searchTextString), fetchProceduresAndSymptoms(searchTextString)])
+        .then((res: any) => {
           try {
-            const searchData = data?.getDoctorList ? data?.getDoctorList : null;
+            const searchData = res?.[0]?.value?.data?.getDoctorList || null;
             if (searchData) {
               if (searchData.doctors) {
                 setdoctorsList(searchData.doctors);
@@ -505,6 +517,24 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               setshowSpinner(false);
             }
             setisSearching(false);
+
+            const result = res?.[1]?.value?.data?.results;
+            const procedures = result?.filter(
+              (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'PROCEDURE'
+            );
+            const symptoms = result?.filter(
+              (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
+            );
+            setProcedures(procedures);
+            setSymptoms(symptoms);
+            postSearchedResultWebEngageEvent(
+              null,
+              searchTextString,
+              searchData?.doctors,
+              searchData?.specialties,
+              procedures,
+              symptoms
+            );
           } catch (e) {
             CommonBugFender('DoctorSearch_fetchSearchData_try', e);
           }
@@ -515,6 +545,84 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           console.log('Error occured while searching Doctor', e);
         });
     }
+  };
+
+  const postSearchedResultWebEngageEvent = (
+    clickedItem?: string | null,
+    inputString?: string,
+    doctors?: any,
+    searchSpecialities?: any,
+    procedures?: any,
+    symptoms?: any
+  ) => {
+    const doctorsList =
+      doctors?.map((item: any) => {
+        return item?.displayName;
+      }) || [];
+    const doctorBucket = doctorsList?.length > 0 ? 'Doctor, ' : '';
+    const specialitiesList =
+      searchSpecialities?.map((item: any) => {
+        return item?.name;
+      }) || [];
+    const specialityBucket = specialitiesList?.length > 0 ? 'Speciality, ' : '';
+    const proceduresList =
+      procedures?.map((item: any) => {
+        return item?.name;
+      }) || [];
+    const procedureBucket = proceduresList?.length > 0 ? 'Procedure, ' : '';
+    const symptomsList =
+      symptoms?.map((item: any) => {
+        return item?.name;
+      }) || [];
+    const symptomBucket = symptomsList?.length > 0 ? 'Symptoms' : '';
+    const searchSuggestions = [
+      ...specialitiesList,
+      ...doctorsList,
+      ...proceduresList,
+      ...symptomsList,
+    ]?.join(', ');
+    setSearchSuggestions(searchSuggestions);
+    const bucket = doctorBucket
+      ?.concat(specialityBucket)
+      ?.concat(procedureBucket)
+      ?.concat(symptomBucket);
+    setSearchedBucket(bucket);
+    let eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH_SUGGESTIONS] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Text typed by the user': inputString || searchText,
+      'Search Suggestions': searchSuggestions || savedSearchedSuggestions,
+      Bucket: bucket || searchedBucket,
+      'Search Suggestion Clicked': clickedItem || '',
+    };
+    postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS, eventAttributes);
+  };
+
+  const postViewAllWebEngageEvent = (
+    bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms',
+    results: string
+  ) => {
+    let eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      Bucket: bucket,
+      'Search suggestions in the particular bucket': results,
+    };
+    postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL, eventAttributes);
   };
 
   const fetchSpecialities = () => {
@@ -836,26 +944,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     );
   };
 
-  const fetchProceduresAndSymptoms = async (searchString: string) => {
-    const queryParams: ProceduresAndSymptomsParams = {
-      text: searchString,
-    };
-    try {
-      const res = await searchProceduresAndSymptoms(queryParams);
-      const result = res?.data?.results;
-      const procedures = result?.filter(
-        (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'PROCEDURE'
-      );
-      const symptoms = result?.filter(
-        (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
-      );
-      setProcedures(procedures);
-      setSymptoms(symptoms);
-    } catch (error) {
-      CommonBugFender('DoctorSearch_fetchProceduresAndSymptoms', error);
-    }
-  };
-
   const renderPastSearch = () => {
     if (showPastSearchSpinner) {
       return (
@@ -1074,7 +1162,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               ]}
             />
             {searchText.length > 2 && !showAllSearchedSymptomsData && SpecialitiesList?.length > 2 && (
-              <TouchableOpacity onPress={() => setShowAllSearchedSymptomsData(true)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAllSearchedSymptomsData(true);
+                  const result = (
+                    SpecialitiesList?.map((item: any) => {
+                      return item?.name;
+                    }) || []
+                  )?.join(', ');
+                  postViewAllWebEngageEvent('Speciality', result);
+                }}
+              >
                 <Text style={styles.viewAllBtnTxt}>View All</Text>
               </TouchableOpacity>
             )}
@@ -1089,6 +1187,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               postSymptomTrackEvent={postSymptomTrackEvent}
               onPressCallback={(item: any) => {
                 postSpecialityEvent(item?.name, item?.id);
+                postSearchedResultWebEngageEvent(item?.name);
                 onClickSearch(
                   item?.id,
                   item?.name,
@@ -1350,7 +1449,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               style={{ marginBottom: 0 }}
             />
             {!showAllSearchedDoctorData && doctorsList?.length > 2 && (
-              <TouchableOpacity onPress={() => setShowAllSearchedDoctorData(true)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAllSearchedDoctorData(true);
+                  const result = (
+                    doctorsList?.map((item: any) => {
+                      return item?.displayName;
+                    }) || []
+                  )?.join(', ');
+                  postViewAllWebEngageEvent('Doctor', result);
+                }}
+              >
                 <Text style={[styles.viewAllBtnTxt, { marginTop: 24 }]}>View All</Text>
               </TouchableOpacity>
             )}
@@ -1363,6 +1472,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             onPressCallback={(item: any, index: number) => {
               const itemNo = index + 1;
               postDoctorClickWEGEvent({ ...item, itemNo }, 'Search');
+              postSearchedResultWebEngageEvent(item?.displayName);
               CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
               props.navigation.navigate(AppRoutes.DoctorDetails, {
                 doctorId: item?.id,
@@ -1385,7 +1495,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               style={{ marginBottom: 0 }}
             />
             {!showAllSearchedProcedures && procedures?.length > 2 && (
-              <TouchableOpacity onPress={() => setShowAllSearchedProcedures(true)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAllSearchedProcedures(true);
+                  const result = (
+                    procedures?.map((item: any) => {
+                      return item?.name;
+                    }) || []
+                  )?.join(', ');
+                  postViewAllWebEngageEvent('Procedure', result);
+                }}
+              >
                 <Text style={[styles.viewAllBtnTxt, { marginTop: 24 }]}>View All</Text>
               </TouchableOpacity>
             )}
@@ -1414,7 +1534,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               style={{ marginBottom: 0 }}
             />
             {!showAllSearchedSymptoms && symptoms?.length > 2 && (
-              <TouchableOpacity onPress={() => setShowAllSearchedSymptoms(true)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAllSearchedSymptoms(true);
+                  const result = (
+                    symptoms?.map((item: any) => {
+                      return item?.name;
+                    }) || []
+                  )?.join(', ');
+                  postViewAllWebEngageEvent('Symptoms', result);
+                }}
+              >
                 <Text style={[styles.viewAllBtnTxt, { marginTop: 24 }]}>View All</Text>
               </TouchableOpacity>
             )}
@@ -1434,6 +1564,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const onPressProcedure = (item: any) => {
+    postSearchedResultWebEngageEvent(item?.name);
     if (item?.speciality?.toUpperCase() === 'ABSENT') {
       props.navigation.navigate(AppRoutes.SymptomTracker, {
         symptomData: item,
