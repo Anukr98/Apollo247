@@ -26,6 +26,7 @@ import {
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
+  isDeviceReady,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -73,6 +74,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [paymentMethods, setPaymentMethods] = useState<any>([]);
   const [cardTypes, setCardTypes] = useState<any>([]);
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
+  const [isCardValid, setisCardValid] = useState<boolean>(true);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -102,6 +104,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'process_result':
         var payload = data.payload || {};
         console.log('payload >>', JSON.stringify(payload));
+        if (payload?.error) {
+          handleError(payload?.errorMessage);
+        }
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
           console.log(payload?.payload?.paymentMethods);
           const banks = payload?.payload?.paymentMethods?.filter(
@@ -116,6 +121,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       default:
         console.log('Unknown Event', data);
+    }
+  };
+
+  const handleError = (errorMessage: string) => {
+    switch (errorMessage) {
+      case 'Card number is invalid.':
+        setisCardValid(false);
+        break;
+      default:
+        console.log('errorMessage', errorMessage);
     }
   };
 
@@ -314,7 +329,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderCards = () => {
-    return <Cards onPressPayNow={onPressCardPay} cardTypes={cardTypes} />;
+    return (
+      <Cards
+        onPressPayNow={onPressCardPay}
+        cardTypes={cardTypes}
+        isCardValid={isCardValid}
+        setisCardValid={setisCardValid}
+      />
+    );
   };
 
   const renderNetBanking = (topBanks: any) => {
