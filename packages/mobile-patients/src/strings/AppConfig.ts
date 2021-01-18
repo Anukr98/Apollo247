@@ -90,7 +90,7 @@ const appStaticVariables = {
   jusPayService: 'in.juspay.ec',
   returnUrl: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
-  jusPayenvironment: 'sandbox',
+  jusPayenvironment: 'prod',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   EXPRESS_MAXIMUM_HOURS: 6,
 };
