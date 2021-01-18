@@ -26,7 +26,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  Image,
+} from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { ScrollView, NavigationScreenProps } from 'react-navigation';
 import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
@@ -36,7 +44,9 @@ import {
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
-import { CheckedIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CheckedIcon, UnCheck, TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -45,6 +55,69 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowColor: 'white',
     elevation: 0,
+  },
+  healthRecordContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+  },
+  healthRecord: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 5,
+    marginVertical: 20,
+    alignItems: 'center',
+  },
+  hrImage: {
+    resizeMode: 'cover',
+    width: width / 4,
+    height: width / 3.5,
+    borderRadius: 8,
+    marginTop: 3,
+  },
+  hrHeading: {
+    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 24),
+    marginLeft: 7,
+  },
+  checkContainer: {
+    position: 'absolute',
+    right: 7,
+    top: 7,
+  },
+  overlayImage: {
+    resizeMode: 'contain',
+    flex: 1,
+    width: undefined,
+    height: undefined,
+  },
+  selectButton: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#FCB716',
+    paddingVertical: 7,
+    paddingHorizontal: 20,
+  },
+  selectText: {
+    ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 30, 0.35),
+    textAlign: 'center',
+  },
+  closeButton: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 7,
+    paddingHorizontal: 20,
+    borderWidth: 3,
+    borderColor: '#FCB716',
+  },
+  closeText: {
+    ...theme.viewStyles.text('B', 14, '#FCB716', 1, 25, 0.35),
+    textAlign: 'center',
+  },
+  stepsIcon: {
+    resizeMode: 'contain',
+    width: 8,
+    height: 8,
+    marginTop: 9,
+    marginRight: 8,
   },
 });
 
@@ -59,6 +132,9 @@ export interface SelectEPrescriptionModalProps extends NavigationScreenProps {
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
   const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
+  const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [imageIndex, setImageIndex] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const DATE_FORMAT = 'DD MMM YYYY';
@@ -276,8 +352,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         medicines={item.medicines}
         isDisabled={disabled}
         style={{
-          marginTop: 4,
-          marginBottom: 4,
+          marginVertical: 4,
+          width: width / 3,
         }}
         onSelect={(isSelected) => {
           setSelectedPrescription({
@@ -285,6 +361,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             [item.id]: isSelected,
           });
         }}
+        uploadedUrl={item?.uploadedUrl}
       />
     );
   };
@@ -310,14 +387,16 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   const renderHealthRecords = () => {
     return (
-      <View>
+      <View style={styles.healthRecordContainer}>
         {combination &&
           combination.map(({ type, data }, index) => {
             const selected = selectedHealthRecord.findIndex((i) => i === index.toString()) > -1;
+            const uploadedBy =
+              data.sourceName || data.source || data.labTestSource ? currentPatient?.firstName : '';
             return (
               <TouchableOpacity
                 activeOpacity={1}
-                onPress={() => {
+                onLongPress={() => {
                   if (selected) {
                     setSelectedHealthRecord([
                       ...selectedHealthRecord.filter((i) => i !== index.toString()),
@@ -326,88 +405,92 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                     setSelectedHealthRecord([...selectedHealthRecord, index.toString()]);
                   }
                 }}
+                onPress={() => {
+                  if (selected) {
+                    setSelectedHealthRecord([
+                      ...selectedHealthRecord.filter((i) => i !== index.toString()),
+                    ]);
+                  } else {
+                    setImageUrl(data.fileUrl);
+                    setImageIndex(index.toString());
+                    setShowPreview(true);
+                  }
+                }}
+                style={styles.healthRecord}
               >
-                <View
-                  style={{
-                    ...theme.viewStyles.cardViewStyle,
-                    marginHorizontal: 20,
-                    marginVertical: 4,
-                    padding: 16,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text
-                      style={{
-                        ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                        flex: 0.9,
-                      }}
-                    >
-                      {data.testName ||
-                        data.issuingDoctor ||
-                        data.location ||
-                        data.diagnosisNotes ||
-                        data.healthCheckName ||
-                        data.labTestName ||
-                        data.prescriptionName}
-                    </Text>
-                    {selected ? <CheckedIcon /> : <UnCheck />}
-                  </View>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text
-                      style={{
-                        ...theme.viewStyles.text(
-                          'M',
-                          14,
-                          theme.colors.TEXT_LIGHT_BLUE,
-                          1,
-                          20,
-                          0.04
-                        ),
-                        width: '49%',
-                      }}
-                    >
-                      {moment(
-                        data.date ||
-                          data.testDate ||
-                          data.appointmentDate ||
-                          data.dateOfHospitalization
-                      ).format('DD MMMM YYYY')}
-                    </Text>
-                    {data.sourceName || data.source || data.labTestSource ? (
-                      <>
-                        <View
-                          style={{
-                            borderRightWidth: 0.5,
-                            // borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                            borderBottomColor: '#02475b',
-                            opacity: 0.2,
-                            marginHorizontal: 12,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            ...theme.viewStyles.text(
-                              'M',
-                              14,
-                              theme.colors.TEXT_LIGHT_BLUE,
-                              1,
-                              20,
-                              0.04
-                            ),
-                            width: '49%',
-                            textAlign: 'left',
-                          }}
-                        >
-                          {(currentPatient && currentPatient.firstName) || ''}
-                        </Text>
-                      </>
-                    ) : null}
-                  </View>
+                <Image source={{ uri: data.fileUrl }} style={styles.hrImage} />
+                <View style={{ padding: 5 }}>
+                  <Text numberOfLines={1} style={styles.hrHeading}>
+                    {uploadedBy ||
+                      data.testName ||
+                      data.issuingDoctor ||
+                      data.location ||
+                      data.diagnosisNotes ||
+                      data.healthCheckName ||
+                      data.labTestName ||
+                      data.prescriptionName}
+                  </Text>
+                  <Text style={theme.viewStyles.text('R', 13, theme.colors.LIGHT_BLUE, 0.6, 24)}>
+                    {moment(
+                      data.date ||
+                        data.testDate ||
+                        data.appointmentDate ||
+                        data.dateOfHospitalization
+                    ).format('DD MMMM YYYY')}
+                  </Text>
+                </View>
+                <View style={styles.checkContainer}>
+                  {selected ? <CheckedIcon /> : <UnCheck />}
                 </View>
               </TouchableOpacity>
             );
           })}
       </View>
+    );
+  };
+
+  const renderPrescriptionPreview = () => {
+    return (
+      <Overlay
+        onRequestClose={() => {}}
+        isVisible={showPreview}
+        onBackdropPress={() => setShowPreview(false)}
+      >
+        <Text
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            ...theme.viewStyles.text('M', 18, theme.colors.LIGHT_BLUE, 1, 24),
+          }}
+        >
+          Prescription Image
+        </Text>
+        <Image style={styles.overlayImage} source={{ uri: imageUrl }} />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedHealthRecord([...selectedHealthRecord, imageIndex]);
+              setTimeout(() => {
+                setShowPreview(false);
+              }, 1000);
+            }}
+            activeOpacity={0.7}
+            style={styles.selectButton}
+          >
+            <Text style={styles.selectText}>SELECT</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setShowPreview(false);
+            }}
+            activeOpacity={0.7}
+            style={styles.closeButton}
+          >
+            <Text style={styles.closeText}>CLOSE</Text>
+          </TouchableOpacity>
+        </View>
+      </Overlay>
     );
   };
 
@@ -442,8 +525,30 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
               <>
                 {renderNoPrescriptions()}
                 <View style={{ height: 16 }} />
+                <View
+                  style={{
+                    marginLeft: 15,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row' }}>
+                    <TrackerBig style={styles.stepsIcon} />
+                    <Text style={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 24)}>
+                      Click on icon to select prescription.
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <TrackerBig style={styles.stepsIcon} />
+                    <Text style={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 24)}>
+                      Long press to preview prescription.
+                    </Text>
+                  </View>
+                </View>
                 {prescriptionUpto6months.map((item, index, array) => {
-                  return renderEPrescription(item, index, array.length);
+                  return (
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      {renderEPrescription(item, index, array.length)}
+                    </View>
+                  );
                 })}
                 {props.displayPrismRecords && renderHealthRecords()}
                 {!!prescriptionOlderThan6months.length && (
@@ -453,7 +558,11 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                   />
                 )}
                 {prescriptionOlderThan6months.map((item, index, array) => {
-                  return renderEPrescription(item, index, array.length, true);
+                  return (
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      {renderEPrescription(item, index, array.length, true)}
+                    </View>
+                  );
                 })}
                 <View style={{ height: 12 }} />
               </>
@@ -601,6 +710,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           </View>
         </SafeAreaView>
         {(loading || (props.displayPrismRecords && medPrismloading)) && <Spinner />}
+        {showPreview && renderPrescriptionPreview()}
       </View>
     </Overlay>
   );
