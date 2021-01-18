@@ -12,6 +12,7 @@ import {
   productsThumbnailUrl,
   isProductInStock,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -106,13 +107,15 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
               )}
               <Text style={theme.viewStyles.text('SB', 13, '#01475B', 1, 25)}>
                 {string.common.Rs}
-                {specialPrice || data.price}
+                {convertNumberToDecimal(specialPrice || data?.price)}
               </Text>
               {specialPrice ? (
                 <View style={styles.flexRow}>
                   <Text style={styles.specialPrice}>
                     <Text style={styles.lineThrough}>{' MRP '}</Text>
-                    <Text style={styles.lineThrough}>{`${string.common.Rs} ${data.price}`}</Text>
+                    <Text style={styles.lineThrough}>{`${string.common.Rs} ${convertNumberToDecimal(
+                      data?.price
+                    )}`}</Text>
                   </Text>
                   <Text style={styles.discount}>{`${getDiscountPercent()}%off`}</Text>
                 </View>

@@ -10,6 +10,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -60,13 +61,13 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         <Text style={styles.label}>{`Price: `}</Text>
         <Text style={styles.value}>
           {string.common.Rs}
-          {specialPrice}
+          {convertNumberToDecimal(specialPrice)}
           {'  '}
         </Text>
         <Text style={styles.smallLabel}>{`MRP `}</Text>
         <Text style={styles.smallValue}>
           {string.common.Rs}
-          {price}
+          {convertNumberToDecimal(price)}
         </Text>
         <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
       </View>
@@ -75,7 +76,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         <Text style={styles.label}>{`MRP: `}</Text>
         <Text style={styles.value}>
           {string.common.Rs}
-          {price}
+          {convertNumberToDecimal(price)}
         </Text>
       </View>
     );

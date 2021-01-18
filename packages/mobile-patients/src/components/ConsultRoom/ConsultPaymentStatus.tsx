@@ -76,6 +76,7 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import moment from 'moment';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -657,7 +658,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const getButtonText = () => {
     if (status == success) {
-      return 'Go To Consult Room';
+      return 'START CONSULTATION';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
     } else {
@@ -811,7 +812,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             You{' '}
             <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {circleSavings}{' '}
+              {convertNumberToDecimal(circleSavings)}{' '}
             </Text>
             on your purchase
           </Text>
@@ -912,7 +913,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   buttonStyle: {
-    height: 0.06 * windowHeight,
+    height: 40,
     backgroundColor: '#fcb716',
     marginVertical: 0.06 * windowWidth,
     marginHorizontal: 0.2 * windowWidth,
