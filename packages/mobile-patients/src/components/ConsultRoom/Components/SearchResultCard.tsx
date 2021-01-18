@@ -60,7 +60,6 @@ export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
     const titleWidth = isSpecialityCard ? width - 190 : width - 174;
     return (
       <View>
-        {isSpecialityCard && index == 1 && renderTrackSymptoms()}
         <TouchableOpacity
           key={index}
           style={styles.card}
@@ -96,6 +95,7 @@ export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
             <Text style={styles.grayText}>{componentName?.toUpperCase()}</Text>
           </View>
         </TouchableOpacity>
+        {componentName === 'symptoms' && index === data?.length - 1 && renderTrackSymptoms()}
       </View>
     );
   };

@@ -1184,7 +1184,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               showAllData={showAllSearchedSymptomsData}
               componentName="speciality"
               navigation={props.navigation}
-              postSymptomTrackEvent={postSymptomTrackEvent}
               onPressCallback={(item: any) => {
                 postSpecialityEvent(item?.name, item?.id);
                 postSearchedResultWebEngageEvent(item?.name);
@@ -1554,6 +1553,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             showAllData={showAllSearchedSymptoms}
             componentName="symptoms"
             navigation={props.navigation}
+            postSymptomTrackEvent={postSymptomTrackEvent}
             onPressCallback={(item: any) => {
               onPressProcedure(item);
             }}
