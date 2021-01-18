@@ -89,6 +89,8 @@ export enum WebEngageEventName {
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
   DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
+  SEARCH_SUGGESTIONS = 'Search suggestions',
+  SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -650,14 +652,14 @@ export interface WebEngageEvents {
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: {
     'Patient Name': string;
-  'Patient UHID': string;
-  Relation: string;
-  'Patient Age': number;
-  'Patient Gender': string;
-  'Mobile Number': string;
-  'Customer ID': string;
-  'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-  'Circle Membership Value': number | null;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -1935,6 +1937,32 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Doctor ID': string;
   };
+  [WebEngageEventName.SEARCH_SUGGESTIONS]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Text typed by the user': string;
+    'Search Suggestions': string;
+    Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
+    'Search Suggestion Clicked': string;
+  };
+
+  [WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
+    'Search suggestions in the particular bucket': string;
+  };
+
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
     CategoryId: string;
