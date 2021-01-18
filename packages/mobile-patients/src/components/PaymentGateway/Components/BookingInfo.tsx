@@ -15,7 +15,6 @@ export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
   const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
 
   const renderHeading = () => {
-    console.log('diagnosticSlot >>', diagnosticSlot);
     const msg =
       LOB == 'Diag'
         ? `Slot booked for sample collection ${diagnosticSlot?.slotStartTime}, ${moment(
