@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import moment from 'moment';
 
 export interface BookingInfoProps {
   LOB: 'Diag' | 'Consult' | 'Pharma';
@@ -10,12 +11,17 @@ export interface BookingInfoProps {
 
 export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
   const { LOB } = props;
-  const { addresses, deliveryAddressId } = useDiagnosticsCart();
+  const { addresses, deliveryAddressId, diagnosticSlot } = useDiagnosticsCart();
   const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
 
   const renderHeading = () => {
+    console.log('diagnosticSlot >>', diagnosticSlot);
     const msg =
-      LOB == 'Diag' ? `Slot booked for sample collection ${new Date().toDateString()}` : '';
+      LOB == 'Diag'
+        ? `Slot booked for sample collection ${diagnosticSlot?.slotStartTime}, ${moment(
+            diagnosticSlot?.date
+          ).format('D MMM, YYYY')}`
+        : '';
     return <Text style={styles.heading}>{msg}</Text>;
   };
 

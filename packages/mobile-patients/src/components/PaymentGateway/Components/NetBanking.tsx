@@ -70,7 +70,9 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
     );
   };
 
-  return <CollapseView Heading={'NET BANKING'} ChildComponent={renderChildComponent()} />;
+  return (
+    <CollapseView isDown={true} Heading={'NET BANKING'} ChildComponent={renderChildComponent()} />
+  );
 };
 
 const styles = StyleSheet.create({

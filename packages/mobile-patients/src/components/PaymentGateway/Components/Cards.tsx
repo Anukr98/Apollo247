@@ -199,7 +199,13 @@ export const Cards: React.FC<CardsProps> = (props) => {
       </View>
     );
   };
-  return <CollapseView Heading={'CREDIT / DEBIT CARDS'} ChildComponent={renderChildComponent()} />;
+  return (
+    <CollapseView
+      isDown={false}
+      Heading={'CREDIT / DEBIT CARDS'}
+      ChildComponent={renderChildComponent()}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
