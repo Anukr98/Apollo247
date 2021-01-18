@@ -658,7 +658,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const getButtonText = () => {
     if (status == success) {
-      return 'START CONSULTATION';
+      return 'Go To Consult Room';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
     } else {
