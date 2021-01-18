@@ -179,6 +179,7 @@ import {
   calculateMrpToDisplay,
   getPricesForItem,
   sourceHeaders,
+  convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
@@ -2056,9 +2057,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const renderCartSavingBanner = () => {
     return dashedBanner(
       'You ',
-      `saved ${string.common.Rs}${
+      `saved ${string.common.Rs}${convertNumberToDecimal(
         isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving
-      }`,
+      )}`,
       'on this order',
       'none'
     );
@@ -2071,7 +2072,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const renderSavedBanner = () => {
     return dashedBanner(
       'You could have',
-      `saved extra ${string.common.Rs}${circleSaving}`,
+      `saved extra ${string.common.Rs}${convertNumberToDecimal(circleSaving)}`,
       'with',
       'right'
     );
@@ -2605,7 +2606,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             amount: grandTotal,
             orderId: orderId,
             orderDetails: orderInfo,
-            eventAttributes
+            eventAttributes,
           });
         }
       })
@@ -2783,8 +2784,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                           {' '}
                           saved {string.common.Rs}
                           {isDiagnosticCircleSubscription
-                            ? Number(orderCartSaving) + Number(orderCircleSaving)
-                            : orderCartSaving}
+                            ? convertNumberToDecimal(
+                                Number(orderCartSaving) + Number(orderCircleSaving)
+                              )
+                            : convertNumberToDecimal(orderCartSaving)}
                         </Text>{' '}
                         on your purchase.
                       </Text>
@@ -2822,7 +2825,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                               alignSelf: 'flex-end',
                             }}
                           >
-                            {string.common.Rs} {orderCircleSaving}
+                            {string.common.Rs} {convertNumberToDecimal(orderCircleSaving)}
                           </Text>
                         </View>
                       </>
@@ -2855,7 +2858,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                               alignSelf: 'flex-end',
                             }}
                           >
-                            {string.common.Rs} {orderCartSaving}
+                            {string.common.Rs} {convertNumberToDecimal(orderCartSaving)}
                           </Text>
                         </View>
                       </>
@@ -2890,7 +2893,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         <Text style={{ color: theme.colors.APP_GREEN, fontWeight: 'bold' }}>
                           {' '}
                           saved extra {string.common.Rs}
-                          {orderCircleSaving}
+                          {convertNumberToDecimal(orderCircleSaving)}
                         </Text>{' '}
                         with
                       </Text>

@@ -18,6 +18,7 @@ import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Props } from 'react-native-image-zoom-viewer/built/image-viewer.type';
 import { ScrollView } from 'react-native-gesture-handler';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -373,7 +374,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={styles.commonText}>
                   {string.common.Rs}
-                  {g(item, 'price')}
+                  {convertNumberToDecimal(g(item, 'price') || null)}
                 </Text>
               </View>
             </View>
@@ -400,7 +401,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <Text style={styles.commonText}>
                 {string.common.Rs}
                 {/* {totalIndividalDiagonsticsCharges} */}
-                {grossCharges}
+                {convertNumberToDecimal(grossCharges)}
               </Text>
             </View>
           </View>
@@ -422,7 +423,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={styles.commonText}>
                   + {string.common.Rs}
-                  {HomeCollectionCharges}
+                  {convertNumberToDecimal(HomeCollectionCharges)}
                 </Text>
               </View>
             </View>
@@ -452,7 +453,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalCircleSaving}
+                  {convertNumberToDecimal(totalCircleSaving)}
                 </Text>
               </View>
             </View>
@@ -479,7 +480,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalCartSaving}
+                  {convertNumberToDecimal(totalCartSaving)}
                 </Text>
               </View>
             </View>
@@ -507,7 +508,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalDiscountSaving}
+                  {convertNumberToDecimal(totalDiscountSaving)}
                 </Text>
               </View>
             </View>
@@ -518,7 +519,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
             <Text style={styles.paymentText1}> Total </Text>
             <Text style={[styles.paymentText, { marginHorizontal: 20 }]}>
               {' '}
-              {string.common.Rs} {orderDetails.totalPrice}{' '}
+              {string.common.Rs} {convertNumberToDecimal(orderDetails?.totalPrice)}{' '}
             </Text>
           </View>
           {false && (
