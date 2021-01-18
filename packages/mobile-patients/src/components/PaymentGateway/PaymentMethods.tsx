@@ -26,7 +26,6 @@ import {
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
-  isDeviceReady,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -270,6 +269,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
+  const OtherBanks = () => {
+    const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
+    const methods = topBanks?.featured_banks?.map((item: any) => item?.method) || [];
+    const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    props.navigation.navigate(AppRoutes.OtherBanks, {
+      paymentId: paymentId,
+      amount: amount,
+      banks: otherBanks,
+    });
+  };
+
   const navigatetoOrderStatus = (isCOD: boolean) => {
     props.navigation.navigate(AppRoutes.OrderStatus, {
       orderDetails: orderDetails,
@@ -295,7 +305,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const showPaymentOptions = () => {
     return !!paymentMethods?.length
-      ? paymentMethods.map((item: any, index: number) => {
+      ? paymentMethods.map((item: any) => {
           switch (item?.name) {
             case 'COD':
               return renderPayByCash();
@@ -343,13 +353,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     return (
       <NetBanking
         topBanks={topBanks}
-        onPressOtherBanks={() =>
-          props.navigation.navigate(AppRoutes.OtherBanks, {
-            paymentId: paymentId,
-            amount: amount,
-            banks: banks,
-          })
-        }
+        onPressOtherBanks={() => OtherBanks()}
         onPressBank={onPressBank}
       />
     );

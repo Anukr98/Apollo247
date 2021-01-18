@@ -5,6 +5,7 @@ import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CardInfo } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import cardValidator from '@aph/mobile-patients/node_modules/@juspay/simple-card-validator/dist/validator';
 
 export interface CardsProps {
   onPressPayNow: (cardInfo: any) => void;
@@ -20,7 +21,8 @@ export const Cards: React.FC<CardsProps> = (props) => {
   const [validity, setValidity] = useState<string>('');
   const [CVV, setCVV] = useState<string>('');
   const [cardbin, setCardbin] = useState<any>({});
-  // const [isValid, setisValid] = useState<boolean>(isCardValid);
+  const [cardDetails, setCardDetails] = useState<any>({});
+
   const cardInfo = {
     cardType: cardbin?.brand,
     cardNumber: cardNumber.replace(/\-/g, ''),
@@ -30,7 +32,6 @@ export const Cards: React.FC<CardsProps> = (props) => {
   };
 
   const fetchCardInfo = async (text: any) => {
-    const oldNumber = cardNumber.replace(/\-/g, '');
     const number = text.replace(/\-/g, '');
     if (number.length >= 6) {
       try {
@@ -42,6 +43,10 @@ export const Cards: React.FC<CardsProps> = (props) => {
       setCardbin({});
       setisCardValid(true);
     }
+    if (text) {
+      var card = cardValidator(text);
+      setCardDetails(card.getCardDetails());
+    }
   };
 
   function updateCard(num: string) {
@@ -51,7 +56,10 @@ export const Cards: React.FC<CardsProps> = (props) => {
       .replace(',', '');
     const newlength = text.length;
     const oldLength = cardNumber.length;
-    if ((newlength == 4 || newlength == 9 || newlength == 14) && oldLength < newlength) {
+    if (
+      (newlength == 4 || newlength == 9 || newlength == 14 || newlength == 19) &&
+      oldLength < newlength
+    ) {
       setCardNumber(text + '-');
     } else {
       setCardNumber(text);
@@ -75,13 +83,23 @@ export const Cards: React.FC<CardsProps> = (props) => {
 
   function isPayNowDisabled() {
     return (
-      cardNumber.replace(/\-/g, '').length != 16 ||
+      cardNumber.replace(/\-/g, '').length != (cardDetails?.max_length || 16) ||
       validity.length != 5 ||
-      CVV.length < 3 ||
+      CVV.length < (cardDetails?.cvv_length || 3) ||
       name == '' ||
       !isCardValid
     );
   }
+
+  const getMaxLength = () => {
+    if (cardDetails?.max_length) {
+      return cardDetails?.max_length > 16
+        ? cardDetails?.max_length + 4
+        : cardDetails?.max_length + 3;
+    } else {
+      return 19;
+    }
+  };
 
   const cardNumberInput = () => {
     const inputStyle = {
@@ -97,7 +115,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
           value={cardNumber}
           onChangeText={(text) => updateCard(text)}
           keyboardType={'numeric'}
-          maxLength={19}
+          maxLength={getMaxLength()}
           icon={renderCardIcon()}
         />
         {renderInvalidCardNumber()}
@@ -163,7 +181,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
           value={CVV}
           onChangeText={(text) => setCVV(text)}
           keyboardType={'numeric'}
-          maxLength={4}
+          maxLength={cardDetails?.cvv_length?.[0] ? cardDetails.cvv_length[0] : 4}
           secureTextEntry={true}
         />
       </View>
