@@ -270,9 +270,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   const OtherBanks = () => {
-    const topBanks = paymentMethods.find((item: any) => item?.name == 'NB');
-    const methods = topBanks?.featured_banks.map((item: any) => item?.method) || [];
-    const otherBanks = banks.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
+    const methods = topBanks?.featured_banks?.map((item: any) => item?.method) || [];
+    const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,
