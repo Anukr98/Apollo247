@@ -212,20 +212,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const btnTxt = item?.banner_template_info?.Button;
     let imageHeight = 180;
 
-    if (!subHeaderText2 || !btnTxt || !headerText3) {
-      imageHeight = isDynamicBanner ? 160 : 144;
-      Image.getSize(
-        bannerUri,
-        (width, height) => {
-          imageHeight = height;
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    } else {
-      imageHeight = 180;
-    }
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -242,7 +228,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           styles.hdfcBanner,
           {
             height: imageHeight,
-            width: isDynamicBanner ? width - 30 : 320,
           },
         ]}
       >
@@ -251,13 +236,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             height: imageHeight,
             width: '100%',
           }}
-          imageStyle={{
-            borderRadius: isDynamicBanner ? 7 : 0,
-          }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={isDynamicBanner ? 'cover' : 'contain'}
+          resizeMode={'contain'}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
@@ -602,10 +584,7 @@ const renderDot = (active: boolean) => (
 
 const styles = StyleSheet.create({
   hdfcBanner: {
-    ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.CLEAR,
-    borderRadius: 12,
-    elevation: 8,
     marginTop: 10,
     marginHorizontal: 28,
     marginBottom: 15,
@@ -640,7 +619,7 @@ const styles = StyleSheet.create({
   },
   bottomView: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 15,
     left: 13,
   },
   upgradeBtnView: {
@@ -652,6 +631,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     justifyContent: 'center',
     minHeight: 35,
+    elevation: 8,
   },
   upgradeText: {
     ...theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW),
