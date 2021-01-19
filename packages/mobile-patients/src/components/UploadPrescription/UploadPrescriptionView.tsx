@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   cameraView: {
-    // flex: 1,
     height: height / 2.5,
     marginBottom: 140,
   },

@@ -159,7 +159,6 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
   const samplePrescriptionImage = require('@aph/mobile-patients/src/components/ui/icons/Sample_Prescription.png');
 
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
-    // if (index === slideIndex) {
     return (
       <View style={{ height, marginTop: 20 }}>
         <View style={item?.highlightContainer} />
@@ -184,9 +183,6 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
         </View>
       </View>
     );
-    // } else {
-    //   return null;
-    // }
   };
 
   const renderCarousel = () => {
