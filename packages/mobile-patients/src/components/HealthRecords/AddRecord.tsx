@@ -529,9 +529,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
-  const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([
-    TestRecordInitialValues,
-  ]);
+  const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([]);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [endDateTimePickerVisible, setEndDateTimePickerVisible] = useState<boolean>(false);
   const [allergyCheckbox, setAllergyCheckbox] = useState(false);
@@ -661,9 +659,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           labResultsObj.maximum = parseFloat((maxMin[1] || 0).toString());
           labResultsArray.push(labResultsObj);
         });
-        setTestRecordParameters(
-          labResultsArray?.length > 0 ? labResultsArray : [TestRecordInitialValues]
-        );
+        setTestRecordParameters(labResultsArray?.length > 0 ? labResultsArray : []);
         setadditionalNotes(selectedRecord?.additionalNotes || '');
         setdateOfTest(
           selectedRecord?.date
@@ -801,12 +797,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const isTestRecordParameterFilled = () => {
     const testRecordsVaild = testRecordParameters
       .map((item) => {
-        return {
-          ...item,
-          result: parseFloat((item?.result || 0).toString()),
-          maximum: parseFloat((item?.maximum || 0).toString()),
-          minimum: parseFloat((item?.minimum || 0).toString()),
-        };
+        return item !== TestRecordInitialValues
+          ? {
+              ...item,
+              result: parseFloat((item?.result || 0).toString()),
+              maximum: parseFloat((item?.maximum || 0).toString()),
+              minimum: parseFloat((item?.minimum || 0).toString()),
+            }
+          : undefined;
       })
       .filter((item) => item !== undefined) as LabTestParameters[];
 
@@ -822,10 +820,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const validRecordDetails1 = recordType && dateOfTest && testName && docName;
     const valid = isTestRecordParameterFilled().map((item) => {
       return {
-        maxmin: item?.maximum! > item?.minimum!,
+        maxmin: (item?.maximum || item?.minimum) && item?.maximum! > item?.minimum!,
         changed: true,
-        noParameterName: item?.parameterName || '',
-        noUnits: item?.unit || '',
         notinitial:
           item?.parameterName === '' &&
           item?.result === 0 &&
@@ -844,11 +840,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     message === '' &&
       valid.forEach((item) => {
-        if (!item?.noParameterName) {
-          message = 'Please enter parameter name';
-        } else if (!item?.noUnits) {
-          message = 'Please enter units';
-        } else if (item?.maxmin === false) {
+        if (item?.maxmin === false) {
           message = 'Please enter valid Maximum and Minimum';
         }
       });
@@ -857,7 +849,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return {
       isvalid: finval,
       isValidParameter:
-        valid.find((i) => i?.maxmin === false || !i?.noParameterName || !i?.noUnits) !== undefined,
+        valid.find((i) => i?.maxmin === false || (i?.changed === false && !i?.notinitial)) !==
+        undefined,
       message: message,
     };
   };
@@ -2296,12 +2289,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
 
     const rightElementParameter = (i: number) => {
-      return testRecordParameters?.length > 1 ? (
+      return (
         <TouchableOpacity activeOpacity={1} onPress={() => onPressRemoveRecordParameter(i)}>
           <PhrRemoveTestDetailsIcon style={{ width: 20, height: 20 }} />
         </TouchableOpacity>
-      ) : (
-        undefined
       );
     };
 
