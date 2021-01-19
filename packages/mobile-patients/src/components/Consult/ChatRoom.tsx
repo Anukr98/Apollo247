@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     width: 282,
     borderRadius: 10,
-    marginVertical: 2,
+    marginVertical: 8,
     alignSelf: 'flex-start',
   },
   iconCont: {
@@ -476,6 +476,7 @@ const styles = StyleSheet.create({
   buttonStyle: {
     marginVertical: 5,
     backgroundColor: '#fff',
+    ...theme.viewStyles.cardViewStyle,
   },
   timeStamp: {
     color: '#0087BA',
@@ -570,6 +571,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
+  const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
+  const MedicinePrescriptions = currentCaseSheet?.filter(
+    (item: any) => item?.medicinePrescription !== null
+  );
+  const TestPrescriptions = currentCaseSheet?.filter(
+    (item: any) => item?.diagnosticPrescription !== null
+  );
   const {
     setDoctorJoinedChat,
     doctorJoinedChat,
@@ -1025,6 +1033,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    fetchAppointmentData();
     checkAutoTriggerMessagePostAppointmentTime();
     return function cleanup() {
       BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
@@ -2837,9 +2846,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(
       moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
     );
-    if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
-      describeYourMedicalConditionAutomatedText(5000);
-    }
     const doctorConnectShortly = insertText.filter((obj: any) => {
       return obj.message === doctorWillConnectShortly;
     });
@@ -2896,6 +2902,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         doctorWillJoinAutomatedText();
       }
       describeYourMedicalConditionAutomatedText();
+    } else {
+      if (appointmentData.isJdQuestionsComplete) {
+        const result = insertText.filter((obj: any) => {
+          return obj.message === consultPatientStartedMsg;
+        });
+        const startConsultResult = insertText.filter((obj: any) => {
+          return obj.message === startConsultMsg;
+        });
+        const diffMin = Math.ceil(
+          moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
+          describeYourMedicalConditionAutomatedText(5000);
+        }
+      }
     }
   };
 
@@ -3311,6 +3332,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const fetchAppointmentData = async () => {
+    try {
+      setLoading?.(true);
+      const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId: channel },
+        fetchPolicy: 'no-cache',
+      });
+      setLoading?.(false);
+      setcurrentCaseSheet(response.data?.getAppointmentData?.appointmentsHistory?.[0]?.caseSheet);
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender(`${AppRoutes.ChatRoom}_fetchAppointmentData`, error);
+    }
+  };
+
   const addMessages = (message: Pubnub.MessageEvent) => {
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
@@ -3718,7 +3755,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <Button
                 title={'VIEW PRESCRIPTION'}
-                style={{ flex: 1, marginRight: 16, marginLeft: 16 }}
+                style={{ flex: 1, marginRight: 16, marginLeft: 16, marginTop: 5 }}
                 onPress={() => {
                   try {
                     postAppointmentWEGEvent(
@@ -3766,14 +3803,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onAddToCart = () => {
-    const medPrescription = (caseSheet[0]?.medicinePrescription || []).filter((item) => item!.id);
-    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheet[0]?.blobName!);
+    const medPrescription = (
+      caseSheet?.[0]?.medicinePrescription ||
+      MedicinePrescriptions ||
+      []
+    ).filter((item: any) => item!.id);
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+      caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
+    );
     const presToAdd = {
-      id: caseSheet[0]?.id,
+      id: caseSheet?.[0]?.id || currentCaseSheet?.[0].id,
       date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: appointmentData?.doctorInfo?.displayName || '',
       forPatient: currentPatient?.firstName || '',
-      medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
+      medicines: (medPrescription || []).map((item: any) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
     setEPrescriptions && setEPrescriptions([presToAdd]);
@@ -3802,9 +3845,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     }
 
-    const testPrescription = (caseSheet[0]?.diagnosticPrescription ||
+    const testPrescription = (caseSheet?.[0]?.diagnosticPrescription ||
+      MedicinePrescriptions ||
       []) as getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription[];
-    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheet[0]?.blobName!);
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+      caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
+    );
 
     if (!testPrescription.length) {
       Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
@@ -3812,7 +3858,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return;
     }
     const presToAdd = {
-      id: caseSheet[0]?.id,
+      id: caseSheet?.[0]?.id || currentCaseSheet?.[0].id,
       date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: appointmentData?.doctorInfo?.displayName || '',
       forPatient: (currentPatient && currentPatient.firstName) || '',
@@ -3863,8 +3909,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const orderMedicine = (rowData: any, index: number) => {
-    console.log('rowdata', rowData);
-
     return (
       <>
         <View style={styles.MsgCont}>
@@ -3879,7 +3923,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 'Order Medicines in one click and get free home delivery in 2-4 hours. We also have home sample collections for diagnostic tests.'
               }
             </Text>
-            {caseSheet[0]?.medicinePrescription && (
+            {(caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions?.length > 0) && (
               <Button
                 title={'ORDER MEDICINES'}
                 titleTextStyle={{ color: '#FC9916' }}
@@ -3887,7 +3931,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 onPress={() => onAddToCart()}
               />
             )}
-            {caseSheet[0]?.diagnosticPrescription && (
+            {(caseSheet?.[0]?.diagnosticPrescription || TestPrescriptions?.length > 0) && (
               <Button
                 title={'BOOK DIAGNOSTIC TESTS'}
                 titleTextStyle={{ color: '#FC9916' }}
@@ -7778,6 +7822,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={(ratingStatus, ratingOption) => {
+          fetchAppointmentData();
           postRatingGivenWEGEvent(ratingStatus!, ratingOption);
           setShowFeedback(false);
           showAphAlert!({

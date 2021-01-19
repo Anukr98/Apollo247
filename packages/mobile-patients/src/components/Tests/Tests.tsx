@@ -2642,21 +2642,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 // extraData={itemsLoading}
                 renderItem={renderSearchSuggestionItemView}
               />
-              <View style={styles.viewAllContainer}>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    props.navigation.navigate(AppRoutes.SearchTestScene, {
-                      searchText: searchText,
-                    });
-                    setSearchText('');
-                    setDiagnosticResults([]);
-                  }}
-                  style={styles.viewAllTouchView}
-                >
-                  <Text style={styles.viewAllText}>VIEW ALL RESULTS</Text>
-                </TouchableOpacity>
-              </View>
+              {diagnosticResults?.length > 6 && (
+                <View style={styles.viewAllContainer}>
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      props.navigation.navigate(AppRoutes.SearchTestScene, {
+                        searchText: searchText,
+                      });
+                      setSearchText('');
+                      setDiagnosticResults([]);
+                    }}
+                    style={styles.viewAllTouchView}
+                  >
+                    <Text style={styles.viewAllText}>VIEW ALL RESULTS</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )
         )}

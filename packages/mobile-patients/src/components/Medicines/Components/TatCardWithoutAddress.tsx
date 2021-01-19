@@ -20,9 +20,9 @@ export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (prop
     tommorowDate.setDate(tommorowDate.getDate() + 1);
 
     if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
-      return `Expected Delivery by: ${format(deliveryTime, 'h:mm A')}, Today!`;
+      return `Expected Delivery by Today!`;
     } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
-      return `Expected Delivery by: ${format(deliveryTime, 'h:mm A')}, Tomorrow!`;
+      return `Expected Delivery by Tomorrow!`;
     } else {
       return `Expected Delivery by: ${format(deliveryTime, 'D-MMM-YYYY')}`;
     }

@@ -846,7 +846,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
       orderCancelText?: string
     ) => {
-      const shipmentNumber = order?.medicineOrderShipments?.[0]?.apOrderNo;
+      const shipmentNumber = order?.medicineOrderShipments?.[0]?.trackingNo;
+      const shipmentProvider = order?.medicineOrderShipments?.[0]?.trackingProvider;
+      const showTracking = !!shipmentNumber && shipmentProvider === 'Delhivery Express';
+
       const renderTrackOrder = (
         <Text
           onPress={() => {
@@ -922,9 +925,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.SHIPPED]: [
           '',
-          `Your order has been picked-up by our courier partner and is in-transit. Shipment AWB number is ${shipmentNumber}.`,
+          showTracking
+            ? `Your order has been picked-up by our courier partner and is in-transit. Shipment AWB number is ${shipmentNumber}.`
+            : '',
           () => {},
-          shipmentNumber ? renderTrackOrder : null,
+          showTracking ? renderTrackOrder : null,
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',

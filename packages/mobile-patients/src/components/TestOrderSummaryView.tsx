@@ -8,7 +8,6 @@ import {
   g,
   formatTestSlotWithBuffer,
   postWebEngageEvent,
-  isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -26,6 +25,7 @@ export interface LineItemPricing {
 }
 
 const { height, width } = Dimensions.get('window');
+const isSmallDevice = width < 370;
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   viewOrderDetailsContainer: {
-    zIndex: 100,
-    height: 40,
-    width: '80%',
+    zIndex: 1000,
+    height: 50,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',

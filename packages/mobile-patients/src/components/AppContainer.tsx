@@ -5,12 +5,12 @@ import { DiagnosticsCartProvider } from '@aph/mobile-patients/src/components/Dia
 import { NavigatorContainer } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import React from 'react';
 import { Platform, Text, TextInput, TouchableOpacity } from 'react-native';
 import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
 
-const codePushOptions: CodePushOptions = {
+let codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
   installMode: codePush.InstallMode.ON_NEXT_RESTART,
   mandatoryInstallMode: codePush.InstallMode.ON_NEXT_RESTART,
@@ -19,6 +19,10 @@ const codePushOptions: CodePushOptions = {
       ? AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_ANDROID
       : AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_IOS,
 };
+
+if (AppConfig.APP_ENV !== AppEnv.PROD) {
+  codePushOptions['updateDialog'] = {};
+}
 
 export type CodePushInfo = {
   syncStatus?: codePush.SyncStatus;
@@ -41,18 +45,19 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
     (TouchableOpacity as any).defaultProps.activeOpacity = 1;
   }
 
-  /**
-   * Enable silent code push updates
-   */
-  /*
   codePushStatusDidChange(status: codePush.SyncStatus) {
-    this.setState({ codePushInfo: { ...this.state.codePushInfo, syncStatus: status } });
+    //Enable silent code push updates
+    if (AppConfig.APP_ENV !== AppEnv.PROD) {
+      this.setState({ codePushInfo: { ...this.state.codePushInfo, syncStatus: status } });
+    }
   }
 
   codePushDownloadDidProgress(progress: DownloadProgress) {
-    this.setState({ codePushInfo: { ...this.state.codePushInfo, downloadProgress: progress } });
+    //Enable silent code push updates
+    if (AppConfig.APP_ENV !== AppEnv.PROD) {
+      this.setState({ codePushInfo: { ...this.state.codePushInfo, downloadProgress: progress } });
+    }
   }
-  */
 
   renderCodePushUi = () => {
     return <CodePushInfoUi codePushInfo={this.state.codePushInfo} />;

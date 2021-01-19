@@ -116,9 +116,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     );
   };
 
-  const renderKeyIngrediant = () => (
+  const renderKeyIngredient = () => (
     <View>
-      <Text style={styles.subHeading}>Key Ingrediant</Text>
+      <Text style={styles.subHeading}>Key Ingredient</Text>
       <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{key_ingredient}</Text>
     </View>
   );
@@ -154,9 +154,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
   const renderVegetarianIcon = () => {
     return vegetarian === 'Yes' ? (
       <VegetarianIcon style={styles.vegIcon} />
-    ) : (
+    ) : vegetarian === 'No' ? (
       <NonVegetarianIcon style={styles.vegIcon} />
-    );
+    ) : null;
   };
 
   const renderOtherInformation = () => (
@@ -187,7 +187,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
         <PharmaMedicineInfo
           name={name}
           pharmaOverview={pharmaOverview}
-          vegetarian={vegetarian === 'Yes'}
+          vegetarian={vegetarian}
           key_ingredient={key_ingredient}
           size={size}
           flavour_fragrance={flavour_fragrance}
@@ -199,7 +199,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
           {!!storage && renderStorage()}
           {!!vegetarian && renderVegetarianIcon()}
           {!!key_benefits && renderKeyBenefits()}
-          {!!key_ingredient && renderKeyIngrediant()}
+          {!!key_ingredient && renderKeyIngredient()}
           {!!size && renderSize()}
           {!!flavour_fragrance && renderFlavour()}
           {!!colour && renderColor()}

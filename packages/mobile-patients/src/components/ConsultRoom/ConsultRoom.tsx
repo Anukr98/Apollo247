@@ -148,6 +148,10 @@ import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
+import {
+  preFetchSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 const { Vitals } = NativeModules;
 
@@ -523,6 +527,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    preFetchSDK(currentPatient?.id);
+    createHyperServiceObject();
+  }, []);
+
+  useEffect(() => {
     if (currentPatient?.id) {
       saveDeviceNotificationToken(currentPatient.id);
       notifyAppVersion(currentPatient.id);
@@ -767,6 +776,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
     if (eventName == WebEngageEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
+    if (eventName == WebEngageEventName.BOOK_DOCTOR_APPOINTMENT) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
     }
     postWebEngageEvent(eventName, eventAttributes);

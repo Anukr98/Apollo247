@@ -270,60 +270,12 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           }
           //if user denied the permission
           else {
-            const checkPinCodeFrom =
-              source == 'Diagnostics Cart' ? diagnosticLocation : pharmacyLocation;
-            if (checkPinCodeFrom) {
-              //get pincode from pharam's pincode.
-              const zipcode = checkPinCodeFrom?.pincode;
-              //call the api to get lat,long + address from pincode.
-              getPlaceInfoByPincode(zipcode)
-                .then((data) => {
-                  console.log({ data });
-                  const addrComponents = data?.data?.results[0]?.address_components || [];
-                  const coordinates = data?.data?.results[0]?.geometry?.location || [];
-
-                  setRegion({
-                    latitude: coordinates?.lat,
-                    longitude: coordinates?.lng,
-                    latitudeDelta: latitudeDelta,
-                    longitudeDelta: longitudeDelta,
-                  });
-                  setLatitude(Number(coordinates?.lat));
-                  setLongitude(Number(coordinates?.lng));
-
-                  const { setMapAddress, formattedLocalAddress } = createAddressToShow(
-                    addrComponents,
-                    coordinates
-                  );
-
-                  setAddressString(setMapAddress);
-                  setLocationResponse(formattedLocalAddress);
-
-                  isConfirmButtonDisabled && setConfirmButtonDisabled(false);
-                  isMapDisabled && setMapDisabled(false);
-                })
-                .catch((error) => {
-                  console.log({ error });
-                  CommonBugFender('AddAddress_getPlaceInfoByPincode_error', error);
-                });
-            }
-            //if nothing is present in pharma homepage (greyed out map + confirm button disable)
-            else {
-              setConfirmButtonDisabled(true);
-              setMapDisabled(true);
-              setRegion({
-                latitude: 0,
-                longitude: 0,
-                latitudeDelta: latitudeDelta,
-                longitudeDelta: longitudeDelta,
-              });
-              setLatitude(Number(0));
-              setLongitude(Number(0));
-            }
+            setAddressFromHomepage();
           }
         })
         .catch((e) => {
-          renderAlert(e);
+          // renderAlert(e);
+          setAddressFromHomepage();
           CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
         })
         .finally(() => {
@@ -331,6 +283,58 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         });
     }
   }, []);
+
+  const setAddressFromHomepage = () => {
+    const checkPinCodeFrom = source == 'Diagnostics Cart' ? diagnosticLocation : pharmacyLocation;
+    if (checkPinCodeFrom) {
+      //get pincode from pharam's pincode.
+      const zipcode = checkPinCodeFrom?.pincode;
+      //call the api to get lat,long + address from pincode.
+      getPlaceInfoByPincode(zipcode)
+        .then((data) => {
+          console.log({ data });
+          const addrComponents = data?.data?.results[0]?.address_components || [];
+          const coordinates = data?.data?.results[0]?.geometry?.location || [];
+
+          setRegion({
+            latitude: coordinates?.lat,
+            longitude: coordinates?.lng,
+            latitudeDelta: latitudeDelta,
+            longitudeDelta: longitudeDelta,
+          });
+          setLatitude(Number(coordinates?.lat));
+          setLongitude(Number(coordinates?.lng));
+
+          const { setMapAddress, formattedLocalAddress } = createAddressToShow(
+            addrComponents,
+            coordinates
+          );
+
+          setAddressString(setMapAddress);
+          setLocationResponse(formattedLocalAddress);
+
+          isConfirmButtonDisabled && setConfirmButtonDisabled(false);
+          isMapDisabled && setMapDisabled(false);
+        })
+        .catch((error) => {
+          console.log({ error });
+          CommonBugFender('AddAddress_getPlaceInfoByPincode_error', error);
+        });
+    }
+    //if nothing is present in pharma homepage (greyed out map + confirm button disable)
+    else {
+      setConfirmButtonDisabled(true);
+      setMapDisabled(true);
+      setRegion({
+        latitude: 0,
+        longitude: 0,
+        latitudeDelta: latitudeDelta,
+        longitudeDelta: longitudeDelta,
+      });
+      setLatitude(Number(0));
+      setLongitude(Number(0));
+    }
+  };
 
   const fetchLatLongFromGoogleApi = (address: string, addressDetailObject?: any) => {
     setLoadingContext!(true);
@@ -481,10 +485,10 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   };
 
   const renderAlert = (message: string) => {
-    showAphAlert!({
-      title: string.common.uhOh,
-      description: message,
-    });
+    // showAphAlert!({
+    //   title: string.common.uhOh,
+    //   description: message,
+    // });
     setConfirmButtonDisabled(true);
     setMapDisabled(true);
   };

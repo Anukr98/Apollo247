@@ -54,5 +54,6 @@ allprojects {
         }
 
         maven { url 'https://kotlin.bintray.com/kotlinx/' }
+        maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
     }
 }

@@ -742,7 +742,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         ? userName.slice(0, setCharLen).concat('...')
         : userName;
     return (
-      <View style={{ margin: 20, marginBottom: 0 }}>
+      <View style={{ margin: 20, marginBottom: 0, marginTop: 10 }}>
         <Text
           style={{
             color: editName ? theme.colors.LIGHT_BLUE : theme.colors.SHERPA_BLUE,
@@ -1056,13 +1056,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           placeholder={'Enter Area Details'}
           inputStyle={styles.addressFieldsText}
         />
-        <Text style={[styles.addressLabel, { marginTop: '3%' }]}>LandMark</Text>
-        <TextInputComponent
-          value={landMark}
-          onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
-          placeholder={'Enter LandMark'}
-          inputStyle={styles.addressFieldsText}
-        />
         <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
           <View style={styles.pincodeView}>
             <Text style={styles.addressLabel}>*Pincode</Text>
@@ -1091,6 +1084,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             />
           </View>
         </View>
+        <Text style={[styles.addressLabel, { marginTop: '4%' }]}>LandMark</Text>
+        <TextInputComponent
+          value={landMark}
+          onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
+          placeholder={'Enter LandMark'}
+          inputStyle={styles.addressFieldsText}
+        />
+
         {/* state*/}
         <Text style={[styles.addressLabel, { marginTop: 12 }]}>*State</Text>
         <TextInputComponent
@@ -1231,10 +1232,10 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           {...keyboardVerticalOffset}
         >
           <ScrollView bounces={false}>
-            {renderUserName()}
-            {renderUserNumber()}
             {renderAddressText()}
             {renderAddress()}
+            {renderUserName()}
+            {renderUserNumber()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>
           <View
