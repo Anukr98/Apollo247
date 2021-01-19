@@ -1,7 +1,20 @@
+import React, { useEffect, useState } from 'react';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  Image,
+  FlatList,
+} from 'react-native';
+import { Overlay } from 'react-native-elements';
+import { ScrollView, NavigationScreenProps } from 'react-navigation';
 import { EPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -24,28 +37,15 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Dimensions,
-  Image,
-} from 'react-native';
-import { Overlay } from 'react-native-elements';
-import { ScrollView, NavigationScreenProps } from 'react-navigation';
-import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
   getPatientPrismMedicalRecords_V2,
   getPatientPrismMedicalRecords_V2Variables,
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
-import { CheckedIcon, UnCheck, TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import { TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
 import Pdf from 'react-native-pdf';
+import { SelectEprescriptionCard } from '@aph/mobile-patients/src/components/Medicines/Components/SelectEprescriptionCard';
 
 const { width, height } = Dimensions.get('window');
 
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    paddingHorizontal: 15,
   },
   healthRecord: {
     ...theme.viewStyles.cardViewStyle,
@@ -129,9 +129,10 @@ const styles = StyleSheet.create({
   },
   pdfPreview: {
     flex: 1,
-    marginTop: 6,
-    width: '100%',
-    height: '100%',
+    marginTop: 10,
+    width: width / 1.3,
+    height: height / 2.7,
+    marginBottom: 5,
     backgroundColor: 'transparent',
   },
   previewHeading: {
@@ -144,6 +145,24 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 17, theme.colors.LIGHT_BLUE, 1, 30),
     paddingLeft: 15,
     paddingTop: 10,
+  },
+  overLayStyle: {
+    padding: 0,
+    margin: 0,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+  },
+  safeAreaStyle: {
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    flex: 1,
+  },
+  buttonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 60,
+  },
+  buttonCta: {
+    marginHorizontal: 60,
+    marginVertical: 10,
   },
 });
 
@@ -362,37 +381,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     return diff <= PRESCRIPTION_VALIDITY_IN_DAYS ? true : false;
   });
 
-  const renderEPrescription = (
-    item: EPrescription,
-    i: number,
-    arrayLength: number,
-    disabled?: boolean
-  ) => {
-    return (
-      <EPrescriptionCard
-        key={i}
-        actionType="selection"
-        isSelected={!!selectedPrescription[item.id]}
-        date={item.date}
-        doctorName={item.doctorName}
-        forPatient={item.forPatient}
-        medicines={item.medicines}
-        isDisabled={disabled}
-        style={{
-          marginVertical: 4,
-          width: width / 3,
-        }}
-        onSelect={(isSelected) => {
-          setSelectedPrescription({
-            ...selectedPrescription,
-            [item.id]: isSelected,
-          });
-        }}
-        uploadedUrl={item?.uploadedUrl}
-      />
-    );
-  };
-
   const renderNoPrescriptions = () => {
     if (
       !loading &&
@@ -412,73 +400,62 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     }
   };
 
+  const renderHealthRecord = ({ item, index }) => {
+    const { data } = item;
+    const selected = selectedHealthRecord.findIndex((i) => i === index.toString()) > -1;
+    const uploadedBy =
+      data?.sourceName || data?.source || data?.labTestSource ? currentPatient?.firstName : '';
+    const isPdf = data?.fileUrl.split('.').pop() === 'pdf';
+    const heading =
+      uploadedBy ||
+      data?.testName ||
+      data?.issuingDoctor ||
+      data?.location ||
+      data?.diagnosisNotes ||
+      data?.healthCheckName ||
+      data?.labTestName ||
+      data?.prescriptionName;
+    const dateOfPrescription = moment(
+      data?.date || data?.testDate || data?.appointmentDate || data?.dateOfHospitalization
+    ).format('DD MMMM YYYY');
+    return (
+      <SelectEprescriptionCard
+        selected={selected}
+        isPdf={isPdf}
+        url={data?.fileUrl || ''}
+        heading={heading}
+        date={dateOfPrescription}
+        onLongPressCard={() => {
+          setIsPdfPrescription(isPdf);
+          setImageUrl(data?.fileUrl);
+          setImageIndex(index.toString());
+          setShowPreview(true);
+        }}
+        onPressCard={() => {
+          if (selected) {
+            setSelectedHealthRecord([
+              ...selectedHealthRecord.filter((i) => i !== index.toString()),
+            ]);
+          } else {
+            setSelectedHealthRecord([...selectedHealthRecord, index.toString()]);
+          }
+        }}
+      />
+    );
+  };
+
   const renderHealthRecords = () => {
     return (
-      <View style={styles.healthRecordContainer}>
-        {combination &&
-          combination.map(({ type, data }, index) => {
-            const selected = selectedHealthRecord.findIndex((i) => i === index.toString()) > -1;
-            const uploadedBy =
-              data.sourceName || data.source || data.labTestSource ? currentPatient?.firstName : '';
-            const isPdf = data?.fileUrl.split('.').pop() === 'pdf';
-            return (
-              <TouchableOpacity
-                activeOpacity={1}
-                onLongPress={() => {
-                  setIsPdfPrescription(isPdf);
-                  setImageUrl(data?.fileUrl);
-                  setImageIndex(index.toString());
-                  setShowPreview(true);
-                }}
-                onPress={() => {
-                  if (selected) {
-                    setSelectedHealthRecord([
-                      ...selectedHealthRecord.filter((i) => i !== index.toString()),
-                    ]);
-                  } else {
-                    setSelectedHealthRecord([...selectedHealthRecord, index.toString()]);
-                  }
-                }}
-                style={styles.healthRecord}
-              >
-                {isPdf ? (
-                  <Pdf
-                    key={data?.fileUrl}
-                    onError={(error) => {
-                      console.log(error);
-                    }}
-                    source={{ uri: data?.fileUrl }}
-                    style={styles.pdfThumbnail}
-                  />
-                ) : (
-                  <Image source={{ uri: data.fileUrl }} style={styles.hrImage} />
-                )}
-                <View style={{ padding: 5 }}>
-                  <Text numberOfLines={1} style={styles.hrHeading}>
-                    {uploadedBy ||
-                      data.testName ||
-                      data.issuingDoctor ||
-                      data.location ||
-                      data.diagnosisNotes ||
-                      data.healthCheckName ||
-                      data.labTestName ||
-                      data.prescriptionName}
-                  </Text>
-                  <Text style={theme.viewStyles.text('R', 13, theme.colors.LIGHT_BLUE, 0.6, 24)}>
-                    {moment(
-                      data.date ||
-                        data.testDate ||
-                        data.appointmentDate ||
-                        data.dateOfHospitalization
-                    ).format('DD MMMM YYYY')}
-                  </Text>
-                </View>
-                <View style={styles.checkContainer}>
-                  {selected ? <CheckedIcon /> : <UnCheck />}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+      <View>
+        <Text style={styles.sectionHeadings}>Health Records</Text>
+        <FlatList
+          data={combination || []}
+          renderItem={renderHealthRecord}
+          keyExtractor={(item) => item.id}
+          numColumns={3}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 15 }}
+        />
       </View>
     );
   };
@@ -533,223 +510,238 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     );
   };
 
+  const renderEPrescriptions = (isOldPrescription: boolean) => {
+    return (
+      <View>
+        <Text style={styles.sectionHeadings}>
+          {isOldPrescription ? `E-Prescriptions older than 6 months` : `E-Prescriptions`}
+        </Text>
+        <FlatList
+          data={isOldPrescription ? prescriptionOlderThan6months : prescriptionUpto6months}
+          renderItem={renderEPrescription}
+          keyExtractor={(item) => item.id}
+          numColumns={3}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 15 }}
+        />
+      </View>
+    );
+  };
+
+  const renderEPrescription = ({ item, index }) => {
+    const isPdf = true;
+    const selected = !!selectedPrescription[item.id];
+    const heading = item?.doctorName || '';
+    const dateOfPrescription = item.date;
+    return (
+      <SelectEprescriptionCard
+        selected={selected}
+        isPdf={isPdf}
+        url={item?.uploadedUrl || ''}
+        heading={heading}
+        date={dateOfPrescription}
+        onLongPressCard={() => {
+          setIsPdfPrescription(isPdf);
+          setImageUrl(item?.uploadedUrl);
+          setImageIndex(index.toString());
+          setShowPreview(true);
+        }}
+        onPressCard={() => {
+          setSelectedPrescription({
+            ...selectedPrescription,
+            [item.id]: !selected,
+          });
+        }}
+      />
+    );
+  };
+
+  const onPressUpload = () => {
+    CommonLogEvent('SELECT_PRESCRIPTION_MODAL', 'Formatted e prescription');
+    const submitValues = prescriptionUpto6months.filter((item) => selectedPrescription[item!.id]);
+    if (combination) {
+      combination.forEach(({ type, data }, index) => {
+        if (selectedHealthRecord.findIndex((i) => i === index.toString()) > -1) {
+          let date = '';
+          let name = '';
+          let message = '';
+          let urls = '';
+          let prismImages = '';
+          let fileName = '';
+          if (type === 'lab') {
+            date = data?.date;
+            name = data?.labTestName || '-';
+            fileName = g(data, 'testResultFiles', '0', 'fileName') || '';
+            message = `${data?.labTestSource || ''} Report\n`;
+            message += `Test Name: ${name}\n`;
+            message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
+            message += `Test Date: ${date || '-'}\n`;
+            message += `${data?.observation ? `Observation Notes: ${data?.observation}\n` : ``}`;
+            message += `${
+              data?.additionalNotes ? `Additional Notes: ${data?.additionalNotes}\n` : ``
+            }`;
+            message += `---------------\n`;
+            (data?.labTestResults || []).forEach((record: any) => {
+              if (record) {
+                if (record.parameterName) {
+                  message += `${record.parameterName}\n`;
+                  message += `${
+                    record.result
+                      ? `Result: ${record.result} ${record.unit ? record.unit || '' : ''}\n`
+                      : ``
+                  }`;
+                } else {
+                  message += `Summary: ${record.result}`;
+                }
+              }
+            });
+            message = message.slice(0, -1);
+            prismImages = data?.id;
+            urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
+          } else if (type === 'prescription') {
+            date = data?.date;
+            name = data?.prescriptionName || '-';
+            fileName = g(data, 'prescriptionFiles', '0', 'fileName') || '';
+            message = `${data?.source || ''} Report\n`;
+            message += `Test Name: ${name}\n`;
+            message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
+            message += `Test Date: ${date || '-'}\n`;
+            message += `${data?.notes ? `Additional Notes: ${data?.notes}\n` : ``}`;
+            message += `---------------\n`;
+            message = message.slice(0, -1);
+            prismImages = data?.id;
+            urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
+          } else if (type === 'medical') {
+            date = data?.testDate;
+            name = data?.testName;
+            const unit = data?.unit;
+            message = `${data?.recordType.replace(/_/g, ' ')} Report\n`;
+            message += `Test Name: ${name}\n`;
+            message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
+            message += `Test Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
+            message += `${
+              data?.observation ? `Observation Notes: ${data?.additionalNotes}\n` : ``
+            }`;
+            message += `${
+              data?.additionalNotes ? `Additional Notes: ${data?.additionalNotes}\n` : ``
+            }`;
+            message += `---------------\n`;
+            (data?.medicalRecordParameters || []).forEach((record: any) => {
+              if (record) {
+                message += `${record.parameterName}\n`;
+                message += `${record.result ? `Result: ${record.result} ${unit || ''}\n` : ``}`;
+              }
+            });
+            message = message.slice(0, -1);
+            prismImages = data?.prismFileIds;
+            urls = data?.documentURLs;
+          } else if (type === 'health') {
+            date = data?.healthCheckName;
+            name = data?.healthCheckDate;
+            message = `Health Check: ${name}\n`;
+            message += `Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
+            message += `Summary: ${data?.healthCheckSummary}\n`;
+            message += ` ${data?.followupDate ? `Follow-up Date: ${data?.followupDate}` : ``}`;
+            prismImages = data?.healthCheckPrismFileIds && data?.healthCheckPrismFileIds.join(',');
+            urls = '';
+          } else if (type === 'hospital') {
+            date = data?.dateOfHospitalization;
+            name = 'Hospitalizations';
+            message = `Date of Hospitalization: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
+            message += `Date of Discharge: ${moment(data?.dateOfDischarge).format('DD-MMM-YYYY') ||
+              '-'}\n`;
+            message += `Diagnosis Notes: ${data?.diagnosisNotes}`;
+            prismImages =
+              data?.hospitalizationPrismFileIds && data?.hospitalizationPrismFileIds.join(',');
+            urls = '';
+          }
+          submitValues.push({
+            id: data?.id,
+            uploadedUrl: urls,
+            fileName: fileName,
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            doctorName: name,
+            date: moment(date).format(DATE_FORMAT),
+            prismPrescriptionFileId: prismImages,
+            message: message,
+            healthRecord: true,
+          } as EPrescription);
+        }
+      });
+    }
+    setSelectedHealthRecord([]);
+    props.onSubmit(submitValues);
+  };
+
+  const renderHeader = () => (
+    <Header
+      title={'SELECT FROM E-PRESCRIPTIONS'}
+      leftIcon="backArrow"
+      container={{
+        ...theme.viewStyles.cardContainer,
+      }}
+      onPressLeftIcon={() => props.onSubmit([])}
+    />
+  );
+
+  const renderSteps = () => (
+    <View style={{ marginLeft: 15 }}>
+      <View style={{ flexDirection: 'row' }}>
+        <TrackerBig style={styles.stepsIcon} />
+        <Text style={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 24)}>
+          Click on icon to select prescription.
+        </Text>
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <TrackerBig style={styles.stepsIcon} />
+        <Text style={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 24)}>
+          Long press to preview prescription.
+        </Text>
+      </View>
+    </View>
+  );
+
+  const renderBottomButton = () => (
+    <View style={styles.buttonContainer}>
+      <Button
+        title={'UPLOAD'}
+        disabled={
+          Object.keys(selectedPrescription).filter((item) => selectedPrescription[item]).length ==
+            0 && selectedHealthRecord.length === 0
+        }
+        onPress={onPressUpload}
+        style={styles.buttonCta}
+      />
+    </View>
+  );
+
   return (
     <Overlay
       onRequestClose={() => props.onSubmit([])}
-      overlayStyle={{
-        padding: 0,
-        margin: 0,
-        backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-      }}
+      overlayStyle={styles.overLayStyle}
       fullScreen
       isVisible={props.isVisible}
     >
       <View style={theme.viewStyles.container}>
-        <SafeAreaView
-          style={{
-            backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            flex: 1,
-          }}
-        >
-          <Header
-            title={'SELECT FROM E-PRESCRIPTIONS'}
-            leftIcon="backArrow"
-            container={{
-              ...theme.viewStyles.cardContainer,
-            }}
-            onPressLeftIcon={() => props.onSubmit([])}
-          />
+        <SafeAreaView style={styles.safeAreaStyle}>
+          {renderHeader()}
           <ScrollView bounces={false}>
             {!(loading || (props.displayPrismRecords && medPrismloading)) && (
               <>
                 {renderNoPrescriptions()}
                 <View style={{ height: 16 }} />
-                <View
-                  style={{
-                    marginLeft: 15,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row' }}>
-                    <TrackerBig style={styles.stepsIcon} />
-                    <Text style={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 24)}>
-                      Click on icon to select prescription.
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: 'row' }}>
-                    <TrackerBig style={styles.stepsIcon} />
-                    <Text style={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 24)}>
-                      Long press to preview prescription.
-                    </Text>
-                  </View>
-                </View>
-                {!!prescriptionUpto6months.length && (
-                  <Text style={styles.sectionHeadings}>E-Prescriptions</Text>
-                )}
-                {prescriptionUpto6months.map((item, index, array) => {
-                  return (
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      {renderEPrescription(item, index, array.length)}
-                    </View>
-                  );
-                })}
-                {!!combination?.length && props.displayPrismRecords && (
-                  <Text style={styles.sectionHeadings}>Health Records</Text>
-                )}
-                {props.displayPrismRecords && renderHealthRecords()}
-                {!!prescriptionOlderThan6months.length && (
-                  <Text style={styles.sectionHeadings}>E-Prescriptions older than 6 months</Text>
-                )}
-                {prescriptionOlderThan6months.map((item, index, array) => {
-                  return (
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      {renderEPrescription(item, index, array.length, true)}
-                    </View>
-                  );
-                })}
+                {(!!prescriptionUpto6months.length ||
+                  (!!combination?.length && props.displayPrismRecords) ||
+                  !!prescriptionOlderThan6months.length) &&
+                  renderSteps()}
+                {!!prescriptionUpto6months.length && renderEPrescriptions(false)}
+                {!!combination?.length && props.displayPrismRecords && renderHealthRecords()}
+                {!!prescriptionOlderThan6months.length && renderEPrescriptions(true)}
                 <View style={{ height: 12 }} />
               </>
             )}
           </ScrollView>
-          <View style={{ justifyContent: 'center', alignItems: 'center', marginHorizontal: 60 }}>
-            <Button
-              title={'UPLOAD'}
-              disabled={
-                Object.keys(selectedPrescription).filter((item) => selectedPrescription[item])
-                  .length == 0 && selectedHealthRecord.length === 0
-              }
-              onPress={() => {
-                CommonLogEvent('SELECT_PRESCRIPTION_MODAL', 'Formatted e prescription');
-                const submitValues = prescriptionUpto6months.filter(
-                  (item) => selectedPrescription[item!.id]
-                );
-                if (combination) {
-                  combination.forEach(({ type, data }, index) => {
-                    if (selectedHealthRecord.findIndex((i) => i === index.toString()) > -1) {
-                      let date = '';
-                      let name = '';
-                      let message = '';
-                      let urls = '';
-                      let prismImages = '';
-                      let fileName = '';
-                      if (type === 'lab') {
-                        date = data.date;
-                        name = data.labTestName || '-';
-                        fileName = g(data, 'testResultFiles', '0', 'fileName') || '';
-                        message = `${data.labTestSource || ''} Report\n`;
-                        message += `Test Name: ${name}\n`;
-                        message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
-                        message += `Test Date: ${date || '-'}\n`;
-                        message += `${
-                          data.observation ? `Observation Notes: ${data.observation}\n` : ``
-                        }`;
-                        message += `${
-                          data.additionalNotes ? `Additional Notes: ${data.additionalNotes}\n` : ``
-                        }`;
-                        message += `---------------\n`;
-                        (data.labTestResults || []).forEach((record: any) => {
-                          if (record) {
-                            if (record.parameterName) {
-                              message += `${record.parameterName}\n`;
-                              message += `${
-                                record.result
-                                  ? `Result: ${record.result} ${
-                                      record.unit ? record.unit || '' : ''
-                                    }\n`
-                                  : ``
-                              }`;
-                            } else {
-                              message += `Summary: ${record.result}`;
-                            }
-                          }
-                        });
-                        message = message.slice(0, -1);
-                        prismImages = data.id;
-                        urls = data.fileUrl ? data.fileUrl : ''; //prismImages;
-                      } else if (type === 'prescription') {
-                        date = data.date;
-                        name = data.prescriptionName || '-';
-                        fileName = g(data, 'prescriptionFiles', '0', 'fileName') || '';
-                        message = `${data.source || ''} Report\n`;
-                        message += `Test Name: ${name}\n`;
-                        message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
-                        message += `Test Date: ${date || '-'}\n`;
-                        message += `${data.notes ? `Additional Notes: ${data.notes}\n` : ``}`;
-                        message += `---------------\n`;
-                        message = message.slice(0, -1);
-                        prismImages = data.id;
-                        urls = data.fileUrl ? data.fileUrl : ''; //prismImages;
-                      } else if (type === 'medical') {
-                        date = data.testDate;
-                        name = data.testName;
-                        const unit = data?.unit;
-                        message = `${data.recordType.replace(/_/g, ' ')} Report\n`;
-                        message += `Test Name: ${name}\n`;
-                        message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
-                        message += `Test Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
-                        message += `${
-                          data.observation ? `Observation Notes: ${data.additionalNotes}\n` : ``
-                        }`;
-                        message += `${
-                          data.additionalNotes ? `Additional Notes: ${data.additionalNotes}\n` : ``
-                        }`;
-                        message += `---------------\n`;
-                        (data.medicalRecordParameters || []).forEach((record: any) => {
-                          if (record) {
-                            message += `${record.parameterName}\n`;
-                            message += `${
-                              record.result ? `Result: ${record.result} ${unit || ''}\n` : ``
-                            }`;
-                          }
-                        });
-                        message = message.slice(0, -1);
-                        prismImages = data.prismFileIds;
-                        urls = data.documentURLs;
-                      } else if (type === 'health') {
-                        date = data.healthCheckName;
-                        name = data.healthCheckDate;
-                        message = `Health Check: ${name}\n`;
-                        message += `Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
-                        message += `Summary: ${data.healthCheckSummary}\n`;
-                        message += ` ${
-                          data.followupDate ? `Follow-up Date: ${data.followupDate}` : ``
-                        }`;
-                        prismImages =
-                          data.healthCheckPrismFileIds && data.healthCheckPrismFileIds.join(',');
-                        urls = '';
-                      } else if (type === 'hospital') {
-                        date = data.dateOfHospitalization;
-                        name = 'Hospitalizations';
-                        message = `Date of Hospitalization: ${moment(date).format('DD-MMM-YYYY') ||
-                          '-'}\n`;
-                        message += `Date of Discharge: ${moment(data.dateOfDischarge).format(
-                          'DD-MMM-YYYY'
-                        ) || '-'}\n`;
-                        message += `Diagnosis Notes: ${data.diagnosisNotes}`;
-                        prismImages =
-                          data.hospitalizationPrismFileIds &&
-                          data.hospitalizationPrismFileIds.join(',');
-                        urls = '';
-                      }
-                      submitValues.push({
-                        id: data.id,
-                        uploadedUrl: urls,
-                        fileName: fileName,
-                        forPatient: (currentPatient && currentPatient.firstName) || '',
-                        doctorName: name,
-                        date: moment(date).format(DATE_FORMAT),
-                        prismPrescriptionFileId: prismImages,
-                        message: message,
-                        healthRecord: true,
-                      } as EPrescription);
-                    }
-                  });
-                }
-                setSelectedHealthRecord([]);
-                props.onSubmit(submitValues);
-              }}
-              style={{ marginHorizontal: 60, marginVertical: 20 }}
-            />
-          </View>
+          {renderBottomButton()}
         </SafeAreaView>
         {(loading || (props.displayPrismRecords && medPrismloading)) && <Spinner />}
         {showPreview && renderPrescriptionPreview()}
