@@ -402,10 +402,10 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   const renderHealthRecord = ({ item, index }) => {
     const { data } = item;
-    const selected = selectedHealthRecord.findIndex((i) => i === index.toString()) > -1;
+    const selected = selectedHealthRecord?.findIndex((i) => i === index.toString()) > -1;
     const uploadedBy =
       data?.sourceName || data?.source || data?.labTestSource ? currentPatient?.firstName : '';
-    const isPdf = data?.fileUrl.split('.').pop() === 'pdf';
+    const isPdf = data?.fileUrl?.split('.')?.pop() === 'pdf';
     const heading =
       uploadedBy ||
       data?.testName ||
@@ -434,10 +434,10 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         onPressCard={() => {
           if (selected) {
             setSelectedHealthRecord([
-              ...selectedHealthRecord.filter((i) => i !== index.toString()),
+              ...selectedHealthRecord?.filter((i) => i !== index?.toString()),
             ]);
           } else {
-            setSelectedHealthRecord([...selectedHealthRecord, index.toString()]);
+            setSelectedHealthRecord([...selectedHealthRecord, index?.toString()]);
           }
         }}
       />
@@ -461,7 +461,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   };
 
   const renderPrescriptionPreview = () => {
-    const selected = selectedHealthRecord.findIndex((i) => i === imageIndex.toString()) > -1;
+    const selected = selectedHealthRecord?.findIndex((i) => i === imageIndex.toString()) > -1;
     return (
       <Overlay
         onRequestClose={() => {}}
@@ -558,10 +558,10 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   const onPressUpload = () => {
     CommonLogEvent('SELECT_PRESCRIPTION_MODAL', 'Formatted e prescription');
-    const submitValues = prescriptionUpto6months.filter((item) => selectedPrescription[item!.id]);
+    const submitValues = prescriptionUpto6months?.filter((item) => selectedPrescription[item!.id]);
     if (combination) {
       combination.forEach(({ type, data }, index) => {
-        if (selectedHealthRecord.findIndex((i) => i === index.toString()) > -1) {
+        if (selectedHealthRecord?.findIndex((i) => i === index.toString()) > -1) {
           let date = '';
           let name = '';
           let message = '';
@@ -706,8 +706,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       <Button
         title={'UPLOAD'}
         disabled={
-          Object.keys(selectedPrescription).filter((item) => selectedPrescription[item]).length ==
-            0 && selectedHealthRecord.length === 0
+          Object.keys(selectedPrescription)?.filter((item) => selectedPrescription?.[item])
+            ?.length == 0 && selectedHealthRecord.length === 0
         }
         onPress={onPressUpload}
         style={styles.buttonCta}
