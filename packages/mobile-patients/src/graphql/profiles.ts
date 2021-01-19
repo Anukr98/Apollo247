@@ -2037,6 +2037,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         rescheduleCount
         isRescheduled
         collectionCharges
+        visitNo
         diagnosticOrderLineItems {
           id
           itemId

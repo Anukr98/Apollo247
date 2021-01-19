@@ -20,6 +20,7 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_PATIENT_FEEDBACK,
+  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrderDetails,
@@ -39,7 +40,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View, Text } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -48,12 +49,19 @@ import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHe
 import {
   DIAGNOSTIC_ORDER_STATUS,
   FEEDBACKTYPE,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
+import {
+  getPrismAuthToken,
+  getPrismAuthTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '../../graphql/types/getPatientPrismMedicalRecords_V2';
 
 const OTHER_REASON = string.Diagnostics_Feedback_Others;
 
@@ -193,6 +201,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const setOrders = props.navigation.getParam('setOrders');
   const selectedTest = props.navigation.getParam('selectedTest');
   const individualTestStatus = props.navigation.getParam('individualTestStatus');
+  const selectedOrder = props.navigation.getParam('selectedOrder');
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -203,6 +212,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
+  const [prismAuthToken, setPrismAuthToken] = useState('');
+  const [labResults, setLabResults] = useState<
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
+    | null
+    | undefined
+  >([]);
 
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
@@ -263,6 +278,56 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       orderStatusList.push(item[1]);
     }
   });
+
+  const getAuthToken = async () => {
+    setLoading!(true);
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+          fetchTestReportResult();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        setLoading!(false);
+      });
+  };
+
+  const fetchTestReportResult = useCallback(() => {
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+      .then((data: any) => {
+        console.log({ data });
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        setLabResults(labResultsData);
+        // put a check to filter based on identifier
+        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: labResultsData[1],
+          labResults: true,
+        });
+      })
+      .catch((error) => {
+        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        console.log('Error occured fetchTestReportsResult', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading!(false));
+  }, []);
 
   const showReportsGenerated =
     sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
@@ -492,7 +557,19 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const onPressViewReport = () => {
-    props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    const visitId = selectedOrder?.visitNo;
+    if (visitId) {
+      getAuthToken();
+    } else {
+      renderReportError(string.diagnostics.unableToOpenReport);
+    }
+  };
+
+  const renderReportError = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
   };
 
   const onPressButton = (buttonTitle: string) => {

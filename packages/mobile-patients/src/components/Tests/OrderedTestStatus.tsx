@@ -6,6 +6,7 @@ import {
   GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS,
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_STATUS,
+  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersList,
@@ -17,12 +18,15 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment, { length } from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import _ from 'lodash';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_STATUS,
+  MedicalRecordType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -35,11 +39,19 @@ import {
   getDiagnosticsOrderStatusVariables,
   getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
-import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getPackageInclusions,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   getDiagnosticCancelledOrderDetails,
   getDiagnosticCancelledOrderDetailsVariables,
-} from '../../graphql/types/getDiagnosticCancelledOrderDetails';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticCancelledOrderDetails';
+import {
+  getPrismAuthToken,
+  getPrismAuthTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '../../graphql/types/getPatientPrismMedicalRecords_V2';
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 
 export interface TestStatusObject {
@@ -145,6 +157,12 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const orderSelectedId = props.navigation.getParam('orderId');
   const orderSelected = props.navigation.getParam('selectedOrder');
   const [individualTestData, setIndividualTestData] = useState<any>([]);
+  const [prismAuthToken, setPrismAuthToken] = useState('');
+  const [labResults, setLabResults] = useState<
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
+    | null
+    | undefined
+  >([]);
 
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
@@ -226,6 +244,56 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         setLoading!(false);
       });
   };
+
+  const getAuthToken = async () => {
+    setLoading!(true);
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+          fetchTestReportResult();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        setLoading!(false);
+      });
+  };
+
+  const fetchTestReportResult = useCallback(() => {
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+      .then((data: any) => {
+        console.log({ data });
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        setLabResults(labResultsData);
+        // put a check to filter based on identifier
+        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          data: labResultsData[1],
+          labResults: true,
+        });
+      })
+      .catch((error) => {
+        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        console.log('Error occured fetchTestReportsResult', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading!(false));
+  }, []);
 
   const loadPackageDetails = async (
     packageId: string,
@@ -484,7 +552,19 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const _navigateToPHR = () => {
-    props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    const visitId = orderSelected?.visitNo;
+    if (visitId) {
+      getAuthToken();
+    } else {
+      renderReportError(string.diagnostics.unableToOpenReport);
+    }
+  };
+
+  const renderReportError = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
   };
 
   const mapStatusWithText = (val: string) => {
