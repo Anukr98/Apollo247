@@ -278,7 +278,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
                 setPhysicalPrescriptions([...physicalPrescriptions, ...imageClickData]);
               removeClickedPhoto();
               props.navigation.navigate(AppRoutes.UploadPrescription, {
-                phyPrescriptionsProp: imageClickData,
                 type: 'Camera',
               });
             }}
@@ -504,7 +503,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       setPhysicalPrescriptions &&
         setPhysicalPrescriptions([...physicalPrescriptions, ...documentData]);
       props.navigation.navigate(AppRoutes.UploadPrescription, {
-        phyPrescriptionsProp: documentData,
         type: 'Gallery',
       });
     } catch (e) {
@@ -549,7 +547,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         setPhysicalPrescriptions &&
           setPhysicalPrescriptions([...physicalPrescriptions, ...uploadedImages]);
         props.navigation.navigate(AppRoutes.UploadPrescription, {
-          phyPrescriptionsProp: uploadedImages,
           type: 'Gallery',
         });
       })
@@ -589,7 +586,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           }
           setEPrescriptions && setEPrescriptions([...ePrescriptions, ...selectedEPres]);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
-            ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',
           });
         }}
