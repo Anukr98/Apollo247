@@ -45,6 +45,7 @@ import {
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { CheckedIcon, UnCheck, TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import Pdf from 'react-native-pdf';
 
 const { width, height } = Dimensions.get('window');
 
@@ -119,6 +120,31 @@ const styles = StyleSheet.create({
     marginTop: 9,
     marginRight: 8,
   },
+  pdfThumbnail: {
+    flex: 1,
+    marginTop: 6,
+    width: width / 4,
+    height: width / 3.5,
+    backgroundColor: 'transparent',
+  },
+  pdfPreview: {
+    flex: 1,
+    marginTop: 6,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+  },
+  previewHeading: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    ...theme.viewStyles.text('M', 18, theme.colors.LIGHT_BLUE, 1, 24),
+  },
+  sectionHeadings: {
+    ...theme.viewStyles.text('SB', 17, theme.colors.LIGHT_BLUE, 1, 30),
+    paddingLeft: 15,
+    paddingTop: 10,
+  },
 });
 
 export interface SelectEPrescriptionModalProps extends NavigationScreenProps {
@@ -135,6 +161,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [imageIndex, setImageIndex] = useState<string>('');
+  const [isPdfPrescription, setIsPdfPrescription] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const DATE_FORMAT = 'DD MMM YYYY';
@@ -393,10 +420,17 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             const selected = selectedHealthRecord.findIndex((i) => i === index.toString()) > -1;
             const uploadedBy =
               data.sourceName || data.source || data.labTestSource ? currentPatient?.firstName : '';
+            const isPdf = data?.fileUrl.split('.').pop() === 'pdf';
             return (
               <TouchableOpacity
                 activeOpacity={1}
                 onLongPress={() => {
+                  setIsPdfPrescription(isPdf);
+                  setImageUrl(data?.fileUrl);
+                  setImageIndex(index.toString());
+                  setShowPreview(true);
+                }}
+                onPress={() => {
                   if (selected) {
                     setSelectedHealthRecord([
                       ...selectedHealthRecord.filter((i) => i !== index.toString()),
@@ -405,20 +439,20 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                     setSelectedHealthRecord([...selectedHealthRecord, index.toString()]);
                   }
                 }}
-                onPress={() => {
-                  if (selected) {
-                    setSelectedHealthRecord([
-                      ...selectedHealthRecord.filter((i) => i !== index.toString()),
-                    ]);
-                  } else {
-                    setImageUrl(data.fileUrl);
-                    setImageIndex(index.toString());
-                    setShowPreview(true);
-                  }
-                }}
                 style={styles.healthRecord}
               >
-                <Image source={{ uri: data.fileUrl }} style={styles.hrImage} />
+                {isPdf ? (
+                  <Pdf
+                    key={data?.fileUrl}
+                    onError={(error) => {
+                      console.log(error);
+                    }}
+                    source={{ uri: data?.fileUrl }}
+                    style={styles.pdfThumbnail}
+                  />
+                ) : (
+                  <Image source={{ uri: data.fileUrl }} style={styles.hrImage} />
+                )}
                 <View style={{ padding: 5 }}>
                   <Text numberOfLines={1} style={styles.hrHeading}>
                     {uploadedBy ||
@@ -450,35 +484,40 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   };
 
   const renderPrescriptionPreview = () => {
+    const selected = selectedHealthRecord.findIndex((i) => i === imageIndex.toString()) > -1;
     return (
       <Overlay
         onRequestClose={() => {}}
         isVisible={showPreview}
         onBackdropPress={() => setShowPreview(false)}
       >
-        <Text
-          style={{
-            position: 'absolute',
-            top: 10,
-            left: 10,
-            ...theme.viewStyles.text('M', 18, theme.colors.LIGHT_BLUE, 1, 24),
-          }}
-        >
-          Prescription Image
+        <Text style={styles.previewHeading}>
+          {isPdfPrescription ? `Prescription PDF` : `Prescription Image`}
         </Text>
-        <Image style={styles.overlayImage} source={{ uri: imageUrl }} />
+        {isPdfPrescription ? (
+          <Pdf
+            key={imageUrl}
+            onError={(error) => {
+              console.log(error);
+            }}
+            source={{ uri: imageUrl }}
+            style={styles.pdfPreview}
+          />
+        ) : (
+          <Image style={styles.overlayImage} source={{ uri: imageUrl }} />
+        )}
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
           <TouchableOpacity
             onPress={() => {
-              setSelectedHealthRecord([...selectedHealthRecord, imageIndex]);
+              if (!selected) setSelectedHealthRecord([...selectedHealthRecord, imageIndex]);
               setTimeout(() => {
                 setShowPreview(false);
-              }, 1000);
+              }, 700);
             }}
             activeOpacity={0.7}
             style={styles.selectButton}
           >
-            <Text style={styles.selectText}>SELECT</Text>
+            <Text style={styles.selectText}>{selected ? `SELECTED` : `SELECT`}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
@@ -543,6 +582,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                     </Text>
                   </View>
                 </View>
+                {!!prescriptionUpto6months.length && (
+                  <Text style={styles.sectionHeadings}>E-Prescriptions</Text>
+                )}
                 {prescriptionUpto6months.map((item, index, array) => {
                   return (
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -550,12 +592,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                     </View>
                   );
                 })}
+                {!!combination?.length && props.displayPrismRecords && (
+                  <Text style={styles.sectionHeadings}>Health Records</Text>
+                )}
                 {props.displayPrismRecords && renderHealthRecords()}
                 {!!prescriptionOlderThan6months.length && (
-                  <SectionHeader
-                    style={{ marginTop: 14, marginBottom: 10 }}
-                    leftText="PRESCRIPTIOINS OLDER THAN 6 MONTHS"
-                  />
+                  <Text style={styles.sectionHeadings}>E-Prescriptions older than 6 months</Text>
                 )}
                 {prescriptionOlderThan6months.map((item, index, array) => {
                   return (

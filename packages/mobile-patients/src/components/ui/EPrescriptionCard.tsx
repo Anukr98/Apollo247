@@ -18,6 +18,8 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import Pdf from 'react-native-pdf';
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   upperContainer: {
     flex: 1,
@@ -27,9 +29,14 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     paddingBottom: 6,
   },
+  pdfThumbnail: {
+    flex: 1,
+    marginTop: 6,
+    width: width / 4,
+    height: width / 3.5,
+    backgroundColor: 'transparent',
+  },
 });
-
-const { width, height } = Dimensions.get('window');
 
 export interface EPrescriptionCardProps {
   style?: StyleProp<ViewStyle>;
@@ -66,25 +73,11 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
     return (
       <Pdf
         key={uploadedUrl}
-        onLoadComplete={(numberOfPages, filePath) => {
-          console.log(`number of pages: ${numberOfPages}, fb:${filePath}`);
-        }}
-        onPageChanged={(page, numberOfPages) => {
-          console.log(`current page: ${page}`);
-        }}
         onError={(error) => {
           console.log(error);
         }}
         source={{ uri: uploadedUrl }}
-        style={{
-          flex: 1,
-          marginTop: 6,
-          // marginHorizontal: isPopup ? 0 : 20,
-          borderWidth: 1,
-          width: width / 3,
-          height: width / 3,
-          backgroundColor: 'transparent',
-        }}
+        style={styles.pdfThumbnail}
       />
     );
   };
