@@ -3798,7 +3798,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const UserInfo = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+
   const onAddToCart = () => {
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, UserInfo);
     const medPrescription = (
       caseSheet?.[0]?.medicinePrescription ||
       MedicinePrescriptions ||
@@ -3823,6 +3830,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onAddTestsToCart = async () => {
+    postWebEngageEvent(WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM, UserInfo);
     let location: LocationData | null = null;
     setLoading && setLoading(true);
 
