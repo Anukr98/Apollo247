@@ -201,11 +201,25 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   } = useShoppingCart();
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState<boolean>(false);
   const [imageClickData, setImageClickData] = useState<any>({});
   const [isCameraAccessGranted, setIsCameraAccessGranted] = useState<boolean>(true);
   let _camera = useRef(null);
   let actionSheetRef: ActionSheet;
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setIsFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  });
 
   const clickPhoto = async () => {
     const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
@@ -277,7 +291,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   };
 
   const renderCameraView = () => {
-    return (
+    return isFocused ? (
       <Camera
         style={styles.cameraView}
         ref={_camera}
@@ -298,6 +312,8 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           return renderCameraActions();
         }}
       </Camera>
+    ) : (
+      <></>
     );
   };
 
@@ -355,14 +371,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         <View style={{ flexDirection: 'row' }}>
           <PendingIcon style={styles.messageIcon} />
           <Text style={theme.viewStyles.text('R', 14, '#01475B', 1, 19)}>
-            * Our pharmacist will dispense medicines only if the prescription is valid & it meets
+            * Our pharmacist will dispense medicines only if the prescription is valid and it meets
             all government regulations.
           </Text>
         </View>
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() => {
-            _camera = useRef(null);
             props.navigation.navigate(AppRoutes.SamplePrescription);
           }}
         >
