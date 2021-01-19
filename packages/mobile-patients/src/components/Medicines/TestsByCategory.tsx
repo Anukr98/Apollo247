@@ -59,6 +59,7 @@ import _ from 'lodash';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -317,7 +318,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             {data.name}
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-            {string.common.Rs} {data.price}
+            {string.common.Rs} {convertNumberToDecimal(data?.price)}
           </Text>
         </View>
       );

@@ -1,7 +1,8 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
-import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { DIAGNOSTIC_ORDER_STATUS, REFUND_STATUSES } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Platform } from 'react-native';
 
 export enum AppEnv {
   DEV = 'DEV',
@@ -84,7 +85,14 @@ const appStaticVariables = {
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
-  HdfcHealthLifeText: string.common.HdfcHealthLifeText
+  clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
+  merchantId: 'apollo247',
+  jusPayService: 'in.juspay.ec',
+  returnUrl: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
+  jusPaybaseUrl: 'https://api.juspay.in/cardbins',
+  jusPayenvironment: 'prod',
+  HdfcHealthLifeText: string.common.HdfcHealthLifeText,
+  EXPRESS_MAXIMUM_HOURS: 6,
 };
 
 const DEV_top_specialties = [
@@ -229,11 +237,11 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
-    DRUPAL_CONFIG : ['https://uatcms.apollo247.com/api', drupalAuthTokenDev]
+    DRUPAL_CONFIG: ['https://uatcms.apollo247.com/api', drupalAuthTokenDev],
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
-    DRUPAL_CONFIG :['https://cms.apollo247.com/api',drupalAuthTokenProd]
+    DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
   },
 };
 
@@ -513,7 +521,7 @@ const ConfigurationDev = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // QA
@@ -566,7 +574,7 @@ const ConfigurationQA = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // QA2
@@ -619,7 +627,7 @@ const ConfigurationQA2 = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // QA3
@@ -665,7 +673,7 @@ const ConfigurationQA3 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // VAPT
@@ -718,7 +726,7 @@ const ConfigurationVAPT = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 //Production
 const ConfigurationProd = {
@@ -768,7 +776,7 @@ const ConfigurationProd = {
   CIRCLE_LANDING_URL: 'https://www.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-  HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 //PERFORMANCE
@@ -822,7 +830,7 @@ const ConfigurationPERFORM = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 //DevelopmentReplica
@@ -876,7 +884,7 @@ const ConfigurationDevReplica = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-    HDFC_HEALTHY_LIFE_URL: "https://www.apollo247.com/partners/hdfc",
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 const Configuration =
@@ -1005,13 +1013,37 @@ export const ConsultFeedBackData = {
 export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
 ];
+
+export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+]
+
+export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [
+  REFUND_STATUSES.FAILURE,
+  REFUND_STATUSES.PENDING,
+  REFUND_STATUSES.SUCCESS,
+  REFUND_STATUSES.MANUAL_REVIEW,
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT
+]
+
+export const DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS = [
+  REFUND_STATUSES.FAILURE,
+  REFUND_STATUSES.MANUAL_REVIEW,
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT
+]
 
 export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
 

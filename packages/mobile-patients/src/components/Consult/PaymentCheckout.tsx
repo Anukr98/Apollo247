@@ -36,7 +36,10 @@ import {
   DoctorType,
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
@@ -195,6 +198,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
+  const circleDiscount =
+    (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
   useEffect(() => {
     verifyCoupon();
@@ -478,7 +483,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return (
       <View style={styles.bottomButtonView}>
         <Button
-          title={`PAY ${string.common.Rs}${amountToPay} `}
+          title={`PAY ${string.common.Rs}${convertNumberToDecimal(amountToPay)} `}
           style={styles.bottomBtn}
           onPress={() => onPressPay()}
           disabled={disabledCheckout}
@@ -607,6 +612,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         patientId: patientId,
         callSaveSearch: callSaveSearch,
         planSelected: circlePlanSelected,
+        circleDiscount,
       });
     }
   };
@@ -716,6 +722,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_currency: 'INR',
       'consult id': id,
       'coupon applied': coupon ? true : false,
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };
@@ -760,6 +767,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: amountToPay,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };
@@ -862,7 +870,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           You could have{' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             saved {string.common.Rs}
-            {discountedPrice}
+            {convertNumberToDecimal(discountedPrice)}
           </Text>{' '}
           on this purchase with
         </Text>

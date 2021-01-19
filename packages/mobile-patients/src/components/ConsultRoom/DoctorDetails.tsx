@@ -85,7 +85,10 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import moment from 'moment';
 // import { NotificationListener } from '../NotificationListener';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
@@ -702,14 +705,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ]}
         >
           {string.common.Rs}
-          {consultType === ConsultMode.ONLINE ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+          {consultType === ConsultMode.ONLINE
+            ? convertNumberToDecimal(onlineConsultMRPPrice)
+            : convertNumberToDecimal(physicalConsultMRPPrice)}
         </Text>
         <View style={styles.rowContainer}>
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {consultType === ConsultMode.ONLINE
-              ? onlineConsultSlashedPrice
-              : physicalConsultSlashedPrice}
+              ? convertNumberToDecimal(onlineConsultSlashedPrice)
+              : convertNumberToDecimal(physicalConsultSlashedPrice)}
           </Text>
           {showCircleSubscribed ? (
             <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
@@ -888,7 +893,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         <Text style={styles.onlineConsultAmount}>
                           {Number(VirtualConsultationFee) <= 0 ||
                           VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                            <Text>{`${string.common.Rs}${doctorDetails.onlineConsultationFees}`}</Text>
+                            <Text>{`${string.common.Rs}${convertNumberToDecimal(
+                              doctorDetails?.onlineConsultationFees
+                            )}`}</Text>
                           ) : (
                             <>
                               <Text
@@ -897,12 +904,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                   textDecorationStyle: 'solid',
                                 }}
                               >
-                                {`(${string.common.Rs}${doctorDetails.onlineConsultationFees})`}
+                                {`(${string.common.Rs}${convertNumberToDecimal(
+                                  doctorDetails?.onlineConsultationFees
+                                )})`}
                               </Text>
                               <Text>
                                 {' '}
                                 {string.common.Rs}
-                                {VirtualConsultationFee}
+                                {convertNumberToDecimal(VirtualConsultationFee)}
                               </Text>
                             </>
                           )}
@@ -979,7 +988,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
                               {string.common.Rs}
-                              {doctorDetails.physicalConsultationFees}
+                              {convertNumberToDecimal(doctorDetails?.physicalConsultationFees)}
                             </Text>
                           )}
                           <AvailabilityCapsule
@@ -1038,7 +1047,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <CircleLogo style={styles.circleLogo} />
         <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 14) }}>
           Starting at {string.common.Rs}
-          {defaultCirclePlan?.currentSellingPrice || '-'}
+          {convertNumberToDecimal(defaultCirclePlan?.currentSellingPrice) || '-'}
         </Text>
       </TouchableOpacity>
     );

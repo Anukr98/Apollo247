@@ -702,12 +702,17 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 }}
               >
                 {props.isSpecialDiscount ? renderSpecialDiscountText({}) : null}
-                <View style={{ flexDirection: 'row' }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: isSmallDevice ? 'flex-start' : 'flex-end',
+                  }}
+                >
                   {props.specialPrice! && props.discount! > 0 && (
                     <Text
                       style={[
                         styles.percentageDiscountText,
-                        { marginLeft: props.isSpecialDiscount ? '20%' : 0 },
+                        { marginLeft: props.isSpecialDiscount ? '13%' : 0 },
                       ]}
                     >
                       {Number(props.discount!).toFixed(0)}%off
@@ -718,7 +723,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                       style={{
                         ...theme.viewStyles.text(
                           'M',
-                          isSmallDevice ? 13 : 14,
+                          isSmallDevice ? 12 : 14,
                           '#02475B',
                           1,
                           20,

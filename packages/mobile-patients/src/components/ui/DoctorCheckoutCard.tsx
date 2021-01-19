@@ -11,7 +11,10 @@ const { width } = Dimensions.get('window');
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { BookAppointmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface DoctorCheckoutProps {
@@ -72,12 +75,16 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             ]}
           >
             {string.common.Rs}
-            {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+            {convertNumberToDecimal(
+              isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice
+            )}
           </Text>
           {!!circleSubscriptionId || planSelected ? (
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
-              {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+              {convertNumberToDecimal(
+                isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice
+              )}
             </Text>
           ) : null}
         </View>

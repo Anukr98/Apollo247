@@ -41,6 +41,7 @@ import {
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { saveSearchDoctor, saveSearchSpeciality } from '../../helpers/clientCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -67,6 +68,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const patientId = props.navigation.getParam('patientId');
   const planSelected = props.navigation.getParam('planSelected');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const circleDiscountedPrice = props.navigation.getParam('circleDiscount');
 
   type bankOptions = {
     name: string;
@@ -180,6 +182,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_revenue: price,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      'Circle discount': circleDiscountedPrice,
     };
     return eventAttributes;
   };
@@ -194,6 +197,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_currency: 'INR',
       'consult id': id,
       'coupon applied': couponApplied,
+      'Circle discount': circleDiscountedPrice,
     };
     return eventAttributes;
   };
@@ -230,6 +234,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       Consult_ID: id,
       af_revenue: price,
       af_currency: 'INR',
+      'Circle discount': circleDiscountedPrice,
     };
     return eventAttributes;
   };
@@ -396,7 +401,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            {string.common.Rs} {price}
+            {string.common.Rs} {convertNumberToDecimal(price)}
           </Text>
         </View>
       </View>

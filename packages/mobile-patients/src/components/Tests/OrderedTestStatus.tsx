@@ -7,6 +7,7 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_STATUS,
   GET_PRISM_AUTH_TOKEN,
+  GET_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersList,
@@ -26,11 +27,21 @@ import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import {
   DIAGNOSTIC_ORDER_STATUS,
   MedicalRecordType,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getTestOrderStatusText,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { AppConfig, SequenceForDiagnosticStatus } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  AppConfig,
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_JUSPAY_REFUND_STATUS,
+  SequenceForDiagnosticStatus,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -52,6 +63,11 @@ import {
   getPrismAuthTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '../../graphql/types/getPatientPrismMedicalRecords_V2';
+import {
+  getOrderInternal,
+  getOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
+import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 
 export interface TestStatusObject {
@@ -156,6 +172,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   const orderSelectedId = props.navigation.getParam('orderId');
   const orderSelected = props.navigation.getParam('selectedOrder');
+  const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+
   const [individualTestData, setIndividualTestData] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState('');
   const [labResults, setLabResults] = useState<
@@ -163,8 +181,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     | null
     | undefined
   >([]);
+  const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
 
-  const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
 
   const [orders, setOrders] = useState<
@@ -187,11 +205,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   useEffect(() => {
     setLoading!(true);
-    if (orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
-      fetchCancelledOrderTest();
-    } else {
-      fetchOrderStatusForEachTest();
-    }
+    fetchOrderStatusForEachTest();
+    isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(orderSelected?.orderStatus)
+      ? fetchRefundForOrder()
+      : null;
   }, []);
 
   const calMaxStatus = (statusForTest: any, status: string) => {
@@ -221,26 +238,29 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       });
   };
 
-  const fetchCancelledOrderTest = async () => {
+  const fetchRefundForOrder = async () => {
+    setRefundStatusArr(null);
     setLoading!(true);
     client
-      .query<getDiagnosticCancelledOrderDetails, getDiagnosticCancelledOrderDetailsVariables>({
-        query: GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS,
+      .query<getOrderInternal, getOrderInternalVariables>({
+        query: GET_INTERNAL_ORDER,
         context: {
           sourceHeaders,
         },
         variables: {
-          diagnosticOrderId: orderSelectedId,
-          patientId: currentPatient?.id,
+          order_id: orderSelected?.paymentOrderId,
         },
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        const _testStatus = g(data, 'getDiagnosticCancelledOrderDetails', 'ordersList') || [];
-        getStatusForAllTests(_testStatus);
+        const refundData = g(data, 'getOrderInternal', 'refunds');
+        console.log({ refundData });
+        if (refundData?.length! > 0) {
+          setRefundStatusArr(refundData);
+        }
       })
       .catch((e) => {
-        CommonBugFender('OrderedTestStatus_fetchTestStatus', e);
+        CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
         setLoading!(false);
       });
   };
@@ -311,6 +331,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       if (res) {
         const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
         console.log({ data });
+        console.log({ itemIdObject });
         data?.map((test: any) => {
           //call getPackage
           objArray.push({
@@ -320,8 +341,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             patientName: currentPatient?.firstName,
             showDateTime: date,
             itemId: test?.itemId,
-            // currentStatus: orderSelected.maxStatus,
-            currentStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+            currentStatus:
+              orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
             packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
             packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
             itemName: test?.name,
@@ -346,9 +369,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const getStatusForAllTests = (
     data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList | any
   ) => {
-    const testStatusData = createObject(data);
-
-    // setIndividualTestData(testStatusData);
+    createObject(data);
   };
 
   const createObject = (
@@ -356,7 +377,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   ) => {
     const itemIdObject = _.groupBy(statusData, 'itemId');
     setStatusForTest(itemIdObject);
-
+    console.log({ itemIdObject });
     let objArray: TestStatusObject[] = [];
     const lengthOfItems = Object.keys(itemIdObject)?.length;
     Object.keys(itemIdObject).forEach(async (key) => {
@@ -405,8 +426,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         } else {
           const getSelectedObj =
             key != 'null' &&
-            orderSelected.diagnosticOrderLineItems.filter(
-              (item: any) => item.itemId.toString() == key
+            orderSelected?.diagnosticOrderLineItems?.filter(
+              (item: any) => item?.itemId?.toString() == key
             );
           let sortedSelectedObj: any;
           //when backend will be fixed use this logic.
@@ -440,26 +461,59 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
               itemIdObject[key],
               DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED
             );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+            );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
+            );
           } else {
             sortedSelectedObj =
               key != null &&
               calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED);
           }
-
-          objArray.push({
-            id: getSelectedObj?.id! || orderSelectedId,
-            displayId: orderSelected?.displayId!,
-            slotTimings: tm,
-            patientName: currentPatient?.firstName,
-            showDateTime: dt,
-            itemId: key,
-            currentStatus: sortedSelectedObj?.orderStatus,
-            packageId: sortedSelectedObj?.packageId,
-            itemName: sortedSelectedObj?.itemName,
-            packageName: sortedSelectedObj?.packageName,
-            statusDate: sortedSelectedObj?.statusDate,
-            testPreparationData: '',
-          });
+          //check here for the refund
+          if (refundStatusArr?.length > 0) {
+            objArray.push({
+              id: getSelectedObj?.id! || orderSelectedId,
+              displayId: orderSelected?.displayId!,
+              slotTimings: tm,
+              patientName: currentPatient?.firstName,
+              showDateTime: dt,
+              itemId: key,
+              currentStatus: refundStatusArr?.[0]?.status,
+              packageId: sortedSelectedObj?.packageId,
+              itemName: sortedSelectedObj?.itemName,
+              packageName: sortedSelectedObj?.packageName,
+              statusDate: sortedSelectedObj?.statusDate,
+              testPreparationData: '',
+            });
+          } else {
+            objArray.push({
+              id: getSelectedObj?.id! || orderSelectedId,
+              displayId: orderSelected?.displayId!,
+              slotTimings: tm,
+              patientName: currentPatient?.firstName,
+              showDateTime: dt,
+              itemId: key,
+              currentStatus: sortedSelectedObj?.orderStatus,
+              packageId: sortedSelectedObj?.packageId,
+              itemName: sortedSelectedObj?.itemName,
+              packageName: sortedSelectedObj?.packageName,
+              statusDate: sortedSelectedObj?.statusDate,
+              testPreparationData: '',
+            });
+          }
         }
         setLoading!(false);
         setIndividualTestData(objArray);
@@ -476,8 +530,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const renderOrder = (order: any, index: number) => {
-    console.log({ order });
-
     const isHomeVisit = !!order?.slotTimings;
 
     const dt = moment(order?.statusDate).format(`D MMM YYYY`); //status date
@@ -490,7 +542,17 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
     const statusTime = getFormattedTime(order?.statusDate);
     const dtTm = `${dt}${isHomeVisit ? `, ${statusTime}` : ''}`;
-    const currentStatus = order?.currentStatus;
+    const currentStatus =
+      isPrepaid && DIAGNOSTIC_JUSPAY_REFUND_STATUS?.length > 0
+        ? orderSelected?.orderStatus
+        : DIAGNOSTIC_ORDER_FAILED_STATUS.includes(orderSelected?.orderStatus)
+        ? orderSelected?.orderStatus
+        : order?.currentStatus;
+    const shouldShowCancel = DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(currentStatus)
+      ? orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+      : currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED ||
+        orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED;
+
     return (
       <TestOrderCard
         key={`${order?.id}`}
@@ -512,8 +574,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             : `Scheduled For: ${dtTm}`
         }
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
+        isCancelled={shouldShowCancel}
         showViewReport={currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED}
+        showRefund={refundStatusArr?.length > 0}
+        refundStatus={refundStatusArr?.[0]?.status}
         onPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
             orderId: orderSelected?.id,
@@ -524,10 +588,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             selectedOrder: orderSelected,
             individualTestStatus: statusForTest,
             comingFrom: AppRoutes.YourOrdersTest,
+            refundStatusArr: refundStatusArr,
           });
         }}
         status={currentStatus}
-        statusText={mapStatusWithText(currentStatus)}
+        statusText={getTestOrderStatusText(currentStatus)}
         style={[
           { marginHorizontal: 20 },
           index < individualTestData.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
@@ -544,6 +609,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             selectedOrder: orderSelected,
             individualTestStatus: statusForTest,
             comingFrom: AppRoutes.YourOrdersTest,
+            refundStatusArr: refundStatusArr,
           });
         }}
         onPressViewReport={() => _navigateToPHR()}
@@ -567,10 +633,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     });
   };
 
-  const mapStatusWithText = (val: string) => {
-    return val?.replace(/[_]/g, ' ');
-  };
-
   const renderOrders = () => {
     console.log({ individualTestData });
     return (
@@ -584,7 +646,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const renderNoOrders = () => {
-    if (!loading && !error) {
+    if (!loading && !error && individualTestData?.length == 0) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
@@ -608,6 +670,12 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           headingTextStyle={{ fontSize: 14 }}
         />
       );
+    }
+  };
+
+  const renderRefund = () => {
+    if (refundStatusArr?.length > 0) {
+      return <RefundCard refundArray={refundStatusArr} />;
     }
   };
 
@@ -657,6 +725,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
+          {renderRefund()}
           {/* {!loading && !error && renderChatWithUs()} */}
         </ScrollView>
       </SafeAreaView>

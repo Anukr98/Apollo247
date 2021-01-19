@@ -93,6 +93,8 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   siteId: string | null;
   siteName: string | null;
   apOrderNo: string | null;
+  trackingNo: string | null;
+  trackingProvider: string | null;
   updatedDate: string | null;
   currentStatus: MEDICINE_ORDER_STATUS | null;
   itemDetails: string | null;

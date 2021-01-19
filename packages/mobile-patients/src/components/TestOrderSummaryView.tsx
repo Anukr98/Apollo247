@@ -8,7 +8,6 @@ import {
   g,
   formatTestSlotWithBuffer,
   postWebEngageEvent,
-  isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -19,6 +18,7 @@ import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Props } from 'react-native-image-zoom-viewer/built/image-viewer.type';
 import { ScrollView } from 'react-native-gesture-handler';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -26,6 +26,7 @@ export interface LineItemPricing {
 }
 
 const { height, width } = Dimensions.get('window');
+const isSmallDevice = width < 370;
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     marginTop: height * 0.04, //0.22
   },
   hideText: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 14.5 : 16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
     color: '#02475b',
     textAlign: 'right',
     marginLeft: isSmallDevice ? 16 : 20,
@@ -137,6 +138,18 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginTop: 15,
     marginLeft: 20,
+  },
+  viewOrderDetailsContainer: {
+    zIndex: 1000,
+    height: 50,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  viewOrderDetailsTouch: {
+    height: '100%',
+    width: '100%',
   },
 });
 
@@ -289,17 +302,17 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
 
   const renderOptions = () => {
     return (
-      <TouchableOpacity onPress={onPressViewDetails}>
-        <View style={{ justifyContent: 'center', alignItems: 'center', margin: 16 }}>
-          <Text
-            style={{
-              ...theme.viewStyles.yellowTextStyle,
-            }}
-          >
+      <View style={styles.viewOrderDetailsContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={onPressViewDetails}
+          style={styles.viewOrderDetailsTouch}
+        >
+          <Text style={{ ...theme.viewStyles.yellowTextStyle, textAlign: 'center' }}>
             VIEW ORDER DETAILS
           </Text>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -361,7 +374,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={styles.commonText}>
                   {string.common.Rs}
-                  {g(item, 'price')}
+                  {convertNumberToDecimal(g(item, 'price') || null)}
                 </Text>
               </View>
             </View>
@@ -388,7 +401,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <Text style={styles.commonText}>
                 {string.common.Rs}
                 {/* {totalIndividalDiagonsticsCharges} */}
-                {grossCharges}
+                {convertNumberToDecimal(grossCharges)}
               </Text>
             </View>
           </View>
@@ -410,7 +423,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={styles.commonText}>
                   + {string.common.Rs}
-                  {HomeCollectionCharges}
+                  {convertNumberToDecimal(HomeCollectionCharges)}
                 </Text>
               </View>
             </View>
@@ -440,7 +453,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalCircleSaving}
+                  {convertNumberToDecimal(totalCircleSaving)}
                 </Text>
               </View>
             </View>
@@ -467,7 +480,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalCartSaving}
+                  {convertNumberToDecimal(totalCartSaving)}
                 </Text>
               </View>
             </View>
@@ -495,7 +508,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <View style={{ flex: 1, alignItems: 'center' }}>
                 <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
                   - {string.common.Rs}
-                  {totalDiscountSaving}
+                  {convertNumberToDecimal(totalDiscountSaving)}
                 </Text>
               </View>
             </View>
@@ -506,7 +519,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
             <Text style={styles.paymentText1}> Total </Text>
             <Text style={[styles.paymentText, { marginHorizontal: 20 }]}>
               {' '}
-              {string.common.Rs} {orderDetails.totalPrice}{' '}
+              {string.common.Rs} {convertNumberToDecimal(orderDetails?.totalPrice)}{' '}
             </Text>
           </View>
           {false && (

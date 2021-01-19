@@ -12,12 +12,19 @@ export interface TatCardProps {
   deliveryAddress: string;
   onPressChangeAddress: () => void;
   onPressTatCard?: () => void;
+  isNonCartOrder?: boolean;
 }
 
 export const TatCard: React.FC<TatCardProps> = (props) => {
-  const { deliveryTime, deliveryAddress, onPressChangeAddress, onPressTatCard } = props;
+  const {
+    deliveryTime,
+    deliveryAddress,
+    onPressChangeAddress,
+    onPressTatCard,
+    isNonCartOrder,
+  } = props;
   const { cartItems } = useShoppingCart();
-  const unServiceable = cartItems.find((item) => item.unserviceable);
+  const unServiceable = isNonCartOrder ? false : cartItems?.find((item) => item?.unserviceable);
 
   function getGenericDate() {
     const genericServiceableDate = moment()
@@ -33,9 +40,17 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
     tommorowDate.setDate(tommorowDate.getDate() + 1);
 
     if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
-      return <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Today!`}</Text>;
+      return !!isNonCartOrder ? (
+        <Text style={styles.dateTime}> {`Today!`}</Text>
+      ) : (
+        <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Today!`}</Text>
+      );
     } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
-      return <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Tomorrow!`}</Text>;
+      return !!isNonCartOrder ? (
+        <Text style={styles.dateTime}> {`Tomorrow!`}</Text>
+      ) : (
+        <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Tomorrow!`}</Text>
+      );
     } else {
       return <Text style={styles.dateTime}>{`${format(deliveryTime, 'D-MMM-YYYY')}`}</Text>;
     }
@@ -54,7 +69,8 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       >
         {!unServiceable && (
           <Text style={styles.delivery}>
-            Deliver by : {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            {!!isNonCartOrder ? `Expected Delivery by ` : `Deliver by :`}
+            {deliveryTime ? getDeliveryDate() : getGenericDate()}
           </Text>
         )}
         <TouchableOpacity

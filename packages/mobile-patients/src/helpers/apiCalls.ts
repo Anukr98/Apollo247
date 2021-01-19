@@ -43,6 +43,7 @@ export interface MedicineProduct {
   dose_form_variant?: string | null;
   pack_form?: string | null;
   pack_size?: string | null;
+  banned?: 'Yes' | 'No';
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -665,6 +666,15 @@ export const availabilityApi247 = (
   });
 };
 
+export const nonCartTatApi247 = (pincode: string): Promise<AxiosResponse<>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/noncarttat?pin=${pincode}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
+};
+
 export const medCartItemsDetailsApi = (
   itemIds: string[]
 ): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
@@ -803,7 +813,7 @@ export const getPlaceInfoByPlaceId = (
 export const getLatLongFromAddress = (
   address: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}&components=country:IN`;
   return Axios.get(url);
 };
 
@@ -1059,8 +1069,11 @@ export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<a
   });
 };
 
-
-export const getDiagnosticsSearchResults = (pageName: string, keyword: string, cityId: number): Promise<AxiosResponse<any>> => {
+export const getDiagnosticsSearchResults = (
+  pageName: string,
+  keyword: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
   return Axios.get(getSearchResults, {

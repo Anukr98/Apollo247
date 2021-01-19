@@ -6,6 +6,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface BottomStickyComponentProps {
   price: number;
@@ -19,6 +20,7 @@ export interface BottomStickyComponentProps {
   onAddCartItem: () => void;
   productQuantity: number;
   setShowAddedToCart: (show: boolean) => void;
+  isBanned: boolean;
 }
 
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
@@ -34,6 +36,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     packFormVariant,
     productQuantity,
     setShowAddedToCart,
+    isBanned,
   } = props;
   const { cartItems, updateCartItem } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -89,12 +92,12 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
           <View style={styles.flexRow}>
             <Text style={styles.value}>
               {string.common.Rs}
-              {specialPrice}{' '}
+              {convertNumberToDecimal(specialPrice)}{' '}
             </Text>
             <Text style={styles.smallLabel}>{`MRP `}</Text>
             <Text style={styles.smallValue}>
               {string.common.Rs}
-              {price}
+              {convertNumberToDecimal(price)}
             </Text>
             <Text style={styles.discountPercent}>{` ${discountPercent}%off`}</Text>
           </View>
@@ -103,7 +106,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
             <Text style={styles.label}>{`MRP: `}</Text>
             <Text style={styles.value}>
               {string.common.Rs}
-              {price}
+              {convertNumberToDecimal(price)}
             </Text>
           </View>
         )}
@@ -121,7 +124,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
   return (
     <StickyBottomComponent style={styles.stickyBottomComponent}>
       {renderProductPrice()}
-      {renderCartCTA()}
+      {!isBanned && renderCartCTA()}
     </StickyBottomComponent>
   );
 };

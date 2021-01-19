@@ -413,7 +413,13 @@
       "unableToProvideSample": "Not in a condition to provide sample",
       "slotMistake": "Slot picked by mistake",
       "otherReasons": "Others (Please specify)"
-    }
+    },
+    "minorAgeText": "Lab tests cannot be booked for below 10 years",
+    "sameSlotError" : "Cannot book same slot",
+    "refundInitiateText": "Your refund for amount ₹{{refundAmount}} has been initiated. It takes 4-5 working days for processing.",
+    "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
+    "orderCancelledSuccessText": "Your order has been cancelled successfully!",
+    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!"
   },
   "orders": {
     "urOrders": "MY ORDERS",
