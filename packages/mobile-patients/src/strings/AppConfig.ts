@@ -29,6 +29,9 @@ const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
+const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
+const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
+
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -236,9 +239,11 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
+    DRUPAL_CONFIG: ['https://uatcms.apollo247.com/api', drupalAuthTokenDev],
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
+    DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
   },
 };
 
@@ -518,6 +523,7 @@ const ConfigurationDev = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // QA
@@ -571,6 +577,7 @@ const ConfigurationQA = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // QA2
@@ -624,6 +631,7 @@ const ConfigurationQA2 = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // QA3
@@ -670,6 +678,7 @@ const ConfigurationQA3 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 // VAPT
@@ -723,6 +732,7 @@ const ConfigurationVAPT = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 //Production
 const ConfigurationProd = {
@@ -773,6 +783,7 @@ const ConfigurationProd = {
   CIRCLE_LANDING_URL: 'https://www.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 //PERFORMANCE
@@ -827,6 +838,7 @@ const ConfigurationPERFORM = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 //DevelopmentReplica
@@ -881,6 +893,7 @@ const ConfigurationDevReplica = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
 };
 
 const Configuration =
@@ -1007,13 +1020,16 @@ export const ConsultFeedBackData = {
 };
 
 export const SequenceForDiagnosticStatus = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
-  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
 ];
@@ -1101,24 +1117,24 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
-    'Home Collection Charges are too high',
-    'Need to change the payment mode',
-    'Need to modify the order details',
-    'I am getting lesser price elsewhere',
-    'Home Collection not occuring at desired time slot',
-    'No need for diagnosis now',
-    'Order created by mistake',
-    'Others (Please specify)s',
+    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
+    string.diagnostics.reasonForCancel_TestOrder.chargesTooHigh,
+    string.diagnostics.reasonForCancel_TestOrder.editOrder,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.noSlot,
+    string.diagnostics.reasonForCancel_TestOrder.changePaymentMode,
+    string.diagnostics.reasonForCancel_TestOrder.highPrice,
+    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 
 export const TestReschedulingReasons = {
   reasons: [
-    'Not present at home',
-    'Did not follow preparation guidelines (Fasting etc.)',
-    'Not in a condition to provide sample',
-    'Slot picked by mistake',
-    'Others (please specify)',
+    string.diagnostics.reasonForReschedule_TestOrder.unavailable,
+    string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
+    string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
+    string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
+    string.diagnostics.reasonForReschedule_TestOrder.otherReasons,
   ],
 };
 

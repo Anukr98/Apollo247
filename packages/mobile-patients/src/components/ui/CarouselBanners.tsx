@@ -212,36 +212,22 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const btnTxt = item?.banner_template_info?.Button;
     let imageHeight = 180;
 
-    if (!subHeaderText2 || !btnTxt || !headerText3) {
-      imageHeight = isDynamicBanner ? 160 : 144;
-      Image.getSize(
-        bannerUri,
-        (width, height) => {
-          imageHeight = height;
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    } else {
-      imageHeight = 180;
-    }
     return (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() =>
           handleOnBannerClick(
-            cta_action.type,
-            cta_action.meta.action,
-            cta_action.meta.message,
-            cta_action?.url
+            cta_action?.type,
+            cta_action?.meta.action,
+            cta_action?.meta.message,
+            cta_action?.url,
+            cta_action?.meta
           )
         }
         style={[
           styles.hdfcBanner,
           {
             height: imageHeight,
-            width: isDynamicBanner ? width - 30 : 320,
           },
         ]}
       >
@@ -250,13 +236,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             height: imageHeight,
             width: '100%',
           }}
-          imageStyle={{
-            borderRadius: isDynamicBanner ? 7 : 0,
-          }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={isDynamicBanner ? 'cover' : 'contain'}
+          resizeMode={'contain'}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
@@ -287,7 +270,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
               cta_action?.type,
               cta_action?.meta?.action,
               cta_action?.meta?.message,
-              cta_action?.url
+              cta_action?.url,
+              cta_action?.meta
             )
           }
         >
@@ -378,7 +362,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     );
   };
 
-  const handleOnBannerClick = (type: any, action: any, message: any, url: string) => {
+  const handleOnBannerClick = (type: any, action: any, message: any, url: string, meta: any) => {
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
@@ -441,6 +425,16 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: Circle.planName,
           });
+        } else if (
+          (action === hdfc_values.MEDICINE_LISTING ||
+            meta?.app_action === hdfc_values.MEDICINE_LISTING) &&
+          !!meta?.category_id &&
+          !!meta?.category_name
+        ) {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            category_id: meta?.category_id,
+            title: meta?.category_name,
+          });
         } else {
           props.navigation.navigate(AppRoutes.ConsultRoom);
         }
@@ -465,9 +459,15 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
       } else if (action == hdfc_values.ABSOLUTE_URL) {
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          itemId: url.split('/').reverse()[0],
-        });
+        if (type == hdfc_values.WEB_VIEW) {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: url.split('/').reverse()[0],
+          });
+        }
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
@@ -584,10 +584,7 @@ const renderDot = (active: boolean) => (
 
 const styles = StyleSheet.create({
   hdfcBanner: {
-    ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.CLEAR,
-    borderRadius: 12,
-    elevation: 8,
     marginTop: 10,
     marginHorizontal: 28,
     marginBottom: 15,
@@ -622,7 +619,7 @@ const styles = StyleSheet.create({
   },
   bottomView: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 15,
     left: 13,
   },
   upgradeBtnView: {
@@ -634,6 +631,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     justifyContent: 'center',
     minHeight: 35,
+    elevation: 8,
   },
   upgradeText: {
     ...theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW),

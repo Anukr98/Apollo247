@@ -32,6 +32,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -215,13 +216,17 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             ]}
           >
             {string.common.Rs}
-            {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+            {convertNumberToDecimal(
+              isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice
+            )}
           </Text>
           <View style={styles.rowContainer}>
             {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
-              {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+              {convertNumberToDecimal(
+                isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice
+              )}
             </Text>
           </View>
         </View>

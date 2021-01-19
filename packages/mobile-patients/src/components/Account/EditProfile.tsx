@@ -390,20 +390,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     email === profileData.emailAddress &&
     photoUrl === profileData.photoUrl;
 
-  useEffect(() => {
-    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      return () => {
-        _didFocus && _didFocus.remove();
-        _willBlur && _willBlur.remove();
-      };
-    });
-  }, []);
-
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     isEditProfile

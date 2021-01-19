@@ -189,7 +189,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderProducts = (array: RecentSearch[]) => {
     const onPress = (sku: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      navigation.navigate(AppRoutes.ProductDetailPage, {
         sku,
         movedFrom: ProductPageViewedSource.RECENT_SEARCH,
       });
@@ -256,7 +256,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     if (!searchResults.length) return null;
 
     const onPress = (sku: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      navigation.navigate(AppRoutes.ProductDetailPage, {
         sku,
         movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
       });

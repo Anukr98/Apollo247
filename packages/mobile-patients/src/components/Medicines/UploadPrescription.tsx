@@ -72,11 +72,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/ChooseAddress';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   pinCodeServiceabilityApi247,
   getPlaceInfoByPincode,
+  nonCartTatApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   makeAdressAsDefaultVariables,
@@ -89,6 +90,7 @@ import {
   updatePatientAddress,
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import moment from 'moment';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 16,
@@ -157,6 +159,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     storeId,
     stores,
     pinCode,
+    deliveryTime,
+    setdeliveryTime,
   } = useShoppingCart();
   const [prescriptionOption, setPrescriptionOption] = useState<string>('specified');
   const [durationDays, setDurationDays] = useState<string>('30');
@@ -166,17 +170,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     {
       id: 'Need all medicine and for duration as per prescription',
       title: 'Order all medicines from prescription',
-      subTitle: 'Cart would be prepared with all the medicines as prescribed by the doctor',
+      subTitle: 'Order will be prepared with all the medicines as prescribed by the doctor',
     },
     {
       id: 'search',
-      title: 'Add more medicines to the order',
-      subTitle: 'Browse and search medicines on the app to modify your order',
+      title: 'Search and select medicines by myself',
+      subTitle: 'Browse and select medicines which you wish to purchase',
     },
     {
       id: 'Call me for details',
-      title: 'Confirm order on call',
-      subTitle: 'Our agent would call you to confirm the order placed',
+      title: 'Call me to confirm my order',
+      subTitle: 'Our pharmacist will call you to confirm the required items',
     },
   ];
   const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(
@@ -196,7 +200,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   useEffect(() => {
     fetchAddress();
     checkServicability(selectedAddress!, true);
+    nonCartAvailabilityTat(selectedAddress?.zipcode);
   }, []);
+
+  useEffect(() => {
+    nonCartAvailabilityTat(selectedAddress?.zipcode);
+  }, [selectedAddress]);
 
   async function fetchAddress() {
     try {
@@ -995,21 +1004,23 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
           onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddress, {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Upload Prescription' as AddressSource,
+              addOnly: true,
             });
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddress, {
+            props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
-              DataAddress: address,
+              addressDetails: address,
               ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
             checkServicability(address, false);
+            nonCartAvailabilityTat(address?.zipcode);
             hideAphAlert!();
           }}
         />
@@ -1042,8 +1053,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         }}
         selectedMedicineOption={selectedMedicineOption}
         onPressAddDeliveryAddress={() => {
-          props.navigation.navigate(AppRoutes.AddAddress, {
+          props.navigation.navigate(AppRoutes.AddAddressNew, {
             source: 'Cart' as AddressSource,
+            addOnly: true,
           });
         }}
         vdcType={vdcType}
@@ -1051,6 +1063,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         onPressChangeAddress={showAddressPopup}
         onPressProceed={onPressProceed}
         onPressTatCard={() =>
+          !disableSubmitButton() &&
           props.navigation.navigate(AppRoutes.PrescriptionOrderSummary, {
             ePrescription: EPrescriptions,
             physicalPrescription: PhysicalPrescriptions,
@@ -1061,9 +1074,28 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           })
         }
         disableButton={disableSubmitButton()}
+        deliveryTime={deliveryTime}
       />
     );
   };
+
+  async function nonCartAvailabilityTat(pincode: string) {
+    try {
+      const response = await nonCartTatApi247(pincode);
+      const tatResponse = g(response, 'data', 'response') || [];
+      const deliveryDate = tatResponse?.tat;
+      if (deliveryDate) {
+        setdeliveryTime && setdeliveryTime(deliveryDate);
+      }
+    } catch (error) {
+      const genericServiceableDate = moment()
+        .add(2, 'days')
+        .set('hours', 20)
+        .set('minutes', 0)
+        .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+      setdeliveryTime?.(genericServiceableDate);
+    }
+  }
 
   return (
     <View

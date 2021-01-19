@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -41,6 +42,13 @@ public class MyFirebaseMessagingService
         extends FirebaseMessagingService {
 
     private static DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter = null;
+    private Vibrator vibrator;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        this.vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+    }
 
     @Override
     public void onNewToken(String s) {
@@ -65,8 +73,9 @@ public class MyFirebaseMessagingService
                     } else if (disconnectCallType.equals(notifDataType)) {
                         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
                         notificationManager.cancelAll();
-                        Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
                         vibrator.cancel();
+                        Intent stopIntent = new Intent(this, RingtonePlayingService.class);
+                        this.stopService(stopIntent);
                         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
                         localBroadcastManager.sendBroadcast(new Intent("com.unlockscreenactivity.action.close"));
                     }
@@ -172,8 +181,6 @@ public class MyFirebaseMessagingService
         NotificationCompat.Action rejectCall = new NotificationCompat.Action.Builder(R.drawable.rjt_btn, getActionText("Decline", android.R.color.holo_red_light), rjctIntent).build();
         //end
 
-        long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
-
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setContentTitle(doctorName)
@@ -203,10 +210,9 @@ public class MyFirebaseMessagingService
             AudioAttributes attributes = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                     .build();
-            mChannel.setSound(incoming_call_notif, attributes);
+            mChannel.setSound(null, null);
             mChannel.setDescription(channelName);
             mChannel.enableLights(true);
-            mChannel.enableVibration(true);
             notificationManager.createNotificationChannel(mChannel);
         }
         //end
@@ -214,6 +220,20 @@ public class MyFirebaseMessagingService
         Notification notification = notificationBuilder.build();
         notification.flags |= Notification.FLAG_INSISTENT;
         notificationManager.notify(oneTimeID, notification);
+
+        try {
+            Intent startIntent = new Intent(this, RingtonePlayingService.class);
+            this.startService(startIntent);
+            Boolean isDndOn = Settings.Global.getInt(getContentResolver(), "zen_mode") != 0;
+            Boolean isVibrationOn = !isDndOn && (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
+                    (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1));
+            if (isVibrationOn) {
+                long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
+                vibrator.vibrate(pattern, 0);
+            }
+        } catch (Exception e) {
+            Log.e("vibration error", e.getMessage() + "\n" + e.toString());
+        }
     }
 
 

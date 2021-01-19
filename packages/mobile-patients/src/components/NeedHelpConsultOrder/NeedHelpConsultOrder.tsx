@@ -84,6 +84,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
+        isConsult: true,
       });
     };
     const onPress = () => {};
@@ -136,6 +137,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
+        isConsult: true,
       });
     };
     return <AphListItem title={string.otherIssueNotMyConsults} onPress={onPress} />;

@@ -16,8 +16,8 @@ import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput'
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import {
   DoctorIcon,
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
 
 export interface SearchAppointmentScreenProps
   extends NavigationScreenProps<{
-    allAppointments: getPatientAllAppointments_getPatientAllAppointments_appointments;
+    allAppointments: getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
     onPressBack: () => void;
   }> {}
 
@@ -244,17 +244,17 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
   const [searchText, setSearchText] = useState<string>('');
   const allAppointmentsParam = props.navigation.getParam('allAppointments') || [];
   const [allAppointments, setAllAppointments] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [searchAppointments, setSearchAppointments] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [searchResultFound, setSearchResultFound] = useState(true);
   const [searchQuery, setSearchQuery] = useState({});
   const [
     appointmentItem,
     setAppoinmentItem,
-  ] = useState<getPatientAllAppointments_getPatientAllAppointments_appointments | null>();
+  ] = useState<getPatientAllAppointments_getPatientAllAppointments_activeAppointments | null>();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
 
@@ -390,7 +390,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
   };
 
   const renderConsultationCard = (
-    item: getPatientAllAppointments_getPatientAllAppointments_appointments,
+    item: getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
     index: number
   ) => {
     let tomorrowDate = moment(new Date())
@@ -461,7 +461,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
     const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
-      medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
+      medicines: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[]
     ) =>
       medicines
         ? medicines

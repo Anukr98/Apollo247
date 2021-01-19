@@ -51,6 +51,13 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
+  skipOptionTouch: {
+    justifyContent: 'center',
+    alignSelf: 'center',
+    width: 50,
+    marginBottom: 16,
+  },
+  skipText: { ...theme.viewStyles.yellowTextStyle, textAlign: 'center' },
 });
 
 export interface ReasonPopUpProps {
@@ -62,7 +69,7 @@ export interface ReasonPopUpProps {
   headingText: string;
   reasonForCancelText: string;
   reasonForCancelStyle?: StyleProp<TextStyle>;
-  dropDownOptions: [];
+  dropDownOptions: string[];
   onPressCross: () => void;
   otherReasonText?: string;
   buttonText?: string;
@@ -71,6 +78,7 @@ export interface ReasonPopUpProps {
   commentsPlaceholderText?: string;
   othersPlaceholderText?: string;
   submitOthersWithoutComment?: boolean;
+  showSkip?: boolean;
 }
 
 export const ReasonPopUp: React.FC<ReasonPopUpProps> = (props: ReasonPopUpProps) => {
@@ -206,6 +214,16 @@ export const ReasonPopUp: React.FC<ReasonPopUpProps> = (props: ReasonPopUpProps)
       />
     );
 
+    const skipOption = (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => props.onPressSubmit('', '')}
+        style={styles.skipOptionTouch}
+      >
+        <Text style={styles.skipText}>SKIP</Text>
+      </TouchableOpacity>
+    );
+
     return (
       isCancelVisible && (
         <View style={{ marginHorizontal: 20 }}>
@@ -221,6 +239,7 @@ export const ReasonPopUp: React.FC<ReasonPopUpProps> = (props: ReasonPopUpProps)
             {heading}
             {content}
             {bottomButton}
+            {props.showSkip ? skipOption : null}
           </View>
         </View>
       )
@@ -244,4 +263,5 @@ ReasonPopUp.defaultProps = {
   commentsPlaceholderText: 'Enter your comments here…',
   othersPlaceholderText: 'Write your reason',
   submitOthersWithoutComment: false,
+  showSkip: false,
 };

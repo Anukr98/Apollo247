@@ -37,6 +37,7 @@ import {
   checkIfReschedule,
   checkIfRescheduleVariables,
 } from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 import {
   BookFollowUpAppointment,
@@ -202,14 +203,14 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               title={
                 props.KeyFollow == 'RESCHEDULE'
                   ? props.rescheduleCount.isPaid === 1
-                    ? `PAY ${string.common.Rs} ${props.data.doctorInfo &&
-                        props.data.doctorInfo.onlineConsultationFees &&
-                        props.data.doctorInfo.onlineConsultationFees}`
+                    ? `PAY ${string.common.Rs} ${convertNumberToDecimal(
+                        props?.data?.doctorInfo?.onlineConsultationFees
+                      )}`
                     : `CONFIRM RESCHEDULE`
                   : props.isfollowupcount === 1
-                  ? `PAY ${string.common.Rs} ${props.doctor &&
-                      props.doctor.onlineConsultationFees &&
-                      props.doctor.onlineConsultationFees}`
+                  ? `PAY ${string.common.Rs} ${convertNumberToDecimal(
+                      Number(props?.doctor?.onlineConsultationFees)
+                    )}`
                   : `BOOK FOLLOWUP`
               }
               disabled={

@@ -149,7 +149,7 @@ const pushTheView = (
       break;
 
     case 'MedicineDetail':
-      navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      navigation.navigate(AppRoutes.ProductDetailPage, {
         sku: id,
         movedFrom: ProductPageViewedSource.DEEP_LINK,
       });

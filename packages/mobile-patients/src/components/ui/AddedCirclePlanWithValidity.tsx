@@ -5,6 +5,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 const { width } = Dimensions.get('window');
 import moment from 'moment';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface AddedCirclePlanWithValidityProps {
   circleSavings: number;
@@ -28,7 +29,7 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
               You{' '}
               <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
                 saved {string.common.Rs}
-                {circleSavings}{' '}
+                {convertNumberToDecimal(circleSavings)}{' '}
               </Text>
               on your
               {isConsult ? ` consult` : ` purchase`}

@@ -75,7 +75,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
   const onPressCurrentLocation = () => {
     //if no permission then request
     setshowSpinner!(true);
-    doRequestAndAccessLocation()
+    doRequestAndAccessLocation(true)
       .then((response) => {
         //after getting permission, navigate to map screen (response undefined in case of deny)
         if (response) {
@@ -161,7 +161,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
         try {
           const addrComponents = g(data, 'result', 'address_components') || [];
           const coordinates = g(data, 'result', 'geometry', 'location')! || {};
-          const loc = getFormattedLocation(addrComponents, coordinates);
+          const loc = getFormattedLocation(addrComponents, coordinates, '', true);
           console.log({ loc });
 
           props.navigation.goBack(); //pass the new location.

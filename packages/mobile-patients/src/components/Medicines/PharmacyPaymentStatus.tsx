@@ -588,11 +588,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   const renderCODNote = () => {
     let noteText = "Your order wasn't placed as payment could not be processed. Please try again";
-    return status == failure ? <Text style={styles.codText}>{noteText}</Text> : null;
+    return status == failure || status == aborted ? (
+      <Text style={styles.codText}>{noteText}</Text>
+    ) : null;
   };
 
   const renderCODButton = () => {
-    return status == failure ? (
+    return status == failure || status == aborted ? (
       <View style={{ marginHorizontal: 0.06 * windowWidth, marginBottom: 0.06 * windowWidth }}>
         <Button
           style={{ height: 0.06 * windowHeight }}
@@ -730,7 +732,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               {appointmentHeader()}
               {appointmentCard()}
               {renderNote()}
-              {status == failure ? renderRetryPayment() : renderButton()}
+              {status == failure || status == aborted ? renderRetryPayment() : renderButton()}
             </ScrollView>
           </View>
         ) : (

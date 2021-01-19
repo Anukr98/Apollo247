@@ -76,6 +76,7 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import moment from 'moment';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -272,7 +273,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
     console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-    fireCirclePurchaseEvent(amountBreakup);
+    isCircleDoctor && amountBreakup?.slashed_price && fireCirclePurchaseEvent(amountBreakup);
   };
 
   const fireCirclePurchaseEvent = (amountBreakup: any) => {
@@ -330,17 +331,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    handleButton();
     return true;
   };
 
@@ -667,7 +658,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const getButtonText = () => {
     if (status == success) {
-      return 'Fill Medical Details';
+      return 'Go To Consult Room';
     } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
     } else {
@@ -675,11 +666,11 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
-  const handleButton = () => {
+  const handleButton = (navigateToChatRoom?: boolean) => {
     const { navigation } = props;
     const { navigate } = navigation;
     if (status == success) {
-      getAppointmentInfo();
+      getAppointmentInfo(navigateToChatRoom);
     } else if (status == failure || status == aborted) {
       // navigate(AppRoutes.DoctorSearch);
       setLoading(true);
@@ -701,7 +692,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
-  const getAppointmentInfo = () => {
+  const getAppointmentInfo = (navigateToChatRoom?: boolean) => {
     setShowSpinner && setShowSpinner(true);
 
     client
@@ -732,18 +723,23 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
                       NavigationActions.navigate({
                         routeName: AppRoutes.ConsultRoom,
                         params: {
-                          isReset: true,
+                          isFreeConsult: navigateToChatRoom ? false : true,
+                          doctorName: doctorName,
+                          appointmentData: appointmentData[0],
+                          skipAutoQuestions: doctor?.skipAutoQuestions,
                         },
                       }),
                     ],
                   })
                 );
-                props.navigation.navigate(AppRoutes.ChatRoom, {
-                  data: appointmentData[0],
-                  callType: '',
-                  prescription: '',
-                  disableChat: false,
-                });
+                if (navigateToChatRoom) {
+                  props.navigation.navigate(AppRoutes.ChatRoom, {
+                    data: appointmentData[0],
+                    callType: '',
+                    prescription: '',
+                    disableChat: false,
+                  });
+                }
               }
             } catch (error) {}
           }
@@ -764,7 +760,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       <TouchableOpacity
         style={styles.buttonStyle}
         onPress={() => {
-          handleButton();
+          handleButton(true);
         }}
       >
         <Text style={{ ...theme.viewStyles.text('SB', 13, '#ffffff', 1, 24) }}>
@@ -787,7 +783,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       Type: 'Consult',
       Source: 'Consult',
     };
-    postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+    !!circlePlanSelected?.valid_duration &&
+      !!circlePlanSelected?.currentSellingPrice &&
+      postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
   };
 
   const renderAddedCirclePlanWithValidity = () => {
@@ -814,7 +812,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             You{' '}
             <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {circleSavings}{' '}
+              {convertNumberToDecimal(circleSavings)}{' '}
             </Text>
             on your purchase
           </Text>
@@ -915,7 +913,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   buttonStyle: {
-    height: 0.06 * windowHeight,
+    height: 40,
     backgroundColor: '#fcb716',
     marginVertical: 0.06 * windowWidth,
     marginHorizontal: 0.2 * windowWidth,

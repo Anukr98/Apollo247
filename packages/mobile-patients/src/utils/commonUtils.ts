@@ -114,7 +114,7 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
       break;
 
     case 'MedicineDetail':
-      navigationProps.navigate(AppRoutes.MedicineDetailsScene, {
+      navigationProps.navigate(AppRoutes.ProductDetailPage, {
         sku: id,
         movedFrom: ProductPageViewedSource.DEEP_LINK,
       });
@@ -431,4 +431,12 @@ export const sourceHeaders = {
     source: Platform.OS,
     source_version: DeviceInfo.getVersion(),
   },
+};
+
+export const isFloat = (n: number) => {
+  return Number(n) == n && n % 1 !== 0;
+};
+
+export const convertNumberToDecimal = (n: number | null | string) => {
+  return n ? (isFloat(Number(n)) ? Number(n)?.toFixed(2) : n) : '';
 };

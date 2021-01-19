@@ -79,8 +79,9 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { CancelConsultation } from '../../strings/AppConfig';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
 const { width, height } = Dimensions.get('window');
@@ -254,8 +255,8 @@ type rescheduleType = {
 export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
-  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
-    .state.params!.data;
+  const data: getPatientAllAppointments_getPatientAllAppointments_activeAppointments = props
+    .navigation.state.params!.data;
   const doctorDetails = data.doctorInfo!;
   const movedFrom = props.navigation.state.params!.from;
   const cancellationReasons = CancelConsultation.reason;
@@ -818,7 +819,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   <Text style={styles.descriptionStyle}>
                     {g(data, 'appointmentPayments', '0' as any, 'amountPaid') ===
                     Number(doctorDetails.onlineConsultationFees) ? (
-                      <Text>{`${string.common.Rs} ${doctorDetails.onlineConsultationFees}`}</Text>
+                      <Text>{`${string.common.Rs} ${convertNumberToDecimal(
+                        Number(doctorDetails?.onlineConsultationFees)
+                      )}`}</Text>
                     ) : (
                       <>
                         <Text
@@ -827,12 +830,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                             textDecorationStyle: 'solid',
                           }}
                         >
-                          {`(${string.common.Rs} ${doctorDetails.onlineConsultationFees})`}
+                          {`(${string.common.Rs} ${convertNumberToDecimal(
+                            Number(doctorDetails?.onlineConsultationFees)
+                          )})`}
                         </Text>
                         <Text>
                           {' '}
                           {string.common.Rs}{' '}
-                          {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}
+                          {convertNumberToDecimal(
+                            g(data, 'appointmentPayments', '0' as any, 'amountPaid') || null
+                          )}
                         </Text>
                       </>
                     )}

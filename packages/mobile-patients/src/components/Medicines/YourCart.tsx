@@ -1099,7 +1099,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               key={medicine.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
-                props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+                props.navigation.navigate(AppRoutes.ProductDetailPage, {
                   sku: medicine.id,
                   title: medicine.name,
                   movedFrom: ProductPageViewedSource.CART,

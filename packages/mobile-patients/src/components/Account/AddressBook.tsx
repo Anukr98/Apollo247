@@ -30,7 +30,7 @@ import {
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
   DeleteIconWhite,
   EditAddressIcon,
@@ -148,16 +148,8 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
 
   const client = useApolloClient();
 
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
-  }, []);
-
   const handleBack = () => {
     props.navigation.goBack();
-    return true;
   };
 
   const renderBottomButtons = () => {

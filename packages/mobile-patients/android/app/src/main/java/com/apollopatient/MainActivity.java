@@ -95,6 +95,8 @@ public class MainActivity extends ReactActivity {
                     ringtone.stop();
                     vibrator.cancel();
                 }
+                Intent stopIntent = new Intent(this, RingtonePlayingService.class);
+                this.stopService(stopIntent);
             }
         } catch (Exception e) {
             Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());

@@ -18,13 +18,14 @@ import {
   ShoppingCartItem,
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Prescriptions } from '@aph/mobile-patients/src/components/Medicines/Components/Prescriptions';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import {
   pinCodeServiceabilityApi247,
   getPlaceInfoByPincode,
+  nonCartTatApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   SET_DEFAULT_ADDRESS,
@@ -72,6 +73,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import moment from 'moment';
 
 export interface PrescriptionOrderSummaryProps extends NavigationScreenProps {}
 
@@ -136,6 +138,10 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
       setLoading?.(false);
     }
   }
+
+  useEffect(() => {
+    nonCartAvailabilityTat(selectedAddress?.zipcode);
+  }, [selectedAddress]);
 
   const renderAlert = (message: string) => {
     showAphAlert!({
@@ -389,6 +395,24 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
     });
   };
 
+  async function nonCartAvailabilityTat(pincode: string) {
+    try {
+      const response = await nonCartTatApi247(pincode);
+      const tatResponse = g(response, 'data', 'response') || [];
+      const deliveryDate = tatResponse?.tat;
+      if (deliveryDate) {
+        setdeliveryTime && setdeliveryTime(deliveryDate);
+      }
+    } catch (error) {
+      const genericServiceableDate = moment()
+        .add(2, 'days')
+        .set('hours', 20)
+        .set('minutes', 0)
+        .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+      setdeliveryTime?.(genericServiceableDate);
+    }
+  }
+
   const renderErrorAlert = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -405,15 +429,15 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
           onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddress, {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Cart' as AddressSource,
             });
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddress, {
+            props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
-              DataAddress: address,
+              addressDetails: address,
               ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
@@ -421,6 +445,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
           onPressSelectAddress={(address) => {
             checkServicability(address);
             hideAphAlert && hideAphAlert();
+            nonCartAvailabilityTat(address?.zipcode);
           }}
         />
       ),
@@ -457,7 +482,9 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   };
 
   const renderTatCard = () => {
-    return <TatCardwithoutAddress style={{ marginTop: 22 }} vdcType={vdcType} />;
+    return (
+      <TatCardwithoutAddress style={{ marginTop: 22 }} vdcType={vdcType} isNonCartOrder={true} />
+    );
   };
 
   const renderPrescriptions = () => {
