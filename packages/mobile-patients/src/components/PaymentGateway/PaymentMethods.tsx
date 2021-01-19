@@ -129,7 +129,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setisCardValid(false);
         break;
       default:
-        console.log('errorMessage', errorMessage);
+        renderErrorPopup();
     }
   };
 
@@ -203,7 +203,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       return token;
     } catch (e) {
       setisTxnProcessing(true);
-      showTxnFailurePopUP();
+      renderErrorPopup();
     }
   };
 
@@ -288,6 +288,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const renderErrorPopup = () =>
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Oops! seems like we are having an issue. Please try again.',
+    });
+
   const renderHeader = () => {
     return (
       <Header
@@ -366,8 +372,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const showTxnFailurePopUP = () => {
     setisTxnProcessing(false);
     showAphAlert?.({
+      unDismissable: true,
       removeTopIcon: true,
-      children: <TxnFailed onPressRetry={() => hideAphAlert?.()} />,
+      children: (
+        <TxnFailed
+          onPressRetry={() => {
+            hideAphAlert?.();
+            props.navigation.goBack();
+          }}
+        />
+      ),
     });
   };
 
