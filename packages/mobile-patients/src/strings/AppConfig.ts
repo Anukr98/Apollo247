@@ -1,7 +1,10 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
-import { DIAGNOSTIC_ORDER_STATUS, REFUND_STATUSES } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
 
 export enum AppEnv {
@@ -90,7 +93,6 @@ const appStaticVariables = {
   jusPayService: 'in.juspay.ec',
   returnUrl: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
-  jusPayenvironment: 'prod',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   EXPRESS_MAXIMUM_HOURS: 6,
 };
@@ -522,6 +524,7 @@ const ConfigurationDev = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // QA
@@ -575,6 +578,7 @@ const ConfigurationQA = {
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // QA2
@@ -628,6 +632,7 @@ const ConfigurationQA2 = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // QA3
@@ -674,6 +679,7 @@ const ConfigurationQA3 = {
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // VAPT
@@ -727,6 +733,7 @@ const ConfigurationVAPT = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 //Production
 const ConfigurationProd = {
@@ -777,6 +784,7 @@ const ConfigurationProd = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 //PERFORMANCE
@@ -831,6 +839,7 @@ const ConfigurationPERFORM = {
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 //DevelopmentReplica
@@ -885,6 +894,7 @@ const ConfigurationDevReplica = {
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 const Configuration =
@@ -1022,28 +1032,28 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
-  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
 ];
 
 export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
-]
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+];
 
 export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [
   REFUND_STATUSES.FAILURE,
   REFUND_STATUSES.PENDING,
   REFUND_STATUSES.SUCCESS,
   REFUND_STATUSES.MANUAL_REVIEW,
-  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT
-]
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
+];
 
 export const DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS = [
   REFUND_STATUSES.FAILURE,
   REFUND_STATUSES.MANUAL_REVIEW,
-  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT
-]
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
+];
 
 export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
 
