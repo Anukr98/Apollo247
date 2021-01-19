@@ -1,7 +1,11 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
-import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Platform } from 'react-native';
 
 export enum AppEnv {
   DEV = 'DEV',
@@ -14,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -80,7 +84,14 @@ const appStaticVariables = {
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
-  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
+  clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
+  merchantId: 'apollo247',
+  jusPayService: 'in.juspay.ec',
+  returnUrl: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
+  jusPaybaseUrl: 'https://api.juspay.in/cardbins',
+  jusPayenvironment: 'prod',
+  HdfcHealthLifeText: string.common.HdfcHealthLifeText,
+  EXPRESS_MAXIMUM_HOURS: 6,
 };
 
 const DEV_top_specialties = [
@@ -530,6 +541,7 @@ const ConfigurationQA = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -582,6 +594,7 @@ const ConfigurationQA2 = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -634,6 +647,7 @@ const ConfigurationQA3 = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -679,6 +693,7 @@ const ConfigurationVAPT = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -730,6 +745,7 @@ const ConfigurationProd = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://base.apolloprism.com',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
@@ -780,6 +796,7 @@ const ConfigurationPERFORM = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -833,6 +850,7 @@ const ConfigurationDevReplica = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -997,6 +1015,27 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+];
+
+export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+];
+
+export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [
+  REFUND_STATUSES.FAILURE,
+  REFUND_STATUSES.PENDING,
+  REFUND_STATUSES.SUCCESS,
+  REFUND_STATUSES.MANUAL_REVIEW,
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
+];
+
+export const DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS = [
+  REFUND_STATUSES.FAILURE,
+  REFUND_STATUSES.MANUAL_REVIEW,
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
 ];
 
 export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
