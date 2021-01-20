@@ -299,7 +299,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   Object.entries(individualTestStatus).filter((item: any) => {
-    console.log({ item });
     if (item[0] == 'null') {
       if (sizeOfIndividualTestStatus == 1) {
         orderStatusList?.push(item[1]);
@@ -337,9 +336,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const fetchTestReportResult = useCallback(() => {
+    const getVisitId = selectedOrder?.visitNo;
     getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
       .then((data: any) => {
-        console.log({ data });
         const labResultsData = g(
           data,
           'getPatientPrismMedicalRecords_V2',
@@ -347,11 +346,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           'response'
         );
         setLabResults(labResultsData);
-        // put a check to filter based on identifier
-        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: labResultsData[1],
-          labResults: true,
-        });
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
+        !!resultForVisitNo
+          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+              data: resultForVisitNo,
+              labResults: true,
+            })
+          : renderReportError(string.diagnostics.unableToOpenReport);
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
@@ -362,7 +363,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   }, []);
   if (refundStatusArr?.length > 0) {
     const getObject = createRefundObject();
-    console.log({ getObject });
     const isPresent = orderStatusList?.[0].find(
       (item: any) => item?.orderStatus == getObject?.[0]?.orderStatus
     );
@@ -371,8 +371,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       getObject?.map((item) => orderStatusList?.[0]?.push(item));
     }
   }
-
-  console.log({ orderStatusList });
 
   const showReportsGenerated =
     sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
@@ -407,7 +405,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           fetchPolicy: 'no-cache',
         });
         const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
-        console.log({ feedback });
         if (!feedback) {
           setShowRateDiagnosticBtn(true);
         }

@@ -38,6 +38,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   siteDisplayName: string | null;
   tag: string | null;
   consultId: string | null;
+  identifier: string | null;
   additionalNotes: string | null;
   observation: string | null;
   labTestResults: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_labTestResults | null)[] | null;

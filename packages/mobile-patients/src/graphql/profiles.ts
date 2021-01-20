@@ -2838,6 +2838,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           siteDisplayName
           tag
           consultId
+          identifier
           additionalNotes
           observation
           labTestResults {

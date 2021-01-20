@@ -254,7 +254,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       })
       .then(({ data }) => {
         const refundData = g(data, 'getOrderInternal', 'refunds');
-        console.log({ refundData });
         if (refundData?.length! > 0) {
           setRefundStatusArr(refundData);
         }
@@ -291,9 +290,9 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const fetchTestReportResult = useCallback(() => {
+    const getVisitId = orderSelected?.visitNo;
     getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
       .then((data: any) => {
-        console.log({ data });
         const labResultsData = g(
           data,
           'getPatientPrismMedicalRecords_V2',
@@ -301,11 +300,13 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           'response'
         );
         setLabResults(labResultsData);
-        // put a check to filter based on identifier
-        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          data: labResultsData[1],
-          labResults: true,
-        });
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
+        !!resultForVisitNo
+          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+              data: resultForVisitNo,
+              labResults: true,
+            })
+          : renderReportError(string.diagnostics.unableToOpenReport);
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
@@ -330,8 +331,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       const res: any = await getPackageInclusions(client, arrayOfId);
       if (res) {
         const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
-        console.log({ data });
-        console.log({ itemIdObject });
         data?.map((test: any) => {
           //call getPackage
           objArray.push({
@@ -377,7 +376,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   ) => {
     const itemIdObject = _.groupBy(statusData, 'itemId');
     setStatusForTest(itemIdObject);
-    console.log({ itemIdObject });
     let objArray: TestStatusObject[] = [];
     const lengthOfItems = Object.keys(itemIdObject)?.length;
     Object.keys(itemIdObject).forEach(async (key) => {
@@ -634,7 +632,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const renderOrders = () => {
-    console.log({ individualTestData });
     return (
       <FlatList
         bounces={false}
