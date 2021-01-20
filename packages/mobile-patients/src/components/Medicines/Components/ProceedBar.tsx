@@ -5,7 +5,7 @@ import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFu
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { TatCard } from '@aph/mobile-patients/src/components/Medicines/Components/TatCard';
+import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
 
 export interface ProceedBarProps {
   onPressSelectDeliveryAddress?: () => void;
@@ -18,6 +18,7 @@ export interface ProceedBarProps {
   screen?: string;
   disableButton?: boolean;
   selectedMedicineOption?: string;
+  deliveryTime?: string;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -33,6 +34,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     disableButton,
     selectedMedicineOption,
     onPressProceed,
+    deliveryTime,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
 
@@ -71,13 +73,14 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   const renderTatCard = () => {
     if (
       selectedAddress &&
-      vdcType != '' &&
       screen != 'summary' &&
-      selectedMedicineOption != 'search'
+      selectedMedicineOption != 'search' &&
+      deliveryTime != undefined
     ) {
       return (
         <TatCard
-          vdcType={vdcType}
+          deliveryTime={deliveryTime}
+          isNonCartOrder={true}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
           onPressTatCard={onPressTatCard}

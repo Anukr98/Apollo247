@@ -14,16 +14,28 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import {
+  Dimensions,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Image } from 'react-native-elements';
-import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getMaxQtyForMedicineItem,
+  isSmallDevice,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { string } from '../../strings/string';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/fonts';
 import { Spearator } from './BasicComponents';
 import { CircleHeading } from './CircleHeading';
-import { calculateMrpToDisplay } from '../../utils/commonUtils';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+const width = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -45,7 +57,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
     color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 15 : 16),
     lineHeight: 24,
   },
   separator: {
@@ -66,9 +78,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(13),
     letterSpacing: 0.33,
   },
-  unitAndRupeeOfferText: {
-    ...theme.viewStyles.text('M', 13, '#02475b', 0.6, undefined, 0.33),
-  },
   takeRegularView: {
     backgroundColor: '#f7f8f5',
     borderRadius: 5,
@@ -83,7 +92,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   packOfTextStyle: {
-    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+    ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, '#02475b', 0.6, 20, 0.04),
     marginBottom: 3,
   },
   unitDropdownContainer: {
@@ -153,20 +162,25 @@ const styles = StyleSheet.create({
   },
   circleHeadingView: { flexDirection: 'row', alignSelf: 'flex-end', marginRight: 5 },
   packageSlashedPrice: {
-    ...theme.viewStyles.text('M', 14, '#02475B', 0.5, 20, 0.04),
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, '#02475B', 0.5, 20, 0.04),
     textDecorationLine: 'line-through',
     textAlign: 'right',
   },
   rightView: { alignSelf: 'flex-end' },
   percentageDiscountText: {
-    ...theme.fonts.IBMPlexSansMedium(11),
+    ...theme.fonts.IBMPlexSansMedium(width > 380 ? 11 : 9),
     color: colors.APP_GREEN,
     lineHeight: 16,
-    marginHorizontal: 10,
+    marginTop: isSmallDevice ? 2 : 0,
+    marginHorizontal: isSmallDevice ? 5 : 10,
   },
   circlePriceTextSub: {
-    ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.04),
+    ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, '#02475B', 1, 20, 0.04),
     marginLeft: 5,
+  },
+  rowRightView: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
   },
 });
 
@@ -201,6 +215,7 @@ export interface MedicineCardProps {
   discount?: number | string;
   mrpToDisplay?: number | string;
   packageMrp?: number;
+  isSpecialDiscount?: boolean;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
@@ -233,6 +248,12 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
   const isSpecialPrice = specialPrice !== price && (!!specialPrice || specialPrice === 0);
   const priceToBeDisplayed = isSpecialPrice ? specialPrice : price;
+
+  const renderSpecialDiscountText = (styleObj?: any) => {
+    return (
+      <SpecialDiscountText text={strings.diagnostics.specialDiscountText} styleObj={styleObj} />
+    );
+  };
 
   const renderTitleAndIcon = () => {
     return (
@@ -510,7 +531,16 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
          */}
 
         {props.isCareSubscribed && (
-          <View style={{ alignSelf: 'flex-end' }}>
+          <View style={styles.rowRightView}>
+            {/**
+             * special price text
+             */}
+            {props.circlePrice! == undefined && props.isSpecialDiscount
+              ? renderSpecialDiscountText({
+                  marginTop: '3%',
+                  paddingRight: 5,
+                })
+              : null}
             <Text
               style={{
                 ...theme.viewStyles.text(
@@ -581,14 +611,25 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           )}
 
           {!props.isCareSubscribed && (
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
-                marginTop: 4,
-              }}
-            >
-              {strings.common.Rs} {specialPrice! || price!}
-            </Text>
+            <View style={styles.rowRightView}>
+              {/**
+               * special price text
+               */}
+              {props.circlePrice! == undefined && props.isSpecialDiscount
+                ? renderSpecialDiscountText({
+                    marginTop: '3%',
+                    paddingRight: 5,
+                  })
+                : null}
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
+                  marginTop: 4,
+                }}
+              >
+                {strings.common.Rs} {specialPrice! || price!}
+              </Text>
+            </View>
           )}
         </View>
       </>
@@ -644,23 +685,56 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         {props.circlePrice == undefined && (
           <>
             {renderCartPagePackageMrp()}
-            <View style={styles.rightView}>
+            <View
+              style={[props.isSpecialDiscount ? { marginLeft: -32 } : { alignSelf: 'flex-end' }]}
+            >
               {props.specialPrice! && props.packageMrp! < price! && (
-                <Text style={styles.packageSlashedPrice}>
-                  ({strings.common.Rs} {price!.toFixed(2)})
-                </Text>
+                <View style={styles.rightView}>
+                  <Text style={[styles.packageSlashedPrice]}>
+                    ({strings.common.Rs} {price!.toFixed(2)})
+                  </Text>
+                </View>
               )}
-              <View style={{ flexDirection: 'row' }}>
-                {props.specialPrice! && props.discount! > 0 && (
-                  <Text style={styles.percentageDiscountText}>
-                    {Number(props.discount!).toFixed(0)}%off
-                  </Text>
-                )}
-                {(!!price || !!specialPrice) && (
-                  <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04) }}>
-                    {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
-                  </Text>
-                )}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                {props.isSpecialDiscount ? renderSpecialDiscountText({}) : null}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: isSmallDevice ? 'flex-start' : 'flex-end',
+                  }}
+                >
+                  {props.specialPrice! && props.discount! > 0 && (
+                    <Text
+                      style={[
+                        styles.percentageDiscountText,
+                        { marginLeft: props.isSpecialDiscount ? '13%' : 0 },
+                      ]}
+                    >
+                      {Number(props.discount!).toFixed(0)}%off
+                    </Text>
+                  )}
+                  {(!!price || !!specialPrice) && (
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text(
+                          'M',
+                          isSmallDevice ? 12 : 14,
+                          '#02475B',
+                          1,
+                          20,
+                          0.04
+                        ),
+                      }}
+                    >
+                      {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
           </>
@@ -677,7 +751,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
               style={{
                 flexDirection: 'row',
                 marginLeft: -40,
-                justifyContent: 'space-between',
+                justifyContent:
+                  props.specialPrice! && props.discount! > 0 ? 'center' : 'space-between',
               }}
             >
               <View style={{ flexDirection: 'row' }}>
@@ -687,19 +762,24 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 </Text>
               </View>
               {/** % added */}
-              {props.discount! > 0 && (
-                <Text style={[styles.percentageDiscountText, { marginLeft: 20 }]}>
-                  {Number(props.discount!).toFixed(0)}% off
-                </Text>
-              )}
-              <View style={styles.rightView}>
-                {(!!price || !!specialPrice) && (
-                  <Text
-                    style={[styles.circlePriceTextSub, { ...theme.fonts.IBMPlexSansMedium(14) }]}
-                  >
-                    {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
+              <View style={{ flexDirection: 'row' }}>
+                {props.discount! > 0 && (
+                  <Text style={[styles.percentageDiscountText, { marginLeft: 20 }]}>
+                    {Number(props.discount!).toFixed(0)}% off
                   </Text>
                 )}
+                <View style={[styles.rightView]}>
+                  {(!!price || !!specialPrice) && (
+                    <Text
+                      style={[
+                        styles.circlePriceTextSub,
+                        { ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14) },
+                      ]}
+                    >
+                      {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
           </>

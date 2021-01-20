@@ -139,6 +139,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots 
 export interface getDoctorDetailsById_getDoctorDetailsById {
   __typename: "DoctorDetails";
   id: string;
+  skipAutoQuestions: boolean | null;
+  isJdAllowed: boolean | null;
   salutation: string | null;
   firstName: string;
   lastName: string;

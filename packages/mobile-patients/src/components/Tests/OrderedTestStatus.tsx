@@ -3,8 +3,10 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
+  GET_DIAGNOSTIC_CANCELLED_ORDER_DETAILS,
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_STATUS,
+  GET_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersList,
@@ -21,11 +23,22 @@ import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import _ from 'lodash';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  DIAGNOSTIC_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getTestOrderStatusText,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { AppConfig, SequenceForDiagnosticStatus } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  AppConfig,
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_JUSPAY_REFUND_STATUS,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -34,7 +47,12 @@ import {
   getDiagnosticsOrderStatusVariables,
   getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
-const sequenceOfStatus = SequenceForDiagnosticStatus;
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getOrderInternal,
+  getOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
+import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 
 export interface TestStatusObject {
   id: string;
@@ -128,20 +146,21 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface YourTestDetailsProps extends NavigationScreenProps {}
+export interface OrderedTestStatusProps extends NavigationScreenProps {}
 
-export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
+export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [statusForTest, setStatusForTest] = useState({});
 
-  const [apiLoading, setApiLoading] = useState(false);
   const orderSelectedId = props.navigation.getParam('orderId');
   const orderSelected = props.navigation.getParam('selectedOrder');
-  const [individualTestData, setIndividualTestData] = useState([]);
+  const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
-  const { getPatientApiCall } = useAuth();
+  const [individualTestData, setIndividualTestData] = useState<any>([]);
+  const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
+
   const client = useApolloClient();
 
   const [orders, setOrders] = useState<
@@ -165,7 +184,14 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   useEffect(() => {
     setLoading!(true);
     fetchOrderStatusForEachTest();
+    isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(orderSelected?.orderStatus)
+      ? fetchRefundForOrder()
+      : null;
   }, []);
+
+  const calMaxStatus = (statusForTest: any, status: string) => {
+    return statusForTest?.find((item: any) => item?.orderStatus == status);
+  };
 
   const fetchOrderStatusForEachTest = async () => {
     setLoading!(true);
@@ -182,27 +208,96 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
       })
       .then(({ data }) => {
         const _testStatus = g(data, 'getDiagnosticsOrderStatus', 'ordersList') || [];
-        console.log(_testStatus);
-        console.log({ orderSelected });
         getStatusForAllTests(_testStatus);
-
-        //check for the status and for the testItems
-
-        setLoading!(false);
       })
       .catch((e) => {
-        console.log('error in fetching the staus for each test' + e);
-        CommonBugFender('Tests_', e);
+        CommonBugFender('OrderedTestStatus_fetchTestStatus', e);
         setLoading!(false);
       });
+  };
+
+  const fetchRefundForOrder = async () => {
+    setRefundStatusArr(null);
+    setLoading!(true);
+    client
+      .query<getOrderInternal, getOrderInternalVariables>({
+        query: GET_INTERNAL_ORDER,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          order_id: orderSelected?.paymentOrderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const refundData = g(data, 'getOrderInternal', 'refunds');
+        console.log({ refundData });
+        if (refundData?.length! > 0) {
+          setRefundStatusArr(refundData);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
+        setLoading!(false);
+      });
+  };
+
+  const loadPackageDetails = async (
+    packageId: string,
+    index: number,
+    date: string,
+    time: string,
+    objArray: any,
+    itemIdObject: any,
+    key: string
+  ) => {
+    try {
+      setLoading!(true);
+      const arrayOfId = packageId.length == 1 ? [Number(packageId)] : packageId;
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        console.log({ data });
+        console.log({ itemIdObject });
+        data?.map((test: any) => {
+          //call getPackage
+          objArray.push({
+            id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
+            displayId: orderSelected?.displayId,
+            slotTimings: time,
+            patientName: currentPatient?.firstName,
+            showDateTime: date,
+            itemId: test?.itemId,
+            currentStatus:
+              orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+            packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
+            packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
+            itemName: test?.name,
+            statusDate: itemIdObject?.[key][0]?.statusDate,
+            testPreparationData:
+              test?.testPreparationData! ||
+              orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.testPreparationData, //need to check
+          });
+        });
+        setLoading!(false);
+        return objArray;
+      } else {
+        setLoading!(false);
+      }
+    } catch (e) {
+      CommonBugFender('TestDetails', e);
+      setLoading!(false);
+      console.log('getPackageData Error \n', { e });
+    }
   };
 
   const getStatusForAllTests = (
     data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList | any
   ) => {
-    const testStatusData = createObject(data);
-
-    setIndividualTestData(testStatusData);
+    createObject(data);
   };
 
   const createObject = (
@@ -210,40 +305,40 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   ) => {
     const itemIdObject = _.groupBy(statusData, 'itemId');
     setStatusForTest(itemIdObject);
-
-    var newArr: TestStatusObject[] = [];
-
-    //create interface
+    console.log({ itemIdObject });
     let objArray: TestStatusObject[] = [];
-    const lengthOfItems = Object.keys(itemIdObject).length;
-    Object.keys(itemIdObject).forEach((key) => {
+    const lengthOfItems = Object.keys(itemIdObject)?.length;
+    Object.keys(itemIdObject).forEach(async (key) => {
       /**
        * key is null for all pickup requested + all the packages are pickup requested
        * we don't have the itemId,packageId so creating the object with the data from
        *  all the tests/packages (searchDiagnosticsById + getPackages).
        */
+      const getUTCDateTime = orderSelected?.slotDateTimeInUTC;
+      const dt = moment(
+        getUTCDateTime != null ? getUTCDateTime : orderSelected?.diagnosticDate!
+      ).format(`D MMM YYYY`);
+      const tm =
+        getUTCDateTime != null
+          ? moment(getUTCDateTime).format('hh:mm A')
+          : orderSelected?.slotTimings;
 
       if (key == 'null' && lengthOfItems == 1) {
-        for (let index = 0; index < orderSelected.diagnosticOrderLineItems.length; index++) {
-          orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.PackageInclussion?.map(
-            (test: any) => {
-              objArray.push({
-                id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
-                displayId: orderSelected?.displayId!,
-                slotTimings: orderSelected?.slotTimings,
-                patientName: currentPatient?.firstName,
-                showDateTime: orderSelected?.diagnosticDate,
-                itemId: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemId,
-                currentStatus: orderSelected?.maxStatus,
-                packageId: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemId,
-                packageName: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.itemName,
-                itemName: test?.name,
-                statusDate: itemIdObject[key][0]?.statusDate,
-                testPreparationData:
-                  orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.testPreparationData,
-              });
-            }
+        for (let index = 0; index < orderSelected?.diagnosticOrderLineItems?.length; index++) {
+          let inclusionVal =
+            orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.inclusions == null
+              ? [orderSelected?.diagnosticOrderLineItems?.[index]?.itemId]
+              : orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.inclusions!;
+          const createdObject = await loadPackageDetails(
+            inclusionVal,
+            index,
+            dt,
+            tm,
+            objArray,
+            itemIdObject,
+            key
           );
+          setIndividualTestData(createdObject);
         }
       } else {
         /**
@@ -259,35 +354,99 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
         } else {
           const getSelectedObj =
             key != 'null' &&
-            orderSelected.diagnosticOrderLineItems.filter(
-              (item: any) => item.itemId.toString() == key
+            orderSelected?.diagnosticOrderLineItems?.filter(
+              (item: any) => item?.itemId?.toString() == key
             );
-          const sortedSelectedObj =
-            key != null &&
-            itemIdObject[key].sort(function(a, b) {
-              return new Date(b.statusDate) - new Date(a.statusDate);
-            });
+          let sortedSelectedObj: any;
+          //when backend will be fixed use this logic.
+          // sortedSelectedObj =
+          //   key != null &&
+          //   itemIdObject[key].sort(function(a: any, b: any) {
+          //     return new Date(b.statusDate).valueOf() - new Date(a.statusDate).valueOf();
+          //   });
 
-          objArray.push({
-            id: getSelectedObj?.id! || orderSelectedId,
-            displayId: orderSelected!.displayId!,
-            slotTimings: orderSelected!.slotTimings,
-            patientName: currentPatient.firstName,
-            showDateTime: orderSelected!.diagnosticDate,
-            itemId: key,
-            currentStatus: sortedSelectedObj[0].orderStatus,
-            packageId: sortedSelectedObj[0].packageId,
-            itemName: sortedSelectedObj[0].itemName,
-            packageName: sortedSelectedObj[0].packageName,
-            statusDate: sortedSelectedObj[0].statusDate,
-            testPreparationData: '',
-          });
+          if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
+            );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB
+            );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED
+            );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+            );
+          } else if (
+            key != null &&
+            calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED)
+          ) {
+            sortedSelectedObj = calMaxStatus(
+              itemIdObject[key],
+              DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
+            );
+          } else {
+            sortedSelectedObj =
+              key != null &&
+              calMaxStatus(itemIdObject[key], DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED);
+          }
+          //check here for the refund
+          if (refundStatusArr?.length > 0) {
+            objArray.push({
+              id: getSelectedObj?.id! || orderSelectedId,
+              displayId: orderSelected?.displayId!,
+              slotTimings: tm,
+              patientName: currentPatient?.firstName,
+              showDateTime: dt,
+              itemId: key,
+              currentStatus: refundStatusArr?.[0]?.status,
+              packageId: sortedSelectedObj?.packageId,
+              itemName: sortedSelectedObj?.itemName,
+              packageName: sortedSelectedObj?.packageName,
+              statusDate: sortedSelectedObj?.statusDate,
+              testPreparationData: '',
+            });
+          } else {
+            objArray.push({
+              id: getSelectedObj?.id! || orderSelectedId,
+              displayId: orderSelected?.displayId!,
+              slotTimings: tm,
+              patientName: currentPatient?.firstName,
+              showDateTime: dt,
+              itemId: key,
+              currentStatus: sortedSelectedObj?.orderStatus,
+              packageId: sortedSelectedObj?.packageId,
+              itemName: sortedSelectedObj?.itemName,
+              packageName: sortedSelectedObj?.packageName,
+              statusDate: sortedSelectedObj?.statusDate,
+              testPreparationData: '',
+            });
+          }
         }
+        setLoading!(false);
+        setIndividualTestData(objArray);
       }
     });
-
-    console.log({ objArray });
-    return objArray;
   };
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
@@ -298,36 +457,58 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
     return moment(time).format('hh:mm A');
   };
 
-  const renderOrder = (order: TestOrder, index: number) => {
-    console.log({ order });
-    const isHomeVisit = !!order.slotTimings;
-    const dt = moment(order!.statusDate).format(`D MMM YYYY`);
-    const tm = getSlotStartTime(order!.statusDate);
-    const statusTime = getFormattedTime(order!.statusDate);
+  const renderOrder = (order: any, index: number) => {
+    const isHomeVisit = !!order?.slotTimings;
+
+    const dt = moment(order?.statusDate).format(`D MMM YYYY`); //status date
+    const tm = getSlotStartTime(order?.statusDate); //status time
+
+    //here schedule for date should be time when you selected slot for pickup requested.
+    const getScheduleDate = moment(order?.showDateTime).format(`D MMM YYYY`);
+    const getScheduleTime = order?.slotTimings;
+    const scheduledDtTm = `${getScheduleDate}${isHomeVisit ? `, ${getScheduleTime}` : ''}`;
+
+    const statusTime = getFormattedTime(order?.statusDate);
     const dtTm = `${dt}${isHomeVisit ? `, ${statusTime}` : ''}`;
-    const currentStatus = order.currentStatus;
+    const currentStatus =
+      isPrepaid && DIAGNOSTIC_JUSPAY_REFUND_STATUS?.length > 0
+        ? orderSelected?.orderStatus
+        : DIAGNOSTIC_ORDER_FAILED_STATUS.includes(orderSelected?.orderStatus)
+        ? orderSelected?.orderStatus
+        : order?.currentStatus;
+    const shouldShowCancel = DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(currentStatus)
+      ? orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+      : currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED ||
+        orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED;
+
     return (
       <TestOrderCard
-        key={`${order.id}`}
-        orderId={`${order.displayId}`}
+        key={`${order?.id}`}
+        orderId={`${order?.displayId}`}
         showStatus={true}
-        patientName={order.patientName}
+        patientName={order?.patientName}
         isComingFrom={'individualTest'}
         showDateTime={true}
         showRescheduleCancel={false}
-        isTypeOfPackage={order.packageName != null ? true : false}
+        isTypeOfPackage={order?.packageName != null ? true : false}
         ordersData={order}
         dateTime={
           order.currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
             ? `Completed On: ${dtTm}`
+            : order?.currentStatus == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
+            ? orderSelected?.isRescheduled == true
+              ? `Rescheduled For: ${scheduledDtTm}`
+              : `Scheduled For: ${scheduledDtTm}`
             : `Scheduled For: ${dtTm}`
         }
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
-        showViewReport={false}
+        isCancelled={shouldShowCancel}
+        showViewReport={currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED}
+        showRefund={refundStatusArr?.length > 0}
+        refundStatus={refundStatusArr?.[0]?.status}
         onPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
-            orderId: orderSelected!.id,
+            orderId: orderSelected?.id,
             setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
               setOrders(orders),
             refetch: refetch,
@@ -335,16 +516,17 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
             selectedOrder: orderSelected,
             individualTestStatus: statusForTest,
             comingFrom: AppRoutes.YourOrdersTest,
+            refundStatusArr: refundStatusArr,
           });
         }}
         status={currentStatus}
-        statusText={mapStatusWithText(currentStatus)}
+        statusText={getTestOrderStatusText(currentStatus)}
         style={[
           { marginHorizontal: 20 },
           index < individualTestData.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        showTestPreparation={order.testPreparationData != ''} //call the service
+        showTestPreparation={order?.testPreparationData != ''} //call the service
         onOptionPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
             orderId: orderSelected!.id,
@@ -355,17 +537,20 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
             selectedOrder: orderSelected,
             individualTestStatus: statusForTest,
             comingFrom: AppRoutes.YourOrdersTest,
+            refundStatusArr: refundStatusArr,
           });
         }}
+        onPressViewReport={() => _navigateToPHR()}
       />
     );
   };
 
-  const mapStatusWithText = (val: string) => {
-    return val?.replace(/[_]/g, ' ');
+  const _navigateToPHR = () => {
+    props.navigation.navigate(AppRoutes.HealthRecordsHome);
   };
 
   const renderOrders = () => {
+    console.log({ individualTestData });
     return (
       <FlatList
         bounces={false}
@@ -377,7 +562,7 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   };
 
   const renderNoOrders = () => {
-    if (!loading && !error) {
+    if (!loading && !error && individualTestData?.length == 0) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
@@ -401,6 +586,12 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
           headingTextStyle={{ fontSize: 14 }}
         />
       );
+    }
+  };
+
+  const renderRefund = () => {
+    if (refundStatusArr?.length > 0) {
+      return <RefundCard refundArray={refundStatusArr} />;
     }
   };
 
@@ -450,6 +641,7 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
+          {renderRefund()}
           {/* {!loading && !error && renderChatWithUs()} */}
         </ScrollView>
       </SafeAreaView>

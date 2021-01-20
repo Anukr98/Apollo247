@@ -1,34 +1,18 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
+import { PreviousQuery } from '@aph/mobile-patients/src/components/NeedHelp';
+import { Helpers, Query } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { GrayEditIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import {
-  CommonBugFender,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SEND_HELP_EMAIL } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  SendHelpEmail,
-  SendHelpEmailVariables,
-} from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import {
-  g,
-  handleGraphQlError,
-  postWebEngageEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
-  Keyboard,
   SafeAreaView,
   ScrollView,
   StyleProp,
@@ -38,20 +22,11 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { PreviousQuery } from '@aph/mobile-patients/src/components/NeedHelp';
-import { Helpers, Query } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
-import moment from 'moment';
+import { NavigationScreenProps } from 'react-navigation';
 
+const { text } = theme.viewStyles;
+const { LIGHT_BLUE } = theme.colors;
 const styles = StyleSheet.create({
   subViewPopup: {
     marginTop: 24,
@@ -65,25 +40,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 30,
   },
-  dropdownOverlayStyle: {
-    padding: 0,
-    margin: 0,
-    height: 'auto',
-    borderRadius: 10,
-    marginTop: 40,
-    marginBottom: 40,
-  },
   categoryItemStyle: {
     ...theme.viewStyles.cardViewStyle,
     zIndex: 1,
     backgroundColor: 'white',
-    marginTop: 10,
-    marginRight: 20,
-  },
-  categoryItemSelectedStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    zIndex: 1,
-    backgroundColor: '#00b38e',
     marginTop: 10,
     marginRight: 20,
   },
@@ -102,55 +62,36 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     color: '#0087ba',
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansMedium(18),
+    marginVertical: 10,
+  },
+  email: {
+    ...text('L', 15, LIGHT_BLUE),
+    marginTop: 10,
+    marginBottom: 10,
   },
   categoryWrapper: {
     flexWrap: 'wrap',
     flexDirection: 'row',
     alignItems: 'center',
   },
-  resetButtonStyle: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  resetButtonTextStyle: {
-    color: '#fc9916',
-  },
-  resetButtonDisabledTextStyle: {
-    color: '#fc9916',
-    opacity: 0.5,
-  },
-  submitButtonStyle: {
-    flex: 1,
-  },
-  buttonsWrapperStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
+  contentContainer: { paddingHorizontal: 15, paddingBottom: 20 },
+  editIcon: { height: 25, width: 25, resizeMode: 'contain' },
+  emailInput: { paddingBottom: 5 },
+  emailInputContainer: { marginBottom: 10 },
 });
 
 export interface Props extends NavigationScreenProps {}
 
 export const NeedHelp: React.FC<Props> = (props) => {
-  const [comment, setComment] = useState<string>('');
-  const [helpCategory, setHelpCategory] = useState<string>('');
-  const [helpCategoryId, setHelpCategoryId] = useState<string>('');
-  const [selectedQuery, setSelectedQuery] = useState<string>('');
-  const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
-  const { needHelpToContactInMessage } = useAppCommonData();
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
+  const [isFocused, setFocused] = useState<boolean>(false);
   const [ongoingQuery, setOngoingQuery] = useState<Query>();
   const [emailValidation, setEmailValidation] = useState<boolean>(
     currentPatient?.emailAddress ? true : false
   );
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert } = useUIElements();
   const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   const isSatisfyingEmailRegex = (value: string) =>
@@ -167,10 +108,6 @@ export const NeedHelp: React.FC<Props> = (props) => {
   useEffect(() => {
     fetchOngoingQuery();
   }, []);
-
-  useEffect(() => {
-    setSelectedQuery('');
-  }, [helpCategory]);
 
   const fetchOngoingQuery = async () => {
     try {
@@ -189,181 +126,52 @@ export const NeedHelp: React.FC<Props> = (props) => {
     { category, id }: typeof NeedHelp[0],
     containerStyle?: StyleProp<ViewStyle>
   ) => {
+    const onPress = () => onSubmit(category, id);
     return (
       <TouchableOpacity
         activeOpacity={1}
         key={category}
-        style={[
-          category == helpCategory ? styles.categoryItemSelectedStyle : styles.categoryItemStyle,
-          containerStyle,
-        ]}
-        onPress={() => {
-          setHelpCategory(category);
-          setHelpCategoryId(id);
-        }}
+        style={[styles.categoryItemStyle, containerStyle]}
+        onPress={onPress}
       >
-        <Text
-          style={[
-            category == helpCategory
-              ? { ...styles.categoryTextStyle, color: 'white' }
-              : styles.categoryTextStyle,
-          ]}
-        >
-          {category}
-        </Text>
+        <Text style={[styles.categoryTextStyle]}>{category}</Text>
       </TouchableOpacity>
     );
   };
 
-  const renderQueyFiled = () => {
-    const handleDropdownClick = () => {
-      Keyboard.dismiss();
-      if (!helpCategory) {
-        Alert.alert('Alert', 'Please select from above categories first.');
-      } else {
-        setDropdownOpen(!isDropdownOpen);
-      }
-    };
-    return (
-      <View style={{ marginTop: 5, marginBottom: 14 }}>
-        <Text style={[styles.fieldLabel, { marginBottom: 12 }]}>
-          Please select a reason that best matches your query
-        </Text>
-        <TouchableOpacity activeOpacity={1} onPress={() => handleDropdownClick()}>
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-            <Text
-              style={[
-                selectedQuery
-                  ? {}
-                  : {
-                      opacity: 0.3,
-                    },
-                {
-                  flex: 0.9,
-                  ...theme.fonts.IBMPlexSansMedium(18),
-                  color: theme.colors.SHERPA_BLUE,
-                },
-              ]}
-              numberOfLines={2}
-            >
-              {selectedQuery || 'Select a query'}
-            </Text>
-            <View style={{ flex: 0.1 }}>
-              <DropdownGreen style={{ alignSelf: 'flex-end' }} />
-            </View>
-          </View>
-          <View
-            style={{
-              marginTop: 5,
-              backgroundColor: '#00b38e',
-              height: 2,
-            }}
-          />
-        </TouchableOpacity>
-        {renderSelectReasonOptions()}
-      </View>
-    );
-  };
-
-  const renderSelectReasonOptions = () => {
-    const options =
-      (helpCategory && NeedHelp.find((item) => item.category == helpCategory)!.options) || [];
-    if (isDropdownOpen)
-      return (
-        <Overlay
-          onBackdropPress={() => setDropdownOpen(!isDropdownOpen)}
-          isVisible={isDropdownOpen}
-          overlayStyle={styles.dropdownOverlayStyle}
-        >
-          <ScrollView>
-            {options.length > 0 && (
-              <DropDown
-                cardContainer={{
-                  margin: 0,
-                }}
-                options={options.map(
-                  (item) =>
-                    ({
-                      optionText: item,
-                      onPress: () => {
-                        setDropdownOpen(!isDropdownOpen);
-                        setSelectedQuery(item);
-                      },
-                    } as Option)
-                )}
-              />
-            )}
-          </ScrollView>
-        </Overlay>
-      );
-  };
-
   const renderEmailField = () => {
     return (
-      <View style={{ marginTop: 12 }}>
-        <Text style={styles.fieldLabel}>Please enter your email address</Text>
+      <View>
+        <Text style={styles.email}>{'Your email address '}</Text>
         <TextInputComponent
           placeholder={'Enter email address'}
           value={email}
           autoCapitalize="none"
           keyboardType="email-address"
           onChangeText={(text: string) => _setEmail(text)}
-          inputStyle={{
-            paddingBottom: 8,
-            marginTop: 8,
-          }}
-        />
-      </View>
-    );
-  };
-
-  const renderCommentField = () => {
-    return (
-      <View>
-        <Text style={styles.fieldLabel}>Please share more details (mandatory)</Text>
-        <TextInputComponent
-          placeholder={'Share your details here…'}
-          value={comment}
-          onChangeText={(text) => setComment(text)}
-          inputStyle={{
-            paddingBottom: 8,
-            marginTop: 8,
-          }}
+          icon={!isFocused && <GrayEditIcon style={styles.editIcon} />}
+          inputStyle={styles.emailInput}
+          conatinerstyles={styles.emailInputContainer}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
       </View>
     );
   };
 
   const renderContent = () => {
+    const whatYouNeedHelp = 'Tell us what you need help with?';
+    const toReportAnIssue = 'To report an issue:';
+
     return (
-      <View style={{ paddingHorizontal: 15, paddingTop: 12, paddingBottom: 20 }}>
-        <View style={styles.categoryWrapper}>{NeedHelp.map((item) => renderCategory(item))}</View>
+      <View style={styles.contentContainer}>
+        <Text style={styles.fieldLabel}>{toReportAnIssue}</Text>
         {renderEmailField()}
-        {/* {renderQueyFiled()} */}
-        {/* {renderCommentField()} */}
+        <Text style={[styles.fieldLabel]}>{whatYouNeedHelp}</Text>
+        <View style={styles.categoryWrapper}>{NeedHelp.map((item) => renderCategory(item))}</View>
       </View>
     );
   };
-
-  // const submit = (
-  //   category: string,
-  //   reason: string,
-  //   comments: string,
-  //   patientId: string,
-  //   email: string
-  // ) =>
-  //   client.query<SendHelpEmail, SendHelpEmailVariables>({
-  //     query: SEND_HELP_EMAIL,
-  //     variables: {
-  //       helpEmailInput: {
-  //         category,
-  //         reason,
-  //         comments,
-  //         patientId,
-  //         email,
-  //       },
-  //     },
-  //   });
 
   const showAlert = () => {
     showAphAlert!({
@@ -371,7 +179,8 @@ export const NeedHelp: React.FC<Props> = (props) => {
       description: `Please enter your valid email address`,
     });
   };
-  const onSubmit = () => {
+
+  const onSubmit = (helpCategory: string, helpCategoryId: string) => {
     if (!emailValidation) {
       showAlert();
       return;
@@ -388,95 +197,6 @@ export const NeedHelp: React.FC<Props> = (props) => {
       pageTitle: helpCategory.toUpperCase(),
       email: email,
     });
-    return;
-
-    setLoading(true);
-    // submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email);
-
-    const helpEmail = {
-      category: helpCategory,
-      reason: selectedQuery,
-      comments: comment,
-      patientId: g(currentPatient, 'id'),
-      email: email,
-    };
-    const attributes: WebEngageEvents[WebEngageEventName.TICKET_RAISED] = {
-      Category: helpCategory,
-      Query: selectedQuery,
-    };
-    postWebEngageEvent(WebEngageEventName.TICKET_RAISED, attributes);
-    client
-      .query<SendHelpEmail, SendHelpEmailVariables>({
-        query: SEND_HELP_EMAIL,
-        variables: {
-          helpEmailInput: helpEmail,
-        },
-      })
-      .then(() => {
-        setLoading(false);
-        showAphAlert!({
-          title: 'Hi:)',
-          description:
-            needHelpToContactInMessage ||
-            'Thank you for reaching out. Our team will call you back shortly.',
-          unDismissable: true,
-          onPressOk: () => {
-            hideAphAlert && hideAphAlert();
-            CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
-          },
-        });
-      })
-      .catch((e) => {
-        CommonBugFender('MobileHelp_onSubmit', e);
-        setLoading(false);
-        props.navigation.goBack();
-        handleGraphQlError(e);
-      });
-  };
-
-  const isInitialState = !(helpCategory || email || selectedQuery || comment);
-  const onReset = () => {
-    if (isInitialState) {
-      CommonLogEvent(AppRoutes.MobileHelp, 'Go back clicked');
-      props.navigation.goBack();
-      return;
-    }
-    setHelpCategory('');
-    setHelpCategoryId('');
-    setComment('');
-    setSelectedQuery('');
-    setEmail('');
-  };
-
-  const renderButtons = () => {
-    return (
-      <View style={styles.buttonsWrapperStyle}>
-        <Button
-          onPress={() => onReset()}
-          title={'RESET'}
-          disabled={isInitialState}
-          style={styles.resetButtonStyle}
-          disabledStyle={styles.resetButtonStyle}
-          titleTextStyle={
-            isInitialState ? styles.resetButtonDisabledTextStyle : styles.resetButtonTextStyle
-          }
-        />
-        <View style={{ width: 16 }} />
-        <Button
-          onPress={() => onSubmit()}
-          disabled={!helpCategory || !email}
-          title="SUBMIT"
-          style={styles.submitButtonStyle}
-        />
-      </View>
-    );
   };
 
   const renderHeader = () => {
@@ -496,13 +216,8 @@ export const NeedHelp: React.FC<Props> = (props) => {
     return !!ongoingQuery && <PreviousQuery query={ongoingQuery} />;
   };
 
-  const needHelpForQuery = !!ongoingQuery
-    ? 'New issue? Tell us what you need help with?'
-    : 'What do you need help with?';
-
   return (
     <View style={theme.viewStyles.container}>
-      {loading && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <View style={{ flex: 1 }}>
@@ -510,12 +225,10 @@ export const NeedHelp: React.FC<Props> = (props) => {
             <KeyboardAwareScrollView style={styles.subViewPopup} bounces={false}>
               <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
               {renderPreviousTicketView()}
-              <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>{needHelpForQuery}</Text>
               {renderContent()}
             </KeyboardAwareScrollView>
           </ScrollView>
         </View>
-        {renderButtons()}
       </SafeAreaView>
     </View>
   );

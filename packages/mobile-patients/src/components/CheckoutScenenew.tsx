@@ -86,6 +86,7 @@ import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPl
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import DeviceInfo from 'react-native-device-info';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -102,6 +103,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showPaymentOptions, setShowPaymentOptions] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
     deliveryAddressId,
@@ -284,6 +286,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
         af_currency: 'INR',
+        'Circle Cashback amount':
+          circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
         ...pharmacyCircleAttributes!,
       };
       if (store) {
@@ -306,6 +310,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       af_currency: 'INR',
       'order id': orderId,
       'coupon applied': coupon ? true : false,
+      'Circle Cashback amount':
+        circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
     };
     return appsflyerEventAttributes;
@@ -782,7 +788,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               Circle Membership
             </Text>
             <Text style={styles.grandTotalTxt}>
-              {string.common.Rs} {circleMembershipCharges}
+              {string.common.Rs} {convertNumberToDecimal(circleMembershipCharges)}
             </Text>
           </View>
         )}
@@ -961,6 +967,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       </TouchableOpacity>
     );
   };
+
+  useEffect(() => {
+    // hide payment options if to pay (after hc) is zero
+    setShowPaymentOptions(grandTotal - burnHC != 0);
+  }, [burnHC]);
 
   useEffect(() => {
     if (isOneApolloSelected) {
@@ -1205,7 +1216,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         style={{
           marginTop: 0.05 * windowHeight,
           height: 0.12 * windowHeight,
-          backgroundColor: theme.colors.HEX_WHITE,
           justifyContent: 'center',
           alignItems: 'center',
         }}
@@ -1248,8 +1258,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {availableHC != 0 && renderOneApolloOption()}
             {renderNewCOD()}
             {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()}
-            {renderPaymentOptions()}
-            {bankOptions.length > 0 && renderNetBanking()}
+            {showPaymentOptions && (
+              <>
+                {renderPaymentOptions()}
+                {bankOptions.length > 0 && renderNetBanking()}
+              </>
+            )}
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (

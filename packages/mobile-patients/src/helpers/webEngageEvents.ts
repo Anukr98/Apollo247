@@ -129,6 +129,7 @@ export enum WebEngageEventName {
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
   READ_ARTICLES = 'Read Articles',
+  HDFC_HEALTHY_LIFE = 'HDFC HealthyLife',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
@@ -148,7 +149,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to Cart',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
 
   // Health Records
@@ -318,7 +319,8 @@ export enum WebEngageEventName {
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
-
+  ORDER_MEDICINES_IN_CONSULT_ROOM = 'Order meds in Consult room',
+  BOOK_TESTS_IN_CONSULT_ROOM = 'Book tests in consult room',
   // Symptom Tracker Events
   SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
@@ -626,7 +628,8 @@ export interface WebEngageEvents {
     'Referral Code'?: string;
   };
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
-
+  [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
+  [WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM]: UserInfo;
   // ********** Home Screen Events ********** \\
 
   [WebEngageEventName.BUY_MEDICINES]: {
@@ -650,12 +653,23 @@ export interface WebEngageEvents {
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
   [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
+  [WebEngageEventName.HDFC_HEALTHY_LIFE]: { clicked: true };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
-  [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: PatientInfo;
+  [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
+  };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
     'Patient UHID': string;
@@ -948,6 +962,7 @@ export interface WebEngageEvents {
     af_currency: string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    'Circle Cashback amount': number;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1088,6 +1103,7 @@ export interface WebEngageEvents {
     'Total items in cart'?: number; // Optional
     'Order Amount': number; // Optional
     'Payment mode'?: 'COD' | 'Online'; // Optional
+    'Circle discount': number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode: 'Online' | 'COD';
@@ -1369,6 +1385,7 @@ export interface WebEngageEvents {
     af_revenue: number;
     af_currency: string;
     'Dr of hour appointment'?: YesOrNo;
+    'Circle discount': number;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;

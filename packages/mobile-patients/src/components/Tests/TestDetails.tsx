@@ -65,8 +65,10 @@ import {
   calculatePackageDiscounts,
   getPricesForItem,
   sourceHeaders,
+  convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -232,11 +234,13 @@ export interface TestDetailsProps
   extends NavigationScreenProps<{
     testDetails?: TestPackageForDetails;
     itemId?: string;
+    source?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
+  const source = props.navigation.getParam('source');
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
@@ -268,7 +272,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
-  const findItemFromCart = cartItems.find((item) => item.id == testInfo.ItemID);
+  const findItemFromCart = cartItems.find((item) => item?.id == testInfo?.ItemID);
   console.log(findItemFromCart);
 
   const discount =
@@ -279,9 +283,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           findItemFromCart?.specialPrice!
         )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          testDetails?.Rate!,
-          Number(testDetails?.specialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          testDetails?.Rate! || testInfo?.Rate!,
+          Number(testDetails?.specialPrice! || testInfo?.specialPrice!)
         );
   const circleDiscount =
     testDetails.source == 'Cart Page'
@@ -291,9 +295,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           findItemFromCart?.circleSpecialPrice!
         )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          Number(testDetails?.circleRate!),
-          Number(testDetails?.circleSpecialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.circleRate! || testInfo?.circleRate),
+          Number(testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!)
         );
   const specialDiscount =
     testDetails.source == 'Cart Page'
@@ -303,9 +307,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           findItemFromCart?.discountSpecialPrice!
         )
       : calculatePackageDiscounts(
-          testDetails?.packageMrp!,
-          Number(testDetails?.discountPrice!),
-          Number(testDetails?.discountSpecialPrice!)
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.discountPrice! || testInfo?.discountPrice!),
+          Number(testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!)
         );
 
   const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
@@ -389,10 +393,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   }, []);
 
-  const loadTestDetails = async (itemId: string) => {
-    const removeSpaces = itemId.replace(/\s/g, '');
-    const arrayOfId = removeSpaces.split(',');
-    const listOfIds = arrayOfId.map((item) => parseInt(item!));
+  const loadTestDetails = async (itemId: string | number) => {
+    let listOfIds = [];
+    if (typeof itemId == 'string') {
+      const removeSpaces = typeof itemId == 'string' ? itemId?.replace(/\s/g, '') : itemId;
+      const arrayOfId = removeSpaces.split(',');
+      listOfIds = arrayOfId.map((item) => parseInt(item!));
+    } else {
+      listOfIds = [Number(itemId)];
+    }
+
     try {
       const {
         data: { findDiagnosticsByItemIDsAndCityID },
@@ -419,16 +429,49 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         toAgeInDays,
         testPreparationData,
         packageCalculatedMrp,
+        diagnosticPricing,
+        inclusions,
+        testDescription,
+        itemType,
       } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
+
+      const getDiagnosticPricingForItem = diagnosticPricing;
+      const getItems = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics');
+      const packageMrpForItem = packageCalculatedMrp!;
+      const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+
+      if (!pricesForItem?.itemActive) {
+        //disable add to cart
+        return !isAddedToCart;
+      }
+      const specialPrice = pricesForItem?.specialPrice!;
+      const price = pricesForItem?.price!; //more than price (black)
+      const circlePrice = pricesForItem?.circlePrice!;
+      const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+      const discountPrice = pricesForItem?.discountPrice!;
+      const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+      const mrpToDisplay = pricesForItem?.mrpToDisplay;
+
       const partialTestDetails = {
-        Rate: rate,
+        Rate: price,
         Gender: gender,
         ItemID: `${itemId}`,
         ItemName: itemName,
         collectionType: collectionType!,
+        mou: inclusions == null ? 1 : inclusions.length,
+        testDescription: testDescription,
+        type: itemType,
         FromAgeInDays: fromAgeInDays,
         ToAgeInDays: toAgeInDays,
         preparation: testPreparationData,
+        packageMrp: packageCalculatedMrp,
+        specialPrice: specialPrice,
+        circleRate: circlePrice,
+        circleSpecialPrice: circleSpecialPrice,
+        discountPrice: discountPrice,
+        discountSpecialPrice: discountSpecialPrice,
+        mrpToDisplay: mrpToDisplay,
+        inclusions: inclusions == null ? Number([itemId]) : inclusions,
       };
 
       try {
@@ -457,7 +500,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       </View>
     );
   };
-
   const renderHeader = () => {
     return (
       <View>
@@ -656,6 +698,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   };
 
+  const renderSpecialDiscountText = (styleObj?: any) => {
+    return (
+      <SpecialDiscountText text={string.diagnostics.specialDiscountText} styleObj={styleObj} />
+    );
+  };
+
   setTimeout(() => isItemAdded && setItemAdded(false), 2000);
 
   const renderItemAdded = () => {
@@ -752,13 +800,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountSpecialPriceToConsider = findItemFromCart?.discountSpecialPrice!;
       itemPackageMrpToConsider = findItemFromCart?.packageMrp!;
     } else {
-      priceToConsider = testDetails?.Rate;
-      specialPriceToConsider = testDetails?.specialPrice;
-      circlePriceToConsider = testDetails?.circleRate!;
-      circleSpecialPriceToConsider = testDetails?.circleSpecialPrice!;
-      discountPriceToConsider = testDetails?.discountPrice!;
-      discountSpecialPriceToConsider = testDetails?.discountSpecialPrice!;
-      itemPackageMrpToConsider = testDetails?.packageMrp!;
+      priceToConsider = testDetails?.Rate || testInfo?.Rate;
+      specialPriceToConsider = testDetails?.specialPrice || testInfo?.specialPrice;
+      circlePriceToConsider = testDetails?.circleRate! || testInfo?.circleRate!;
+      circleSpecialPriceToConsider =
+        testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!;
+      discountPriceToConsider = testDetails?.discountPrice! || testInfo?.discountPrice!;
+      discountSpecialPriceToConsider =
+        testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!;
+      itemPackageMrpToConsider = testDetails?.packageMrp! || testInfo?.packageMrp!;
     }
 
     const mrpToDisplay = calculateMrpToDisplay(
@@ -826,7 +876,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <View style={styles.circlePriceView}>
                   <Text style={styles.priceText}>
                     {string.common.Rs}
-                    {circleSpecialPriceToConsider}
+                    {convertNumberToDecimal(circleSpecialPriceToConsider)}
                   </Text>
                 </View>
               </View>
@@ -849,7 +899,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {string.common.Rs} {mrpToDisplay}
+                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
                 </Text>
               </View>
               {renderItemAdded()}
@@ -864,7 +914,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {string.common.Rs} {mrpToDisplay}
+                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
                 </Text>
               </View>
               {renderItemAdded()}
@@ -887,7 +937,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {string.common.Rs} {mrpToDisplay}
+                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
                 </Text>
               </View>
               {renderItemAdded()}
@@ -927,6 +977,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   }}
                 >
                   {/**
+                   * special price text
+                   */}
+                  {promoteDiscount
+                    ? renderSpecialDiscountText({ marginTop: -10, marginBottom: 2 })
+                    : null}
+
+                  {/**
                    * circle + promote
                    */}
                   {isDiagnosticCircleSubscription && promoteCircle ? (
@@ -939,7 +996,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {promoteCircle && !!strikedPrice && strikedPrice! > bottomPrice && (
                     <Text style={[styles.priceText, styles.priceTextSlashed]}>
                       ({string.common.Rs}
-                      {strikedPrice})
+                      {convertNumberToDecimal(strikedPrice)})
                     </Text>
                   )}
                   <View style={{ flexDirection: 'row' }}>
@@ -953,7 +1010,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       ]}
                     >
                       {string.common.Rs}
-                      {bottomPrice}
+                      {convertNumberToDecimal(bottomPrice)}
                     </Text>
                     {promoteCircle &&
                       (isDiagnosticCircleSubscription ? circleDiscount > 0 : discount > 0) && (

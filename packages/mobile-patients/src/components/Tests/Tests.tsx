@@ -1,7 +1,6 @@
 import {
   LocationData,
   useAppCommonData,
-  bannerType,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import stripHtml from 'string-strip-html';
@@ -13,7 +12,6 @@ import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
-import DeviceInfo from 'react-native-device-info';
 
 import {
   CartIcon,
@@ -21,12 +19,9 @@ import {
   LocationOn,
   SearchSendIcon,
   TestsIcon,
-  ShieldIcon,
   PendingIcon,
   OfferIcon,
   SearchIcon,
-  AddIcon,
-  RemoveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -36,7 +31,6 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   SAVE_SEARCH,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   GET_DIAGNOSTIC_HOME_PAGE_ITEMS,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
@@ -47,17 +41,16 @@ import {
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 
 import {
   getTestsPackages,
   TestPackage,
   PackageInclusion,
   getPlaceInfoByPincode,
+  getLandingPageBanners,
+  getDiagnosticsSearchResults,
+  DIAGNOSTIC_GROUP_PLAN,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -69,7 +62,6 @@ import {
   postWEGNeedHelpEvent,
   setWebEngageScreenNames,
   getFormattedLocation,
-  getDiscountPercentage,
   postAppsFlyerEvent,
   postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -92,12 +84,15 @@ import {
   ViewStyle,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  BackHandler,
   Platform,
+  Image as ImageNative,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  SEARCH_TYPE,
+  TEST_COLLECTION_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   CommonBugFender,
@@ -124,7 +119,6 @@ import {
   getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHomePageItems';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import {
@@ -136,11 +130,10 @@ import {
   getPackageInclusions,
   getUserBannersList,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import {
-  getActiveTestItems,
-  getPricesForItem,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPricesForItem, sourceHeaders, convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+import Carousel from 'react-native-snap-carousel';
+import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -318,6 +311,43 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 15.6),
   },
+  sliderPlaceHolderStyle: {
+    ...theme.viewStyles.imagePlaceholderStyle,
+    width: '100%',
+    alignContent: 'center',
+    justifyContent: 'center',
+  },
+  sliderDotStyle: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    marginTop: 9,
+  },
+  landingBannerInnerView: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+  },
+  viewAllContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 60,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  viewAllTouchView: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#FCB716',
+    borderRadius: 6,
+    padding: 10,
+    alignItems: 'center',
+  },
+  viewAllText: { ...theme.viewStyles.text('B', 15, '#FCB716', 1, 20) },
 });
 
 export interface TestsProps
@@ -367,8 +397,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setDiagnosticServiceabilityData,
     isDiagnosticLocationServiceable,
     setDiagnosticLocationServiceable,
-    circleSubscription,
-    setCircleSubscription,
     setBannerData,
     bannerData,
   } = useAppCommonData();
@@ -389,11 +417,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
   });
 
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
-
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
   const [searchQuery, setSearchQuery] = useState({});
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
+
+  const [bannerLoading, setBannerLoading] = useState(true);
+  const [imgHeight, setImgHeight] = useState(150);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [banners, setBanners] = useState([]);
+  const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
 
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchResult, setSearchResults] = useState<boolean>(false);
@@ -436,7 +469,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       Pincode: parseInt(pincode!),
       Serviceability: serviceable ? 'Yes' : 'No',
     };
-    console.log({ eventAttributes });
     postWebEngageEvent(
       WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
       eventAttributes
@@ -482,45 +514,36 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
+    getDiagnosticBanner();
     setBannerData && setBannerData([]); // default banners to be empty
   }, []);
+
+  useEffect(() => {
+    if (!loading && banners?.length > 0) {
+      banners?.map((item: any) => {
+        ImageNative.getSize(
+          item?.bannerImage,
+          (width, height) => {
+            setImgHeight(height * (winWidth / width));
+            setBannerLoading(false);
+          },
+          () => {
+            setBannerLoading(false);
+          }
+        );
+      });
+    }
+  }, [loading, banners]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
-      _willBlur && _willBlur.remove();
     };
   });
-
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    setBannerData && setBannerData([]);
-
-    if (comingFrom == AppRoutes.MembershipDetails) {
-      props.navigation.navigate(AppRoutes.MembershipDetails, {
-        membershipType: string.Circle.planName,
-        source: AppRoutes.Tests,
-      });
-    } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
-    }
-
-    return false;
-  };
 
   const checkLocation = () => {
     !locationDetails &&
@@ -567,12 +590,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     CommonBugFender('Tests_ALLOW_AUTO_DETECT', e);
                     setLoadingContext!(false);
                     showAphAlert!({
-                      title: 'Uh oh! :(',
+                      title: string.common.uhOh,
                       description: 'Unable to access location.',
                       onPressOk: () => {
                         hideAphAlert!();
                         setLocationError(true);
-                        // setshowLocationpopup(true); //same as medicine
                       },
                     });
                   });
@@ -647,6 +669,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, []);
+
+  const getDiagnosticBanner = async () => {
+    const res: any = await getLandingPageBanners('diagnostic');
+    if (res?.data?.success) {
+      const bannerData = g(res, 'data', 'data');
+      setBanners(bannerData);
+    } else {
+      setBanners([]);
+      setBannerLoading(false);
+    }
+  };
 
   const getUserBanners = async () => {
     const res: any = await getUserBannersList(
@@ -823,7 +856,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           toBeShownOn={'Diagnostics'}
           onComplete={onClose}
           onPressSubmit={(pincode) => checkIsPinCodeServiceable(pincode, 'Manually')}
-          subText={'Allow us to serve you better by entering your area pincode below.'}
+          subText={string.diagnostics.locationPermissionText}
         />
       )
     );
@@ -868,7 +901,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          console.log('data...' + data.getPincodeServiceability.cityName);
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
             let obj = {
@@ -896,9 +928,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           console.log('getDiagnosticsPincode serviceability Error\n', { e });
           showAphAlert!({
             unDismissable: true,
-            title: 'Uh oh! :(',
-            description:
-              "Something went wrong. We're unable to check diagnostics serviceability for your location.",
+            title: string.common.uhOh,
+            description: string.diagnostics.serviceabilityFailureText,
           });
         });
     }
@@ -1096,27 +1127,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
         },
       });
       return (
-        <View style={styles.priceView}>
+        <>
           {/**
-           * if promote circle - sub/non-sub don't show top view price
+           * if special discount exists
            */}
-          {promoteCircle ? null : (
-            <View style={{ flexDirection: 'row' }}>
-              {/**
-               * if special price exists or any special discount exist
-               */}
-              {(specialPrice != price || discountSpecialPrice != discountPrice) && (
-                <Text style={styles.discountPriceText}>
-                  {string.common.Rs} {price}
+          {promoteDiscount
+            ? renderSpecialDiscountText({ marginTop: '2%', marginBottom: -10 })
+            : null}
+          <View style={[styles.priceView]}>
+            {/**
+             * if promote circle - sub/non-sub don't show top view price
+             */}
+            {promoteCircle ? null : (
+              <View style={{ flexDirection: 'row' }}>
+                {/**
+                 * if special price exists or any special discount exist
+                 */}
+                {(specialPrice != price || discountSpecialPrice != discountPrice) && (
+                  <Text style={styles.discountPriceText}>
+                    {string.common.Rs} {convertNumberToDecimal(price)}
+                  </Text>
+                )}
+                <Text style={styles.sellingPriceText}>
+                  {string.common.Rs}
+                  {convertNumberToDecimal(promoteDiscount ? discountSpecialPrice : specialPrice || price)}
                 </Text>
-              )}
-              <Text style={styles.sellingPriceText}>
-                {string.common.Rs}
-                {promoteDiscount ? discountSpecialPrice : specialPrice || price}
-              </Text>
-            </View>
-          )}
-        </View>
+              </View>
+            )}
+          </View>
+        </>
       );
     };
 
@@ -1211,14 +1250,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
               }}
             >
               {' '}
-              {string.common.Rs} {circleSpecialPrice}
+              {string.common.Rs} {convertNumberToDecimal(circleSpecialPrice)}
             </Text>
           )}
         </View>
         <View style={{ flexDirection: 'row' }}>
           {isDiagnosticCircleSubscription && promoteCircle && (
             <Text style={styles.circleMainPriceText}>
-              {string.common.Rs} {price}
+              {string.common.Rs} {convertNumberToDecimal(price)}
             </Text>
           )}
           {!isDiagnosticCircleSubscription && promoteCircle && price > circlePrice && (
@@ -1231,11 +1270,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 },
               ]}
             >
-              {string.common.Rs} {price}
+              {string.common.Rs} {convertNumberToDecimal(price)}
             </Text>
           )}
           <Text style={styles.circleSellingPriceText}>
-            {string.common.Rs} {isDiagnosticCircleSubscription ? circleSpecialPrice : circlePrice}
+            {string.common.Rs} {convertNumberToDecimal(isDiagnosticCircleSubscription ? circleSpecialPrice : circlePrice)}
           </Text>
         </View>
       </View>
@@ -1463,6 +1502,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //   );
   // };
 
+  const renderSpecialDiscountText = (styleObj?: any) => {
+    return (
+      <SpecialDiscountText text={string.diagnostics.specialDiscountText} styleObj={styleObj} />
+    );
+  };
+
   const renderPackageCard = (
     title: string,
     subtitle: string,
@@ -1597,11 +1642,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {!isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubPrice}>
                     {string.common.Rs}
-                    {promoteCircle ? circleSpecialPrice : specialPrice || price}
+                    {convertNumberToDecimal(promoteCircle ? circleSpecialPrice : specialPrice || price)}
                   </Text>
                 )}
               </View>
             )}
+            {/**
+             * show a text if special discount exists
+             */}
+            {promoteDiscount ? renderSpecialDiscountText({}) : null}
+
             {/**
              * original price (main price to be shown)
              */}
@@ -1613,7 +1663,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 packageCalculatedMrp != price &&
                 packageCalculatedMrp > price && (
                   <Text style={styles.nonSubStrikedPrice}>
-                    ({string.common.Rs} {packageCalculatedMrp})
+                    ({string.common.Rs} {convertNumberToDecimal(packageCalculatedMrp)})
                   </Text>
                 )}
               {/**
@@ -1624,7 +1674,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   (!!discountSpecialPrice && discountSpecialPrice != discountPrice)) &&
                 !isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubStrikedPrice}>
-                    ({string.common.Rs} {price})
+                    ({string.common.Rs} {convertNumberToDecimal(price)})
                   </Text>
                 )}
 
@@ -1655,7 +1705,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         },
                       ]}
                     >
-                      {string.common.Rs} {price}
+                      {string.common.Rs} {convertNumberToDecimal(price)}
                     </Text>
                     )
                   </Text>
@@ -1668,10 +1718,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
               >
                 {string.common.Rs}
                 {promoteCircle && !!circleSpecialPrice && isDiagnosticCircleSubscription
-                  ? circleSpecialPrice
+                  ? convertNumberToDecimal(circleSpecialPrice)
                   : promoteDiscount
-                  ? discountSpecialPrice
-                  : specialPrice || price}
+                  ? convertNumberToDecimal(discountSpecialPrice)
+                  : convertNumberToDecimal(specialPrice || price)}
               </Text>
               {/**
                * add to cart
@@ -1693,7 +1743,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const errorAlert = () => {
     showAphAlert!({
-      title: 'Uh oh! :(',
+      title: string.common.uhOh,
       description: 'Unable to fetch package details.',
     });
   };
@@ -1951,7 +2001,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
         <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>
-          {string.common.Rs} {price}
+          {string.common.Rs} {convertNumberToDecimal(price)}
         </Text>
       </TouchableOpacity>
     );
@@ -2047,89 +2097,83 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const onAddCartItem = (
-    {
-      itemId,
-      itemName,
-      rate,
-      collectionType,
-      diagnosticPricing,
-    }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-    pricesObject: any,
-    promoteCircle: boolean,
-    promoteDiscount: boolean,
-    selectedPlan: any,
-    inclusions: any[]
+    itemId: string | number,
+    itemName: string,
+    rate?: number,
+    collectionType?: TEST_COLLECTION_TYPE,
+    pricesObject?: any,
+    promoteCircle?: boolean,
+    promoteDiscount?: boolean,
+    selectedPlan?: any,
+    inclusions?: any[]
   ) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
-    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate, 'Partial search');
-
+    // postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate, 'Partial search');
+    //passed zero till the time prices aren't updated.
+    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, 'Partial search');
     addCartItem!({
       id: `${itemId}`,
       name: stripHtml(itemName),
-      price: pricesObject?.rate,
-      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate,
+      price: pricesObject?.rate || 0,
+      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate || 0,
       circlePrice: pricesObject?.circlePrice,
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
       discountSpecialPrice: pricesObject?.discountSpecialPrice,
       mou: inclusions == null ? 1 : inclusions?.length,
       thumbnail: '',
-      collectionMethod: collectionType!,
-      groupPlan: selectedPlan?.groupPlan,
-      packageMrp: pricesObject?.mrpToDisplay,
+      collectionMethod: collectionType! || TEST_COLLECTION_TYPE?.HC,
+      groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
+      packageMrp: pricesObject?.mrpToDisplay || 0,
       inclusions: inclusions == null ? [Number(itemId)] : inclusions,
     });
   };
 
   const [searchText, setSearchText] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<
+  const [diagnosticResults, setDiagnosticResults] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
   const client = useApolloClient();
 
-  const onSearchTest = (_searchText: string) => {
+  const onSearchTest = async (_searchText: string) => {
     if (isValidSearch(_searchText)) {
       if (!g(locationForDiagnostics, 'cityId')) {
         renderLocationNotServingPopup();
         return;
       }
       if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        console.log('onSearchMedicine');
+        setDiagnosticResults([]);
         return;
       }
       setShowMatchingMedicines(true);
       setsearchSate('load');
-
-      client
-        .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-          query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
-          context: {
-            sourceHeaders,
-          },
-          variables: {
-            searchText: _searchText,
-            cityID: parseInt(locationForDiagnostics?.cityId!, 10),
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
-          setMedicineList(
+      try {
+        const res: any = await getDiagnosticsSearchResults(
+          'diagnostic',
+          _searchText,
+          parseInt(locationForDiagnostics?.cityId!, 10)
+        );
+        if (res?.data?.success) {
+          const products = g(res, 'data', 'data') || [];
+          setDiagnosticResults(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
           );
-          setSearchResults(products.length == 0);
+          setSearchResults(products?.length == 0);
           setsearchSate('success');
           setWebEngageEventOnSearchItem(_searchText, products);
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_onSearchMedicine', e);
-          setsearchSate('fail');
-        });
+        } else {
+          setDiagnosticResults([]);
+          setSearchResults(true);
+          setsearchSate('success');
+        }
+      } catch (error) {
+        CommonBugFender('Tests_onSearchTests', error);
+        setsearchSate('fail'); //handle this case
+      }
     }
   };
 
@@ -2210,236 +2254,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     inclusions: any;
     style?: ViewStyle;
   }
-  const renderSearchSuggestionItem = (data: SuggestionType) => {
-    const localStyles = StyleSheet.create({
-      containerStyle: {
-        ...data.style,
-      },
-      iconAndDetailsContainerStyle: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 9.5,
-        marginHorizontal: 12,
-      },
-      iconOrImageContainerStyle: {
-        width: 40,
-      },
-      nameAndPriceViewStyle: {
-        flex: 1,
-      },
-    });
-
-    const renderNamePriceAndInStockStatus = () => {
-      const pricesObject = {
-        rate: data?.rate,
-        specialPrice: data?.specialPrice! || data?.rate,
-        circlePrice: data?.circlePrice,
-        circleSpecialPrice: data?.circleSpecialPrice,
-        discountPrice: data?.discountPrice,
-        discountSpecialPrice: data?.discountSpecialPrice,
-        mrpToDisplay: data?.mrpToDisplay,
-      };
-      const isAddedToCart = !!cartItems.find((item) => item?.id == data?.itemId);
-      return (
-        <View style={[localStyles.nameAndPriceViewStyle]}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            {<View style={{ marginLeft: -16 }}>{renderIconOrImage()}</View>}
-
-            <View style={{ flex: 0.9 }}>
-              <Text
-                numberOfLines={1}
-                style={{
-                  ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
-                }}
-              >
-                {data?.itemName}
-              </Text>
-            </View>
-            <View>
-              <TouchableOpacity
-                onPress={() =>
-                  isAddedToCart
-                    ? removeCartItem!(`${data.itemId}`)
-                    : fetchPackageInclusion(`${data.itemId}`, (tests) => {
-                        onAddCartItem(
-                          data,
-                          pricesObject,
-                          data?.promoteCircle,
-                          data?.promoteDiscount,
-                          data?.planToConsider,
-                          data?.inclusions
-                        );
-                      })
-                }
-              >
-                {isAddedToCart ? <RemoveIcon /> : <AddIcon />}
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* <Spearator style={{ marginTop: 6, marginBottom: 2 }} /> */}
-
-          {/**
-           * code for slash pricing
-           */}
-
-          {!!data?.packageCalculatedMrp && data?.packageCalculatedMrp > data?.rate && (
-            <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
-              <Text style={styles.strikedPrice}>
-                ({string.common.Rs} {data?.packageCalculatedMrp})
-              </Text>
-            </View>
-          )}
-
-          {(data?.packageCalculatedMrp == null || data?.packageCalculatedMrp == 0) &&
-            data?.promoteCircle &&
-            data?.circleSpecialPrice != data?.circlePrice &&
-            (!isDiagnosticCircleSubscription ? data?.circlePrice != data?.mrpToDisplay : true) && (
-              <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
-                <Text style={styles.strikedPrice}>
-                  ({string.common.Rs} {data?.circlePrice})
-                </Text>
-              </View>
-            )}
-
-          {(data?.packageCalculatedMrp == null || data?.packageCalculatedMrp == 0) &&
-            data?.promoteDiscount &&
-            data?.discountPrice != data?.discountSpecialPrice && (
-              <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
-                <Text style={styles.strikedPrice}>
-                  ({string.common.Rs} {data?.discountPrice})
-                </Text>
-              </View>
-            )}
-
-          <View
-            style={{
-              flexDirection: 'row',
-              alignSelf: 'flex-end',
-              marginTop: 4,
-            }}
-          >
-            {/**
-             * non member with promote circle
-             */}
-
-            {!isDiagnosticCircleSubscription && data?.promoteCircle && data?.circleSpecialPrice! && (
-              <>
-                <View style={{ flexDirection: 'row' }}>
-                  <CircleHeading />
-                  <Text
-                    style={{
-                      marginLeft: 5,
-                      ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                    }}
-                  >
-                    {string.common.Rs} {data?.circleSpecialPrice!}
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    borderLeftWidth: 1,
-                    borderLeftColor: '#02475b',
-                    opacity: 0.3,
-                    marginLeft: 4,
-                    marginRight: 4,
-                    marginTop: 4,
-                  }}
-                />
-              </>
-            )}
-            {/**
-             * non-circle + promote circle
-             */}
-            {!isDiagnosticCircleSubscription && data?.promoteCircle && (
-              <Text style={[styles.normalPrice]}>
-                {string.common.Rs} {data?.specialPrice! || data?.mrpToDisplay}
-                {/* {string.common.Rs} {data?.mrpToDisplay} */}
-              </Text>
-            )}
-            {/**
-             * non circle + non-promote circle
-             */}
-            {!isDiagnosticCircleSubscription && !data?.promoteCircle && (
-              <Text style={styles.normalPrice}>
-                {string.common.Rs}
-                {data?.promoteDiscount
-                  ? data?.discountSpecialPrice
-                  : data?.specialPrice! || data?.mrpToDisplay}
-              </Text>
-            )}
-            {/**
-             * circle + non-promote circle
-             */}
-            {isDiagnosticCircleSubscription && !data?.promoteCircle && (
-              <Text style={styles.normalPrice}>
-                {string.common.Rs}
-                {data?.promoteDiscount
-                  ? data?.discountSpecialPrice
-                  : data?.specialPrice! || data?.mrpToDisplay}
-              </Text>
-            )}
-            {/**
-             * sub + promote
-             */}
-            {isDiagnosticCircleSubscription && data?.promoteCircle && (
-              <View style={{ flexDirection: 'row' }}>
-                <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
-                <Text
-                  style={[
-                    styles.normalPrice,
-                    {
-                      marginLeft: 5,
-                    },
-                  ]}
-                >
-                  {string.common.Rs} {data?.circleSpecialPrice!}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-      );
-    };
-
-    const renderIconOrImage = () => {
-      return (
-        <View style={localStyles.iconOrImageContainerStyle}>
-          {data?.imgUri ? (
-            <Image
-              placeholderStyle={styles.imagePlaceholderStyle}
-              source={{ uri: data.imgUri }}
-              style={{
-                height: 40,
-                width: 40,
-              }}
-              resizeMode="contain"
-            />
-          ) : data?.type == 'PACKAGE' ? (
-            <TestsIcon />
-          ) : (
-            <TestsIcon />
-          )}
-        </View>
-      );
-    };
-
-    return (
-      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        <View style={localStyles.containerStyle} key={data.itemName}>
-          <View style={localStyles.iconAndDetailsContainerStyle}>
-            <View style={{ width: 16 }} />
-            {renderNamePriceAndInStockStatus()}
-          </View>
-          {data?.showSeparator ? <Spearator /> : null}
-        </View>
-      </TouchableOpacity>
-    );
-  };
 
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
@@ -2492,6 +2306,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             marginTop: 12,
             alignSelf: 'center',
           },
+      searchViewShadow: {
+        shadowColor: colors.SHADOW_GRAY,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 4,
+      },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -2508,7 +2329,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             searchText: searchText,
           });
           setSearchText('');
-          setMedicineList([]);
+          setDiagnosticResults([]);
         }}
       >
         <SearchSendIcon />
@@ -2529,7 +2350,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText.length > 2 && searchResult;
     return (
-      <View pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}>
+      <View
+        pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}
+        style={styles.searchViewShadow}
+      >
         <Input
           autoFocus={!locationDetails ? false : focusSearch}
           onSubmitEditing={() => {
@@ -2545,7 +2369,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
             setSearchFocused(false);
-            setMedicineList([]);
+            setDiagnosticResults([]);
             setSearchText('');
             setsearchSate('success');
           }}
@@ -2557,10 +2381,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
               }
               setSearchText(value);
               if (!(value && value.length > 2)) {
-                setMedicineList([]);
+                setDiagnosticResults([]);
                 return;
               }
               const search = _.debounce(onSearchTest, 300);
+              if (value?.length >= 3) {
+                setsearchSate('load');
+              }
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
@@ -2678,36 +2505,72 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderDot = (active: boolean) => (
+    <View
+      style={[styles.sliderDotStyle, { backgroundColor: active ? colors.APP_GREEN : '#d8d8d8' }]}
+    />
+  );
+
   const renderBanner = () => {
-    return (
-      <View
-        style={{
-          backgroundColor: theme.colors.APP_GREEN,
-          width: '100%',
-          paddingVertical: 16,
-          paddingHorizontal: 20,
-          flexDirection: 'row',
-        }}
-      >
-        <ShieldIcon />
-        <View
-          style={{
-            borderRightWidth: 1,
-            borderRightColor: 'rgba(2, 71, 91, 0.5)',
-            marginHorizontal: 19.5,
-          }}
-        />
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
-            Most trusted diagnostics from the comfort of your home!
-          </Text>
+    if (loading || bannerLoading) {
+      return (
+        <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
+          <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
         </View>
-      </View>
+      );
+    } else if (banners.length) {
+      return (
+        <View style={{ marginBottom: 10 }}>
+          <Carousel
+            onSnapToItem={setSlideIndex}
+            data={banners}
+            renderItem={renderSliderItem}
+            sliderWidth={winWidth}
+            itemWidth={winWidth}
+            loop={true}
+            autoplay={true}
+            autoplayDelay={3000}
+            autoplayInterval={3000}
+          />
+          <View style={styles.landingBannerInnerView}>
+            {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+          </View>
+        </View>
+      );
+    }
+  };
+
+  const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
+    const handleOnPress = () => {
+      if (item?.redirectUrl) {
+        const data = item?.redirectUrl.split('=')[1];
+        const extractData = data?.replace('apollopatients://', '');
+        const getNavigationDetails = extractData.split('?');
+        const route = getNavigationDetails[0];
+        let itemId = '';
+        try {
+          if (getNavigationDetails.length >= 2) {
+            itemId = getNavigationDetails[1].split('&');
+            if (itemId.length > 0) {
+              itemId = itemId[0];
+            }
+          }
+        } catch (error) {}
+        if (route == 'TestDetails') {
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: itemId,
+          });
+        }
+      }
+    };
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
+        <ImageNative
+          resizeMode="stretch"
+          style={{ width: '100%', minHeight: imgHeight }}
+          source={{ uri: item.bannerImage }}
+        />
+      </TouchableOpacity>
     );
   };
 
@@ -2724,174 +2587,82 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
     });
 
-  /**
-   *
-   * search suggestions list
-   */
-  const renderSearchSuggestionItemView = (
-    data: ListRenderItemInfo<searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics>
-  ) => {
+  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<any>) => {
     const { index, item } = data;
-    const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const {
-      rate,
-      gender,
-      itemId,
-      itemName,
-      collectionType,
-      fromAgeInDays,
-      toAgeInDays,
-      testPreparationData,
-      testDescription,
-      itemType,
-      diagnosticPricing,
-      packageCalculatedMrp,
-      inclusions,
-    } = item;
 
-    const pricesForItem = getPricesForItem(diagnosticPricing, packageCalculatedMrp!);
-    if (!pricesForItem?.itemActive) {
-      return null;
-    }
-
-    const specialPrice = pricesForItem?.specialPrice!;
-    const price = pricesForItem?.price!;
-    const circlePrice = pricesForItem?.circlePrice!;
-    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
-    const discountPrice = pricesForItem?.discountPrice!;
-    const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
-    const planToConsider = pricesForItem?.planToConsider;
-
-    const discount = pricesForItem?.discount;
-    const circleDiscount = pricesForItem?.circleDiscount;
-    const specialDiscount = pricesForItem?.specialDiscount;
-
-    const mrpToDisplay = pricesForItem?.mrpToDisplay;
-
-    const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
-    const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
-
-    return renderSearchSuggestionItem({
-      onPress: () => {
-        savePastSearch(`${itemId}`, itemName).catch((e) => {});
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          testDetails: {
-            Rate: price,
-            specialPrice: specialPrice! || price,
-            circleRate: circlePrice,
-            circleSpecialPrice: circleSpecialPrice,
-            discountPrice: discountPrice,
-            discountSpecialPrice: discountSpecialPrice,
-            Gender: gender,
-            ItemID: `${itemId}`,
-            ItemName: itemName,
-            collectionType: collectionType,
-            FromAgeInDays: fromAgeInDays,
-            ToAgeInDays: toAgeInDays,
-            preparation: testPreparationData,
-            testDescription: testDescription,
-            source: 'Partial Search',
-            type: itemType,
-            packageMrp: packageCalculatedMrp,
-            mrpToDisplay: mrpToDisplay,
-            inclusions: inclusions == null ? [Number(itemId)] : inclusions,
-          } as TestPackageForDetails,
-        });
-      },
-      itemId: item.itemId,
-      itemName: item.itemName,
-      rate: price,
-      collectionType: item.collectionType,
-      type: 'TEST',
-      style: {
-        marginHorizontal: 20,
-        paddingBottom: index == medicineList.length - 1 ? 10 : 0,
-      },
-      showSeparator: !(index == medicineList.length - 1),
-      imgUri,
-      specialPrice: specialPrice! || price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      diagnosticPricing: diagnosticPricing!,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      discount,
-      circleDiscount,
-      specialDiscount,
-      promoteCircle,
-      promoteDiscount,
-      planToConsider,
-      mrpToDisplay,
-      packageCalculatedMrp: packageCalculatedMrp!,
-      inclusions,
-    });
-  };
-
-  const renderSearchSuggestions = () => {
-    // if (medicineList.length == 0) return null;
-    const testResults = medicineList!.filter((item) => item?.diagnosticPricing!.length > 0);
     return (
-      <View
-        style={{
-          width: '100%',
-          position: 'absolute',
+      <DiagnosticsSearchSuggestionItem
+        onPress={() => {
+          CommonLogEvent(AppRoutes.Tests, 'Search suggestion Item');
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: item?.diagnostic_item_id,
+            source: 'Partial Search',
+          });
         }}
-      >
-        {searchSate == 'load' ? (
-          <View
-            style={{
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            }}
-          >
-            {renderSectionLoader(266)}
-          </View>
-        ) : (
-          !!searchText &&
-          searchText.length > 2 && (
-            <FlatList
-              keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-              bounces={false}
-              keyExtractor={(_, index) => `${index}`}
-              showsVerticalScrollIndicator={false}
-              style={{
-                paddingTop: testResults.length > 0 ? 10.5 : 0,
-                maxHeight: 266,
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-              }}
-              data={testResults}
-              renderItem={renderSearchSuggestionItemView}
-            />
-          )
-        )}
-      </View>
+        onPressAddToCart={() => {
+          onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name);
+        }}
+        data={item}
+        loading={true}
+        showSeparator={index !== diagnosticResults?.length - 1}
+        style={{
+          marginHorizontal: 20,
+          paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
+        }}
+        onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+      />
     );
   };
 
-  const renderSearchBarAndSuggestions = () => {
+  const renderSearchSuggestions = () => {
+    const showResults = !!searchText && searchText?.length > 2 && diagnosticResults?.length > 0;
+    const isLoading = searchSate == 'load';
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          Keyboard.dismiss();
-        }}
-        style={[
-          (searchSate == 'success' || searchSate == 'fail') && medicineList.length == 0
-            ? {
-                height: '100%',
-                width: '100%',
-              }
-            : searchText.length > 2
-            ? {
-                height: '100%',
-                width: '100%',
-                backgroundColor: 'rgba(0,0,0,0.8)',
-              }
-            : {},
-        ]}
-      >
-        {renderSearchSuggestions()}
-      </TouchableOpacity>
+      <>
+        {isLoading ? (
+          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+            {renderSectionLoader(330)}
+          </View>
+        ) : (
+          !!showResults && (
+            <View>
+              <FlatList
+                keyboardShouldPersistTaps="always"
+                // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+                bounces={false}
+                keyExtractor={(_, index) => `${index}`}
+                showsVerticalScrollIndicator={true}
+                persistentScrollbar={true}
+                style={{
+                  paddingTop: 10.5,
+                  maxHeight: 266,
+                  backgroundColor: '#f7f8f5',
+                }}
+                data={diagnosticResults}
+                // extraData={itemsLoading}
+                renderItem={renderSearchSuggestionItemView}
+              />
+              {diagnosticResults?.length > 6 && (
+                <View style={styles.viewAllContainer}>
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      props.navigation.navigate(AppRoutes.SearchTestScene, {
+                        searchText: searchText,
+                      });
+                      setSearchText('');
+                      setDiagnosticResults([]);
+                    }}
+                    style={styles.viewAllTouchView}
+                  >
+                    <Text style={styles.viewAllText}>VIEW ALL RESULTS</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )
+        )}
+      </>
     );
   };
 
@@ -2900,9 +2671,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          if (medicineList.length == 0 && !searchText) return;
+          if (diagnosticResults.length == 0 && !searchText) return;
           setSearchText('');
-          setMedicineList([]);
+          setDiagnosticResults([]);
         }}
         style={{ flex: 1 }}
       >
@@ -2975,45 +2746,58 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderOverlay = () => {
+    const isNoResultsFound =
+      searchSate != 'load' && searchText.length > 2 && diagnosticResults?.length == 0;
+
+    return (
+      (!!diagnosticResults.length || searchSate == 'load' || isNoResultsFound) && (
+        <View style={theme.viewStyles.overlayStyle}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={theme.viewStyles.overlayStyle}
+            onPress={() => {
+              if (diagnosticResults?.length == 0 && !searchText) return;
+              setSearchText('');
+              setDiagnosticResults([]);
+              setSearchFocused(false);
+            }}
+          />
+        </View>
+      )
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        {renderTopView()}
-        {!!serviceabilityMsg && (
-          <View style={styles.serviceabiltyMessageBackground}>
-            <View style={styles.serviceabiltyMessageView}>
-              <View style={styles.serviceabiltyMessageInnerView}>
-                <PendingIcon style={styles.pendingIconStyle} />
-                <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>
+        <View style={{ backgroundColor: 'white' }}>
+          {renderTopView()}
+          {!!serviceabilityMsg && (
+            <View style={styles.serviceabiltyMessageBackground}>
+              <View style={styles.serviceabiltyMessageView}>
+                <View style={styles.serviceabiltyMessageInnerView}>
+                  <PendingIcon style={styles.pendingIconStyle} />
+                  <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>
+                </View>
               </View>
             </View>
-          </View>
-        )}
-        <ScrollView
-          keyboardShouldPersistTaps="always"
-          showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
-          bounces={false}
-          stickyHeaderIndices={[1]}
-          contentContainerStyle={[
-            isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
-          ]}
-        >
-          <View style={{ height: 0, backgroundColor: theme.colors.WHITE }} />
-          <View style={{ flex: 1 }}>
-            <View
-              style={{
-                backgroundColor: 'white',
-              }}
-            >
-              {renderSearchBar()}
-            </View>
-            {renderSearchBarAndSuggestions()}
-          </View>
-          <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
+          )}
+          {renderSearchBar()}
+          {renderSearchSuggestions()}
+        </View>
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            removeClippedSubviews={true}
+            bounces={false}
+            style={{ flex: 1 }}
+            keyboardShouldPersistTaps="always"
+            showsVerticalScrollIndicator={false}
+          >
             {renderSections()}
-          </View>
-        </ScrollView>
+            {renderOverlay()}
+          </ScrollView>
+        </View>
       </SafeAreaView>
       {renderPopup()}
     </View>

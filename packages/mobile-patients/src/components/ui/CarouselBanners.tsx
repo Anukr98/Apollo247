@@ -226,15 +226,17 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     } else {
       imageHeight = 180;
     }
+
     return (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() =>
           handleOnBannerClick(
-            cta_action.type,
-            cta_action.meta.action,
-            cta_action.meta.message,
-            cta_action?.url
+            cta_action?.type,
+            cta_action?.meta.action,
+            cta_action?.meta.message,
+            cta_action?.url,
+            cta_action?.meta
           )
         }
         style={[
@@ -287,7 +289,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
               cta_action?.type,
               cta_action?.meta?.action,
               cta_action?.meta?.message,
-              cta_action?.url
+              cta_action?.url,
+              cta_action?.meta
             )
           }
         >
@@ -378,7 +381,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     );
   };
 
-  const handleOnBannerClick = (type: any, action: any, message: any, url: string) => {
+  const handleOnBannerClick = (type: any, action: any, message: any, url: string, meta: any) => {
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
@@ -441,6 +444,16 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: Circle.planName,
           });
+        } else if (
+          (action === hdfc_values.MEDICINE_LISTING ||
+            meta?.app_action === hdfc_values.MEDICINE_LISTING) &&
+          !!meta?.category_id &&
+          !!meta?.category_name
+        ) {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            category_id: meta?.category_id,
+            title: meta?.category_name,
+          });
         } else {
           props.navigation.navigate(AppRoutes.ConsultRoom);
         }
@@ -465,9 +478,15 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
       } else if (action == hdfc_values.ABSOLUTE_URL) {
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          itemId: url.split('/').reverse()[0],
-        });
+        if (type == hdfc_values.WEB_VIEW) {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: url.split('/').reverse()[0],
+          });
+        }
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
@@ -622,7 +641,7 @@ const styles = StyleSheet.create({
   },
   bottomView: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 15,
     left: 13,
   },
   upgradeBtnView: {

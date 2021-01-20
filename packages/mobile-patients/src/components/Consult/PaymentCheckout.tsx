@@ -36,7 +36,10 @@ import {
   DoctorType,
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
@@ -69,6 +72,7 @@ import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppo
 import {
   BOOK_APPOINTMENT,
   MAKE_APPOINTMENT_PAYMENT,
+  GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -82,6 +86,10 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import messaging from '@react-native-firebase/messaging';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -190,6 +198,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
+  const circleDiscount =
+    (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
   useEffect(() => {
     verifyCoupon();
@@ -473,7 +483,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return (
       <View style={styles.bottomButtonView}>
         <Button
-          title={`PAY ${string.common.Rs}${amountToPay} `}
+          title={`PAY ${string.common.Rs}${convertNumberToDecimal(amountToPay)} `}
           style={styles.bottomBtn}
           onPress={() => onPressPay()}
           disabled={disabledCheckout}
@@ -602,6 +612,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         patientId: patientId,
         callSaveSearch: callSaveSearch,
         planSelected: circlePlanSelected,
+        circleDiscount,
       });
     }
   };
@@ -644,7 +655,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           )
         );
         setLoading!(false);
-        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`);
+        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
         setLoading!(false);
@@ -652,22 +663,53 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       });
   };
 
-  const handleOrderSuccess = (doctorName: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-            params: {
-              isFreeConsult: true,
-              doctorName: doctorName,
-            },
-          }),
-        ],
+  const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
+    setLoading && setLoading(true);
+    client
+      .query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId,
+        },
+        fetchPolicy: 'no-cache',
       })
-    );
+      .then((_data) => {
+        try {
+          setLoading && setLoading(false);
+          const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
+          if (appointmentData) {
+            try {
+              if (appointmentData?.[0]?.doctorInfo !== null) {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.ConsultRoom,
+                        params: {
+                          isFreeConsult: true,
+                          doctorName: doctorName,
+                          appointmentData: appointmentData[0],
+                          skipAutoQuestions: doctor?.skipAutoQuestions,
+                        },
+                      }),
+                    ],
+                  })
+                );
+              }
+            } catch (error) {}
+          }
+        } catch (error) {
+          setLoading && setLoading(false);
+          props.navigation.navigate('APPOINTMENTS');
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
+        setLoading && setLoading(false);
+        props.navigation.navigate('APPOINTMENTS');
+      });
   };
 
   const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
@@ -680,6 +722,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_currency: 'INR',
       'consult id': id,
       'coupon applied': coupon ? true : false,
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };
@@ -724,6 +767,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: amountToPay,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };
@@ -826,7 +870,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           You could have{' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             saved {string.common.Rs}
-            {discountedPrice}
+            {convertNumberToDecimal(discountedPrice)}
           </Text>{' '}
           on this purchase with
         </Text>

@@ -9,7 +9,8 @@
 
 export interface GetMedicineOrderShipmentDetails_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments {
   __typename: "MedicineOrderOMSShipment";
-  apOrderNo: string | null;
+  trackingNo: string | null;
+  trackingProvider: string | null;
 }
 
 export interface GetMedicineOrderShipmentDetails_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails {

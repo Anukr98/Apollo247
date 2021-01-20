@@ -55,7 +55,10 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -315,7 +318,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {string.common.Rs}
         </Text>
         <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
-          {nonCircleDoctorFees}
+          {convertNumberToDecimal(nonCircleDoctorFees)}
         </Text>
       </View>
     );
@@ -328,11 +331,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={styles.rowContainer}>
             <Text style={styles.carePrice}>
               {string.common.Rs}
-              {circleDoctorFees}
+              {convertNumberToDecimal(circleDoctorFees)}
             </Text>
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
-              {circleDoctorSlashedPrice}
+              {convertNumberToDecimal(circleDoctorSlashedPrice)}
             </Text>
           </View>
         </View>
@@ -352,7 +355,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </Text>
             <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
               {string.common.Rs}
-              {circleDoctorFees}
+              {convertNumberToDecimal(circleDoctorFees)}
             </Text>
           </View>
           <View style={styles.seperatorLine} />
@@ -372,7 +375,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
                 {string.common.Rs}
-                {circleDoctorSlashedPrice}
+                {convertNumberToDecimal(circleDoctorSlashedPrice)}
               </Text>
 
               <InfoBlue style={styles.infoIcon} />
