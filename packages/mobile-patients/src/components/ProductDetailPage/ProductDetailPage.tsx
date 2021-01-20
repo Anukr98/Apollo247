@@ -860,7 +860,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             )}
             <ProductInfo
               name={medicineDetails?.name}
-              description={medicineDetails?.description}
+              description={medicineDetails?.product_information}
               isReturnable={medicineDetails?.is_returnable === 'Yes'}
               vegetarian={medicineDetails?.vegetarian}
               storage={medicineDetails?.storage}
@@ -926,6 +926,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               productQuantity={productQuantity}
               setShowAddedToCart={setShowAddedToCart}
               isBanned={medicineDetails?.banned === 'Yes'}
+              cashback={cashback}
             />
           )}
         {!loading &&

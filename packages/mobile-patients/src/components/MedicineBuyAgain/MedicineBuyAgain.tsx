@@ -42,7 +42,7 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
       const productsResponse = await medCartItemsDetailsApi(skuList);
       setProducts(
         productsResponse?.data?.productdp?.filter(
-          ({ sku, id, status }) => sku && id && status !== '2'
+          ({ sku, id, status }) => sku && id && status && status !== '2'
         ) || []
       );
       setLoading(false);
