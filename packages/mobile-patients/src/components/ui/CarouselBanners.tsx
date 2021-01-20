@@ -599,10 +599,8 @@ const renderDot = (active: boolean) => (
 
 const styles = StyleSheet.create({
   hdfcBanner: {
-    ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.CLEAR,
     borderRadius: 12,
-    elevation: 8,
     marginTop: 10,
     marginHorizontal: 28,
     marginBottom: 15,
