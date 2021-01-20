@@ -65,6 +65,7 @@ import {
   calculatePackageDiscounts,
   getPricesForItem,
   sourceHeaders,
+  convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
@@ -875,7 +876,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <View style={styles.circlePriceView}>
                   <Text style={styles.priceText}>
                     {string.common.Rs}
-                    {circleSpecialPriceToConsider}
+                    {convertNumberToDecimal(circleSpecialPriceToConsider)}
                   </Text>
                 </View>
               </View>
@@ -898,7 +899,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {string.common.Rs} {mrpToDisplay}
+                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
                 </Text>
               </View>
               {renderItemAdded()}
@@ -913,7 +914,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {string.common.Rs} {mrpToDisplay}
+                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
                 </Text>
               </View>
               {renderItemAdded()}
@@ -936,7 +937,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
-                  {string.common.Rs} {mrpToDisplay}
+                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
                 </Text>
               </View>
               {renderItemAdded()}
@@ -995,7 +996,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   {promoteCircle && !!strikedPrice && strikedPrice! > bottomPrice && (
                     <Text style={[styles.priceText, styles.priceTextSlashed]}>
                       ({string.common.Rs}
-                      {strikedPrice})
+                      {convertNumberToDecimal(strikedPrice)})
                     </Text>
                   )}
                   <View style={{ flexDirection: 'row' }}>
@@ -1009,7 +1010,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       ]}
                     >
                       {string.common.Rs}
-                      {bottomPrice}
+                      {convertNumberToDecimal(bottomPrice)}
                     </Text>
                     {promoteCircle &&
                       (isDiagnosticCircleSubscription ? circleDiscount > 0 : discount > 0) && (

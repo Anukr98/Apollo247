@@ -88,7 +88,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const renderHeader = () => {
     return (
       <View style={styles.header}>
-        <Text style={styles.name}>{`Hi, ${currentPatient?.firstName || ''} :)`}</Text>
+        <Text style={styles.name}>{`Hi, ${currentPatient?.firstName.slice(0, 10) || ''} :)`}</Text>
         <TouchableOpacity onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}>
           <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
         </TouchableOpacity>
@@ -214,7 +214,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
           <>

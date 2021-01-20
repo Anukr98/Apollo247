@@ -138,7 +138,7 @@ import {
   getPackageInclusions,
   getUserBannersList,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPricesForItem, sourceHeaders, convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import Carousel from 'react-native-snap-carousel';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
@@ -1111,12 +1111,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                  */}
                 {(specialPrice != price || discountSpecialPrice != discountPrice) && (
                   <Text style={styles.discountPriceText}>
-                    {string.common.Rs} {price}
+                    {string.common.Rs} {convertNumberToDecimal(price)}
                   </Text>
                 )}
                 <Text style={styles.sellingPriceText}>
                   {string.common.Rs}
-                  {promoteDiscount ? discountSpecialPrice : specialPrice || price}
+                  {convertNumberToDecimal(promoteDiscount ? discountSpecialPrice : specialPrice || price)}
                 </Text>
               </View>
             )}
@@ -1216,14 +1216,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
               }}
             >
               {' '}
-              {string.common.Rs} {circleSpecialPrice}
+              {string.common.Rs} {convertNumberToDecimal(circleSpecialPrice)}
             </Text>
           )}
         </View>
         <View style={{ flexDirection: 'row' }}>
           {isDiagnosticCircleSubscription && promoteCircle && (
             <Text style={styles.circleMainPriceText}>
-              {string.common.Rs} {price}
+              {string.common.Rs} {convertNumberToDecimal(price)}
             </Text>
           )}
           {!isDiagnosticCircleSubscription && promoteCircle && price > circlePrice && (
@@ -1236,11 +1236,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 },
               ]}
             >
-              {string.common.Rs} {price}
+              {string.common.Rs} {convertNumberToDecimal(price)}
             </Text>
           )}
           <Text style={styles.circleSellingPriceText}>
-            {string.common.Rs} {isDiagnosticCircleSubscription ? circleSpecialPrice : circlePrice}
+            {string.common.Rs} {convertNumberToDecimal(isDiagnosticCircleSubscription ? circleSpecialPrice : circlePrice)}
           </Text>
         </View>
       </View>
@@ -1608,7 +1608,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {!isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubPrice}>
                     {string.common.Rs}
-                    {promoteCircle ? circleSpecialPrice : specialPrice || price}
+                    {convertNumberToDecimal(promoteCircle ? circleSpecialPrice : specialPrice || price)}
                   </Text>
                 )}
               </View>
@@ -1629,7 +1629,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 packageCalculatedMrp != price &&
                 packageCalculatedMrp > price && (
                   <Text style={styles.nonSubStrikedPrice}>
-                    ({string.common.Rs} {packageCalculatedMrp})
+                    ({string.common.Rs} {convertNumberToDecimal(packageCalculatedMrp)})
                   </Text>
                 )}
               {/**
@@ -1640,7 +1640,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   (!!discountSpecialPrice && discountSpecialPrice != discountPrice)) &&
                 !isDiagnosticCircleSubscription && (
                   <Text style={styles.nonSubStrikedPrice}>
-                    ({string.common.Rs} {price})
+                    ({string.common.Rs} {convertNumberToDecimal(price)})
                   </Text>
                 )}
 
@@ -1671,7 +1671,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         },
                       ]}
                     >
-                      {string.common.Rs} {price}
+                      {string.common.Rs} {convertNumberToDecimal(price)}
                     </Text>
                     )
                   </Text>
@@ -1684,10 +1684,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
               >
                 {string.common.Rs}
                 {promoteCircle && !!circleSpecialPrice && isDiagnosticCircleSubscription
-                  ? circleSpecialPrice
+                  ? convertNumberToDecimal(circleSpecialPrice)
                   : promoteDiscount
-                  ? discountSpecialPrice
-                  : specialPrice || price}
+                  ? convertNumberToDecimal(discountSpecialPrice)
+                  : convertNumberToDecimal(specialPrice || price)}
               </Text>
               {/**
                * add to cart
@@ -1967,7 +1967,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
         <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>
-          {string.common.Rs} {price}
+          {string.common.Rs} {convertNumberToDecimal(price)}
         </Text>
       </TouchableOpacity>
     );

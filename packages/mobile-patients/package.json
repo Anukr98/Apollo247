@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "@bugfender/rn-bugfender": "1.1.0",
+    "@juspay/simple-card-validator": "^1.2.2",
     "@praktice/navigator-react-native-sdk": "0.0.2",
     "@react-native-community/async-storage": "1.7.1",
     "@react-native-community/datetimepicker": "^2.6.2",

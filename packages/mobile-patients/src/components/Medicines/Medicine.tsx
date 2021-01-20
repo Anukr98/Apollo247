@@ -139,7 +139,7 @@ import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
 import Carousel from 'react-native-snap-carousel';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -1968,7 +1968,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           <View style={{ flexDirection: 'row', marginLeft: 10 }}>
             <Text style={styles.priceStrikeOff}>
               ({string.common.Rs}
-              {cartTotal})
+              {convertNumberToDecimal(cartTotal)})
             </Text>
             <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
           </View>
@@ -2076,7 +2076,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     </Text>
                     <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
                       {string.common.Rs}
-                      {effectivePrice}
+                      {convertNumberToDecimal(effectivePrice)}
                     </Text>
                   </View>
                 </View>

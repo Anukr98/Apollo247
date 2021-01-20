@@ -226,6 +226,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     } else {
       imageHeight = 180;
     }
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
   },
   bottomView: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 15,
     left: 13,
   },
   upgradeBtnView: {

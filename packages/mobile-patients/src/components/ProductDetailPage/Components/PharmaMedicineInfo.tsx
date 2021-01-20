@@ -10,7 +10,7 @@ import { PrecautionWarnings } from '@aph/mobile-patients/src/components/ProductD
 export interface PharmaMedicineInfoProps {
   name: string;
   pharmaOverview?: NewPharmaOverview | null;
-  vegetarian: boolean;
+  vegetarian: 'Yes' | 'No';
   key_ingredient?: string | null;
   size?: string | null;
   flavour_fragrance?: string | null;
@@ -51,20 +51,20 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     const sideEffectsHtml = filterHtmlContent(medicineSideEffects);
     const text = sideEffectsHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
     const sideEffects = text.replace(/\$name/gi, name.toLocaleLowerCase());
-    return (
+    return !!sideEffects ? (
       <View>
         <Text style={styles.subHeading}>{`Side Effects of ${name.toLocaleLowerCase()}`}</Text>
         <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{sideEffects}</Text>
       </View>
-    );
+    ) : null;
   };
 
   const renderVegetarianIcon = () => {
-    return vegetarian ? (
+    return vegetarian === 'Yes' ? (
       <VegetarianIcon style={styles.vegIcon} />
-    ) : (
+    ) : vegetarian === 'No' ? (
       <NonVegetarianIcon style={styles.vegIcon} />
-    );
+    ) : null;
   };
 
   const renderStorage = () => {

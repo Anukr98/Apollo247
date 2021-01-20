@@ -81,6 +81,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -655,7 +656,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           style={styles.bottomCta}
         >
           <Text style={styles.bottomCtaText}>
-            {`Proceed to Checkout (${cartItems?.length} items) ${string.common.Rs}${cartTotal}`}
+            {`Proceed to Checkout (${cartItems?.length} items) ${
+              string.common.Rs
+            }${convertNumberToDecimal(cartTotal)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -822,6 +825,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               cashback={cashback}
               finalPrice={finalPrice}
               showDeliverySpinner={showDeliverySpinner}
+              isBanned={medicineDetails?.banned === 'Yes'}
             />
             <View
               ref={buttonRef}
@@ -843,12 +847,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 setProductQuantity={setProductQuantity}
                 setShowAddedToCart={setShowAddedToCart}
                 isSellOnline={medicineDetails?.sell_online === 1}
+                isBanned={medicineDetails?.banned === 'Yes'}
               />
             </View>
             {isPharma && (
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
-                composition={medicineDetails?.composition}
+                composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
                 consumeType={medicineDetails?.consume_type}
               />
             )}
@@ -876,7 +881,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                 similarProducts={substitutes}
                 navigation={props.navigation}
-                composition={medicineDetails?.composition}
+                composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
                 setShowSubstituteInfo={setShowSubstituteInfo}
               />
             )}
@@ -919,6 +924,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               packFormVariant={medicineDetails?.dose_form_variant}
               productQuantity={productQuantity}
               setShowAddedToCart={setShowAddedToCart}
+              isBanned={medicineDetails?.banned === 'Yes'}
             />
           )}
         {!loading &&

@@ -2457,7 +2457,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           id
           siteId
           siteName
-          apOrderNo
+          trackingNo
+          trackingProvider
           updatedDate
           currentStatus
           itemDetails
@@ -2516,7 +2517,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
     ) {
       medicineOrderDetails {
         medicineOrderShipments {
-          apOrderNo
+          trackingNo
+          trackingProvider
         }
       }
     }
@@ -4520,24 +4522,24 @@ export const CREATE_ORDER = gql`
 `;
 
 export const GET_INTERNAL_ORDER = gql`
-query getOrderInternal($order_id: String!) {
-  getOrderInternal(order_id: $order_id) {
-   id
-   txn_uuid
-   txn_id
-   status_id
-   payment_order_id
-   refunds{
-     status
-     unique_request_id
-     sent_to_gateway
-     initiated_by
-     created_at
-     updated_at
-     amount
-   }
+  query getOrderInternal($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      txn_uuid
+      txn_id
+      status_id
+      payment_order_id
+      refunds {
+        status
+        unique_request_id
+        sent_to_gateway
+        initiated_by
+        created_at
+        updated_at
+        amount
+      }
+    }
   }
-}
 `;
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
@@ -4545,6 +4547,16 @@ export const PROCESS_DIAG_COD_ORDER = gql`
       status
       preBookingID
       message
+    }
+  }
+`;
+
+export const VERIFY_VPA = gql`
+  mutation verifyVPA($verifyVPA: VerifyVPA) {
+    verifyVPA(verifyVPA: $verifyVPA) {
+      vpa
+      status
+      customer_name
     }
   }
 `;

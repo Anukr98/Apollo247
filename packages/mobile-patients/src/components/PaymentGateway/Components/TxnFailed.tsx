@@ -24,8 +24,7 @@ export const TxnFailed: React.FC<TxnFailedProps> = (props) => {
   const retry = () => {
     return (
       <View style={{ alignItems: 'center' }}>
-        <Button style={styles.button} title={'RETRY'} onPress={onPressRetry} />
-        <Text style={styles.tryOther}>TRY OTHER PAYMENT METHODS</Text>
+        <Button style={styles.button} title={'RETRY BOOKING'} onPress={onPressRetry} />
       </View>
     );
   };
@@ -56,7 +55,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    width: 100,
+    width: 180,
     borderRadius: 5,
     marginTop: 16,
     marginBottom: 12,

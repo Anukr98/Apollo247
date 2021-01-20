@@ -4,6 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface CircleTotalBillProps {
   selectedPlan?: any;
@@ -27,7 +28,7 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
         <Text style={styles.regularText}>{string.circleDoctors.billTotal}</Text>
         <Text style={styles.regularText}>
           {string.common.Rs}
-          {planSellingPrice}
+          {convertNumberToDecimal(planSellingPrice)}
         </Text>
       </View>
       <View style={styles.seperator} />
@@ -49,7 +50,7 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
         <Text style={styles.mediumText}>{string.circleDoctors.total}</Text>
         <Text style={styles.mediumText}>
           {string.common.Rs}
-          {planSellingPrice}
+          {convertNumberToDecimal(planSellingPrice)}
         </Text>
       </View>
     </View>
