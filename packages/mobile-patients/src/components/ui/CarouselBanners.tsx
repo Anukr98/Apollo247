@@ -213,7 +213,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     let imageHeight = 180;
 
     if (!subHeaderText2 || !btnTxt || !headerText3) {
-      imageHeight = isDynamicBanner ? 160 : 144;
+      imageHeight = isDynamicBanner ? 160 : 180;
       Image.getSize(
         bannerUri,
         (width, height) => {
@@ -243,7 +243,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           styles.hdfcBanner,
           {
             height: imageHeight,
-            width: isDynamicBanner ? width - 30 : 320,
           },
         ]}
       >
@@ -251,9 +250,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           style={{
             height: imageHeight,
             width: '100%',
-          }}
-          imageStyle={{
-            borderRadius: isDynamicBanner ? 7 : 0,
           }}
           source={{
             uri: bannerUri,
