@@ -20,6 +20,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -34,7 +35,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-  const { isDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
+  const {
+    isDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
+    cartItems,
+  } = useDiagnosticsCart();
   const { circleSubscriptionId } = useShoppingCart();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const savings = isDiagnosticCircleSubscription
@@ -54,8 +59,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   useEffect(() => {
-    clearDiagnoticCartInfo?.();
     postwebEngageCheckoutCompletedEvent();
+    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
+    clearDiagnoticCartInfo?.();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);

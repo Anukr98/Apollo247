@@ -2037,8 +2037,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         rescheduleCount
         isRescheduled
         collectionCharges
-        paymentType
         visitNo
+        paymentType
         paymentOrderId
         diagnosticOrderLineItems {
           id
@@ -2838,6 +2838,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           siteDisplayName
           tag
           consultId
+          identifier
           additionalNotes
           observation
           labTestResults {

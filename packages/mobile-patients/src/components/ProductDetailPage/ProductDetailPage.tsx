@@ -839,6 +839,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isInStock={isInStock}
                 packForm={medicineDetails?.pack_form || 'Quantity'}
                 packSize={medicineDetails?.pack_size}
+                productForm={medicineDetails?.product_form || ''}
                 unit={medicineDetails.unit_of_measurement || ''}
                 sku={medicineDetails?.sku}
                 onAddCartItem={onAddCartItem}
