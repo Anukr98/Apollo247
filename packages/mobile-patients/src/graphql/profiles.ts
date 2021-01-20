@@ -1317,6 +1317,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       city
       awards
       gender
+      profile_deeplink
       photoUrl
       availableModes
       doctorPricing {

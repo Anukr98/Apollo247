@@ -214,7 +214,7 @@ export const getDoctorShareMessage = (doctorData: any) => {
     doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
   } for any relevant health issues!\n\nYou can easily consult with ${
     doctorData?.displayName
-  } online over Apollo 247 App and Website. Click <link to doctor profile> to book!`;
+  } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
 };
 
 export const formatAddressWithLandmark = (
