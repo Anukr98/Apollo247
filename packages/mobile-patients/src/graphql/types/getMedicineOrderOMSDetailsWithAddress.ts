@@ -92,6 +92,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   id: string;
   siteId: string | null;
   siteName: string | null;
+  apOrderNo: string | null;
   trackingNo: string | null;
   trackingProvider: string | null;
   updatedDate: string | null;
