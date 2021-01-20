@@ -620,7 +620,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     if (visitId) {
       getAuthToken();
     } else {
-      renderReportError(string.diagnostics.unableToOpenReport);
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   };
 

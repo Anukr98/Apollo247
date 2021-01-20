@@ -717,7 +717,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     if (visitId) {
       getAuthToken();
     } else {
-      renderReportError(string.diagnostics.unableToOpenReport);
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   };
 
