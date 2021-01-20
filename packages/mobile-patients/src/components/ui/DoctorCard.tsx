@@ -637,13 +637,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <View style={styles.doctorNameViewStyle}>
                 <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
-                <TouchableOpacity
+                {/* Hiding Share Icon from Card */}
+                {/* <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => props.onPressShare && props.onPressShare(rowData)}
                   style={{ paddingLeft: 5 }}
                 >
                   <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
               {renderSpecialities()}
               {isCircleDoctorOnSelectedConsultMode
