@@ -7112,7 +7112,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     if (checkMsgResult?.length === 0) {
       const automatedText = [
-        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in 15 mins you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
+        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in less than 15 minutes you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
       ];
       pubnub.publish(
         {
