@@ -114,7 +114,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
             </Text>
           </View>
         )}
-        {!!packSize && !!packForm && !!packFormVariant && renderPackSize()}
+        {/* {!!packSize && !!packForm && !!packFormVariant && renderPackSize()} */}
       </View>
     );
   };
