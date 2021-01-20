@@ -12,7 +12,10 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Down, Up, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface ConsultDiscountProps {
   onPressCard: TouchableOpacityProps['onPress'];
@@ -35,15 +38,21 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     circleSubscriptionId,
     planSelected,
   } = props;
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     physicalConsultDiscountedPrice,
     onlineConsultDiscountedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-  const isOnlineConsult = selectedTab === 'Consult Online';
+
   const totalSavings =
-    isCircleDoctor && (circleSubscriptionId || planSelected)
+    isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || planSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -65,7 +74,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
             You will{' '}
             <Text style={{ ...styles.regularText, color: theme.colors.SEARCH_UNDERLINE_COLOR }}>
               save {string.common.Rs}
-              {totalSavings}
+              {convertNumberToDecimal(totalSavings)}
             </Text>{' '}
             on your consult.
           </Text>
@@ -74,7 +83,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         {showPriceBreakup ? (
           <View>
             <View style={styles.seperatorLine} />
-            {isCircleDoctor && (!!circleSubscriptionId || planSelected) ? (
+            {isCircleDoctorOnSelectedConsultMode && (!!circleSubscriptionId || planSelected) ? (
               <View style={[styles.rowContainer, { marginTop: 10 }]}>
                 <View style={styles.row}>
                   <CircleLogo style={styles.careLogo} />
@@ -84,7 +93,9 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                 </View>
                 <Text style={styles.membershipDiscountStyle}>
                   {string.common.Rs}
-                  {isOnlineConsult ? onlineConsultDiscountedPrice : physicalConsultDiscountedPrice}
+                  {convertNumberToDecimal(
+                    isOnlineConsult ? onlineConsultDiscountedPrice : physicalConsultDiscountedPrice
+                  )}
                 </Text>
               </View>
             ) : null}
@@ -95,14 +106,14 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                 </Text>
                 <Text style={[styles.membershipDiscountStyle, { color: theme.colors.LIGHT_BLUE }]}>
                   {string.common.Rs}
-                  {couponDiscountFees}
+                  {convertNumberToDecimal(couponDiscountFees)}
                 </Text>
               </View>
             ) : null}
             <View style={styles.seperatorLine} />
             <Text style={styles.totalPayStyle}>
               {string.common.Rs}
-              {totalSavings}
+              {convertNumberToDecimal(totalSavings)}
             </Text>
           </View>
         ) : null}

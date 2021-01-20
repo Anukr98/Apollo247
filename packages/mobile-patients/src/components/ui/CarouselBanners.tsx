@@ -36,12 +36,16 @@ import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { useApolloClient } from 'react-apollo-hooks';
-import { GET_PLAN_DETAILS_BY_PLAN_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_ONEAPOLLO_USER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { Overlay } from 'react-native-elements';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 
 interface CarouselProps extends NavigationScreenProps {
   circleActivated?: boolean;
@@ -68,12 +72,36 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [benefitId, setbenefitId] = useState<string>('');
-
+  const [healthCredits, setHealthCredits] = useState(0);
+  const planValidity = useRef<string>('');
   const client = useApolloClient();
 
   useEffect(() => {
     fetchCarePlans();
   }, []);
+
+  useEffect(() => {
+    if (currentPatient?.id) {
+      getOneApolloUserDetails();
+    }
+  }, [currentPatient]);
+
+  const getOneApolloUserDetails = async () => {
+    client
+      .query({
+        query: GET_ONEAPOLLO_USER,
+        variables: {
+          patientId: g(currentPatient, 'id'),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        setHealthCredits(res?.data?.getOneApolloUser?.availableHC);
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingOneApolloUser', error);
+      });
+  };
 
   const fetchCarePlans = async () => {
     try {
@@ -198,15 +226,17 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     } else {
       imageHeight = 180;
     }
+
     return (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() =>
           handleOnBannerClick(
-            cta_action.type,
-            cta_action.meta.action,
-            cta_action.meta.message,
-            cta_action?.url
+            cta_action?.type,
+            cta_action?.meta.action,
+            cta_action?.meta.message,
+            cta_action?.url,
+            cta_action?.meta
           )
         }
         style={[
@@ -259,7 +289,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
               cta_action?.type,
               cta_action?.meta?.action,
               cta_action?.meta?.message,
-              cta_action?.url
+              cta_action?.url,
+              cta_action?.meta
             )
           }
         >
@@ -350,7 +381,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     );
   };
 
-  const handleOnBannerClick = (type: any, action: any, message: any, url: string) => {
+  const handleOnBannerClick = (type: any, action: any, message: any, url: string, meta: any) => {
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
@@ -377,11 +408,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       type == hdfc_values.ONE_TOUCH ? null : fireCircleEvent(type, action);
       planPurchased.current = false;
       setCirclePlanSelected && setCirclePlanSelected(null);
-      if (type == hdfc_values.ONE_TOUCH) {
-        setShowCircleActivation(true);
-      } else {
-        setShowCirclePlans(true);
-      }
+      setShowCirclePlans(true);
     } else if (action == hdfc_values.SPECIALITY_LISTING) {
       fireBannerCovidClickedWebengageEvent();
       if (type) {
@@ -417,6 +444,16 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: Circle.planName,
           });
+        } else if (
+          (action === hdfc_values.MEDICINE_LISTING ||
+            meta?.app_action === hdfc_values.MEDICINE_LISTING) &&
+          !!meta?.category_id &&
+          !!meta?.category_name
+        ) {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            category_id: meta?.category_id,
+            title: meta?.category_name,
+          });
         } else {
           props.navigation.navigate(AppRoutes.ConsultRoom);
         }
@@ -441,9 +478,15 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
       } else if (action == hdfc_values.ABSOLUTE_URL) {
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          itemId: url.split('/').reverse()[0],
-        });
+        if (type == hdfc_values.WEB_VIEW) {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: url.split('/').reverse()[0],
+          });
+        }
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
@@ -473,7 +516,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       defaultCirclePlan={defaultCirclePlan}
       navigation={props.navigation}
       circlePaymentDone={planPurchased.current}
-      circlePlanValidity={props.circlePlanValidity}
+      circlePlanValidity={planValidity.current || props.circlePlanValidity}
       from={from}
       source={source}
     />
@@ -489,6 +532,16 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         membershipPlans={membershipPlans}
         source={source}
         from={from}
+        healthCredits={healthCredits}
+        onPurchaseWithHCCallback={(res: any) => {
+          fireCirclePurchaseEvent(
+            currentPatient,
+            res?.data?.CreateUserSubscription?.response?.end_date
+          );
+          planPurchased.current = true;
+          planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+          setShowCircleActivation(true);
+        }}
       />
     );
   };
@@ -497,7 +550,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   if (showBanner) {
     return (
       <View style={{ marginTop: 5, flex: 1 }}>
-        {renderCircleMembershipActivated()}
+        {showCircleActivation && renderCircleMembershipActivated()}
         {showCirclePlans && renderCircleSubscriptionPlans()}
         <Carousel
           onSnapToItem={setSlideIndex}
@@ -588,7 +641,7 @@ const styles = StyleSheet.create({
   },
   bottomView: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 15,
     left: 13,
   },
   upgradeBtnView: {

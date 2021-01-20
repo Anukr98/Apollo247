@@ -382,6 +382,7 @@ export interface FirebaseEvents {
     Payment_Type?: 'COD' | 'Prepaid'; // Optional
     Cart_ID?: string | number; // Optional
     Service_Area: 'Pharmacy' | 'Diagnostic';
+    'Circle discount': number;
   };
 
   [FirebaseEventName.PRODUCT_PAGE_VIEWED]: {
@@ -558,6 +559,7 @@ export interface FirebaseEvents {
     Customer_ID: string;
     af_revenue: number;
     af_currency: string;
+    'Circle discount': number;
   };
   [FirebaseEventName.RATING_GIVEN]: {
     PatientUHID: string;

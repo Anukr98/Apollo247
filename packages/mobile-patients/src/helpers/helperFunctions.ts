@@ -2,6 +2,7 @@ import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPackageData,
@@ -19,9 +20,11 @@ import {
   MEDICINE_UNIT,
   SaveSearchInput,
   STATUS,
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -41,8 +44,8 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
@@ -91,9 +94,13 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
+const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -142,6 +149,10 @@ export enum HEALTH_CONDITIONS_TITLE {
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
 }
+
+export const getPhrHighlightText = (highlightText: string) => {
+  return stripHtml(highlightText?.replace(/[\{["]/gi, '')) || '';
+};
 
 export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
@@ -219,6 +230,36 @@ export const formatAddressWithLandmark = (
   }
 };
 
+export const formatAddressBookAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = removeConsecutiveComma(
+    [address?.addressLine1, address?.addressLine2, address?.city].filter((v) => v).join(', ')
+  );
+  const landmark = [address?.landmark];
+  const state = [address?.state];
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
+  if (address?.landmark != '') {
+    return `${addrLine1},\n${landmark}\n${state}${formattedZipcode}`;
+  } else {
+    return `${addrLine1},\n${state}${formattedZipcode}`;
+  }
+};
+
+export const formatAddressForApi = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
+    .filter((v) => v)
+    .join(', ');
+  const state = [address?.state];
+  const formattedZipcode = address?.zipcode ? `${address?.zipcode}` : '';
+  const formattedAddress = removeConsecutiveComma(
+    addrLine1 + ', ' + state + ', ' + formattedZipcode
+  );
+  return formattedAddress;
+};
+
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   if (address.name!) {
     return `${address.name}\n${address.mobileNumber}`;
@@ -229,9 +270,9 @@ export const formatNameNumber = (address: savePatientAddress_savePatientAddress_
 
 export const isPastAppointment = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null,
-  item: getPatientAllAppointments_getPatientAllAppointments_appointments
+  item: getPatientAllAppointments_getPatientAllAppointments_activeAppointments
 ) => {
   const case_sheet = followUpChatDaysCaseSheet(caseSheet);
   const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
@@ -252,7 +293,7 @@ export const isPastAppointment = (
 
 export const followUpChatDaysCaseSheet = (
   caseSheet:
-    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[]
     | null
 ) => {
   const case_sheet =
@@ -318,10 +359,10 @@ export const phrSortByDate = (array: { type: string; data: any }[]) => {
 export const phrSortWithDate = (array: any) => {
   return array?.sort(
     (a: any, b: any) =>
-      moment(b.date || b.billDateTime || b.startDateTime)
+      moment(b?.date || b?.billDateTime || b?.startDateTime || b?.recordDateTime)
         .toDate()
         .getTime() -
-      moment(a.date || a.billDateTime || a.startDateTime)
+      moment(a?.date || a?.billDateTime || a?.startDateTime || a?.recordDateTime)
         .toDate()
         .getTime()
   );
@@ -360,7 +401,7 @@ const getConsiderDate = (type: string, dataObject: any) => {
     case 'bills':
       return dataObject?.billDateTime;
     case 'health-conditions':
-      return dataObject?.startDateTime;
+      return dataObject?.startDateTime || dataObject?.recordDateTime;
   }
 };
 
@@ -846,7 +887,8 @@ export const getlocationDataFromLatLang = async (latitude: number, longitude: nu
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void,
-  latLngOnly?: boolean
+  latLngOnly?: boolean,
+  modifyAddress?: boolean
 ) => {
   Geolocation.getCurrentPosition(
     (position) => {
@@ -863,7 +905,14 @@ const getlocationData = (
             console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
-            resolve(getFormattedLocation(addrComponents, { lat: latitude, lng: longitude }));
+            resolve(
+              getFormattedLocation(
+                addrComponents,
+                { lat: latitude, lng: longitude },
+                '',
+                modifyAddress
+              )
+            );
           }
         })
         .catch((e) => {
@@ -876,11 +925,14 @@ const getlocationData = (
 
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: false, timeout: 5000 }
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
-export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promise<LocationData> => {
+export const doRequestAndAccessLocationModified = (
+  latLngOnly?: boolean,
+  modifyAddress?: boolean
+): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -891,14 +943,14 @@ export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promis
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject, latLngOnly);
+                getlocationData(resolve, reject, latLngOnly, modifyAddress);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject, latLngOnly);
+            getlocationData(resolve, reject, latLngOnly, modifyAddress);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -930,7 +982,7 @@ export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promis
   });
 };
 
-export const doRequestAndAccessLocation = (): Promise<LocationData> => {
+export const doRequestAndAccessLocation = (isModifyAddress?: boolean): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -941,14 +993,14 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject);
+                getlocationData(resolve, reject, false, isModifyAddress);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject);
+            getlocationData(resolve, reject, false, isModifyAddress);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -1118,13 +1170,20 @@ export const addTestsToCart = async (
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+      context: {
+        headers: {
+          source: Platform.OS,
+          source_version: DeviceInfo.getVersion(),
+        },
+      },
       variables: {
         searchText: name,
         cityID: 9, //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });
-  const detailQuery = (itemId: string) => getPackageData(itemId);
+  const detailQuery = async (itemId: string) =>
+    await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
@@ -1140,22 +1199,22 @@ export const addTestsToCart = async (
       searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
     );
     const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
-
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData.length,
     }).map((_, index) => {
       const s = searchQueriesData[index];
       const testIncludedCount = detailQueriesData[index];
       return {
-        id: `${s.itemId}`,
-        name: s.itemName,
-        price: s.rate,
+        id: `${s?.itemId}`,
+        name: s?.itemName,
+        price: s?.rate,
         specialPrice: undefined,
         mou: testIncludedCount,
         thumbnail: '',
-        collectionMethod: s.collectionType,
+        collectionMethod: s?.collectionType,
+        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
       } as DiagnosticsCartItem;
     });
 
@@ -1742,31 +1801,42 @@ export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
 export const getFormattedLocation = (
   addrComponents: PlacesApiResponse['results'][0]['address_components'],
   latLang: PlacesApiResponse['results'][0]['geometry']['location'],
-  pincode?: string
+  pincode?: string,
+  isModifyAddress?: boolean
 ) => {
   const { lat, lng } = latLang || {};
-
-  const area = [
-    findAddrComponents('route', addrComponents),
-    findAddrComponents('sublocality_level_2', addrComponents),
-    findAddrComponents('sublocality_level_1', addrComponents),
-  ].filter((i) => i);
-
+  let area;
+  if (isModifyAddress) {
+    area = [
+      findAddrComponents('sublocality_level_2', addrComponents),
+      findAddrComponents('sublocality_level_1', addrComponents),
+      findAddrComponents('locality', addrComponents),
+    ]?.filter((i) => i);
+  } else {
+    [
+      findAddrComponents('route', addrComponents),
+      findAddrComponents('sublocality_level_2', addrComponents),
+      findAddrComponents('sublocality_level_1', addrComponents),
+    ]?.filter((i) => i);
+  }
   return {
-    displayName:
-      (area || []).pop() ||
-      findAddrComponents('locality', addrComponents) ||
-      findAddrComponents('administrative_area_level_2', addrComponents),
+    displayName: isModifyAddress
+      ? findAddrComponents('locality', addrComponents) ||
+        findAddrComponents('administrative_area_level_2', addrComponents)
+      : (area || []).pop() ||
+        findAddrComponents('locality', addrComponents) ||
+        findAddrComponents('administrative_area_level_2', addrComponents),
+
     latitude: lat,
     longitude: lng,
-    area: area.join(', '),
+    area: area?.join(', '),
     city:
       findAddrComponents('locality', addrComponents) ||
       findAddrComponents('administrative_area_level_2', addrComponents),
     state: findAddrComponents('administrative_area_level_1', addrComponents),
     stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
-    pincode: pincode || findAddrComponents('postal_code', addrComponents),
+    pincode: (pincode != '' && pincode) || findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };
@@ -1841,7 +1911,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.push(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.ProductDetailPage, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });
@@ -2193,4 +2263,98 @@ export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
     circleMembershipType = 'Annual';
   }
   return circleMembershipType;
+};
+
+export const filterHtmlContent = (content: string = '') => {
+  return content
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;rn/g, '>')
+    .replace(/&gt;r/g, '>')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, '</>')
+    .replace(/\.t/g, '.');
+};
+export const isProductInStock = (product: MedicineProduct) => {
+  const { dc_availability, is_in_contract } = product;
+  if (
+    !!dc_availability &&
+    !!is_in_contract &&
+    dc_availability.toLowerCase() === 'no' &&
+    is_in_contract.toLowerCase() === 'no'
+  ) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
+export const takeToHomePage = (props: any) => {
+  props.navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+        }),
+      ],
+    })
+  );
+};
+export const isSmallDevice = width < 370;
+
+export const getTestOrderStatusText = (status: string) => {
+  let statusString = '';
+  switch (status) {
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
+      statusString = 'Order Cancelled';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
+      statusString = 'Order Failed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED:
+      statusString = 'Order Initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
+      statusString = 'Pickup Requested';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+      statusString = 'Pickup Confirmed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
+      statusString = 'Sample Collected';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
+      statusString = 'Sample Received in Lab';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
+      statusString = 'Report Generated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED:
+      statusString = 'Order Completed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING:
+      statusString = 'Payment Pending';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
+      statusString = 'Payment Failed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL:
+      statusString = 'Payment Successful';
+      break;
+    case REFUND_STATUSES.SUCCESS:
+        statusString = 'Refund Proccessed';
+        break;
+    case REFUND_STATUSES.PENDING:
+    case REFUND_STATUSES.FAILURE:
+    case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
+    case REFUND_STATUSES.MANUAL_REVIEW:
+        statusString = 'Refund Initiated';
+        break;
+    default:
+      statusString = (status || '')
+      statusString?.replace(/[_]/g, ' ');
+  }
+  return statusString;
 };

@@ -10,12 +10,15 @@ import {
   Dimensions,
   ScrollView,
   Platform,
+  Alert,
 } from 'react-native';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
-import { GET_PLAN_DETAILS_BY_PLAN_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PLAN_DETAILS_BY_PLAN_ID,
+  CREATE_USER_SUBSCRIPTION,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -34,7 +37,17 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  CreateUserSubscription,
+  CreateUserSubscriptionVariables,
+} from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
+import {
+  one_apollo_store_code,
+  PaymentStatus,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -51,11 +64,13 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   buyNow?: boolean;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
   from?: string;
+  healthCredits?: number;
+  onPurchaseWithHCCallback?: (res: any) => void;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
   const [membershipPlans, setMembershipPlans] = useState<any>(props.membershipPlans || []);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [spinning, setSpinning] = useState<boolean>(true);
   const {
     isConsultJourney,
     isDiagnosticJourney,
@@ -68,11 +83,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     buyNow,
     source,
     from,
+    healthCredits,
+    onPurchaseWithHCCallback,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const circleStaticMonthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
-  const { circleSubscription } = useAppCommonData();
   const {
     circlePlanSelected,
     setCirclePlanSelected,
@@ -91,7 +107,13 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
-
+  const { setLoading } = useUIElements();
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
+  const amountToPay = defaultCirclePlan
+    ? defaultCirclePlan?.currentSellingPrice
+    : circlePlanSelected?.currentSellingPrice;
+  const purchaseWithHC = healthCredits && healthCredits >= amountToPay;
   const planDimension = isModal ? 100 : 120;
   const defaultPlanDimension = isModal ? 130 : 120;
   const isIos = Platform.OS === 'ios';
@@ -105,12 +127,13 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
       fetchCarePlans();
     } else {
-      setLoading(false);
+      setSpinning(false);
       onEndApiCall && onEndApiCall();
     }
     if (buyNow && props.membershipPlans?.length > 0) {
-      selectDefaultPlan && selectDefaultPlan(props.membershipPlans);
-      setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
+      setDefaultCirclePlan && setDefaultCirclePlan(null);
+      // selectDefaultPlan && selectDefaultPlan(props.membershipPlans);
+      // setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
     }
   }, []);
 
@@ -138,12 +161,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       if (circlePlans) {
         setMembershipPlans(circlePlans);
         if ((doctorFees && doctorFees >= 400) || isModal) {
-          autoSelectDefaultPlan(circlePlans);
-          if (!circlePlanSelected) {
-            selectDefaultPlan && selectDefaultPlan(circlePlans);
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
-          } else {
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          if (!buyNow) {
+            autoSelectDefaultPlan(circlePlans);
+            if (!circlePlanSelected) {
+              selectDefaultPlan && selectDefaultPlan(circlePlans);
+              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
+            } else {
+              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+            }
           }
         } else {
           if (isConsultJourney || isDiagnosticJourney || !circleMembershipCharges) {
@@ -162,10 +187,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           }
         }
       }
-      setLoading(false);
+      setSpinning(false);
       onEndApiCall && onEndApiCall();
     } catch (error) {
-      setLoading(false);
+      setSpinning(false);
       onEndApiCall && onEndApiCall();
       CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
     }
@@ -235,6 +260,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED,
         CircleEventAttributes
       );
+    isConsultJourney && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_REMOVES_CART);
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {
@@ -305,7 +331,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 ]}
               >
                 {string.common.Rs}
-                {value?.currentSellingPrice}
+                {convertNumberToDecimal(value?.currentSellingPrice)}
               </Text>
             </ImageBackground>
           </TouchableOpacity>
@@ -383,7 +409,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const renderSubscriptionPlans = () => {
     return (
       <View style={styles.subscriptionContainer}>
-        <ContentLoader loading={loading} active containerStyles={{ marginTop: 10 }}>
+        <ContentLoader loading={spinning} active containerStyles={{ marginTop: 10 }}>
           {isModal && renderHeaderTitle()}
           <View style={isModal ? [styles.careBannerView, { paddingBottom: 5 }] : {}}>
             <View style={styles.careTextContainer}>
@@ -394,7 +420,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                     Get{' '}
                     <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
                       {string.common.Rs}
-                      {careDiscountPrice} off{' '}
+                      {convertNumberToDecimal(careDiscountPrice)} off{' '}
                     </Text>{' '}
                     on this Consult with CIRCLE membership and a lot more benefits....
                   </Text>
@@ -452,7 +478,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           Get{' '}
           <Text style={theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE)}>
             {string.common.Rs}
-            {careDiscountPrice} off{' '}
+            {convertNumberToDecimal(careDiscountPrice)} off{' '}
           </Text>{' '}
           on this Consult
         </Text>
@@ -574,15 +600,69 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_REMOVES_CART);
   };
 
+  const onPurchasePlanThroughHC = async () => {
+    setLoading && setLoading(true);
+    try {
+      const res = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
+        mutation: CREATE_USER_SUBSCRIPTION,
+        variables: {
+          userSubscription: {
+            mobile_number: currentPatient?.mobileNumber,
+            plan_id: planId,
+            sub_plan_id: defaultCirclePlan
+              ? defaultCirclePlan?.subPlanId
+              : circlePlanSelected?.subPlanId,
+            storeCode,
+            FirstName: currentPatient?.firstName,
+            LastName: currentPatient?.lastName,
+            payment_reference: {
+              amount_paid: 0,
+              payment_status: PaymentStatus.TXN_SUCCESS,
+              purchase_via_HC: true,
+              HC_used: amountToPay,
+            },
+            transaction_date_time: new Date().toISOString(),
+          },
+        },
+        fetchPolicy: 'no-cache',
+      });
+      setLoading && setLoading(false);
+      if (res?.data?.CreateUserSubscription?.success) {
+        onPurchaseWithHCCallback!(res);
+      } else {
+        Alert.alert('Apollo', `${res?.data?.CreateUserSubscription?.message}`);
+      }
+    } catch (error) {
+      setLoading && setLoading(false);
+      CommonBugFender('ConsultRoom_createUserCircleSubscription', error);
+    }
+  };
+
   const renderAddToCart = () => {
     return (
       <Button
+        disabled={!defaultCirclePlan && !circlePlanSelected}
         title={
           buyNow && from !== string.banner_context.PHARMACY_HOME
-            ? string.circleDoctors.upgrade
+            ? purchaseWithHC
+              ? string.circleDoctors.upgradeWithHC.replace(
+                  '{hc}',
+                  circlePlanSelected?.currentSellingPrice
+                )
+              : !circlePlanSelected
+              ? string.circleDoctors.upgrade
+              : string.circleDoctors.upgradeWithPrice.replace(
+                  '{price}',
+                  circlePlanSelected?.currentSellingPrice
+                )
             : string.circleDoctors.addToCart
         }
-        style={styles.buyNowBtn}
+        style={[
+          styles.buyNowBtn,
+          {
+            width: purchaseWithHC ? 230 : 212,
+          },
+        ]}
         onPress={() => {
           fireCircleBuyNowEvent();
           isConsultJourney &&
@@ -595,7 +675,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
           if (buyNow && from !== string.banner_context.PHARMACY_HOME) {
-            props.navigation.navigate(AppRoutes.CircleSubscription, { from: from, soruce: source });
+            if (purchaseWithHC) {
+              onPurchasePlanThroughHC();
+            } else {
+              props.navigation.navigate(AppRoutes.CircleSubscription, {
+                from: from,
+                soruce: source,
+              });
+            }
           } else {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
           }
@@ -654,7 +741,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}
             >
               {string.common.Rs}
-              {circlePlanSelected?.currentSellingPrice}
+              {convertNumberToDecimal(circlePlanSelected?.currentSellingPrice)}
             </Text>
           </View>
         </View>
@@ -676,7 +763,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !loading && !defaultCirclePlan
+      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !spinning && !defaultCirclePlan
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>

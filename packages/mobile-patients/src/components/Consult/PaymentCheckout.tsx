@@ -36,7 +36,10 @@ import {
   DoctorType,
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
@@ -69,6 +72,7 @@ import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppo
 import {
   BOOK_APPOINTMENT,
   MAKE_APPOINTMENT_PAYMENT,
+  GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -82,6 +86,10 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import messaging from '@react-native-firebase/messaging';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -120,6 +128,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const isOnlineConsult = selectedTab === 'Consult Online';
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
   const { currentPatient } = useAllCurrentPatients();
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
@@ -128,19 +137,23 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
   const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
-    isCircleDoctor && !circleSubscriptionId
+    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
   );
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
@@ -148,7 +161,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
-    circlePlanSelected && isCircleDoctor
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? onlineConsultSlashedPrice -
           couponDiscountFees +
@@ -158,13 +171,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
   const notSubscriberUserForCareDoctor =
-    isCircleDoctor && !circleSubscriptionId && !circlePlanSelected;
+    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
 
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
   finalAppointmentInput['actualAmount'] =
-    circlePlanSelected && isCircleDoctor
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? onlineConsultSlashedPrice
         : physicalConsultSlashedPrice
@@ -174,10 +187,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     PlanAmount: circlePlanSelected?.currentSellingPrice,
   };
   finalAppointmentInput['planPurchaseDetails'] =
-    circlePlanSelected && isCircleDoctor ? planPurchaseDetails : null;
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
 
   const totalSavings =
-    isCircleDoctor && (circleSubscriptionId || circlePlanSelected)
+    isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -185,6 +198,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
+  const circleDiscount =
+    (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
   useEffect(() => {
     verifyCoupon();
@@ -313,7 +328,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <ListCard
         container={[
           styles.couponContainer,
-          { marginTop: isCircleDoctor && !!circleSubscriptionId ? 0 : 20 },
+          { marginTop: isCircleDoctorOnSelectedConsultMode && !!circleSubscriptionId ? 0 : 20 },
         ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
@@ -352,7 +367,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
     const billAmount =
-      circlePlanSelected && isCircleDoctor
+      circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
@@ -468,7 +483,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return (
       <View style={styles.bottomButtonView}>
         <Button
-          title={`PAY ${string.common.Rs}${amountToPay} `}
+          title={`PAY ${string.common.Rs}${convertNumberToDecimal(amountToPay)} `}
           style={styles.bottomBtn}
           onPress={() => onPressPay()}
           disabled={disabledCheckout}
@@ -597,6 +612,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         patientId: patientId,
         callSaveSearch: callSaveSearch,
         planSelected: circlePlanSelected,
+        circleDiscount,
       });
     }
   };
@@ -639,7 +655,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           )
         );
         setLoading!(false);
-        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`);
+        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
         setLoading!(false);
@@ -647,22 +663,53 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       });
   };
 
-  const handleOrderSuccess = (doctorName: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-            params: {
-              isFreeConsult: true,
-              doctorName: doctorName,
-            },
-          }),
-        ],
+  const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
+    setLoading && setLoading(true);
+    client
+      .query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId,
+        },
+        fetchPolicy: 'no-cache',
       })
-    );
+      .then((_data) => {
+        try {
+          setLoading && setLoading(false);
+          const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
+          if (appointmentData) {
+            try {
+              if (appointmentData?.[0]?.doctorInfo !== null) {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.ConsultRoom,
+                        params: {
+                          isFreeConsult: true,
+                          doctorName: doctorName,
+                          appointmentData: appointmentData[0],
+                          skipAutoQuestions: doctor?.skipAutoQuestions,
+                        },
+                      }),
+                    ],
+                  })
+                );
+              }
+            } catch (error) {}
+          }
+        } catch (error) {
+          setLoading && setLoading(false);
+          props.navigation.navigate('APPOINTMENTS');
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
+        setLoading && setLoading(false);
+        props.navigation.navigate('APPOINTMENTS');
+      });
   };
 
   const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
@@ -675,6 +722,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_currency: 'INR',
       'consult id': id,
       'coupon applied': coupon ? true : false,
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };
@@ -719,6 +767,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: amountToPay,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      'Circle discount': circleDiscount,
     };
     return eventAttributes;
   };
@@ -821,7 +870,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           You could have{' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             saved {string.common.Rs}
-            {discountedPrice}
+            {convertNumberToDecimal(discountedPrice)}
           </Text>{' '}
           on this purchase with
         </Text>
@@ -846,8 +895,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
-          {isCircleDoctor && !!circleSubscriptionId ? renderCareMembershipAddedCard() : null}
-          {isCircleDoctor && !circleSubscriptionId ? renderCircleSubscriptionPlans() : null}
+          {isCircleDoctorOnSelectedConsultMode && !!circleSubscriptionId
+            ? renderCareMembershipAddedCard()
+            : null}
+          {isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
+            ? renderCircleSubscriptionPlans()
+            : null}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
           {renderDiscountView()}

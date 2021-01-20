@@ -1,7 +1,11 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
-import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Platform } from 'react-native';
 
 export enum AppEnv {
   DEV = 'DEV',
@@ -14,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -25,6 +29,9 @@ const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
+const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
+const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
+
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -65,6 +72,7 @@ const appStaticVariables = {
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
+  MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
@@ -79,6 +87,13 @@ const appStaticVariables = {
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
+  clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
+  merchantId: 'apollo247',
+  jusPayService: 'in.juspay.ec',
+  returnUrl: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
+  jusPaybaseUrl: 'https://api.juspay.in/cardbins',
+  HdfcHealthLifeText: string.common.HdfcHealthLifeText,
+  EXPRESS_MAXIMUM_HOURS: 6,
 };
 
 const DEV_top_specialties = [
@@ -223,34 +238,38 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
+    DRUPAL_CONFIG: ['https://uatcms.apollo247.com/api', drupalAuthTokenDev],
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
+    DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
   },
 };
 
 export const NeedHelp = [
   {
     category: 'Pharmacy',
+    id: 'pharmacy',
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
     options: [
       'I would like to cancel the order!',
       'I would like to know the Delivery status of my order.',
-      'I was not able to place the order due to technical errors',
-      'My money got deducted but no order confirmation received',
       'I need to know why my order was cancelled',
       'I have issues in order delivered!',
       'Excess amount was charged to me by Delivery Executive',
       'Inappropriate attitude & behaviour of Delivery Executive',
       'I need to know my refund status',
       'I have prescription related queries (Invalid/ Order cancelled)',
+      'I was not able to place the order due to technical errors',
+      'My money got deducted but no order confirmation received',
     ],
   },
   {
     category: 'Virtual/Online Consult',
+    id: 'virtualOnlineConsult',
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
     options: [
-      'I am unable to book an appointment (slot not available/ Doctor not listed)',
       'The doctor did not start the consultation call on time',
-      'My money got deducted but no confirmation on the doctor appointment',
       'I faced technical issues during/after booking an appointment',
       'I want to reschedule/cancel my appointment ',
       'I haven’t received the prescription',
@@ -258,10 +277,13 @@ export const NeedHelp = [
       'I need to know my refund status',
       'I did not recieve invoice/ receipt of my appointment',
       'Consultation ended, Doctor has not replied to my query over 24 hours',
+      'I am unable to book an appointment (slot not available/ Doctor not listed)',
+      'My money got deducted but no confirmation on the doctor appointment',
     ],
   },
   {
     category: 'Health Records',
+    id: 'healthRecords',
     options: [
       'Add multiple UHID’s linked to other mobile numbers',
       'Delay in responses to queries',
@@ -276,6 +298,7 @@ export const NeedHelp = [
   },
   {
     category: 'Physical Consult',
+    id: 'physicalConsult',
     options: [
       'App appointment dishonored at confirmed time slot',
       'Application issues(bandwidth & payment errors)',
@@ -294,6 +317,7 @@ export const NeedHelp = [
   },
   {
     category: 'Feedback',
+    id: 'feedback',
     options: [
       'Feedback on app',
       'Feedback on consultation',
@@ -303,6 +327,7 @@ export const NeedHelp = [
   },
   {
     category: 'Diagnostics',
+    id: 'diagnostics',
     options: [
       'Excess amount related',
       'Issues in order confirmation',
@@ -318,10 +343,12 @@ export const NeedHelp = [
   },
   {
     category: 'Unsubscribe',
+    id: 'unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
   {
     category: 'HealthyLife (HDFC)',
+    id: 'healthyLifeHdfc',
     options: [
       'Coupon related',
       'Concierge Services',
@@ -340,6 +367,7 @@ export const NeedHelp = [
   },
   {
     category: 'Circle Membership',
+    id: 'circleMembership',
     options: [
       'Details about Circle Membership',
       'Regarding Circle Benefits',
@@ -494,6 +522,8 @@ const ConfigurationDev = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // QA
@@ -517,6 +547,7 @@ const ConfigurationQA = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -546,6 +577,8 @@ const ConfigurationQA = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // QA2
@@ -569,6 +602,7 @@ const ConfigurationQA2 = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -598,6 +632,8 @@ const ConfigurationQA2 = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // QA3
@@ -621,6 +657,7 @@ const ConfigurationQA3 = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -643,6 +680,8 @@ const ConfigurationQA3 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 // VAPT
@@ -666,6 +705,7 @@ const ConfigurationVAPT = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -695,6 +735,8 @@ const ConfigurationVAPT = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 //Production
 const ConfigurationProd = {
@@ -717,6 +759,7 @@ const ConfigurationProd = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://base.apolloprism.com',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
@@ -744,6 +787,8 @@ const ConfigurationProd = {
   CIRCLE_LANDING_URL: 'https://www.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 //PERFORMANCE
@@ -767,6 +812,7 @@ const ConfigurationPERFORM = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -797,6 +843,8 @@ const ConfigurationPERFORM = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 //DevelopmentReplica
@@ -820,6 +868,7 @@ const ConfigurationDevReplica = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -850,6 +899,8 @@ const ConfigurationDevReplica = {
   CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  jusPayenvironment: 'prod',
 };
 
 const Configuration =
@@ -976,14 +1027,38 @@ export const ConsultFeedBackData = {
 };
 
 export const SequenceForDiagnosticStatus = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
-  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+];
+
+export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+];
+
+export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [
+  REFUND_STATUSES.FAILURE,
+  REFUND_STATUSES.PENDING,
+  REFUND_STATUSES.SUCCESS,
+  REFUND_STATUSES.MANUAL_REVIEW,
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
+];
+
+export const DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS = [
+  REFUND_STATUSES.FAILURE,
+  REFUND_STATUSES.MANUAL_REVIEW,
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
 ];
 
 export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
@@ -1049,24 +1124,24 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
-    'Home Collection Charges are too high',
-    'Need to change the payment mode',
-    'Need to modify the order details',
-    'I am getting lesser price elsewhere',
-    'Home Collection not occuring at desired time slot',
-    'No need for diagnosis now',
-    'Order created by mistake',
-    'Others (Please specify)s',
+    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
+    string.diagnostics.reasonForCancel_TestOrder.chargesTooHigh,
+    string.diagnostics.reasonForCancel_TestOrder.editOrder,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.noSlot,
+    string.diagnostics.reasonForCancel_TestOrder.changePaymentMode,
+    string.diagnostics.reasonForCancel_TestOrder.highPrice,
+    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 
 export const TestReschedulingReasons = {
   reasons: [
-    'Not present at home',
-    'Did not follow preparation guidelines (Fasting etc.)',
-    'Not in a condition to provide sample',
-    'Slot picked by mistake',
-    'Others (please specify)',
+    string.diagnostics.reasonForReschedule_TestOrder.unavailable,
+    string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
+    string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
+    string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
+    string.diagnostics.reasonForReschedule_TestOrder.otherReasons,
   ],
 };
 

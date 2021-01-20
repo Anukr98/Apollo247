@@ -78,14 +78,17 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
   const renderProceedToCheckout = () => {
     const count = cartItems.length;
     return (
-      !!count && (
-        <View style={styles.proceedToCheckout}>
-          <Button
-            onPress={() => navigation.navigate(AppRoutes.MedicineCart)}
-            title={string.proceedToCheckout.replace('{0}', `${count}`)}
-          />
-        </View>
-      )
+      <View style={styles.proceedToCheckout}>
+        <Button
+          onPress={() => navigation.navigate(AppRoutes.MedicineCart)}
+          title={
+            count
+              ? string.proceedToCheckoutItems.replace('{0}', `${count}`)
+              : string.proceedToCheckout
+          }
+          disabled={!count}
+        />
+      </View>
     );
   };
 

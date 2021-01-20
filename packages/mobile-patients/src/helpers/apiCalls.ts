@@ -23,6 +23,27 @@ export interface MedicineProduct {
   url_key: string;
   careCashback?: number | null;
   is_express?: 'Yes' | 'No';
+  dc_availability?: 'Yes' | 'No';
+  is_in_contract?: 'Yes' | 'No';
+  is_returnable?: 'Yes' | 'No';
+  marketer_address?: string | null;
+  unit_of_measurement?: string | null;
+  vegetarian?: 'Yes' | 'No';
+  storage?: string | null;
+  key_ingredient?: string | null;
+  key_benefits?: string | null;
+  safety_information?: string | null;
+  size?: string | null;
+  flavour_fragrance?: string | null;
+  colour?: string | null;
+  variant?: string | null;
+  expiry_date?: string | null;
+  composition?: string | null;
+  consume_type?: string | null;
+  dose_form_variant?: string | null;
+  pack_form?: string | null;
+  pack_size?: string | null;
+  banned?: 'Yes' | 'No';
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -50,6 +71,35 @@ interface PharmaOverview {
     Caption: string;
     CaptionDesc: string;
   }[]; // type can be string if information not available
+  NewPharmaOverview: NewPharmaOverview;
+}
+
+export interface NewPharmaOverview {
+  Storage: string;
+  StoragePlace: string;
+  ColdChain: string;
+  AboutProduct: string;
+  HowToTake: string;
+  LiverTag: string;
+  LiverContent: string;
+  KidneyTag: string;
+  KidneyContent: string;
+  PregnancyTag: string;
+  PregnancyContent: string;
+  BreastfeedingMothersTag: string;
+  BreastfeedingMothersContent: string;
+  AlcoholTag: string;
+  AlcoholContent: string;
+  DrivingTag: string;
+  DrivingContent: string;
+  WarningsAndPrecautions: string;
+  CompositionContentFAQs: PharmaFAQ[];
+  SideEffects: string;
+}
+
+export interface PharmaFAQ {
+  field_question: string;
+  field_answer: string;
 }
 
 export interface MedicineProductDetailsResponse {
@@ -349,11 +399,13 @@ export interface MedicinePageAPiResponse {
 }
 
 export interface PackageInclusion {
+  requiredAttachment?: string;
+  itemId?: number;
   TestInclusion: string;
-  SampleRemarks: string;
-  SampleTypeName: string;
-  TestParameters: string;
-  TestName?: string; // getting TestInclusion value in TestName from API
+  sampleRemarks: string;
+  sampleTypeName: string;
+  testParameters: string;
+  name?: string;
 }
 
 export interface TestPackage {
@@ -475,11 +527,17 @@ export interface SymptomsSpecialities {
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
-  productSku: string
+  productSku: string,
+  axdcCode?: string,
+  pincode?: string
 ): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
   return Axios.post(
     `${config.MED_DETAIL[0]}/popcsrchpdp_api.php`,
-    { params: productSku },
+    {
+      params: productSku,
+      axdcCode: axdcCode || '',
+      pincode: pincode || '',
+    },
     {
       headers: {
         Authorization: config.MED_DETAIL[1],
@@ -488,6 +546,7 @@ export const getMedicineDetailsApi = (
   );
 };
 
+let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1,
@@ -496,6 +555,8 @@ export const searchMedicineApi = async (
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
@@ -510,6 +571,9 @@ export const searchMedicineApi = async (
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
+    cancelToken: new CancelToken((c) => {
+      cancelSearchMedicineApi247 = c;
+    }),
   });
 };
 
@@ -599,6 +663,15 @@ export const availabilityApi247 = (
     cancelToken: new CancelToken((c) => {
       cancelAvailabilityApi247 = c;
     }),
+  });
+};
+
+export const nonCartTatApi247 = (pincode: string): Promise<AxiosResponse<>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/noncarttat?pin=${pincode}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
   });
 };
 
@@ -740,7 +813,7 @@ export const getPlaceInfoByPlaceId = (
 export const getLatLongFromAddress = (
   address: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}&components=country:IN`;
   return Axios.get(url);
 };
 
@@ -964,6 +1037,48 @@ export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
     },
     headers: {
       Authorization: config.GET_SKU[1],
+    },
+  });
+};
+
+export const searchPHRApi = (
+  searchText: string,
+  uhid: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrl = `${AppConfig.Configuration.PHR_BASE_URL}/apollo/healthrecord/search?accessToken=KeyOf247&uhid=${uhid}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrl);
+};
+
+export const searchPHRApiWithAuthToken = (
+  searchText: string,
+  authToken: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrlWithAuthToke = `${AppConfig.Configuration.PHR_BASE_URL}/searchhealthrecord?authToken=${authToken}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrlWithAuthToke);
+};
+
+export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getBanners = `${baseurl}/banner/${pageName}`;
+  return Axios.get(getBanners, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getDiagnosticsSearchResults = (
+  pageName: string,
+  keyword: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
+  return Axios.get(getSearchResults, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
     },
   });
 };

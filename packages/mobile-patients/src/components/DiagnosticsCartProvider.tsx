@@ -5,7 +5,7 @@ import {
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Clinic, DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -29,6 +29,8 @@ export interface DiagnosticsCartItem {
   discountSpecialPrice?: number | null; //price
   collectionMethod: TEST_COLLECTION_TYPE;
   groupPlan?: string;
+  packageMrp?: number;
+  inclusions?: any[];
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -64,7 +66,10 @@ export interface DiagnosticsCartContextProps {
     | null;
 
   cartTotal: number;
+  totalPriceExcludingAnyDiscounts: number;
   cartSaving: number;
+  normalSaving: number;
+  discountSaving: number;
   circleSaving: number;
   couponDiscount: number;
   deliveryCharges: number;
@@ -148,7 +153,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
+  totalPriceExcludingAnyDiscounts: 0,
   cartSaving: 0,
+  normalSaving: 0,
+  discountSaving: 0,
   circleSaving: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
@@ -342,7 +350,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const addCartItem: DiagnosticsCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (cartItems.find((item) => item.id == itemToAdd.id)) {
+    if (cartItems.find((item) => item?.id == itemToAdd?.id)) {
       return;
     }
     const newCartItems = [itemToAdd, ...cartItems];
@@ -385,30 +393,59 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     }
   };
 
+  const withDiscount = cartItems?.filter(
+    (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+  );
+
+  const withAll = cartItems?.filter((item) =>
+    isDiagnosticCircleSubscription
+      ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+      : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  );
+  const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
+    (currTotal, currItem) =>
+      currTotal +
+      (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
+        ? currItem?.packageMrp! - currItem?.discountSpecialPrice!
+        : currItem?.price! - currItem?.discountSpecialPrice!),
+    0
+  );
+  const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
+    (currTotal, currItem) =>
+      currTotal +
+      (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
+        ? currItem?.packageMrp! - currItem?.specialPrice!
+        : currItem?.price! - currItem?.specialPrice!),
+    0
+  );
+
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
     cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
   );
 
-  const cartSaving: DiagnosticsCartContextProps['cartSaving'] =
-    cartTotal -
-    parseFloat(
-      cartItems
-        ?.reduce(
-          (currTotal, currItem) =>
-            currTotal +
-            (currItem?.discountSpecialPrice || currItem?.specialPrice || currItem?.price),
-          0
-        )
-        .toFixed(2)
-    );
+  //this takes packageMrp if exists or mrp
+  const totalPriceExcludingAnyDiscounts: DiagnosticsCartContextProps['totalPriceExcludingAnyDiscounts'] = parseFloat(
+    cartItems
+      ?.reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem?.packageMrp! > currItem?.price ? currItem?.packageMrp! : currItem?.price),
+        0
+      )
+      .toFixed(2)
+  );
 
+  const cartSaving: DiagnosticsCartContextProps['cartTotal'] = discountSaving + normalSaving;
   const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
     cartItems
       ?.reduce(
         (currTotal, currItem) =>
           currTotal +
           (currItem?.groupPlan == 'CIRCLE'
-            ? currItem?.circlePrice! - currItem?.circleSpecialPrice!
+            ? (currItem?.packageMrp! > currItem?.circlePrice!
+                ? currItem?.packageMrp!
+                : currItem?.circlePrice!) - currItem?.circleSpecialPrice!
             : 0 || 0),
         0
       )
@@ -423,9 +460,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
   const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
 
+  //carttotal
   const grandTotal = parseFloat(
     (
-      cartTotal +
+      totalPriceExcludingAnyDiscounts +
       deliveryCharges +
       (ppeKitCharges ? 0 : 0) -
       couponDiscount -
@@ -554,7 +592,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
+        totalPriceExcludingAnyDiscounts,
         cartSaving,
+        discountSaving,
+        normalSaving,
         circleSaving,
         grandTotal,
         couponDiscount,

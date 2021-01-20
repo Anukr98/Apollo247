@@ -3,11 +3,19 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE } from "./globalTypes";
+import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticOrdersList
 // ====================================================
+
+export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_itemObj {
+  __typename: "ItemObj";
+  itemType: string | null;
+  testPreparationData: string | null;
+  packageCalculatedMrp: number | null;
+  inclusions: (number | null)[] | null;
+}
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_pricingObj {
   __typename: "PricingObj";
@@ -32,8 +40,8 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   itemId: number;
   itemName: string;
   itemType: DIAGNOSTICS_TYPE | null;
-  testPreparationData: string;
   testDescription: string | null;
+  testPreparationData: string;
   inclusions: (number | null)[] | null;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
@@ -42,9 +50,12 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   __typename: "DiagnosticOrderLineItems";
   id: string;
   itemId: number | null;
+  itemName: string | null;
   quantity: number | null;
   price: number | null;
   groupPlan: string | null;
+  itemType: DIAGNOSTICS_TYPE | null;
+  itemObj: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_itemObj | null;
   pricingObj: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics | null;
 }
@@ -53,7 +64,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
   patientAddressId: string;
-  city: string;
+  city: string | null;
   slotTimings: string;
   employeeSlotId: string;
   diagnosticEmployeeCode: string;
@@ -71,8 +82,13 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   displayId: number;
   createdDate: any;
   areaId: number | null;
+  slotDateTimeInUTC: any | null;
   rescheduleCount: number | null;
   isRescheduled: boolean | null;
+  collectionCharges: number | null;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  visitNo: string | null;
+  paymentOrderId: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
 

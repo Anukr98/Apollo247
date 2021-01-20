@@ -115,9 +115,9 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
   };
 
   const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
-    props.navigation.push(AppRoutes.AddAddress, {
+    props.navigation.push(AppRoutes.AddAddressNew, {
       KeyName: dataname,
-      DataAddress: address,
+      addressDetails: address,
       ComingFrom: comingFrom,
     });
   };

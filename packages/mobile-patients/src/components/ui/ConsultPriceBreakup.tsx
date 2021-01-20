@@ -3,7 +3,10 @@ import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface ConsultPriceProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -26,16 +29,21 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
   const {
-    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
+    isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
 
-  const amountToPay = isCircleDoctor
+  const amountToPay = isCircleDoctorOnSelectedConsultMode
     ? isOnlineConsult
       ? circleSubscriptionId
         ? onlineConsultSlashedPrice - couponDiscountFees
@@ -64,12 +72,16 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           ]}
         >
           {string.common.Rs}
-          {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+          {convertNumberToDecimal(
+            isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice
+          )}
         </Text>
         {!!circleSubscriptionId || planSelected ? (
           <Text style={styles.regularText}>
             {string.common.Rs}
-            {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+            {convertNumberToDecimal(
+              isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice
+            )}
           </Text>
         ) : null}
       </View>
@@ -80,7 +92,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     return (
       <Text style={styles.regularText}>
         {string.common.Rs}
-        {Number(doctorFees)}
+        {convertNumberToDecimal(Number(doctorFees))}
       </Text>
     );
   };
@@ -90,16 +102,22 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>
           {string.common.consultFee}{' '}
-          {`${isCircleDoctor && (!!circleSubscriptionId || planSelected) ? '(CIRCLE Price)' : ''}`}
+          {`${
+            isCircleDoctorOnSelectedConsultMode && (!!circleSubscriptionId || planSelected)
+              ? '(CIRCLE Price)'
+              : ''
+          }`}
         </Text>
-        {isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
+        {isCircleDoctorOnSelectedConsultMode
+          ? renderCareDoctorPricing()
+          : renderNonCareDoctorPricing()}
       </View>
-      {circleSubscriptionId == '' && planSelected && isCircleDoctor ? (
+      {circleSubscriptionId == '' && planSelected && isCircleDoctorOnSelectedConsultMode ? (
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <Text style={styles.regularText}>{string.common.careMembership}</Text>
           <Text style={styles.regularText}>
             {string.common.Rs}
-            {planSelected?.currentSellingPrice}
+            {convertNumberToDecimal(planSelected?.currentSellingPrice)}
           </Text>
         </View>
       ) : null}
@@ -112,7 +130,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           </View>
           <Text style={styles.couponText}>
             - {string.common.Rs}
-            {couponDiscountFees}
+            {convertNumberToDecimal(couponDiscountFees)}
           </Text>
         </View>
       ) : null}
@@ -121,15 +139,19 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
         <Text style={styles.regularText}>{string.common.toPay}</Text>
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
           {string.common.Rs}
-          {planSelected && isCircleDoctor
+          {planSelected && isCircleDoctorOnSelectedConsultMode
             ? isOnlineConsult
-              ? onlineConsultSlashedPrice -
-                couponDiscountFees +
-                (circleSubscriptionId == '' ? Number(planSelected?.currentSellingPrice) : 0)
-              : physicalConsultSlashedPrice -
-                couponDiscountFees +
-                Number(planSelected?.currentSellingPrice)
-            : amountToPay}
+              ? convertNumberToDecimal(
+                  onlineConsultSlashedPrice -
+                    couponDiscountFees +
+                    (circleSubscriptionId == '' ? Number(planSelected?.currentSellingPrice) : 0)
+                )
+              : convertNumberToDecimal(
+                  physicalConsultSlashedPrice -
+                    couponDiscountFees +
+                    Number(planSelected?.currentSellingPrice)
+                )
+            : convertNumberToDecimal(amountToPay)}
         </Text>
       </View>
     </View>

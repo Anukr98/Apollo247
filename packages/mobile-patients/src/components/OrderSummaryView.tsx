@@ -18,6 +18,7 @@ import {
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CircleLogo, DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -491,7 +492,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             cashback of{' '}
             <Text style={styles.highlightedCashBackText}>
               {string.common.Rs}
-              {orderDetails?.totalCashBack!} earned{' '}
+              {convertNumberToDecimal(orderDetails?.totalCashBack!)} earned{' '}
             </Text>
             on your order
           </Text>

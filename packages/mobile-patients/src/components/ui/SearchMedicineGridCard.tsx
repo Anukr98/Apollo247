@@ -26,6 +26,7 @@ import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -164,9 +165,17 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     onPressNotify,
     onPressAddQty,
     onPressSubtractQty,
+    dc_availability,
+    is_in_contract,
   } = props;
   const finalPrice = price - Number(special_price) ? Number(special_price) : price;
   const cashback = getCareCashback(Number(finalPrice), type_id);
+
+  const isOutOfStock =
+    !!dc_availability &&
+    !!is_in_contract &&
+    dc_availability.toLowerCase() === 'no' &&
+    is_in_contract.toLowerCase() === 'no';
 
   const renderTitleAndIcon = () => {
     return (
@@ -185,11 +194,11 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={[styles.addToCartViewStyle, !!is_in_stock && { paddingHorizontal: 23 }]}
-        onPress={!is_in_stock ? onPressNotify : onPressAddToCart}
+        style={[styles.addToCartViewStyle, !isOutOfStock && { paddingHorizontal: 23 }]}
+        onPress={isOutOfStock ? onPressNotify : onPressAddToCart}
       >
         <Text style={theme.viewStyles.text('SB', 9, '#fc9916', 1, 24, 0)}>
-          {!is_in_stock ? 'NOTIFY ME' : 'ADD'}
+          {isOutOfStock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
     );
@@ -234,15 +243,15 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const renderSpecialPrice = () => {
     const discount = getDiscountPercentage(price, special_price);
     const off_text = discount ? ' ' + discount + '%off' : '';
-    return is_in_stock ? (
-      <View style={{ flexDirection: 'row', marginBottom: 20, }}>
+    return !isOutOfStock ? (
+      <View style={{ flexDirection: 'row', marginBottom: 20 }}>
         {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>
             {'('}
-            <Text
-              style={{ textDecorationLine: 'line-through' }}
-            >{`${string.common.Rs}${price}`}</Text>
+            <Text style={{ textDecorationLine: 'line-through' }}>{`${
+              string.common.Rs
+            }${convertNumberToDecimal(price)}`}</Text>
             {')'}
           </Text>,
           <Text style={styles.offTextStyle}>{off_text}</Text>,
@@ -253,14 +262,14 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
 
   const renderOutOfStock = () => {
     const discount = getDiscountPercentage(price, special_price);
-    return !is_in_stock && sell_online ? (
+    return isOutOfStock && sell_online ? (
       <Text style={styles.outOfStockStyle} numberOfLines={2}>
         {'Out Of Stock'}
       </Text>
     ) : (
       <Text style={styles.priceTextCollapseStyle}>
         {string.common.Rs}
-        {discount ? special_price : price}
+        {convertNumberToDecimal(discount ? special_price : price)}
       </Text>
     );
   };
@@ -304,10 +313,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     >
       {!!cashback && !!type_id && renderOfferTag()}
       {is_express === 'Yes' && renderExpressFlag()}
-      <View style={[
-        styles.medicineIconAndNameViewStyle,
-        {marginTop: 10}
-      ]}>
+      <View style={[styles.medicineIconAndNameViewStyle, { marginTop: 10 }]}>
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
       </View>

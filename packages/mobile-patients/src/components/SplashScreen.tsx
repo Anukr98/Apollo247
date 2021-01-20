@@ -480,6 +480,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('ConsultDetails', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'CircleMembershipDetails':
+            getData('CircleMembershipDetails');
+            break;
+
           default:
             getData('ConsultRoom', undefined, true);
             // webengage event
@@ -604,6 +608,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
       let allPatients;
 
+      const isCircleMember: string | null = await AsyncStorage.getItem('isCircleMember');
+
       if (callByPrism === 'false') {
         allPatients =
           item && item.data && item.data.getPatientByMobileNumber
@@ -637,7 +643,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (mePatient.firstName !== '') {
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
-                pushTheView(routeName, id ? id : undefined, isCall);
+                pushTheView(routeName, id ? id : undefined, isCall, isCircleMember === 'yes');
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
@@ -707,7 +713,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
-  const pushTheView = (routeName: String, id?: any, isCall?: boolean) => {
+  const pushTheView = (routeName: String, id?: any, isCall?: boolean, isCircleMember?: boolean) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -734,7 +740,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'MedicineDetail':
         console.log('MedicineDetail');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        props.navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: id,
           movedFrom: ProductPageViewedSource.DEEP_LINK,
         });
@@ -879,6 +885,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'MedicineByName':
         getMedicineSKU(id);
         break;
+      case 'CircleMembershipDetails':
+        if (isCircleMember) {
+          props.navigation.navigate(AppRoutes.MembershipDetails, {
+            membershipType: string.Circle.planName,
+            isActive: true,
+          });
+        }
       default:
         break;
     }
@@ -914,7 +927,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const response = await getMedicineSku(skuKey);
       const { data } = response;
       data?.Message == 'Product available'
-        ? props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        ? props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: data?.sku,
             movedFrom: ProductPageViewedSource.DEEP_LINK,
           })
@@ -1018,6 +1031,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Doctors_Page_Size',
     },
     Need_Help: {
+      QA: 'QA_Need_Help',
       PROD: 'Need_Help',
     },
   };

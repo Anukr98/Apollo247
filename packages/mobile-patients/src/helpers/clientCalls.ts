@@ -27,6 +27,7 @@ import {
   GET_PHR_USER_NOTIFY_EVENTS,
   GET_MEDICAL_PRISM_RECORD_V2,
   GET_ALL_GROUP_BANNERS_OF_USER,
+  GET_PACKAGE_INCLUSIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -115,6 +116,7 @@ import {
   GetAllGroupBannersOfUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
 import { bannerType } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { getInclusionsOfMultipleItems, getInclusionsOfMultipleItemsVariables } from '@aph/mobile-patients/src/graphql/types/getInclusionsOfMultipleItems';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -368,6 +370,35 @@ export const getPatientPrismMedicalRecordsApi = (
         variables: {
           patientId: patientId || '',
           records: records,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        res(data);
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getPatientPrismMedicalRecordsApi', e);
+        rej(e);
+      });
+  });
+};
+
+export const getPatientPrismSingleMedicalRecordApi = (
+  client: ApolloClient<object>,
+  patientId: string,
+  records: MedicalRecordType[],
+  recordId: string,
+  source: string | null = null
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientPrismMedicalRecords_V2, getPatientPrismMedicalRecords_V2Variables>({
+        query: GET_MEDICAL_PRISM_RECORD_V2,
+        variables: {
+          patientId: patientId || '',
+          records: records,
+          recordId: recordId,
+          source: source,
         },
         fetchPolicy: 'no-cache',
       })
@@ -811,5 +842,28 @@ export const getUserBannersList = (
           rej(e);
           CommonBugFender('ConsultRoom_GetAllGroupBannersOfUser', e);
         });
+  });
+};
+
+export const getPackageInclusions = (
+  client: ApolloClient<object>,
+  itemId: any,
+) => {
+  const input = {
+    itemID: itemId,
+  };
+  return new Promise((res, rej) => {
+    client
+      .query<getInclusionsOfMultipleItems, getInclusionsOfMultipleItemsVariables>({
+        query: GET_PACKAGE_INCLUSIONS,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res(data);
+      })
+      .catch((e) => {
+        rej(e);
+      });
   });
 };

@@ -7,6 +7,7 @@
     "edit_profile_imp_text": "You cannot edit Name, Age, Date of Birth \nand Gender!",
     "new_profile_confirmation_text": "You cannot edit these details once you \nhave saved them. They will appear on all \nyour medical documents. Do you wish to \nconfirm?",
     "uhOh": "Uh oh.. :(",
+    "hiWithSmiley": "Hi :)",
     "date_placeholder_text": "DD MMM, YYYY",
     "select_text": "Select",
     "doctor_name_text": "Doctor name",
@@ -20,6 +21,7 @@
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "best_doctor_text": "Here are our best ",
+    "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
     "distance": "Distance",
     "consult_now": "CONSULT NOW",
@@ -40,6 +42,7 @@
     "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
     "covidYouCanText": "You can also",
     "Rs": "₹",
+    "DegreeSymbol": "º",
     "KavachText": "Explore the Apollo Kavach Program",
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
     "waitForDoctirToJoinCall": "Please wait while Dr. doctor_name is going through your medical records. This might take a while. Advice you to stay in the consult room!",
@@ -77,7 +80,11 @@
     "careMembership": "CIRCLE Membership",
     "tryAgainLater": "Something went wrong, please try again after sometime",
     "weAreHereToHelpYou": "Always caring about your health, we are here to help you!",
-    "consultFee": "Consult Fee"
+    "consultFee": "Consult Fee",
+    "consultedDoctors": "Consulted Doctors",
+    "pastSearches": "Past Searches",
+    "topSpecialities": "Top Specialities",
+    "HdfcHealthLifeText": "Explore HDFC HealthyLife"
   },
   "components": {
     "medicineDetails": {
@@ -97,11 +104,31 @@
     }
   },
   "lookingForBoughtPreviously": "Looking for an item you bought previously?",
+  "trackYourShipment": "TRACK YOUR SHIPMENT",
+  "reportIssue": "REPORT ISSUE",
+  "submit": "Submit",
+  "retry": "Retry",
+  "help": "Help",
+  "cancel": "Cancel",
+  "needHelp": "Need Help",
+  "needHelpSubmitMessage": "Thank you for bringing this to our notice. We’ll gather the details regarding your issue and immediately after that someone from our team will call you.",
+  "recentConsults": "RECENT CONSULTS",
+  "recentOrders": "RECENT ORDERS",
+  "pharmacy": "Pharmacy",
+  "productDetail": "Product Detail",
+  "pleaseProvideMoreDetails": "Please provide more details",
+  "chooseFromPreviousConsults": "Choose from previous consultations",
+  "otherIssueNotMyConsults": "Other issue not related to consult",
+  "chooseFromPreviousOrders": "Choose from previous orders",
+  "otherIssueNotMyOrders": "Other issue not related to My Orders",
+  "ifYourOrderFailed": "If your order transaction failed report issue in this section:",
+  "ifYourConsultTransactionFailed": "If your consult transaction failed you may find your issue in this section:",
   "buyAgain": "Buy Again",
   "sorryNoProductsHere": "Sorry, no products available here.",
   "genericError": "Oops! seems like we are having an issue. Please try again.",
   "selectFromOrderedItems": "Select from your previously ordered items",
-  "proceedToCheckout": "Proceed to Checkout ({0} items)",
+  "proceedToCheckoutItems": "Proceed to Checkout ({0} items)",
+  "proceedToCheckout": "Proceed to Checkout",
   "specialOffers": "Special Offers",
   "notInStockInYourArea": "Not in stock in your area",
   "notForSale": "Not for sale",
@@ -111,6 +138,7 @@
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
   "uploadPrescription": "UPLOAD PRESCRIPTION",
   "proceedToPay": "PROCEED TO PAY",
+  "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "consultType": {
@@ -175,8 +203,7 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [
-      {
+    "arrayTest": [{
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -195,8 +222,7 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [
-      {
+    "startDoctor": [{
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -225,8 +251,7 @@
     }
   },
   "consult_room": {
-    "specialities": [
-      {
+    "specialities": [{
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -260,8 +285,7 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [
-        {
+      "data": [{
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -273,8 +297,7 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [
-        {
+      "data": [{
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -301,54 +324,29 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [
-      {
+    "filter_data": [{
         "label": "City",
-        "options": [
-          "Hyderabad",
-          "Chennai"
-        ]
+        "options": ["Hyderabad", "Chennai"]
       },
       {
         "label": "Experience In Years",
-        "options": [
-          "0 - 5",
-          "6 - 10",
-          "11 - 15",
-          "15+"
-        ]
+        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
       },
       {
         "label": "Availability",
-        "options": [
-          "Now",
-          "Today",
-          "Tomorrow",
-          "Next 3 Days"
-        ]
+        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
       },
       {
         "label": "Fees In Rupees",
-        "options": [
-          "100 - 500",
-          "501 - 1000",
-          "1000+"
-        ]
+        "options": ["100 - 500", "501 - 1000", "1000+"]
       },
       {
         "label": "Gender",
-        "options": [
-          "Male",
-          "Female"
-        ]
+        "options": ["Male", "Female"]
       },
       {
         "label": "Language",
-        "options": [
-          "Hindi",
-          "English",
-          "Telugu"
-        ]
+        "options": ["Hindi", "English", "Telugu"]
       }
     ]
   },
@@ -370,6 +368,8 @@
     "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification"
   },
   "diagnostics": {
+    "locationPermissionText":"Allow us to serve you better by entering your area pincode below.",
+    "serviceabilityFailureText":"Something went wrong. We're unable to check diagnostics serviceability for your location.",
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
     "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
     "nonServiceableConfigPinCodeMsg": "Diagnostic services are not available in Pincode - {{pincode}} for now.",
@@ -386,7 +386,39 @@
     "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
     "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
     "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
-    "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address."
+    "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
+    "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
+    "specialDiscountText": "TESTS247 coupon pre-applied",
+    "disclaimerText": [{
+      "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
+    }, {
+      "text": "Rescheduling can be done upto 3 times only"
+    }],
+    "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
+    "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
+    "reasonForCancel_TestOrder": {
+      "latePhelbo": "Phlebo didn't arrive on time",
+      "chargesTooHigh": "Home Collection charges are too high",
+      "editOrder": "Need to edit order details",
+      "userUnavailable": "I am not available",
+      "noSlot": "Required slot is not available",
+      "changePaymentMode": "Need to change payment mode",
+      "highPrice": "High price issue",
+      "otherReasons": "Others (Please specify)"
+    },
+    "reasonForReschedule_TestOrder": {
+      "unavailable": "Not present at home",
+      "guidelinesNotFollowed": "Did not follow preparation guidelines (Fasting etc.)",
+      "unableToProvideSample": "Not in a condition to provide sample",
+      "slotMistake": "Slot picked by mistake",
+      "otherReasons": "Others (Please specify)"
+    },
+    "minorAgeText": "Lab tests cannot be booked for below 10 years",
+    "sameSlotError" : "Cannot book same slot",
+    "refundInitiateText": "Your refund for amount ₹{{refundAmount}} has been initiated. It takes 4-5 working days for processing.",
+    "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
+    "orderCancelledSuccessText": "Your order has been cancelled successfully!",
+    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -435,8 +467,7 @@
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [
-      {
+    "tabs": [{
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -481,8 +512,7 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [
-    {
+  "muiltdosages": [{
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -518,12 +548,7 @@
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar",
-    "availabilityList": [
-      "Now",
-      "Today",
-      "Tomorrow",
-      "Next 3 days"
-    ],
+    "availabilityList": ["Now", "Today", "Tomorrow", "Next 3 days"],
     "appointmentStatus": [
       "Active",
       "Completed",
@@ -595,7 +620,9 @@
     "ONE_TOUCH": "ONE-TOUCH",
     "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
     "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
-    "ABSOLUTE_URL" : "ABSOLUTE_URL",
+    "ABSOLUTE_URL": "ABSOLUTE_URL",
+    "WEB_VIEW": "WEB_VIEW",
+    "MEDICINE_LISTING": "MEDICINE_LISTING",
     "ADVANCED_DIABETES": "POP-UP",
     "FILL_FORM": "LEAD-FORM",
     "DIABETES_CONSENT": {
@@ -606,11 +633,9 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [
-        {
+      "QUESTIONAIRE": [{
           "QUESTION": "Q1. Which type of diabetes are you living with?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "Pre-Diabetes",
               "value": "Pre-Diabetes"
             },
@@ -630,8 +655,7 @@
         },
         {
           "QUESTION": "Q2. For how many years have you lived with diabetes?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "lessThan2Years",
               "value": "Less than 2 years"
             },
@@ -689,7 +713,7 @@
     "bookedForWrongUser": "Booked with wrong user details",
     "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons": "Others (Please specifiy)"
+    "otherReasons": "Others (Please specify)"
   },
   "circleDoctors": {
     "care": "CARE",
@@ -718,7 +742,9 @@
     "membershipActivated": "Circle Membership Activated!",
     "healthCreditsRemaining": "Health Credits remaining",
     "returnToHomepage": "RETURN TO HOMEPAGE",
-    "availableHealthCredits": "*Available Health Credits"
+    "availableHealthCredits": "*Available Health Credits",
+    "upgradeWithHC": "UPGRADE WITH {hc} HC",
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
@@ -752,8 +778,7 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
     ],
-    "FAQ": [
-      {
+    "FAQ": [{
         "question": "What is the Apollo 24|7 CIRCLE Membership program?",
         "answer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
@@ -805,6 +830,12 @@
         "question": "Will some of these features be part of the Apollo Hospital experience as well?",
         "answer": "Not as of now, but we are working towards it so you get the best out of Circle"
       }
+    ],
+    "video_links": [
+      "https://www.youtube.com/embed/vTEJT52hNRw",
+      "https://www.youtube.com/embed/c0egNatC16I",
+      "https://www.youtube.com/embed/rsFlGsOBMuM",
+      "https://www.youtube.com/embed/0-TlHa7rLxo"
     ]
   },
   "banner_context": {
@@ -823,5 +854,17 @@
     "ADVANCE_DIABETES": "Advanced Diabetes",
     "COVID_CARE": "CovidCare",
     "DIGITALIZATION_PHR": "DigitizationPHR"
+  },
+  "productDetailPage": {
+    "SIMILAR_PRODUCTS": "View Similar Products",
+    "ALSO_BOUGHT": "Customers Also Bought",
+    "PRODUCT_SUBSTITUTES": "Product Substitutes"
+  },
+  "addressSelection": {
+    "USE_CURRENT_LOCATION_TEXT": "Use current location",
+    "USE_GPS_TEXT": "Using GPS",
+    "NO_RESULTS_FOUND": "No Results Found",
+    "MARKER_TEXT": "MOVE MAP TO ADJUST",
+    "HELP_US_LOCATE_TEXT": "Help us locate your address"
   }
 }

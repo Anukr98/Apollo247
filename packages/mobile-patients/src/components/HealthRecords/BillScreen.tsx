@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   View,
@@ -7,6 +7,10 @@ import {
   ScrollView,
   SectionList,
   BackHandler,
+  Keyboard,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -28,6 +32,8 @@ import {
   phrSortWithDate,
   postWebEngagePHR,
   postWebEngageEvent,
+  isValidSearch,
+  getPhrHighlightText,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -43,6 +49,20 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  getPrismAuthTokenVariables,
+  getPrismAuthToken,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { GET_PRISM_AUTH_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  PhrSearchIcon,
+  SearchDarkPhrIcon,
+  BillPhrSearchIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -73,11 +93,50 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23.4),
     marginBottom: 3,
   },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+    paddingBottom: 10,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center',
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    marginLeft: 18,
+  },
+  textInputStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
+  },
+  loaderViewStyle: { justifyContent: 'center', flex: 1, alignItems: 'center' },
+  loaderStyle: { height: 100, backgroundColor: 'transparent', alignSelf: 'center' },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
+  searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
+  phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
+  searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
 });
 
 export interface BillScreenProps
   extends NavigationScreenProps<{
     onPressBack: () => void;
+    authToken: string;
   }> {}
 
 export const BillScreen: React.FC<BillScreenProps> = (props) => {
@@ -90,6 +149,17 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     data: MedicalBillsType[];
   }> | null>(null);
   const [callApi, setCallApi] = useState(false);
+  const [apiError, setApiError] = useState(false);
+  const [isSearchFocus, SetIsSearchFocus] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchInputFocus, setSearchInputFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const _searchInputRef = useRef(null);
+  const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
+  const [prismAuthToken, setPrismAuthToken] = useState<string>(
+    props.navigation?.getParam('authToken') || ''
+  );
 
   useEffect(() => {
     getLatestMedicalBillRecords();
@@ -113,6 +183,81 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, [callApi]);
+
+  const getAuthToken = async () => {
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+      });
+  };
+
+  const onSearchHealthRecords = (_searchText: string) => {
+    setSearchLoading(true);
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken, 'Bills')
+      .then(({ data }) => {
+        setHealthRecordSearchResults([]);
+        if (data?.response) {
+          const recordData = data.response;
+          const finalData: any[] = [];
+          recordData.forEach((_recordData: any) => {
+            const { healthrecordType } = _recordData;
+            if (healthrecordType === 'BILLS') {
+              finalData.push({ healthkey: MedicalRecordType.MEDICALBILL, value: _recordData });
+            }
+          });
+          setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
+        } else {
+          getAuthToken();
+          setSearchLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.log('searchPHRApiWithAuthToken Error', error);
+        getAuthToken();
+        setSearchLoading(false);
+      });
+  };
+
+  const onSearchTextChange = (value: string) => {
+    SetIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 2)) {
+        setHealthRecordSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      const search = _.debounce(onSearchHealthRecords, 300);
+      search(value);
+    }
+  };
+
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      setSearchText('');
+      SetIsSearchFocus(false);
+      setShowSearchBar(false);
+      _searchInputRef?.current?.clear();
+      setHealthRecordSearchResults([]);
+      Keyboard.dismiss();
+    }
+  };
 
   useEffect(() => {
     if (callApi) {
@@ -140,6 +285,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       })
       .catch((error) => {
         setShowSpinner(false);
+        setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
@@ -157,9 +303,9 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const renderHeader = () => {
     return (
       <Header
-        title={'BILLS'}
+        title={apiError ? undefined : 'BILLS'}
         leftIcon={'backArrow'}
-        rightComponent={renderProfileImage()}
+        rightComponent={apiError ? undefined : renderProfileImage()}
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={gotoPHRHomeScreen}
       />
@@ -170,6 +316,18 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     return (
       <View style={styles.searchFilterViewStyle}>
         <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>{'Bills'}</Text>
+        <View style={styles.searchBarMainView}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setShowSearchBar(true);
+              setSearchInputFocus(true);
+            }}
+            style={{ paddingLeft: 11 }}
+          >
+            <SearchDarkPhrIcon style={{ width: 17.49, height: 17.49 }} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -248,6 +406,14 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
+  const emptyListView = () => {
+    return apiError ? (
+      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+    ) : (
+      <PhrNoDataComponent />
+    );
+  };
+
   const renderMedicalBillsData = () => {
     return (
       <SectionList
@@ -256,7 +422,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalBillsData || []}
         renderItem={({ item, index }) => renderMedicalBillItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={emptyListView}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -289,16 +455,131 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     );
   };
 
+  const renderSearchBar = () => {
+    return (
+      <View style={styles.searchBarMainView}>
+        <View style={styles.searchBarMainViewStyle}>
+          <View style={styles.searchBarViewStyle}>
+            <PhrSearchIcon style={{ width: 20, height: 20 }} />
+            <TextInput
+              placeholder={'Search bills'}
+              autoCapitalize={'none'}
+              autoFocus={searchInputFocus}
+              style={styles.textInputStyle}
+              selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+              numberOfLines={1}
+              ref={_searchInputRef}
+              onFocus={() => SetIsSearchFocus(true)}
+              value={searchText}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(value) => onSearchTextChange(value)}
+            />
+          </View>
+          {isSearchFocus ? (
+            <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+              {'Cancel'}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderSearchLoader = () => {
+    return (
+      <View style={styles.loaderViewStyle}>
+        <Spinner style={styles.loaderStyle} />
+      </View>
+    );
+  };
+
+  const searchListHeaderView = () => {
+    const search_result_text =
+      healthRecordSearchResults?.length === 1
+        ? `${healthRecordSearchResults?.length} search result for \‘${searchText}\’`
+        : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
+    return (
+      <View style={styles.searchListHeaderViewStyle}>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+      </View>
+    );
+  };
+
+  const onClickSearchHealthCard = (item: any) => {
+    const { healthrecordId } = item?.value;
+    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+      healthrecordId: healthrecordId,
+      healthRecordType: MedicalRecordType.MEDICALBILL,
+      medicalBill: true,
+    });
+  };
+
+  const renderHealthRecordSearchItem = (item: any, index: number) => {
+    const healthCardTopView = () => {
+      return (
+        <View style={styles.healthRecordTypeViewStyle}>
+          <BillPhrSearchIcon style={{ width: 16, height: 13 }} />
+          <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+            {'Bills'}
+          </Text>
+        </View>
+      );
+    };
+    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
+    return (
+      <SearchHealthRecordCard
+        dateText={dateText}
+        healthRecordTitle={item?.value?.title}
+        healthRecordMoreText={healthMoreText}
+        searchHealthCardTopView={healthCardTopView()}
+        item={item}
+        index={index}
+        onSearchHealthCardPress={(item) => onClickSearchHealthCard(item)}
+      />
+    );
+  };
+
+  const renderHealthRecordSearchResults = () => {
+    return searchLoading ? (
+      renderSearchLoader()
+    ) : (
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        bounces={false}
+        data={healthRecordSearchResults}
+        ListEmptyComponent={
+          <PhrNoDataComponent mainViewStyle={styles.phrNodataMainViewStyle} phrSearchList />
+        }
+        ListHeaderComponent={searchListHeaderView}
+        renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
+      />
+    );
+  };
+
+  const renderBillsMainView = () => {
+    return (
+      <>
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {renderMedicalBillsData()}
+        </ScrollView>
+        {!apiError && renderAddButton()}
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {medicalBillsMainData?.length > 0 ? renderSearchAndFilterView() : null}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderMedicalBillsData()}
-        </ScrollView>
-        {renderAddButton()}
+        {medicalBillsMainData?.length > 0
+          ? showSearchBar
+            ? renderSearchBar()
+            : renderSearchAndFilterView()
+          : null}
+        {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderBillsMainView()}
       </SafeAreaView>
     </View>
   );

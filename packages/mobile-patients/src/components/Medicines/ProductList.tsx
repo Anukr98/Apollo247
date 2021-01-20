@@ -65,7 +65,7 @@ export const ProductList: React.FC<Props> = ({
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string) => {
-    navigation.push(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.ProductDetailPage, {
       sku,
       movedFrom,
       sectionName,

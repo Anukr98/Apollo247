@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   CircleLogo,
@@ -13,12 +13,18 @@ import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import Carousel from 'react-native-snap-carousel';
+import { WebView } from 'react-native-webview';
+
+const screenWidth = Dimensions.get('window').width;
 
 export interface CircleSavingsProps extends NavigationScreenProps {}
 
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const { circleSubscription, totalCircleSavings } = useAppCommonData();
-
+  const [slideIndex, setSlideIndex] = useState(0);
+  const videoLinks = strings.Circle.video_links;
+  
   const renderCircleExpiryBanner = () => {
     return (
       <View style={[styles.expiryBanner, { alignItems: 'center' }]}>
@@ -104,6 +110,65 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
     );
   };
 
+  const renderViewCarousel = () => {
+    return (
+      <View
+        style={{ backgroundColor: '#FFFFFF' }}
+      >
+        <Text style={styles.howToHeader}>
+          How to Book Consult?
+        </Text>
+        <Carousel
+          onSnapToItem={setSlideIndex}
+          data={videoLinks}
+          renderItem={rendeSliderVideo}
+          sliderWidth={screenWidth}
+          itemWidth={screenWidth - 30}
+          loop={true}
+          autoplay={false}
+        />
+        {videoLinks && videoLinks.length > 1 ? (
+          <View style={styles.sliderDotsContainer}>
+            {videoLinks?.map((_, index) =>
+              index == slideIndex ? renderDot(true) : renderDot(false)
+            )}
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const rendeSliderVideo = ({item}) => {
+    return (
+      <View style={{ flex: 1 }}>
+        <WebView
+          allowsFullscreenVideo
+          allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction
+          source={{ uri: item }} 
+          style={{
+            width: screenWidth,
+            height: 150,
+          }}
+        />
+      </View>
+    )
+  };
+
+  const renderDot = (active: boolean) => (
+    <View
+      style={[
+        styles.sliderDots,
+        {
+          backgroundColor: active
+            ? theme.colors.TURQUOISE_LIGHT_BLUE
+            : theme.colors.CAROUSEL_INACTIVE_DOT,
+          width: active ? 13 : 6,
+        },
+      ]}
+    />
+  );
+
   const renderSavingsCard = () => {
     return (
       <View style={styles.savingsCard}>
@@ -184,7 +249,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   return (
     <View>
       {renderCircleExpiryBanner()}
-      {renderCircleSavings()}
+      {((totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed) > 0) ? 
+        renderCircleSavings() : renderViewCarousel()}
     </View>
   );
 };
@@ -247,4 +313,21 @@ const styles = StyleSheet.create({
   priceView: {
     width: '25%',
   },
+  sliderDotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  sliderDots: {
+    height: 6,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    marginTop: 8,
+    justifyContent: 'flex-start',
+  },
+  howToHeader: {
+    ...theme.viewStyles.text('M', 14, '#02475B', 1, 18),
+    paddingLeft: 15,
+    marginBottom: 7,
+  }
 });
