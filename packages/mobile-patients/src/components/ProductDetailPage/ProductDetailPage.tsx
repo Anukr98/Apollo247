@@ -214,11 +214,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setMedicineDetails(productDetails || {});
-          if (productDetails?.dc_availability === 'No' && productDetails?.is_in_contract === 'No') {
-            setIsInStock(false);
-          } else {
-            setIsInStock(true);
-          }
           setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
           postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
@@ -423,6 +418,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
       const checkAvailabilityRes = await availabilityApi247(currentPincode, sku);
       const outOfStock = !!!checkAvailabilityRes?.data?.response[0]?.exist;
+      setIsInStock(!outOfStock);
       try {
         const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {

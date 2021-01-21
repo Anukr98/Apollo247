@@ -172,10 +172,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const cashback = getCareCashback(Number(finalPrice), type_id);
 
   const isOutOfStock =
-    !!dc_availability &&
-    !!is_in_contract &&
-    dc_availability.toLowerCase() === 'no' &&
-    is_in_contract.toLowerCase() === 'no';
+    dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no';
 
   const renderTitleAndIcon = () => {
     return (
