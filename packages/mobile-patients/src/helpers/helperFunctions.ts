@@ -207,9 +207,14 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
 };
 
 export const getDoctorShareMessage = (doctorData: any) => {
-  return `Recommending ${doctorData?.displayName} \n\n${doctorData?.displayName}${
-    doctorData?.doctorfacility ? 'from ' + doctorData?.doctorfacility : ''
-  } is one of the top ${doctorData?.specialtydisplayName ||
+  const hospitalName = g(doctorData, 'doctorHospital', '0', 'facility', 'name')
+    ? g(doctorData, 'doctorHospital', '0', 'facility', 'name') + ', '
+    : '';
+  const hospitalCity = g(doctorData, 'doctorHospital', '0', 'facility', 'city') || '';
+  return `Recommending ${doctorData?.displayName} \n\n${
+    doctorData?.displayName
+  } from ${doctorData?.doctorfacility ||
+    hospitalName + hospitalCity} is one of the top ${doctorData?.specialtydisplayName ||
     doctorData?.specialty?.name ||
     ''} doctors in the country. \n\nI strongly recommend ${
     doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
