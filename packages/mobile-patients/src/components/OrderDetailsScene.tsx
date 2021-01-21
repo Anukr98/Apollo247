@@ -636,6 +636,35 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >{`ORDER #${orderAutoId}`}</Text>
             {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
           </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: 10,
+            }}
+          >
+            <View>
+              <Text style={theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5)}>
+                Courier
+              </Text>
+              <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                Blue Dart
+              </Text>
+            </View>
+            <View>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5),
+                  textAlign: 'right',
+                }}
+              >
+                Tracking ID
+              </Text>
+              <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                1253846389748
+              </Text>
+            </View>
+          </View>
           <View style={{ flexDirection: 'row', marginTop: 12 }}>
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
               {string.OrderSummery.name}
