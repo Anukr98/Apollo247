@@ -410,6 +410,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           : pharmacyPincode == currentPincode && !isPharmacyLocationServiceable;
       setNotServiceable(!data?.response?.servicable);
       if (!data?.response?.servicable) {
+        setIsInStock(false);
         setdeliveryTime('');
         setdeliveryError(unServiceableMsg);
         setshowDeliverySpinner(false);
