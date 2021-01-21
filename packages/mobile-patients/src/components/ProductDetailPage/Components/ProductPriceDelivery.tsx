@@ -52,7 +52,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const momentDiff = moment(deliveryTime).diff(moment());
   const hoursMoment = moment.duration(momentDiff);
   const hours = hoursMoment.asHours().toFixed();
-  const showExpress = isExpress && Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
+  const showExpress = Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
