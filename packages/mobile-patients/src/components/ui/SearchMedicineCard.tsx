@@ -126,10 +126,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   } = props;
 
   const isOutOfStock =
-    !!dc_availability &&
-    !!is_in_contract &&
-    dc_availability.toLowerCase() === 'no' &&
-    is_in_contract.toLowerCase() === 'no';
+    dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no';
 
   const renderCareCashback = () => {
     const finalPrice = Number(special_price) || price;

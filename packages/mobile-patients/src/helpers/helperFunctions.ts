@@ -2277,12 +2277,7 @@ export const filterHtmlContent = (content: string = '') => {
 };
 export const isProductInStock = (product: MedicineProduct) => {
   const { dc_availability, is_in_contract } = product;
-  if (
-    !!dc_availability &&
-    !!is_in_contract &&
-    dc_availability.toLowerCase() === 'no' &&
-    is_in_contract.toLowerCase() === 'no'
-  ) {
+  if (dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no') {
     return false;
   } else {
     return true;
@@ -2344,16 +2339,16 @@ export const getTestOrderStatusText = (status: string) => {
       statusString = 'Payment Successful';
       break;
     case REFUND_STATUSES.SUCCESS:
-        statusString = 'Refund Proccessed';
-        break;
+      statusString = 'Refund Proccessed';
+      break;
     case REFUND_STATUSES.PENDING:
     case REFUND_STATUSES.FAILURE:
     case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
     case REFUND_STATUSES.MANUAL_REVIEW:
-        statusString = 'Refund Initiated';
-        break;
+      statusString = 'Refund Initiated';
+      break;
     default:
-      statusString = (status || '')
+      statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
