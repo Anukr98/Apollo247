@@ -92,6 +92,15 @@ export enum WebEngageEventName {
   SEARCH_SUGGESTIONS = 'Search suggestions',
   SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
 
+  //Doctor Share Events
+  SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
+  SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
+  GO_BACK_CLICKED_DOC_LIST = 'go back clicked doc list',
+  SHARE_CLICKED_DOC_PROFILE_SCREEN = 'share clicked doc profile screen',
+  SHARE_PROFILE_CLICKED_DOC_PROFILE = 'Share profile clicked doc profile',
+  GO_BACK_CLICKED_DOC_PROFILE = 'go back clicked doc profile',
+  DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
+
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -312,7 +321,8 @@ export enum WebEngageEventName {
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
-
+  ORDER_MEDICINES_IN_CONSULT_ROOM = 'Order meds in Consult room',
+  BOOK_TESTS_IN_CONSULT_ROOM = 'Book tests in consult room',
   // Symptom Tracker Events
   SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
@@ -620,7 +630,8 @@ export interface WebEngageEvents {
     'Referral Code'?: string;
   };
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
-
+  [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
+  [WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM]: UserInfo;
   // ********** Home Screen Events ********** \\
 
   [WebEngageEventName.BUY_MEDICINES]: {
@@ -1963,6 +1974,19 @@ export interface WebEngageEvents {
     'Search suggestions in the particular bucket': string;
   };
 
+  [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor ID': string;
+    'Doctor card rank'?: number;
+    'UTM parameter'?: string;
+  };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
     CategoryId: string;

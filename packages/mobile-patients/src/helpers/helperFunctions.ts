@@ -20,6 +20,7 @@ import {
   MEDICINE_UNIT,
   SaveSearchInput,
   STATUS,
+  Gender,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -203,6 +204,23 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const getDoctorShareMessage = (doctorData: any) => {
+  const hospitalName = g(doctorData, 'doctorHospital', '0', 'facility', 'name')
+    ? g(doctorData, 'doctorHospital', '0', 'facility', 'name') + ', '
+    : '';
+  const hospitalCity = g(doctorData, 'doctorHospital', '0', 'facility', 'city') || '';
+  return `Recommending ${doctorData?.displayName} \n\n${
+    doctorData?.displayName
+  } from ${doctorData?.doctorfacility ||
+    hospitalName + hospitalCity} is one of the top ${doctorData?.specialtydisplayName ||
+    doctorData?.specialty?.name ||
+    ''} doctors in the country. \n\nI strongly recommend ${
+    doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
+  } for any relevant health issues!\n\nYou can easily consult with ${
+    doctorData?.displayName
+  } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
 };
 
 export const formatAddressWithLandmark = (
@@ -1479,6 +1497,28 @@ export const postWEGReferralCodeEvent = (ReferralCode: string) => {
   webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
 };
 
+export const postDoctorShareWEGEvents = (
+  doctorData: any,
+  eventName: WebEngageEventName,
+  currentPatient: any,
+  specialityId: string,
+  rank: number = 1
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Doctor ID': g(doctorData, 'id')!,
+    'Doctor Name': g(doctorData, 'displayName')!,
+    'Speciality Name': g(doctorData, 'specialtydisplayName')!,
+    'Doctor card rank': rank,
+    'Speciality ID': specialityId,
+  };
+  postWebEngageEvent(eventName, eventAttributes);
+};
+
 export const permissionHandler = (
   permission: string,
   deniedMessage: string,
@@ -2344,16 +2384,16 @@ export const getTestOrderStatusText = (status: string) => {
       statusString = 'Payment Successful';
       break;
     case REFUND_STATUSES.SUCCESS:
-        statusString = 'Refund Proccessed';
-        break;
+      statusString = 'Refund Proccessed';
+      break;
     case REFUND_STATUSES.PENDING:
     case REFUND_STATUSES.FAILURE:
     case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
     case REFUND_STATUSES.MANUAL_REVIEW:
-        statusString = 'Refund Initiated';
-        break;
+      statusString = 'Refund Initiated';
+      break;
     default:
-      statusString = (status || '')
+      statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
   }
   return statusString;

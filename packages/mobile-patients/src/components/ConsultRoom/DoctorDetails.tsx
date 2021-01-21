@@ -42,6 +42,7 @@ import {
   timeDiffFromNow,
   setWebEngageScreenNames,
   nextAvailability,
+  getDoctorShareMessage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -80,17 +81,22 @@ import {
   CTGrayChat,
   InfoBlue,
   CircleLogo,
+  ShareYellowDocIcon,
 } from '../ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import moment from 'moment';
 // import { NotificationListener } from '../NotificationListener';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 
 const { height, width } = Dimensions.get('window');
 
@@ -109,6 +115,7 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 7,
     paddingTop: 0,
+    flex: 1,
   },
   doctorSpecializationStyles: {
     paddingTop: 7,
@@ -286,6 +293,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 13, theme.colors.WHITE, 1, 24),
     textTransform: 'uppercase',
   },
+  doctorNameViewStyle: { flexDirection: 'row', justifyContent: 'space-between' },
+  shareTextStyle: {
+    ...theme.viewStyles.text('B', 12, theme.colors.APP_YELLOW, 1, 16),
+    marginRight: 11,
+  },
+  shareViewStyle: { paddingLeft: 5, flexDirection: 'row', alignItems: 'center' },
 });
 type Appointments = {
   date: string;
@@ -342,6 +355,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const fromDeeplink = props.navigation.getParam('fromDeeplink');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
+  const [doctorShareData, setDoctorShareData] = useState<any>();
+  const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -702,14 +717,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ]}
         >
           {string.common.Rs}
-          {consultType === ConsultMode.ONLINE ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+          {consultType === ConsultMode.ONLINE
+            ? convertNumberToDecimal(onlineConsultMRPPrice)
+            : convertNumberToDecimal(physicalConsultMRPPrice)}
         </Text>
         <View style={styles.rowContainer}>
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {consultType === ConsultMode.ONLINE
-              ? onlineConsultSlashedPrice
-              : physicalConsultSlashedPrice}
+              ? convertNumberToDecimal(onlineConsultSlashedPrice)
+              : convertNumberToDecimal(physicalConsultSlashedPrice)}
           </Text>
           {showCircleSubscribed ? (
             <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
@@ -751,6 +768,28 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     );
   };
 
+  const postDoctorShareWEGEvents = (eventName: WebEngageEventName) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
+  const onClickDoctorShare = () => {
+    setShowDoctorSharePopup(true);
+    postDoctorShareWEGEvents(WebEngageEventName.SHARE_CLICKED_DOC_PROFILE_SCREEN);
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -778,7 +817,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {doctorDetails?.doctorsOfTheHourStatus ? renderPlatinumDoctorView() : null}
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
-              <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
+              <View style={styles.doctorNameViewStyle}>
+                <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => onClickDoctorShare()}
+                  style={styles.shareViewStyle}
+                >
+                  <Text style={styles.shareTextStyle}>{'SHARE'}</Text>
+                  <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
+                </TouchableOpacity>
+              </View>
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
                 {doctorDetails.specialty && doctorDetails.specialty.name
@@ -888,7 +937,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         <Text style={styles.onlineConsultAmount}>
                           {Number(VirtualConsultationFee) <= 0 ||
                           VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                            <Text>{`${string.common.Rs}${doctorDetails.onlineConsultationFees}`}</Text>
+                            <Text>{`${string.common.Rs}${convertNumberToDecimal(
+                              doctorDetails?.onlineConsultationFees
+                            )}`}</Text>
                           ) : (
                             <>
                               <Text
@@ -897,12 +948,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                   textDecorationStyle: 'solid',
                                 }}
                               >
-                                {`(${string.common.Rs}${doctorDetails.onlineConsultationFees})`}
+                                {`(${string.common.Rs}${convertNumberToDecimal(
+                                  doctorDetails?.onlineConsultationFees
+                                )})`}
                               </Text>
                               <Text>
                                 {' '}
                                 {string.common.Rs}
-                                {VirtualConsultationFee}
+                                {convertNumberToDecimal(VirtualConsultationFee)}
                               </Text>
                             </>
                           )}
@@ -979,7 +1032,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
                               {string.common.Rs}
-                              {doctorDetails.physicalConsultationFees}
+                              {convertNumberToDecimal(doctorDetails?.physicalConsultationFees)}
                             </Text>
                           )}
                           <AvailabilityCapsule
@@ -1038,7 +1091,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <CircleLogo style={styles.circleLogo} />
         <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 14) }}>
           Starting at {string.common.Rs}
-          {defaultCirclePlan?.currentSellingPrice || '-'}
+          {convertNumberToDecimal(defaultCirclePlan?.currentSellingPrice) || '-'}
         </Text>
       </TouchableOpacity>
     );
@@ -1202,6 +1255,39 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       return null;
     }
     return null;
+  };
+
+  const onPressShareProfileButton = async (doctorData: any) => {
+    const shareDoctorMessage = getDoctorShareMessage(doctorData);
+    try {
+      const result = await Share.share({
+        message: shareDoctorMessage,
+      });
+      if (result.action === Share.sharedAction) {
+        postDoctorShareWEGEvents(WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_PROFILE);
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share.dismissedAction');
+      }
+    } catch (error) {
+      console.log('onPressShareProfileButton Error', error.message);
+    }
+  };
+
+  const onPressGoBackShareDoctor = () => {
+    setShowDoctorSharePopup(false);
+    postDoctorShareWEGEvents(WebEngageEventName.GO_BACK_CLICKED_DOC_PROFILE);
+  };
+
+  const renderDoctorShareComponent = () => {
+    return showDoctorSharePopup ? (
+      <DoctorShareComponent
+        doctorData={doctorDetails}
+        fromDoctorDetails
+        onPressGoBack={onPressGoBackShareDoctor}
+        onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
+        availableModes={doctorDetails?.availableModes}
+      />
+    ) : null;
   };
 
   const renderDoctorTeam = () => {
@@ -1520,6 +1606,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {/* </ScrollView> */}
         </Animated.ScrollView>
         {doctorDetails && renderConsultNow()}
+        {renderDoctorShareComponent()}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (

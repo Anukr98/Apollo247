@@ -3739,7 +3739,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now`}
+              {`Hello ${userName},\nYour prescription has been shared by the doctor.`}
             </Text>
             <StickyBottomComponent
               style={{
@@ -3798,7 +3798,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const UserInfo = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+
   const onAddToCart = () => {
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, UserInfo);
     const medPrescription = (
       caseSheet?.[0]?.medicinePrescription ||
       MedicinePrescriptions ||
@@ -3823,6 +3830,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onAddTestsToCart = async () => {
+    postWebEngageEvent(WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM, UserInfo);
     let location: LocationData | null = null;
     setLoading && setLoading(true);
 
@@ -7104,7 +7112,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     if (checkMsgResult?.length === 0) {
       const automatedText = [
-        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in 15 mins you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
+        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in less than 15 minutes you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
       ];
       pubnub.publish(
         {

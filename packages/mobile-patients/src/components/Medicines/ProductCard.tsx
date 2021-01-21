@@ -20,6 +20,7 @@ import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareC
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -54,19 +55,17 @@ export const ProductCard: React.FC<Props> = ({
   is_in_contract,
   dc_availability,
 }) => {
-  const {
-    circleSubscription,
-  } = useAppCommonData();
-  const {
-    isCircleSubscription,
-  } = useShoppingCart();
+  const { circleSubscription } = useAppCommonData();
+  const { isCircleSubscription } = useShoppingCart();
   const isPrescriptionRequired = is_prescription_required == 1;
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(${string.common.Rs} ${price})`;
+    const strikeOffPrice = `(${string.common.Rs} ${convertNumberToDecimal(price)})`;
     const mrp = 'MRP  ';
-    const finalPrice = `${string.common.Rs}${discount ? special_price : price}`;
+    const finalPrice = `${string.common.Rs}${convertNumberToDecimal(
+      discount ? special_price : price
+    )}`;
     return (
       <View style={styles.priceContainer}>
         <Text style={styles.finalPrice}>{mrp}</Text>
@@ -144,12 +143,15 @@ export const ProductCard: React.FC<Props> = ({
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback) {
       return (
-        <TouchableOpacity activeOpacity={1} onPress={() => {
-          if (!circleSubscription?._id || !isCircleSubscription) {
-            // if not a circle member open circle webview
-            onPressCashback && onPressCashback();
-          }
-        }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            if (!circleSubscription?._id || !isCircleSubscription) {
+              // if not a circle member open circle webview
+              onPressCashback && onPressCashback();
+            }
+          }}
+        >
           <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />
         </TouchableOpacity>
       );

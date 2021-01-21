@@ -34,7 +34,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
   };
 
   return !!wallets?.length ? (
-    <CollapseView Heading={'WALLETS'} ChildComponent={renderWallets()} />
+    <CollapseView isDown={true} Heading={'WALLETS'} ChildComponent={renderWallets()} />
   ) : null;
 };
 

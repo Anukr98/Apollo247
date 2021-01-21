@@ -86,7 +86,7 @@ export const FaqComponent: React.FC<FaqComponentProps> = (props) => {
       <View style={styles.flexRow}>
         <Text style={styles.subHeading}>FAQs</Text>
         <TouchableOpacity onPress={() => returnFaqs(true)}>
-          <Text style={styles.subHeading}>Expland all</Text>
+          <Text style={styles.subHeading}>Expand all</Text>
         </TouchableOpacity>
       </View>
       {renderFaqs()}

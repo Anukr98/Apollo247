@@ -86,8 +86,8 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   rescheduleCount: number | null;
   isRescheduled: boolean | null;
   collectionCharges: number | null;
-  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   visitNo: string | null;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   paymentOrderId: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems | null)[] | null;
 }

@@ -432,3 +432,11 @@ export const sourceHeaders = {
     source_version: DeviceInfo.getVersion(),
   },
 };
+
+export const isFloat = (n: number) => {
+  return Number(n) == n && n % 1 !== 0;
+};
+
+export const convertNumberToDecimal = (n: number | null | string) => {
+  return n ? (isFloat(Number(n)) ? Number(n)?.toFixed(2) : n) : '';
+};

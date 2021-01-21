@@ -104,7 +104,9 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     );
   };
 
-  return <CollapseView Heading={'UPI PAYMENTS'} ChildComponent={renderChildComponent()} />;
+  return (
+    <CollapseView isDown={true} Heading={'UPI PAYMENTS'} ChildComponent={renderChildComponent()} />
+  );
 };
 
 const styles = StyleSheet.create({

@@ -36,7 +36,13 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
       </View>
     );
   };
-  return <CollapseView Heading={'PAY ON DELIVERY'} ChildComponent={renderChildComponent()} />;
+  return (
+    <CollapseView
+      isDown={true}
+      Heading={'PAY ON DELIVERY'}
+      ChildComponent={renderChildComponent()}
+    />
+  );
 };
 
 const styles = StyleSheet.create({

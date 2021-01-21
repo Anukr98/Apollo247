@@ -73,6 +73,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [paymentMethods, setPaymentMethods] = useState<any>([]);
   const [cardTypes, setCardTypes] = useState<any>([]);
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
+  const [isCardValid, setisCardValid] = useState<boolean>(true);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -102,6 +103,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'process_result':
         var payload = data.payload || {};
         console.log('payload >>', JSON.stringify(payload));
+        if (payload?.error) {
+          handleError(payload?.errorMessage);
+        }
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
           console.log(payload?.payload?.paymentMethods);
           const banks = payload?.payload?.paymentMethods?.filter(
@@ -116,6 +120,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       default:
         console.log('Unknown Event', data);
+    }
+  };
+
+  const handleError = (errorMessage: string) => {
+    switch (errorMessage) {
+      case 'Card number is invalid.':
+        setisCardValid(false);
+        break;
+      default:
+        renderErrorPopup();
     }
   };
 
@@ -189,7 +203,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       return token;
     } catch (e) {
       setisTxnProcessing(true);
-      showTxnFailurePopUP();
+      renderErrorPopup();
     }
   };
 
@@ -255,6 +269,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
+  const OtherBanks = () => {
+    const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
+    const methods = topBanks?.featured_banks?.map((item: any) => item?.method) || [];
+    const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    props.navigation.navigate(AppRoutes.OtherBanks, {
+      paymentId: paymentId,
+      amount: amount,
+      banks: otherBanks,
+    });
+  };
+
   const navigatetoOrderStatus = (isCOD: boolean) => {
     props.navigation.navigate(AppRoutes.OrderStatus, {
       orderDetails: orderDetails,
@@ -262,6 +287,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       eventAttributes,
     });
   };
+
+  const renderErrorPopup = () =>
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Oops! seems like we are having an issue. Please try again.',
+    });
 
   const renderHeader = () => {
     return (
@@ -280,7 +311,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const showPaymentOptions = () => {
     return !!paymentMethods?.length
-      ? paymentMethods.map((item: any, index: number) => {
+      ? paymentMethods.map((item: any) => {
           switch (item?.name) {
             case 'COD':
               return renderPayByCash();
@@ -314,20 +345,21 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderCards = () => {
-    return <Cards onPressPayNow={onPressCardPay} cardTypes={cardTypes} />;
+    return (
+      <Cards
+        onPressPayNow={onPressCardPay}
+        cardTypes={cardTypes}
+        isCardValid={isCardValid}
+        setisCardValid={setisCardValid}
+      />
+    );
   };
 
   const renderNetBanking = (topBanks: any) => {
     return (
       <NetBanking
         topBanks={topBanks}
-        onPressOtherBanks={() =>
-          props.navigation.navigate(AppRoutes.OtherBanks, {
-            paymentId: paymentId,
-            amount: amount,
-            banks: banks,
-          })
-        }
+        onPressOtherBanks={() => OtherBanks()}
         onPressBank={onPressBank}
       />
     );
@@ -340,8 +372,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const showTxnFailurePopUP = () => {
     setisTxnProcessing(false);
     showAphAlert?.({
+      unDismissable: true,
       removeTopIcon: true,
-      children: <TxnFailed onPressRetry={() => hideAphAlert?.()} />,
+      children: (
+        <TxnFailed
+          onPressRetry={() => {
+            hideAphAlert?.();
+            props.navigation.goBack();
+          }}
+        />
+      ),
     });
   };
 

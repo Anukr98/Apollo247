@@ -81,6 +81,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -655,7 +656,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           style={styles.bottomCta}
         >
           <Text style={styles.bottomCtaText}>
-            {`Proceed to Checkout (${cartItems?.length} items) ${string.common.Rs}${cartTotal}`}
+            {`Proceed to Checkout (${cartItems?.length} items) ${
+              string.common.Rs
+            }${convertNumberToDecimal(cartTotal)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -836,6 +839,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isInStock={isInStock}
                 packForm={medicineDetails?.pack_form || 'Quantity'}
                 packSize={medicineDetails?.pack_size}
+                productForm={medicineDetails?.product_form || ''}
                 unit={medicineDetails.unit_of_measurement || ''}
                 sku={medicineDetails?.sku}
                 onAddCartItem={onAddCartItem}
@@ -856,7 +860,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             )}
             <ProductInfo
               name={medicineDetails?.name}
-              description={medicineDetails?.description}
+              description={medicineDetails?.product_information}
               isReturnable={medicineDetails?.is_returnable === 'Yes'}
               vegetarian={medicineDetails?.vegetarian}
               storage={medicineDetails?.storage}
@@ -922,6 +926,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               productQuantity={productQuantity}
               setShowAddedToCart={setShowAddedToCart}
               isBanned={medicineDetails?.banned === 'Yes'}
+              cashback={cashback}
             />
           )}
         {!loading &&

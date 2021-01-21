@@ -213,7 +213,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     let imageHeight = 180;
 
     if (!subHeaderText2 || !btnTxt || !headerText3) {
-      imageHeight = isDynamicBanner ? 160 : 144;
+      imageHeight = 160;
       Image.getSize(
         bannerUri,
         (width, height) => {
@@ -226,6 +226,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     } else {
       imageHeight = 180;
     }
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -242,7 +243,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           styles.hdfcBanner,
           {
             height: imageHeight,
-            width: isDynamicBanner ? width - 30 : 320,
           },
         ]}
       >
@@ -251,13 +251,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             height: imageHeight,
             width: '100%',
           }}
-          imageStyle={{
-            borderRadius: isDynamicBanner ? 7 : 0,
-          }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={isDynamicBanner ? 'cover' : 'contain'}
+          resizeMode={'stretch'}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
@@ -602,10 +599,8 @@ const renderDot = (active: boolean) => (
 
 const styles = StyleSheet.create({
   hdfcBanner: {
-    ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.CLEAR,
     borderRadius: 12,
-    elevation: 8,
     marginTop: 10,
     marginHorizontal: 28,
     marginBottom: 15,
@@ -640,7 +635,7 @@ const styles = StyleSheet.create({
   },
   bottomView: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 15,
     left: 13,
   },
   upgradeBtnView: {
