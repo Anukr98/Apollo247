@@ -1427,8 +1427,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             },
           })
           .then((data) => {
-            const count =
-              data?.data?.getPatientFutureAppointmentCount?.activeAndInProgressConsultsCount || 0;
+            const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
             setCurrentAppointments(`${count}`);
             setAppointmentLoading(false);
           })
