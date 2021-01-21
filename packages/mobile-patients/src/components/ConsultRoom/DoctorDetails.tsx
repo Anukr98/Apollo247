@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 7,
     paddingTop: 0,
+    flex: 1,
   },
   doctorSpecializationStyles: {
     paddingTop: 7,

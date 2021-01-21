@@ -213,7 +213,8 @@ export const DoctorShareComponent: React.FC<DoctorShareComponentProps> = (props)
   const doctorDescription = `${doctorData?.displayName} ${
     !!clinicAddress ? 'from ' + clinicAddress : ''
   } is one of the top ${doctorData?.specialtydisplayName ||
-    ''} in the country. \n\nI strongly recommend ${
+    doctorData?.specialty?.name ||
+    ''} doctors in the country. \n\nI strongly recommend ${
     doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
   } for any relevant health issues!\n\nYou can easily consult with ${
     doctorData?.displayName
