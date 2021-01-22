@@ -30,9 +30,20 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+  FlatList,
+  ListRenderItemInfo,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { Overlay } from 'react-native-elements';
+import { CrossPopup, Up } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -63,6 +74,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const isConsult = navigation.getParam('isConsult') || false;
   const [queryIndex, setQueryIndex] = useState<number>();
   const [comments, setComments] = useState<string>('');
+  const [showReturnPopup, setShowReturnPopup] = useState<boolean>(false);
+  const [showReturnUI, setShowReturnUI] = useState<boolean>(false);
 
   const getOrderDetails = async (orderId: string) => {
     const variables: GetMedicineOrderShipmentDetailsVariables = {
@@ -217,7 +230,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderItem = ({ index, item }: ListRenderItemInfo<string>) => {
+    const isReturnQuery = queryReasons[index] === string.common.return_text;
     const onPress = () => {
+      if (isReturnQuery) {
+        setShowReturnPopup(true);
+      }
       setQueryIndex(index);
       setComments('');
     };
@@ -226,7 +243,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         <Text onPress={onPress} style={styles.flatListItem}>
           {item}
         </Text>
-        {index === queryIndex ? renderTextInputAndCTAs(index) : null}
+        {!isReturnQuery && index === queryIndex ? renderTextInputAndCTAs(index) : null}
       </>
     );
   };
@@ -255,12 +272,91 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return <Text style={styles.heading}>{text}</Text>;
   };
 
+  const renderCloseIcon = () => {
+    return (
+      <View style={styles.closeIconViewStyle}>
+        <TouchableOpacity
+          onPress={() => {
+            setShowReturnPopup(false);
+          }}
+        >
+          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderReturnPopup = () => {
+    return (
+      <Overlay
+        onRequestClose={() => setShowReturnPopup(false)}
+        isVisible={showReturnPopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        overlayStyle={styles.overlayStyle}
+      >
+        <View style={styles.overlayViewStyle}>
+          <View style={styles.overlaySafeAreaViewStyle}>
+            {renderCloseIcon()}
+            <View style={styles.returnPopupMainViewStyle}>
+              <View style={styles.returnPolicyViewStyle}>
+                <Text style={styles.returnPolicyTextStyle}>{string.common.return_policy_text}</Text>
+              </View>
+              <View style={styles.returnPolicyMessageViewStyle}>
+                <View style={styles.returnPolicyMessageTextViewStyle}>
+                  <Text style={styles.returnPolicyMessage1TextStyle}>
+                    {string.common.return_policy_message1}
+                  </Text>
+                  <Text style={styles.returnPolicyMessage2TextStyle}>
+                    {string.common.return_policy_message2}
+                  </Text>
+                </View>
+                <Button
+                  title={'CONTINUE'}
+                  onPress={() => {
+                    setShowReturnPopup(false);
+                    setShowReturnUI(true);
+                  }}
+                  style={styles.returnPolicyButtonStyle}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Overlay>
+    );
+  };
+
+  const renderReturnOrderView = () => {
+    return (
+      <View style={[styles.returnPopupMainViewStyle, styles.returnOrderMainViewStyle]}>
+        <View style={[styles.returnPolicyViewStyle, styles.returnOrderViewStyle]}>
+          <Text style={[styles.flatListItem, styles.returnTextStyle]}>
+            {string.common.return_text}
+          </Text>
+          <TouchableOpacity
+            style={styles.upIconViewStyle}
+            activeOpacity={1}
+            onPress={() => setShowReturnUI(false)}
+          >
+            <Up />
+          </TouchableOpacity>
+        </View>
+        <View style={{ paddingTop: 4, paddingHorizontal: 16 }}>
+          <TextInputComponent label={string.common.why_return_order_text} noInput={true} />
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
-      {renderReasons()}
+      {showReturnUI ? renderReturnOrderView() : renderReasons()}
+      {renderReturnPopup()}
     </SafeAreaView>
   );
 };
@@ -298,4 +394,68 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginHorizontal: 5,
   },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
+  overlayViewStyle: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+  },
+  overlaySafeAreaViewStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    marginHorizontal: 20,
+  },
+  closeIconViewStyle: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
+  },
+  returnPopupMainViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: theme.colors.CARD_BG,
+    overflow: 'hidden',
+  },
+  returnPolicyViewStyle: {
+    paddingVertical: 18,
+    ...theme.viewStyles.cardViewStyle,
+    borderBottomEndRadius: 0,
+    borderBottomStartRadius: 0,
+    marginBottom: 10,
+    shadowOpacity: 0.2,
+  },
+  returnPolicyTextStyle: {
+    ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 21),
+    textAlign: 'center',
+  },
+  returnPolicyMessageViewStyle: { backgroundColor: theme.colors.CARD_BG },
+  returnPolicyMessageTextViewStyle: { paddingTop: 17, paddingHorizontal: 15, paddingBottom: 37 },
+  returnPolicyMessage1TextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
+  },
+  returnPolicyMessage2TextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 19),
+    marginTop: 7,
+  },
+  returnPolicyButtonStyle: { width: '50%', alignSelf: 'center', marginBottom: 16 },
+  returnOrderMainViewStyle: {
+    backgroundColor: '#F6F8F5',
+    margin: 20,
+    marginTop: 10,
+    paddingBottom: 100,
+  },
+  returnOrderViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 0,
+  },
+  returnTextStyle: { paddingLeft: 16, paddingVertical: 18, flex: 1 },
+  upIconViewStyle: { paddingHorizontal: 14, paddingVertical: 18 },
 });

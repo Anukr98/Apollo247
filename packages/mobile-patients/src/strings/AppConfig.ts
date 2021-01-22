@@ -271,6 +271,7 @@ export const NeedHelp = [
     id: 'pharmacy',
     orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
     options: [
+      'I want to return my order',
       'I would like to cancel the order!',
       'I would like to know the Delivery status of my order.',
       'I need to know why my order was cancelled',
