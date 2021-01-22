@@ -78,7 +78,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setdeliveryTime,
     pharmacyCircleAttributes,
   } = useShoppingCart();
-  const { setPharmacyLocation, setAxdcCode } = useAppCommonData();
+  const { setPharmacyLocation, setAxdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -266,7 +266,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       new Date(tatDate),
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
       pharmacyCircleAttributes!,
-      moment(tatDate).diff(moment(), 'h')
+      moment(tatDate).diff(moment(), 'h'),
+      pharmacyUserTypeAttribute!
     );
   }
 
@@ -360,7 +361,13 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       tatType: storeType,
       shopId: shopId,
     });
-    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime, pharmacyCircleAttributes!);
+    postwebEngageProceedToPayEvent(
+      shoppingCart,
+      false,
+      deliveryTime,
+      pharmacyCircleAttributes!,
+      pharmacyUserTypeAttribute!
+    );
   }
 
   const renderAlert = (message: string) => {

@@ -65,12 +65,14 @@ import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   SAVE_VOIP_DEVICE_TOKEN,
   UPDATE_PATIENT_APP_VERSION,
+  GET_USER_PROFILE_TYPE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { getUserProfileType } from '@aph/mobile-patients/src/graphql/types/getUserProfileType';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
@@ -439,6 +441,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCircleStatus,
     setHdfcStatus,
     hdfcStatus,
+    setPharmacyUserType,
+    pharmacyUserTypeAttribute,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -776,7 +780,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
     if (eventName == WebEngageEventName.BUY_MEDICINES) {
-      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+      eventAttributes = {
+        ...eventAttributes,
+        ...pharmacyCircleAttributes,
+        ...pharmacyUserTypeAttribute,
+      };
     }
     if (eventName == WebEngageEventName.BOOK_DOCTOR_APPOINTMENT) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
@@ -1258,6 +1266,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
 
+  const getUserProfileType = () => {
+    client
+      .query<getUserProfileType>({
+        query: GET_USER_PROFILE_TYPE,
+        variables: { mobileNumber: g(currentPatient, 'mobileNumber') },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const profileType = data?.data?.getUserProfileType?.profile;
+        if (!!profileType) {
+          setPharmacyUserType && setPharmacyUserType(profileType);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_getUserProfileType', e);
+      });
+  };
+
   const storePatientDetailsTOBugsnag = async () => {
     try {
       let allPatients: any;
@@ -1464,6 +1490,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
 
     getProductCashbackDetails();
+    getUserProfileType();
   }, []);
 
   const initializeVoip = () => {

@@ -153,6 +153,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     hdfcPlanId,
     hdfcStatus,
     circleStatus,
+    pharmacyUserTypeAttribute,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -182,7 +183,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     fetchHealthCredits();
     cartItems.length &&
-      PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'), pharmacyCircleAttributes!);
+      PharmacyCartViewedEvent(
+        shoppingCart,
+        g(currentPatient, 'id'),
+        pharmacyCircleAttributes!,
+        pharmacyUserTypeAttribute!
+      );
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
@@ -499,7 +505,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       new Date(tatDate),
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
       pharmacyCircleAttributes!,
-      moment(tatDate).diff(moment(), 'h')
+      moment(tatDate).diff(moment(), 'h'),
+      pharmacyUserTypeAttribute!
     );
   }
 
@@ -864,7 +871,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       tatType: storeType,
       shopId: shopId,
     });
-    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime, pharmacyCircleAttributes!);
+    postwebEngageProceedToPayEvent(
+      shoppingCart,
+      false,
+      deliveryTime,
+      pharmacyCircleAttributes!,
+      pharmacyUserTypeAttribute!
+    );
   }
 
   const headerRightComponent = () => {

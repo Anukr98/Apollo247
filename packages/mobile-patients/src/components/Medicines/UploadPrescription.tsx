@@ -90,6 +90,7 @@ import {
   updatePatientAddress,
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -139,6 +140,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const orderId = props.navigation.getParam('orderAutoId');
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
+  const { pharmacyUserType } = useAppCommonData();
   const type = props.navigation.getParam('type') || '';
   const [PhysicalPrescriptions, setPhysicalPrescriptions] = useState<PhysicalPrescription[]>(
     phyPrescriptionsProp
@@ -445,6 +447,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       StoreId: storeId, // incase of store delivery
       'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
       Pincode: pinCode,
+      User_Type: pharmacyUserType,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
@@ -563,6 +566,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       NumberOfPrescriptionClicked: numberOfPrescriptionClicked,
       NumberOfPrescriptionUploaded: numberOfPrescriptionUploaded,
       NumberOfEPrescriptions: EPrescriptions.length,
+      User_Type: pharmacyUserType,
     };
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED, eventAttribute);
     CommonLogEvent(
@@ -817,6 +821,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       : 'Call me for details';
                   const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
                     OptionSelected: optionSelected,
+                    User_Type: pharmacyUserType,
                   };
                   postWebEngageEvent(
                     WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,

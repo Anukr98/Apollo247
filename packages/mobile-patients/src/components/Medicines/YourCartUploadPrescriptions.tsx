@@ -71,6 +71,7 @@ import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Spinner } from '../ui/Spinner';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import DeviceInfo from 'react-native-device-info';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -169,6 +170,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     stores,
     setAddresses,
   } = useShoppingCart();
+  const { pharmacyUserType } = useAppCommonData();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
 
@@ -266,6 +268,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
       StoreId: storeId, // incase of store delivery
       'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
       Pincode: pinCode,
+      User_Type: pharmacyUserType,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
