@@ -27,6 +27,7 @@ import {
   InitiateVPATxn,
   InitiateCardTxn,
   isGooglePayReady,
+  isPhonePeReady,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -86,7 +87,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     fecthPaymentOptions();
     fetchTopBanks();
-    isGooglePayReady(currentPatient?.id);
+    isGooglePayReady();
+    isPhonePeReady();
     return () => eventListener.remove();
   }, []);
 

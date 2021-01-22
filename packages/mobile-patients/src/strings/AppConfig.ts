@@ -578,7 +578,7 @@ const ConfigurationQA = {
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 
 // QA2
