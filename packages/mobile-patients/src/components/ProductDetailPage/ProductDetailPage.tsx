@@ -214,11 +214,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setMedicineDetails(productDetails || {});
-          if (productDetails?.dc_availability === 'No' && productDetails?.is_in_contract === 'No') {
-            setIsInStock(false);
-          } else {
-            setIsInStock(true);
-          }
           setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
           postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
@@ -415,6 +410,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           : pharmacyPincode == currentPincode && !isPharmacyLocationServiceable;
       setNotServiceable(!data?.response?.servicable);
       if (!data?.response?.servicable) {
+        setIsInStock(false);
         setdeliveryTime('');
         setdeliveryError(unServiceableMsg);
         setshowDeliverySpinner(false);
@@ -423,6 +419,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
       const checkAvailabilityRes = await availabilityApi247(currentPincode, sku);
       const outOfStock = !!!checkAvailabilityRes?.data?.response[0]?.exist;
+      setIsInStock(!outOfStock);
       try {
         const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
@@ -839,6 +836,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isInStock={isInStock}
                 packForm={medicineDetails?.pack_form || 'Quantity'}
                 packSize={medicineDetails?.pack_size}
+                productForm={medicineDetails?.product_form || ''}
                 unit={medicineDetails.unit_of_measurement || ''}
                 sku={medicineDetails?.sku}
                 onAddCartItem={onAddCartItem}
@@ -859,7 +857,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             )}
             <ProductInfo
               name={medicineDetails?.name}
-              description={medicineDetails?.description}
+              description={medicineDetails?.product_information}
               isReturnable={medicineDetails?.is_returnable === 'Yes'}
               vegetarian={medicineDetails?.vegetarian}
               storage={medicineDetails?.storage}
@@ -925,6 +923,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               productQuantity={productQuantity}
               setShowAddedToCart={setShowAddedToCart}
               isBanned={medicineDetails?.banned === 'Yes'}
+              cashback={cashback}
             />
           )}
         {!loading &&

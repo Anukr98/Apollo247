@@ -47,6 +47,8 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
+  getDoctorShareMessage,
+  postDoctorShareWEGEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -76,6 +78,7 @@ import {
   Platform,
   Modal,
   Alert,
+  Share,
 } from 'react-native';
 import {
   NavigationActions,
@@ -91,6 +94,7 @@ import { SymptomTrackerCard } from '@aph/mobile-patients/src/components/ConsultR
 import { DefaultSearchComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DefaultSearchComponent';
 const { width } = Dimensions.get('window');
 import { getPatientAllAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -354,6 +358,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
   const [consultedDoctors, setConsultedDoctors] = useState<any>([]);
+  const [doctorShareData, setDoctorShareData] = useState<any>();
+  const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
+
   useEffect(() => {
     newUserPastSearch();
     if (!currentPatient) {
@@ -1277,6 +1285,65 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
+  const onPressShareProfileButton = async (doctorData: any) => {
+    console.log('');
+    const shareDoctorMessage = getDoctorShareMessage(doctorData);
+    try {
+      const result = await Share.share({
+        message: shareDoctorMessage,
+      });
+      if (result.action === Share.sharedAction) {
+        postDoctorShareWEGEvents(
+          doctorData,
+          WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_LIST,
+          currentPatient,
+          g(doctorData, 'specialty', 'id')!,
+          doctorShareRank
+        );
+      } else if (result.action === Share.dismissedAction) {
+      }
+    } catch (error) {
+      console.log('onPressShareProfileButton Error', error.message);
+    }
+  };
+
+  const onPressGoBackShareDoctor = (doctorData: any) => {
+    setShowDoctorSharePopup(false);
+    postDoctorShareWEGEvents(
+      doctorData,
+      WebEngageEventName.GO_BACK_CLICKED_DOC_LIST,
+      currentPatient,
+      g(doctorData, 'specialty', 'id')!,
+      doctorShareRank
+    );
+  };
+
+  const renderDoctorShareComponent = () => {
+    return showDoctorSharePopup ? (
+      <DoctorShareComponent
+        doctorData={doctorShareData}
+        onPressGoBack={(doctorData) => onPressGoBackShareDoctor(doctorData)}
+        onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
+        availableModes={doctorShareData?.consultMode}
+      />
+    ) : null;
+  };
+
+  const onClickDoctorShare = (doctorData: any, rank: number) => {
+    if (doctorData) {
+      postDoctorShareWEGEvents(
+        doctorData,
+        WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN,
+        currentPatient,
+        g(doctorData, 'specialty', 'id')!,
+        rank
+      );
+      setShowDoctorSharePopup(true);
+      setDoctorShareData(doctorData);
+      setDoctorShareRank(rank);
+    }
+  };
+
   const renderSearchDoctorResultsRow = (rowId: number, rowData: any) => {
     if (rowData)
       return (
@@ -1310,6 +1377,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   callSaveSearch: 'true',
                 });
               }}
+              onPressShare={(doctorData) => onClickDoctorShare(doctorData, rowId)}
               onPressConsultNowOrBookAppointment={(type) => {
                 postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search', type);
               }}
@@ -1480,6 +1548,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: isSearchFocused ? 'white' : '#f0f1ec' }}>
         {doctorsList && renderSearch()}
+        {renderDoctorShareComponent()}
         {!showSpinner ? (
           isSearching ? (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

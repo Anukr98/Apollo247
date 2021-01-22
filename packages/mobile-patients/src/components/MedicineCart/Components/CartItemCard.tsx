@@ -10,6 +10,7 @@ import {
   DropdownGreen,
   DeleteIcon,
   DeleteBoldIcon,
+  PrescriptionRequiredIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
@@ -26,6 +27,8 @@ export interface CartItemCardProps {
   onPressDelete: () => void;
   onPressProduct: () => void;
 }
+
+const { width } = Dimensions.get('window');
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const {
@@ -51,11 +54,16 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   }, [item]);
 
   const renderImage = () => {
-    const imageUrl = productsThumbnailUrl(item.thumbnail!);
+    const imageUrl = productsThumbnailUrl(item?.thumbnail!);
     return (
       <View style={{ width: 50, justifyContent: 'center', opacity: itemAvailable ? 1 : 0.3 }}>
+        {item?.prescriptionRequired && (
+          <View style={styles.rxSymbolContainer}>
+            <PrescriptionRequiredIcon style={styles.rxSymbol} />
+          </View>
+        )}
         <Image
-          PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+          PlaceholderContent={item?.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
           placeholderStyle={{ backgroundColor: 'transparent' }}
           source={{ uri: imageUrl }}
           style={{ height: 40, width: 40 }}
@@ -100,12 +108,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderLowerCont = () => {
-    const { width } = Dimensions.get('window');
     return (
-      <View style={{ 
-        flexDirection: 'row', 
-        justifyContent: width <= 360 ? 'space-around' : 'space-between' 
-      }}>
+      <View style={styles.lowerCountContainer}>
         <View>
           {renderQuantity()}
           {itemAvailable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
@@ -370,5 +374,20 @@ const styles = StyleSheet.create({
   careText: {
     ...theme.viewStyles.text('M', 10, '#00A0E3', 1, 15),
     paddingVertical: 7,
+  },
+  lowerCountContainer: {
+    flexDirection: 'row',
+    justifyContent: width <= 360 ? 'space-around' : 'space-between',
+  },
+  rxSymbolContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 25,
+    zIndex: 9,
+  },
+  rxSymbol: {
+    resizeMode: 'contain',
+    width: 15,
+    height: 15,
   },
 });

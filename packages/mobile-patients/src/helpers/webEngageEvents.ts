@@ -90,6 +90,15 @@ export enum WebEngageEventName {
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
   DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
 
+  //Doctor Share Events
+  SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
+  SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
+  GO_BACK_CLICKED_DOC_LIST = 'go back clicked doc list',
+  SHARE_CLICKED_DOC_PROFILE_SCREEN = 'share clicked doc profile screen',
+  SHARE_PROFILE_CLICKED_DOC_PROFILE = 'Share profile clicked doc profile',
+  GO_BACK_CLICKED_DOC_PROFILE = 'go back clicked doc profile',
+  DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
+
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -1936,6 +1945,19 @@ export interface WebEngageEvents {
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor ID': string;
+  };
+  [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor ID': string;
+    'Doctor card rank'?: number;
+    'UTM parameter'?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
