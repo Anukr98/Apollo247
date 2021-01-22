@@ -419,7 +419,9 @@
     "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
     "collectionFromText" : "Sample collection address",
     "orderCancelledSuccessText": "Your order has been cancelled successfully!",
-    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!"
+    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!",
+    "stepsToBook": "3 simple steps to book with apollo 24|7",
+    "certificateText":"Certified safety and quality fullfiled by Apollo Diagnostics."
   },
   "orders": {
     "urOrders": "MY ORDERS",

@@ -1082,3 +1082,14 @@ export const getDiagnosticsSearchResults = (
     },
   });
 };
+
+export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getWidgets = `${baseurl}/${pageName}/getwidgets`;
+  return Axios.get(getWidgets, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+

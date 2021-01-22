@@ -911,7 +911,7 @@ export const ShieldIcon: React.FC<IconProps> = (props) => (
     size="sm"
     style={{ height: 42.1, width: 36 }}
     {...props}
-    source={require('./icons/ic_shield.png')}
+    source={require('./icons/shield.png')}
   />
 );
 
@@ -1677,4 +1677,11 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
 
 export const AddIconBlue: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/AddIconBlue.png')} />
+);
+export const WorkflowIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_workflow.png')} />
+);
+
+export const ArrowRightYellow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right_yellow.png')} />
 );
