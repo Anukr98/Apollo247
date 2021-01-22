@@ -1255,9 +1255,9 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
 
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
-    case 'https://aph.dev.api.popcornapps.com//graphql':
+    case 'https://aph-dev-api.apollo247.com//graphql':
       return 'DEV';
-    case 'https://aph.staging.api.popcornapps.com//graphql':
+    case 'https://aph-staging-api.apollo247.com//graphql':
       return 'QA';
     case 'https://stagingapi.apollo247.com//graphql':
       return 'VAPT';

@@ -296,7 +296,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
     const baseUrl = AppConfig.Configuration.DIAGNOSTICS_PG_BASE_URL;
     const url = `${baseUrl}/${paymentId}`;
     // const url =
-    //   'https://aph.dev.pmt.popcornapps.com/diagnosticpayment?patientId=1d75146c-029e-4eb9-badb-0574d93c0d9f&orderId=b4548315-1129-4de2-a82d-8c9e5c9695bb&price=100';
+    //   'https://aph-dev-pmt.apollo247.com/diagnosticpayment?patientId=1d75146c-029e-4eb9-badb-0574d93c0d9f&orderId=b4548315-1129-4de2-a82d-8c9e5c9695bb&price=100';
     // console.log(`%cDIAGNOSTICS_PG_URL:\t${url}`, 'color: #bada55');
     return (
       <WebView
