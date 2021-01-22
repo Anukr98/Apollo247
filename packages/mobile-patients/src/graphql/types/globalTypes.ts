@@ -424,6 +424,11 @@ export enum PAYMENT_MODE {
   PREPAID = "PREPAID",
 }
 
+export enum PHARMACY_USER_TYPE {
+  NEW = "NEW",
+  REPEAT = "REPEAT",
+}
+
 export enum PLAN {
   ALL = "ALL",
   CARE_PLAN = "CARE_PLAN",
