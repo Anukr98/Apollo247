@@ -26,6 +26,7 @@ import {
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
+  isGooglePayReady,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -85,6 +86,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     fecthPaymentOptions();
     fetchTopBanks();
+    isGooglePayReady(currentPatient?.id);
     return () => eventListener.remove();
   }, []);
 
@@ -102,12 +104,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
-        console.log('payload >>', JSON.stringify(payload));
         if (payload?.error) {
           handleError(payload?.errorMessage);
         }
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
-          console.log(payload?.payload?.paymentMethods);
           const banks = payload?.payload?.paymentMethods?.filter(
             (item: any) => item?.paymentMethodType == 'NB'
           );
@@ -116,6 +116,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
           payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false);
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
+        } else if (payload?.payload?.action == 'isDeviceReady') {
+          console.log(payload);
         }
         break;
       default:
@@ -147,7 +149,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     const { data } = response;
     const { getPaymentMethods } = data;
-    console.log('getPaymentMethods >>', getPaymentMethods);
     setPaymentMethods(getPaymentMethods);
     const types = getPaymentMethods.find((item: any) => item?.name == 'CARD');
     setCardTypes(types?.featured_banks);

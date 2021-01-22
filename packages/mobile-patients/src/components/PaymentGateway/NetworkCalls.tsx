@@ -201,3 +201,16 @@ export const InitiateVPATxn = (
   console.log('VPAPayload >>', VPAPayload);
   HyperSdkReact.process(JSON.stringify(VPAPayload));
 };
+
+export const isGooglePayReady = (requestId: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_GOOGLEPAY',
+    },
+  };
+  console.log('payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};
