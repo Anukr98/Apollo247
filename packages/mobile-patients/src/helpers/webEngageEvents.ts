@@ -1115,8 +1115,8 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
     'Order Amount': number; // Optional
-    'Payment mode'?: 'COD' | 'Online'; // Optional
-    'Circle discount': number;
+    'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
+    'Circle discount'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode: 'Online' | 'COD';
