@@ -53,6 +53,7 @@ import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersS
 import { AzureUpload } from '@aph/mobile-patients/src/components/AzureUpload';
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
 import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';
+import { TestListing } from '@aph/mobile-patients/src/components/Tests/TestListing';
 import {
   createAppContainer,
   createStackNavigator,
@@ -249,6 +250,7 @@ export enum AppRoutes {
   PaymentMethods = 'PaymentMethods',
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
+  TestListing = 'TestListing',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -637,6 +639,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OrderStatus]: {
     screen: OrderStatus,
+  },
+  [AppRoutes.TestListing]: {
+    screen: TestListing,
   },
 };
 
