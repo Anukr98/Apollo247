@@ -584,12 +584,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Platform.OS === 'ios' ? 70 : 44,
     right: 20,
-    width: 90,
+    width: 95,
     height: 120,
     zIndex: 1000,
     borderRadius: 12,
     backgroundColor: '#e1e1e1',
-    paddingHorizontal: 12,
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -779,7 +779,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     position: 'absolute',
     top: isIphoneX() ? 70 : 44,
     right: 20,
-    width: 90,
+    width: 95,
     height: 120,
     zIndex: 1000,
     borderRadius: 12,
@@ -2452,12 +2452,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         );
         fireWebengageEventForCallAnswer(WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON);
         callEndWebengageEvent('Network');
-        callToastStatus.current = 'Call disconnected due to bad network';
         eventsAfterConnectionDestroyed();
         setTimeout(() => {
           setSnackbarState(true);
           setHandlerMessage('Check the network connection.');
-          callToastStatus.current = '';
         }, 2050);
       } else {
         setSnackBar();
@@ -3576,6 +3574,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setCallMinimize(false);
           AsyncStorage.setItem('callDisconnected', 'true');
           stopSound();
+          playDisconnectSound();
         }, 2000);
       } else if (message.message.message === exotelCall) {
         addMessages(message);
@@ -5828,7 +5827,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           {!showProgressBarOnHeader.current &&
             isProgressBarVisible.current &&
             renderProgressBar(currentProgressBarPosition.current)}
-          {doctorJoinedChat && renderJoinCallHeader()}
+          {/* {doctorJoinedChat && renderJoinCallHeader()} */}
+          {renderJoinCallHeader()}
         </View>
       );
     }
@@ -6027,7 +6027,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <OTPublisher
                 style={
-                  !showVideo || !isPublishAudio
+                  !showVideo
                     ? {}
                     : !downgradeToAudio
                     ? publisherStyles
@@ -6096,13 +6096,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   </Text>
                 </View>
                 {!subscriberConnected.current && (
-                  <Text style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}>
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
+                  >
                     {doctorName}
                   </Text>
                 )}
               </>
             )}
-
+            {!isPublishAudio && showVideo && renderShowNoAudioView()}
             {subscriberConnected.current && renderSubscriberConnectedInfo()}
             {!subscriberConnected.current && renderTextConnecting()}
             {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
@@ -6115,7 +6118,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </Text>
             )}
 
-            {(!showVideo || !isPublishAudio) && renderDisableVideoSubscriber()}
+            {!showVideo && renderDisableVideoSubscriber()}
             {(!subscriberConnected.current || !callerVideo) &&
               renderNoSubscriberConnectedThumbnail()}
             {!PipView && renderChatNotificationIcon()}
@@ -6126,6 +6129,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const renderShowNoAudioView = () => {
+    return (
+      <View
+        style={[
+          styles.disableVideoSubscriber,
+          {
+            backgroundColor: 'clear',
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.disabledVideoAudioText,
+            {
+              marginTop: 'auto',
+            },
+          ]}
+        >
+          Your audio is off
+        </Text>
+      </View>
+    );
+  };
   const renderTextConnecting = () => {
     return (
       <Text
@@ -6163,7 +6189,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ? 'Your video is off'
         : 'Your audio is off';
     return (
-      <View style={[styles.disableVideoSubscriber, { marginTop: isIphoneX() ? 64 : 44 }]}>
+      <View style={[styles.disableVideoSubscriber, { marginTop: 0 }]}>
         <Text style={styles.disabledVideoAudioText}>{title}</Text>
       </View>
     );
@@ -6187,12 +6213,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (callStatus.current === disconnecting && callToastStatus.current === '') {
       return;
     }
-    let message = connectingCall;
-    if (!subscriberConnected.current) {
-      setTimeout(() => {
-        message = '';
-      }, 2000);
-    }
     return (
       <View style={styles.doctorStatusContainer}>
         <View style={styles.doctorStatusInnerContainer}>
@@ -6206,12 +6226,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               textAlign: 'center',
             }}
           >
-            {isPaused !== ''
+            {/* {isPaused !== ''
               ? showMessage(isPaused)
               : !subscriberConnected.current
-              ? message
+              ? connectingCall
               : callToastStatus.current
               ? callToastStatus.current
+              : ''} */}
+            {callToastStatus.current
+              ? callToastStatus.current
+              : !subscriberConnected.current
+              ? connectingCall
+              : isPaused !== ''
+              ? showMessage(isPaused)
               : ''}
           </Text>
         </View>
@@ -6406,7 +6433,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       position: 'absolute',
       top: isIphoneX() ? 70 : 44,
       right: 20,
-      width: 90,
+      width: 95,
       height: 120,
       zIndex: 1000,
       borderRadius: 12,
@@ -6508,7 +6535,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setCallMinimize(false);
               AsyncStorage.setItem('callDisconnected', 'true');
               stopSound();
-              playDisconnectSound();
               setIsAudioCall(false);
               stopTimer();
               setHideStatusBar(false);
@@ -6579,7 +6605,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       position: 'absolute',
       top: isIphoneX() ? 70 : 44,
       right: 20,
-      width: 90,
+      width: 95,
       height: 120,
       zIndex: 1000,
       borderRadius: 12,
