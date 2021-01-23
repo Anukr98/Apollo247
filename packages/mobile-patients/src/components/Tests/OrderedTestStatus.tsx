@@ -331,29 +331,52 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       const res: any = await getPackageInclusions(client, arrayOfId);
       if (res) {
         const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
-        data?.map((test: any) => {
-          //call getPackage
+        if (data?.length > 0) {
+          data?.map((test: any) => {
+            //call getPackage
+            objArray.push({
+              id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
+              displayId: orderSelected?.displayId,
+              slotTimings: time,
+              patientName: currentPatient?.firstName,
+              showDateTime: date,
+              itemId: test?.itemId,
+              currentStatus:
+                orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                  ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                  : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+              packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
+              packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
+              itemName: test?.name,
+              statusDate: itemIdObject?.[key][0]?.statusDate,
+              testPreparationData:
+                test?.testPreparationData! ||
+                orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.testPreparationData, //need to check
+            });
+          });
+        } else {
           objArray.push({
             id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
             displayId: orderSelected?.displayId,
             slotTimings: time,
             patientName: currentPatient?.firstName,
             showDateTime: date,
-            itemId: test?.itemId,
+            itemId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
             currentStatus:
               orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
                 ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
                 : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
             packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
             packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
-            itemName: test?.name,
+            itemName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
             statusDate: itemIdObject?.[key][0]?.statusDate,
             testPreparationData:
-              test?.testPreparationData! ||
               orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.testPreparationData, //need to check
           });
-        });
+        }
+
         setLoading!(false);
+        console.log({ objArray });
         return objArray;
       } else {
         setLoading!(false);
