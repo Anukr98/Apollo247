@@ -101,7 +101,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
-  const { setPharmacyLocation, setAxdcCode } = useAppCommonData();
+  const { setPharmacyLocation, setAxdcCode, pharmacyUserType } = useAppCommonData();
   const physicalPrescription: PhysicalPrescription[] = props.navigation.getParam(
     'physicalPrescription'
   );
@@ -275,6 +275,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
       StoreId: storeId, // incase of store delivery
       'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
       Pincode: pinCode,
+      User_Type: pharmacyUserType,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };

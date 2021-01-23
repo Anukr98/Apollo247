@@ -251,6 +251,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     circleSubscription,
     setBannerData,
     bannerData,
+    pharmacyUserType,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -1181,6 +1182,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             onPress={() => {
               const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED] = {
                 Source: 'Home',
+                User_Type: pharmacyUserType,
               };
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
               setShowPopop(true);
@@ -1606,6 +1608,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyword: _searchText,
           Source: 'Pharmacy Home',
           resultsdisplayed: products.length,
+          User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
       })

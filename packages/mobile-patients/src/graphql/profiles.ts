@@ -4563,3 +4563,11 @@ export const VERIFY_VPA = gql`
     }
   }
 `;
+
+export const GET_USER_PROFILE_TYPE = gql`
+  query getUserProfileType($mobileNumber: String!) {
+    getUserProfileType(mobileNumber: $mobileNumber) {
+      profile
+    }
+  }
+`;
