@@ -176,6 +176,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     addMultipleEPrescriptions,
     addresses,
     onHoldOptionOrder,
+    setEPrescriptions,
+    setPhysicalPrescriptions,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
@@ -1457,6 +1459,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
+            setPhysicalPrescriptions && setPhysicalPrescriptions(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
@@ -1481,6 +1484,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
+          setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',

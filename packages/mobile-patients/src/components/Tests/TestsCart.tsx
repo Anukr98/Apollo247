@@ -2599,7 +2599,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             'Patient UHID': g(currentPatient, 'id'),
             'Total items in cart': cartItems.length,
             'Order Amount': grandTotal,
-            'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+            'Payment mode': isCashOnDelivery ? 'Cash' : 'Prepaid',
           };
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
