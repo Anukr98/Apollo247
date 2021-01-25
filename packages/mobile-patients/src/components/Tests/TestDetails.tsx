@@ -699,9 +699,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderSpecialDiscountText = (styleObj?: any) => {
-    return (
-      <SpecialDiscountText text={string.diagnostics.specialDiscountText} styleObj={styleObj} />
-    );
+    return <SpecialDiscountText isImage={true} text={'TEST 247'} />;
   };
 
   setTimeout(() => isItemAdded && setItemAdded(false), 2000);

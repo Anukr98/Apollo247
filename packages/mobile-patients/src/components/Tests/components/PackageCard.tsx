@@ -229,7 +229,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           {string.common.Rs} {convertNumberToDecimal(priceToShow)}
         </Text>
         {/**slashed price */}
-        {!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice ? null : (
+        {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
+        priceToShow == slashedPrice ? null : (
           <Text style={styles.slashedPriceText}>
             ({string.common.Rs} {convertNumberToDecimal(slashedPrice)})
           </Text>
