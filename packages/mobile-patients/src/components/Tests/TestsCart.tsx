@@ -626,7 +626,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const postPaymentInitiatedWebengage = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
+      Paymentmode: isCashOnDelivery ? 'Cash' : 'Prepaid',
       Amount: grandTotal,
       ServiceArea: 'Diagnostic',
       LOB: 'Diagnostic',
