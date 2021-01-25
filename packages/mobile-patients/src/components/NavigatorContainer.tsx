@@ -39,6 +39,8 @@ import { ProductDetailPage } from '@aph/mobile-patients/src/components/ProductDe
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
+import { UploadPrescriptionView } from '@aph/mobile-patients/src/components/UploadPrescription/UploadPrescriptionView';
+import { SamplePrescription } from '@aph/mobile-patients/src/components/UploadPrescription/SamplePrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components/Medicines/YourCartUploadPrescriptions';
 import { PharmacyPaymentStatus } from '@aph/mobile-patients/src/components/Medicines/PharmacyPaymentStatus';
@@ -177,6 +179,8 @@ export enum AppRoutes {
   LocationSearch = 'LocationSearch',
   EditAddress = 'EditAddress',
   UploadPrescription = 'UploadPrescription',
+  UploadPrescriptionView = 'UploadPrescriptionView',
+  SamplePrescription = 'SamplePrescription',
   ChennaiNonCartOrderForm = 'ChennaiNonCartOrderForm',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
   HealthRecordsHome = 'HealthRecordsHome',
@@ -398,6 +402,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     navigationOptions: {
       gesturesEnabled: false,
     },
+  },
+  [AppRoutes.UploadPrescriptionView]: {
+    screen: UploadPrescriptionView,
+  },
+  [AppRoutes.SamplePrescription]: {
+    screen: SamplePrescription,
   },
   [AppRoutes.ChennaiNonCartOrderForm]: {
     screen: ChennaiNonCartOrderForm,
