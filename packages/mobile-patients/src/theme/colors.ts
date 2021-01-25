@@ -101,6 +101,7 @@ const Common = {
   DISABLE_TEXT: '#BCBCBC',
   RED: '#C5411E',
   LIGHTISH_GRAY: '#93B7C5',
+  LIGHT_ORANGE: '#FCB716',
 };
 
 const Header = {
