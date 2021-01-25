@@ -1186,6 +1186,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       maxVolume();
       if (disconnectAudioTrack) {
         disconnectAudioTrack.play();
+        AsyncStorage.setItem('leftSoundPlayed', 'true');
       }
     } catch (e) {
       CommonBugFender('playing_callertune__failed', e);
@@ -2226,17 +2227,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
-      const debounceFunc = _.debounce(() => {
-        stopSound();
-        playDisconnectSound();
-      }, 6000);
-      setCallEndEventDebounce((prevEvent: any) => {
-        if (prevEvent.cancel) {
-          prevEvent.cancel();
-        }
-        return debounceFunc;
-      });
-      debounceFunc();
     },
     otrnError: (error: string) => {
       openTokErrorWebEngageEvents(
@@ -3131,7 +3121,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setIsCall(false);
           setIsAudioCall(false);
           addMessages(message);
-          stopSound();
         }, 2000);
       } else if (message.message.message === covertVideoMsg) {
         console.log('covertVideoMsg', covertVideoMsg);
@@ -3214,8 +3203,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } catch (error) {}
           setCallMinimize(false);
           AsyncStorage.setItem('callDisconnected', 'true');
-          stopSound();
-        }, 2000);
+          AsyncStorage.getItem('leftSoundPlayed').then((data) => {
+            if (!JSON.parse(data || 'false')) {
+              stopSound();
+              playDisconnectSound();
+            }
+          });
+        }, 2300);
       } else if (message.message.message === exotelCall) {
         addMessages(message);
       } else {
@@ -5471,6 +5465,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const joinCallHandler = () => {
     callPermissions(() => {
+      AsyncStorage.setItem('leftSoundPlayed', 'false');
+      callStatus.current = '';
+      callToastStatus.current = '';
       setLoading(true);
       setCallAccepted(true);
       setHideStatusBar(true);
