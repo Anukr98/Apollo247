@@ -376,7 +376,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         }
 
         setLoading!(false);
-        console.log({ objArray });
         return objArray;
       } else {
         setLoading!(false);
