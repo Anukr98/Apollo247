@@ -1316,6 +1316,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       languages
       city
       awards
+      gender
+      profile_deeplink
       photoUrl
       availableModes
       doctorPricing {
@@ -2037,8 +2039,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         rescheduleCount
         isRescheduled
         collectionCharges
-        paymentType
         visitNo
+        paymentType
         paymentOrderId
         diagnosticOrderLineItems {
           id
@@ -2838,6 +2840,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           siteDisplayName
           tag
           consultId
+          identifier
           additionalNotes
           observation
           labTestResults {
@@ -4557,6 +4560,14 @@ export const VERIFY_VPA = gql`
       vpa
       status
       customer_name
+    }
+  }
+`;
+
+export const GET_USER_PROFILE_TYPE = gql`
+  query getUserProfileType($mobileNumber: String!) {
+    getUserProfileType(mobileNumber: $mobileNumber) {
+      profile
     }
   }
 `;

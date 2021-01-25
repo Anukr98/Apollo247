@@ -42,6 +42,7 @@ export interface MedicineProduct {
   consume_type?: string | null;
   dose_form_variant?: string | null;
   pack_form?: string | null;
+  product_form?: string | null;
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
 }

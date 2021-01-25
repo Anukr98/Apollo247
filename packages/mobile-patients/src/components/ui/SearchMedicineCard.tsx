@@ -17,6 +17,7 @@ import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -125,10 +126,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   } = props;
 
   const isOutOfStock =
-    !!dc_availability &&
-    !!is_in_contract &&
-    dc_availability.toLowerCase() === 'no' &&
-    is_in_contract.toLowerCase() === 'no';
+    dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no';
 
   const renderCareCashback = () => {
     const finalPrice = Number(special_price) || price;
@@ -221,16 +219,16 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
         {/* {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>} */}
         <Text style={styles.priceTextCollapseStyle}>
           {string.common.Rs}
-          {discount ? special_price : price}
+          {convertNumberToDecimal(discount ? special_price : price)}
         </Text>
         {!!special_price && (
           <>
             {/* {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>} */}
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
-              <Text
-                style={{ textDecorationLine: 'line-through' }}
-              >{`${string.common.Rs}${price}`}</Text>
+              <Text style={{ textDecorationLine: 'line-through' }}>{`${
+                string.common.Rs
+              }${convertNumberToDecimal(price)}`}</Text>
               {')'}
             </Text>
             <Text style={styles.offTextStyle}>{off_text}</Text>

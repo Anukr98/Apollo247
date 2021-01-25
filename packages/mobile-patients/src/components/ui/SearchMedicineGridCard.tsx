@@ -26,6 +26,7 @@ import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -171,10 +172,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const cashback = getCareCashback(Number(finalPrice), type_id);
 
   const isOutOfStock =
-    !!dc_availability &&
-    !!is_in_contract &&
-    dc_availability.toLowerCase() === 'no' &&
-    is_in_contract.toLowerCase() === 'no';
+    dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no';
 
   const renderTitleAndIcon = () => {
     return (
@@ -248,9 +246,9 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>
             {'('}
-            <Text
-              style={{ textDecorationLine: 'line-through' }}
-            >{`${string.common.Rs}${price}`}</Text>
+            <Text style={{ textDecorationLine: 'line-through' }}>{`${
+              string.common.Rs
+            }${convertNumberToDecimal(price)}`}</Text>
             {')'}
           </Text>,
           <Text style={styles.offTextStyle}>{off_text}</Text>,
@@ -268,7 +266,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     ) : (
       <Text style={styles.priceTextCollapseStyle}>
         {string.common.Rs}
-        {discount ? special_price : price}
+        {convertNumberToDecimal(discount ? special_price : price)}
       </Text>
     );
   };

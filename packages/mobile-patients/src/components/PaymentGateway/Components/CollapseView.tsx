@@ -6,11 +6,12 @@ import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface CollapseViewProps {
   Heading: string;
   ChildComponent: any;
+  isDown: boolean;
 }
 
 export const CollapseView: React.FC<CollapseViewProps> = (props) => {
-  const { Heading, ChildComponent } = props;
-  const [dropDown, setdropDown] = useState<boolean>(true);
+  const { Heading, ChildComponent, isDown } = props;
+  const [dropDown, setdropDown] = useState<boolean>(isDown);
 
   const renderHeader = () => {
     return (

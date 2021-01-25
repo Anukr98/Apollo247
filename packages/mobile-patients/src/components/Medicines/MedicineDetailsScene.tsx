@@ -91,7 +91,7 @@ import {
   GetSubscriptionsOfUserByStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
-
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -830,15 +830,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               <View style={styles.priceView}>
                 <Text style={styles.price}>
                   {discountPercent
-                    ? `MRP ${string.common.Rs}${medicineDetails.special_price}`
-                    : `MRP ${string.common.Rs}${medicineDetails.price}`}
+                    ? `MRP ${string.common.Rs}${convertNumberToDecimal(
+                        medicineDetails?.special_price
+                      )}`
+                    : `MRP ${string.common.Rs}${convertNumberToDecimal(medicineDetails?.price)}`}
                 </Text>
                 {!!medicineDetails.special_price && (
                   <View style={styles.discountPriceView}>
                     {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
                     <Text style={styles.priceStrikeOff}>
                       ({string.common.Rs}
-                      {medicineDetails.price})
+                      {convertNumberToDecimal(medicineDetails?.price)})
                     </Text>
                     <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>

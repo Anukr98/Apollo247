@@ -186,6 +186,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     pharmacyLocation,
     isPharmacyLocationServiceable,
     axdcCode,
+    pharmacyUserType,
   } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -253,6 +254,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           keyword: _searchText,
           Source: 'Pharmacy Home',
           resultsdisplayed: products.length,
+          User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
       })
@@ -289,6 +291,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             keyword: _searchText,
             Source: 'Pharmacy List',
             resultsdisplayed: products.length,
+            User_Type: pharmacyUserType,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
           const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {

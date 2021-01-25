@@ -424,6 +424,11 @@ export enum PAYMENT_MODE {
   PREPAID = "PREPAID",
 }
 
+export enum PHARMACY_USER_TYPE {
+  NEW = "NEW",
+  REPEAT = "REPEAT",
+}
+
 export enum PLAN {
   ALL = "ALL",
   CARE_PLAN = "CARE_PLAN",
@@ -926,7 +931,7 @@ export interface DiagnosticBookHomeCollectionInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
   areaId: number;
-  collectionCharges: number;
+  homeCollectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
   totalPriceExcludingDiscounts?: number | null;

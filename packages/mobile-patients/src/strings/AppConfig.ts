@@ -1,7 +1,10 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
-import { DIAGNOSTIC_ORDER_STATUS, REFUND_STATUSES } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
 
 export enum AppEnv {
@@ -15,7 +18,26 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+
+const paymentGatewayBaseUrl: string =
+  APP_ENV == AppEnv.PROD
+    ? 'https://pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA
+    ? 'https://aph-staging-pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA2
+    ? 'https://qapmt.apollo247.com'
+    : APP_ENV == AppEnv.QA3
+    ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.PERFORM
+    ? 'https://aspmt.apollo247.com'
+    : APP_ENV == AppEnv.VAPT
+    ? 'https://stagingpmt.apollo247.com'
+    : APP_ENV == AppEnv.DEV
+    ? 'https://aph-dev-pmt.apollo247.com'
+    : APP_ENV == AppEnv.DEVReplica
+    ? 'https://devpmt.apollo247.com'
+    : 'https://aph-staging-pmt.apollo247.com';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -84,13 +106,11 @@ const appStaticVariables = {
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
-  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
   merchantId: 'apollo247',
   jusPayService: 'in.juspay.ec',
-  returnUrl: 'https://aph.staging.web-patients.popcornapps.com/ordersuccess',
+  returnUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
-  jusPayenvironment: 'sandbox',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   EXPRESS_MAXIMUM_HOURS: 6,
 };
@@ -477,15 +497,15 @@ const ConfigurationDev = {
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ztcR3MB6vWyWtIAzpnsOczanc57pCQeMAIhUS',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 't1yzL4Cj0zDKiAUuKVZt_zIYuwHrleGaNVihE',
-  PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success',
   CONSULT_PG_ERROR_PATH: '/consultpg-error',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
@@ -503,26 +523,25 @@ const ConfigurationDev = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+    'https://aph-dev-web-patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  CIRCLE_CONSULT_URL:
-    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
-  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
-  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
+  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 
 // QA
@@ -531,21 +550,22 @@ const ConfigurationQA = {
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
-  PAYMENT_GATEWAY_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -557,26 +577,25 @@ const ConfigurationQA = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+    'https://aph-staging-web-patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  CIRCLE_CONSULT_URL:
-    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
-  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
-  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
+  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
-    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 
 // QA2
@@ -585,21 +604,22 @@ const ConfigurationQA2 = {
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'kq-NXsLvHNu_EYzKBlZOuk2vbQKepRdBSndmo',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'h6JJUbQWK4JEItmav-kH852x-3pneo4vcZNkg',
-  PAYMENT_GATEWAY_BASE_URL: 'https://qapmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://qapmt.apollo247.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://qapmt.apollo247.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -611,7 +631,7 @@ const ConfigurationQA2 = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
@@ -619,18 +639,17 @@ const ConfigurationQA2 = {
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  CIRCLE_CONSULT_URL:
-    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
-  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
-  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
+  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 
 // QA3
@@ -639,21 +658,22 @@ const ConfigurationQA3 = {
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'QEuQRL5_DKsdca021jR9bpVrQf9x3rF6hOADA',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: '_9aJEBfuTc3Vki4DZUAbC3X0YEHff4D-lR28l',
-  PAYMENT_GATEWAY_BASE_URL: 'https://qathreepmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://qathreepmt.apollo247.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://qathreepmt.apollo247.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -665,7 +685,7 @@ const ConfigurationQA3 = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://qathreepmt.apollo247.com/',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
@@ -673,11 +693,11 @@ const ConfigurationQA3 = {
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 
 // VAPT
@@ -686,21 +706,22 @@ const ConfigurationVAPT = {
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'WjmvQNubbydD5MzGoj0wJDBBQM5j0QnYlE6fq',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'I2C97PsUTffeO7krrfYjxOxQ_uebYPeOPdLqG',
-  PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://stagingpmt.apollo247.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://stagingpmt.apollo247.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -712,7 +733,7 @@ const ConfigurationVAPT = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://stagingpmt.apollo247.com',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
@@ -720,18 +741,17 @@ const ConfigurationVAPT = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  CIRCLE_CONSULT_URL:
-    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
-  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
-  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
+  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 //Production
 const ConfigurationProd = {
@@ -739,21 +759,22 @@ const ConfigurationProd = {
   TAGALYS_CLIENT_CODE: '93D966E474D9A823',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'N9LT5oUoB9DUv394XXz05Tywn3LKgHsugfl3i',
-  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl, //PRODUCTION
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://pmt.apollo247.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://pmt.apollo247.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://base.apolloprism.com',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
@@ -765,7 +786,7 @@ const ConfigurationProd = {
   ...appStaticVariables,
   ...Apollo247Config.prod,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
@@ -783,6 +804,7 @@ const ConfigurationProd = {
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 
 //PERFORMANCE
@@ -791,21 +813,22 @@ const ConfigurationPERFORM = {
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
-  PAYMENT_GATEWAY_BASE_URL: 'https://aspmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://aspmt.apollo247.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://aspmt.apollo247.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -817,27 +840,26 @@ const ConfigurationPERFORM = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19/cough-scan?utm_source=mobile_app',
+    'https://aph-staging-web-patients.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+    'https://aph-staging-web-patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  CIRCLE_CONSULT_URL:
-    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
-  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
-  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
+  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
-    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 
 //DevelopmentReplica
@@ -846,21 +868,22 @@ const ConfigurationDevReplica = {
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
-  PAYMENT_GATEWAY_BASE_URL: 'https://devpmt.apollo247.com',
+  PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'https://devpmt.apollo247.com',
+  CONSULT_PG_BASE_URL: paymentGatewayBaseUrl,
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
   CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'https://devpmt.apollo247.com',
+  DIAGNOSTICS_PG_BASE_URL: paymentGatewayBaseUrl,
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
+  PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -872,27 +895,26 @@ const ConfigurationDevReplica = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
-  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19/cough-scan?utm_source=mobile_app',
+    'https://aph-staging-web-patients.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+    'https://aph-staging-web-patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
-  CIRCLE_CONSULT_URL:
-    'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
-  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
-  CIRCLE_LANDING_URL: 'https://aph.staging.web-patients.popcornapps.com/circle?header=false',
+  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   APOLLO_PRO_HEALTH_URL:
-    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+    'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
+  jusPayenvironment: 'prod',
 };
 
 const Configuration =
@@ -1030,28 +1052,28 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
-  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
 ];
 
 export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
-]
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+];
 
 export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [
   REFUND_STATUSES.FAILURE,
   REFUND_STATUSES.PENDING,
   REFUND_STATUSES.SUCCESS,
   REFUND_STATUSES.MANUAL_REVIEW,
-  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT
-]
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
+];
 
 export const DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS = [
   REFUND_STATUSES.FAILURE,
   REFUND_STATUSES.MANUAL_REVIEW,
-  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT
-]
+  REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
+];
 
 export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
 

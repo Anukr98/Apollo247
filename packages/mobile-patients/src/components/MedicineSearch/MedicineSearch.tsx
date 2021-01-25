@@ -55,6 +55,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     pharmacyLocation,
     isPharmacyLocationServiceable,
     axdcCode,
+    pharmacyUserType,
   } = useAppCommonData();
   const { showAphAlert } = useUIElements();
   const {
@@ -105,6 +106,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       Source: 'Pharmacy List',
       keyword: keyword,
       resultsdisplayed: results,
+      User_Type: pharmacyUserType,
     });
   };
 

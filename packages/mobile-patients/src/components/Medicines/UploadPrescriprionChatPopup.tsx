@@ -31,6 +31,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -161,12 +162,14 @@ export interface UploadPrescriprionChatPopupProps {
 export const UploadPrescriprionChatPopup: React.FC<UploadPrescriprionChatPopupProps> = (props) => {
   const { showAphAlert, setLoading, hideAphAlert } = useUIElements();
   const { isIphoneX } = DeviceHelper();
+  const { pharmacyUserType } = useAppCommonData();
 
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
+      User_Type: pharmacyUserType,
     };
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };

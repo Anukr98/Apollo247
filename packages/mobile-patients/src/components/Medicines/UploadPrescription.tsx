@@ -89,6 +89,7 @@ import {
   updatePatientAddress,
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -138,6 +139,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const orderId = props.navigation.getParam('orderAutoId');
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
+  const { pharmacyUserType } = useAppCommonData();
   const type = props.navigation.getParam('type') || '';
   const isPhysicalPresciptionProps = !!phyPrescriptionsProp.length;
   const isEPresciptionProps = !!ePrescriptionsProp.length;
@@ -324,9 +326,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         .map((item) => item.prismPrescriptionFileId)
         .filter((i) => i);
 
-      const ePresUrls = e_Prescription.map((item) => item.uploadedUrl).filter((i) => i);
+      const ePresUrls = e_Prescription?.map((item) => item?.uploadedUrl)?.filter((i) => i);
       const ePresPrismIds = e_Prescription
-        .map((item) => item.prismPrescriptionFileId)
+        .map((item) => item?.prismPrescriptionFileId)
         .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
 
@@ -453,6 +455,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       StoreId: storeId, // incase of store delivery
       'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
       Pincode: pinCode,
+      User_Type: pharmacyUserType,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
@@ -680,7 +683,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           isEPresciptionProps
             ? setEPrescriptionsProps(EPrescriptionsProps?.filter((_item) => _item?.id != item?.id))
             : setEPrescriptions &&
-              setEPrescriptions(ePrescriptions.filter((_item) => _item.id != item.id));
+              setEPrescriptions(ePrescriptions?.filter((_item) => _item?.id != item?.id));
         }}
       />
     );
@@ -717,7 +720,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               : setEPrescriptions && setEPrescriptions([...selectedEPres]);
           }}
           isVisible={true}
-          selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
+          selectedEprescriptionIds={ePrescriptions?.map((item) => item?.id)}
         />
       )
     );
@@ -757,6 +760,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       : 'Call me for details';
                   const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
                     OptionSelected: optionSelected,
+                    User_Type: pharmacyUserType,
                   };
                   postWebEngageEvent(
                     WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,

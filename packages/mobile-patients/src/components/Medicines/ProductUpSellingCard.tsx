@@ -20,6 +20,7 @@ import {
 import { Divider, Image } from 'react-native-elements';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -93,7 +94,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
             <Text style={styles.mrp}>{mrp}</Text>
             <Text style={styles.priceStrikeOff}>
               ({string.common.Rs}
-              {price})
+              {convertNumberToDecimal(price)})
             </Text>
             <Text style={styles.discountPercentage}>{`  ${discount}% off`}</Text>
           </Text>
