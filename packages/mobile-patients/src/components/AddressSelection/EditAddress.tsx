@@ -480,7 +480,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient) {
-      const _setUserName = addressData?.name! ? addressData?.name : currentPatient.firstName!;
+      const _setUserName = addressData?.name! ? addressData?.name : currentPatient?.firstName!;
       setuserName(_setUserName);
       setuserId(currentPatient.id);
       if (addressData?.mobileNumber) {
@@ -1234,7 +1234,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           <ScrollView bounces={false}>
             {renderAddressText()}
             {renderAddress()}
-            {renderUserName()}
+            {!!source && source == 'Diagnostics Cart' ? null : renderUserName()}
             {renderUserNumber()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>

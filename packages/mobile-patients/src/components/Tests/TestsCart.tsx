@@ -1440,6 +1440,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       KeyName: dataname,
       addressDetails: address,
       ComingFrom: comingFrom,
+      source: 'Diagnostics Cart' as AddressSource,
     });
   };
 
