@@ -3209,7 +3209,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               playDisconnectSound();
             }
           });
-        }, 2300);
+        }, 2000);
       } else if (message.message.message === exotelCall) {
         addMessages(message);
       } else {
