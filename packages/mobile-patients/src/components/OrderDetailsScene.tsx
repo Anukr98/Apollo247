@@ -897,9 +897,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       );
       const isCartItemsUpdated =
         orderDetails?.medicineOrderShipments?.length > 0 &&
-        !isEmptyObject(orderDetails.medicineOrderShipments?.[0]?.itemDetails!) &&
-        checkIsJSON(orderDetails.medicineOrderShipments?.[0]?.itemDetails!) &&
-        JSON.parse(orderDetails.medicineOrderShipments?.[0]?.itemDetails!);
+        !isEmptyObject(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
+        checkIsJSON(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
+        JSON.parse(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!);
       const orderStatusDescMapping = {
         [MEDICINE_ORDER_STATUS.ORDER_PLACED]:
           orderDetails?.prescriptionOptionSelected! == 'Call me for details'
