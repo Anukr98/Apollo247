@@ -1320,7 +1320,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const renderCourierTrackingCta = () => {
       return (
         <Button
-          style={{ width: '60%', alignSelf: 'center', alignContent: 'center', marginBottom: 10 }}
+          style={styles.trackingOrderCta}
           onPress={() => {
             props.navigation.navigate(AppRoutes.CommonWebView, {
               url: shipmentTrackingUrl,
@@ -2356,5 +2356,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
+  },
+  trackingOrderCta: {
+    width: '60%',
+    alignSelf: 'center',
+    alignContent: 'center',
+    marginBottom: 10,
   },
 });
