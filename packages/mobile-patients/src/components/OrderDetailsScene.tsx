@@ -840,21 +840,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
-  const renderCourierTrackingCta = (
-    <Text
-      onPress={() => {
-        const url = AppConfig.Configuration.MED_TRACK_SHIPMENT_URL;
-        props.navigation.navigate(AppRoutes.CommonWebView, {
-          url: shipmentTrackingUrl,
-          isGoBack: true,
-        });
-      }}
-      style={styles.trackOrder}
-    >
-      TRACK COURIER STATUS
-    </Text>
-  );
-
   const renderOrderHistory = () => {
     const isDelivered = orderStatusList.find(
       (item) =>
@@ -990,7 +975,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           '',
-          `Your order has been picked up from our store!`,
+          `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`,
         ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',
@@ -1332,6 +1317,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     console.log({ reasonForOnHold });
     const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
 
+    const renderCourierTrackingCta = () => {
+      return (
+        <Button
+          style={{ width: '60%', alignSelf: 'center', alignContent: 'center', marginBottom: 10 }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: shipmentTrackingUrl,
+              isGoBack: true,
+            });
+          }}
+          title={'TRACK COURIER STATUS'}
+        />
+      );
+    };
+
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -1425,6 +1425,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             navigaitonProps={props.navigation}
           />
         )}
+        {orderDetails.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY &&
+          shipmentTrackingUrl &&
+          renderCourierTrackingCta()}
         {isDelivered ? (
           <View
             style={{
