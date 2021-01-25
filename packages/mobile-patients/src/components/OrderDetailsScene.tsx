@@ -196,6 +196,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
+  const shipmentInfo = g(order, 'medicineOrderShipments');
+  const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
+  const shipmentTrackingProvider = shipmentInfo?.[0]?.trackingProvider;
+  const shipmentTrackingUrl = shipmentInfo?.[0]?.trackingUrl;
   const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
     (item) => item!.isPrescriptionNeeded
   );
@@ -636,35 +640,35 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >{`ORDER #${orderAutoId}`}</Text>
             {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginTop: 10,
-            }}
-          >
-            <View>
-              <Text style={theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5)}>
-                Courier
-              </Text>
-              <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
-                Blue Dart
-              </Text>
+          {(!!shipmentTrackingProvider || !!shipmentTrackingNumber) && (
+            <View style={styles.shipmentInfoContainer}>
+              {!!shipmentTrackingProvider && (
+                <View>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5)}>
+                    Courier
+                  </Text>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                    {shipmentTrackingProvider}
+                  </Text>
+                </View>
+              )}
+              {!!shipmentTrackingNumber && (
+                <View>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5),
+                      textAlign: 'right',
+                    }}
+                  >
+                    Tracking ID
+                  </Text>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                    {shipmentTrackingNumber}
+                  </Text>
+                </View>
+              )}
             </View>
-            <View>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5),
-                  textAlign: 'right',
-                }}
-              >
-                Tracking ID
-              </Text>
-              <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
-                1253846389748
-              </Text>
-            </View>
-          </View>
+          )}
           <View style={{ flexDirection: 'row', marginTop: 12 }}>
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
               {string.OrderSummery.name}
@@ -836,6 +840,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const renderCourierTrackingCta = (
+    <Text
+      onPress={() => {
+        const url = AppConfig.Configuration.MED_TRACK_SHIPMENT_URL;
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: shipmentTrackingUrl,
+          isGoBack: true,
+        });
+      }}
+      style={styles.trackOrder}
+    >
+      TRACK COURIER STATUS
+    </Text>
+  );
+
   const renderOrderHistory = () => {
     const isDelivered = orderStatusList.find(
       (item) =>
@@ -892,10 +911,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         </Text>
       );
       const isCartItemsUpdated =
-        orderDetails.medicineOrderShipments!.length > 0 &&
-        !isEmptyObject(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
-        checkIsJSON(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
-        JSON.parse(orderDetails.medicineOrderShipments![0]?.itemDetails!);
+        orderDetails?.medicineOrderShipments?.length > 0 &&
+        !isEmptyObject(orderDetails.medicineOrderShipments?.[0]?.itemDetails!) &&
+        checkIsJSON(orderDetails.medicineOrderShipments?.[0]?.itemDetails!) &&
+        JSON.parse(orderDetails.medicineOrderShipments?.[0]?.itemDetails!);
       const orderStatusDescMapping = {
         [MEDICINE_ORDER_STATUS.ORDER_PLACED]:
           orderDetails?.prescriptionOptionSelected! == 'Call me for details'
@@ -1382,8 +1401,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   statusToShowNewItems.includes(orderDetails?.currentStatus!) &&
                   orderDetails.orderTat! &&
                   (orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
-                    ? orderDetails?.medicineOrderShipments!.length > 0
-                    : orderDetails.medicineOrderLineItems!.length > 0)
+                    ? orderDetails?.medicineOrderShipments?.length > 0
+                    : orderDetails?.medicineOrderLineItems?.length > 0)
                     ? true
                     : false
                 }
@@ -2329,5 +2348,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+  },
+  shipmentInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
 });

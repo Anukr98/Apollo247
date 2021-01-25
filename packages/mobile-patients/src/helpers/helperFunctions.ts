@@ -532,7 +532,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Out for Delivery';
+      statusString = 'Order Dispatched';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -2344,16 +2344,16 @@ export const getTestOrderStatusText = (status: string) => {
       statusString = 'Payment Successful';
       break;
     case REFUND_STATUSES.SUCCESS:
-        statusString = 'Refund Proccessed';
-        break;
+      statusString = 'Refund Proccessed';
+      break;
     case REFUND_STATUSES.PENDING:
     case REFUND_STATUSES.FAILURE:
     case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
     case REFUND_STATUSES.MANUAL_REVIEW:
-        statusString = 'Refund Initiated';
-        break;
+      statusString = 'Refund Initiated';
+      break;
     default:
-      statusString = (status || '')
+      statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
