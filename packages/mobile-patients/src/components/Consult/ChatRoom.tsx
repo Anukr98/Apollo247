@@ -582,7 +582,6 @@ const styles = StyleSheet.create({
   disableVideoSubscriber: {
     ...theme.viewStyles.cardViewStyle,
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 70 : 44,
     right: 20,
     width: 95,
     height: 120,
@@ -625,7 +624,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(20),
     textAlign: 'center',
     left: 0,
-    zIndex: 1,
+    zIndex: 1001,
   },
   connectingTextStyle: {
     ...theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR),
@@ -3574,7 +3573,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setCallMinimize(false);
           AsyncStorage.setItem('callDisconnected', 'true');
           stopSound();
-          playDisconnectSound();
         }, 2000);
       } else if (message.message.message === exotelCall) {
         addMessages(message);
@@ -5827,8 +5825,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           {!showProgressBarOnHeader.current &&
             isProgressBarVisible.current &&
             renderProgressBar(currentProgressBarPosition.current)}
-          {/* {doctorJoinedChat && renderJoinCallHeader()} */}
-          {renderJoinCallHeader()}
+          {doctorJoinedChat && renderJoinCallHeader()}
         </View>
       );
     }
@@ -5844,7 +5841,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </Text>
           <TouchableOpacity
             onPress={() => {
-              patientJoinedCall.current = true;
+              // patientJoinedCall.current = true;
+              isAudio.current = true;
               joinCallHandler();
               postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
             }}
@@ -5977,12 +5975,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const drDisplayName = appointmentData.doctorInfo.displayName;
   const drName = drDisplayName?.includes('Dr') ? drDisplayName : `Dr ${drDisplayName}`;
-
   const doctorName = name == 'JUNIOR' ? drName + '`s' + ' team doctor ' : drName;
+
   const VideoCall = () => {
     return (
       <View style={[talkStyles, { zIndex: 1001 }]}>
-        {downgradeToAudio && (
+        {/* {downgradeToAudio && (
           <View>
             {appointmentData.doctorInfo.photoUrl ? (
               <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
@@ -6008,123 +6006,119 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
             )}
           </View>
-        )}
-        {isCall && (
-          <View style={{ flex: 1, flexDirection: 'row' }}>
-            <OTSession
-              // apiKey={'46401302'}
-              apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
-              sessionId={sessionId}
-              token={token}
-              eventHandlers={sessionEventHandlers}
-              ref={otSessionRef}
-              options={{
-                androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
-                androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
-                useTextureViews: true, // Android only - default is false
-                isCamera2Capable: true, // Android only - default is false
+        )} */}
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <OTSession
+            // apiKey={'46401302'}
+            apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
+            sessionId={sessionId}
+            token={token}
+            eventHandlers={sessionEventHandlers}
+            ref={otSessionRef}
+            options={{
+              androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
+              androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
+              useTextureViews: true, // Android only - default is false
+              isCamera2Capable: true, // Android only - default is false
+            }}
+          >
+            <OTPublisher
+              style={
+                !showVideo
+                  ? {}
+                  : !downgradeToAudio
+                  ? publisherStyles
+                  : {
+                      position: 'absolute',
+                      top: 44,
+                      right: 20,
+                      width: 1,
+                      height: 1,
+                      zIndex: 1000,
+                    }
+              }
+              properties={{
+                cameraPosition: cameraPosition,
+                publishVideo: !downgradeToAudio ? showVideo : false,
+                publishAudio: isPublishAudio,
+                audioVolume: 100,
+                name: g(currentPatient, 'firstName') || 'patient',
+                resolution: '640x480', // setting this resolution to avoid over heating of device
+                audioBitrate: 30000,
+                frameRate: 15,
               }}
-            >
-              <OTPublisher
-                style={
-                  !showVideo
-                    ? {}
-                    : !downgradeToAudio
-                    ? publisherStyles
-                    : {
-                        position: 'absolute',
-                        top: 44,
-                        right: 20,
-                        width: 1,
-                        height: 1,
-                        zIndex: 1000,
-                      }
-                }
-                properties={{
-                  cameraPosition: cameraPosition,
-                  publishVideo: !downgradeToAudio ? showVideo : false,
-                  publishAudio: isPublishAudio,
-                  videoTrack: !downgradeToAudio ? showVideo : false,
-                  audioTrack: isPublishAudio,
-                  audioVolume: 100,
-                  name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '640x480', // setting this resolution to avoid over heating of device
-                  audioBitrate: 30000,
-                  frameRate: 15,
-                }}
-                eventHandlers={publisherEventHandlers}
-              />
-              <OTSubscriber
-                style={
-                  isDoctorVideoPaused
-                    ? { width: 0, height: 0 }
-                    : !downgradeToAudio
-                    ? subscriberStyles
-                    : {
-                        width: 1,
-                        height: 1,
-                      }
-                }
-                // subscribeToSelf={true}
-                eventHandlers={subscriberEventHandlers}
-                properties={{
-                  subscribeToAudio: true,
-                  subscribeToVideo: !downgradeToAudio ? true : false,
-                  audioVolume: 100,
-                }}
-              />
-            </OTSession>
+              eventHandlers={publisherEventHandlers}
+            />
+            <OTSubscriber
+              style={
+                isDoctorVideoPaused
+                  ? { width: 0, height: 0 }
+                  : !downgradeToAudio
+                  ? subscriberStyles
+                  : {
+                      width: 1,
+                      height: 1,
+                    }
+              }
+              // subscribeToSelf={true}
+              eventHandlers={subscriberEventHandlers}
+              properties={{
+                subscribeToAudio: true,
+                subscribeToVideo: !downgradeToAudio ? true : false,
+                audioVolume: 100,
+              }}
+            />
+          </OTSession>
 
-            {!PipView && (
-              <>
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: isIphoneX() ? 24 : 0,
-                    left: 0,
-                    width: width,
-                    height: 24,
-                    backgroundColor: 'transparent',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000,
-                  }}
+          {!PipView && (
+            <>
+              <View
+                style={{
+                  position: 'absolute',
+                  top: isIphoneX() ? 24 : 0,
+                  left: 0,
+                  width: width,
+                  height: 24,
+                  backgroundColor: 'transparent',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                }}
+              >
+                <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                  Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                  {seconds.toString().length < 2 ? '0' + seconds : seconds}
+                </Text>
+              </View>
+              {!subscriberConnected.current && (
+                <Text
+                  numberOfLines={1}
+                  style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
                 >
-                  <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-                    Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                    {seconds.toString().length < 2 ? '0' + seconds : seconds}
-                  </Text>
-                </View>
-                {!subscriberConnected.current && (
-                  <Text
-                    numberOfLines={1}
-                    style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
-                  >
-                    {doctorName}
-                  </Text>
-                )}
-              </>
-            )}
-            {!isPublishAudio && showVideo && renderShowNoAudioView()}
-            {subscriberConnected.current && renderSubscriberConnectedInfo()}
-            {!subscriberConnected.current && renderTextConnecting()}
-            {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
-              ? renderDoctorStatus()
-              : null}
-            {waitAndEndCall()}
-            {patientJoinedCall.current && !subscriberConnected.current && (
-              <Text style={styles.centerTxt}>
-                {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
-              </Text>
-            )}
+                  {doctorName}
+                </Text>
+              )}
+            </>
+          )}
+          {!isPublishAudio && showVideo && renderShowNoAudioView()}
+          {subscriberConnected.current && renderSubscriberConnectedInfo()}
+          {!subscriberConnected.current && renderTextConnecting()}
+          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
+            ? renderToastMessages()
+            : null}
+          {waitAndEndCall()}
+          {patientJoinedCall.current && !subscriberConnected.current && (
+            <Text style={styles.centerTxt}>
+              {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
+            </Text>
+          )}
 
-            {!showVideo && renderDisableVideoSubscriber()}
-            {(!subscriberConnected.current || !callerVideo) &&
-              renderNoSubscriberConnectedThumbnail()}
-            {!PipView && renderChatNotificationIcon()}
-            {!PipView && renderBottomButtons()}
-          </View>
-        )}
+          {!showVideo && renderDisableVideoSubscriber()}
+          {(!subscriberConnected.current || isDoctorVideoPaused) &&
+            renderNoSubscriberConnectedThumbnail()}
+          {!PipView && renderChatNotificationIcon()}
+          {!PipView && renderBottomButtons()}
+        </View>
       </View>
     );
   };
@@ -6135,7 +6129,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         style={[
           styles.disableVideoSubscriber,
           {
-            backgroundColor: 'clear',
+            backgroundColor: showVideo ? 'clear' : '#e1e1e1',
+            top: isIphoneX() ? 64 : 44,
           },
         ]}
       >
@@ -6188,8 +6183,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         : !showVideo
         ? 'Your video is off'
         : 'Your audio is off';
+
     return (
-      <View style={[styles.disableVideoSubscriber, { marginTop: 0 }]}>
+      <View style={[styles.disableVideoSubscriber, { top: isIphoneX() ? 64 : 44 }]}>
         <Text style={styles.disabledVideoAudioText}>{title}</Text>
       </View>
     );
@@ -6209,7 +6205,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //  {isCall && VideoCall()}
   //   {isAudioCall && AudioCall()}
 
-  const renderDoctorStatus = () => {
+  const renderToastMessages = () => {
     if (callStatus.current === disconnecting && callToastStatus.current === '') {
       return;
     }
@@ -6249,7 +6245,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const AudioCall = () => {
     return (
       <View style={audioCallStyles}>
-        {!convertVideo && (
+        {/* {!convertVideo && (
           <View>
             {appointmentData.doctorInfo.photoUrl ? (
               <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
@@ -6263,19 +6259,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <DoctorImage style={audioCallImageStyles} />
             )}
           </View>
-        )}
-        {/* {!convertVideo && <DoctorCall style={audioCallImageStyles} />} */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: theme.colors.CARD_BG,
-            opacity: 0.6,
-          }}
-        />
+        )} */}
         <OTSession
           apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
           sessionId={sessionId}
@@ -6333,28 +6317,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           />
         </OTSession>
         {showAudioPipView && (
-          <View
-            style={{
-              position: 'absolute',
-              top: isIphoneX() ? 24 : 0,
-              left: 0,
-              width: width,
-              height: 24,
-              backgroundColor: 'transparent',
-              // opacity: 0.6,
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1001,
-            }}
-          >
-            <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-              Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-              {seconds.toString().length < 2 ? '0' + seconds : seconds}
-            </Text>
-          </View>
+          <>
+            <View
+              style={{
+                position: 'absolute',
+                top: isIphoneX() ? 24 : 0,
+                left: 0,
+                width: width,
+                height: 24,
+                backgroundColor: 'transparent',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+              }}
+            >
+              <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds}
+              </Text>
+            </View>
+            {!subscriberConnected.current && (
+              <Text
+                numberOfLines={1}
+                style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
+              >
+                {doctorName}
+              </Text>
+            )}
+          </>
         )}
-        <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-        {showAudioPipView && renderAudioCallButtons()}
+        {showAudioPipView && renderChatNotificationIcon()}
         {!showAudioPipView && renderAudioFullScreen()}
       </View>
     );
@@ -6701,10 +6693,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           style={styles.btnActionContainer}
           activeOpacity={1}
           onPress={() => {
-            showVideo === true ? setShowVideo(false) : setShowVideo(true);
+            setShowVideo(!showVideo);
           }}
         >
-          {showVideo === true ? (
+          {showVideo? (
             <VideoActiveIcon style={styles.videoActiveIcon} />
           ) : (
             <VideoInactiveIcon style={styles.videoInactiveIcon} />
@@ -6824,10 +6816,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     AsyncStorage.setItem('callDisconnected', 'false');
     if (isAudio.current && !patientJoinedCall.current) {
-      setIsAudioCall(true);
+      setShowVideo(false);
     } else {
-      setIsCall(true);
+      setShowVideo(true);
     }
+    setIsCall(true);
     setLoading(false);
   };
 
@@ -7341,8 +7334,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         style={styles.tapToReturnToCallView}
         onPress={() => {
           setCallMinimize(false);
-          isAudioCall && changeAudioStyles();
-          isCall && changeVideoStyles();
+          changeVideoStyles();
           setHideStatusBar(true);
         }}
       >
@@ -7773,8 +7765,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         />
       )}
-      {isCall && VideoCall()}
-      {isAudioCall && AudioCall()}
+      {(isCall || isAudioCall) && VideoCall()}
+      {/* {isAudioCall && AudioCall()} */}
       {transferAccept && (
         <BottomPopUp
           title={'Please wait :)'}
