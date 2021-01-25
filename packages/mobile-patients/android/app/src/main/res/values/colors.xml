@@ -3,4 +3,5 @@
     <color name="windowBackground">#f0f1ec</color>
     <color name="white">#FFF</color>
     <color name="notificationColor">#fcb716</color>
+    <color name="unlocktext">#02475B</color>
 </resources>
