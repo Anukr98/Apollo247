@@ -7,27 +7,6 @@ import { Image } from 'react-native-elements';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '../../DiagnosticsCartProvider';
 
-const styles = StyleSheet.create({
-  containerStyle: {},
-  iconAndDetailsContainerStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 9.5,
-  },
-  iconOrImageContainerStyle: {
-    width: 40,
-  },
-  nameAndPriceViewStyle: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  flexRow: {
-    flexDirection: 'row',
-  },
-  testNameText: { ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '95%' },
-  imageIcon: { height: 40, width: 40 },
-});
-
 export interface DiagnosticsSearchSuggestionItemProps {
   onPress: () => void;
   onPressAddToCart: () => void;
@@ -108,3 +87,24 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  containerStyle: {},
+  iconAndDetailsContainerStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 9.5,
+  },
+  iconOrImageContainerStyle: {
+    width: 40,
+  },
+  nameAndPriceViewStyle: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  flexRow: {
+    flexDirection: 'row',
+  },
+  testNameText: { ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '95%' },
+  imageIcon: { height: 40, width: 40 },
+});

@@ -52,6 +52,11 @@ export interface DiagnosticArea {
   value: string;
 }
 
+export interface TestBreadcrumbLink {
+  title: string;
+  onPress?: () => void;
+}
+
 export interface DiagnosticsCartContextProps {
   forPatientId: string;
   setPatientId: ((id: string) => void) | null;
@@ -140,6 +145,9 @@ export interface DiagnosticsCartContextProps {
 
   getUniqueId: string;
   setUniqueId: ((value: string) => void) | null;
+
+  testListingBreadCrumbs: TestBreadcrumbLink[] | undefined;
+  setTestListingBreadCrumbs: ((items: TestBreadcrumbLink[]) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -216,6 +224,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setIsDiagnosticCircleSubscription: null,
   getUniqueId: '',
   setUniqueId: null,
+  testListingBreadCrumbs: [],
+  setTestListingBreadCrumbs: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -283,6 +293,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   >([]);
   const [getUniqueId, setUniqueId] = useState<DiagnosticsCartContextProps['getUniqueId']>('');
 
+  const [testListingBreadCrumbs, setTestListingBreadCrumbs] = useState<
+    DiagnosticsCartContextProps['testListingBreadCrumbs']
+  >();
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
     _setDiagnosticSlot(null);
@@ -654,6 +667,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
         getUniqueId,
         setUniqueId,
+
+        testListingBreadCrumbs,
+        setTestListingBreadCrumbs,
       }}
     >
       {props.children}

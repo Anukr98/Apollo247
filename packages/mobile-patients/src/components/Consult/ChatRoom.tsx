@@ -1161,7 +1161,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    fetchAppointmentData();
+    !isVoipCall && !fromIncomingCall && fetchAppointmentData();
     checkAutoTriggerMessagePostAppointmentTime();
     return function cleanup() {
       BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
@@ -1269,7 +1269,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const fetchDoctorDetails = async () => {
-    setLoading(true);
     const input = {
       id: doctorId,
     };
@@ -3223,16 +3222,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const fetchAppointmentData = async () => {
     try {
-      setLoading?.(true);
       const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
         variables: { appointmentId: channel },
         fetchPolicy: 'no-cache',
       });
-      setLoading?.(false);
       setcurrentCaseSheet(response.data?.getAppointmentData?.appointmentsHistory?.[0]?.caseSheet);
     } catch (error) {
-      setLoading?.(false);
       CommonBugFender(`${AppRoutes.ChatRoom}_fetchAppointmentData`, error);
     }
   };

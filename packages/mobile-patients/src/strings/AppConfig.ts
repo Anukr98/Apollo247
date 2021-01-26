@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -541,7 +541,7 @@ const ConfigurationDev = {
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 
 // QA
@@ -595,7 +595,7 @@ const ConfigurationQA = {
     'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 
 // QA2
@@ -649,7 +649,7 @@ const ConfigurationQA2 = {
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 
 // QA3
@@ -697,7 +697,7 @@ const ConfigurationQA3 = {
   BLOG_URL: 'https://www.apollo247.com/blog',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 
 // VAPT
@@ -751,7 +751,7 @@ const ConfigurationVAPT = {
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 //Production
 const ConfigurationProd = {
@@ -859,7 +859,7 @@ const ConfigurationPERFORM = {
     'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 
 //DevelopmentReplica
@@ -914,7 +914,7 @@ const ConfigurationDevReplica = {
     'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'http://13.71.16.69/api/v1/clinicalsearch',
-  jusPayenvironment: 'prod',
+  jusPayenvironment: 'sandbox',
 };
 
 const Configuration =
@@ -1168,6 +1168,24 @@ export const CancelConsultation = {
     string.ReasonFor_Cancel_Consultation.otherReasons,
   ],
 };
+
+export const stepsToBookArray = [
+  {
+    "heading" : string.diagnostics.bookOnline,
+    "subtext" : string.diagnostics.bookOnlineSubText,
+    "image" : require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_1.png')
+  },
+  {
+    "heading" : string.diagnostics.hcSample,
+    "subtext" : string.diagnostics.hcSampleSubText,
+    "image" : require("@aph/mobile-patients/src/components/ui/icons/stepsForBooking_2.png")
+  },
+  {
+    "heading" : string.diagnostics.fastReport,
+    "subtext" : string.diagnostics.fastReportSubText,
+    "image" : require("@aph/mobile-patients/src/components/ui/icons/stepsForBooking_3.png")
+  }
+]
 
 type SpecialitiesType = {
   [key: string]: string[];

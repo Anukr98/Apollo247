@@ -149,6 +149,7 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICATION = 'MEDICATION',
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
+  FAMILY_HISTORY = 'FAMILY HISTORY',
 }
 
 export const getPhrHighlightText = (highlightText: string) => {
@@ -1463,6 +1464,24 @@ export const postWebEngagePHR = (
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
     'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+  };
+  postWebEngageEvent(webEngageEventName, eventAttributes);
+};
+
+export const phrSearchWebEngageEvents = (
+  webEngageEventName: WebEngageEventName,
+  currentPatient: any,
+  searchKey: string
+) => {
+  const eventAttributes = {
+    searchKey,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
     'Patient Gender': g(currentPatient, 'gender'),
     'Mobile Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
