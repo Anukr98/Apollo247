@@ -1169,16 +1169,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const playJoinSound = () => {
-    setTimeout(() => {
-      try {
-        maxVolume();
-        if (joinAudioTrack) {
-          joinAudioTrack.play();
-        }
-      } catch (e) {
-        CommonBugFender('playing_callertune__failed', e);
+    try {
+      maxVolume();
+      if (joinAudioTrack) {
+        joinAudioTrack.play();
       }
-    }, 1000);
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
   };
 
   const playDisconnectSound = () => {
