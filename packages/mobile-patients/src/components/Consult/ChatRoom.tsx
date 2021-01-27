@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 2,
-  }
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -1210,6 +1210,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
     };
   }, []);
+
+  const playJoinSound = () => {
+    try {
+      maxVolume();
+      if (joinAudioTrack) {
+        joinAudioTrack.play();
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
 
   const checkAutoTriggerMessagePostAppointmentTime = () => {
     const diffMin = Math.ceil(
@@ -2315,6 +2326,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
       subscriberConnected.current = true;
+      playJoinSound();
     },
     disconnected: (event: string) => {
       callEndWebengageEvent('Network');
@@ -3355,7 +3367,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const [callEndEventDebounce, setCallEndEventDebounce] = useState({});
   const [showFeedback, setShowFeedback] = useState(false);
-  const { showAphAlert, audioTrack, setPrevVolume, maxVolume, hideAphAlert } = useUIElements();
+  const {
+    showAphAlert,
+    audioTrack,
+    setPrevVolume,
+    maxVolume,
+    hideAphAlert,
+    joinAudioTrack,
+    playCustomSound,
+  } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
     if (message.message.isTyping) {
@@ -6113,9 +6133,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <View style={styles.doctorStatusContainer}>
         <View style={styles.doctorStatusInnerContainer}>
-        <Text style={{...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE), textAlign: 'center' }}>
-          {showMessage(isPaused)}
-        </Text>
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+              textAlign: 'center',
+            }}
+          >
+            {showMessage(isPaused)}
+          </Text>
         </View>
       </View>
     );

@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
 
 RNSound.setCategory('Playback');
 let audioTrack: RNSound | null = null;
+let joinAudioTrack: RNSound | null = null;
 
 export interface UIElementsContextProps {
   loading: boolean;
@@ -69,6 +70,7 @@ export interface UIElementsContextProps {
   setPrevVolume: () => void;
   maxVolume: () => void;
   audioTrack: RNSound | null;
+  joinAudioTrack: RNSound | null;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -80,6 +82,7 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setPrevVolume: () => {},
   maxVolume: () => {},
   audioTrack: null,
+  joinAudioTrack: null,
 });
 
 type AphAlertCTAs = {
@@ -132,6 +135,14 @@ export const UIElementsProvider: React.FC = (props) => {
 
     audioTrack = new RNSound(
       'incallmanager_ringtone.mp3',
+      Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
+      (error) => {
+        console.log('erroraudiotrack', error);
+      }
+    );
+
+    joinAudioTrack = new RNSound(
+      'join_sound.mp3',
       Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
       (error) => {
         console.log('erroraudiotrack', error);
@@ -274,6 +285,7 @@ export const UIElementsProvider: React.FC = (props) => {
         setPrevVolume,
         maxVolume,
         audioTrack,
+        joinAudioTrack,
       }}
     >
       <View style={{ flex: 1 }}>
