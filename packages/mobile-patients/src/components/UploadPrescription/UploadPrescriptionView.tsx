@@ -10,6 +10,7 @@ import {
   Dimensions,
   Platform,
   Alert,
+  Image,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { RNCamera as Camera } from 'react-native-camera';
@@ -66,6 +67,7 @@ const styles = StyleSheet.create({
   },
   cameraActionsContainer: {
     alignItems: 'center',
+    marginTop: 10,
   },
   cameraClickIcon: {
     resizeMode: 'contain',
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    top: height / 2.1,
+    marginTop: -70,
   },
   cameraActionButton: {
     padding: 10,
@@ -184,6 +186,20 @@ const styles = StyleSheet.create({
   cameraSubText: {
     ...theme.viewStyles.text('R', 14, '#FFFFFF', 1, 16),
     textAlign: 'center',
+  },
+  previewImageContainer: {
+    borderWidth: 3,
+    borderColor: theme.colors.WHITE,
+    width: width - 50,
+    height: height / 1.7,
+    alignSelf: 'center',
+    backgroundColor: 'black',
+    marginTop: 5,
+  },
+  previewImage: {
+    marginTop: 10,
+    resizeMode: 'contain',
+    height: height / 1.8,
   },
 });
 
@@ -288,8 +304,20 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     );
   };
 
+  const renderPreviewImage = () => {
+    const imgBase64 = `data:image/jpeg;base64,${photoBase64}`;
+    return (
+      !!photoBase64 && (
+        <View style={styles.previewImageContainer}>
+          <Image source={{ uri: imgBase64 }} style={styles.previewImage} />
+          {renderCameraActions()}
+        </View>
+      )
+    );
+  };
+
   const renderCameraView = () => {
-    return isFocused ? (
+    return isFocused && !photoBase64 ? (
       <Camera
         style={styles.cameraView}
         ref={_camera}
@@ -302,16 +330,14 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         captureAudio={false}
       >
         {({ camera, status, recordAudioPermissionStatus }) => {
-          console.log(status);
           setIsCameraAccessGranted(status === 'READY');
           if (status !== 'READY') {
             return renderPermissionContainer();
           }
-          return renderCameraActions();
         }}
       </Camera>
     ) : (
-      <></>
+      renderPreviewImage()
     );
   };
 
@@ -334,7 +360,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity
               style={styles.iconContainer}
-              disabled={!isCameraAccessGranted}
               activeOpacity={0.3}
               onPress={() => {
                 actionSheetRef.show();
@@ -368,7 +393,12 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       <View style={styles.messageContainer}>
         <View style={{ flexDirection: 'row' }}>
           <PendingIcon style={styles.messageIcon} />
-          <Text style={theme.viewStyles.text('R', 14, '#01475B', 1, 19)}>
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 14, '#01475B', 1, 19),
+              marginRight: 20,
+            }}
+          >
             * Our pharmacist will dispense medicines only if the prescription is valid and it meets
             all government regulations.
           </Text>
