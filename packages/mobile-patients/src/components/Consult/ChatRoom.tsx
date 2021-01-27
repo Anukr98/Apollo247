@@ -31,6 +31,14 @@ import {
   VideoOnIcon,
   ActiveCalenderIcon,
   InactiveCalenderIcon,
+  CallCollapseIcon,
+  CallCameraIcon,
+  AudioActiveIcon,
+  AudioInactiveIcon,
+  VideoActiveIcon,
+  VideoInactiveIcon,
+  WhiteCallIcon,
+  UserThumbnailIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -248,6 +256,7 @@ let jdCount: any = 1;
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
+const bottomBtnContainerWidth = 267;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -502,6 +511,161 @@ const styles = StyleSheet.create({
     width: 20,
     height: 22,
   },
+  callBottomButtonsStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    position: 'absolute',
+    left: width / 2 - bottomBtnContainerWidth / 2,
+    bottom: 20,
+    width: bottomBtnContainerWidth,
+    zIndex: 1000,
+    backgroundColor: theme.colors.CALL_LIGHT_GRAY,
+    height: 57,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 7,
+  },
+  disconnectViewStyle: {
+    backgroundColor: theme.colors.APP_RED,
+    height: '100%',
+    width: bottomBtnContainerWidth / 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopRightRadius: 7,
+    borderBottomRightRadius: 7,
+  },
+  endCallIcon: {
+    width: 32,
+    height: 12,
+  },
+  cameraIcon: {
+    width: 32,
+    height: 28,
+  },
+  muteActiveIcon: {
+    width: 23,
+    height: 32,
+  },
+  muteInactiveIcon: {
+    width: 28,
+    height: 31,
+  },
+  videoActiveIcon: {
+    width: 32,
+    height: 22,
+  },
+  videoInactiveIcon: {
+    width: 30,
+    height: 30,
+  },
+  btnActionContainer: {
+    width: bottomBtnContainerWidth / 4,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tapToReturnToCallView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: width,
+    height: 44,
+    backgroundColor: theme.colors.SEARCH_UNDERLINE_COLOR,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    borderRadius: 0,
+  },
+  tapText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE),
+  },
+  disableVideoSubscriber: {
+    ...theme.viewStyles.cardViewStyle,
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 70 : 44,
+    right: 20,
+    width: 90,
+    height: 120,
+    zIndex: 1000,
+    borderRadius: 12,
+    backgroundColor: '#e1e1e1',
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabledVideoAudioText: {
+    ...theme.viewStyles.text('SB', 10, theme.colors.APP_RED),
+    textAlign: 'center',
+  },
+  userThumbnailIcon: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 90,
+    height: 132,
+    zIndex: 1000,
+    top: height / 2 - 61,
+    left: width / 2 - 45,
+  },
+  connectingText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.SEARCH_UNDERLINE_COLOR),
+    textAlign: 'center',
+    bottom: 115,
+    position: 'absolute',
+    zIndex: 1,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  connectingDoctorName: {
+    position: 'absolute',
+    marginHorizontal: 20,
+    width: width - 40,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansSemiBold(20),
+    textAlign: 'center',
+    left: 0,
+    zIndex: 1,
+  },
+  connectingTextStyle: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR),
+    marginTop: 10,
+    position: 'absolute',
+    zIndex: 1,
+    textAlign: 'center',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  subscriberConnectedView: {
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    position: 'absolute',
+    zIndex: 1,
+  },
+  connectedDoctorName: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE),
+  },
+  subscriberConnectedInnerView: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: theme.colors.CAROUSEL_INACTIVE_DOT,
+    borderRadius: 8,
+    padding: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doctorStatusContainer: {
+    bottom: 115,
+    position: 'absolute',
+    zIndex: 1,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  doctorStatusInnerContainer: {
+    backgroundColor: theme.colors.CALL_BG_GRAY,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+  }
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -512,7 +676,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
-
+  const [callMinimize, setCallMinimize] = useState<boolean>(false);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
@@ -594,7 +758,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isCancelVisible, setCancelVisible] = useState<boolean>(false);
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: theme.colors.CALL_BG_GRAY,
     position: 'absolute',
     top: 0,
     bottom: 0,
@@ -608,12 +772,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   });
   const [publisherStyles, setPublisherStyles] = useState<object>({
     position: 'absolute',
-    top: isIphoneX() ? 74 : 44,
+    top: isIphoneX() ? 70 : 44,
     right: 20,
-    width: 148,
-    height: 112,
+    width: 90,
+    height: 120,
     zIndex: 1000,
-    borderRadius: 30,
+    borderRadius: 12,
+    ...theme.viewStyles.cardViewStyle,
   });
   const [audioCallStyles, setAudioCallStyles] = useState<object>({
     flex: 1,
@@ -697,6 +862,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const subscriberConnected = useRef<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const [callDuration, setCallDuration] = useState<number>(0);
+
+  const isPaused = !callerAudio
+    ? !callerVideo && isCall
+      ? 'audio/video'
+      : 'audio'
+    : !callerVideo && isCall
+    ? 'video'
+    : '';
+
+  const isDoctorVideoPaused = isPaused == 'audio/video' || isPaused == 'video';
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -2109,6 +2284,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_ERROR,
         JSON.stringify(error)
       );
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
@@ -2118,6 +2294,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR,
         JSON.stringify(error)
       );
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
@@ -2194,6 +2371,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       if (
         [
@@ -2324,6 +2502,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setSnackBar();
         }
       });
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       console.log(
         `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
@@ -3229,6 +3408,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
+        setCallMinimize(false);
         AsyncStorage.setItem('callDisconnected', 'true');
         setOnSubscribe(false);
         callhandelBack = true;
@@ -3316,6 +3496,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           });
           event();
         } catch (error) {}
+        setCallMinimize(false);
         AsyncStorage.setItem('callDisconnected', 'true');
       } else if (message.message.message === exotelCall) {
         addMessages(message);
@@ -5716,10 +5897,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const doctorName =
-    name == 'JUNIOR'
-      ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
-      : appointmentData.doctorInfo.displayName;
+  const drDisplayName = appointmentData.doctorInfo.displayName;
+  const drName = drDisplayName?.includes('Dr') ? drDisplayName : `Dr ${drDisplayName}`;
+
+  const doctorName = name == 'JUNIOR' ? drName + '`s' + ' team doctor ' : drName;
   const VideoCall = () => {
     return (
       <View style={[talkStyles, { zIndex: 1001 }]}>
@@ -5768,7 +5949,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <OTPublisher
                 style={
-                  !downgradeToAudio
+                  !showVideo || !isPublishAudio
+                    ? {}
+                    : !downgradeToAudio
                     ? publisherStyles
                     : {
                         position: 'absolute',
@@ -5795,7 +5978,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
               <OTSubscriber
                 style={
-                  !downgradeToAudio
+                  isDoctorVideoPaused
+                    ? { width: 0, height: 0 }
+                    : !downgradeToAudio
                     ? subscriberStyles
                     : {
                         width: 1,
@@ -5832,25 +6017,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     {seconds.toString().length < 2 ? '0' + seconds : seconds}
                   </Text>
                 </View>
-                <Text
-                  style={{
-                    position: 'absolute',
-                    marginHorizontal: 20,
-                    marginTop: isIphoneX() ? 64 : 44,
-                    width: width - 40,
-                    color: 'white',
-                    ...theme.fonts.IBMPlexSansSemiBold(20),
-                    textAlign: 'center',
-                    left: 0,
-                    zIndex: 1001,
-                  }}
-                >
-                  {doctorName}
-                </Text>
+                {!subscriberConnected.current && (
+                  <Text style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}>
+                    {doctorName}
+                  </Text>
+                )}
               </>
             )}
 
-            <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {/* <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text> */}
+            {subscriberConnected.current && renderSubscriberConnectedInfo()}
+            {!subscriberConnected.current && renderTextConnecting()}
+            {isPaused !== '' && renderDoctorStatus()}
             {waitAndEndCall()}
             {patientJoinedCall.current && !subscriberConnected.current && (
               <Text style={styles.centerTxt}>
@@ -5858,15 +6036,67 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </Text>
             )}
 
-            {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
-
-            {PipView && renderOnCallPipButtons('video')}
+            {(!showVideo || !isPublishAudio) && renderDisableVideoSubscriber()}
+            {(!subscriberConnected.current || !callerVideo) &&
+              renderNoSubscriberConnectedThumbnail()}
+            {!subscriberConnected.current && renderConnectingCall()}
             {!PipView && renderChatNotificationIcon()}
             {!PipView && renderBottomButtons()}
           </View>
         )}
       </View>
     );
+  };
+
+  const renderTextConnecting = () => {
+    return (
+      <Text
+        style={[
+          styles.connectingTextStyle,
+          {
+            marginTop: isIphoneX() ? 100 : 80,
+          },
+        ]}
+      >
+        Connecting...
+      </Text>
+    );
+  };
+
+  const renderSubscriberConnectedInfo = () => {
+    return (
+      <View style={[styles.subscriberConnectedView, { marginTop: isIphoneX() ? 64 : 44 }]}>
+        <View style={styles.subscriberConnectedInnerView}>
+          <Text style={styles.connectedDoctorName}>{doctorName}</Text>
+          <Text style={styles.connectedDoctorName}>
+            Connected {'  '}
+            {callTimerStarted}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderConnectingCall = () => {
+    return <Text style={styles.connectingText}>Connecting Call....</Text>;
+  };
+
+  const renderDisableVideoSubscriber = () => {
+    const title =
+      !showVideo && !isPublishAudio
+        ? 'Your audio & video are off'
+        : !showVideo
+        ? 'Your video is off'
+        : 'Your audio is off';
+    return (
+      <View style={[styles.disableVideoSubscriber, { marginTop: isIphoneX() ? 64 : 44 }]}>
+        <Text style={styles.disabledVideoAudioText}>{title}</Text>
+      </View>
+    );
+  };
+
+  const renderNoSubscriberConnectedThumbnail = () => {
+    return <UserThumbnailIcon style={styles.userThumbnailIcon} />;
   };
 
   const callMinutes = Math.floor(callTimer / 60);
@@ -5876,16 +6106,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
   } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
 
-  const isPaused = !callerAudio
-    ? !callerVideo && isCall
-      ? 'Audio/Video'
-      : 'Audio'
-    : !callerVideo && isCall
-    ? 'Video'
-    : '';
-
   //  {isCall && VideoCall()}
   //   {isAudioCall && AudioCall()}
+
+  const renderDoctorStatus = () => {
+    return (
+      <View style={styles.doctorStatusContainer}>
+        <View style={styles.doctorStatusInnerContainer}>
+        <Text style={{...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE), textAlign: 'center' }}>
+          {showMessage(isPaused)}
+        </Text>
+        </View>
+      </View>
+    );
+  };
 
   const AudioCall = () => {
     return (
@@ -5995,9 +6229,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-        {renderBusyMessages(showAudioPipView, isIphoneX() ? 121 : 101)}
         {showAudioPipView && renderAudioCallButtons()}
-        {!showAudioPipView && renderOnCallPipButtons('audio')}
         {!showAudioPipView && renderAudioFullScreen()}
       </View>
     );
@@ -6006,51 +6238,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (downgradeToAudio) {
       return `Falling back to audio due to bad network!!`;
     }
-    return `Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`;
-  };
-  const renderBusyMessages = (showPip: boolean, insetTop: any) => {
-    return (
-      <>
-        {isPaused !== '' ? (
-          <View
-            style={{
-              position: 'absolute',
-              marginTop: showPip ? insetTop : 25,
-              zIndex: 1005,
-              justifyContent: showPip ? 'center' : 'flex-start',
-              width: showPip ? width : 155,
-              alignItems: showPip ? 'center' : 'flex-start',
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: 'white',
-                paddingTop: 2,
-                paddingBottom: Platform.OS === 'ios' ? 3 : 5,
-                justifyContent: showPip ? 'center' : 'flex-start',
-                alignItems: showPip ? 'center' : 'flex-start',
-                paddingHorizontal: 10,
-                marginTop: 2,
-                marginHorizontal: 16,
-                borderRadius: 100,
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.APP_RED,
-                  ...theme.fonts.IBMPlexSansSemiBold(12),
-                  textAlign: 'center',
-                  padding: 0,
-                  flexWrap: 'wrap',
-                }}
-              >
-                {showMessage(isPaused)}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-      </>
-    );
+    return `${doctorName} has turned off the ${isPaused}`;
   };
 
   const renderAudioFullScreen = () => {
@@ -6118,12 +6306,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     setPublisherStyles({
       position: 'absolute',
-      top: isIphoneX() ? 74 : 44,
+      top: isIphoneX() ? 70 : 44,
       right: 20,
-      width: 148,
-      height: 112,
+      width: 90,
+      height: 120,
       zIndex: 1000,
-      borderRadius: 30,
+      borderRadius: 12,
+      ...theme.viewStyles.cardViewStyle,
     });
     Keyboard.dismiss();
     setDropdownVisible(false);
@@ -6161,54 +6350,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              setCallMinimize(true);
               setHideStatusBar(false);
               setChatReceived(false);
               setSubscriberStyles({
-                width: 155,
-                height: 205,
+                width: 0,
+                height: 0,
               });
 
               setPublisherStyles({
-                position: 'absolute',
-                top: 1,
-                right: 1,
-                width: 1,
-                height: 1,
-                zIndex: 1000,
+                width: 0,
+                height: 0,
               });
 
               setAudioCallStyles({
-                flex: 1,
-                position: 'absolute',
-                top: 88,
-                right: 8,
-                height: 205,
-                width: 155,
-                backgroundColor: 'black',
+                height: 0,
+                width: 0,
               });
               setAudioCallImageStyles({
-                height: 205,
-                width: 155,
+                height: 0,
+                width: 0,
               });
               setShowAudioPipView(false);
               setTimerStyles({
-                position: 'absolute',
-                marginHorizontal: 5,
-                marginTop: 5,
-                width: 155,
-                color: 'white',
-                ...theme.fonts.IBMPlexSansSemiBold(12),
-                textAlign: 'center',
-                letterSpacing: 0.46,
-                zIndex: 1005,
+                width: 0,
               });
             }}
           >
-            {chatReceived ? (
-              <ChatWithNotification style={{ height: 88, width: 88, left: -20, top: -20 }} />
-            ) : (
-              <ChatIcon style={{ height: 48, width: 48 }} />
-            )}
+            <CallCollapseIcon />
           </TouchableOpacity>
         </View>
         <View
@@ -6238,6 +6407,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              setCallMinimize(false);
               AsyncStorage.setItem('callDisconnected', 'true');
               setIsAudioCall(false);
               stopTimer();
@@ -6290,81 +6460,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const renderOnCallPipButtons = (pipType: 'audio' | 'video') => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 16,
-          left: 16,
-          zIndex: 1002,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            pipType === 'audio' && changeAudioStyles();
-            pipType === 'video' && changeVideoStyles();
-            setHideStatusBar(true);
-          }}
-        >
-          <FullScreenIcon style={{ width: 40, height: 40 }} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            AsyncStorage.setItem('callDisconnected', 'true');
-            pipType === 'audio' && setIsAudioCall(false);
-            pipType === 'video' && setIsCall(false);
-            setIsPublishAudio(true);
-            setShowVideo(true);
-            setCameraPosition('front');
-            stopTimer();
-            setHideStatusBar(false);
-            postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
-            callEndWebengageEvent('Patient');
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: pipType === 'audio' ? 'Audio call ended' : 'Video call ended',
-                  duration: callTimerStarted,
-                  id: patientId,
-                  messageDate: new Date(),
-                },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: endCallMsg,
-                  id: patientId,
-                  messageDate: new Date(),
-                },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-          }}
-        >
-          <EndCallIcon style={{ width: 40, height: 40, marginLeft: 43 }} />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   const changeVideoStyles = () => {
     setTalkStyles({
       flex: 1,
-      backgroundColor: 'black',
+      backgroundColor: theme.colors.CALL_BG_GRAY,
       position: 'absolute',
       top: 0,
       bottom: 0,
@@ -6378,12 +6477,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     setPublisherStyles({
       position: 'absolute',
-      top: isIphoneX() ? 74 : 44,
+      top: isIphoneX() ? 70 : 44,
       right: 20,
-      width: 148,
-      height: 112,
+      width: 90,
+      height: 120,
       zIndex: 1000,
-      borderRadius: 30,
+      borderRadius: 12,
+      ...theme.viewStyles.cardViewStyle,
     });
     setPipView(false);
     setTimerStyles({
@@ -6416,39 +6516,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
+            setCallMinimize(true);
             setTalkStyles({
-              flex: 1,
-              backgroundColor: 'black',
-              position: 'absolute',
-              top: 88,
-              right: 20,
-              width: 155,
-              height: 205,
+              height: 0,
+              width: 0,
             });
 
             setSubscriberStyles({
-              width: 155,
-              height: 205,
+              width: 0,
+              height: 0,
             });
 
             setPublisherStyles({
-              position: 'absolute',
-              top: 1,
-              right: 1,
-              width: 1,
-              height: 1,
-              zIndex: 1000,
+              width: 0,
+              height: 0,
             });
             setTimerStyles({
-              position: 'absolute',
-              marginHorizontal: 5,
-              marginTop: 5,
-              width: 155,
-              color: 'white',
-              ...theme.fonts.IBMPlexSansSemiBold(12),
-              textAlign: 'center',
-              letterSpacing: 0.46,
-              zIndex: 1005,
+              width: 0,
             });
 
             setPipView(true);
@@ -6456,11 +6540,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setHideStatusBar(false);
           }}
         >
-          {chatReceived ? (
-            <ChatWithNotification style={{ height: 88, width: 88, left: -20, top: -20 }} />
-          ) : (
-            <ChatIcon style={{ height: 48, width: 48 }} />
-          )}
+          <CallCollapseIcon />
         </TouchableOpacity>
       </View>
     );
@@ -6468,63 +6548,50 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const renderBottomButtons = () => {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 20,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}
-      >
-        <View
-          style={{
-            marginHorizontal: Platform.OS === 'ios' ? 30 : 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+      <View style={styles.callBottomButtonsStyle}>
+        <TouchableOpacity
+          style={styles.btnActionContainer}
+          activeOpacity={1}
+          onPress={() => {
+            cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
           }}
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
-            }}
-          >
-            {cameraPosition === 'front' ? (
-              <BackCameraIcon style={{ height: 60, width: 60 }} />
-            ) : (
-              <FrontCameraIcon style={{ height: 60, width: 60 }} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              showVideo === true ? setShowVideo(false) : setShowVideo(true);
-            }}
-          >
-            {showVideo === true ? (
-              <VideoOnIcon style={{ height: 60, width: 60 }} />
-            ) : (
-              <VideoOffIcon style={{ height: 60, width: 60 }} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
-            }}
-          >
-            {isPublishAudio === true ? (
-              <UnMuteIcon style={{ height: 60, width: 60 }} />
-            ) : (
-              <MuteIcon style={{ height: 60, width: 60 }} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity activeOpacity={1} onPress={() => handleEndCall()}>
-            <EndCallIcon style={{ height: 60, width: 60 }} />
-          </TouchableOpacity>
-        </View>
+          <CallCameraIcon style={styles.cameraIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.btnActionContainer}
+          onPress={() => {
+            isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
+          }}
+        >
+          {isPublishAudio === true ? (
+            <AudioActiveIcon style={styles.muteActiveIcon} />
+          ) : (
+            <AudioInactiveIcon style={styles.muteInactiveIcon} />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.btnActionContainer}
+          activeOpacity={1}
+          onPress={() => {
+            showVideo === true ? setShowVideo(false) : setShowVideo(true);
+          }}
+        >
+          {showVideo === true ? (
+            <VideoActiveIcon style={styles.videoActiveIcon} />
+          ) : (
+            <VideoInactiveIcon style={styles.videoInactiveIcon} />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.disconnectViewStyle}
+          activeOpacity={1}
+          onPress={() => handleEndCall()}
+        >
+          <WhiteCallIcon style={styles.endCallIcon} />
+        </TouchableOpacity>
       </View>
     );
   };
@@ -6536,6 +6603,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndCall = () => {
+    setCallMinimize(false);
     AsyncStorage.setItem('callDisconnected', 'true');
     setIsCall(false);
     setIsPublishAudio(true);
@@ -7132,6 +7200,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const renderTapToReturnToCallView = () => {
+    return (
+      <TouchableOpacity
+        style={styles.tapToReturnToCallView}
+        onPress={() => {
+          setCallMinimize(false);
+          isAudioCall && changeAudioStyles();
+          isCall && changeVideoStyles();
+          setHideStatusBar(true);
+        }}
+      >
+        <Text style={styles.tapText}>Tap to return to call</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -7263,6 +7347,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         ) : null}
         {renderChatHeader()}
+        {callMinimize && renderTapToReturnToCallView()}
         {isCancelVisible && (
           <CancelReasonPopup
             isCancelVisible={isCancelVisible}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, ImageProps } from 'react-native';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
@@ -1677,4 +1678,41 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
     source={require('./icons/healthyLifeIcon.png')}
     resizeMode="contain"
   />
+);
+
+export const CallCollapseIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ ...theme.viewStyles.cardViewStyle, borderRadius: 20, width: 40, height: 40 }}
+    {...props}
+    source={require('./icons/callCollapse.png')}
+    resizeMode="contain"
+  />
+);
+
+export const CallCameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/camera.png')} resizeMode="contain" />
+);
+
+export const AudioActiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/microphoneActive.png')} resizeMode="contain" />
+);
+
+export const AudioInactiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/microphoneInactive.png')} resizeMode="contain" />
+);
+
+export const VideoActiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/videoActive.png')} resizeMode="contain" />
+);
+
+export const VideoInactiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/videoDisable.png')} resizeMode="contain" />
+);
+
+export const WhiteCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/whiteCall.png')} resizeMode="contain" />
+);
+
+export const UserThumbnailIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/callDoctorThumbnail.png')} resizeMode="contain" />
 );
