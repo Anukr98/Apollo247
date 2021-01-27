@@ -30,7 +30,15 @@ export const MedicineListingHeader: React.FC<Props> = ({ navigation, movedFrom }
   const paddingView = <View style={styles.paddingView} />;
 
   const renderHeaderCenterView = () => {
-    return <ApolloLogo style={styles.apolloLogo} />;
+    return (
+      <TouchableOpacity style={{ marginLeft: '-75%' }} onPress={onPressApolloIcon}>
+        <ApolloLogo style={styles.apolloLogo} />
+      </TouchableOpacity>
+    );
+  };
+
+  const onPressApolloIcon = () => {
+    navigation.replace(AppRoutes.ConsultRoom);
   };
 
   const renderHeaderRightView = () => {
@@ -83,7 +91,6 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     height: 50,
     width: 50,
-    marginLeft: '-75%',
   },
   headerRightView: { justifyContent: 'flex-end', flexDirection: 'row' },
   paddingView: { width: 20, height: 0 },
