@@ -2017,11 +2017,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderHelpButton = () => {
+    const currentStatusDate = order?.medicineOrdersStatus?.find(
+      (i) => i?.orderStatus === order?.currentStatus
+    )?.statusDate;
     const onPress = () => {
       props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         medicineOrderStatus: order?.currentStatus,
         orderId: billNumber || orderAutoId,
+        medicineOrderStatusDate: currentStatusDate,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],

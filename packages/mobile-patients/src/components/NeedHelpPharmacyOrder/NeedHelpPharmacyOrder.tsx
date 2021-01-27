@@ -73,9 +73,13 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
 
   const renderItem = ({ item }: ListRenderItemInfo<MedOrder>) => {
     const onPressHelp = () => {
+      const currentStatusDate = item?.medicineOrdersStatus?.find(
+        (i) => i?.orderStatus === item?.currentStatus
+      )?.statusDate;
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         medicineOrderStatus: item.currentStatus,
+        medicineOrderStatusDate: currentStatusDate,
         orderId: item.billNumber || item.orderAutoId,
         queryCategory,
         email,

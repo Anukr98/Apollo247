@@ -1935,7 +1935,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         orderTat
         medicineOrdersStatus {
           id
-          # statusDate
+          statusDate
           orderStatus
           hideStatus
           statusMessage
