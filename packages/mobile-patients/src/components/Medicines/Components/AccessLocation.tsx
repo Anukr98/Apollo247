@@ -32,12 +32,11 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   } = props;
 
   const isFromTest = source == AppRoutes.Tests;
-  console.log({ addresses });
 
   function sortAddresses(addresses: savePatientAddress_savePatientAddress_patientAddress[]) {
     if (addresses) {
-      const array1 = addresses.filter((item) => item?.defaultAddress);
-      const array2 = addresses.filter((item) => !item?.defaultAddress);
+      const array1 = addresses?.filter((item) => item?.defaultAddress);
+      const array2 = addresses?.filter((item) => !item?.defaultAddress);
       const sortedAddresses = array1?.concat(array2);
       return sortedAddresses;
     } else {
