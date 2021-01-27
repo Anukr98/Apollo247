@@ -126,6 +126,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
+  const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
   const client = useApolloClient();
   const voipAppointmentId = useRef<string>('');
   const voipPatientId = useRef<string>('');
@@ -145,7 +146,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { setPhrNotificationData } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
+    takeToConsultRoom && getData('ConsultRoom', undefined, false);
+  }, [takeToConsultRoom]);
+
+  useEffect(() => {
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
@@ -296,6 +300,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               console.log('linking', url);
             } catch (e) {}
           } else {
+            settakeToConsultRoom(true);
             fireAppOpenedEvent('');
           }
         })
