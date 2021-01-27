@@ -80,11 +80,6 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 24),
     marginLeft: 7,
   },
-  checkContainer: {
-    position: 'absolute',
-    right: 7,
-    top: 7,
-  },
   overlayImage: {
     resizeMode: 'contain',
     flex: 1,

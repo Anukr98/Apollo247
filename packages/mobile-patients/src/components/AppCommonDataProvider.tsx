@@ -134,6 +134,12 @@ export interface TotalCircleSavings {
   callsUsed: number;
 }
 
+export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
+
+export interface PharmacyUserTypeEvent {
+  User_Type: PharmaUserStatus;
+}
+
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
@@ -216,6 +222,9 @@ export interface AppCommonDataContextProps {
   setCircleStatus: ((value: string) => void) | null;
   hdfcStatus: string;
   setHdfcStatus: ((value: string) => void) | null;
+  pharmacyUserType: PharmaUserStatus;
+  setPharmacyUserType: ((type: PharmaUserStatus) => void) | null;
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -288,6 +297,9 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCircleStatus: null,
   hdfcStatus: '',
   setHdfcStatus: null,
+  pharmacyUserType: '',
+  setPharmacyUserType: null,
+  pharmacyUserTypeAttribute: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -453,6 +465,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
+  const [pharmacyUserType, setPharmacyUserType] = useState<
+    AppCommonDataContextProps['pharmacyUserType']
+  >('');
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
@@ -465,6 +480,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [allNotifications, setAllNotifications] = useState<any[]>([]);
   const [isSelected, setisSelected] = useState<any[]>([]);
   const [isUHID, setisUHID] = useState<string[]>([]);
+
+  const pharmacyUserTypeAttribute: PharmacyUserTypeEvent = {
+    User_Type: pharmacyUserType,
+  };
 
   useEffect(() => {
     // update location from async storage the very first time app opened
@@ -564,6 +583,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCircleStatus,
         hdfcStatus,
         setHdfcStatus,
+        pharmacyUserType,
+        setPharmacyUserType,
+        pharmacyUserTypeAttribute,
       }}
     >
       {props.children}

@@ -176,6 +176,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     addMultipleEPrescriptions,
     addresses,
     onHoldOptionOrder,
+    setEPrescriptions,
+    setPhysicalPrescriptions,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
@@ -196,6 +198,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
+  const shipmentInfo = g(order, 'medicineOrderShipments');
+  const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
+  const shipmentTrackingProvider = shipmentInfo?.[0]?.trackingProvider;
+  const shipmentTrackingUrl = shipmentInfo?.[0]?.trackingUrl;
   const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
     (item) => item!.isPrescriptionNeeded
   );
@@ -636,6 +642,35 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >{`ORDER #${orderAutoId}`}</Text>
             {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
           </View>
+          {(!!shipmentTrackingProvider || !!shipmentTrackingNumber) && (
+            <View style={styles.shipmentInfoContainer}>
+              {!!shipmentTrackingProvider && (
+                <View>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5)}>
+                    Courier
+                  </Text>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                    {shipmentTrackingProvider}
+                  </Text>
+                </View>
+              )}
+              {!!shipmentTrackingNumber && (
+                <View>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5),
+                      textAlign: 'right',
+                    }}
+                  >
+                    Tracking ID
+                  </Text>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                    {shipmentTrackingNumber}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
           <View style={{ flexDirection: 'row', marginTop: 12 }}>
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
               {string.OrderSummery.name}
@@ -863,10 +898,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         </Text>
       );
       const isCartItemsUpdated =
-        orderDetails.medicineOrderShipments!.length > 0 &&
-        !isEmptyObject(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
-        checkIsJSON(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
-        JSON.parse(orderDetails.medicineOrderShipments![0]?.itemDetails!);
+        orderDetails?.medicineOrderShipments?.length > 0 &&
+        !isEmptyObject(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
+        checkIsJSON(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
+        JSON.parse(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!);
       const orderStatusDescMapping = {
         [MEDICINE_ORDER_STATUS.ORDER_PLACED]:
           orderDetails?.prescriptionOptionSelected! == 'Call me for details'
@@ -942,7 +977,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           '',
-          `Your order has been picked up from our store!`,
+          `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`,
         ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',
@@ -1284,6 +1319,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     console.log({ reasonForOnHold });
     const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
 
+    const renderCourierTrackingCta = () => {
+      return (
+        <Button
+          style={styles.trackingOrderCta}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: shipmentTrackingUrl,
+              isGoBack: true,
+            });
+          }}
+          title={'TRACK COURIER STATUS'}
+        />
+      );
+    };
+
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -1353,8 +1403,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   statusToShowNewItems.includes(orderDetails?.currentStatus!) &&
                   orderDetails.orderTat! &&
                   (orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
-                    ? orderDetails?.medicineOrderShipments!.length > 0
-                    : orderDetails.medicineOrderLineItems!.length > 0)
+                    ? orderDetails?.medicineOrderShipments?.length > 0
+                    : orderDetails?.medicineOrderLineItems?.length > 0)
                     ? true
                     : false
                 }
@@ -1377,6 +1427,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             navigaitonProps={props.navigation}
           />
         )}
+        {orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY &&
+          shipmentTrackingUrl &&
+          renderCourierTrackingCta()}
         {isDelivered ? (
           <View
             style={{
@@ -1457,6 +1510,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
+            setPhysicalPrescriptions && setPhysicalPrescriptions(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
@@ -1481,6 +1535,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
+          setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',
@@ -2300,5 +2355,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+  },
+  shipmentInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  trackingOrderCta: {
+    width: '60%',
+    alignSelf: 'center',
+    alignContent: 'center',
+    marginBottom: 10,
   },
 });

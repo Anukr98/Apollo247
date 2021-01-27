@@ -1716,3 +1716,15 @@ export const WhiteCallIcon: React.FC<IconProps> = (props) => (
 export const UserThumbnailIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/callDoctorThumbnail.png')} resizeMode="contain" />
 );
+
+export const CameraClickButton: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_camera_button.png')} />
+);
+
+export const GalleryIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/galleryIconWhite.png')} />
+);
+
+export const MomAndBaby: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_mom&baby.png')} />
+);

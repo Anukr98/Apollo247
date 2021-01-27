@@ -3,26 +3,16 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  GET_DIAGNOSTIC_SLOTS,
-  GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getDiagnosticSlots,
-  getDiagnosticSlotsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
-import {
-  formatTestSlot,
   formatTestSlotWithBuffer,
   g,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
   handleGraphQlError,
-  isValidTestSlot,
   isValidTestSlotWithArea,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -31,43 +21,7 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import {
   getDiagnosticSlotsWithAreaID,
   getDiagnosticSlotsWithAreaIDVariables,
-} from '../../graphql/types/getDiagnosticSlotsWithAreaID';
-
-const styles = StyleSheet.create({
-  containerStyle: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    marginTop: 20,
-  },
-  optionsView: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingBottom: 16,
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 6,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  placeholderTextStyle: {
-    ...theme.viewStyles.text('M', 16, '#01475b'),
-  },
-  sectionStyle: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: theme.colors.CARD_BG,
-    marginBottom: 16,
-  },
-});
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 
 export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   zipCode: number;
@@ -86,7 +40,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
   const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.WEEK);
-  const { currentPatient } = useAllCurrentPatients();
+  const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
   const [spinner, showSpinner] = useState(false);
   const { zipCode, onSchedule, isVisible, ...attributes } = props;
@@ -94,6 +48,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const uniqueSlots = getUniqueTestSlots(slots);
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!).format('hh:mm') || null;
+  const isSameDate = moment().isSame(moment(date), 'date');
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
@@ -137,15 +92,29 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         });
 
         const uniqueSlots = getUniqueTestSlots(slotsArray);
-
         console.log('ARRAY OF SLOTS', { slotsArray });
         console.log('UNIQUE SLOTS', { uniqueSlots });
-
-        setSlots(slotsArray);
-        uniqueSlots.length &&
-          setSlotInfo(
-            getTestSlotDetailsByTime(slotsArray, uniqueSlots[0].startTime!, uniqueSlots[0].endTime!)
+        // if slot is empty then refetch it for next date
+        const isSameDate = moment().isSame(moment(date), 'date');
+        if (isSameDate && uniqueSlots?.length == 0 && isDateAutoSelected) {
+          setDate(
+            moment(date)
+              .add(1, 'day')
+              .toDate()
           );
+          showSpinner(true);
+        } else {
+          setSlots(slotsArray);
+          uniqueSlots.length &&
+            setSlotInfo(
+              getTestSlotDetailsByTime(
+                slotsArray,
+                uniqueSlots[0].startTime!,
+                uniqueSlots[0].endTime!
+              )
+            );
+          showSpinner(false);
+        }
       })
       .catch((e) => {
         console.log('getDiagnosticSlots Error', { e });
@@ -153,8 +122,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         if (!noHubSlots) {
           handleGraphQlError(e);
         }
-      })
-      .finally(() => {
         showSpinner(false);
       });
   };
@@ -164,7 +131,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   }, [date]);
 
   const renderSlotSelectionView = () => {
-    const dropDownOptions = uniqueSlots.map((val) => ({
+    const dropDownOptions = uniqueSlots?.map((val) => ({
       key: `${formatTestSlotWithBuffer(val.startTime)}`,
       value: `${formatTestSlotWithBuffer(val.startTime)}`,
       data: val,
@@ -173,7 +140,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
     console.log('dropDownOptions', { dropDownOptions, uniqueSlots });
 
     const { width } = Dimensions.get('window');
-
     return (
       <View style={[styles.sectionStyle, { paddingHorizontal: 16 }]}>
         <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 16 }}>Slot</Text>
@@ -207,7 +173,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
                 >
                   {spinner
                     ? 'Loading...'
-                    : dropDownOptions.length
+                    : dropDownOptions?.length
                     ? slotInfo
                       ? `${formatTestSlotWithBuffer(slotInfo.slotInfo.startTime!)}`
                       : 'Please select a slot'
@@ -225,15 +191,29 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   };
 
   const renderCalendarView = () => {
+    /**
+     * as soon as current date has no slot selection, then change it to next date (autoselection)
+     */
+
+    const isCurrentDateSlotUnavailable = isSameDate && uniqueSlots?.length == 0;
+    //date is the selected date & minDate : date to show.
+    const dateToHighlight =
+      isCurrentDateSlotUnavailable && isDateAutoSelected
+        ? moment(date)
+            .add(1, 'day')
+            .toDate()
+        : date;
+
     return (
       <CalendarView
         styles={{ marginBottom: 16 }}
-        date={date}
+        date={dateToHighlight}
         minDate={new Date()}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {
           setDate(selectedDate);
           setSlotInfo(undefined);
+          setIsDateAutoSelected(false);
         }}
         calendarType={calendarType}
         onCalendarTypeChanged={(type) => {
@@ -268,3 +248,39 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
     </AphOverlay>
   );
 };
+
+const styles = StyleSheet.create({
+  containerStyle: {
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    marginTop: 20,
+  },
+  optionsView: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingBottom: 16,
+  },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 6,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#01475b'),
+  },
+  sectionStyle: {
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: theme.colors.CARD_BG,
+    marginBottom: 16,
+  },
+});

@@ -92,12 +92,12 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   id: string;
   siteId: string | null;
   siteName: string | null;
-  apOrderNo: string | null;
   trackingNo: string | null;
   trackingProvider: string | null;
   updatedDate: string | null;
   currentStatus: MEDICINE_ORDER_STATUS | null;
   itemDetails: string | null;
+  trackingUrl: string | null;
   medicineOrdersStatus: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_medicineOrdersStatus | null)[] | null;
   medicineOrderInvoice: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_medicineOrderInvoice | null)[] | null;
 }

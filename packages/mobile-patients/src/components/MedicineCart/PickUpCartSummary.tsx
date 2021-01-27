@@ -26,6 +26,7 @@ import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDoc
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -46,6 +47,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const shoppingCart = useShoppingCart();
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
 
   useEffect(() => {
     onFinishUpload();
@@ -115,7 +117,13 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
 
   function onPressProceedtoPay() {
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, { isStorePickup: true });
-    postwebEngageProceedToPayEvent(shoppingCart, false, '', pharmacyCircleAttributes!);
+    postwebEngageProceedToPayEvent(
+      shoppingCart,
+      false,
+      '',
+      pharmacyCircleAttributes!,
+      pharmacyUserTypeAttribute!
+    );
   }
 
   const renderAlert = (message: string) => {
