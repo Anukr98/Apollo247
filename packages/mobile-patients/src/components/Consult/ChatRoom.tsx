@@ -2918,6 +2918,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const doctorWillConnectShortlyAutomatedText = () => {
     setTimeout(() => {
+      if (doctorJoinedChat) {
+        return;
+      }
       const automatedText = [
         'Please wait while the doctor connects with you shortly. Thanks for your patience.',
       ];
@@ -2941,6 +2944,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const rescheduleOrCancelAppointmentAutomatedText = () => {
     setTimeout(() => {
+      if (doctorJoinedChat) {
+        return;
+      }
       const automatedText = [
         'We are sorry to keep you waiting. You can  reschedule/cancel this appointment by clicking on the icon at the top right of this screen.',
       ];
