@@ -27,12 +27,12 @@ function createPatientAttributes(currentPatient: any) {
 
 export function DiagnosticLandingPageViewedEvent(
   currentPatient: any,
-  isServiceable: string | undefined
+  isServiceable: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
     ...getPatientAttributes,
-    Serviceability: isServiceable === 'true' ? 'Yes' : 'No',
+    Serviceability: isServiceable ? 'Yes' : 'No',
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
 }

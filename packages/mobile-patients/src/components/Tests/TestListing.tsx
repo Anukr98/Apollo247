@@ -232,7 +232,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
           <PackageCard
             data={dataFromHomePage}
             isCircleSubscribed={isDiagnosticCircleSubscription}
-            isServiceable={isDiagnosticLocationServiceable == 'true'}
+            isServiceable={isDiagnosticLocationServiceable}
             isVertical={true}
             columns={1}
             navigation={props.navigation}
@@ -242,7 +242,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
           <ItemCard
             data={dataFromHomePage}
             isCircleSubscribed={isDiagnosticCircleSubscription}
-            isServiceable={isDiagnosticLocationServiceable == 'true'}
+            isServiceable={isDiagnosticLocationServiceable}
             isVertical={true}
             columns={2}
             navigation={props.navigation}
