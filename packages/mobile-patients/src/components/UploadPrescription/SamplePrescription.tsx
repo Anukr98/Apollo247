@@ -15,17 +15,22 @@ import Carousel from 'react-native-snap-carousel';
 import { ArrowLeft, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const { width, height } = Dimensions.get('window');
+const isSmallerDevice = width <= 370;
 
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: theme.colors.GRAY,
   },
+  dotAndButtonContainer: {
+    position: 'absolute',
+    bottom: isSmallerDevice ? -15 : 24,
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
   slideDotContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    position: 'absolute',
-    bottom: 0,
     alignSelf: 'center',
   },
   sliderDotStyle: {
@@ -56,13 +61,30 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
   },
+  okayButton: {
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: '#FCB716',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    alignSelf: 'center',
+  },
+  skipButton: {
+    marginTop: -25,
+    alignItems: 'center',
+  },
+  imageBackgroundStyle: {
+    width: width - 20,
+    height: height / 1.25,
+  },
 });
 
 const instructionsData = [
   {
     instruction: 'Doctor’s name & Clinic details',
     highlightContainer: {
-      marginTop: 25,
+      marginTop: isSmallerDevice ? 0 : 40,
       marginLeft: 20,
       borderWidth: 4,
       borderRadius: 10,
@@ -78,13 +100,13 @@ const instructionsData = [
       paddingHorizontal: 15,
       marginLeft: 20,
       marginTop: 15,
-      maxWidth: width / 1.6,
+      maxWidth: width / 1.4,
     },
   },
   {
     instruction: 'Date of Prescription',
     highlightContainer: {
-      marginTop: 100,
+      marginTop: isSmallerDevice ? '15%' : 110,
       marginLeft: width / 1.8,
       borderWidth: 4,
       borderRadius: 10,
@@ -107,7 +129,7 @@ const instructionsData = [
     instruction: 'Patient Details',
     subText: 'Name & Age',
     highlightContainer: {
-      marginTop: 130,
+      marginTop: isSmallerDevice ? '22%' : 150,
       marginLeft: 20,
       borderWidth: 4,
       borderRadius: 10,
@@ -130,7 +152,7 @@ const instructionsData = [
     instruction: 'Medicine Details',
     subText: 'Name, qty, dosage',
     highlightContainer: {
-      marginTop: 200,
+      marginTop: isSmallerDevice ? '35%' : 220,
       marginLeft: 30,
       borderWidth: 4,
       borderRadius: 10,
@@ -203,10 +225,13 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
         />
         {slideIndex !== 0 && renderLeftArrow()}
         {slideIndex !== dataLength - 1 && renderRightArrow()}
-        <View style={styles.slideDotContainer}>
-          {instructionsData.map((_, index) =>
-            index == slideIndex ? renderDot(true) : renderDot(false)
-          )}
+        <View style={styles.dotAndButtonContainer}>
+          {renderSkipButton(slideIndex, dataLength)}
+          <View style={styles.slideDotContainer}>
+            {instructionsData.map((_, index) =>
+              index == slideIndex ? renderDot(true) : renderDot(false)
+            )}
+          </View>
         </View>
       </View>
     );
@@ -255,23 +280,39 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
     />
   );
 
+  const renderSkipButton = (slideIndex: number, dataLength: number) => {
+    const showButton = slideIndex + 1 === dataLength;
+    return showButton ? (
+      <TouchableOpacity style={styles.okayButton} onPress={() => props.navigation.goBack()}>
+        <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 18)}>OK, GOT IT!</Text>
+      </TouchableOpacity>
+    ) : (
+      <TouchableOpacity
+        style={styles.skipButton}
+        activeOpacity={0.6}
+        onPress={() => {
+          _carousel?.current?.snapToItem(slideIndex + 1);
+        }}
+      >
+        <Text style={theme.viewStyles.text('B', 13, '#000000', 0.6, 14)}>SKIP</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header
           title={'SAMPLE PRESCRIPTION'}
           leftIcon="backArrow"
-          container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
+          container={{ ...theme.viewStyles.shadowStyle, zIndex: 1, marginBottom: 10 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView bounces={false} contentContainerStyle={{ paddingHorizontal: 10 }}>
           <ImageBackground
             source={samplePrescriptionImage}
             resizeMode="contain"
-            style={{
-              width: width - 20,
-              height: height / 1.25,
-            }}
+            style={styles.imageBackgroundStyle}
           >
             {renderCarousel()}
           </ImageBackground>

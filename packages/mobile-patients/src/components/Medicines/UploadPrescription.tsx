@@ -167,14 +167,19 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setEPrescriptions,
     physicalPrescriptions,
     setPhysicalPrescriptions,
+    newAddressAdded,
+    setNewAddressAdded,
   } = useShoppingCart();
-  const [prescriptionOption, setPrescriptionOption] = useState<string>('specified');
+  const SPECIFIED_DURATION = 'Duration as specified in prescription';
+  const CALL_ME = 'Call me for details';
+  const NEED_ALL_MEDICINES = 'Need all medicine and for duration as per prescription';
+  const [prescriptionOption, setPrescriptionOption] = useState<string>(SPECIFIED_DURATION);
   const [durationDays, setDurationDays] = useState<string>('30');
   const [vdcType, setvdcType] = useState<string>('');
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const medicineDetailOptions = [
     {
-      id: 'Need all medicine and for duration as per prescription',
+      id: NEED_ALL_MEDICINES,
       title: 'Order all medicines from prescription',
       subTitle: 'Order will be prepared with all the medicines as prescribed by the doctor',
     },
@@ -184,14 +189,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       subTitle: 'Browse and select medicines which you wish to purchase',
     },
     {
-      id: 'Call me for details',
+      id: CALL_ME,
       title: 'Call me to confirm my order',
       subTitle: 'Our pharmacist will call you to confirm the required items',
     },
   ];
-  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(
-    'Need all medicine and for duration as per prescription'
-  );
+  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(NEED_ALL_MEDICINES);
   const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] = useState<number>(
     type === 'Camera' ? 1 : 0
   );
@@ -212,6 +215,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   useEffect(() => {
     nonCartAvailabilityTat(selectedAddress?.zipcode);
   }, [selectedAddress]);
+
+  useEffect(() => {
+    // call availability api if new address is added
+    const addressLength = addresses.length;
+    if (!!addressLength && !!newAddressAdded) {
+      const newAddress = addresses.filter((value) => value.id === newAddressAdded);
+      nonCartAvailabilityTat(newAddress?.[0]?.zipcode);
+      setNewAddressAdded && setNewAddressAdded('');
+    }
+  }, [newAddressAdded]);
 
   async function fetchAddress() {
     try {
@@ -755,9 +768,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   const optionSelected =
                     item.id === 'search'
                       ? 'Search and add'
-                      : item.id === 'Need all medicine and for duration as per prescription'
+                      : item.id === NEED_ALL_MEDICINES
                       ? 'All Medicine'
-                      : 'Call me for details';
+                      : CALL_ME;
+                  if (optionSelected === CALL_ME) {
+                    setPrescriptionOption(CALL_ME);
+                  } else if (optionSelected === 'All Medicine') {
+                    setPrescriptionOption(SPECIFIED_DURATION);
+                  }
                   const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
                     OptionSelected: optionSelected,
                     User_Type: pharmacyUserType,
@@ -776,8 +794,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 hideSeparator={
                   index + 1 === array.length ||
                   (selectedMedicineOption == item.id &&
-                    selectedMedicineOption ==
-                      'Need all medicine and for duration as per prescription')
+                    selectedMedicineOption == NEED_ALL_MEDICINES)
                 }
                 radioSubBody={selectedMedicineOption == item.id ? getRadioButtonAction() : <></>}
               />
@@ -789,7 +806,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const getRadioButtonAction = () => {
-    if (selectedMedicineOption === 'Need all medicine and for duration as per prescription') {
+    if (selectedMedicineOption === NEED_ALL_MEDICINES) {
       const isDurationDaysSelected = prescriptionOption === 'duration';
       return (
         <View
@@ -818,7 +835,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 : {},
             ]}
             onPress={() => {
-              setPrescriptionOption('specified');
+              setPrescriptionOption(SPECIFIED_DURATION);
             }}
           >
             <Text
@@ -934,7 +951,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     } else {
       const durationDaysInput =
         selectedMedicineOption &&
-        selectedMedicineOption === 'Need all medicine and for duration as per prescription' &&
+        selectedMedicineOption === NEED_ALL_MEDICINES &&
         prescriptionOption === 'duration' &&
         durationDays === ''
           ? true
@@ -977,7 +994,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   }
 
   const renderExpectCall = () => {
-    return selectedMedicineOption === 'Call me for details' ? <ExpectCall /> : null;
+    return selectedMedicineOption === CALL_ME ? <ExpectCall /> : null;
   };
 
   const onPressProceed = () => {
