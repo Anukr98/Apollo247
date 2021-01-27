@@ -220,7 +220,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     // call availability api if new address is added
     const addressLength = addresses.length;
     if (!!addressLength && !!newAddressAdded) {
-      const newAddress = addresses.filter((value) => value.id === newAddressAdded);
+      const newAddress = addresses?.filter((value) => value?.id === newAddressAdded);
       nonCartAvailabilityTat(newAddress?.[0]?.zipcode);
       setNewAddressAdded && setNewAddressAdded('');
     }
