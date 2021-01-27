@@ -1034,6 +1034,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Need_Help',
       PROD: 'Need_Help',
     },
+    Need_Help_Return_Order_Sub_Reason: {
+      QA: 'QA_Need_Help_Return_Order_Sub_Reason',
+      PROD: 'Need_Help_Return_Order_Sub_Reason',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1108,6 +1112,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Need_Help',
         'NEED_HELP',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.NEED_HELP
+      );
+
+      setAppConfig(
+        'Need_Help_Return_Order_Sub_Reason',
+        'RETURN_ORDER_SUB_REASON',
+        (key) =>
+          JSON.parse(config.getString(key)) || AppConfig.Configuration.RETURN_ORDER_SUB_REASON
       );
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
