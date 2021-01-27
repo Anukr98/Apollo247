@@ -400,6 +400,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     setStatusForTest(itemIdObject);
     let objArray: TestStatusObject[] = [];
     const lengthOfItems = Object.keys(itemIdObject)?.length;
+
     Object.keys(itemIdObject).forEach(async (key) => {
       /**
        * key is null for all pickup requested + all the packages are pickup requested
@@ -414,7 +415,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         getUTCDateTime != null
           ? moment(getUTCDateTime).format('hh:mm A')
           : orderSelected?.slotTimings;
-
       if (key == 'null' && lengthOfItems == 1) {
         for (let index = 0; index < orderSelected?.diagnosticOrderLineItems?.length; index++) {
           let inclusionVal =

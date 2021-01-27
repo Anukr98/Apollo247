@@ -1,0 +1,406 @@
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import React from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Image } from 'react-native-elements';
+import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  convertNumberToDecimal,
+  getPricesForItem,
+} from '@aph/mobile-patients/src/utils/commonUtils';
+import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { AppRoutes } from '../../NavigatorContainer';
+import { TestPackageForDetails } from '../TestDetails';
+import { DiagnosticHomePageWidgetClicked } from '../Events';
+
+export interface ItemCardProps {
+  onPress?: (item: any) => void;
+  isCircleSubscribed: boolean;
+  style?: ViewStyle;
+  showSeparator?: boolean;
+  loading?: boolean;
+  data: any;
+  isServiceable?: boolean;
+  isVertical: boolean;
+  columns?: number;
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>;
+  source: string;
+}
+
+export const ItemCard: React.FC<ItemCardProps> = (props) => {
+  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { data, isCircleSubscribed, navigation, source } = props;
+
+  const renderItemCard = (item: any) => {
+    const getItem = item?.item;
+    const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
+
+    if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
+      return null;
+    }
+    const packageMrpForItem = getItem?.packageCalculatedMrp!;
+    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+
+    if (!pricesForItem?.itemActive) {
+      return null;
+    }
+
+    const imageUrl =
+      getItem?.itemImageUrl || 'https://apolloaphstorage.blob.core.windows.net/organs/ic_liver.png';
+    const name = getItem?.itemTitle;
+    const parameters = getItem?.itemParameter;
+
+    const isAddedToCart = !!cartItems?.find(
+      (items) => Number(items?.id) == Number(getItem?.itemId)
+    );
+
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
+        key={item?.item?.itemId}
+      >
+        <View
+          style={[
+            styles.itemCardView,
+            props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
+          ]}
+        >
+          <Image
+            placeholderStyle={styles.imagePlaceholderStyle}
+            source={{ uri: imageUrl }}
+            style={styles.imageStyle}
+          />
+
+          <View style={{ minHeight: 30 }}>
+            <Text style={styles.itemNameText} numberOfLines={2}>
+              {name}
+            </Text>
+          </View>
+          {parameters ? (
+            <Text style={styles.parameterText}>{parameters} Parameters included</Text>
+          ) : null}
+          <Spearator style={styles.horizontalSeparator} />
+          {renderPricesView(pricesForItem, packageMrpForItem)}
+          {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderPricesView = (pricesForItem: any, packageMrpForItem: any) => {
+    const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
+    const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
+
+    return (
+      <View>
+        {promoteCircle || promoteDiscount ? (
+          renderAnyDiscountView(pricesForItem, packageMrpForItem)
+        ) : (
+          <View style={{ height: 20 }}></View>
+        )}
+        {renderMainPriceView(pricesForItem, packageMrpForItem)}
+      </View>
+    );
+  };
+
+  const renderAnyDiscountView = (pricesForItem: any, packageMrpForItem: any) => {
+    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+    const promoteDiscount = pricesForItem?.promoteDiscount;
+    const promoteCircle = pricesForItem?.promoteCircle;
+    const circleDiscountSaving = pricesForItem?.circleDiscountDiffPrice;
+    const specialDiscountSaving = pricesForItem?.specialDiscountDiffPrice;
+
+    return (
+      <View>
+        {isCircleSubscribed && circleDiscountSaving > 0 && !promoteDiscount ? (
+          <View style={styles.flexRow}>
+            <CircleLogo style={styles.circleLogoIcon} />
+            {renderSavingView(
+              'Savings',
+              circleDiscountSaving,
+              { marginHorizontal: '3%' },
+              styles.savingTextStyle
+            )}
+          </View>
+        ) : promoteDiscount && specialDiscountSaving > 0 && !promoteCircle ? (
+          <View style={styles.flexRow}>
+            <SpecialDiscountText isImage={true} text={'TEST 247'} />
+            {renderSavingView(
+              'Savings',
+              specialDiscountSaving,
+              { marginHorizontal: '3%' },
+              styles.savingTextStyle
+            )}
+          </View>
+        ) : circleDiscountSaving > 0 ? (
+          <View style={styles.flexRow}>
+            <CircleHeading isSubscribed={false} />
+            {renderSavingView(
+              '',
+              circleSpecialPrice,
+              { marginHorizontal: '6%', alignSelf: 'center' },
+              [styles.nonCirclePriceText]
+            )}
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderSavingView = (
+    text: string,
+    price: number | string,
+    mainViewStyle: any,
+    textStyle: any
+  ) => {
+    return (
+      <View style={mainViewStyle}>
+        <Text style={textStyle}>
+          {text} {string.common.Rs} {convertNumberToDecimal(price)}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderMainPriceView = (pricesForItem: any, packageMrpForItem: any) => {
+    const promoteCircle = pricesForItem?.promoteCircle;
+    const promoteDiscount = pricesForItem?.promoteDiscount;
+    const specialPrice = pricesForItem?.specialPrice!;
+    const price = pricesForItem?.price!;
+    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+    const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+
+    //1. circle sub + promote circle -> circleSpecialPrice
+    //2. circle sub + discount -> dicount Price
+    //3. circle sub + none -> special price | price
+    //4. non-circle + promote circle -> special price | price
+    //5. non-circle + promte disocunt -> discount price
+    //6. non-circle + none -> special price | price
+    let priceToShow;
+    if (isCircleSubscribed) {
+      if (promoteCircle) {
+        priceToShow = circleSpecialPrice;
+      } else if (promoteDiscount) {
+        priceToShow = discountSpecialPrice;
+      } else {
+        priceToShow = specialPrice || price;
+      }
+    } else {
+      if (promoteDiscount) {
+        priceToShow = discountSpecialPrice;
+      } else {
+        priceToShow = specialPrice || price;
+      }
+    }
+    const slashedPrice =
+      !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
+    //1. circle sub + promote -> packageMrp/price
+    //2. non-circle + circle -> no slashing
+    return (
+      <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
+        <Text style={styles.mainPriceText}>
+          {string.common.Rs} {convertNumberToDecimal(priceToShow)}
+        </Text>
+        {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
+        priceToShow == slashedPrice ? null : (
+          <Text style={styles.slashedPriceText}>
+            {string.common.Rs} {convertNumberToDecimal(slashedPrice)}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  function onPressAddToCart(item: any, pricesForItem: any, packageCalculatedMrp: number) {
+    const specialPrice = pricesForItem?.specialPrice!;
+    const price = pricesForItem?.price!;
+    const circlePrice = pricesForItem?.circlePrice!;
+    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+    const discountPrice = pricesForItem?.discountPrice!;
+    const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+    const planToConsider = pricesForItem?.planToConsider;
+
+    addCartItem!({
+      id: `${item?.itemId}`,
+      mou: 1,
+      name: item?.itemTitle!,
+      price: price,
+      specialPrice: specialPrice! | price,
+      circlePrice: circlePrice,
+      circleSpecialPrice: circleSpecialPrice,
+      discountPrice: discountPrice,
+      discountSpecialPrice: discountSpecialPrice,
+      thumbnail: item?.itemImageUrl,
+      collectionMethod: TEST_COLLECTION_TYPE.HC,
+      groupPlan: planToConsider?.groupPlan,
+      packageMrp: packageCalculatedMrp,
+      inclusions: [Number(item?.itemId)], // since it's a test
+    });
+  }
+
+  function onPressRemoveFromCart(item: any) {
+    if (!props.isServiceable) {
+      return;
+    }
+    removeCartItem!(`${item?.itemId}`);
+  }
+
+  function postHomePageWidgetClicked(name: string, id: string, section: string) {
+    DiagnosticHomePageWidgetClicked(name, id, section);
+  }
+
+  function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
+    const specialPrice = pricesForItem?.specialPrice!;
+    const price = pricesForItem?.price!; //more than price (black)
+    const circlePrice = pricesForItem?.circlePrice!;
+    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+    const discountPrice = pricesForItem?.discountPrice!;
+    const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
+    const widgetTitle = data?.diagnosticWidgetTitle;
+
+    postHomePageWidgetClicked(item?.itemName!, `${item?.itemId}`, widgetTitle);
+    navigation.navigate(AppRoutes.TestDetails, {
+      itemId: item?.itemId,
+      testDetails: {
+        Rate: price,
+        specialPrice: specialPrice! || price,
+        circleRate: circlePrice,
+        circleSpecialPrice: circleSpecialPrice,
+        discountPrice: discountPrice,
+        discountSpecialPrice: discountSpecialPrice,
+        ItemID: `${item?.itemId}`,
+        ItemName: item?.itemName!,
+        collectionType: TEST_COLLECTION_TYPE.HC,
+        packageMrp: packageCalculatedMrp,
+        mrpToDisplay: mrpToDisplay,
+        source: source,
+        type: data?.diagnosticWidgetType,
+        inclusions: [Number(item?.itemId)],
+      } as TestPackageForDetails,
+    });
+  }
+
+  const renderAddToCart = (
+    isAddedToCart: boolean,
+    item: any,
+    pricesForItem: any,
+    packageCalculatedMrp: number
+  ) => {
+    return (
+      <Text
+        style={[
+          styles.addToCartText,
+          {
+            ...theme.viewStyles.text('B', 14, props.isServiceable ? '#fc9916' : '#FED984', 1, 24),
+          },
+        ]}
+        onPress={() =>
+          isAddedToCart
+            ? onPressRemoveFromCart(item)
+            : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
+        }
+      >
+        {isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+      </Text>
+    );
+  };
+
+  return (
+    <>
+      <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
+        {data?.diagnosticWidgetData?.length > 0 ? (
+          <FlatList
+            numColumns={props.isVertical ? props.columns : undefined}
+            bounces={false}
+            keyExtractor={(_, index) => `${index}`}
+            showsHorizontalScrollIndicator={false}
+            horizontal={!props.isVertical}
+            data={data?.diagnosticWidgetData}
+            renderItem={renderItemCard}
+            initialNumToRender={12}
+          />
+        ) : null}
+      </View>
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  itemCardView: {
+    ...theme.viewStyles.card(12, 0),
+    elevation: 10,
+    height: 210,
+    width: 180,
+    marginHorizontal: 4,
+    marginRight: 10,
+    alignItems: 'flex-start',
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
+  imageStyle: { height: 40, width: 40, marginBottom: 8 },
+  itemNameText: {
+    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE, 1, 20),
+    textAlign: 'left',
+    textTransform: 'capitalize',
+  },
+  parameterText: {
+    ...theme.viewStyles.text('R', 11, theme.colors.SHERPA_BLUE, 1, 16),
+    textAlign: 'left',
+    marginTop: '5%',
+  },
+  horizontalSeparator: { marginBottom: 7.5, marginTop: '6%' },
+  flexRow: {
+    flexDirection: 'row',
+  },
+  testNameText: {
+    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE, 1, 24, 0),
+    width: '95%',
+  },
+  imageIcon: { height: 40, width: 40 },
+  savingTextStyle: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN),
+    lineHeight: 18,
+    textAlign: 'center',
+    alignSelf: 'center',
+  },
+  nonCirclePriceText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 12.5 : 13, theme.colors.SHERPA_BLUE),
+    lineHeight: 16,
+    textAlign: 'center',
+    alignSelf: 'center',
+  },
+  mainPriceText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
+    lineHeight: 21,
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+  },
+  slashedPriceText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE),
+    lineHeight: 21,
+    textAlign: 'center',
+    opacity: 0.5,
+    textDecorationLine: 'line-through',
+    marginHorizontal: '5%',
+  },
+  circleLogoIcon: {
+    height: 20,
+    width: isSmallDevice ? 32 : 36,
+    resizeMode: 'contain',
+  },
+  addToCartText: {
+    textAlign: 'left',
+    position: 'absolute',
+    left: 16,
+    bottom: 10,
+  },
+});
