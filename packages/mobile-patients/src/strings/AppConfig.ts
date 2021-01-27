@@ -292,7 +292,7 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     id: 'pharmacy',
-    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8],
     options: [
       'I want to return my order',
       'I would like to cancel the order!',

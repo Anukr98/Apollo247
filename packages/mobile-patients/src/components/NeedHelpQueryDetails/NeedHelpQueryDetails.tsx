@@ -28,7 +28,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   FlatList,
@@ -55,6 +55,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import moment from 'moment';
 const { width } = Dimensions.get('window');
 
 export interface Props
@@ -67,6 +68,7 @@ export interface Props
     isOrderRelatedIssue?: boolean;
     medicineOrderStatus?: MEDICINE_ORDER_STATUS;
     isConsult?: boolean;
+    medicineOrderStatusDate?: any;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -77,8 +79,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
+  const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const { getFilteredReasons, saveNeedHelpQuery } = Helpers;
-  const queryReasons = getFilteredReasons(queryCategory, isOrderRelatedIssue);
+  const [queryReasons, setQueryReasons] = useState(
+    getFilteredReasons(queryCategory, isOrderRelatedIssue)
+  );
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -93,6 +98,21 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [selectedReturnOrderSubReason, setSelectedReturnOrderSubReason] = useState<string>('');
   const returnOrderSubReasons = AppConfig.Configuration.RETURN_ORDER_SUB_REASON;
   let fin = '';
+
+  useEffect(() => {
+    if (medicineOrderStatusDate) {
+      const queryReasonsIndex = queryReasons?.findIndex(
+        (item) => item === string.common.return_text
+      );
+      const showReturnOrder =
+        moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
+      if (!(medicineOrderStatus === MEDICINE_ORDER_STATUS.DELIVERED && showReturnOrder)) {
+        const updatedQueryReasons: string[] = queryReasons;
+        updatedQueryReasons?.splice(queryReasonsIndex, 1);
+        setQueryReasons(updatedQueryReasons);
+      }
+    }
+  }, []);
 
   const getOrderDetails = async (orderId: string) => {
     const variables: GetMedicineOrderShipmentDetailsVariables = {
@@ -354,7 +374,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderReturnOrderView = () => {
     const submit_request =
-      selectedReturnOrderSubReason && returnOrderImages?.length > 0 && comments ? false : true;
+      selectedReturnOrderSubReason && returnOrderImages?.length > 0 ? false : true;
     return (
       <View style={[styles.returnPopupMainViewStyle, styles.returnOrderMainViewStyle]}>
         <View style={[styles.returnPolicyViewStyle, styles.returnOrderViewStyle]}>
@@ -370,11 +390,14 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <View style={{ paddingTop: 4, paddingHorizontal: 16 }}>
-          <TextInputComponent label={string.common.why_return_order_text} noInput={true} />
+          <Text style={[styles.uploadImageTextStyle, { marginTop: 6, marginBottom: 12 }]}>
+            {string.common.why_return_order_text}
+            <Text style={{ color: theme.colors.INPUT_FAILURE_TEXT }}>{'*'}</Text>
+          </Text>
           {renderReturnOrderSubReasonView()}
           <Text style={styles.uploadImageTextStyle}>
             {string.common.upload_image_text}
-            <Text style={{ color: theme.colors.APP_RED }}>{'*'}</Text>
+            <Text style={{ color: theme.colors.INPUT_FAILURE_TEXT }}>{'*'}</Text>
           </Text>
           <Text style={styles.fileSizeText}>{string.common.upload_image_file_size_text}</Text>
           {returnOrderImages?.length > 0 ? renderUploadImagesList() : renderUploadButton()}
@@ -682,10 +705,10 @@ const styles = StyleSheet.create({
   fileSizeText: { ...text('R', 11, SHERPA_BLUE, 1, 14), marginTop: 3 },
   uploadButtonStyle: {
     ...cardViewStyle,
-    paddingTop: 5,
+    paddingTop: 4,
     backgroundColor: WHITE,
     alignSelf: 'flex-start',
-    paddingBottom: 8,
+    paddingBottom: 6,
     paddingHorizontal: 14,
     borderRadius: 3,
     borderWidth: 0.5,
@@ -694,7 +717,7 @@ const styles = StyleSheet.create({
     marginTop: 19,
   },
   uploadButtonTextStyle: {
-    ...text('M', 13, LIGHT_ORANGE, 1, 17),
+    ...text('B', 13, LIGHT_ORANGE, 1, 17),
   },
   imageListViewStyle: {
     marginTop: 14,
