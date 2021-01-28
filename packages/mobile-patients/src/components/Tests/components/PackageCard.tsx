@@ -162,7 +162,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: '6%', alignSelf: 'center' },
+              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
               [styles.nonCirclePriceText]
             )}
           </View>
@@ -321,7 +321,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text('B', 14, props.isServiceable ? '#fc9916' : '#FED984', 1, 24),
+            ...theme.viewStyles.text(
+              'B',
+              isSmallDevice ? 13 : 14,
+              props.isServiceable ? '#fc9916' : '#FED984',
+              1,
+              24
+            ),
           },
         ]}
         onPress={() =>
@@ -372,7 +378,7 @@ const styles = StyleSheet.create({
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 40, width: 40, marginBottom: 8 },
   itemNameText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 17 : 18, theme.colors.SHERPA_BLUE, 1, 24),
+    ...theme.viewStyles.text('M', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 24),
     textAlign: 'left',
     textTransform: 'capitalize',
   },

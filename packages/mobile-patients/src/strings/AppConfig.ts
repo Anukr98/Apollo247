@@ -1169,6 +1169,24 @@ export const CancelConsultation = {
   ],
 };
 
+export const stepsToBookArray = [
+  {
+    "heading" : string.diagnostics.bookOnline,
+    "subtext" : string.diagnostics.bookOnlineSubText,
+    "image" : require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_1.png')
+  },
+  {
+    "heading" : string.diagnostics.hcSample,
+    "subtext" : string.diagnostics.hcSampleSubText,
+    "image" : require("@aph/mobile-patients/src/components/ui/icons/stepsForBooking_2.png")
+  },
+  {
+    "heading" : string.diagnostics.fastReport,
+    "subtext" : string.diagnostics.fastReportSubText,
+    "image" : require("@aph/mobile-patients/src/components/ui/icons/stepsForBooking_3.png")
+  }
+]
+
 type SpecialitiesType = {
   [key: string]: string[];
 };
