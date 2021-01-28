@@ -10,6 +10,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -25,6 +26,7 @@ export interface ProductPriceDeliveryProps {
   cashback: number;
   finalPrice: number;
   showDeliverySpinner: boolean;
+  isBanned: boolean;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -42,6 +44,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     finalPrice,
     isSellOnline,
     showDeliverySpinner,
+    isBanned,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId, circleSubscriptionId } = useShoppingCart();
@@ -49,7 +52,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const momentDiff = moment(deliveryTime).diff(moment());
   const hoursMoment = moment.duration(momentDiff);
   const hours = hoursMoment.asHours().toFixed();
-  const showExpress = isExpress && Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
+  const showExpress = Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
@@ -58,13 +61,13 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         <Text style={styles.label}>{`Price: `}</Text>
         <Text style={styles.value}>
           {string.common.Rs}
-          {specialPrice}
+          {convertNumberToDecimal(specialPrice)}
           {'  '}
         </Text>
         <Text style={styles.smallLabel}>{`MRP `}</Text>
         <Text style={styles.smallValue}>
           {string.common.Rs}
-          {price}
+          {convertNumberToDecimal(price)}
         </Text>
         <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
       </View>
@@ -73,7 +76,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         <Text style={styles.label}>{`MRP: `}</Text>
         <Text style={styles.value}>
           {string.common.Rs}
-          {price}
+          {convertNumberToDecimal(price)}
         </Text>
       </View>
     );
@@ -87,6 +90,10 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         size="small"
         color="green"
       />
+    ) : isBanned ? (
+      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+        <Text style={styles.stockText}>Banned for Sale</Text>
+      </View>
     ) : !isSellOnline ? (
       <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
         <Text style={styles.stockText}>Not for Sale</Text>
@@ -195,7 +202,8 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       {!!circleSubscriptionId && !!cashback && renderCareCashback()}
       {!!manufacturer && !isPharma && renderManufacturer()}
       {renderDeliverTo()}
-      {showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime()}
+      {!isBanned &&
+        (showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime())}
     </View>
   );
 };

@@ -185,7 +185,10 @@ import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
-import { EPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  EPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription } from '@aph/mobile-patients/src/graphql/types/getSDLatestCompletedCaseSheet';
 import {
   DiagnosticsCartItem,
@@ -568,9 +571,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-  const isMedicinePrescribed = useRef<any>();
-  const isTestPrescribed = useRef<any>();
-
+  const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
+  const MedicinePrescriptions = currentCaseSheet?.filter(
+    (item: any) => item?.medicinePrescription !== null
+  );
+  const TestPrescriptions = currentCaseSheet?.filter(
+    (item: any) => item?.diagnosticPrescription !== null
+  );
   const {
     setDoctorJoinedChat,
     doctorJoinedChat,
@@ -583,6 +590,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
+  const { setEPrescriptions } = useShoppingCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -1025,7 +1033,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    fetchAppointmentData();
+    !isVoipCall && !fromIncomingCall && fetchAppointmentData();
     checkAutoTriggerMessagePostAppointmentTime();
     return function cleanup() {
       BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
@@ -1091,7 +1099,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const fetchDoctorDetails = async () => {
-    setLoading(true);
     const input = {
       id: doctorId,
     };
@@ -2838,9 +2845,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(
       moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
     );
-    if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
-      describeYourMedicalConditionAutomatedText(5000);
-    }
     const doctorConnectShortly = insertText.filter((obj: any) => {
       return obj.message === doctorWillConnectShortly;
     });
@@ -2897,6 +2901,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         doctorWillJoinAutomatedText();
       }
       describeYourMedicalConditionAutomatedText();
+    } else {
+      if (appointmentData.isJdQuestionsComplete) {
+        const result = insertText.filter((obj: any) => {
+          return obj.message === consultPatientStartedMsg;
+        });
+        const startConsultResult = insertText.filter((obj: any) => {
+          return obj.message === startConsultMsg;
+        });
+        const diffMin = Math.ceil(
+          moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
+          describeYourMedicalConditionAutomatedText(5000);
+        }
+      }
     }
   };
 
@@ -3314,23 +3333,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const fetchAppointmentData = async () => {
     try {
-      setLoading?.(true);
       const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
         variables: { appointmentId: channel },
         fetchPolicy: 'no-cache',
       });
-      setLoading?.(false);
-      const appointmentCaseSheet =
-        response.data?.getAppointmentData?.appointmentsHistory?.[0]?.caseSheet;
-      isMedicinePrescribed.current = appointmentCaseSheet?.filter(
-        (item) => item?.medicinePrescription !== null
-      );
-      isTestPrescribed.current = appointmentCaseSheet?.filter(
-        (item) => item?.diagnosticPrescription !== null
-      );
+      setcurrentCaseSheet(response.data?.getAppointmentData?.appointmentsHistory?.[0]?.caseSheet);
     } catch (error) {
-      setLoading?.(false);
       CommonBugFender(`${AppRoutes.ChatRoom}_fetchAppointmentData`, error);
     }
   };
@@ -3730,7 +3739,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now`}
+              {`Hello ${userName},\nYour prescription has been shared by the doctor.`}
             </Text>
             <StickyBottomComponent
               style={{
@@ -3789,17 +3798,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const UserInfo = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+
   const onAddToCart = () => {
-    const medPrescription = (caseSheet[0]?.medicinePrescription || []).filter((item) => item!.id);
-    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheet[0]?.blobName!);
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, UserInfo);
+    const medPrescription = (
+      caseSheet?.[0]?.medicinePrescription ||
+      MedicinePrescriptions ||
+      []
+    ).filter((item: any) => item!.id);
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+      caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
+    );
     const presToAdd = {
-      id: caseSheet[0]?.id,
+      id: caseSheet?.[0]?.id || currentCaseSheet?.[0].id,
       date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: appointmentData?.doctorInfo?.displayName || '',
       forPatient: currentPatient?.firstName || '',
-      medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
+      medicines: (medPrescription || []).map((item: any) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
+    setEPrescriptions && setEPrescriptions([presToAdd]);
 
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
@@ -3808,6 +3831,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onAddTestsToCart = async () => {
+    postWebEngageEvent(WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM, UserInfo);
     let location: LocationData | null = null;
     setLoading && setLoading(true);
 
@@ -3825,9 +3849,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     }
 
-    const testPrescription = (caseSheet[0]?.diagnosticPrescription ||
+    const testPrescription = (caseSheet?.[0]?.diagnosticPrescription ||
+      MedicinePrescriptions ||
       []) as getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription[];
-    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheet[0]?.blobName!);
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+      caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
+    );
 
     if (!testPrescription.length) {
       Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
@@ -3835,7 +3862,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return;
     }
     const presToAdd = {
-      id: caseSheet[0]?.id,
+      id: caseSheet?.[0]?.id || currentCaseSheet?.[0].id,
       date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: appointmentData?.doctorInfo?.displayName || '',
       forPatient: (currentPatient && currentPatient.firstName) || '',
@@ -3900,7 +3927,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 'Order Medicines in one click and get free home delivery in 2-4 hours. We also have home sample collections for diagnostic tests.'
               }
             </Text>
-            {(caseSheet?.[0]?.medicinePrescription || isMedicinePrescribed.current?.length > 0) && (
+            {(caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions?.length > 0) && (
               <Button
                 title={'ORDER MEDICINES'}
                 titleTextStyle={{ color: '#FC9916' }}
@@ -3908,7 +3935,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 onPress={() => onAddToCart()}
               />
             )}
-            {(caseSheet?.[0]?.diagnosticPrescription || isTestPrescribed.current?.length > 0) && (
+            {(caseSheet?.[0]?.diagnosticPrescription || TestPrescriptions?.length > 0) && (
               <Button
                 title={'BOOK DIAGNOSTIC TESTS'}
                 titleTextStyle={{ color: '#FC9916' }}
@@ -7086,7 +7113,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     if (checkMsgResult?.length === 0) {
       const automatedText = [
-        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in 15 mins you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
+        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in less than 15 minutes you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
       ];
       pubnub.publish(
         {

@@ -4,6 +4,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { SymptomsSpecialities } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { UserEvent } from 'pubnub';
+import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -89,6 +90,17 @@ export enum WebEngageEventName {
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
   DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
+  SEARCH_SUGGESTIONS = 'Search suggestions',
+  SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
+
+  //Doctor Share Events
+  SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
+  SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
+  GO_BACK_CLICKED_DOC_LIST = 'go back clicked doc list',
+  SHARE_CLICKED_DOC_PROFILE_SCREEN = 'share clicked doc profile screen',
+  SHARE_PROFILE_CLICKED_DOC_PROFILE = 'Share profile clicked doc profile',
+  GO_BACK_CLICKED_DOC_PROFILE = 'go back clicked doc profile',
+  DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -310,7 +322,8 @@ export enum WebEngageEventName {
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
-
+  ORDER_MEDICINES_IN_CONSULT_ROOM = 'Order meds in Consult room',
+  BOOK_TESTS_IN_CONSULT_ROOM = 'Book tests in consult room',
   // Symptom Tracker Events
   SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
@@ -618,7 +631,8 @@ export interface WebEngageEvents {
     'Referral Code'?: string;
   };
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
-
+  [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
+  [WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM]: UserInfo;
   // ********** Home Screen Events ********** \\
 
   [WebEngageEventName.BUY_MEDICINES]: {
@@ -634,6 +648,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.ORDER_TESTS]: PatientInfoWithSource;
   [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
@@ -650,14 +665,14 @@ export interface WebEngageEvents {
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: {
     'Patient Name': string;
-  'Patient UHID': string;
-  Relation: string;
-  'Patient Age': number;
-  'Patient Gender': string;
-  'Mobile Number': string;
-  'Customer ID': string;
-  'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-  'Circle Membership Value': number | null;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value': number | null;
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -728,6 +743,7 @@ export interface WebEngageEvents {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List' | 'Pharmacy PDP';
     resultsdisplayed: number;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.SEARCH_ENTER_CLICK]: {
     keyword: string;
@@ -842,6 +858,7 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.SKU_PRICE_MISMATCH]: {
     'Mobile Number': string;
@@ -874,6 +891,7 @@ export interface WebEngageEvents {
     'No. of out of stock items'?: number;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -882,6 +900,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Customer ID': string;
@@ -902,6 +921,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
     OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED]: {
     Serviceable: 'Yes' | 'No';
@@ -914,10 +934,12 @@ export interface WebEngageEvents {
     NumberOfPrescriptionClicked: number;
     NumberOfPrescriptionUploaded: number;
     NumberOfEPrescriptions: number;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
     'Upload Source'?: 'Cart' | 'Upload Flow';
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
     'Order ID': string | number;
@@ -925,6 +947,7 @@ export interface WebEngageEvents {
     StoreId?: string; //(incase of store delivery)
     'Delivery address'?: string;
     Pincode: string | number;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -952,6 +975,7 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1091,11 +1115,11 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
     'Order Amount': number; // Optional
-    'Payment mode'?: 'COD' | 'Online'; // Optional
-    'Circle discount': number;
+    'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
+    'Circle discount'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Paymentmode: 'Online' | 'COD';
+    Paymentmode: 'Prepaid' | 'Cash';
     Amount: number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
@@ -1445,6 +1469,7 @@ export interface WebEngageEvents {
     TAT_Hrs: number;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type?: PharmaUserStatus;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
@@ -1923,6 +1948,7 @@ export interface WebEngageEvents {
     SectionName?: string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -1934,6 +1960,45 @@ export interface WebEngageEvents {
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor ID': string;
+  };
+  [WebEngageEventName.SEARCH_SUGGESTIONS]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Text typed by the user': string;
+    'Search Suggestions': string;
+    Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
+    'Search Suggestion Clicked': string;
+  };
+
+  [WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
+    'Search suggestions in the particular bucket': string;
+  };
+
+  [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor ID': string;
+    'Doctor card rank'?: number;
+    'UTM parameter'?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';

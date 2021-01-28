@@ -43,7 +43,10 @@ import {
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -307,16 +310,16 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         >
           {string.common.Rs}
           {heading === string.consultType.online.heading
-            ? onlineConsultMRPPrice
-            : physicalConsultMRPPrice}
+            ? convertNumberToDecimal(onlineConsultMRPPrice)
+            : convertNumberToDecimal(physicalConsultMRPPrice)}
         </Text>
         <View style={styles.rowContainer}>
           {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {heading === string.consultType.online.heading
-              ? onlineConsultSlashedPrice
-              : physicalConsultSlashedPrice}
+              ? convertNumberToDecimal(onlineConsultSlashedPrice)
+              : convertNumberToDecimal(physicalConsultSlashedPrice)}
           </Text>
         </View>
       </View>
@@ -377,7 +380,9 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             {showCirclePricing ? (
               renderCareDoctorPricing(heading)
             ) : (
-              <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
+              <Text style={styles.priceTextStyle}>{`${string.common.Rs}${convertNumberToDecimal(
+                Number(price)
+              )}`}</Text>
             )}
           </View>
           {!showCircleSubscribed && showCirclePricing ? (

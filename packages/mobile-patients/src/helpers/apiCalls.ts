@@ -42,7 +42,9 @@ export interface MedicineProduct {
   consume_type?: string | null;
   dose_form_variant?: string | null;
   pack_form?: string | null;
+  product_form?: string | null;
   pack_size?: string | null;
+  banned?: 'Yes' | 'No';
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -523,6 +525,24 @@ export interface SymptomsSpecialities {
   name: string;
 }
 
+export interface ProceduresAndSymptomsParams {
+  text: string;
+}
+
+interface ProceduresAndSymptomsResponse {
+  hits?: number;
+  results: ProceduresAndSymptomsResult[];
+  status?: string;
+}
+
+export interface ProceduresAndSymptomsResult {
+  description?: string;
+  id?: string;
+  name: string;
+  speciality?: string;
+  tag: string;
+}
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
@@ -812,7 +832,7 @@ export const getPlaceInfoByPlaceId = (
 export const getLatLongFromAddress = (
   address: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}&components=country:IN`;
   return Axios.get(url);
 };
 
@@ -1079,5 +1099,24 @@ export const getDiagnosticsSearchResults = (
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
     },
+  });
+};
+
+export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getWidgets = `${baseurl}/${pageName}/getwidgets`;
+  return Axios.get(getWidgets, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const searchProceduresAndSymptoms = (
+  params: ProceduresAndSymptomsParams
+): Promise<AxiosResponse<ProceduresAndSymptomsResponse>> => {
+  const url = AppConfig.Configuration.PROCEDURE_SYMPTOMS_SEARCH_URL;
+  return Axios.get(url, {
+    params: params,
   });
 };

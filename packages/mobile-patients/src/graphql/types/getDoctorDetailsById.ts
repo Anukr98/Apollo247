@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE, WeekDay } from "./globalTypes";
+import { DoctorType, Gender, ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorDetailsById
@@ -156,6 +156,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   languages: string | null;
   city: string | null;
   awards: string | null;
+  gender: Gender | null;
+  profile_deeplink: string | null;
   photoUrl: string | null;
   availableModes: (ConsultMode | null)[] | null;
   doctorPricing: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;

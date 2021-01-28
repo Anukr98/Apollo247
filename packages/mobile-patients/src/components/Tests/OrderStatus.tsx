@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  SafeAreaView,
+  StackActions,
+} from 'react-navigation';
 import { CircleLogo, OrderPlacedCheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -15,6 +20,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -29,7 +35,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-  const { isDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
+  const {
+    isDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
+    cartItems,
+  } = useDiagnosticsCart();
   const { circleSubscriptionId } = useShoppingCart();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const savings = isDiagnosticCircleSubscription
@@ -49,8 +59,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   useEffect(() => {
-    clearDiagnoticCartInfo?.();
     postwebEngageCheckoutCompletedEvent();
+    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
+    clearDiagnoticCartInfo?.();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -83,7 +94,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const renderHeader = () => {
     return (
       <View style={styles.header}>
-        <Text style={styles.name}>{`Hi, ${currentPatient?.firstName || ''} :)`}</Text>
+        <Text style={styles.name}>{`Hi, ${currentPatient?.firstName.slice(0, 10) || ''} :)`}</Text>
         <TouchableOpacity onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}>
           <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
         </TouchableOpacity>
@@ -209,16 +220,18 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
-        <>
-          {renderHeader()}
-          {renderOrderPlacedMsg()}
-          {renderBookingInfo()}
-          {renderCartSavings()}
-          {backToHome()}
-        </>
-      </ScrollView>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
+          <>
+            {renderHeader()}
+            {renderOrderPlacedMsg()}
+            {renderBookingInfo()}
+            {renderCartSavings()}
+            {backToHome()}
+          </>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 };

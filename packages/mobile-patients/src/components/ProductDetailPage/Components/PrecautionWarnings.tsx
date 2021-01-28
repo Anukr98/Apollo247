@@ -29,6 +29,13 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
   const liverContent = pharmaOverview?.LiverContent;
   const kidneyContent = pharmaOverview?.KidneyContent;
   const faqContent = pharmaOverview?.CompositionContentFAQs;
+  const showSafetyAdvice =
+    !!alcoholContent ||
+    !!pregnancyContent ||
+    !!breastfeedingContent ||
+    !!drivingContent ||
+    !!liverContent ||
+    !!kidneyContent;
 
   const [numberOfLines, setNumberOfLines] = useState<number>(2);
   const [maxLines, setMaxLines] = useState<number>(2);
@@ -140,11 +147,15 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
 
   return (
     <View style={styles.cardStyle}>
-      <View style={styles.lineBreak} />
-      <Text style={styles.heading}>In Depth Precautions & Warning</Text>
-      {!!drugWarning && renderWarning()}
-      {renderSafetyAdvice()}
-      <View style={styles.lineBreak} />
+      {(!!drugWarning || showSafetyAdvice) && (
+        <>
+          <View style={styles.lineBreak} />
+          <Text style={styles.heading}>In Depth Precautions & Warning</Text>
+          {!!drugWarning && renderWarning()}
+          {showSafetyAdvice && renderSafetyAdvice()}
+          <View style={styles.lineBreak} />
+        </>
+      )}
       {!!faqContent && faqContent.length && <FaqComponent faqs={faqContent} name={name} />}
     </View>
   );

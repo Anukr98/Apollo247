@@ -6,6 +6,8 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface BottomStickyComponentProps {
   price: number;
@@ -19,6 +21,8 @@ export interface BottomStickyComponentProps {
   onAddCartItem: () => void;
   productQuantity: number;
   setShowAddedToCart: (show: boolean) => void;
+  isBanned: boolean;
+  cashback: number;
 }
 
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
@@ -34,8 +38,10 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     packFormVariant,
     productQuantity,
     setShowAddedToCart,
+    isBanned,
+    cashback,
   } = props;
-  const { cartItems, updateCartItem } = useShoppingCart();
+  const { cartItems, updateCartItem, circleSubscriptionId } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   const renderCartCTA = () => {
@@ -83,18 +89,19 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
         style={{
           flexDirection: 'column',
           justifyContent: 'center',
+          marginTop: !!cashback && !!circleSubscriptionId ? 0 : 17,
         }}
       >
         {!!specialPrice ? (
           <View style={styles.flexRow}>
             <Text style={styles.value}>
               {string.common.Rs}
-              {specialPrice}{' '}
+              {convertNumberToDecimal(specialPrice)}{' '}
             </Text>
             <Text style={styles.smallLabel}>{`MRP `}</Text>
             <Text style={styles.smallValue}>
               {string.common.Rs}
-              {price}
+              {convertNumberToDecimal(price)}
             </Text>
             <Text style={styles.discountPercent}>{` ${discountPercent}%off`}</Text>
           </View>
@@ -103,11 +110,11 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
             <Text style={styles.label}>{`MRP: `}</Text>
             <Text style={styles.value}>
               {string.common.Rs}
-              {price}
+              {convertNumberToDecimal(price)}
             </Text>
           </View>
         )}
-        {!!packSize && !!packForm && !!packFormVariant && renderPackSize()}
+        {/* {!!packSize && !!packForm && !!packFormVariant && renderPackSize()} */}
       </View>
     );
   };
@@ -118,10 +125,34 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     >{`${packForm} of ${packSize}${unit} ${packFormVariant}`}</Text>
   );
 
+  const renderCareCashback = () => {
+    const finalPrice = price - specialPrice ? specialPrice : price;
+    return (
+      <>
+        <CareCashbackBanner
+          bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
+          textStyle={styles.circleText}
+          logoStyle={styles.circleLogo}
+        />
+        <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
+          Effective price for you
+          <Text style={{ fontWeight: 'bold' }}>
+            {' '}
+            {string.common.Rs}
+            {(finalPrice - cashback).toFixed(2)}
+          </Text>
+        </Text>
+      </>
+    );
+  };
+
   return (
     <StickyBottomComponent style={styles.stickyBottomComponent}>
-      {renderProductPrice()}
-      {renderCartCTA()}
+      <View>
+        {renderProductPrice()}
+        {!!circleSubscriptionId && !!cashback && renderCareCashback()}
+      </View>
+      {!isBanned && renderCartCTA()}
     </StickyBottomComponent>
   );
 };
@@ -129,6 +160,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
 const styles = StyleSheet.create({
   stickyBottomComponent: {
     ...theme.viewStyles.shadowStyle,
+    backgroundColor: theme.colors.WHITE,
     flexDirection: 'row',
     borderTopWidth: 0.6,
     borderStyle: 'dashed',
@@ -173,4 +205,14 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   discountPercent: theme.viewStyles.text('R', 14, '#00B38E', 1, 15, 0.35),
+  circleText: {
+    ...theme.viewStyles.text('M', 10, '#02475B', 1, 15),
+    paddingVertical: 2,
+    marginLeft: -4,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 38,
+    height: 20,
+  },
 });

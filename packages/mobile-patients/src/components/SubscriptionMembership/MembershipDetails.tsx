@@ -775,11 +775,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           'TESTS',
           isCirclePlan ? { comingFrom: AppRoutes.MembershipDetails } : {}
         );
-      } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
+      } else if (action == Hdfc_values.DIETECIAN_LANDING) {
         props.navigation.navigate('DoctorSearchListing', {
           specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
-      } else if ((action = Hdfc_values.PRO_HEALTH)) {
+      } else if (action == Hdfc_values.PRO_HEALTH) {
         onPressHealthPro();
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);

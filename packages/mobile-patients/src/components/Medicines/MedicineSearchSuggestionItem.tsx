@@ -12,6 +12,7 @@ import {
   productsThumbnailUrl,
   isProductInStock,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -69,7 +70,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const isOutOfStock = !isProductInStock(data);
   const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = Number(data.special_price) || undefined;
-  const { dose_form_variant, pack_form, pack_size, unit_of_measurement } = data;
+  const { product_form, pack_form, pack_size, unit_of_measurement } = data;
 
   function getDiscountPercent() {
     return (((data.price - specialPrice) / data.price) * 100).toFixed(1);
@@ -84,10 +85,10 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
         >
           {data.name}
         </Text>
-        {!!dose_form_variant && !!pack_form && !!pack_size && !!unit_of_measurement && (
+        {!!product_form && !!pack_form && !!pack_size && (
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 0.7, 20)}>
-              {`${pack_form} of ${pack_size}${unit_of_measurement} ${dose_form_variant}`}
+              {`${pack_form} of ${pack_size}${unit_of_measurement || ''} ${product_form}`}
             </Text>
           </View>
         )}
@@ -106,13 +107,15 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
               )}
               <Text style={theme.viewStyles.text('SB', 13, '#01475B', 1, 25)}>
                 {string.common.Rs}
-                {specialPrice || data.price}
+                {convertNumberToDecimal(specialPrice || data?.price)}
               </Text>
               {specialPrice ? (
                 <View style={styles.flexRow}>
                   <Text style={styles.specialPrice}>
                     <Text style={styles.lineThrough}>{' MRP '}</Text>
-                    <Text style={styles.lineThrough}>{`${string.common.Rs} ${data.price}`}</Text>
+                    <Text style={styles.lineThrough}>{`${string.common.Rs} ${convertNumberToDecimal(
+                      data?.price
+                    )}`}</Text>
                   </Text>
                   <Text style={styles.discount}>{`${getDiscountPercent()}%off`}</Text>
                 </View>

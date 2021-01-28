@@ -137,11 +137,12 @@ android {
         applicationId "com.apollopatient"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 80
-        versionName "5.3.0"
+        versionCode 82
+        versionName "5.3.1"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
+        missingDimensionStrategy 'react-native-camera', 'general'
     }
     splits {
         abi {
@@ -205,6 +206,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-camera')
     implementation 'org.webkit:android-jsc:+'
     implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation project(':@react-native-community_progress-bar-android')

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { VegetarianIcon, NonVegetarianIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NewPharmaOverview } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { filterHtmlContent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { PharmaMedicineInfo } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/PharmaMedicineInfo';
+import HTML from 'react-native-render-html';
 
 export interface ProductInfoProps {
   name: string;
@@ -43,13 +44,6 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     safety_information,
   } = props;
 
-  const [numberOfLines, setNumberOfLines] = useState<number>(2);
-  const [maxLines, setMaxLines] = useState<number>(2);
-
-  const onTextLayout = (e) => {
-    setNumberOfLines(e.nativeEvent.lines.length);
-  };
-
   const renderDescription = () => {
     const descriptionHtml = filterHtmlContent(description);
     const text = descriptionHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
@@ -57,53 +51,55 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
       !!text.length && (
         <View>
           <Text style={styles.subHeading}>Description</Text>
-          <TouchableOpacity
-            onPress={() => {
-              if (numberOfLines != maxLines) {
-                setMaxLines(numberOfLines);
-              } else {
-                setMaxLines(2);
-              }
+          <HTML
+            html={descriptionHtml}
+            baseFontStyle={{
+              ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
-          >
-            <Text
-              numberOfLines={maxLines}
-              onTextLayout={onTextLayout}
-              style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
-            >
-              {text}
-            </Text>
-            {numberOfLines > 2 && numberOfLines != maxLines && (
-              <Text style={styles.readMoreText}>READ MORE</Text>
-            )}
-            {numberOfLines > 2 && numberOfLines === maxLines && (
-              <Text style={styles.readMoreText}>READ LESS</Text>
-            )}
-          </TouchableOpacity>
+            imagesMaxWidth={Dimensions.get('window').width}
+          />
         </View>
       )
     );
   };
 
   const renderKeyBenefits = () => {
-    const text = key_benefits?.replace(/u2022/, '');
-    const keyBenefit = text?.replace(/u2022/gi, '.').trim();
+    const keyBenefits = filterHtmlContent(key_benefits);
+    const text2 = keyBenefits?.replace(/u2022/, '');
+    const keyBenefit = text2?.replace(/u2022/gi, '.').trim();
     return (
-      <View>
-        <Text style={styles.subHeading}>Key Benefits</Text>
-        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{keyBenefit}</Text>
-      </View>
+      !!keyBenefit.legth && (
+        <View>
+          <Text style={styles.subHeading}>Key Benefits</Text>
+          <HTML
+            html={keyBenefit}
+            baseFontStyle={{
+              ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
+            }}
+            imagesMaxWidth={Dimensions.get('window').width}
+          />
+        </View>
+      )
     );
   };
 
   const renderSafetyInfo = () => {
-    const text = safety_information?.replace(/u2022/, '');
-    const safetyInfo = text?.replace(/u2022/gi, '.').trim();
+    const safety_info = filterHtmlContent(safety_information);
+    const text2 = safety_info?.replace(/u2022/, '');
+    const safetyInfo = text2?.replace(/u2022/gi, '.').trim();
     return (
-      <View>
-        <Text style={styles.subHeading}>Key Benefits</Text>
-        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{safetyInfo}</Text>
-      </View>
+      !!safetyInfo.length && (
+        <View>
+          <Text style={styles.subHeading}>Safety Info</Text>
+          <HTML
+            html={safetyInfo}
+            baseFontStyle={{
+              ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
+            }}
+            imagesMaxWidth={Dimensions.get('window').width}
+          />
+        </View>
+      )
     );
   };
 
@@ -154,9 +150,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
   const renderVegetarianIcon = () => {
     return vegetarian === 'Yes' ? (
       <VegetarianIcon style={styles.vegIcon} />
-    ) : (
+    ) : vegetarian === 'No' ? (
       <NonVegetarianIcon style={styles.vegIcon} />
-    );
+    ) : null;
   };
 
   const renderOtherInformation = () => (
@@ -187,7 +183,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
         <PharmaMedicineInfo
           name={name}
           pharmaOverview={pharmaOverview}
-          vegetarian={vegetarian === 'Yes'}
+          vegetarian={vegetarian}
           key_ingredient={key_ingredient}
           size={size}
           flavour_fragrance={flavour_fragrance}
@@ -196,9 +192,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
         />
       ) : (
         <>
+          {!!key_benefits && renderKeyBenefits()}
           {!!storage && renderStorage()}
           {!!vegetarian && renderVegetarianIcon()}
-          {!!key_benefits && renderKeyBenefits()}
           {!!key_ingredient && renderKeyIngredient()}
           {!!size && renderSize()}
           {!!flavour_fragrance && renderFlavour()}

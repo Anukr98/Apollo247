@@ -480,7 +480,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient) {
-      const _setUserName = addressData?.name! ? addressData?.name : currentPatient.firstName!;
+      const _setUserName = addressData?.name! ? addressData?.name : currentPatient?.firstName!;
       setuserName(_setUserName);
       setuserId(currentPatient.id);
       if (addressData?.mobileNumber) {
@@ -742,7 +742,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         ? userName.slice(0, setCharLen).concat('...')
         : userName;
     return (
-      <View style={{ margin: 20, marginBottom: 0 }}>
+      <View style={{ margin: 20, marginBottom: 0, marginTop: 10 }}>
         <Text
           style={{
             color: editName ? theme.colors.LIGHT_BLUE : theme.colors.SHERPA_BLUE,
@@ -1232,10 +1232,10 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           {...keyboardVerticalOffset}
         >
           <ScrollView bounces={false}>
-            {renderUserName()}
-            {renderUserNumber()}
             {renderAddressText()}
             {renderAddress()}
+            {!!source && source == 'Diagnostics Cart' ? null : renderUserName()}
+            {renderUserNumber()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>
           <View

@@ -1316,6 +1316,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       languages
       city
       awards
+      gender
+      profile_deeplink
       photoUrl
       availableModes
       doctorPricing {
@@ -2037,6 +2039,9 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         rescheduleCount
         isRescheduled
         collectionCharges
+        visitNo
+        paymentType
+        paymentOrderId
         diagnosticOrderLineItems {
           id
           itemId
@@ -2454,10 +2459,12 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           id
           siteId
           siteName
-          apOrderNo
+          trackingNo
+          trackingProvider
           updatedDate
           currentStatus
           itemDetails
+          trackingUrl
           medicineOrdersStatus {
             id
             orderStatus
@@ -2513,7 +2520,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
     ) {
       medicineOrderDetails {
         medicineOrderShipments {
-          apOrderNo
+          trackingNo
+          trackingProvider
         }
       }
     }
@@ -2833,6 +2841,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           siteDisplayName
           tag
           consultId
+          identifier
           additionalNotes
           observation
           labTestResults {
@@ -4516,12 +4525,50 @@ export const CREATE_ORDER = gql`
   }
 `;
 
+export const GET_INTERNAL_ORDER = gql`
+  query getOrderInternal($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      txn_uuid
+      txn_id
+      status_id
+      payment_order_id
+      refunds {
+        status
+        unique_request_id
+        sent_to_gateway
+        initiated_by
+        created_at
+        updated_at
+        amount
+      }
+    }
+  }
+`;
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
     processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
       status
       preBookingID
       message
+    }
+  }
+`;
+
+export const VERIFY_VPA = gql`
+  mutation verifyVPA($verifyVPA: VerifyVPA) {
+    verifyVPA(verifyVPA: $verifyVPA) {
+      vpa
+      status
+      customer_name
+    }
+  }
+`;
+
+export const GET_USER_PROFILE_TYPE = gql`
+  query getUserProfileType($mobileNumber: String!) {
+    getUserProfileType(mobileNumber: $mobileNumber) {
+      profile
     }
   }
 `;

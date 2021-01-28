@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE } from "./globalTypes";
+import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticOrdersList
@@ -86,6 +86,9 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   rescheduleCount: number | null;
   isRescheduled: boolean | null;
   collectionCharges: number | null;
+  visitNo: string | null;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  paymentOrderId: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
 

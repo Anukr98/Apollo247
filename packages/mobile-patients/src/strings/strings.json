@@ -389,6 +389,7 @@
     "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
     "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
     "specialDiscountText": "TESTS247 coupon pre-applied",
+    "unableToOpenReport" : "We are facing some issue in opening the report. Please try again later.",
     "disclaimerText": [{
       "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
     }, {
@@ -413,7 +414,15 @@
       "slotMistake": "Slot picked by mistake",
       "otherReasons": "Others (Please specify)"
     },
-    "minorAgeText": "Lab tests cannot be booked for below 10 yrs"
+    "minorAgeText": "Lab tests cannot be booked for below 10 years",
+    "sameSlotError" : "Cannot book same slot",
+    "refundInitiateText": "Your refund for amount ₹{{refundAmount}} has been initiated. It takes 4-5 working days for processing.",
+    "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
+    "collectionFromText" : "Sample collection address",
+    "orderCancelledSuccessText": "Your order has been cancelled successfully!",
+    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!",
+    "stepsToBook": "3 simple steps to book with apollo 24|7",
+    "certificateText":"Certified safety and quality fullfiled by Apollo Diagnostics."
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -861,5 +870,13 @@
     "NO_RESULTS_FOUND": "No Results Found",
     "MARKER_TEXT": "MOVE MAP TO ADJUST",
     "HELP_US_LOCATE_TEXT": "Help us locate your address"
+  },
+  "accessLocationPopUp":{
+    "chooseFromAddressText":"Choose from saved addresses",
+    "headerMessage":"Select delivery location",
+    "currentLocationText":"Use my current location",
+    "defaultPincodeText" : "Enter Delivery Pincode",
+    "testPincodeText" : "Enter pincode here",
+    "addNewAddressText":"Add New Address"
   }
 }

@@ -9,6 +9,7 @@ import {
   ApolloPartnerIcon,
   InfoBlue,
   CircleLogo,
+  ShareYellowDocIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
@@ -54,7 +55,10 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  convertNumberToDecimal,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -95,7 +99,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   doctorNameStyles: {
-    paddingTop: 35,
+    paddingTop: 0,
     paddingLeft: 0,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -165,6 +169,7 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
   },
+  doctorNameViewStyle: { flexDirection: 'row', paddingTop: 35, justifyContent: 'space-between' },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -191,6 +196,13 @@ export interface DoctorCardProps extends NavigationScreenProps {
   callSaveSearch?: string;
   onPlanSelected?: (() => void) | null;
   selectedConsultMode?: ConsultMode | null;
+  onPressShare?: (
+    rowData:
+      | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
+      | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
+      | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
+      | any
+  ) => void;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -306,7 +318,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {string.common.Rs}
         </Text>
         <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
-          {nonCircleDoctorFees}
+          {convertNumberToDecimal(nonCircleDoctorFees)}
         </Text>
       </View>
     );
@@ -319,11 +331,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={styles.rowContainer}>
             <Text style={styles.carePrice}>
               {string.common.Rs}
-              {circleDoctorFees}
+              {convertNumberToDecimal(circleDoctorFees)}
             </Text>
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
-              {circleDoctorSlashedPrice}
+              {convertNumberToDecimal(circleDoctorSlashedPrice)}
             </Text>
           </View>
         </View>
@@ -343,7 +355,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </Text>
             <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
               {string.common.Rs}
-              {circleDoctorFees}
+              {convertNumberToDecimal(circleDoctorFees)}
             </Text>
           </View>
           <View style={styles.seperatorLine} />
@@ -363,7 +375,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
                 {string.common.Rs}
-                {circleDoctorSlashedPrice}
+                {convertNumberToDecimal(circleDoctorSlashedPrice)}
               </Text>
 
               <InfoBlue style={styles.infoIcon} />
@@ -623,7 +635,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
+              <View style={styles.doctorNameViewStyle}>
+                <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
+                {/* Hiding Share Icon from Card */}
+                {/* <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => props.onPressShare && props.onPressShare(rowData)}
+                  style={{ paddingLeft: 5 }}
+                >
+                  <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
+                </TouchableOpacity> */}
+              </View>
               {renderSpecialities()}
               {isCircleDoctorOnSelectedConsultMode
                 ? renderCareDoctorsFee()

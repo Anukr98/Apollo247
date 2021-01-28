@@ -17,7 +17,6 @@ import {
   setCircleMembershipType,
   isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -42,7 +41,6 @@ import {
   CrossYellow,
   DropdownGreen,
   OrderPlacedCheckedIcon,
-  RadioButtonIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
@@ -68,7 +66,6 @@ import {
   VALIDATE_DIAGNOSTIC_COUPON,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_DIAGNOSTIC_ORDER,
-  SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -84,7 +81,6 @@ import {
 import {
   BOOKINGSOURCE,
   DEVICETYPE,
-  DiagnosticBookHomeCollectionInput,
   DiagnosticLineItem,
   DiagnosticOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -156,7 +152,7 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { fonts } from '../../theme/fonts';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
@@ -169,16 +165,13 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import {
-  DiagnosticBookHomeCollection,
-  DiagnosticBookHomeCollectionVariables,
-} from '@aph/mobile-patients/src/graphql/types/DiagnosticBookHomeCollection';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import {
   calculateMrpToDisplay,
   getPricesForItem,
   sourceHeaders,
+  convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
@@ -630,54 +623,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
   };
-  const fireOrderFailedEvent = (orderId: any) => {
-    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
-      OrderID: orderId,
-      Price: Number(grandTotal),
-      CouponCode: coupon ? coupon.code : '',
-      PaymentType: isCashOnDelivery ? 'COD' : 'Prepaid',
-      LOB: 'Diagnostics',
-    };
-    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
-    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
-  };
 
   const postPaymentInitiatedWebengage = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
+      Paymentmode: isCashOnDelivery ? 'Cash' : 'Prepaid',
       Amount: grandTotal,
       ServiceArea: 'Diagnostic',
       LOB: 'Diagnostic',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
-  };
-
-  const firePurchaseEvent = (orderId: string) => {
-    let items: any = [];
-    cartItems.forEach((item, index) => {
-      let itemObj: any = {};
-      itemObj.item_name = item.name; // Product Name or Doctor Name
-      itemObj.item_id = item.id; // Product SKU or Doctor ID
-      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
-      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
-      itemObj.item_category = 'Diagnostics'; // 'Pharmacy' or 'Consultations'
-      itemObj.item_category2 = ''; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
-      itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
-      itemObj.index = index + 1; // Item sequence number in the list
-      itemObj.quantity = 1; // "1" or actual quantity
-      items.push(itemObj);
-    });
-    let code: any = coupon ? coupon.code : null;
-    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      coupon: code,
-      currency: 'INR',
-      items: items,
-      transaction_id: orderId,
-      value: Number(grandTotal),
-      LOB: 'Diagnostics',
-    };
-    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, eventAttributes);
   };
 
   useEffect(() => {
@@ -721,10 +675,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [deliveryAddressId, diagnosticSlot, cartItems]);
 
-  useEffect(() => {
-    clinics.length == 0 && fetchStorePickup();
-    slicedStoreList.length == 0 && filterClinics(clinicId, true, true);
-  }, [clinicId]);
+  // useEffect(() => {
+  //   clinics.length == 0 && fetchStorePickup();
+  //   slicedStoreList.length == 0 && filterClinics(clinicId, true, true);
+  // }, [clinicId]);
 
   useEffect(() => {
     if (testCentresLoaded) {
@@ -1439,6 +1393,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       KeyName: dataname,
       addressDetails: address,
       ComingFrom: comingFrom,
+      source: 'Diagnostics Cart' as AddressSource,
     });
   };
 
@@ -2056,9 +2011,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const renderCartSavingBanner = () => {
     return dashedBanner(
       'You ',
-      `saved ${string.common.Rs}${
+      `saved ${string.common.Rs}${convertNumberToDecimal(
         isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving
-      }`,
+      )}`,
       'on this order',
       'none'
     );
@@ -2071,7 +2026,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const renderSavedBanner = () => {
     return dashedBanner(
       'You could have',
-      `saved extra ${string.common.Rs}${circleSaving}`,
+      `saved extra ${string.common.Rs}${convertNumberToDecimal(circleSaving)}`,
       'with',
       'right'
     );
@@ -2446,41 +2401,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     saveOrder(orderInfo)
       .then(({ data }) => {
-        // const { orderId, displayId, errorCode, errorMessage } =
-        //   g(data, 'SaveDiagnosticOrder')! || {};
         console.log('data >>>>', data);
-        // if (errorCode || errorMessage) {
-        //   // Order-failed
-        //   setshowSpinner(false);
-        //   setLoading!(false);
-        //   showAphAlert!({
-        //     unDismissable: true,
-        //     title: string.common.uhOh,
-        //     description: string.diagnostics.bookingOrderFailedMessage,
-        //   });
-        //   fireOrderFailedEvent(orderId);
-        // } else {
-        //   // Order-Success
-        //   if (!isCashOnDelivery) {
-        //     // PG order, redirect to web page
-        //     redirectToPaymentGateway(orderId!, displayId!);
-        //     return;
-        //   }
-        //   // COD order, show popup here & clear cart info
-        //   postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
-
-        //   setModalVisible(true);
-        //   firePurchaseEvent(orderId!);
-        //   setOrderDetails({
-        //     orderId: orderId,
-        //     displayId: displayId,
-        //     diagnosticDate: date!,
-        //     slotTime: slotTimings!,
-        //     cartSaving: cartSaving,
-        //     circleSaving: circleSaving,
-        //   });
-        //   clearDiagnoticCartInfo && clearDiagnoticCartInfo();
-        // }
       })
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
@@ -2598,14 +2519,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             'Patient UHID': g(currentPatient, 'id'),
             'Total items in cart': cartItems.length,
             'Order Amount': grandTotal,
-            'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+            'Payment mode': isCashOnDelivery ? 'Cash' : 'Prepaid',
           };
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: grandTotal,
             orderId: orderId,
             orderDetails: orderInfo,
-            eventAttributes
+            eventAttributes,
           });
         }
       })
@@ -2783,8 +2704,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                           {' '}
                           saved {string.common.Rs}
                           {isDiagnosticCircleSubscription
-                            ? Number(orderCartSaving) + Number(orderCircleSaving)
-                            : orderCartSaving}
+                            ? convertNumberToDecimal(
+                                Number(orderCartSaving) + Number(orderCircleSaving)
+                              )
+                            : convertNumberToDecimal(orderCartSaving)}
                         </Text>{' '}
                         on your purchase.
                       </Text>
@@ -2822,7 +2745,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                               alignSelf: 'flex-end',
                             }}
                           >
-                            {string.common.Rs} {orderCircleSaving}
+                            {string.common.Rs} {convertNumberToDecimal(orderCircleSaving)}
                           </Text>
                         </View>
                       </>
@@ -2855,7 +2778,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                               alignSelf: 'flex-end',
                             }}
                           >
-                            {string.common.Rs} {orderCartSaving}
+                            {string.common.Rs} {convertNumberToDecimal(orderCartSaving)}
                           </Text>
                         </View>
                       </>
@@ -2890,7 +2813,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         <Text style={{ color: theme.colors.APP_GREEN, fontWeight: 'bold' }}>
                           {' '}
                           saved extra {string.common.Rs}
-                          {orderCircleSaving}
+                          {convertNumberToDecimal(orderCircleSaving)}
                         </Text>{' '}
                         with
                       </Text>

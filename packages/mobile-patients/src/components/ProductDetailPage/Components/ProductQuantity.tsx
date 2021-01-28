@@ -20,6 +20,8 @@ export interface ProductQuantityProps {
   setProductQuantity: (qty: number) => void;
   setShowAddedToCart: (show: boolean) => void;
   isSellOnline: boolean;
+  isBanned: boolean;
+  productForm: string;
 }
 
 export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
@@ -36,6 +38,8 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     setProductQuantity,
     setShowAddedToCart,
     isSellOnline,
+    isBanned,
+    productForm,
   } = props;
   const { cartItems, updateCartItem } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -73,7 +77,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
   const renderPackSize = () => (
     <Text
       style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0.35)}
-    >{`  ${packSize}${unit} in 1 ${packForm}`}</Text>
+    >{`  ${packSize}${unit} ${productForm} in 1 ${packForm}`}</Text>
   );
 
   const renderCartCTA = () => {
@@ -118,9 +122,9 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     <View>
       <View style={styles.flexRow}>
         {renderQuantity()}
-        {!!packSize && renderPackSize()}
+        {!!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
-      {isSellOnline && renderCartCTA()}
+      {isSellOnline && !isBanned && renderCartCTA()}
     </View>
   );
 };

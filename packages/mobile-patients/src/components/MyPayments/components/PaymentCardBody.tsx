@@ -21,6 +21,7 @@ import {
 import PaymentStatusConstants from '../constants';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface PaymentCardBodyProps {
   item: any;
@@ -108,7 +109,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         </View>
         <View>
           <Text style={{ ...theme.viewStyles.text('M', 14, colors.CARD_HEADER, 1, 20) }}>
-            {string.common.Rs} {price}
+            {string.common.Rs} {convertNumberToDecimal(price)}
           </Text>
         </View>
       </View>

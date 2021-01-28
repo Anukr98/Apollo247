@@ -8,10 +8,12 @@ export interface UPIPaymentsProps {
   upiApps: any;
   onPressUPIApp: (app: any) => void;
   onPressPay: (VPA: string) => void;
+  isVPAvalid: boolean;
+  setisVPAvalid: (arg: boolean) => void;
 }
 
 export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
-  const { upiApps, onPressUPIApp, onPressPay } = props;
+  const { upiApps, onPressUPIApp, onPressPay, isVPAvalid, setisVPAvalid } = props;
   const [VPA, setVPA] = useState<string>('');
 
   const isValid = (VPA: string) => {
@@ -62,20 +64,34 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     return (
       <View style={{}}>
         <Text style={styles.UPIHeader}>Enter your UPI ID</Text>
-        <View style={styles.inputCont}>
+        <View style={{ ...styles.inputCont, borderColor: isVPAvalid ? '#00B38E' : '#FF748E' }}>
           <View style={{ flex: 1 }}>
             <TextInputComponent
               conatinerstyles={styles.conatinerstyles}
               inputStyle={styles.inputStyle}
               value={VPA}
-              onChangeText={(text) => setVPA(text)}
+              onChangeText={(text) => {
+                setVPA(text);
+                setisVPAvalid(true);
+              }}
               placeholder={'username@bank'}
+              onSubmitEditing={(e) => isValid(VPA) && onPressPay(VPA)}
             />
           </View>
           {renderPay()}
         </View>
-        <Text style={styles.upiCollectMsg}>A payment request will be sent to this UPI ID</Text>
+        {renderUPICollectMsg()}
       </View>
+    );
+  };
+
+  const renderUPICollectMsg = () => {
+    return isVPAvalid ? (
+      <Text style={styles.upiCollectMsg}>A payment request will be sent to this UPI ID</Text>
+    ) : (
+      <Text style={{ ...styles.upiCollectMsg, color: '#FF748E' }}>
+        Invalid UPI Id, Please check again
+      </Text>
     );
   };
 
@@ -88,7 +104,9 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     );
   };
 
-  return <CollapseView Heading={'UPI PAYMENTS'} ChildComponent={renderChildComponent()} />;
+  return (
+    <CollapseView isDown={true} Heading={'UPI PAYMENTS'} ChildComponent={renderChildComponent()} />
+  );
 };
 
 const styles = StyleSheet.create({
@@ -111,10 +129,10 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   upiCollectMsg: {
-    ...theme.fonts.IBMPlexSansRegular(10),
+    ...theme.fonts.IBMPlexSansMedium(10),
     lineHeight: 10,
     color: '#01475B',
-    marginTop: 8,
+    marginTop: 10,
   },
   AppCont: {
     flexDirection: 'row',
@@ -148,7 +166,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(13),
+    ...theme.fonts.IBMPlexSansBold(14),
     lineHeight: 15,
     color: '#FC9916',
   },

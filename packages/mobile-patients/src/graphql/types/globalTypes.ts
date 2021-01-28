@@ -424,6 +424,11 @@ export enum PAYMENT_MODE {
   PREPAID = "PREPAID",
 }
 
+export enum PHARMACY_USER_TYPE {
+  NEW = "NEW",
+  REPEAT = "REPEAT",
+}
+
 export enum PLAN {
   ALL = "ALL",
   CARE_PLAN = "CARE_PLAN",
@@ -457,6 +462,14 @@ export enum REFUND_STATUS {
   REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
   REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
   REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
+}
+
+export enum REFUND_STATUSES {
+  FAILURE = "FAILURE",
+  MANUAL_REVIEW = "MANUAL_REVIEW",
+  PENDING = "PENDING",
+  REFUND_REQUEST_NOT_SENT = "REFUND_REQUEST_NOT_SENT",
+  SUCCESS = "SUCCESS",
 }
 
 export enum REQUEST_ROLES {
@@ -918,7 +931,7 @@ export interface DiagnosticBookHomeCollectionInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
   areaId: number;
-  collectionCharges: number;
+  homeCollectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
   totalPriceExcludingDiscounts?: number | null;
@@ -1530,6 +1543,11 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface VerifyVPA {
+  vpa: string;
+  merchant_id?: string | null;
 }
 
 export interface prescriptionPrismFileProperties {

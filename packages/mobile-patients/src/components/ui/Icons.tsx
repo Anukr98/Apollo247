@@ -890,6 +890,10 @@ export const SearchDarkPhrIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_search_dark_phr.png')} />
 );
 
+export const ShareYellowDocIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_share_yellow.png')} />
+);
+
 export const WhiteListViewIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/list_view_white.png')} />
 );
@@ -911,7 +915,7 @@ export const ShieldIcon: React.FC<IconProps> = (props) => (
     size="sm"
     style={{ height: 42.1, width: 36 }}
     {...props}
-    source={require('./icons/ic_shield.png')}
+    source={require('./icons/shield.png')}
   />
 );
 
@@ -1676,4 +1680,30 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
     source={require('./icons/healthyLifeIcon.png')}
     resizeMode="contain"
   />
+);
+
+export const AddIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/AddIconBlue.png')} />
+);
+export const WorkflowIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_workflow.png')} />
+);
+
+export const ArrowRightYellow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right_yellow.png')} />
+);
+export const SpecialDiscountImage: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/specialCoupon_badge.png')} />
+);
+
+export const CameraClickButton: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_camera_button.png')} />
+);
+
+export const GalleryIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/galleryIconWhite.png')} />
+);
+
+export const MomAndBaby: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_mom&baby.png')} />
 );

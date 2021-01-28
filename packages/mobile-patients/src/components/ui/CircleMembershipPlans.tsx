@@ -47,6 +47,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -330,7 +331,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 ]}
               >
                 {string.common.Rs}
-                {value?.currentSellingPrice}
+                {convertNumberToDecimal(value?.currentSellingPrice)}
               </Text>
             </ImageBackground>
           </TouchableOpacity>
@@ -419,7 +420,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                     Get{' '}
                     <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
                       {string.common.Rs}
-                      {careDiscountPrice} off{' '}
+                      {convertNumberToDecimal(careDiscountPrice)} off{' '}
                     </Text>{' '}
                     on this Consult with CIRCLE membership and a lot more benefits....
                   </Text>
@@ -477,7 +478,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           Get{' '}
           <Text style={theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE)}>
             {string.common.Rs}
-            {careDiscountPrice} off{' '}
+            {convertNumberToDecimal(careDiscountPrice)} off{' '}
           </Text>{' '}
           on this Consult
         </Text>
@@ -740,7 +741,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}
             >
               {string.common.Rs}
-              {circlePlanSelected?.currentSellingPrice}
+              {convertNumberToDecimal(circlePlanSelected?.currentSellingPrice)}
             </Text>
           </View>
         </View>

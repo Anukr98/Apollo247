@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { VegetarianIcon, NonVegetarianIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NewPharmaOverview } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { filterHtmlContent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { PrecautionWarnings } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/PrecautionWarnings';
+import HTML from 'react-native-render-html';
 
 export interface PharmaMedicineInfoProps {
   name: string;
   pharmaOverview?: NewPharmaOverview | null;
-  vegetarian: boolean;
+  vegetarian: 'Yes' | 'No';
   key_ingredient?: string | null;
   size?: string | null;
   flavour_fragrance?: string | null;
@@ -37,13 +38,22 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   const storage = pharmaOverview?.Storage;
   const coldChain = pharmaOverview?.ColdChain;
 
-  const renderUses = (medicineStorage: string) => {
-    const storageInfo = medicineStorage.replace(/\$name/gi, name.toLocaleLowerCase());
+  const renderUses = (uses: string) => {
+    const medicine_use = filterHtmlContent(uses);
+    const medicineUse = medicine_use.replace(/\$name/gi, name.toLocaleLowerCase());
     return (
-      <View>
-        <Text style={styles.subHeading}>{`Uses of ${name.toLocaleLowerCase()}`}</Text>
-        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{storageInfo}</Text>
-      </View>
+      !!medicineUse.length && (
+        <View>
+          <Text style={styles.subHeading}>{`Uses of ${name.toLocaleLowerCase()}`}</Text>
+          <HTML
+            html={medicineUse}
+            baseFontStyle={{
+              ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
+            }}
+            imagesMaxWidth={Dimensions.get('window').width}
+          />
+        </View>
+      )
     );
   };
 
@@ -51,20 +61,20 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     const sideEffectsHtml = filterHtmlContent(medicineSideEffects);
     const text = sideEffectsHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
     const sideEffects = text.replace(/\$name/gi, name.toLocaleLowerCase());
-    return (
+    return !!sideEffects ? (
       <View>
         <Text style={styles.subHeading}>{`Side Effects of ${name.toLocaleLowerCase()}`}</Text>
         <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{sideEffects}</Text>
       </View>
-    );
+    ) : null;
   };
 
   const renderVegetarianIcon = () => {
-    return vegetarian ? (
+    return vegetarian === 'Yes' ? (
       <VegetarianIcon style={styles.vegIcon} />
-    ) : (
+    ) : vegetarian === 'No' ? (
       <NonVegetarianIcon style={styles.vegIcon} />
-    );
+    ) : null;
   };
 
   const renderStorage = () => {

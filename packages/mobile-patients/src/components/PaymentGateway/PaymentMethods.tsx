@@ -33,6 +33,7 @@ import {
   GET_BANK_OPTIONS,
   CREATE_ORDER,
   PROCESS_DIAG_COD_ORDER,
+  VERIFY_VPA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '../NavigatorContainer';
@@ -48,11 +49,13 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   OrderInput,
   PAYMENT_MODE,
+  VerifyVPA,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   createOrder,
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
+import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {}
@@ -69,6 +72,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
   const [paymentMethods, setPaymentMethods] = useState<any>([]);
   const [cardTypes, setCardTypes] = useState<any>([]);
+  const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
+  const [isCardValid, setisCardValid] = useState<boolean>(true);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -98,6 +103,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'process_result':
         var payload = data.payload || {};
         console.log('payload >>', JSON.stringify(payload));
+        if (payload?.error) {
+          handleError(payload?.errorMessage);
+        }
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
           console.log(payload?.payload?.paymentMethods);
           const banks = payload?.payload?.paymentMethods?.filter(
@@ -112,6 +120,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       default:
         console.log('Unknown Event', data);
+    }
+  };
+
+  const handleError = (errorMessage: string) => {
+    switch (errorMessage) {
+      case 'Card number is invalid.':
+        setisCardValid(false);
+        break;
+      default:
+        renderErrorPopup();
     }
   };
 
@@ -163,6 +181,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const verifyVPA = (VPA: string) => {
+    const verifyVPA: VerifyVPA = {
+      vpa: VPA,
+      merchant_id: AppConfig.Configuration.merchantId,
+    };
+    return client.mutate<verifyVPA, verifyVPAVariables>({
+      mutation: VERIFY_VPA,
+      variables: { verifyVPA: verifyVPA },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const getClientToken = async () => {
     setisTxnProcessing(true);
     try {
@@ -173,7 +203,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       return token;
     } catch (e) {
       setisTxnProcessing(true);
-      showTxnFailurePopUP();
+      renderErrorPopup();
     }
   };
 
@@ -199,8 +229,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressVPAPay(VPA: string) {
-    const token = await getClientToken();
-    InitiateVPATxn(currentPatient?.id, token, paymentId, VPA);
+    try {
+      setisTxnProcessing(true);
+      const response = await verifyVPA(VPA);
+      console.log('response >>', response?.data?.verifyVPA);
+      if (response?.data?.verifyVPA?.status == 'VALID') {
+        const token = await getClientToken();
+        InitiateVPATxn(currentPatient?.id, token, paymentId, VPA);
+      } else {
+        setisTxnProcessing(false);
+        setisVPAvalid(false);
+      }
+    } catch (e) {
+      showTxnFailurePopUP();
+    }
   }
 
   async function onPressCardPay(cardInfo: any) {
@@ -227,6 +269,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
+  const OtherBanks = () => {
+    const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
+    const methods = topBanks?.featured_banks?.map((item: any) => item?.method) || [];
+    const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    props.navigation.navigate(AppRoutes.OtherBanks, {
+      paymentId: paymentId,
+      amount: amount,
+      banks: otherBanks,
+    });
+  };
+
   const navigatetoOrderStatus = (isCOD: boolean) => {
     props.navigation.navigate(AppRoutes.OrderStatus, {
       orderDetails: orderDetails,
@@ -234,6 +287,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       eventAttributes,
     });
   };
+
+  const renderErrorPopup = () =>
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Oops! seems like we are having an issue. Please try again.',
+    });
 
   const renderHeader = () => {
     return (
@@ -252,7 +311,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const showPaymentOptions = () => {
     return !!paymentMethods?.length
-      ? paymentMethods.map((item: any, index: number) => {
+      ? paymentMethods.map((item: any) => {
           switch (item?.name) {
             case 'COD':
               return renderPayByCash();
@@ -275,25 +334,32 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const renderUPIPayments = (upiApps: any) => {
     return (
-      <UPIPayments upiApps={upiApps} onPressUPIApp={onPressUPIApp} onPressPay={onPressVPAPay} />
+      <UPIPayments
+        isVPAvalid={isVPAvalid}
+        upiApps={upiApps}
+        onPressUPIApp={onPressUPIApp}
+        onPressPay={onPressVPAPay}
+        setisVPAvalid={setisVPAvalid}
+      />
     );
   };
 
   const renderCards = () => {
-    return <Cards onPressPayNow={onPressCardPay} cardTypes={cardTypes} />;
+    return (
+      <Cards
+        onPressPayNow={onPressCardPay}
+        cardTypes={cardTypes}
+        isCardValid={isCardValid}
+        setisCardValid={setisCardValid}
+      />
+    );
   };
 
   const renderNetBanking = (topBanks: any) => {
     return (
       <NetBanking
         topBanks={topBanks}
-        onPressOtherBanks={() =>
-          props.navigation.navigate(AppRoutes.OtherBanks, {
-            paymentId: paymentId,
-            amount: amount,
-            banks: banks,
-          })
-        }
+        onPressOtherBanks={() => OtherBanks()}
         onPressBank={onPressBank}
       />
     );
@@ -306,8 +372,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const showTxnFailurePopUP = () => {
     setisTxnProcessing(false);
     showAphAlert?.({
+      unDismissable: true,
       removeTopIcon: true,
-      children: <TxnFailed onPressRetry={() => hideAphAlert?.()} />,
+      children: (
+        <TxnFailed
+          onPressRetry={() => {
+            hideAphAlert?.();
+            props.navigation.goBack();
+          }}
+        />
+      ),
     });
   };
 
@@ -316,7 +390,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {!loading ? (
-          <ScrollView style={styles.container}>
+          <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
             {showPaymentOptions()}
           </ScrollView>
@@ -331,7 +405,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 50,
+    paddingBottom: 24,
   },
   header: {
     ...theme.viewStyles.cardViewStyle,

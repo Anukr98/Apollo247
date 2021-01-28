@@ -20,6 +20,9 @@ import {
   MEDICINE_UNIT,
   SaveSearchInput,
   STATUS,
+  Gender,
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -201,6 +204,23 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const getDoctorShareMessage = (doctorData: any) => {
+  const hospitalName = g(doctorData, 'doctorHospital', '0', 'facility', 'name')
+    ? g(doctorData, 'doctorHospital', '0', 'facility', 'name') + ', '
+    : '';
+  const hospitalCity = g(doctorData, 'doctorHospital', '0', 'facility', 'city') || '';
+  return `Recommending ${doctorData?.displayName} \n\n${
+    doctorData?.displayName
+  } from ${doctorData?.doctorfacility ||
+    hospitalName + hospitalCity} is one of the top ${doctorData?.specialtydisplayName ||
+    doctorData?.specialty?.name ||
+    ''} doctors in the country. \n\nI strongly recommend ${
+    doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
+  } for any relevant health issues!\n\nYou can easily consult with ${
+    doctorData?.displayName
+  } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
 };
 
 export const formatAddressWithLandmark = (
@@ -530,7 +550,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Out for Delivery';
+      statusString = 'Order Dispatched';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -1235,9 +1255,9 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
 
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
-    case 'https://aph.dev.api.popcornapps.com//graphql':
+    case 'https://aph-dev-api.apollo247.com//graphql':
       return 'DEV';
-    case 'https://aph.staging.api.popcornapps.com//graphql':
+    case 'https://aph-staging-api.apollo247.com//graphql':
       return 'QA';
     case 'https://stagingapi.apollo247.com//graphql':
       return 'VAPT';
@@ -1475,6 +1495,28 @@ export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
 export const postWEGReferralCodeEvent = (ReferralCode: string) => {
   console.log(ReferralCode, 'Referral Code');
   webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
+};
+
+export const postDoctorShareWEGEvents = (
+  doctorData: any,
+  eventName: WebEngageEventName,
+  currentPatient: any,
+  specialityId: string,
+  rank: number = 1
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Doctor ID': g(doctorData, 'id')!,
+    'Doctor Name': g(doctorData, 'displayName')!,
+    'Speciality Name': g(doctorData, 'specialtydisplayName')!,
+    'Doctor card rank': rank,
+    'Speciality ID': specialityId,
+  };
+  postWebEngageEvent(eventName, eventAttributes);
 };
 
 export const permissionHandler = (
@@ -2275,12 +2317,7 @@ export const filterHtmlContent = (content: string = '') => {
 };
 export const isProductInStock = (product: MedicineProduct) => {
   const { dc_availability, is_in_contract } = product;
-  if (
-    !!dc_availability &&
-    !!is_in_contract &&
-    dc_availability.toLowerCase() === 'no' &&
-    is_in_contract.toLowerCase() === 'no'
-  ) {
+  if (dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no') {
     return false;
   } else {
     return true;
@@ -2301,3 +2338,58 @@ export const takeToHomePage = (props: any) => {
   );
 };
 export const isSmallDevice = width < 370;
+
+export const getTestOrderStatusText = (status: string) => {
+  let statusString = '';
+  switch (status) {
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
+      statusString = 'Order Cancelled';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
+      statusString = 'Order Failed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED:
+      statusString = 'Order Initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
+      statusString = 'Pickup Requested';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+      statusString = 'Pickup Confirmed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
+      statusString = 'Sample Collected';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
+      statusString = 'Sample Received in Lab';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
+      statusString = 'Report Generated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED:
+      statusString = 'Order Completed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING:
+      statusString = 'Payment Pending';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
+      statusString = 'Payment Failed';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL:
+      statusString = 'Payment Successful';
+      break;
+    case REFUND_STATUSES.SUCCESS:
+      statusString = 'Refund Proccessed';
+      break;
+    case REFUND_STATUSES.PENDING:
+    case REFUND_STATUSES.FAILURE:
+    case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
+    case REFUND_STATUSES.MANUAL_REVIEW:
+      statusString = 'Refund Initiated';
+      break;
+    default:
+      statusString = status || '';
+      statusString?.replace(/[_]/g, ' ');
+  }
+  return statusString;
+};
