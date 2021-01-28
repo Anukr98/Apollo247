@@ -54,6 +54,7 @@ import {
   phrSortByDate,
   getPhrHighlightText,
   isValidSearch,
+  phrSearchWebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -305,6 +306,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+              '{0}',
+              'Test Reports'
+            ) as WebEngageEventName,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);

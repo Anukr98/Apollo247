@@ -57,6 +57,7 @@ import {
   postWebEngagePHR,
   isValidSearch,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -473,6 +474,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+              '{0}',
+              'Doctor Consultations'
+            ) as WebEngageEventName,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);

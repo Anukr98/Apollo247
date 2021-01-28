@@ -45,6 +45,7 @@ import {
   HEALTH_CONDITIONS_TITLE,
   isValidSearch,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -292,12 +293,20 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
                 });
                 break;
               case 'FAMILYHISTORY':
-                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: _recordData });
                 break;
             }
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+              '{0}',
+              'Health Conditions'
+            ) as WebEngageEventName,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);
