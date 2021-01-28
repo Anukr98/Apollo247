@@ -120,6 +120,7 @@ import {
 import { CertifiedCard } from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
 import {
   DiagnosticAddToCartEvent,
+  DiagnosticBannerClick,
   DiagnosticHomePageSearchItem,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
@@ -1188,6 +1189,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         } catch (error) {}
         if (route == 'TestDetails') {
+          DiagnosticBannerClick(slideIndex + 1, Number(itemId));
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: itemId,
           });

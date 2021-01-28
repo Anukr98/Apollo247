@@ -23,9 +23,9 @@ import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHead
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
-import { AppRoutes } from '../../NavigatorContainer';
-import { TestPackageForDetails } from '../TestDetails';
-import { DiagnosticHomePageWidgetClicked } from '../Events';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import { DiagnosticHomePageWidgetClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -274,7 +274,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetTitle = data?.diagnosticWidgetTitle;
 
-    postHomePageWidgetClicked(item?.itemName!, `${item?.itemId}`, widgetTitle);
+    postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
     navigation.navigate(AppRoutes.TestDetails, {
       itemId: item?.itemId,
       testDetails: {
@@ -285,7 +285,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         discountPrice: discountPrice,
         discountSpecialPrice: discountSpecialPrice,
         ItemID: `${item?.itemId}`,
-        ItemName: item?.itemName!,
+        ItemName: item?.itemTitle!,
         collectionType: TEST_COLLECTION_TYPE.HC,
         packageMrp: packageCalculatedMrp,
         mrpToDisplay: mrpToDisplay,
