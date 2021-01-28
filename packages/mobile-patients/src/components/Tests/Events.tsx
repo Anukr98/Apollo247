@@ -143,3 +143,12 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
+
+export function DiagnosticBannerClick(slideIndex: number, itemId: number) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED] = {
+    position: slideIndex,
+    itemId: itemId,
+  };
+
+  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
+}

@@ -154,6 +154,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
+  DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1123,6 +1124,10 @@ export interface WebEngageEvents {
     Amount: number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
+  };
+  [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
+   position: number;
+   itemId: number;
   };
 
   // ********** ConsultEvents ********** \\
