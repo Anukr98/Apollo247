@@ -75,6 +75,7 @@ import {
   View,
   ViewStyle,
   Image as ImageNative,
+  ImageBackground,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -119,6 +120,7 @@ import {
 import { CertifiedCard } from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
 import {
   DiagnosticAddToCartEvent,
+  DiagnosticBannerClick,
   DiagnosticHomePageSearchItem,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
@@ -130,6 +132,7 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { stepsToBookArray } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -143,7 +146,8 @@ const whyBookUsArray = [
   { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.png') },
   { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.png') },
 ];
-const { width: winWidth } = Dimensions.get('window');
+
+const { width: winWidth, height: winHeight } = Dimensions.get('window');
 
 export interface DiagnosticData {
   cityId: string;
@@ -300,7 +304,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
    */
   useEffect(() => {
     getDiagnosticBanner();
-    // getHomePageWidgets();
+    // getHomePageWidgets(
+    //   (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
+    // );
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(currentPatient, isDiagnosticLocationServiceable);
   }, []);
@@ -1183,6 +1189,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         } catch (error) {}
         if (route == 'TestDetails') {
+          DiagnosticBannerClick(slideIndex + 1, Number(itemId));
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: itemId,
             comingFrom: AppRoutes.Tests,
@@ -1346,6 +1353,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       props.navigation.navigate(AppRoutes.TestListing, {
                         comingFrom: 'Home Page',
                         data: data,
+                        cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                       });
                     }
                   : undefined
@@ -1393,6 +1401,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       props.navigation.navigate(AppRoutes.TestListing, {
                         comingFrom: 'Home Page',
                         data: data,
+                        cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                       });
                     }
                   : undefined
@@ -1484,36 +1493,58 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderBookingStepsModal = () => {
+    const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 2 : 1.5;
     return showAphAlert!({
       unDismissable: isunDismissable(),
       removeTopIcon: true,
       children: (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            onPress={() => setShowBookingStepsModal(false)}
-            activeOpacity={1}
-            style={{ backgroundColor: 'transparent' }}
-          >
-            <Remove
-              style={{
-                position: 'absolute',
-                tintColor: colors.APP_YELLOW_COLOR,
-                zIndex: 1000,
-                alignSelf: 'flex-end',
-                height: 30,
-                width: 30,
-              }}
-            />
-            <ImageNative
-              source={require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking.png')}
-              style={{
-                height: 510,
-                width: winWidth,
-                resizeMode: 'cover',
-                backgroundColor: 'transparent',
-              }}
-            />
-          </TouchableOpacity>
+        <View
+          style={[
+            styles.stepsToBookModalView,
+            {
+              height: winHeight / divisionFactor,
+            },
+          ]}
+        >
+          <View style={styles.stepsToBookModalHeadingView}>
+            <View>
+              <Text style={styles.stepsToBookModalHeadingText}>
+                {nameFormater(string.diagnostics.stepsToBookHeading, 'upper')}
+              </Text>
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={() => hideAphAlert!()}
+                activeOpacity={1}
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <Remove style={styles.removeIconStyle} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            {stepsToBookArray.map((item: any, index: number) => {
+              return (
+                <>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View style={styles.stepsToBookModalMainTextView}>
+                      <Image source={item.image} style={styles.stepsToBookModalIconStyle} />
+                    </View>
+                    <View style={{ width: '82%' }}>
+                      <ImageBackground
+                        source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.png')}
+                        style={{ height: 110, width: 300 }}
+                        resizeMode={'contain'}
+                      >
+                        <Text style={styles.stepsToBookModalMainTextHeading}>{item.heading}</Text>
+                        <Text style={styles.stepsToBookModalMainTextSubText}>{item.subtext}</Text>
+                      </ImageBackground>
+                    </View>
+                  </View>
+                </>
+              );
+            })}
+          </View>
         </View>
       ),
     });
@@ -1868,5 +1899,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingTop: 16,
     backgroundColor: '#fff',
+  },
+  stepsToBookModalView: {
+    paddingLeft: 30,
+    paddingRight: 20,
+    paddingTop: 20,
+  },
+  stepsToBookModalHeadingView: { flexDirection: 'row', justifyContent: 'space-between' },
+  stepsToBookModalHeadingText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 14 : 15, colors.SHERPA_BLUE, 1, 20),
+  },
+  removeIconStyle: {
+    tintColor: colors.APP_YELLOW_COLOR,
+    height: 30,
+    width: 30,
+    resizeMode: 'contain',
+  },
+  stepsToBookModalMainTextView: {
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginTop: -10,
+  },
+  stepsToBookModalIconStyle: {
+    height: 30,
+    width: 30,
+    resizeMode: 'contain',
+  },
+  stepsToBookModalMainTextHeading: {
+    marginTop: '2%',
+    marginHorizontal: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 14 : 15, '#5C586F', 1, 20),
+  },
+  stepsToBookModalMainTextSubText: {
+    marginBottom: '4%',
+    marginHorizontal: 20,
+    ...theme.viewStyles.text('R', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1, 20),
   },
 });

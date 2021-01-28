@@ -30,7 +30,6 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import {
   findDiagnosticsByItemIDsAndCityID,
   findDiagnosticsByItemIDsAndCityIDVariables,
-  findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
@@ -43,9 +42,9 @@ import { Breadcrumb } from '../MedicineListing/Breadcrumb';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
-    focusSearch?: boolean;
     comingFrom?: string;
     data: any;
+    cityId: string | number;
   }> {}
 
 export const TestListing: React.FC<TestListingProps> = (props) => {
@@ -65,6 +64,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const movedFrom = props.navigation.getParam('comingFrom');
   const dataFromHomePage = props.navigation.getParam('data');
+  const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
   const client = useApolloClient();
 
@@ -96,9 +96,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     const itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
 
     const res = Promise.all(
-      itemIds?.map((item: any) =>
-        fetchPricesForCityId(Number(diagnosticServiceabilityData?.cityId!) || 9, item)
-      )
+      itemIds?.map((item: any) => fetchPricesForCityId(Number(cityId) || 9, item))
     );
 
     const response = (await res).map((item: any) =>

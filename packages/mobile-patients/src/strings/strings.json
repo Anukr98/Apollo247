@@ -422,7 +422,14 @@
     "orderCancelledSuccessText": "Your order has been cancelled successfully!",
     "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!",
     "stepsToBook": "3 simple steps to book with apollo 24|7",
-    "certificateText":"Certified safety and quality fullfiled by Apollo Diagnostics."
+    "certificateText":"Certified safety and quality fullfiled by Apollo Diagnostics.",
+    "stepsToBookHeading" : "How it works",
+    "bookOnline" : "Book Online",
+    "bookOnlineSubText":"Select a test or package and book appointment on Apollo 247",
+    "hcSample":"Home Sample Collection",
+    "hcSampleSubText": "Certified Phlebotomist visits your home for sample collection at selected slot time",
+    "fastReport":"Fast & Accurate Reports",
+    "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime"
   },
   "orders": {
     "urOrders": "MY ORDERS",

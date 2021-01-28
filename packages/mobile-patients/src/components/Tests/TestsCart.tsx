@@ -1485,7 +1485,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ADD NEW ADDRESS
           </Text>
           <View>
-            {addresses.length > 2 && (
+            {addresses?.length > 2 && (
               <Text
                 style={styles.yellowTextStyle}
                 onPress={() => {

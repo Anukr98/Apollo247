@@ -176,3 +176,12 @@ export function DiagnosticDetailsViewed(
   postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
 }
+
+export function DiagnosticBannerClick(slideIndex: number, itemId: number) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED] = {
+    position: slideIndex,
+    itemId: itemId,
+  };
+
+  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
+}

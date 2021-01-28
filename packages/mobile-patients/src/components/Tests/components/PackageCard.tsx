@@ -21,10 +21,13 @@ import {
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { DiagnosticAddToCartEvent, DiagnosticHomePageWidgetClicked } from '../Events';
-import { AppRoutes } from '../../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import {
+  DiagnosticHomePageWidgetClicked,
+  DiagnosticAddToCartEvent,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
-import { TestPackageForDetails } from '../TestDetails';
 
 export interface PackageCardProps {
   onPress?: () => void;
@@ -163,7 +166,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: '6%', alignSelf: 'center' },
+              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
               [styles.nonCirclePriceText]
             )}
           </View>
@@ -299,7 +302,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetTitle = data?.diagnosticWidgetTitle;
 
-    postHomePageWidgetClicked(item?.itemName!, `${item?.itemId}`, widgetTitle);
+    postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
     navigation.navigate(AppRoutes.TestDetails, {
       itemId: item?.itemId,
       comingFrom: sourceScreen,
@@ -311,7 +314,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         discountPrice: discountPrice,
         discountSpecialPrice: discountSpecialPrice,
         ItemID: `${item?.itemId}`,
-        ItemName: item?.itemName!,
+        ItemName: item?.itemTitle!,
         collectionType: TEST_COLLECTION_TYPE.HC,
         packageMrp: packageCalculatedMrp,
         mrpToDisplay: mrpToDisplay,
@@ -333,7 +336,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text('B', 14, props.isServiceable ? '#fc9916' : '#FED984', 1, 24),
+            ...theme.viewStyles.text(
+              'B',
+              isSmallDevice ? 13 : 14,
+              props.isServiceable ? '#fc9916' : '#FED984',
+              1,
+              24
+            ),
           },
         ]}
         onPress={() =>
@@ -384,7 +393,7 @@ const styles = StyleSheet.create({
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 40, width: 40, marginBottom: 8 },
   itemNameText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 17 : 18, theme.colors.SHERPA_BLUE, 1, 24),
+    ...theme.viewStyles.text('M', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 24),
     textAlign: 'left',
     textTransform: 'capitalize',
   },
