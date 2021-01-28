@@ -71,7 +71,9 @@ interface Symptoms {
   name: string;
 }
 
-interface SymptomTrackerProps extends NavigationScreenProps {}
+interface SymptomTrackerProps extends NavigationScreenProps {
+  symptomData?: string;
+}
 
 export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
@@ -89,7 +91,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [restartVisible, setRestartVisible] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const flatlistRef = useRef<any>(null);
-
+  const symptomData = props.navigation.getParam('symptomData');
   const patientInfoAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient ID': g(currentPatient, 'id'),
@@ -271,6 +273,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           insertMessage = [{ text: res.data.dialogue.text }];
         } else {
           insertMessage = insertMessage.concat({ text: res.data.dialogue.text });
+        }
+        if (symptomData) {
+          // coming from props
+          updateUserChat(symptomData, res?.data?.id, insertMessage);
         }
         setMessages(insertMessage);
         setChatId(res.data.id);
@@ -526,7 +532,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 }
                 props.navigation.navigate(AppRoutes.SymptomSelection, {
                   chatId: chatId,
-                  goBackCallback: goBackCallback,
+                  goBackCallback: updateUserChat,
                   defaultSymptoms: defaultSymptoms,
                   storedMessages: messages,
                 });
@@ -594,7 +600,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     }
   };
 
-  const goBackCallback = async (data: any, chat_id: string, storedMessages: any) => {
+  const updateUserChat = async (data: any, chat_id: string, storedMessages: any) => {
     insertMessage = storedMessages.concat({ text: data.name, isSentByPatient: true });
     setMessages(insertMessage);
     const body: UpdateSymptomTrackerChatRequest = {

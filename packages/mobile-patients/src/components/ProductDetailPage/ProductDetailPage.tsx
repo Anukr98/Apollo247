@@ -128,6 +128,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setAxdcCode,
     isPharmacyLocationServiceable,
     axdcCode,
+    pharmacyUserTypeAttribute,
   } = useAppCommonData();
 
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -358,6 +359,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         Stockavailability: !!is_in_stock ? 'Yes' : 'No',
         ...productPageViewedEventProps,
         ...pharmacyCircleAttributes,
+        ...pharmacyUserTypeAttribute,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);

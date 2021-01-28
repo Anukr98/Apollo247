@@ -327,32 +327,54 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   ) => {
     try {
       setLoading!(true);
-      const arrayOfId = packageId.length == 1 ? [Number(packageId)] : packageId;
+      const arrayOfId = orderSelected?.diagnosticOrderLineItems?.[index]?.itemId;
       const res: any = await getPackageInclusions(client, arrayOfId);
       if (res) {
         const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
-        data?.map((test: any) => {
-          //call getPackage
+        if (data?.length > 0) {
+          data?.map((test: any) => {
+            //call getPackage
+            objArray.push({
+              id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
+              displayId: orderSelected?.displayId,
+              slotTimings: time,
+              patientName: currentPatient?.firstName,
+              showDateTime: date,
+              itemId: test?.itemId,
+              currentStatus:
+                orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                  ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+                  : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+              packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
+              packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
+              itemName: test?.name,
+              statusDate: itemIdObject?.[key][0]?.statusDate,
+              testPreparationData:
+                test?.testPreparationData! ||
+                orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.testPreparationData, //need to check
+            });
+          });
+        } else {
           objArray.push({
             id: orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.id,
             displayId: orderSelected?.displayId,
             slotTimings: time,
             patientName: currentPatient?.firstName,
             showDateTime: date,
-            itemId: test?.itemId,
+            itemId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
             currentStatus:
               orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
                 ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
                 : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
             packageId: orderSelected?.diagnosticOrderLineItems?.[index]?.itemId,
             packageName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
-            itemName: test?.name,
+            itemName: orderSelected?.diagnosticOrderLineItems?.[index]?.itemName,
             statusDate: itemIdObject?.[key][0]?.statusDate,
             testPreparationData:
-              test?.testPreparationData! ||
               orderSelected?.diagnosticOrderLineItems?.[index]?.itemObj?.testPreparationData, //need to check
           });
-        });
+        }
+
         setLoading!(false);
         return objArray;
       } else {
@@ -378,6 +400,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     setStatusForTest(itemIdObject);
     let objArray: TestStatusObject[] = [];
     const lengthOfItems = Object.keys(itemIdObject)?.length;
+
     Object.keys(itemIdObject).forEach(async (key) => {
       /**
        * key is null for all pickup requested + all the packages are pickup requested
@@ -392,7 +415,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         getUTCDateTime != null
           ? moment(getUTCDateTime).format('hh:mm A')
           : orderSelected?.slotTimings;
-
       if (key == 'null' && lengthOfItems == 1) {
         for (let index = 0; index < orderSelected?.diagnosticOrderLineItems?.length; index++) {
           let inclusionVal =

@@ -2464,6 +2464,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           updatedDate
           currentStatus
           itemDetails
+          trackingUrl
           medicineOrdersStatus {
             id
             orderStatus
@@ -4560,6 +4561,14 @@ export const VERIFY_VPA = gql`
       vpa
       status
       customer_name
+    }
+  }
+`;
+
+export const GET_USER_PROFILE_TYPE = gql`
+  query getUserProfileType($mobileNumber: String!) {
+    getUserProfileType(mobileNumber: $mobileNumber) {
+      profile
     }
   }
 `;

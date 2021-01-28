@@ -244,6 +244,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     circlePlanId,
     hdfcStatus,
     circleStatus,
+    pharmacyUserType,
+    pharmacyUserTypeAttribute,
   } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
@@ -301,6 +303,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         ),
         'Service Area': 'Pharmacy',
         'Customer ID': g(currentPatient, 'id'),
+        User_Type: pharmacyUserType,
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
       if (coupon) {
@@ -644,7 +647,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
             Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
             pharmacyCircleAttributes,
-            moment(tatDate).diff(moment(), 'h')
+            moment(tatDate).diff(moment(), 'h'),
+            pharmacyUserTypeAttribute!
           );
 
         if (selectedAddress && selectedAddress.id === newAddressAdded) {
@@ -1863,6 +1867,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Service Area': 'Pharmacy',
       'Popup Shown': alertShown,
       'No. of out of stock items': numberOfOutOfStockItems,
+      User_Type: pharmacyUserType,
     };
     setAlertShown(false);
     if (selectedStore) {

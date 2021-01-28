@@ -39,6 +39,8 @@ import { ProductDetailPage } from '@aph/mobile-patients/src/components/ProductDe
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
+import { UploadPrescriptionView } from '@aph/mobile-patients/src/components/UploadPrescription/UploadPrescriptionView';
+import { SamplePrescription } from '@aph/mobile-patients/src/components/UploadPrescription/SamplePrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components/Medicines/YourCartUploadPrescriptions';
 import { PharmacyPaymentStatus } from '@aph/mobile-patients/src/components/Medicines/PharmacyPaymentStatus';
@@ -53,6 +55,7 @@ import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersS
 import { AzureUpload } from '@aph/mobile-patients/src/components/AzureUpload';
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
 import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';
+import { TestListing } from '@aph/mobile-patients/src/components/Tests/TestListing';
 import {
   createAppContainer,
   createStackNavigator,
@@ -177,6 +180,8 @@ export enum AppRoutes {
   LocationSearch = 'LocationSearch',
   EditAddress = 'EditAddress',
   UploadPrescription = 'UploadPrescription',
+  UploadPrescriptionView = 'UploadPrescriptionView',
+  SamplePrescription = 'SamplePrescription',
   ChennaiNonCartOrderForm = 'ChennaiNonCartOrderForm',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
   HealthRecordsHome = 'HealthRecordsHome',
@@ -249,6 +254,7 @@ export enum AppRoutes {
   PaymentMethods = 'PaymentMethods',
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
+  TestListing = 'TestListing',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -398,6 +404,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     navigationOptions: {
       gesturesEnabled: false,
     },
+  },
+  [AppRoutes.UploadPrescriptionView]: {
+    screen: UploadPrescriptionView,
+  },
+  [AppRoutes.SamplePrescription]: {
+    screen: SamplePrescription,
   },
   [AppRoutes.ChennaiNonCartOrderForm]: {
     screen: ChennaiNonCartOrderForm,
@@ -637,6 +649,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OrderStatus]: {
     screen: OrderStatus,
+  },
+  [AppRoutes.TestListing]: {
+    screen: TestListing,
   },
 };
 

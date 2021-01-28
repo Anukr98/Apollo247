@@ -19,12 +19,14 @@ import {
   FirebaseEventName,
   FirebaseEvents,
 } from '@aph/mobile-patients/src//helpers/firebaseEvents';
+import { PharmacyUserTypeEvent } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export function postwebEngageProceedToPayEvent(
   shoppingCart: ShoppingCartContextProps,
   isStorePickup: boolean,
   deliveryTime: string,
-  pharmacyCircleEvent: PharmacyCircleEvent
+  pharmacyCircleEvent: PharmacyCircleEvent,
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent
 ) {
   const {
     cartTotal,
@@ -52,6 +54,7 @@ export function postwebEngageProceedToPayEvent(
     'Pin Code': pinCode,
     'Service Area': 'Pharmacy',
     'No. of out of stock items': numberOfOutOfStockItems,
+    ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
   };
   if (selectedStore) {
@@ -64,7 +67,8 @@ export function postwebEngageProceedToPayEvent(
 export function PharmacyCartViewedEvent(
   shoppingCart: ShoppingCartContextProps,
   id: string,
-  pharmacyCircleEvent: PharmacyCircleEvent
+  pharmacyCircleEvent: PharmacyCircleEvent,
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart.cartItems.length,
@@ -87,6 +91,7 @@ export function PharmacyCartViewedEvent(
     ),
     'Service Area': 'Pharmacy',
     'Customer ID': id,
+    ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
   };
   if (shoppingCart.coupon) {

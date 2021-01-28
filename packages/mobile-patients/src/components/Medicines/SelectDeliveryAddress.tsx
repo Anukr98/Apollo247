@@ -22,6 +22,7 @@ import {
   formatAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -119,6 +120,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
       KeyName: dataname,
       addressDetails: address,
       ComingFrom: comingFrom,
+      source: isTest ? ('Diagnostics Cart' as AddressSource) : undefined,
     });
   };
 
