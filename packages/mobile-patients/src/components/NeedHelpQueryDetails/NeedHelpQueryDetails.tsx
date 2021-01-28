@@ -56,6 +56,8 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import moment from 'moment';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const { width } = Dimensions.get('window');
 
 export interface Props
@@ -136,6 +138,20 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderBreadCrumb = () => {
     return <Breadcrumb links={breadCrumb} containerStyle={styles.breadcrumb} />;
+  };
+
+  const returnOrderWebEngageEvents = (webEngageEventName: WebEngageEventName) => {
+    const eventAttributes = {
+      'Order ID': orderId,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(webEngageEventName, eventAttributes);
   };
 
   const onSuccess = () => {
@@ -352,6 +368,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
                 <Button
                   title={string.common.continue}
                   onPress={() => {
+                    returnOrderWebEngageEvents(WebEngageEventName.RETURN_REQUEST_START);
                     setShowReturnPopup(false);
                     setShowReturnUI(true);
                   }}
@@ -415,8 +432,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           <Button
             title={string.common.submit_request}
             onPress={() => {
+              returnOrderWebEngageEvents(WebEngageEventName.RETURN_REQUEST_SUBMITTED);
               setShowReturnPopup(false);
-              setShowReturnUI(true);
+              setShowReturnUI(false);
             }}
             disabled={submit_request}
             style={[
