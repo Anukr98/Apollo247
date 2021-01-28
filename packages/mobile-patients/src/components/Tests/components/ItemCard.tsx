@@ -3,7 +3,15 @@ import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import React from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import {
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Image } from 'react-native-elements';
 import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -78,7 +86,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             style={styles.imageStyle}
           />
 
-          <View style={{ minHeight: 30 }}>
+          <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
             <Text style={styles.itemNameText} numberOfLines={2}>
               {name}
             </Text>
@@ -145,7 +153,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: '6%', alignSelf: 'center' },
+              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
               [styles.nonCirclePriceText]
             )}
           </View>
@@ -299,7 +307,13 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text('B', 14, props.isServiceable ? '#fc9916' : '#FED984', 1, 24),
+            ...theme.viewStyles.text(
+              'B',
+              isSmallDevice ? 13 : 14,
+              props.isServiceable ? '#fc9916' : '#FED984',
+              1,
+              24
+            ),
           },
         ]}
         onPress={() =>
@@ -338,7 +352,8 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
     height: 210,
-    width: 180,
+    // width: 180,
+    width: Dimensions.get('window').width * 0.45,
     marginHorizontal: 4,
     marginRight: 10,
     alignItems: 'flex-start',
@@ -348,7 +363,7 @@ const styles = StyleSheet.create({
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 40, width: 40, marginBottom: 8 },
   itemNameText: {
-    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE, 1, 20),
+    ...theme.viewStyles.text('M', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
     textTransform: 'capitalize',
   },
