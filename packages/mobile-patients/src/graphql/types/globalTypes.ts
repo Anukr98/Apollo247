@@ -132,14 +132,21 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
+  ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
+  PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
+  PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
+  PHLEBO_PENDING = "PHLEBO_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
+  SAMPLE_COLLECTED_IN_LAB = "SAMPLE_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
+  SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -552,6 +559,7 @@ export enum SpecialtySearchType {
 export enum SubscriptionStatus {
   ACTIVE = "ACTIVE",
   CANCELLED = "CANCELLED",
+  DEFERRED_ACTIVE = "DEFERRED_ACTIVE",
   DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
   DISABLED = "DISABLED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
@@ -903,6 +911,7 @@ export interface CreateUserSubscriptionInput {
   DOB?: any | null;
   storeCode: one_apollo_store_code;
   sub_plan_id?: string | null;
+  source_meta_data?: SourceMetaData | null;
 }
 
 export interface DeleteHealthRecordFilesInput {
@@ -1231,8 +1240,7 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  return_url?: string | null;
-  gateway_id?: number | null;
+  patient_id?: any | null;
 }
 
 export interface OrderInput {
@@ -1336,8 +1344,10 @@ export interface PatientProfileInput {
   gender: Gender;
   relation: Relation;
   emailAddress: string;
-  photoUrl: string;
+  photoUrl?: string | null;
   mobileNumber: string;
+  partnerId?: string | null;
+  id?: string | null;
 }
 
 export interface PaymentReference {
@@ -1496,6 +1506,10 @@ export interface ShopAddress {
   state?: string | null;
   zipcode?: string | null;
   stateCode?: string | null;
+}
+
+export interface SourceMetaData {
+  source_identifier?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {
