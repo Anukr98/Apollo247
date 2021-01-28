@@ -552,6 +552,7 @@ export enum SpecialtySearchType {
 export enum SubscriptionStatus {
   ACTIVE = "ACTIVE",
   CANCELLED = "CANCELLED",
+  DEFERRED_ACTIVE = "DEFERRED_ACTIVE",
   DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
   DISABLED = "DISABLED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
@@ -903,6 +904,7 @@ export interface CreateUserSubscriptionInput {
   DOB?: any | null;
   storeCode: one_apollo_store_code;
   sub_plan_id?: string | null;
+  source_meta_data?: SourceMetaData | null;
 }
 
 export interface DeleteHealthRecordFilesInput {
@@ -1496,6 +1498,10 @@ export interface ShopAddress {
   state?: string | null;
   zipcode?: string | null;
   stateCode?: string | null;
+}
+
+export interface SourceMetaData {
+  source_identifier?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {

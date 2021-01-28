@@ -375,8 +375,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const moveSelectedToTop = () => {
       if (currentPatient !== undefined) {
         const patientLinkedProfiles = [
-          allCurrentPatients.find((item: any) => item.uhid === currentPatient.uhid),
-          ...allCurrentPatients.filter((item: any) => item.uhid !== currentPatient.uhid),
+          allCurrentPatients?.find((item: any) => item?.uhid === currentPatient.uhid),
+          ...allCurrentPatients.filter((item: any) => item?.uhid !== currentPatient.uhid),
         ];
         return patientLinkedProfiles;
       }
@@ -387,8 +387,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const renderCTAs = () => (
       <View style={styles.aphAlertCtaViewStyle}>
         {moveSelectedToTop()
-          .slice(0, 5)
-          .map((item: any, index: any, array: any) =>
+          ?.slice(0, 5)
+          ?.map((item: any, index: any, array: any) =>
             item.firstName !== '+ADD MEMBER' ? (
               <TouchableOpacity
                 onPress={() => {
@@ -449,8 +449,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                 flexDirection: 'row',
                 paddingRight: 8,
                 borderRightWidth: 0,
-                // paddingTop: 80,
-                // marginTop: 30,
                 borderRightColor: 'rgba(2, 71, 91, 0.2)',
                 backgroundColor: theme.colors.CLEAR,
               }}
@@ -605,13 +603,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     getNetStatus()
       .then((status) => {
         if (status) {
-          //onSubmitBookAppointment();
-          showAphAlert!({
-                title: 'Appointment Status',
-                description: `Your appointment has been successfully booked with Dr. Garima for Today, 6:30 PM at Apollo Hospital, Jubilee Hills.
-                              Please note that you will need to pay Rs 400 + One-time registration charges
-                              ( For new users) at the hospital Reception. `.trim(),
-              });
+          onSubmitBookAppointment();
 
         } else {
           setshowOfflinePopup(true);
@@ -633,10 +625,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, 'ConsultOverlay onSubmitBookAppointment clicked');
-    // again check coupon is valid or not
 
     console.log('finalAppointmentInput', finalAppointmentInput);
-    //if (amountToPay == 0){
+
       setLoading!(true);
       client
         .mutate<bookAppointment>({
@@ -647,6 +638,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
+        console.log("csk data-------",JSON.stringify(data))
           const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
           if (consultedWithDoctorBefore) {
             storeAppointmentId(g(apptmt, 'id')!);
@@ -661,7 +653,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
             }
           } catch (error) {}
           makePayment(
-            g(apptmt, 'id')!,
+            g(apptmt, 'paymentOrderId')!,
             Number(amountToPay),
             g(apptmt, 'appointmentDateTime'),
             g(apptmt, 'displayId')!
@@ -696,23 +688,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
             renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
           }
         });
-//     } else {
-//       setLoading!(false);
-//       props.navigation.navigate(AppRoutes.ConsultCheckout, {
-//         doctor: doctor,
-//         tabs: tabs,
-//         selectedTab: selectedTab,
-//         doctorName: `${g(doctor, 'fullName')}`,
-//         price: amountToPay,
-//         appointmentInput: finalAppointmentInput,
-//         couponApplied: coupon == '' ? false : true,
-//         consultedWithDoctorBefore: consultedWithDoctorBefore,
-//         patientId: patientId,
-//         callSaveSearch: callSaveSearch,
-//         planSelected: circlePlanSelected,
-//         circleDiscount,
-//       });
-//     }
+
   };
 
   const makePayment = (
@@ -728,7 +704,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           paymentInput: {
             amountPaid: amountPaid,
             paymentRefId: '',
-            paymentStatus: 'TXN_SUCCESS',
+            paymentStatus: 'SUCCESS',
             paymentDateTime: paymentDateTime,
             responseCode: coupon,
             responseMessage: 'Coupon applied',

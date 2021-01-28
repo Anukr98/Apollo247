@@ -206,6 +206,7 @@ export const BOOK_APPOINTMENT = gql`
         appointmentType
         patientId
         displayId
+        paymentOrderId
       }
     }
   }
