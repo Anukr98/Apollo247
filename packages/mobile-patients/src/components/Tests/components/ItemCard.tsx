@@ -17,7 +17,7 @@ import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/glo
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppRoutes } from '../../NavigatorContainer';
 import { TestPackageForDetails } from '../TestDetails';
-import { DiagnosticHomePageWidgetClicked } from '../Events';
+import { DiagnosticAddToCartEvent, DiagnosticHomePageWidgetClicked } from '../Events';
 
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -31,11 +31,12 @@ export interface ItemCardProps {
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: string;
+  sourceScreen: string;
 }
 
 export const ItemCard: React.FC<ItemCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, navigation, source } = props;
+  const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
 
   const renderItemCard = (item: any) => {
     const getItem = item?.item;
@@ -226,7 +227,16 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const planToConsider = pricesForItem?.planToConsider;
+    const discountToDisplay = pricesForItem?.discountToDisplay;
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
 
+    DiagnosticAddToCartEvent(
+      item?.itemTitle,
+      `${item?.itemId}`,
+      mrpToDisplay,
+      discountToDisplay,
+      data?.diagnosticWidgetTitle
+    );
     addCartItem!({
       id: `${item?.itemId}`,
       mou: 1,
@@ -269,6 +279,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     postHomePageWidgetClicked(item?.itemName!, `${item?.itemId}`, widgetTitle);
     navigation.navigate(AppRoutes.TestDetails, {
       itemId: item?.itemId,
+      comingFrom: sourceScreen,
       testDetails: {
         Rate: price,
         specialPrice: specialPrice! || price,

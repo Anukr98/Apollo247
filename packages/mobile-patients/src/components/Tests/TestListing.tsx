@@ -237,6 +237,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             columns={1}
             navigation={props.navigation}
             source={'Listing'}
+            sourceScreen={AppRoutes.TestListing}
           />
         ) : (
           <ItemCard
@@ -247,6 +248,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             columns={2}
             navigation={props.navigation}
             source={'Listing'}
+            sourceScreen={AppRoutes.TestListing}
           />
         )}
       </>

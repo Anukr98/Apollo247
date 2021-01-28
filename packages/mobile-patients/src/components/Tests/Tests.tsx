@@ -1185,6 +1185,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (route == 'TestDetails') {
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: itemId,
+            comingFrom: AppRoutes.Tests,
           });
         }
       }
@@ -1223,6 +1224,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: item?.diagnostic_item_id,
             source: 'Partial Search',
+            comingFrom: AppRoutes.Tests,
           });
         }}
         onPressAddToCart={() => {
@@ -1360,6 +1362,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isVertical={false}
                 navigation={props.navigation}
                 source={'Home Page'}
+                sourceScreen={AppRoutes.Tests}
               />
             )}
           </>
@@ -1406,6 +1409,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isVertical={false}
                 navigation={props.navigation}
                 source={'Home Page'}
+                sourceScreen={AppRoutes.Tests}
               />
             )}
           </>

@@ -1107,7 +1107,7 @@ export interface WebEngageEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search';
-    Section?: 'Featured tests' | 'Browse packages';
+    Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;

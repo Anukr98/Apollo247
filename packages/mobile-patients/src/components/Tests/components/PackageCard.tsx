@@ -21,7 +21,7 @@ import {
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { DiagnosticHomePageWidgetClicked } from '../Events';
+import { DiagnosticAddToCartEvent, DiagnosticHomePageWidgetClicked } from '../Events';
 import { AppRoutes } from '../../NavigatorContainer';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { TestPackageForDetails } from '../TestDetails';
@@ -38,11 +38,12 @@ export interface PackageCardProps {
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: string;
+  sourceScreen: string;
 }
 
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, source, navigation } = props;
+  const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
   const renderItemCard = (item: any) => {
     const getItem = item?.item;
     const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
@@ -248,6 +249,16 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const planToConsider = pricesForItem?.planToConsider;
+    const discountToDisplay = pricesForItem?.discountToDisplay;
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
+
+    DiagnosticAddToCartEvent(
+      item?.itemTitle,
+      `${item?.itemId}`,
+      mrpToDisplay,
+      discountToDisplay,
+      data?.diagnosticWidgetTitle
+    );
 
     addCartItem!({
       id: `${item?.itemId}`,
@@ -291,6 +302,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     postHomePageWidgetClicked(item?.itemName!, `${item?.itemId}`, widgetTitle);
     navigation.navigate(AppRoutes.TestDetails, {
       itemId: item?.itemId,
+      comingFrom: sourceScreen,
       testDetails: {
         Rate: price,
         specialPrice: specialPrice! || price,

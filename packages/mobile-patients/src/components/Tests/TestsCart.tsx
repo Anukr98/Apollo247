@@ -1245,6 +1245,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   test.id,
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
+                      comingFrom: AppRoutes.TestsCart,
                       testDetails: {
                         ItemID: test?.id,
                         ItemName: test?.name,

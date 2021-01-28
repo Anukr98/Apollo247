@@ -1,4 +1,7 @@
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  TestBreadcrumbLink,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -6,7 +9,11 @@ import { CartIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/component
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { DIAGNOSTIC_GROUP_PLAN, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  DIAGNOSTIC_GROUP_PLAN,
+  getDiagnosticTestDetails,
+  TestPackage,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
 import {
@@ -15,6 +22,7 @@ import {
   g,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -30,7 +38,7 @@ import {
   ViewStyle,
   Platform,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -69,8 +77,308 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+import { DiagnosticAddToCartEvent, DiagnosticDetailsViewed } from './Events';
+import { TestListingHeader } from './components/TestListingHeader';
+import { Breadcrumb } from '../MedicineListing/Breadcrumb';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
+
+var tabs = [
+  {
+    id: '1',
+    title: 'Tests Included',
+  },
+  {
+    id: '2',
+    title: 'Preparation',
+  },
+];
+
+export interface TestPackageForDetails extends TestPackage {
+  collectionType: TEST_COLLECTION_TYPE;
+  preparation: string;
+  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search';
+  type: string;
+  specialPrice?: string | number;
+  circleRate?: string | number;
+  circleSpecialPrice?: string | number;
+  discountPrice?: string | number;
+  discountSpecialPrice?: string | number;
+  packageMrp?: string | number;
+  mrpToDisplay?: string | number;
+  inclusions?: any;
+}
+
+export interface TestDetailsProps
+  extends NavigationScreenProps<{
+    testDetails?: TestPackageForDetails;
+    itemId?: string;
+    source?: string;
+    comingFrom?: string;
+  }> {}
+
+export const TestDetails: React.FC<TestDetailsProps> = (props) => {
+  const {
+    cartItems,
+    addCartItem,
+    isDiagnosticCircleSubscription,
+    setIsDiagnosticCircleSubscription,
+    testDetailsBreadCrumbs,
+    setTestDetailsBreadCrumbs,
+  } = useDiagnosticsCart();
+  const {
+    cartItems: shopCartItems,
+    setIsCircleSubscription,
+    setHdfcSubscriptionId,
+    setCircleSubscriptionId,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setCirclePlanValidity,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
+
+  const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
+  const itemId = props.navigation.getParam('itemId');
+  const source = props.navigation.getParam('source');
+  const movedFrom = props.navigation.getParam('comingFrom');
+  console.log({ props });
+
+  const [cmsTestDetails, setCmsTestDetails] = useState([] as any);
+  const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
+
+  const itemName = testInfo?.ItemName;
+
+  const hdfc_values = string.Hdfc_values;
+  const cartItemsCount = cartItems.length + shopCartItems.length;
+  const [isItemAdded, setItemAdded] = useState<boolean>(false);
+  const currentItemId = testInfo?.ItemID;
+  aphConsole.log('currentItemId : ' + currentItemId);
+  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
+  const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+
+  const findItemFromCart = cartItems?.find((item) => item?.id == testInfo?.ItemID);
+
+  const discount =
+    testDetails.source == 'Cart Page'
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
+          findItemFromCart?.price!,
+          findItemFromCart?.specialPrice!
+        )
+      : calculatePackageDiscounts(
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          testDetails?.Rate! || testInfo?.Rate!,
+          Number(testDetails?.specialPrice! || testInfo?.specialPrice!)
+        );
+  const circleDiscount =
+    testDetails.source == 'Cart Page'
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
+          findItemFromCart?.circlePrice!,
+          findItemFromCart?.circleSpecialPrice!
+        )
+      : calculatePackageDiscounts(
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.circleRate! || testInfo?.circleRate),
+          Number(testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!)
+        );
+  const specialDiscount =
+    testDetails.source == 'Cart Page'
+      ? calculatePackageDiscounts(
+          findItemFromCart?.packageMrp!,
+          findItemFromCart?.discountPrice!,
+          findItemFromCart?.discountSpecialPrice!
+        )
+      : calculatePackageDiscounts(
+          testDetails?.packageMrp! || testInfo?.packageMrp!,
+          Number(testDetails?.discountPrice! || testInfo?.discountPrice!),
+          Number(testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!)
+        );
+
+  const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
+  const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
+
+  /**
+   * fetching the details wrt itemId
+   */
+  useEffect(() => {
+    if (itemId) {
+      fetchTestDetails_CMS(itemId);
+      // loadTestDetails(itemId);
+    } else {
+      // !TestDetailsDiscription && fetchPackageInclusions(currentItemId);
+    }
+  }, []);
+
+  const fetchTestDetails_CMS = async (itemId: string | number) => {
+    //start loading
+    const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
+    if (res?.data?.success && res?.data?.data.length > 0) {
+      const result = res?.data?.data;
+      setCmsTestDetails(result);
+    } else {
+      setCmsTestDetails([]);
+    }
+  };
+
+  const homeBreadCrumb: TestBreadcrumbLink = {
+    title: 'Home',
+    onPress: () => {
+      const resetAction = StackActions.reset({
+        index: 0,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      });
+      props.navigation.dispatch(resetAction);
+    },
+  };
+
+  useEffect(() => {
+    let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
+    if (!!movedFrom) {
+      if (movedFrom == AppRoutes.Tests) {
+        breadcrumb.push({
+          title: 'Order Tests',
+          onPress: () => {
+            props.navigation.navigate('TESTS');
+          },
+        });
+      }
+      if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
+        breadcrumb.push({
+          title: 'Order Tests',
+          onPress: () => {
+            props.navigation.navigate('TESTS');
+          },
+        });
+        breadcrumb.push({
+          title: movedFrom == AppRoutes.SearchTestScene ? 'Test Search' : 'Test Listing',
+          onPress: () => {
+            movedFrom == AppRoutes.SearchTestScene
+              ? props.navigation.navigate(AppRoutes.SearchTestScene)
+              : props.navigation.navigate(AppRoutes.TestListing);
+          },
+        });
+      }
+      if (movedFrom === AppRoutes.TestsCart) {
+        breadcrumb.push({
+          title: 'Cart',
+          onPress: () => {
+            const resetAction = StackActions.reset({
+              index: 0,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.TestsCart })],
+            });
+            props.navigation.dispatch(resetAction);
+          },
+        });
+      }
+      breadcrumb.push({
+        title: itemName,
+        onPress: () => {},
+      });
+      setTestDetailsBreadCrumbs && setTestDetailsBreadCrumbs(breadcrumb);
+    }
+  }, [movedFrom]);
+
+  useEffect(() => {
+    DiagnosticDetailsViewed(
+      testInfo?.source,
+      testInfo?.ItemName,
+      testInfo?.type,
+      testInfo?.ItemID,
+      currentPatient,
+      testInfo?.Rate,
+      pharmacyCircleAttributes
+    );
+  }, []);
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        context: {
+          sourceHeaders,
+        },
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: data?.APOLLO?.[0]?.start_date,
+            endDate: data?.APOLLO?.[0]?.end_date,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
+        }
+      }
+    } catch (error) {
+      CommonBugFender('Diagnositic_DetailsPage_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
+
+  const renderBreadCrumb = () => {
+    console.log({ testDetailsBreadCrumbs });
+    return (
+      <View style={{ marginLeft: 20 }}>
+        <Breadcrumb
+          links={testDetailsBreadCrumbs!}
+          containerStyle={{
+            borderBottomWidth: 1,
+            borderBottomColor: '#E5E5E5',
+          }}
+        />
+      </View>
+    );
+  };
+
+  const renderHeader = () => {
+    return (
+      <TestListingHeader
+        navigation={props.navigation}
+        headerText={nameFormater('TEST PACKAGE DETAIL', 'upper')}
+      />
+    );
+  };
+
+  return (
+    <SafeAreaView
+      style={{
+        ...theme.viewStyles.container,
+      }}
+    >
+      {renderHeader()}
+      {renderBreadCrumb()}
+      <ScrollView bounces={false} keyboardDismissMode="on-drag"></ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -203,893 +511,3 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
 });
-
-var tabs = [
-  {
-    id: '1',
-    title: 'Tests Included',
-  },
-  {
-    id: '2',
-    title: 'Preparation',
-  },
-];
-
-export interface TestPackageForDetails extends TestPackage {
-  collectionType: TEST_COLLECTION_TYPE;
-  preparation: string;
-  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search';
-  type: string;
-  specialPrice?: string | number;
-  circleRate?: string | number;
-  circleSpecialPrice?: string | number;
-  discountPrice?: string | number;
-  discountSpecialPrice?: string | number;
-  packageMrp?: string | number;
-  mrpToDisplay?: string | number;
-  inclusions?: any;
-}
-
-export interface TestDetailsProps
-  extends NavigationScreenProps<{
-    testDetails?: TestPackageForDetails;
-    itemId?: string;
-    source?: string;
-  }> {}
-
-export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
-  const itemId = props.navigation.getParam('itemId');
-  const source = props.navigation.getParam('source');
-
-  const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
-  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
-
-  const TestDetailsDiscription = testInfo.PackageInClussion;
-  const { diagnosticServiceabilityData } = useAppCommonData();
-  const {
-    cartItems,
-    addCartItem,
-    isDiagnosticCircleSubscription,
-    setIsDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
-  const {
-    cartItems: shopCartItems,
-    setIsCircleSubscription,
-    setHdfcSubscriptionId,
-    setCircleSubscriptionId,
-    setHdfcPlanName,
-    setIsFreeDelivery,
-    setCirclePlanValidity,
-    pharmacyCircleAttributes,
-  } = useShoppingCart();
-  const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems.length + shopCartItems.length;
-  const [isItemAdded, setItemAdded] = useState<boolean>(false);
-  const currentItemId = testInfo.ItemID;
-  aphConsole.log('currentItemId : ' + currentItemId);
-  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
-  const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
-
-  const findItemFromCart = cartItems.find((item) => item?.id == testInfo?.ItemID);
-  console.log(findItemFromCart);
-
-  const discount =
-    testDetails.source == 'Cart Page'
-      ? calculatePackageDiscounts(
-          findItemFromCart?.packageMrp!,
-          findItemFromCart?.price!,
-          findItemFromCart?.specialPrice!
-        )
-      : calculatePackageDiscounts(
-          testDetails?.packageMrp! || testInfo?.packageMrp!,
-          testDetails?.Rate! || testInfo?.Rate!,
-          Number(testDetails?.specialPrice! || testInfo?.specialPrice!)
-        );
-  const circleDiscount =
-    testDetails.source == 'Cart Page'
-      ? calculatePackageDiscounts(
-          findItemFromCart?.packageMrp!,
-          findItemFromCart?.circlePrice!,
-          findItemFromCart?.circleSpecialPrice!
-        )
-      : calculatePackageDiscounts(
-          testDetails?.packageMrp! || testInfo?.packageMrp!,
-          Number(testDetails?.circleRate! || testInfo?.circleRate),
-          Number(testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!)
-        );
-  const specialDiscount =
-    testDetails.source == 'Cart Page'
-      ? calculatePackageDiscounts(
-          findItemFromCart?.packageMrp!,
-          findItemFromCart?.discountPrice!,
-          findItemFromCart?.discountSpecialPrice!
-        )
-      : calculatePackageDiscounts(
-          testDetails?.packageMrp! || testInfo?.packageMrp!,
-          Number(testDetails?.discountPrice! || testInfo?.discountPrice!),
-          Number(testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!)
-        );
-
-  const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
-  const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
-
-  useEffect(() => {
-    if (itemId) {
-      loadTestDetails(itemId);
-    } else {
-      !TestDetailsDiscription && fetchPackageInclusions(currentItemId);
-    }
-  }, []);
-
-  const fetchPackageInclusions = async (currentItemId: string) => {
-    try {
-      const arrayOfId = [Number(currentItemId)];
-      const res: any = await getPackageInclusions(client, arrayOfId);
-      if (res) {
-        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
-        aphConsole.log('getPackageData \n', { data });
-        setTestInfo({ ...testInfo, PackageInClussion: data || [] });
-      }
-    } catch (e) {
-      CommonBugFender('TestDetails', e);
-      aphConsole.log('getPackageData Error \n', { e });
-      setsearchSate('fail');
-    }
-  };
-
-  useEffect(() => {
-    if (testInfo?.testDescription != null) {
-      tabs = [
-        {
-          id: '1',
-          title: 'Tests Included',
-        },
-        {
-          id: '2',
-          title: 'Preparation',
-        },
-        {
-          id: '3',
-          title: 'Overview',
-        },
-      ];
-    } else {
-      tabs = [
-        {
-          id: '1',
-          title: 'Tests Included',
-        },
-        {
-          id: '2',
-          title: 'Preparation',
-        },
-      ];
-    }
-  }, []);
-
-  useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
-      Source: testInfo.source,
-      'Item Name': testInfo.ItemName,
-      'Item Type': testInfo.type,
-      'Item Code': testInfo.ItemID,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
-
-    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
-      PatientUHID: g(currentPatient, 'uhid'),
-      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      source: testInfo.source,
-      ItemName: testInfo.ItemName,
-      ItemType: testInfo.type,
-      ItemCode: testInfo.ItemID,
-      ItemPrice: testInfo.Rate,
-      LOB: 'Diagnostics',
-      ...pharmacyCircleAttributes,
-    };
-    postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
-  }, []);
-
-  const loadTestDetails = async (itemId: string | number) => {
-    let listOfIds = [];
-    if (typeof itemId == 'string') {
-      const removeSpaces = typeof itemId == 'string' ? itemId?.replace(/\s/g, '') : itemId;
-      const arrayOfId = removeSpaces.split(',');
-      listOfIds = arrayOfId.map((item) => parseInt(item!));
-    } else {
-      listOfIds = [Number(itemId)];
-    }
-
-    try {
-      const {
-        data: { findDiagnosticsByItemIDsAndCityID },
-      } = await client.query<
-        findDiagnosticsByItemIDsAndCityID,
-        findDiagnosticsByItemIDsAndCityIDVariables
-      >({
-        query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-        context: {
-          sourceHeaders,
-        },
-        variables: {
-          cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
-          itemIDs: listOfIds,
-        },
-        fetchPolicy: 'no-cache',
-      });
-      const {
-        rate,
-        gender,
-        itemName,
-        collectionType,
-        fromAgeInDays,
-        toAgeInDays,
-        testPreparationData,
-        packageCalculatedMrp,
-        diagnosticPricing,
-        inclusions,
-        testDescription,
-        itemType,
-      } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
-
-      const getDiagnosticPricingForItem = diagnosticPricing;
-      const getItems = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics');
-      const packageMrpForItem = packageCalculatedMrp!;
-      const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-
-      if (!pricesForItem?.itemActive) {
-        //disable add to cart
-        return !isAddedToCart;
-      }
-      const specialPrice = pricesForItem?.specialPrice!;
-      const price = pricesForItem?.price!; //more than price (black)
-      const circlePrice = pricesForItem?.circlePrice!;
-      const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
-      const discountPrice = pricesForItem?.discountPrice!;
-      const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
-      const mrpToDisplay = pricesForItem?.mrpToDisplay;
-
-      const partialTestDetails = {
-        Rate: price,
-        Gender: gender,
-        ItemID: `${itemId}`,
-        ItemName: itemName,
-        collectionType: collectionType!,
-        mou: inclusions == null ? 1 : inclusions.length,
-        testDescription: testDescription,
-        type: itemType,
-        FromAgeInDays: fromAgeInDays,
-        ToAgeInDays: toAgeInDays,
-        preparation: testPreparationData,
-        packageMrp: packageCalculatedMrp,
-        specialPrice: specialPrice,
-        circleRate: circlePrice,
-        circleSpecialPrice: circleSpecialPrice,
-        discountPrice: discountPrice,
-        discountSpecialPrice: discountSpecialPrice,
-        mrpToDisplay: mrpToDisplay,
-        inclusions: inclusions == null ? Number([itemId]) : inclusions,
-      };
-
-      try {
-        const arrayOfId = [Number(itemId)];
-        const res: any = await getPackageInclusions(client, arrayOfId);
-        if (res) {
-          const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
-          aphConsole.log('getPackageData \n', { data });
-          setTestInfo({ ...partialTestDetails, ...testInfo, PackageInClussion: data || [] });
-          setsearchSate('success');
-        }
-      } catch (e) {
-        CommonBugFender('TestDetails', e);
-        aphConsole.log('getPackageData Error \n', { e });
-        setsearchSate('fail');
-      }
-    } catch (error) {
-      setsearchSate('fail');
-    }
-  };
-
-  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
-    return (
-      <View style={[styles.labelView, containerStyle]}>
-        <Text style={styles.labelText}>{count}</Text>
-      </View>
-    );
-  };
-  const renderHeader = () => {
-    return (
-      <View>
-        <Header
-          container={{
-            ...theme.viewStyles.cardViewStyle,
-            borderRadius: 0,
-          }}
-          title={'TEST DETAIL'}
-          leftIcon="backArrow"
-          onPressLeftIcon={() => props.navigation.goBack()}
-          rightComponent={
-            <TouchableOpacity
-              onPress={() => {
-                setItemAdded(false);
-                props.navigation.navigate(AppRoutes.MedAndTestCart);
-              }}
-            >
-              <CartIcon style={{}} />
-              {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
-            </TouchableOpacity>
-          }
-        />
-      </View>
-    );
-  };
-
-  const renderTestDetails = () => {
-    const gender: any = {
-      B: 'MALE AND FEMALE',
-      M: 'MALE',
-      F: 'FEMALE',
-    };
-    const fromAge = (testInfo.FromAgeInDays / 365).toFixed(0);
-    const toAge = (testInfo.ToAgeInDays / 365).toFixed(0);
-
-    return (
-      <View style={{ overflow: 'hidden', padding: 20 }}>
-        <View>
-          <Text style={styles.testNameStyles}>{testInfo.ItemName}</Text>
-          {!!testInfo.ToAgeInDays && (
-            <View style={styles.personDetailsView}>
-              <Text style={styles.personDetailLabelStyles}>Age Group</Text>
-              <Text style={styles.personDetailStyles}>For all age group</Text>
-            </View>
-          )}
-          {!!testInfo.Gender && !!gender[testInfo.Gender] && (
-            <View style={styles.personDetailsView}>
-              <Text style={styles.personDetailLabelStyles}>Gender</Text>
-              <Text style={styles.personDetailStyles}>{`FOR ${gender[testInfo.Gender]}`}</Text>
-            </View>
-          )}
-          {!!testInfo.PackageInClussion && (
-            <View style={styles.personDetailsView}>
-              <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
-              <Text style={styles.personDetailStyles}>
-                {testInfo?.PackageInClussion.map((item) => item?.sampleTypeName)
-                  .filter((i) => i)
-                  .filter((i, idx, array) => array.indexOf(i) >= idx)
-                  .join(', ')}
-              </Text>
-            </View>
-          )}
-          <View style={styles.personDetailsView}>
-            <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
-            <Text style={styles.personDetailStyles}>
-              {testInfo.collectionType
-                ? testInfo.collectionType === TEST_COLLECTION_TYPE.HC
-                  ? 'HOME VISIT OR CLINIC VISIT'
-                  : 'CLINIC VISIT'
-                : null}
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-    return null;
-  };
-
-  const renderTabsData = () => {
-    console.log(tabs);
-    return (
-      <View>
-        <TabsComponent
-          style={{
-            backgroundColor: '#f7f8f5',
-          }}
-          height={44}
-          data={tabs}
-          onChange={(selectedTab: string) => setSelectedTab(selectedTab)}
-          selectedTab={selectedTab}
-          selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
-          titleStyle={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)}
-        />
-      </View>
-    );
-  };
-
-  const renderTestsIncludedData = () => {
-    return (
-      <View style={styles.descriptionStyles}>
-        {testInfo.PackageInClussion.map((item, i) => (
-          <View key={i}>
-            <Text style={styles.descriptionTextStyles}>
-              {i + 1}. {item?.TestInclusion || item?.name}
-            </Text>
-          </View>
-        ))}
-      </View>
-    );
-  };
-
-  const renderPreparation = () => {
-    return (
-      <View style={styles.descriptionStyles}>
-        <Text style={styles.descriptionTextStyles}>
-          {(testInfo && testInfo.preparation) || string.diagnostics.noPreparationRequiredText}
-        </Text>
-      </View>
-    );
-  };
-
-  const renderTestDescription = () => {
-    return (
-      <View style={styles.descriptionStyles}>
-        <Text style={styles.descriptionTextStyles}>
-          {(testInfo && stripHtml(testInfo?.testDescription)) ||
-            string.diagnostics.noTestDescription}
-        </Text>
-      </View>
-    );
-  };
-
-  const renderNotification = () => {
-    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
-      return null;
-    }
-    return (
-      <View style={styles.notificationCard}>
-        <PendingIcon style={styles.pendingIconStyle} />
-        <Text style={[styles.personDetailStyles, { marginTop: 0, marginLeft: 4, marginRight: 6 }]}>
-          {string.diagnostics.priceNotificationForCovidText}
-        </Text>
-      </View>
-    );
-  };
-
-  const getUserSubscriptionsByStatus = async () => {
-    try {
-      const query: GetSubscriptionsOfUserByStatusVariables = {
-        mobile_number: g(currentPatient, 'mobileNumber'),
-        status: ['active', 'deferred_inactive'],
-      };
-      const res = await client.query<GetSubscriptionsOfUserByStatus>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        context: {
-          sourceHeaders,
-        },
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
-      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
-          const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-          };
-          setCirclePlanValidity && setCirclePlanValidity(planValidity);
-        } else {
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCirclePlanValidity && setCirclePlanValidity(null);
-        }
-
-        if (data?.HDFC?.[0]._id) {
-          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
-
-          const planName = data?.HDFC?.[0].name;
-          setHdfcPlanName && setHdfcPlanName(planName);
-
-          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
-            setIsFreeDelivery && setIsFreeDelivery(true);
-          }
-        } else {
-          setHdfcSubscriptionId && setHdfcSubscriptionId('');
-          setHdfcPlanName && setHdfcPlanName('');
-        }
-      }
-    } catch (error) {
-      CommonBugFender('Diagnositic_DetailsPage_GetSubscriptionsOfUserByStatus', error);
-    }
-  };
-
-  const renderSpecialDiscountText = (styleObj?: any) => {
-    return <SpecialDiscountText isImage={true} text={'TEST 247'} />;
-  };
-
-  setTimeout(() => isItemAdded && setItemAdded(false), 2000);
-
-  const renderItemAdded = () => {
-    return (
-      <View>
-        {isItemAdded && isAddedToCart && (
-          <View
-            style={{
-              ...theme.viewStyles.cardViewStyle,
-              flexDirection: 'row',
-              marginTop: -10,
-              right: 0,
-              position: 'absolute',
-            }}
-          >
-            <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
-              {string.diagnostics.itemsAddedSuccessfullyCTA}
-            </Text>
-            <TouchableOpacity
-              style={{ marginTop: 13, marginRight: 10 }}
-              onPress={() => setItemAdded(false)}
-            >
-              <Cross style={styles.crossIconStyle} />
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const postDiagnosticAddToCartEvent = (
-    name: string,
-    id: string,
-    price: number,
-    discountedPrice: number
-  ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      'Item Name': name,
-      'Item ID': id,
-      Source: 'Details page',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
-    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      productname: name,
-      productid: id,
-      Source: 'Diagnostic',
-      Price: price,
-      DiscountedPrice: discountedPrice,
-      Quantity: 1,
-    };
-    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
-  };
-
-  const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo.ItemID);
-  console.log('isAddedToCart' + isAddedToCart);
-
-  if (!TestDetailsDiscription && searchSate != 'fail') {
-    return <Spinner />;
-  } else if (searchSate == 'fail') {
-    return (
-      <SafeAreaView
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
-        {renderHeader()}
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <Card
-            cardContainer={{ marginTop: 0 }}
-            heading={'Uh oh! :('}
-            description={'Test Details Not Available!'}
-            descriptionTextStyle={{ fontSize: 14 }}
-            headingTextStyle={{ fontSize: 14 }}
-          />
-        </View>
-      </SafeAreaView>
-    );
-  } else {
-    //if don't promote circle & specialprice or special discount
-    let priceToConsider,
-      specialPriceToConsider,
-      circlePriceToConsider,
-      circleSpecialPriceToConsider,
-      discountPriceToConsider,
-      discountSpecialPriceToConsider,
-      itemPackageMrpToConsider;
-    if (testDetails?.source == 'Cart Page' && findItemFromCart!) {
-      priceToConsider = findItemFromCart?.price!;
-      specialPriceToConsider = findItemFromCart?.specialPrice;
-      circlePriceToConsider = findItemFromCart?.circlePrice!;
-      circleSpecialPriceToConsider = findItemFromCart?.circleSpecialPrice!;
-      discountPriceToConsider = findItemFromCart?.discountPrice!;
-      discountSpecialPriceToConsider = findItemFromCart?.discountSpecialPrice!;
-      itemPackageMrpToConsider = findItemFromCart?.packageMrp!;
-    } else {
-      priceToConsider = testDetails?.Rate || testInfo?.Rate;
-      specialPriceToConsider = testDetails?.specialPrice || testInfo?.specialPrice;
-      circlePriceToConsider = testDetails?.circleRate! || testInfo?.circleRate!;
-      circleSpecialPriceToConsider =
-        testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!;
-      discountPriceToConsider = testDetails?.discountPrice! || testInfo?.discountPrice!;
-      discountSpecialPriceToConsider =
-        testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!;
-      itemPackageMrpToConsider = testDetails?.packageMrp! || testInfo?.packageMrp!;
-    }
-
-    const mrpToDisplay = calculateMrpToDisplay(
-      promoteCircle,
-      promoteDiscount,
-      itemPackageMrpToConsider,
-      priceToConsider,
-      Number(circlePriceToConsider),
-      Number(discountPriceToConsider)
-    );
-    const anySpecialDiscount =
-      (!promoteCircle && circlePriceToConsider && mrpToDisplay != circlePriceToConsider) ||
-      (promoteDiscount &&
-        discountSpecialPriceToConsider &&
-        mrpToDisplay != discountSpecialPriceToConsider);
-
-    let bottomPrice, strikedPrice;
-    if (isDiagnosticCircleSubscription) {
-      if (promoteCircle) {
-        bottomPrice = circleSpecialPriceToConsider;
-      } else if (promoteDiscount) {
-        bottomPrice = discountSpecialPriceToConsider;
-      } else {
-        bottomPrice = specialPriceToConsider || mrpToDisplay;
-      }
-    } else {
-      if (promoteCircle) {
-        strikedPrice = mrpToDisplay;
-        bottomPrice = circlePriceToConsider!;
-      } else if (promoteDiscount) {
-        bottomPrice = discountSpecialPriceToConsider;
-      } else {
-        bottomPrice = specialPriceToConsider || mrpToDisplay;
-      }
-    }
-    return (
-      <SafeAreaView
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
-        {renderHeader()}
-        <ScrollView bounces={false} keyboardDismissMode="on-drag">
-          <View>{renderTestDetails()}</View>
-          {renderNotification()}
-          {renderTabsData()}
-          {selectedTab === tabs[0].title
-            ? renderTestsIncludedData()
-            : selectedTab === tabs[1].title
-            ? renderPreparation()
-            : renderTestDescription()}
-          {promoteCircle && <View style={{ marginBottom: 30 }}></View>}
-          <View style={{ height: screenHeight * 0.2 }} />
-        </ScrollView>
-
-        <StickyBottomComponent defaultBG style={styles.container}>
-          {/**
-           * non-subscribed + promote circle
-           */}
-
-          {!isDiagnosticCircleSubscription && promoteCircle && (
-            <View style={[styles.topPriceView, { height: 75 }]}>
-              <View>
-                <CircleHeading />
-                <View style={styles.circlePriceView}>
-                  <Text style={styles.priceText}>
-                    {string.common.Rs}
-                    {convertNumberToDecimal(circleSpecialPriceToConsider)}
-                  </Text>
-                </View>
-              </View>
-              {renderItemAdded()}
-            </View>
-          )}
-          {/**
-           * non-subscribed + special price + non-promote
-           */}
-
-          {!isDiagnosticCircleSubscription && anySpecialDiscount && (
-            <View style={[styles.topPriceView, { height: 60 }]}>
-              <View
-                style={[
-                  styles.circlePriceView,
-                  // { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
-                  { alignSelf: 'flex-start' },
-                ]}
-              >
-                <Text
-                  style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
-                >
-                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
-                </Text>
-              </View>
-              {renderItemAdded()}
-            </View>
-          )}
-          {/**
-           * subscribed + promote circle
-           */}
-          {isDiagnosticCircleSubscription && promoteCircle && (
-            <View style={[styles.topPriceView]}>
-              <View style={styles.circlePriceView}>
-                <Text
-                  style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
-                >
-                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
-                </Text>
-              </View>
-              {renderItemAdded()}
-            </View>
-          )}
-
-          {/**
-           * subscribed + special
-           */}
-
-          {isDiagnosticCircleSubscription && anySpecialDiscount && (
-            <View style={[styles.topPriceView, { height: 60 }]}>
-              <View
-                style={[
-                  styles.circlePriceView,
-                  // { alignSelf: promoteDiscount ? 'flex-start' : 'flex-end' },
-                  { alignSelf: 'flex-start' },
-                ]}
-              >
-                <Text
-                  style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
-                >
-                  {string.common.Rs} {convertNumberToDecimal(mrpToDisplay)}
-                </Text>
-              </View>
-              {renderItemAdded()}
-            </View>
-          )}
-
-          {/**
-           * for normal cases where no special price + no circle price
-           */}
-          {!promoteCircle && mrpToDisplay == specialPriceToConsider && (
-            <View
-              style={{
-                bottom: 50,
-                alignItems: 'flex-end',
-              }}
-            >
-              {renderItemAdded()}
-            </View>
-          )}
-
-          <View style={{ backgroundColor: 'white', margin: -16 }}>
-            <View style={{ margin: 16 }}>
-              <View
-                style={{
-                  justifyContent: 'space-between',
-                  flexDirection: 'row',
-                }}
-              >
-                {/**
-                 * default price. - on sticky bottom
-                 */}
-
-                <View
-                  style={{
-                    alignSelf: 'flex-start',
-                    marginTop: isDiagnosticCircleSubscription && promoteCircle ? 0 : 10,
-                  }}
-                >
-                  {/**
-                   * special price text
-                   */}
-                  {promoteDiscount
-                    ? renderSpecialDiscountText({ marginTop: -10, marginBottom: 2 })
-                    : null}
-
-                  {/**
-                   * circle + promote
-                   */}
-                  {isDiagnosticCircleSubscription && promoteCircle ? (
-                    <View style={{ alignSelf: 'flex-start' }}>
-                      <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
-                    </View>
-                  ) : null}
-
-                  {/**added */}
-                  {promoteCircle && !!strikedPrice && strikedPrice! > bottomPrice && (
-                    <Text style={[styles.priceText, styles.priceTextSlashed]}>
-                      ({string.common.Rs}
-                      {convertNumberToDecimal(strikedPrice)})
-                    </Text>
-                  )}
-                  <View style={{ flexDirection: 'row' }}>
-                    <Text
-                      style={[
-                        styles.priceText,
-                        {
-                          marginTop: isDiagnosticCircleSubscription && promoteCircle ? -2 : 0,
-                          textAlign: 'left',
-                        },
-                      ]}
-                    >
-                      {string.common.Rs}
-                      {convertNumberToDecimal(bottomPrice)}
-                    </Text>
-                    {promoteCircle &&
-                      (isDiagnosticCircleSubscription ? circleDiscount > 0 : discount > 0) && (
-                        <Text
-                          style={{
-                            ...theme.fonts.IBMPlexSansMedium(11),
-                            color: colors.APP_GREEN,
-                            lineHeight: 16,
-                            marginHorizontal: 10,
-                          }}
-                        >
-                          {Number(
-                            isDiagnosticCircleSubscription ? circleDiscount! : discount
-                          ).toFixed(0)}
-                          %off
-                        </Text>
-                      )}
-                    {/**
-                     * circle + not to promote  -- removed isDiagnosticCircleSubscription (to show discounts)
-                     */}
-                    {anySpecialDiscount && (
-                      <Text
-                        style={{
-                          ...theme.fonts.IBMPlexSansMedium(11),
-                          color: colors.APP_GREEN,
-                          lineHeight: 16,
-                          marginHorizontal: 10,
-                        }}
-                      >
-                        {Number(promoteDiscount ? specialDiscount! : discount!).toFixed(0)}%off
-                      </Text>
-                    )}
-                  </View>
-                </View>
-
-                <View style={{ width: '50%', alignSelf: 'flex-end' }}>
-                  <Button
-                    title={!isAddedToCart ? 'ADD TO CART' : string.diagnostics.proceedToCartCTA}
-                    // disabled={!isAddedToCart}
-                    style={{ marginBottom: 20 }}
-                    onPress={() => {
-                      if (!isAddedToCart) {
-                        setItemAdded(true);
-                        postDiagnosticAddToCartEvent(
-                          testInfo.ItemName,
-                          testInfo.ItemID,
-                          testInfo.Rate,
-                          testInfo.Rate
-                        );
-                        addCartItem!({
-                          id: testInfo?.ItemID,
-                          name: testInfo?.ItemName,
-                          mou: testInfo?.PackageInClussion.length,
-                          price: testInfo?.Rate,
-                          specialPrice: Number(testInfo?.specialPrice!) || Number(testInfo?.Rate!),
-                          circlePrice: Number(testInfo?.circleRate!) || undefined,
-                          circleSpecialPrice: Number(testInfo?.circleSpecialPrice!) || undefined,
-                          discountPrice: Number(testInfo?.discountPrice),
-                          discountSpecialPrice: Number(testInfo?.discountSpecialPrice),
-                          thumbnail: '',
-                          collectionMethod: testInfo?.collectionType,
-                          groupPlan: promoteCircle
-                            ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
-                            : promoteDiscount
-                            ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-                            : DIAGNOSTIC_GROUP_PLAN.ALL,
-                          packageMrp: Number(testInfo?.packageMrp!),
-                          inclusions: testInfo?.inclusions,
-                        });
-                      } else {
-                        setItemAdded(false);
-                        props.navigation.navigate(AppRoutes.MedAndTestCart);
-                      }
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-        </StickyBottomComponent>
-      </SafeAreaView>
-    );
-  }
-};
