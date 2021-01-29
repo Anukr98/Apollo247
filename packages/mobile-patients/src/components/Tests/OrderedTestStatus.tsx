@@ -327,7 +327,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   ) => {
     try {
       setLoading!(true);
-      const arrayOfId = packageId.length == 1 ? [Number(packageId)] : packageId;
+      const arrayOfId = orderSelected?.diagnosticOrderLineItems?.[index]?.itemId;
       const res: any = await getPackageInclusions(client, arrayOfId);
       if (res) {
         const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
