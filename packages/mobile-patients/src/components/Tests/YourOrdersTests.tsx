@@ -555,7 +555,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
         const uniqueSlots = getUniqueTestSlots(slotsArray);
         setSlots(slotsArray);
-        uniqueSlots.length &&
+        uniqueSlots?.length &&
           setselectedTimeSlot(
             getTestSlotDetailsByTime(slotsArray, uniqueSlots[0].startTime!, uniqueSlots[0].endTime!)
           );
@@ -862,7 +862,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         statusText={getTestOrderStatusText(currentStatus)}
         style={[
           { marginHorizontal: 20 },
-          index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
+          index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
         onPressCancel={() => onPressTestCancel(order)}
@@ -886,7 +886,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderNoOrders = () => {
-    if (!loading && !error && orders.length == 0) {
+    if (!loading && !error && orders?.length == 0) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
