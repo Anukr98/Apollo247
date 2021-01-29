@@ -25,7 +25,8 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
       <View style={styles.AppCont}>
         <TouchableOpacity style={styles.imageCont} onPress={() => onPressUPIApp(item?.item)}>
           <Image
-            source={{ uri: item?.item?.image_url }}
+            // source={{ uri: item?.item?.image_url }}
+            source={item?.item?.source}
             resizeMode="contain"
             style={styles.image}
           />

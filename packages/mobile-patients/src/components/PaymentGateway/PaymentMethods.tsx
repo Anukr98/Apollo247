@@ -80,6 +80,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
+  const upiApps = [
+    {
+      bank: 'Google Pay',
+      method: 'GOOGLEPAY',
+      source: require('@aph/mobile-patients/src/components/ui/icons/GPay.png'),
+    },
+  ];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -107,6 +114,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'process_result':
         var payload = data.payload || {};
         if (payload?.error) {
+          console.log('error >>>>>>>>', payload);
           handleError(payload?.errorMessage);
         }
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
@@ -323,7 +331,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             case 'WALLET':
               return renderWallets(item?.featured_banks || []);
             case 'UPI':
-              return renderUPIPayments(item?.featured_banks || []);
+              return renderUPIPayments(upiApps || []);
             case 'NB':
               return renderNetBanking(item?.featured_banks || []);
           }
