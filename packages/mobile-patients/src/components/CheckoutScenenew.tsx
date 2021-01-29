@@ -137,6 +137,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     defaultCirclePlan,
     circlePlanSelected,
     pharmacyCircleAttributes,
+    setIsFreeDelivery,
   } = useShoppingCart();
 
   type bankOptions = {
@@ -186,6 +187,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       mutation: SAVE_MEDICINE_ORDER_PAYMENT,
       variables: paymentInfo,
     });
+
+  useEffect(() => {
+    !!circleMembershipCharges ? setIsFreeDelivery?.(true) : setIsFreeDelivery?.(false);
+  }, [circleMembershipCharges]);
 
   useEffect(() => {
     fetchHealthCredits();
