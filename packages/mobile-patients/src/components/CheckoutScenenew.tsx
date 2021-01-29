@@ -1208,7 +1208,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         />
         {!!circleMembershipCharges ? (
           <Text style={styles.codAlertMsg}>
-            {'Remove Circle Membership on Cart Page to avail COD'}
+            {'!Remove Circle Membership on Cart Page to avail COD'}
           </Text>
         ) : !!isOneApolloSelected ? (
           <Text style={styles.codAlertMsg}>
@@ -1449,7 +1449,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 0.05 * windowWidth,
   },
   codAlertMsg: {
-    ...theme.viewStyles.text('M', 11, theme.colors.LIGHT_BLUE, 1, 18),
+    ...theme.viewStyles.text('B', 11, theme.colors.LIGHT_BLUE, 1, 18),
     marginTop: 6,
     marginHorizontal: 25,
   },
