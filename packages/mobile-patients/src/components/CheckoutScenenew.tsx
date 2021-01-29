@@ -1206,11 +1206,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           title={'CASH ON DELIVERY'}
           onPress={() => initiateOrder('', '', true, false)}
         />
-        {!!isOneApolloSelected && (
+        {!!circleMembershipCharges ? (
+          <Text style={styles.codAlertMsg}>
+            {'! COD option is not available for current order as Circle is a prepaid membership'}
+          </Text>
+        ) : !!isOneApolloSelected ? (
           <Text style={styles.codAlertMsg}>
             {'! COD option is not available along with OneApollo Health Credits.'}
           </Text>
-        )}
+        ) : null}
       </View>
     );
   };
@@ -1262,7 +1266,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
             {availableHC != 0 && renderOneApolloOption()}
             {renderNewCOD()}
-            {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()}
+            {/* {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()} */}
             {showPaymentOptions && (
               <>
                 {renderPaymentOptions()}
