@@ -1122,7 +1122,7 @@ export interface WebEngageEvents {
     'Circle discount'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Paymentmode: 'Prepaid' | 'Cash';
+    Paymentmode?: 'Prepaid' | 'Cash';
     Amount: number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
