@@ -1208,7 +1208,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         />
         {!!circleMembershipCharges ? (
           <Text style={styles.codAlertMsg}>
-            {'! COD option is not available for current order as Circle is a prepaid membership'}
+            {'Remove Circle Membership on Cart Page to avail COD'}
           </Text>
         ) : !!isOneApolloSelected ? (
           <Text style={styles.codAlertMsg}>
