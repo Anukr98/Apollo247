@@ -34,8 +34,18 @@ import ApolloClient from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { FlatList, ListRenderItem, SafeAreaView, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  ListRenderItem,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -45,6 +55,7 @@ const styles = StyleSheet.create({
     shadowColor: 'white',
     elevation: 0,
   },
+  helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
 });
 
 type AppSection = { buyAgainSection: true };
@@ -58,6 +69,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
+  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   useEffect(() => {
     fetchOrders();
@@ -249,6 +261,24 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     }
   };
 
+  const onPressHelp = () => {
+    const { category } = NeedHelp[0];
+    props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
+      queryCategory: category,
+      breadCrumb: [{ title: string.needHelp }, { title: category }] as BreadcrumbProps['links'],
+      pageTitle: category.toUpperCase(),
+      email: currentPatient?.emailAddress || '',
+    });
+  };
+
+  const renderHeaderRightComponent = () => {
+    return (
+      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -257,6 +287,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           title={props.navigation.getParam('header') || string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
+          rightComponent={renderHeaderRightComponent()}
         />
         {renderError()}
         {renderOrders()}
