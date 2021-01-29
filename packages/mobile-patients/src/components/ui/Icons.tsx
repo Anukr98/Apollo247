@@ -1704,3 +1704,12 @@ export const GalleryIconWhite: React.FC<IconProps> = (props) => (
 export const MomAndBaby: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_mom&baby.png')} />
 );
+export const ClockIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/clock.png')} />
+);
+export const InfoIconRed: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_info.png')} />
+);
+export const WhyBookUs: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.png')} />
+);
