@@ -2678,7 +2678,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         variables: {
           itemIDs: itemWithId,
-          totalCharges: cartTotal,
+          totalCharges: grandTotal, //removed cartTotal due APP-7386
           slotID: slotVal!,
           pincode: parseInt(pinCodeFromAddress, 10),
         },
