@@ -86,7 +86,7 @@ export function DiagnosticAddToCartEvent(
   id: string,
   price: number,
   discountedPrice: number,
-  source: 'Home page' | 'Full search' | 'Details page' | 'Partial search',
+  source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page',
   section?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {

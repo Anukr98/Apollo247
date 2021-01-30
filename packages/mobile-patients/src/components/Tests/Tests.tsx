@@ -303,10 +303,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
    * fetch widgets
    */
   useEffect(() => {
+    //check how to remove it
+    getHomePageWidgets(
+      (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
+    );
     getDiagnosticBanner();
-    // getHomePageWidgets(
-    //   (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
-    // );
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(currentPatient, isDiagnosticLocationServiceable);
   }, []);
@@ -1230,6 +1231,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           CommonLogEvent(AppRoutes.Tests, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: item?.diagnostic_item_id,
+            itemName: item?.diagnostic_item_name,
             source: 'Partial Search',
             comingFrom: AppRoutes.Tests,
           });
@@ -1337,7 +1339,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 13;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
     return (
       <View>
         {isPricesAvailable ? (
@@ -1384,7 +1386,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 13;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
 
     return (
       <View>

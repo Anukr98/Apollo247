@@ -1833,15 +1833,15 @@ export const nameFormater = (
   caseFormat?: 'lower' | 'upper' | 'title' | 'camel' | 'default'
 ) => {
   if (caseFormat === 'title') {
-    return _.startCase(name.toLowerCase());
+    return _.startCase(name?.toLowerCase());
   } else if (caseFormat === 'camel') {
-    return _.camelCase(name);
+    return _.camelCase(name!);
   } else if (caseFormat === 'lower') {
-    return _.lowerCase(name);
+    return _.lowerCase(name!);
   } else if (caseFormat === 'upper') {
-    return _.upperCase(name);
+    return _.upperCase(name!);
   } else {
-    return _.capitalize(name.replace(/_/g, ' '));
+    return _.capitalize(name?.replace(/_/g, ' '));
   }
 };
 

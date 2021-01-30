@@ -4,18 +4,16 @@ import {
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  CartIcon,
+  CircleLogo,
   ClockIcon,
-  Cross,
   InfoIconRed,
   PendingIcon,
   WhyBookUs,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticTestDetails,
@@ -25,12 +23,8 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import stripHtml from 'string-strip-html';
 import {
   aphConsole,
-  postWebEngageEvent,
   g,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
   nameFormater,
-  isEmptyObject,
   isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -39,23 +33,15 @@ import {
   Dimensions,
   SafeAreaView,
   ScrollView,
-  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ViewStyle,
-  Platform,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
@@ -66,31 +52,31 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
-} from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { AppConfig, COVID_NOTIFICATION_ITEMID } from '../../strings/AppConfig';
-import { FirebaseEventName, FirebaseEvents } from '../../helpers/firebaseEvents';
-import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import {
-  calculateMrpToDisplay,
   calculatePackageDiscounts,
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
-import { DiagnosticAddToCartEvent, DiagnosticDetailsViewed } from './Events';
-import { TestListingHeader } from './components/TestListingHeader';
-import { Breadcrumb } from '../MedicineListing/Breadcrumb';
-import { Spearator } from '../ui/BasicComponents';
-import { FAQComponent } from '../SubscriptionMembership/Components/FAQComponent';
+import {
+  DiagnosticAddToCartEvent,
+  DiagnosticDetailsViewed,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
+import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -109,25 +95,56 @@ export interface TestPackageForDetails extends TestPackage {
   inclusions?: any;
 }
 
+const gender: any = {
+  B: 'MALE AND FEMALE',
+  M: 'MALE',
+  F: 'FEMALE',
+};
+
+export interface TestOverview {
+  value: string;
+  summary: string;
+  format?: string;
+}
+
+export interface CMSTestInclusions {
+  sampleTypeName: string;
+  inclusionName: string;
+}
+
+export interface CMSTestDetails {
+  diagnosticItemName: string;
+  diagnosticFAQs: any;
+  diagnosticItemImageUrl: string;
+  diagnosticUrlAlias: string;
+  diagnosticGender: string;
+  diagnosticAge: string;
+  diagnosticReportGenerationTime: string;
+  diagnosticPretestingRequirement: string;
+  diagnosticOverview: any;
+  diagnosticInclusionName: any;
+}
+
 export interface TestDetailsProps
   extends NavigationScreenProps<{
     testDetails?: TestPackageForDetails;
     itemId?: string;
     source?: string;
     comingFrom?: string;
+    itemName?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const {
     cartItems,
     addCartItem,
+    removeCartItem,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
   } = useDiagnosticsCart();
   const {
-    cartItems: shopCartItems,
     setIsCircleSubscription,
     setHdfcSubscriptionId,
     setCircleSubscriptionId,
@@ -139,91 +156,61 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const { diagnosticServiceabilityData } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
-  const itemId = props.navigation.getParam('itemId');
-  const source = props.navigation.getParam('source');
+  const testName = props.navigation.getParam('itemName');
+  const { setLoading: setLoadingContext } = useUIElements();
+
   const movedFrom = props.navigation.getParam('comingFrom');
-  console.log({ props });
+  const itemId =
+    movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
+  const source = props.navigation.getParam('source');
 
-  //create interface...
-  const [cmsTestDetails, setCmsTestDetails] = useState([] as any);
-  const [testInfo, setTestInfo] = useState({} as any);
+  const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
+  const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
   const [moreInclusions, setMoreInclusions] = useState(false);
-  const [readMore, setReadMore] = useState(false);
+  const [readMore, setReadMore] = useState(true);
+  const [errorState, setErrorState] = useState(false);
 
-  const itemName = testInfo?.ItemName || '';
+  const itemName =
+    testDetails?.ItemName ||
+    testName ||
+    cmsTestDetails?.diagnosticItemName ||
+    testInfo?.ItemName ||
+    '';
 
   const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems.length + shopCartItems.length;
-  const [isItemAdded, setItemAdded] = useState<boolean>(false);
   const currentItemId = testInfo?.ItemID;
   aphConsole.log('currentItemId : ' + currentItemId);
-  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
-  const findItemFromCart = cartItems?.find((item) => item?.id == testInfo?.ItemID);
+  const findItemFromCart = cartItems?.find(
+    (item) => item?.id == testInfo?.ItemID || item?.id == testDetails?.ItemID
+  );
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
-
-  const discount =
-    testDetails.source == 'Cart Page'
-      ? calculatePackageDiscounts(
-          findItemFromCart?.packageMrp!,
-          findItemFromCart?.price!,
-          findItemFromCart?.specialPrice!
-        )
-      : calculatePackageDiscounts(
-          testDetails?.packageMrp! || testInfo?.packageMrp!,
-          testDetails?.Rate! || testInfo?.Rate!,
-          Number(testDetails?.specialPrice! || testInfo?.specialPrice!)
-        );
-  const circleDiscount =
-    testDetails.source == 'Cart Page'
-      ? calculatePackageDiscounts(
-          findItemFromCart?.packageMrp!,
-          findItemFromCart?.circlePrice!,
-          findItemFromCart?.circleSpecialPrice!
-        )
-      : calculatePackageDiscounts(
-          testDetails?.packageMrp! || testInfo?.packageMrp!,
-          Number(testDetails?.circleRate! || testInfo?.circleRate),
-          Number(testDetails?.circleSpecialPrice! || testInfo?.circleSpecialPrice!)
-        );
-  const specialDiscount =
-    testDetails.source == 'Cart Page'
-      ? calculatePackageDiscounts(
-          findItemFromCart?.packageMrp!,
-          findItemFromCart?.discountPrice!,
-          findItemFromCart?.discountSpecialPrice!
-        )
-      : calculatePackageDiscounts(
-          testDetails?.packageMrp! || testInfo?.packageMrp!,
-          Number(testDetails?.discountPrice! || testInfo?.discountPrice!),
-          Number(testDetails?.discountSpecialPrice! || testInfo?.discountSpecialPrice!)
-        );
-
-  const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
-  const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
 
   /**
    * fetching the details wrt itemId
    */
   useEffect(() => {
     if (itemId) {
-      fetchTestDetails_CMS(991);
+      fetchTestDetails_CMS(itemId);
       loadTestDetails(itemId);
     } else {
-      // !TestDetailsDiscription && fetchPackageInclusions(currentItemId);
+      setErrorState(true);
     }
   }, []);
 
   const fetchTestDetails_CMS = async (itemId: string | number) => {
-    //start loading
+    setLoadingContext!(true);
     const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
       console.log({ result });
       setCmsTestDetails(result);
+      setLoadingContext!(false);
     } else {
+      setLoadingContext!(false);
+      setErrorState(true);
       setCmsTestDetails([]);
     }
   };
@@ -233,6 +220,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     listOfIds = [Number(itemId)];
 
     try {
+      setLoadingContext!(true);
       const {
         data: { findDiagnosticsByItemIDsAndCityID },
       } = await client.query<
@@ -266,12 +254,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
 
       const getDiagnosticPricingForItem = diagnosticPricing;
-      const getItems = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics');
       const packageMrpForItem = packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
       if (!pricesForItem?.itemActive) {
-        //disable add to cart
         return !isAddedToCart;
       }
       const specialPrice = pricesForItem?.specialPrice!;
@@ -302,12 +288,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         discountSpecialPrice: discountSpecialPrice,
         mrpToDisplay: mrpToDisplay,
         inclusions: inclusions == null ? Number([itemId]) : inclusions,
+        specialDiscountDiffPrice: pricesForItem?.specialDiscountDiffPrice,
+        circleDiscountDiffPrice: pricesForItem?.circleDiscountDiffPrice,
+        promoteCircle: pricesForItem?.promoteCircle,
+        promoteDiscount: pricesForItem?.promoteDiscount,
+        groupPlan: pricesForItem?.planToConsider,
       };
 
       setTestInfo({ ...(partialTestDetails || []) });
     } catch (error) {
-      // setsearchSate('fail');
       console.log({ error });
+      setErrorState(true);
+    } finally {
+      setLoadingContext!(false);
     }
   };
 
@@ -362,8 +355,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         });
       }
       breadcrumb.push({
-        // check this ....
-        title: nameFormater(itemName, 'title'),
+        title: !!itemName ? nameFormater(itemName!, 'title') : itemName,
         onPress: () => {},
       });
       setTestDetailsBreadCrumbs && setTestDetailsBreadCrumbs(breadcrumb);
@@ -433,37 +425,79 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   };
 
-  const renderDescriptionCard = () => {
+  function createSampleType(data: any) {
+    const array = data?.map(
+      (item: CMSTestInclusions) => nameFormater(item?.sampleTypeName),
+      'title'
+    );
+    const sampleTypeArray = [...new Set(array)];
+    return sampleTypeArray;
+  }
+
+  const renderNotification = () => {
+    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
+      return null;
+    }
     return (
-      <View
-        style={{
-          width: Dimensions.get('window').width * 0.9,
-          ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
-          padding: 16,
-          elevation: 10,
-          margin: 16,
-        }}
-      >
-        {/**
-         * if package then package otherwise, test.
-         * age if not coming from cms -> db
-         * gender if not coming from cms -> db
-         * sample type cms -> db
-         */}
-        <Text>Package Description</Text>
-        {renderDetails('Sample type', 'something')}
-        {renderDetails('Gender', cmsTestDetails?.diagnosticAge)}
-        {renderDetails('Age group', cmsTestDetails?.diagnosticAge)}
-        {renderDescription()}
+      <View style={styles.notificationCard}>
+        <PendingIcon style={styles.pendingIconStyle} />
+        <Text style={[styles.personDetailStyles, { marginTop: 0, marginLeft: 4, marginRight: 6 }]}>
+          {string.diagnostics.priceNotificationForCovidText}
+        </Text>
       </View>
+    );
+  };
+
+  const renderDescriptionCard = () => {
+    const sampleType =
+      !!cmsTestDetails && cmsTestDetails?.diagnosticInclusionName?.length > 0
+        ? createSampleType(cmsTestDetails?.diagnosticInclusionName)
+        : [];
+    const sampleString = sampleType?.length > 0 ? sampleType?.join(', ') : false;
+    const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
+    const showGender =
+      (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
+      (!!testInfo && `FOR ${gender[testInfo.Gender]}`);
+    const showDescription =
+      (!!cmsTestDetails &&
+        cmsTestDetails?.diagnosticOverview?.length > 0 &&
+        cmsTestDetails?.diagnosticOverview?.[0]?.value) ||
+      (!!testInfo && testInfo?.testDescription);
+    return (
+      <>
+        {sampleType || showAge || showGender || showDescription ? (
+          <View style={styles.descriptionCardOuterView}>
+            {/**
+             * if package then package otherwise, test.
+             * age if not coming from cms -> db
+             * gender if not coming from cms -> db
+             * sample type cms -> db
+             */}
+            <Text style={styles.packageDescriptionHeading}>Package Description</Text>
+            {!!sampleString ? renderDetails('Sample type', sampleString) : null}
+            {!!showGender ? renderDetails('Gender', nameFormater(showGender, 'title')) : null}
+            {!!showAge ? renderDetails('Age group', showAge) : null}
+            {!!showDescription ? renderDescription(showDescription) : null}
+          </View>
+        ) : null}
+      </>
     );
   };
 
   const renderDetails = (key: string, value: string) => {
     return (
-      <View style={{ flexDirection: 'row' }}>
-        <Text>{key} : </Text>
-        <Text>{value}</Text>
+      <View style={{ flexDirection: 'row', marginTop: 5, width: '90%' }}>
+        <Text style={styles.packageDescriptionText}>{key} : </Text>
+        <Text
+          style={[
+            styles.packageDescriptionText,
+            {
+              width: '83%',
+            },
+          ]}
+        >
+          {value}
+        </Text>
       </View>
     );
   };
@@ -472,27 +506,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setReadMore(!readMore);
   }
 
-  const renderDescription = () => {
-    //handle strio html
+  const renderDescription = (showDescription: string) => {
     return (
       <>
-        <View style={{ backgroundColor: 'orange', width: '85%' }}>
-          {/* <Text>{stripHtml(cmsTestDetails?.diagnosticOverview?.[0]?.value!)}</Text> */}
+        <View style={styles.overViewContainer}>
           {readMore ? (
-            <Text numberOfLines={1}>Some Random text Some Random text Some Random text</Text>
-          ) : (
-            <Text>
-              Some Random text Some Random text Some Random text gffhhf ghtuytuy jyfyfy new test
-              deshg{' '}
+            <Text style={styles.packageDescriptionText} numberOfLines={1}>
+              {stripHtml(showDescription)}
             </Text>
+          ) : (
+            <Text style={styles.packageDescriptionText}>{stripHtml(showDescription)}</Text>
           )}
         </View>
         <TouchableOpacity
           onPress={() => onPressReadMore()}
           activeOpacity={1}
-          style={{ backgroundColor: 'yellow', alignSelf: 'flex-end', marginVertical: '2%' }}
+          style={styles.readMoreTouch}
         >
-          <Text> {!readMore ? 'READ LESS' : 'READ MORE'}</Text>
+          <Text style={styles.readMoreText}> {!readMore ? 'READ LESS' : 'READ MORE'}</Text>
         </TouchableOpacity>
       </>
     );
@@ -507,15 +538,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
   const renderItemCard = () => {
     return (
-      <View
-        style={{
-          width: Dimensions.get('window').width * 0.9,
-          ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
-          padding: 16,
-          elevation: 10,
-          margin: 16,
-        }}
-      >
+      <View style={styles.descriptionCardOuterView}>
         {renderCardTopView()}
         {renderCardMidView()}
         {renderCardBottomView()}
@@ -525,38 +548,136 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderPriceView = () => {
+    console.log({ testInfo });
+    //if coming from anywhere other than cart page
+    //check other conidtions
+    const slashedPrice =
+      !!testInfo?.packageMrp && testInfo?.packageMrp > testInfo?.Rate
+        ? testInfo?.packageMrp
+        : testInfo?.Rate;
+
+    //1. circle sub + promote circle -> circleSpecialPrice
+    //2. circle sub + discount -> dicount Price
+    //3. circle sub + none -> special price | price
+    //4. non-circle + promote circle -> special price | price
+    //5. non-circle + promte disocunt -> discount price
+    //6. non-circle + none -> special price | price
+
+    let priceToShow;
+    if (isDiagnosticCircleSubscription) {
+      if (testInfo?.promoteCircle) {
+        priceToShow = testInfo?.circleSpecialPrice;
+      } else if (testInfo?.promoteDiscount) {
+        priceToShow = testInfo?.discountSpecialPrice;
+      } else {
+        priceToShow = testInfo?.specialPrice || testInfo?.Rate;
+      }
+    } else {
+      if (testInfo?.promoteDiscount) {
+        priceToShow = testInfo?.discountSpecialPrice;
+      } else {
+        priceToShow = testInfo?.specialPrice || testInfo?.Rate;
+      }
+    }
     return (
-      <View style={{ backgroundColor: 'teal' }}>
-        {/**
-         * slashedd will only be shown if packageMrp > price in any case.
-         */}
-        {renderSlashedView()}
-        {renderMainPriceView()}
+      <View style={{}}>
+        {renderSeparator()}
+        <View style={{ marginTop: '2%' }}>
+          {renderSlashedView(slashedPrice, priceToShow)}
+          {!!testInfo && renderMainPriceView(priceToShow)}
+        </View>
       </View>
     );
   };
 
-  const renderSlashedView = () => {
+  const renderSlashedView = (slashedPrice: number, priceToShow: number) => {
     return (
       <View>
-        <Text> {string.common.Rs} 70000</Text>
+        {(!isDiagnosticCircleSubscription &&
+          testInfo?.promoteCircle &&
+          priceToShow == slashedPrice) ||
+        priceToShow == slashedPrice ? null : (
+          <Text style={styles.slashedPriceText}>
+            {string.common.Rs} {convertNumberToDecimal(slashedPrice)}
+          </Text>
+        )}
       </View>
     );
   };
 
-  const renderMainPriceView = () => {
+  const renderMainPriceView = (priceToShow: number) => {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text> {string.common.Rs} 70000</Text>
-        {renderSavingView()}
+      <View style={styles.flexRowView}>
+        {!!priceToShow && (
+          <Text style={styles.mainPriceText}>
+            {string.common.Rs} {convertNumberToDecimal(priceToShow)}
+          </Text>
+        )}
+        {renderDiscountView()}
       </View>
     );
   };
 
-  const renderSavingView = () => {
+  const renderDiscountView = () => {
+    const circleSpecialPrice = testInfo?.circleSpecialPrice!;
+    const circleDiscountSaving = testInfo?.circleDiscountDiffPrice;
+    const specialDiscountSaving = testInfo?.specialDiscountDiffPrice;
+    const groupPlan = testInfo?.groupPlan?.groupPlan;
+
     return (
       <View>
-        <Text> kjhfhf</Text>
+        {isDiagnosticCircleSubscription &&
+        circleDiscountSaving > 0 &&
+        !testInfo?.promoteDiscount &&
+        groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
+          <View style={styles.rowStyle}>
+            <CircleLogo style={styles.circleLogoIcon} />
+            {renderSavingView(
+              'Savings',
+              circleDiscountSaving,
+              { marginHorizontal: '1%' },
+              styles.savingsText
+            )}
+          </View>
+        ) : testInfo?.promoteDiscount &&
+          specialDiscountSaving > 0 &&
+          !testInfo?.promoteCircle &&
+          groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
+          <View style={styles.rowStyle}>
+            <SpecialDiscountText isImage={true} text={'TEST 247'} />
+            {renderSavingView(
+              'Savings',
+              specialDiscountSaving,
+              { marginHorizontal: '1%' },
+              styles.savingsText
+            )}
+          </View>
+        ) : circleDiscountSaving > 0 && groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
+          <View style={styles.rowStyle}>
+            <CircleHeading isSubscribed={false} />
+            {renderSavingView(
+              '',
+              circleSpecialPrice,
+              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
+              styles.savingsText
+            )}
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderSavingView = (
+    text: string,
+    price: number | string,
+    mainViewStyle: any,
+    textStyle: any
+  ) => {
+    return (
+      <View style={mainViewStyle}>
+        <Text style={textStyle}>
+          {text} {string.common.Rs} {convertNumberToDecimal(price)}
+        </Text>
       </View>
     );
   };
@@ -570,10 +691,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {!!cmsTestDetails?.diagnosticReportGenerationTime ? (
           <>
             {renderSeparator()}
-            <View style={{ flexDirection: 'row' }}>
-              <ClockIcon />
-              <Text>Report generation Time</Text>
-              <Text>{cmsTestDetails?.diagnosticReportGenerationTime}</Text>
+            <View style={styles.midCardView}>
+              <ClockIcon style={styles.clockIconStyle} />
+
+              <View style={styles.midCardTextView}>
+                <Text style={styles.reportTimeText}>Report generation Time</Text>
+                <Text style={styles.reportTime}>
+                  {cmsTestDetails?.diagnosticReportGenerationTime}
+                </Text>
+              </View>
             </View>
           </>
         ) : null}
@@ -590,10 +716,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {!!cmsTestDetails?.diagnosticPretestingRequirement ? (
           <>
             {renderSeparator()}
-            <View style={{ flexDirection: 'row' }}>
-              <InfoIconRed />
-              <Text>Fasting..</Text>
-              <Text>{cmsTestDetails?.diagnosticPretestingRequirement}</Text>
+            <View style={styles.bottomCardView}>
+              <InfoIconRed style={styles.infoIconStyle} />
+              <Text style={styles.preTestingText}>
+                {cmsTestDetails?.diagnosticPretestingRequirement}
+              </Text>
             </View>
           </>
         ) : null}
@@ -613,40 +740,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
     return (
       <>
-        <View style={{ width: '75%', backgroundColor: 'red' }}>
-          <Text
-            style={{
-              ...theme.viewStyles.text(
-                'SB',
-                isSmallDevice ? 16.5 : 18,
-                theme.colors.SHERPA_BLUE,
-                1,
-                25
-              ),
-              textAlign: 'left',
-              textTransform: 'capitalize',
-            }}
-          >
-            {cmsTestDetails?.diagnosticItemName}
+        <View style={{ width: '75%' }}>
+          <Text style={styles.itemNameText}>
+            {testName ||
+              testDetails?.ItemName ||
+              cmsTestDetails?.diagnosticItemName ||
+              testInfo?.itemName}
           </Text>
         </View>
-        <View style={{ backgroundColor: 'pink', width: '100%', marginVertical: '6%' }}>
+        <View style={styles.inclusionsView}>
           {isInclusionPrsent ? (
-            <Text
-              style={{
-                ...theme.viewStyles.text(
-                  'M',
-                  isSmallDevice ? 13 : 14,
-                  theme.colors.SHERPA_BLUE,
-                  0.5,
-                  13
-                ),
-                textAlign: 'left',
-                marginTop: '1%',
-                letterSpacing: 0.25,
-                marginBottom: '3%',
-              }}
-            >
+            <Text style={styles.testIncludedText}>
               Tests included : {cmsTestDetails?.diagnosticInclusionName?.length}
             </Text>
           ) : null}
@@ -654,43 +758,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             !moreInclusions &&
             inclusions?.map((item: any, index: number) =>
               index < 4 ? (
-                <View style={{ flexDirection: 'row' }}>
-                  <Text
-                    style={{
-                      color: '#007C9D',
-                      fontSize: 6,
-                      textAlign: 'center',
-                      paddingTop: 3,
-                    }}
-                  >
-                    {'\u2B24'}
-                  </Text>
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('R', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 16),
-                      letterSpacing: 0.25,
-                      marginBottom: '2%',
-                      marginHorizontal: '3%',
-                    }}
-                  >
-                    {nameFormater(item, 'title')}{' '}
+                <View style={styles.rowStyle}>
+                  <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                  <Text style={styles.inclusionsItemText}>
+                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
                     {index == 3 && inclusions?.length - 4 > 0 && (
                       <Text
                         onPress={() => setMoreInclusions(!moreInclusions)}
-                        style={{
-                          ...theme.viewStyles.text(
-                            'M',
-                            isSmallDevice ? 12 : 13,
-                            theme.colors.APP_YELLOW,
-                            1,
-                            13
-                          ),
-                          letterSpacing: 0.25,
-                          marginBottom: '1.5%',
-                        }}
+                        style={styles.moreText}
                       >
                         {'   '}
-                        {!moreInclusions && `+${inclusions?.length - 4} more`}
+                        {!moreInclusions && `+${inclusions?.length - 4} MORE`}
                       </Text>
                     )}
                   </Text>
@@ -700,49 +778,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           {isInclusionPrsent &&
             moreInclusions &&
             inclusions?.map((item: any, index: number) => (
-              <View style={{ flexDirection: 'row' }}>
-                <Text
-                  style={{
-                    color: '#007C9D',
-                    fontSize: 6,
-                    textAlign: 'center',
-                    paddingTop: 3,
-                  }}
-                >
-                  {'\u2B24'}
-                </Text>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('R', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 16),
-                    letterSpacing: 0.25,
-                    marginBottom: '2%',
-                    marginHorizontal: '3%',
-                  }}
-                >
-                  {nameFormater(item, 'title')}{' '}
+              <View style={styles.rowStyle}>
+                <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                <Text style={styles.inclusionsItemText}>
+                  {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
                 </Text>
               </View>
             ))}
-          {/**
-           * check for less items..
-           */}
           {isInclusionPrsent && moreInclusions && (
-            <Text
-              onPress={() => setMoreInclusions(!moreInclusions)}
-              style={{
-                ...theme.viewStyles.text(
-                  'M',
-                  isSmallDevice ? 12 : 13,
-                  theme.colors.APP_YELLOW,
-                  1,
-                  13
-                ),
-                letterSpacing: 0.25,
-                marginBottom: '1.5%',
-                marginTop: '2%',
-                marginLeft: '5%',
-              }}
-            >
+            <Text onPress={() => setMoreInclusions(!moreInclusions)} style={styles.showLessText}>
               SHOW LESS
             </Text>
           )}
@@ -752,16 +796,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderBreadCrumb = () => {
-    console.log({ testDetailsBreadCrumbs });
     return (
       <View style={{ marginLeft: 20 }}>
-        <Breadcrumb
-          links={testDetailsBreadCrumbs!}
-          containerStyle={{
-            borderBottomWidth: 1,
-            borderBottomColor: '#E5E5E5',
-          }}
-        />
+        <Breadcrumb links={testDetailsBreadCrumbs!} containerStyle={styles.breadCrumbContainer} />
       </View>
     );
   };
@@ -779,14 +816,61 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <FAQComponent
         headingText={'Frequently Asked Questions'}
-        headingStyle={{
-          ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0.35),
-          marginTop: 10,
-        }}
+        headingStyle={styles.faqHeadingText}
         headerSeparatorStyle={{ marginVertical: 10 }}
+        containerStyle={{ marginLeft: 20, marginRight: 25 }}
+        data={cmsTestDetails?.diagnosticFAQs}
+        arrowStyle={{ tintColor: theme.colors.APP_YELLOW }}
       />
     );
   };
+
+  function onPressAddToCart() {
+    const specialPrice = testInfo?.specialPrice!;
+    const price = testInfo?.Rate!;
+    const circlePrice = testInfo?.circlePrice!;
+    const circleSpecialPrice = testInfo?.circleSpecialPrice!;
+    const discountPrice = testInfo?.discountPrice!;
+    const discountSpecialPrice = testInfo?.discountSpecialPrice!;
+    const planToConsider = testInfo?.planToConsider;
+    const discountToDisplay = testInfo?.discountToDisplay;
+    const mrpToDisplay = testInfo?.mrpToDisplay;
+
+    DiagnosticAddToCartEvent(
+      cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
+      itemId!,
+      mrpToDisplay,
+      discountToDisplay,
+      'Details page'
+    );
+    addCartItem!({
+      id: `${itemId!}`,
+      mou: cmsTestDetails?.diagnosticInclusionName?.length + 1 || testInfo?.mou,
+      name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
+      price: price,
+      specialPrice: specialPrice! | price,
+      circlePrice: circlePrice,
+      circleSpecialPrice: circleSpecialPrice,
+      discountPrice: discountPrice,
+      discountSpecialPrice: discountSpecialPrice,
+      thumbnail: cmsTestDetails?.diagnosticItemImageUrl,
+      collectionMethod: TEST_COLLECTION_TYPE.HC,
+      packageMrp: Number(testInfo?.packageMrp!),
+      groupPlan: testInfo?.promoteCircle
+        ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
+        : testInfo?.promoteDiscount
+        ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+        : DIAGNOSTIC_GROUP_PLAN.ALL,
+      inclusions: testInfo?.inclusions == null ? [Number(itemId)] : testInfo?.inclusions,
+    });
+  }
+
+  function onPressRemoveFromCart() {
+    if (diagnosticServiceabilityData?.city != '') {
+      return;
+    }
+    removeCartItem!(`${itemId}`);
+  }
 
   return (
     <SafeAreaView
@@ -794,78 +878,49 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ...theme.viewStyles.container,
       }}
     >
-      {renderHeader()}
-      {renderBreadCrumb()}
-      <ScrollView bounces={false} keyboardDismissMode="on-drag">
-        {renderItemCard()}
-        {renderWhyBookUs()}
-        {renderDescriptionCard()}
-        {renderFAQView()}
-      </ScrollView>
+      {!errorState ? (
+        <>
+          {renderHeader()}
+          {renderBreadCrumb()}
+          <ScrollView bounces={false} keyboardDismissMode="on-drag" style={{ marginBottom: 60 }}>
+            {!!testInfo && !!cmsTestDetails && renderItemCard()}
+            {renderWhyBookUs()}
+            {renderDescriptionCard()}
+            {!!cmsTestDetails?.diagnosticFAQs &&
+            cmsTestDetails?.diagnosticFAQs?.length > 0 &&
+            cmsTestDetails?.diagnosticFAQs?.[0]?.diagnosticFAQs?.length > 0
+              ? renderFAQView()
+              : null}
+          </ScrollView>
+          <StickyBottomComponent>
+            <Button
+              title={isAddedToCart ? 'PROCEED TO CART ' : 'ADD TO CART'}
+              onPress={() =>
+                isAddedToCart ? props.navigation.navigate(AppRoutes.TestsCart) : onPressAddToCart()
+              }
+            />
+          </StickyBottomComponent>
+          {/* {loading && <Spinner />} */}
+        </>
+      ) : (
+        <>
+          {renderHeader()}
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Card
+              cardContainer={{ marginTop: 0 }}
+              heading={string.common.uhOh}
+              description={'Test Details are not Available!'}
+              descriptionTextStyle={{ fontSize: 14 }}
+              headingTextStyle={{ fontSize: 14 }}
+            />
+          </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  testNameStyles: {
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansSemiBold(20),
-    lineHeight: 24,
-    color: theme.colors.SEARCH_DOCTOR_NAME,
-    marginTop: 4,
-    marginBottom: 4,
-  },
-  personDetailLabelStyles: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    color: theme.colors.SEARCH_EDUCATION_COLOR,
-    letterSpacing: 0.25,
-  },
-  personDetailStyles: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    color: theme.colors.LIGHT_BLUE,
-    letterSpacing: 0.25,
-    marginTop: 4,
-  },
-  personDetailsView: {
-    marginTop: 6,
-  },
-  descriptionStyles: {
-    backgroundColor: theme.colors.WHITE,
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 5,
-    paddingVertical: 20,
-  },
-  descriptionTextStyles: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SKY_BLUE,
-    textAlign: 'left',
-    lineHeight: 22,
-  },
-  priceText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: '#02475b',
-    letterSpacing: 0.35,
-    textAlign: 'center',
-  },
-  circlePriceText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    letterSpacing: 0.35,
-    textAlign: 'center',
-  },
-  SeparatorStyle: {
-    ...theme.viewStyles.lightSeparatorStyle,
-    borderBottomColor: 'rgba(2, 71, 91, 0.5)',
-    paddingLeft: 20,
-    paddingRight: 20,
-    marginBottom: 20,
-  },
-  pendingIconStyle: { height: 15, width: 15, resizeMode: 'contain' },
   container: {
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -880,60 +935,147 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  labelView: {
-    position: 'absolute',
-    top: -3,
-    right: -3,
-    backgroundColor: '#ff748e',
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
+  personDetailStyles: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    color: theme.colors.LIGHT_BLUE,
+    letterSpacing: 0.25,
+    marginTop: 4,
   },
-  labelText: {
-    ...theme.fonts.IBMPlexSansBold(9),
-    color: theme.colors.WHITE,
-  },
-  proceedToCartText: {
-    color: theme.colors.APP_YELLOW,
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  successfulText: {
-    margin: 10,
-    textAlign: 'center',
-    color: '#658F9B',
-    ...theme.fonts.IBMPlexSansMedium(11),
-    alignSelf: 'flex-end',
-  },
+  pendingIconStyle: { height: 15, width: 15, resizeMode: 'contain' },
   notificationCard: {
     ...theme.viewStyles.cardViewStyle,
     flexDirection: 'row',
     margin: 16,
     padding: 16,
   },
-  crossIconStyle: {
-    tintColor: colors.APP_YELLOW_COLOR,
-    height: 10,
-    width: 10,
-    marginHorizontal: 5,
-    resizeMode: 'contain',
-    justifyContent: 'center',
+  descriptionCardOuterView: {
+    width: Dimensions.get('window').width * 0.9,
+    ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
+    padding: 16,
+    elevation: 10,
+    margin: 16,
+    flex: 1,
   },
-  topPriceView: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    height: 50,
+  packageDescriptionHeading: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
+    textAlign: 'left',
+    marginBottom: '2%',
   },
-  circlePriceView: { alignSelf: 'flex-start', marginTop: 5 },
-  priceTextSlashed: {
+  packageDescriptionText: {
+    ...theme.viewStyles.text('L', 13, theme.colors.SHERPA_BLUE, 1, 20),
+    textAlign: 'left',
+    letterSpacing: 0.5,
+  },
+  overViewContainer: {
+    width: '85%',
+    marginTop: 10,
+  },
+  readMoreTouch: { alignSelf: 'flex-end', marginTop: 10 },
+  readMoreText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 14 : 15, theme.colors.APP_YELLOW, 1, 20),
+    letterSpacing: 0.25,
+    marginBottom: '1.5%',
+  },
+  flexRowView: { flexDirection: 'row', justifyContent: 'space-between' },
+  rowStyle: { flexDirection: 'row' },
+  slashedPriceText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE),
+    lineHeight: 21,
+    textAlign: 'left',
+    opacity: 0.5,
+    textDecorationLine: 'line-through',
+  },
+  mainPriceText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
+    lineHeight: 21,
     textAlign: 'left',
     alignSelf: 'flex-start',
-    textDecorationLine: 'line-through',
-    opacity: 0.5,
-    marginTop: -10,
+  },
+  circleLogoIcon: {
+    height: 20,
+    width: isSmallDevice ? 32 : 36,
+    resizeMode: 'contain',
+  },
+  savingsText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN),
+    lineHeight: 18,
+    textAlign: 'center',
+    alignSelf: 'center',
+  },
+  midCardView: { flexDirection: 'row', height: 60 },
+  clockIconStyle: { height: 32, width: 32, resizeMode: 'contain', alignSelf: 'center' },
+  midCardTextView: {
+    flexDirection: 'column',
+    marginHorizontal: '2%',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  reportTimeText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 13),
+    textAlign: 'left',
+    letterSpacing: 0.25,
+  },
+  reportTime: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 16),
+    textAlign: 'left',
+    letterSpacing: 0.25,
+    marginVertical: 4,
+  },
+  bottomCardView: {
+    flexDirection: 'row',
+    height: 40,
+    alignItems: 'center',
+  },
+  infoIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  preTestingText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, '#FF637B', 1, 13),
+    textAlign: 'left',
+    letterSpacing: 0.25,
+    marginHorizontal: '4%',
+  },
+  itemNameText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
+    textAlign: 'left',
+    textTransform: 'capitalize',
+  },
+  inclusionsView: { width: '100%', marginVertical: '5%' },
+  testIncludedText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 13),
+    textAlign: 'left',
+    marginTop: '1%',
+    letterSpacing: 0.25,
+    marginBottom: '3%',
+  },
+  inclusionsBullet: {
+    color: '#007C9D',
+    fontSize: 6,
+    textAlign: 'center',
+    paddingTop: 3,
+  },
+  inclusionsItemText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
+    letterSpacing: 0,
+    marginBottom: '1.5%',
+    marginHorizontal: '3%',
+  },
+  moreText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
+    letterSpacing: 0.25,
+    marginBottom: '1.5%',
+  },
+  showLessText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 13),
+    letterSpacing: 0.25,
+    marginBottom: '1.5%',
+    marginTop: '2%',
+    marginLeft: '5%',
+  },
+  breadCrumbContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  faqHeadingText: {
+    ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0.35),
+    marginTop: 10,
   },
 });

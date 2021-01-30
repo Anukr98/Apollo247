@@ -2,6 +2,7 @@ import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponent
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import React from 'react';
 import {
   Dimensions,
@@ -47,6 +48,11 @@ export interface PackageCardProps {
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
+
+  const actualItemsToShow =
+    data?.diagnosticWidgetData?.length > 0 &&
+    data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+
   const renderItemCard = (item: any) => {
     const getItem = item?.item;
     const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
@@ -356,20 +362,44 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     );
   };
 
+  const renderError = () => {
+    if (props.isVertical)
+      return (
+        <Card
+          cardContainer={{
+            height: 'auto',
+            shadowRadius: 0,
+            shadowOffset: { width: 0, height: 0 },
+            shadowColor: 'white',
+            elevation: 0,
+          }}
+          heading={string.common.uhOh}
+          description={'Something went wrong.'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      );
+    else {
+      return null;
+    }
+  };
+
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
-        {data?.diagnosticWidgetData?.length > 0 ? (
+        {actualItemsToShow?.length > 0 ? (
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
             bounces={false}
             keyExtractor={(_, index) => `${index}`}
             showsHorizontalScrollIndicator={false}
             horizontal={!props.isVertical}
-            data={data?.diagnosticWidgetData}
+            data={actualItemsToShow}
             renderItem={renderItemCard}
           />
-        ) : null}
+        ) : (
+          renderError()
+        )}
       </View>
     </>
   );
