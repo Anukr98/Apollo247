@@ -140,6 +140,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     pharmacyCircleAttributes,
     newAddressAdded,
     setNewAddressAdded,
+    orders,
+    setOrders,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -423,6 +425,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         try {
           const res = await getDeliveryTAT247(tatInput);
           const response = res?.data?.response;
+          console.log('response >>>', response);
+          setOrders?.(response);
           const tatTimeStamp = response?.tatU;
           if (tatTimeStamp && tatTimeStamp !== -1) {
             const deliveryDate = response?.tat;

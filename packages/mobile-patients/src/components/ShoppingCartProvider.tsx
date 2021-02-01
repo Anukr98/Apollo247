@@ -223,6 +223,8 @@ export interface ShoppingCartContextProps {
   pharmacyCircleAttributes: PharmacyCircleEvent | null;
   pdpBreadCrumbs: BreadcrumbLink[];
   setPdpBreadCrumbs: ((items: BreadcrumbLink[]) => void) | null;
+  orders: any;
+  setOrders: ((orders: any[]) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -324,6 +326,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   pharmacyCircleAttributes: null,
   pdpBreadCrumbs: [],
   setPdpBreadCrumbs: null,
+  orders: [],
+  setOrders: null,
 });
 
 const AsyncStorageKeys = {
@@ -431,6 +435,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >();
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
+  const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
     AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
@@ -973,6 +978,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         pharmacyCircleAttributes,
         pdpBreadCrumbs,
         setPdpBreadCrumbs,
+        orders,
+        setOrders,
       }}
     >
       {props.children}

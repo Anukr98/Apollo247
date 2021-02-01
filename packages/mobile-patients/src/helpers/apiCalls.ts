@@ -860,7 +860,7 @@ export const getDeliveryTAT247 = (
 ): Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  const url = `${config.UATTAT_CONFIG[0]}/v2/tat`;
   return Axios.post(url, params, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -1121,7 +1121,10 @@ export const searchProceduresAndSymptoms = (
   });
 };
 
-export const getDiagnosticTestDetails = (pageName: string, itemId: number): Promise<AxiosResponse<any>> => {
+export const getDiagnosticTestDetails = (
+  pageName: string,
+  itemId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getDetails = `${baseurl}/${pageName}/${itemId}`;
   return Axios.get(getDetails, {
