@@ -2918,7 +2918,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const doctorWillConnectShortlyAutomatedText = () => {
     setTimeout(() => {
-      if (doctorJoinedChat) {
+      if (doctorJoinedChat || status === STATUS.COMPLETED) {
         return;
       }
       const automatedText = [
@@ -2944,7 +2944,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const rescheduleOrCancelAppointmentAutomatedText = () => {
     setTimeout(() => {
-      if (doctorJoinedChat) {
+      if (doctorJoinedChat || status === STATUS.COMPLETED) {
         return;
       }
       const automatedText = [
