@@ -5447,8 +5447,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </Text>
           <TouchableOpacity
             onPress={() => {
-              // patientJoinedCall.current = true;
-              isAudio.current = true;
+              patientJoinedCall.current = true;
               joinCallHandler();
               postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
             }}
