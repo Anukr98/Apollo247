@@ -268,6 +268,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       breadCrumb: [{ title: string.needHelp }, { title: category }] as BreadcrumbProps['links'],
       pageTitle: category.toUpperCase(),
       email: currentPatient?.emailAddress || '',
+      fromOrderFlow: true,
     });
   };
 
