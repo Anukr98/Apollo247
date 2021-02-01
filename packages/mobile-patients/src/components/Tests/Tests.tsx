@@ -32,10 +32,10 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   SAVE_SEARCH,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
-  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   SET_DEFAULT_ADDRESS,
   GET_PATIENT_ADDRESS_LIST,
+  GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
@@ -96,10 +96,6 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import {
-  findDiagnosticsByItemIDsAndCityID,
-  findDiagnosticsByItemIDsAndCityIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
   GetSubscriptionsOfUserByStatus,
@@ -133,6 +129,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { stepsToBookArray } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  findDiagnosticsWidgetsPricing,
+  findDiagnosticsWidgetsPricingVariables,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -249,8 +249,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   );
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
-    client.query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
-      query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+    client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
+      query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
       context: {
         sourceHeaders,
       },
@@ -401,7 +401,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
 
     const response = (await res)?.map((item: any) =>
-      g(item, 'data', 'findDiagnosticsByItemIDsAndCityID', 'diagnostics')
+      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
     );
     let newWidgetsData = [...widgetsData];
 

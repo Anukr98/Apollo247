@@ -7,7 +7,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_WIDGETS_PRICING_BY_ITEMID_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
 
 import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -24,21 +24,16 @@ import {
   Image as ImageNative,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-
-import {
-  findDiagnosticsByItemIDsAndCityID,
-  findDiagnosticsByItemIDsAndCityIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
-
-import { TestListingHeader } from './components/TestListingHeader';
-import { Breadcrumb } from '../MedicineListing/Breadcrumb';
+import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
+import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
+import {
+  findDiagnosticsWidgetsPricing,
+  findDiagnosticsWidgetsPricingVariables,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -56,11 +51,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
 
-  const {
-    diagnosticServiceabilityData,
-
-    isDiagnosticLocationServiceable,
-  } = useAppCommonData();
+  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
   const movedFrom = props.navigation.getParam('comingFrom');
   const dataFromHomePage = props.navigation.getParam('data');
@@ -80,8 +71,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   }, []);
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
-    client.query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
-      query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+    client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
+      query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
       context: {
         sourceHeaders,
       },
@@ -100,7 +91,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     );
 
     const response = (await res).map((item: any) =>
-      g(item, 'data', 'findDiagnosticsByItemIDsAndCityID', 'diagnostics')
+      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
     );
 
     console.log({ response });

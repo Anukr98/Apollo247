@@ -1260,7 +1260,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkSlotSelection = (item: areaObject) => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
 
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({

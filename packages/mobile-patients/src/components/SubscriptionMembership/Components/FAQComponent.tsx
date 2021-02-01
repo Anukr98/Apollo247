@@ -53,10 +53,10 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
                   transform: [
                     {
                       rotate: !!(previousIndex != -1 && index === previousIndex)
-                        ? '270deg'
-                        : !!(activeIndex === index)
                         ? '90deg'
-                        : '270deg',
+                        : !!(activeIndex === index)
+                        ? '270deg'
+                        : '90deg',
                     },
                   ],
                 },

@@ -1337,7 +1337,8 @@ export const isValidTestSlot = (
 
 export const isValidTestSlotWithArea = (
   slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
-  date: Date
+  date: Date,
+  customSlot?: boolean
 ) => {
   return (
     (moment(date)
@@ -1354,7 +1355,12 @@ export const isValidTestSlotWithArea = (
         )
       : true) &&
     moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
-      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+      moment(
+        customSlot
+          ? AppConfig.Configuration.DIAGNOSTIC_COVID_MAX_SLOT_TIME.trim()
+          : AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(),
+        'HH:mm'
+      )
     )
   );
 };
