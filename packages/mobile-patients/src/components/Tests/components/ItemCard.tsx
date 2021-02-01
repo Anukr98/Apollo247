@@ -350,13 +350,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     if (props.isVertical)
       return (
         <Card
-          cardContainer={{
-            height: 'auto',
-            shadowRadius: 0,
-            shadowOffset: { width: 0, height: 0 },
-            shadowColor: 'white',
-            elevation: 0,
-          }}
+          cardContainer={styles.errorCardContainer}
           heading={string.common.uhOh}
           description={'Something went wrong.'}
           descriptionTextStyle={{ fontSize: 14 }}
@@ -460,5 +454,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     bottom: 10,
+  },
+  errorCardContainer: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
   },
 });

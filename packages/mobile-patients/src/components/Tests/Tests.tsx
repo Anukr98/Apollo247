@@ -303,7 +303,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
    * fetch widgets
    */
   useEffect(() => {
-    //check how to remove it
     getHomePageWidgets(
       (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
     );

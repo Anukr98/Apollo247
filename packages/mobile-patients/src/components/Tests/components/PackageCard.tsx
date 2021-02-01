@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo, OfferIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -71,6 +71,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const name = getItem?.itemTitle;
     const inclusions = getItem?.inclusionData;
 
+    const promoteCircle = pricesForItem?.promoteCircle;
+    const promoteDiscount = pricesForItem?.promoteDiscount;
+    const circleDiscount = pricesForItem?.circleDiscount;
+    const specialDiscount = pricesForItem?.specialDiscount;
+    const discount = pricesForItem?.discount;
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -82,6 +88,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
         ]}
       >
+        {renderPercentageDiscountTag(
+          promoteCircle && isCircleSubscribed
+            ? circleDiscount
+            : promoteDiscount
+            ? specialDiscount
+            : discount
+        )}
         <View>
           <View style={{ minHeight: 100 }}>
             <View style={styles.topPackageView}>
@@ -118,6 +131,19 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           {renderPricesView(pricesForItem, packageMrpForItem, getItem)}
         </View>
       </TouchableOpacity>
+    );
+  };
+
+  const renderPercentageDiscountTag = (discount: string | number) => {
+    return (
+      <>
+        {!!discount ? (
+          <View style={styles.discountTagView}>
+            <OfferIcon style={styles.offerIconStyle} />
+            <Text style={styles.discountTagText}>-{Number(discount).toFixed(0)}%</Text>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -366,13 +392,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     if (props.isVertical)
       return (
         <Card
-          cardContainer={{
-            height: 'auto',
-            shadowRadius: 0,
-            shadowOffset: { width: 0, height: 0 },
-            shadowColor: 'white',
-            elevation: 0,
-          }}
+          cardContainer={styles.errorCardContainer}
           heading={string.common.uhOh}
           description={'Something went wrong.'}
           descriptionTextStyle={{ fontSize: 14 }}
@@ -488,5 +508,34 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     right: 16,
     position: 'absolute',
+  },
+  discountTagView: {
+    elevation: 20,
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    zIndex: 1,
+  },
+  discountTagText: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24),
+    top: 5,
+  },
+  offerIconStyle: {
+    height: 45,
+    width: 45,
+  },
+  errorCardContainer: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
   },
 });

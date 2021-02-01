@@ -457,7 +457,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
     const showGender =
       (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
-      (!!testInfo && `FOR ${gender[testInfo.Gender]}`);
+      (!!testInfo && `FOR ${gender[testInfo?.Gender]}`);
     const showDescription =
       (!!cmsTestDetails &&
         cmsTestDetails?.diagnosticOverview?.length > 0 &&
