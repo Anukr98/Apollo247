@@ -434,7 +434,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
             onPress={() => {
               returnOrderWebEngageEvents(WebEngageEventName.RETURN_REQUEST_SUBMITTED);
               setShowReturnPopup(false);
-              setShowReturnUI(false);
+              onSubmit();
+              closeReturnView();
             }}
             disabled={submit_request}
             style={[
@@ -463,9 +464,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     let imagesArray = [] as any;
     returnOrderImages?.forEach((item: any) => {
       let imageObj = {} as any;
-      imageObj.fileName = item?.title + '.' + item?.fileType;
-      imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
-      imageObj.content = item?.base64;
+      imageObj.fileType = item?.fileType;
+      imageObj.base64FileInput = item?.base64;
       imagesArray.push(imageObj);
     });
     return imagesArray;
