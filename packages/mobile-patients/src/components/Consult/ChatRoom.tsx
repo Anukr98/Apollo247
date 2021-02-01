@@ -575,15 +575,17 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, theme.colors.APP_RED),
     textAlign: 'center',
   },
-  userThumbnailIcon: {
+  userThumbnailView: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 90,
-    height: 132,
     zIndex: 1000,
     top: height / 2 - 61,
     left: width / 2 - 45,
+  },
+  userThumbnailIcon: {
+    width: 90,
+    height: 132,
   },
   connectingText: {
     ...theme.viewStyles.text('M', 14, theme.colors.SEARCH_UNDERLINE_COLOR),
@@ -826,6 +828,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     : '';
 
   const isDoctorVideoPaused = isPaused == 'audio/video' || isPaused == 'video';
+  const doctorProfileUrl = appointmentData?.doctorInfo?.photoUrl;
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -5586,33 +5589,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const VideoCall = () => {
     return (
       <View style={[talkStyles, { zIndex: 1001 }]}>
-        {/* {downgradeToAudio && (
-          <View>
-            {appointmentData.doctorInfo.photoUrl ? (
-              <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
-                <Image
-                  source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                  style={audioCallImageStyles}
-                  resizeMode={'contain'}
-                />
-              </View>
-            ) : (
-              <View
-                style={[
-                  audioCallImageStyles,
-                  {
-                    backgroundColor: 'black',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0.6,
-                  },
-                ]}
-              >
-                <DoctorPlaceholderImage />
-              </View>
-            )}
-          </View>
-        )} */}
         <View style={{ flex: 1, flexDirection: 'row' }}>
           <OTSession
             // apiKey={'46401302'}
@@ -5801,7 +5777,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderNoSubscriberConnectedThumbnail = () => {
-    return <UserThumbnailIcon style={styles.userThumbnailIcon} />;
+    return (
+      <View style={styles.userThumbnailView}>
+        {doctorProfileUrl ? (
+          <Image
+            source={{ uri: doctorProfileUrl }}
+            style={styles.userThumbnailIcon}
+            resizeMode={'contain'}
+          />
+        ) : (
+          <UserThumbnailIcon style={styles.userThumbnailIcon} />
+        )}
+      </View>
+    );
   };
 
   const callMinutes = Math.floor(callTimer / 60);
