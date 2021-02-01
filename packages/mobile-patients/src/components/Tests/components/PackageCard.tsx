@@ -1,7 +1,8 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo, OfferIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import React from 'react';
 import {
   Dimensions,
@@ -23,7 +24,10 @@ import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/c
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { DiagnosticHomePageWidgetClicked } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticHomePageWidgetClicked,
+  DiagnosticAddToCartEvent,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 
 export interface PackageCardProps {
@@ -38,11 +42,17 @@ export interface PackageCardProps {
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: string;
+  sourceScreen: string;
 }
 
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, source, navigation } = props;
+  const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
+
+  const actualItemsToShow =
+    data?.diagnosticWidgetData?.length > 0 &&
+    data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+
   const renderItemCard = (item: any) => {
     const getItem = item?.item;
     const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
@@ -61,6 +71,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const name = getItem?.itemTitle;
     const inclusions = getItem?.inclusionData;
 
+    const promoteCircle = pricesForItem?.promoteCircle;
+    const promoteDiscount = pricesForItem?.promoteDiscount;
+    const circleDiscount = pricesForItem?.circleDiscount;
+    const specialDiscount = pricesForItem?.specialDiscount;
+    const discount = pricesForItem?.discount;
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -72,6 +88,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
         ]}
       >
+        {renderPercentageDiscountTag(
+          promoteCircle && isCircleSubscribed
+            ? circleDiscount
+            : promoteDiscount
+            ? specialDiscount
+            : discount
+        )}
         <View>
           <View style={{ minHeight: 100 }}>
             <View style={styles.topPackageView}>
@@ -108,6 +131,19 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           {renderPricesView(pricesForItem, packageMrpForItem, getItem)}
         </View>
       </TouchableOpacity>
+    );
+  };
+
+  const renderPercentageDiscountTag = (discount: string | number) => {
+    return (
+      <>
+        {!!discount ? (
+          <View style={styles.discountTagView}>
+            <OfferIcon style={styles.offerIconStyle} />
+            <Text style={styles.discountTagText}>-{Number(discount).toFixed(0)}%</Text>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -248,6 +284,16 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const planToConsider = pricesForItem?.planToConsider;
+    const discountToDisplay = pricesForItem?.discountToDisplay;
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
+
+    DiagnosticAddToCartEvent(
+      item?.itemTitle,
+      `${item?.itemId}`,
+      mrpToDisplay,
+      discountToDisplay,
+      data?.diagnosticWidgetTitle
+    );
 
     addCartItem!({
       id: `${item?.itemId}`,
@@ -291,6 +337,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
     navigation.navigate(AppRoutes.TestDetails, {
       itemId: item?.itemId,
+      comingFrom: sourceScreen,
       testDetails: {
         Rate: price,
         specialPrice: specialPrice! || price,
@@ -341,20 +388,38 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     );
   };
 
+  const renderError = () => {
+    if (props.isVertical)
+      return (
+        <Card
+          cardContainer={styles.errorCardContainer}
+          heading={string.common.uhOh}
+          description={'Something went wrong.'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      );
+    else {
+      return null;
+    }
+  };
+
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
-        {data?.diagnosticWidgetData?.length > 0 ? (
+        {actualItemsToShow?.length > 0 ? (
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
             bounces={false}
             keyExtractor={(_, index) => `${index}`}
             showsHorizontalScrollIndicator={false}
             horizontal={!props.isVertical}
-            data={data?.diagnosticWidgetData}
+            data={actualItemsToShow}
             renderItem={renderItemCard}
           />
-        ) : null}
+        ) : (
+          renderError()
+        )}
       </View>
     </>
   );
@@ -443,5 +508,34 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     right: 16,
     position: 'absolute',
+  },
+  discountTagView: {
+    elevation: 20,
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    zIndex: 1,
+  },
+  discountTagText: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24),
+    top: 5,
+  },
+  offerIconStyle: {
+    height: 45,
+    width: 45,
+  },
+  errorCardContainer: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
   },
 });

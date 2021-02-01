@@ -1109,8 +1109,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search';
-    Section?: 'Featured tests' | 'Browse packages';
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page';
+    Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -1122,7 +1122,7 @@ export interface WebEngageEvents {
     'Circle discount'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Paymentmode: 'Prepaid' | 'Cash';
+    Paymentmode?: 'Prepaid' | 'Cash';
     Amount: number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;

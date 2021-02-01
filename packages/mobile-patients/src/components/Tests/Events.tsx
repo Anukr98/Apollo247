@@ -14,6 +14,7 @@ import {
   AppsFlyerEventName,
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { PharmacyCircleEvent } from '../ShoppingCartProvider';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -85,8 +86,8 @@ export function DiagnosticAddToCartEvent(
   id: string,
   price: number,
   discountedPrice: number,
-  source: 'Home page' | 'Full search' | 'Details page' | 'Partial search',
-  section?: 'Featured tests' | 'Browse packages'
+  source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page',
+  section?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
     'Item Name': name,
@@ -143,6 +144,38 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
+
+export function DiagnosticDetailsViewed(
+  source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search',
+  itemName: string,
+  itemType: string,
+  itemCode: string,
+  currentPatient: any,
+  itemPrice: number,
+  pharmacyCircleAttributes: any
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
+    Source: source,
+    'Item Name': itemName,
+    'Item Type': itemType,
+    'Item Code': itemCode,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+
+  const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
+    PatientUHID: g(currentPatient, 'uhid'),
+    PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    source: source,
+    ItemName: itemName,
+    ItemType: itemType,
+    ItemCode: itemCode,
+    ItemPrice: itemPrice,
+    LOB: 'Diagnostics',
+    ...pharmacyCircleAttributes,
+  };
+  postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+}
 
 export function DiagnosticBannerClick(slideIndex: number, itemId: number) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED] = {
