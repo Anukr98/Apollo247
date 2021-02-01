@@ -157,7 +157,6 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   city: string | null;
   awards: string | null;
   gender: Gender | null;
-  profile_deeplink: string | null;
   photoUrl: string | null;
   availableModes: (ConsultMode | null)[] | null;
   doctorPricing: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
