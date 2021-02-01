@@ -246,53 +246,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#00b38e',
     opacity: 1,
   },
-  scrollViewOuterView: {
-    flexDirection: 'row',
-    marginTop: '10%',
-    width: '70%',
-    height: 90,
-  },
-  orderPlacedText: {
-    flexWrap: 'wrap',
-    textAlign: 'left',
-    alignSelf: 'center',
-    ...theme.fonts.IBMPlexSansRegular(14),
-    lineHeight: 22,
-    color: theme.colors.SKY_BLUE,
-  },
-  bookingIdText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...fonts.IBMPlexSansMedium(14),
-    lineHeight: 22,
-  },
-  bookingNumberText: {
-    color: theme.colors.APP_GREEN,
-    ...fonts.IBMPlexSansMedium(14),
-    lineHeight: 22,
-    marginHorizontal: 4,
-  },
-  horizontalSeparator: { width: screenWidth - 40, marginLeft: -16, height: 1, opacity: 0.4 },
-  placeholderText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...fonts.IBMPlexSansRegular(11),
-    lineHeight: 16,
-    letterSpacing: 1,
-  },
-  contentText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...fonts.IBMPlexSansMedium(14),
-    lineHeight: 22,
-  },
-  totalSavingOuterView: {
-    marginVertical: 20,
-    borderColor: theme.colors.APP_GREEN,
-    borderWidth: 2,
-    borderRadius: 5,
-    padding: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    borderStyle: 'dashed',
-  },
 });
 
 type clinicHoursData = {
@@ -418,8 +371,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
-  const [isModalVisible, setModalVisible] = useState<boolean>(false);
-  const [isCashOnDelivery, setCashOnDelivery] = useState(true);
   const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
 
@@ -626,7 +577,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const postPaymentInitiatedWebengage = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      Paymentmode: isCashOnDelivery ? 'Cash' : 'Prepaid',
       Amount: grandTotal,
       ServiceArea: 'Diagnostic',
       LOB: 'Diagnostic',
@@ -1245,6 +1195,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   test.id,
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
+                      comingFrom: AppRoutes.TestsCart,
                       testDetails: {
                         ItemID: test?.id,
                         ItemName: test?.name,
@@ -2375,9 +2326,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
       ].join(','),
-      paymentType: isCashOnDelivery
-        ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
-        : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
+      paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
+
       // prismPrescriptionFileId: [
       //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
       //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
@@ -2519,7 +2469,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             'Patient UHID': g(currentPatient, 'id'),
             'Total items in cart': cartItems.length,
             'Order Amount': grandTotal,
-            'Payment mode': isCashOnDelivery ? 'Cash' : 'Prepaid',
           };
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
@@ -2555,295 +2504,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         key: null,
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
-    );
-  };
-
-  const renderNewView = () => {
-    const pickupDate = moment(orderDetails?.diagnosticDate!).format('DD MMM');
-    const pickupYear = moment(orderDetails?.diagnosticDate!).format('YYYY');
-    const pickupTime = orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
-    const orderCartSaving = orderDetails?.cartSaving!;
-    const orderCircleSaving = orderDetails?.circleSaving!;
-    const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'transparent',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: 40,
-        }}
-      >
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={isModalVisible}
-          onRequestClose={() => {
-            setModalVisible(false);
-            onPressCross();
-          }}
-          onDismiss={() => {
-            setModalVisible(false);
-            onPressCross();
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              padding: 20,
-              marginTop: screenHeight > 600 ? '5%' : 0,
-            }}
-          >
-            <View style={{ alignSelf: 'flex-end' }}>
-              <TouchableOpacity onPress={() => onPressCross()}>
-                <CrossYellow style={{ height: 32, width: 32, resizeMode: 'contain' }} />
-              </TouchableOpacity>
-            </View>
-            <View style={{}}>
-              <Text style={{ ...theme.fonts.IBMPlexSansMedium(24) }}>
-                {`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-              </Text>
-            </View>
-            {/**
-             * order success view
-             */}
-            <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
-              <>
-                <View style={styles.scrollViewOuterView}>
-                  <OrderPlacedCheckedIcon style={{ marginRight: 20 }} />
-                  <Text style={styles.orderPlacedText}>
-                    Your order has been placed successfully.
-                  </Text>
-                </View>
-                {/** order view */}
-                <View style={{ backgroundColor: '#F7F8F5', padding: 16 }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      marginBottom: '5%',
-                    }}
-                  >
-                    <Text style={styles.bookingIdText}>Your Booking ID is </Text>
-                    <Text style={styles.bookingNumberText}>#{orderDetails?.displayId!}</Text>
-                  </View>
-                  <Spearator style={styles.horizontalSeparator} />
-                  {/**
-                   * mid - first view
-                   */}
-                  <View style={{ marginVertical: 28, marginHorizontal: 4 }}>
-                    <Text style={styles.placeholderText}>BOOKING DATE/TIME</Text>
-                    <Text style={styles.contentText}>
-                      {moment().format('DD MMM')}, {moment().format('YYYY')} |{' '}
-                      {moment().format('hh:mm A')}
-                    </Text>
-                  </View>
-                  {/**
-                   * mid - second view add a check for clinic selection as well
-                   */}
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    {pickupDate && pickupYear && (
-                      <View style={{ marginHorizontal: 4 }}>
-                        <Text style={styles.placeholderText}>PICKUP DATE</Text>
-                        <Text
-                          style={[
-                            styles.contentText,
-                            {
-                              marginVertical: 2,
-                            },
-                          ]}
-                        >
-                          {pickupDate}, {pickupYear}
-                        </Text>
-                      </View>
-                    )}
-                    {pickupTime && (
-                      <View style={{ marginHorizontal: 4 }}>
-                        <Text
-                          style={[
-                            styles.placeholderText,
-                            {
-                              marginHorizontal: 4,
-                            },
-                          ]}
-                        >
-                          PICKUP TIME
-                        </Text>
-                        <Text
-                          style={[
-                            styles.contentText,
-                            {
-                              marginVertical: 2,
-                            },
-                          ]}
-                        >
-                          {pickupTime}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-                {/**
-                 * top green view
-                 */}
-                {(orderCartSaving > 0 ||
-                  (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
-                  <View style={styles.totalSavingOuterView}>
-                    {(orderCartSaving > 0 ||
-                      (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
-                      <Text
-                        style={{
-                          color: '#02475b',
-                          ...theme.fonts.IBMPlexSansRegular(14),
-                          lineHeight: 16,
-                        }}
-                      >
-                        You
-                        <Text style={{ color: theme.colors.APP_GREEN }}>
-                          {' '}
-                          saved {string.common.Rs}
-                          {isDiagnosticCircleSubscription
-                            ? convertNumberToDecimal(
-                                Number(orderCartSaving) + Number(orderCircleSaving)
-                              )
-                            : convertNumberToDecimal(orderCartSaving)}
-                        </Text>{' '}
-                        on your purchase.
-                      </Text>
-                    )}
-
-                    {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
-                      <>
-                        <Spearator style={{ margin: 5 }} />
-
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View style={{ flexDirection: 'row' }}>
-                            <CircleLogo
-                              style={{
-                                height: 20,
-                                width: 34,
-                                resizeMode: 'contain',
-                              }}
-                            />
-                            <Text
-                              style={{
-                                color: theme.colors.APP_GREEN,
-                                ...theme.fonts.IBMPlexSansRegular(14),
-                                lineHeight: 16,
-                                alignSelf: 'flex-end',
-                              }}
-                            >
-                              Membership Discount
-                            </Text>
-                          </View>
-                          <Text
-                            style={{
-                              color: theme.colors.APP_GREEN,
-                              ...theme.fonts.IBMPlexSansRegular(14),
-                              lineHeight: 16,
-                              alignSelf: 'flex-end',
-                            }}
-                          >
-                            {string.common.Rs} {convertNumberToDecimal(orderCircleSaving)}
-                          </Text>
-                        </View>
-                      </>
-                    )}
-                    {/**
-                     * add a check a here that if it contains all or has all circle
-                     */}
-
-                    {showCartSaving! && (
-                      <>
-                        <Spearator style={{ margin: 5 }} />
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <Text
-                            style={{
-                              color: theme.colors.APP_GREEN,
-                              ...theme.fonts.IBMPlexSansRegular(14),
-                              lineHeight: 16,
-                              alignSelf: 'flex-end',
-                            }}
-                          >
-                            {' '}
-                            Cart Saving
-                          </Text>
-
-                          <Text
-                            style={{
-                              color: theme.colors.APP_GREEN,
-                              ...theme.fonts.IBMPlexSansRegular(14),
-                              lineHeight: 16,
-                              alignSelf: 'flex-end',
-                            }}
-                          >
-                            {string.common.Rs} {convertNumberToDecimal(orderCartSaving)}
-                          </Text>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                )}
-
-                {!isDiagnosticCircleSubscription &&
-                  orderCircleSaving > 0 &&
-                  orderCircleSaving > orderCartSaving && (
-                    <View
-                      style={{
-                        borderColor: theme.colors.APP_GREEN,
-                        borderWidth: 2,
-                        borderRadius: 5,
-                        padding: 16,
-                        paddingTop: 8,
-                        paddingBottom: 8,
-                        borderStyle: 'dashed',
-                        flexDirection: 'row',
-                        marginVertical: orderCartSaving > 0 ? 0 : 30,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: '#02475b',
-                          ...theme.fonts.IBMPlexSansRegular(14),
-                          lineHeight: 16,
-                        }}
-                      >
-                        You could have
-                        <Text style={{ color: theme.colors.APP_GREEN, fontWeight: 'bold' }}>
-                          {' '}
-                          saved extra {string.common.Rs}
-                          {convertNumberToDecimal(orderCircleSaving)}
-                        </Text>{' '}
-                        with
-                      </Text>
-                      <CircleLogo
-                        style={{
-                          resizeMode: 'contain',
-                          height: 20,
-                          width: 37,
-                          marginTop: -2,
-                        }}
-                      />
-                    </View>
-                  )}
-              </>
-              <View style={{ marginBottom: 20 }}></View>
-            </ScrollView>
-
-            <View style={{ height: 90 }}>{renderDiagnosticHelpText()}</View>
-            <Spearator style={{ opacity: 0.3, marginBottom: 20 }} />
-            <TouchableOpacity
-              style={{ alignItems: 'center', justifyContent: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
-            >
-              <Text style={{ ...theme.viewStyles.text('B', 16, '#FC9916'), marginVertical: '4%' }}>
-                VIEW ORDER SUMMARY
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      </View>
     );
   };
 
@@ -3018,7 +2678,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         variables: {
           itemIDs: itemWithId,
-          totalCharges: cartTotal,
+          totalCharges: grandTotal, //removed cartTotal due APP-7386
           slotID: slotVal!,
           pincode: parseInt(pinCodeFromAddress, 10),
         },
@@ -3134,7 +2794,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
-      {isModalVisible && renderNewView()}
       {showSpinner && <Spinner />}
     </View>
   );

@@ -1120,3 +1120,13 @@ export const searchProceduresAndSymptoms = (
     params: params,
   });
 };
+
+export const getDiagnosticTestDetails = (pageName: string, itemId: number): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getDetails = `${baseurl}/${pageName}/${itemId}`;
+  return Axios.get(getDetails, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};

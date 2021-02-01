@@ -303,10 +303,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
    * fetch widgets
    */
   useEffect(() => {
+    getHomePageWidgets(
+      (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
+    );
     getDiagnosticBanner();
-    // getHomePageWidgets(
-    //   (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
-    // );
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(currentPatient, isDiagnosticLocationServiceable);
   }, []);
@@ -1192,6 +1192,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           DiagnosticBannerClick(slideIndex + 1, Number(itemId));
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: itemId,
+            comingFrom: AppRoutes.Tests,
           });
         }
       }
@@ -1229,7 +1230,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           CommonLogEvent(AppRoutes.Tests, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: item?.diagnostic_item_id,
+            itemName: item?.diagnostic_item_name,
             source: 'Partial Search',
+            comingFrom: AppRoutes.Tests,
           });
         }}
         onPressAddToCart={() => {
@@ -1335,7 +1338,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 13;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
     return (
       <View>
         {isPricesAvailable ? (
@@ -1368,6 +1371,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isVertical={false}
                 navigation={props.navigation}
                 source={'Home Page'}
+                sourceScreen={AppRoutes.Tests}
               />
             )}
           </>
@@ -1381,7 +1385,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 13;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
 
     return (
       <View>
@@ -1415,6 +1419,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isVertical={false}
                 navigation={props.navigation}
                 source={'Home Page'}
+                sourceScreen={AppRoutes.Tests}
               />
             )}
           </>

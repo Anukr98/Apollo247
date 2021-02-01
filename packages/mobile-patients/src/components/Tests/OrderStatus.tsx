@@ -71,6 +71,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const postwebEngageCheckoutCompletedEvent = () => {
     let attributes = {
       ...eventAttributes,
+      'Payment mode': isCOD ? 'Cash' : 'Prepaid',
       'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);

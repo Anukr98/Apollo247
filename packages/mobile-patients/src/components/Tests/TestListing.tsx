@@ -133,12 +133,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
-    console.log({ breadcrumb });
     if (!!movedFrom) {
-      if (
-        //create enum
-        movedFrom == 'Home Page'
-      ) {
+      if (movedFrom == 'Home Page') {
         breadcrumb.push({
           title: 'Order Tests',
           onPress: () => {
@@ -160,7 +156,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Test Search',
           onPress: () => {
-            // props.navigation.navigate(AppRoutes.MedicineListing);
+            props.navigation.navigate(AppRoutes.SearchTestScene);
           },
         });
       }
@@ -218,13 +214,15 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   };
 
   const renderList = () => {
+    const actualItemsToShow = dataFromHomePage?.diagnosticWidgetData?.filter(
+      (item: any) => item?.diagnosticPricing
+    );
+
     return (
       <>
         <Text style={styles.headingText}>
           {dataFromHomePage?.diagnosticWidgetTitle}{' '}
-          <Text style={styles.itemCountText}>
-            ({dataFromHomePage?.diagnosticWidgetData?.length})
-          </Text>{' '}
+          <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>{' '}
         </Text>
         {dataFromHomePage?.diagnosticWidgetType == 'Package' ? (
           <PackageCard
@@ -235,6 +233,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             columns={1}
             navigation={props.navigation}
             source={'Listing'}
+            sourceScreen={AppRoutes.TestListing}
           />
         ) : (
           <ItemCard
@@ -245,6 +244,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             columns={2}
             navigation={props.navigation}
             source={'Listing'}
+            sourceScreen={AppRoutes.TestListing}
           />
         )}
       </>
