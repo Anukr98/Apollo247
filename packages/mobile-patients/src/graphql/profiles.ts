@@ -4572,3 +4572,12 @@ export const GET_USER_PROFILE_TYPE = gql`
     }
   }
 `;
+
+export const UPDATE_APPOINTMENT = gql`
+  mutation updateAppointment($appointmentInput: UpdateAppointmentInput) {
+    updateAppointment(appointmentInput: $appointmentInput) {
+      error
+      status
+    }
+  }
+`;

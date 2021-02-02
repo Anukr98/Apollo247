@@ -6,6 +6,9 @@ import {
   Success,
   Copy,
   CircleLogo,
+  LocationOn,
+  BackArrow,
+  Mascot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -22,7 +25,13 @@ import {
   postWebEngageEvent,
   overlyCallPermissions,
   g,
+  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  autoCompletePlaceSearch,
+  getPlaceInfoByPlaceId,
+  getPlaceInfoByLatLng,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import {
   WebEngageEventName,
@@ -76,12 +85,21 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import moment from 'moment';
-import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  convertNumberToDecimal,
+  findAddrComponents,
+} from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  useAppCommonData,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { Overlay } from 'react-native-elements';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
-  const [loading, setLoading] = useState<boolean>(true);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [refNo, setrefNo] = useState<string>('');
@@ -103,7 +121,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
@@ -112,6 +130,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState();
+  const [locationSearchText, setLocationSearchText] = useState<string>('');
+  const [showLocationPopup, setShowLocationPopup] = useState<boolean>(false);
+  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
+    []
+  );
+  const [showLocations, setshowLocations] = useState<boolean>(false);
+
   const [
     amountBreakup,
     setAmountBreakup,
@@ -119,6 +144,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const circleSavings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
 
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
+  const { setLocationDetails, locationDetails, locationForDiagnostics } = useAppCommonData();
+  const { clearDiagnoticCartInfo } = useDiagnosticsCart();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -132,7 +159,51 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     getUserSubscriptionsByStatus();
+    !locationDetails && askLocationPermission();
   }, []);
+
+  const askLocationPermission = () => {
+    showAphAlert!({
+      unDismissable: false,
+      title: 'Hi! :)',
+      description:
+        'It is important for us to know your location so that the doctor can prescribe medicines accordingly. Please allow us to detect your location or enter location manually.',
+      CTAs: [
+        {
+          text: 'ENTER MANUALLY',
+          onPress: () => {
+            hideAphAlert?.();
+            setlocationSearchList([]);
+            setShowLocationPopup(true);
+          },
+          type: 'white-button',
+        },
+        {
+          text: 'ALLOW AUTO DETECT',
+          onPress: () => {
+            hideAphAlert!();
+            setLoading?.(true);
+            doRequestAndAccessLocationModified()
+              .then((response) => {
+                setLoading?.(false);
+                response && setLocationDetails?.(response);
+              })
+              .catch((e) => {
+                CommonBugFender('ConsultPaymentStatus__ALLOW_AUTO_DETECT', e);
+                setLoading?.(false);
+                e &&
+                  typeof e == 'string' &&
+                  !e.includes('denied') &&
+                  showAphAlert!({
+                    title: 'Uh oh! :(',
+                    description: e,
+                  });
+              });
+          },
+        },
+      ],
+    });
+  };
 
   useEffect(() => {
     // getTxnStatus(orderId)
@@ -186,7 +257,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
         setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
         setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
-        setLoading(false);
+        setLoading?.(false);
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
@@ -673,7 +744,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       getAppointmentInfo(navigateToChatRoom);
     } else if (status == failure || status == aborted) {
       // navigate(AppRoutes.DoctorSearch);
-      setLoading(true);
+      setLoading?.(true);
       navigate(AppRoutes.DoctorDetails, {
         doctorId: doctorID,
       });
@@ -821,28 +892,203 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     );
   };
 
+  const autoSearchPlaces = (searchText: string) => {
+    autoCompletePlaceSearch(searchText)
+      .then((obj) => {
+        try {
+          if (obj.data.predictions) {
+            const address = obj.data.predictions.map(
+              (item: {
+                place_id: string;
+                structured_formatting: {
+                  main_text: string;
+                };
+              }) => {
+                return { name: item.structured_formatting.main_text, placeId: item.place_id };
+              }
+            );
+            setlocationSearchList(address);
+          }
+        } catch (e) {
+          CommonBugFender('DoctorSearchListing_autoSearch_try', e);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('DoctorSearchListing_autoSearch', error);
+      });
+  };
+
+  const renderSearchManualLocation = () => {
+    return (
+      <Overlay
+        onRequestClose={() => setShowLocationPopup(false)}
+        isVisible={showLocationPopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
+        fullScreen
+        transparent
+        overlayStyle={styles.overlayStyle}
+      >
+        <View style={styles.searchLocationView}>
+          <Mascot style={styles.userIcon} />
+          <View style={styles.rowCenter}>
+            <TouchableOpacity onPress={() => setShowLocationPopup(false)}>
+              <BackArrow style={styles.backIcon} />
+            </TouchableOpacity>
+            <Text style={styles.locationTitle}>Current Location</Text>
+          </View>
+          <View style={styles.innerSearchView}>
+            <LocationOn />
+            <TextInputComponent
+              inputStyle={{ marginLeft: 10 }}
+              autoFocus={true}
+              onChangeText={(value) => {
+                setLocationSearchText(value);
+                if (value?.length > 2) {
+                  autoSearchPlaces(value);
+                  setshowLocations(true);
+                } else {
+                  setshowLocations(false);
+                }
+              }}
+            />
+          </View>
+          {showLocations && (
+            <View style={styles.locationView}>
+              <ScrollView>
+                {locationSearchList?.map((item, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.locationItem,
+                      {
+                        marginBottom: i === locationSearchList?.length - 1 ? 12 : 0,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={styles.locations}
+                      onPress={() => {
+                        setShowLocationPopup(false);
+                        saveLocationDetails(item);
+                      }}
+                    >
+                      {item?.name}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      </Overlay>
+    );
+  };
+
+  const saveLocationDetails = (item: { name: string; placeId: string }) => {
+    setLoading?.(true);
+    getPlaceInfoByPlaceId(item.placeId)
+      .then((response) => {
+        const addrComponents = g(response, 'data', 'result', 'address_components') || [];
+        const coordinates = g(response, 'data', 'result', 'geometry', 'location')! || {};
+
+        const city =
+          findAddrComponents('locality', addrComponents) ||
+          findAddrComponents('administrative_area_level_2', addrComponents);
+        if (city?.toLowerCase() != (locationForDiagnostics?.city || '')?.toLowerCase()) {
+          clearDiagnoticCartInfo?.();
+        }
+        if (addrComponents?.length > 0) {
+          const locationData: LocationData = {
+            displayName: item?.name,
+            latitude:
+              typeof coordinates?.lat == 'string' ? Number(coordinates?.lat) : coordinates?.lat,
+            longitude:
+              typeof coordinates?.lng == 'string' ? Number(coordinates?.lng) : coordinates?.lng,
+            area: [
+              findAddrComponents('route', addrComponents),
+              findAddrComponents('sublocality_level_2', addrComponents),
+              findAddrComponents('sublocality_level_1', addrComponents),
+            ]
+              ?.filter((i) => i)
+              ?.join(', '),
+            city,
+            state: findAddrComponents('administrative_area_level_1', addrComponents),
+            country: findAddrComponents('country', addrComponents),
+            pincode: findAddrComponents('postal_code', addrComponents),
+            lastUpdated: new Date().getTime(),
+          };
+
+          setLocationDetails?.(locationData);
+
+          getPlaceInfoByLatLng(coordinates.lat, coordinates.lng)
+            .then((response) => {
+              setLoading?.(false);
+              const addrComponents =
+                g(response, 'data', 'results', '0' as any, 'address_components') || [];
+              if (addrComponents.length > 0) {
+                setLocationDetails?.({
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                  lastUpdated: new Date().getTime(),
+                });
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('LocationSearchPopup_saveLatlong', error);
+            });
+        }
+      })
+      .catch((error) => {
+        setLoading?.(false);
+        CommonBugFender('DoctorSearchListing_getPlaceInfoByPlaceId', error);
+      });
+  };
+
+  const renderSavedLocation = () => {
+    return (
+      <View style={styles.savedLocationView}>
+        <Text style={styles.currentLocationTitle}>Your current location</Text>
+        <View style={styles.line} />
+
+        <View style={styles.spaceRow}>
+          <View style={styles.rowCenter}>
+            <LocationOn />
+            <Text style={styles.savedLocationText}>
+              {locationDetails?.city} {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ""}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              setlocationSearchList([]);
+              setShowLocationPopup(true);
+            }}
+          >
+            <Text style={styles.changeLocationBtnTxt}>CHANGE LOCATION</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <SafeAreaView style={styles.container}>
         <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-        {!loading ? (
-          <View style={styles.container}>
-            <ScrollView style={styles.container}>
-              {renderStatusCard()}
-              {circleSavings > 0 && !circleSubscriptionId
-                ? renderAddedCirclePlanWithValidity()
-                : null}
-              {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
-              {appointmentHeader()}
-              {appointmentCard()}
-              {renderNote()}
-            </ScrollView>
-            {renderButton()}
-          </View>
-        ) : (
-          <Spinner />
-        )}
+        <View style={styles.container}>
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {circleSavings > 0 && !circleSubscriptionId
+              ? renderAddedCirclePlanWithValidity()
+              : null}
+            {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
+            {locationDetails && renderSavedLocation()}
+            {appointmentHeader()}
+            {appointmentCard()}
+            {renderNote()}
+          </ScrollView>
+          {renderButton()}
+        </View>
         {showSpinner && <Spinner />}
         {notificationAlert && (
           <NotificationPermissionAlert
@@ -853,6 +1099,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             }}
           />
         )}
+        {renderSearchManualLocation()}
       </SafeAreaView>
     </View>
   );
@@ -997,5 +1244,96 @@ const styles = StyleSheet.create({
     width: 45,
     height: 27,
     marginRight: 5,
+  },
+  locationSearchView: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    zIndex: 1,
+    elevation: 15,
+  },
+  searchLocationView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: windowWidth,
+    padding: 20,
+    marginTop: 'auto',
+    paddingTop: 24,
+    minHeight: 250,
+  },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  locationTitle: {
+    color: theme.colors.CARD_HEADER,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  backIcon: {
+    marginRight: 16,
+    width: 24,
+    height: 15,
+  },
+  userIcon: {
+    position: 'absolute',
+    top: -32,
+    right: 20,
+  },
+  innerSearchView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '75%',
+    marginLeft: 20,
+    marginTop: 10,
+  },
+  locationItem: {
+    marginTop: 12,
+  },
+  locationView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '75%',
+    marginLeft: 50,
+    paddingHorizontal: 16,
+    maxHeight: 150,
+  },
+  locations: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+  },
+  savedLocationView: {
+    marginHorizontal: 0.06 * windowWidth,
+    marginBottom: 20,
+    paddingBottom: 4,
+  },
+  line: {
+    width: '100%',
+    height: 0.8,
+    backgroundColor: '#ddd',
+    marginTop: 6,
+  },
+  currentLocationTitle: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE),
+  },
+  savedLocationText: {
+    marginLeft: 6,
+    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
+    width: windowWidth - 210,
+  },
+  changeLocationBtnTxt: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
+  },
+  spaceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 7,
   },
 });
