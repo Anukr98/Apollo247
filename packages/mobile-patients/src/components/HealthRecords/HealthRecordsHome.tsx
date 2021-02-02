@@ -36,7 +36,6 @@ import {
   getPrismAuthTokenVariables,
   getPrismAuthToken,
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { BloodGroups, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -52,6 +51,7 @@ import {
   isValidSearch,
   HEALTH_CONDITIONS_TITLE,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -1537,6 +1537,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_OF_USERS_SEARCHED_GLOBAL,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);

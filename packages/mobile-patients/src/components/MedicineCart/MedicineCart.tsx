@@ -694,11 +694,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const response = await searchPickupStoresApi(pincode);
         const { data } = response;
         const { Stores } = data;
-        console.log(Stores?.length && Stores[0]?.message != 'Data Not Available');
-        if (Stores?.length && Stores[0]?.message != 'Data Not Available') {
-          setshowStorePickupCard(true);
-        } else {
+        if (Stores?.length) {
           setshowStorePickupCard(false);
+        } else {
+          setshowStorePickupCard(true);
         }
       } catch (error) {
         console.log(error);

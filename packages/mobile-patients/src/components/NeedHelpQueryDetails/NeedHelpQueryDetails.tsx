@@ -54,11 +54,11 @@ import {
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import moment from 'moment';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const { width } = Dimensions.get('window');
+import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -71,15 +71,20 @@ export interface Props
     medicineOrderStatus?: MEDICINE_ORDER_STATUS;
     isConsult?: boolean;
     medicineOrderStatusDate?: any;
+    fromOrderFlow?: boolean;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const pageTitle = navigation.getParam('pageTitle') || string.help.toUpperCase();
   const queryCategory = navigation.getParam('queryCategory') || '';
-  const email = navigation.getParam('email') || '';
+  const [email, setEmail] = useState(navigation.getParam('email') || '');
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
+  const isFromOrderFlow = navigation.getParam('fromOrderFlow') || false;
+  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(
+    isFromOrderFlow && !email ? true : false
+  );
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const { getFilteredReasons, saveNeedHelpQuery } = Helpers;
@@ -580,6 +585,17 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const renderEmailPopup = () => {
+    return showEmailPopup ? (
+      <NeedHelpEmailPopup
+        onPressSendORConfirm={(email) => {
+          setShowEmailPopup(false);
+          setEmail(email);
+        }}
+      />
+    ) : null;
+  };
+
   return (
     <SafeAreaView style={container}>
       {renderUploadImagePopup()}
@@ -588,6 +604,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       {renderHeading()}
       {showReturnUI ? renderReturnOrderView() : renderReasons()}
       {renderReturnPopup()}
+      {renderEmailPopup()}
     </SafeAreaView>
   );
 };

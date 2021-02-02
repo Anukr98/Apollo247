@@ -93,7 +93,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? props.availableMode === ConsultMode.BOTH
-        ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
+        ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
         : props.availableMode === ConsultMode.ONLINE
         ? [{ title: 'Consult Online' }]
         : [{ title: 'Visit Clinic' }]
@@ -232,7 +232,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : null,
     };
 
+    tabs[0].title === selectedTab?
     props.navigation.navigate(AppRoutes.PaymentCheckout, {
+      doctor: props.doctor,
+      tabs: tabs,
+      selectedTab: selectedTab,
+      price: actualPrice,
+      appointmentInput: appointmentInput,
+      couponApplied: coupon == '' ? false : true,
+      consultedWithDoctorBefore: props.consultedWithDoctorBefore,
+      patientId: props.patientId,
+      callSaveSearch: props.callSaveSearch,
+      availableInMin: availableInMin,
+      nextAvailableSlot: nextAvailableSlot,
+      selectedTimeSlot: selectedTimeSlot,
+      followUp: props.FollowUp,
+      whatsAppUpdate: whatsAppUpdate,
+      isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
+    }) :
+
+    props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, {
       doctor: props.doctor,
       tabs: tabs,
       selectedTab: selectedTab,
@@ -262,7 +281,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={`${string.common.proceedToCheckout}`}
+          title={"PROCEED"}
           disabled={
             disablePay
               ? true
@@ -299,6 +318,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           ]}
         >
           {string.common.DisclaimerText}
+        </Text>
+      </View>
+    );
+  };
+  const renderFootNote = () => {
+    return (
+      <View
+        style={{
+          margin: 12,
+          padding: 2,
+          justifyContent:'center',
+          alignItems:'center'
+        }}>
+        <Text
+          style={[
+            theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0),
+            { textAlign: 'justify' },
+          ]}
+        >
+          Note: Pay at Reception is available.
         </Text>
       </View>
     );
@@ -450,7 +489,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
-              {selectedTab === tabs[0].title && renderDisclamer()}
+              {renderDisclamer()}
               {!g(currentPatient, 'whatsAppConsult') ? (
                 <WhatsAppStatus
                   // style={{ marginTop: 6 }}
@@ -460,6 +499,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   isSelected={whatsAppUpdate}
                 />
               ) : null}
+
+              {selectedTab !== tabs[0].title && renderFootNote()}
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}

@@ -33,6 +33,7 @@ import {
   postWebEngageEvent,
   isValidSearch,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -221,6 +222,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+              '{0}',
+              'Insurances'
+            ) as WebEngageEventName,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);

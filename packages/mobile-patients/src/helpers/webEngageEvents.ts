@@ -156,6 +156,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
+  DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -221,6 +222,8 @@ export enum WebEngageEventName {
   PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records - app',
   PHR_USER_LINKING = 'PHR User Linking - app',
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
+  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
+  PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
@@ -1108,8 +1111,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search';
-    Section?: 'Featured tests' | 'Browse packages';
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page';
+    Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -1117,14 +1120,18 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
     'Order Amount': number; // Optional
-    'Payment mode'?: 'COD' | 'Online'; // Optional
-    'Circle discount': number;
+    'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
+    'Circle discount'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Paymentmode: 'Online' | 'COD';
+    Paymentmode?: 'Prepaid' | 'Cash';
     Amount: number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
+  };
+  [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
+   position: number;
+   itemId: number;
   };
 
   // ********** ConsultEvents ********** \\

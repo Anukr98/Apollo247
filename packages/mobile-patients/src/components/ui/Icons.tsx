@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, ImageProps } from 'react-native';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
@@ -314,7 +315,7 @@ export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
 );
 
 export const ArrowRight: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')}/>
 );
 
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (
@@ -915,7 +916,7 @@ export const ShieldIcon: React.FC<IconProps> = (props) => (
     size="sm"
     style={{ height: 42.1, width: 36 }}
     {...props}
-    source={require('./icons/ic_shield.png')}
+    source={require('./icons/shield.png')}
   />
 );
 
@@ -1064,6 +1065,9 @@ export const WhatsAppIcon: React.FC<IconProps> = (props) => (
 
 export const NeedHelpIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_round_live_help.png')} />
+);
+export const Apollo247Icon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_Apollo.png')} />
 );
 
 export const PrimaryIcon: React.FC<IconProps> = (props) => (
@@ -1677,4 +1681,76 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
     source={require('./icons/healthyLifeIcon.png')}
     resizeMode="contain"
   />
+);
+
+export const CallCollapseIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ ...theme.viewStyles.cardViewStyle, borderRadius: 20, width: 40, height: 40 }}
+    {...props}
+    source={require('./icons/callCollapse.png')}
+    resizeMode="contain"
+  />
+);
+
+export const CallCameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/camera.png')} resizeMode="contain" />
+);
+
+export const AudioActiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/microphoneActive.png')} resizeMode="contain" />
+);
+
+export const AudioInactiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/microphoneInactive.png')} resizeMode="contain" />
+);
+
+export const VideoActiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/videoActive.png')} resizeMode="contain" />
+);
+
+export const VideoInactiveIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/videoDisable.png')} resizeMode="contain" />
+);
+
+export const WhiteCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/whiteCall.png')} resizeMode="contain" />
+);
+
+export const UserThumbnailIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/callDoctorThumbnail.png')} resizeMode="contain" />
+);
+
+export const AddIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/AddIconBlue.png')} />
+);
+export const WorkflowIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_workflow.png')} />
+);
+
+export const ArrowRightYellow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right_yellow.png')} />
+);
+export const SpecialDiscountImage: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/specialCoupon_badge.png')} />
+);
+
+export const CameraClickButton: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_camera_button.png')} />
+);
+
+export const GalleryIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/galleryIconWhite.png')} />
+);
+
+export const MomAndBaby: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_mom&baby.png')} />
+);
+export const ClockIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/clock.png')} />
+);
+export const InfoIconRed: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_info.png')} />
+);
+export const WhyBookUs: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.png')} />
 );

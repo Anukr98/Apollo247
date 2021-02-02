@@ -1,18 +1,119 @@
+import moment from 'moment';
 import {
   g,
   postAppsFlyerEvent,
-  postWebEngageEvent,
   postFirebaseEvent,
-} from '@aph/mobile-patients/src//helpers/helperFunctions';
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   AppsFlyerEventName,
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { PharmacyCircleEvent } from '../ShoppingCartProvider';
+
+function createPatientAttributes(currentPatient: any) {
+  const patientAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+  };
+  return patientAttributes;
+}
+
+export function DiagnosticLandingPageViewedEvent(
+  currentPatient: any,
+  isServiceable: boolean | undefined
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+    ...getPatientAttributes,
+    Serviceability: isServiceable ? 'Yes' : 'No',
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+}
+
+export function DiagnosticHomePageSearchItem(currentPatient: any, keyword: string, results: any[]) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+
+  if (keyword.length > 2) {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
+      ...getPatientAttributes,
+      'Keyword Entered': keyword,
+      '# Results appeared': results.length,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
+  }
+}
+
+export function DiagnosticPinCodeClicked(
+  currentPatient: any,
+  mode: string,
+  pincode: string,
+  serviceable: boolean
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR] = {
+    ...getPatientAttributes,
+    Mode: mode,
+    Pincode: parseInt(pincode!),
+    Serviceability: serviceable ? 'Yes' : 'No',
+  };
+  postWebEngageEvent(
+    WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
+    eventAttributes
+  );
+}
+
+export function DiagnosticHomePageWidgetClicked(name: string, id: string, section: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED] = {
+    'Item Name': name,
+    'Item ID': id,
+    Source: 'Home Page',
+    'Section Name': section,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED, eventAttributes);
+}
+
+export function DiagnosticAddToCartEvent(
+  name: string,
+  id: string,
+  price: number,
+  discountedPrice: number,
+  source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page',
+  section?: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
+    'Item Name': name,
+    'Item ID': id,
+    Source: source,
+  };
+  if (section) {
+    eventAttributes['Section'] = section;
+  }
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+  const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+    productname: name,
+    productid: id,
+    Source: 'Diagnostic',
+    Price: price,
+    DiscountedPrice: discountedPrice,
+    Quantity: 1,
+  };
+  postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+}
 
 export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems: any) => {
   let items: any = [];
-  cartItems.forEach((item, index) => {
+  cartItems.forEach((item: any, index: number) => {
     let itemObj: any = {};
     itemObj.item_name = item.name; // Product Name or Doctor Name
     itemObj.item_id = item.id; // Product SKU or Doctor ID
@@ -43,3 +144,44 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
+
+export function DiagnosticDetailsViewed(
+  source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search',
+  itemName: string,
+  itemType: string,
+  itemCode: string,
+  currentPatient: any,
+  itemPrice: number,
+  pharmacyCircleAttributes: any
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
+    Source: source,
+    'Item Name': itemName,
+    'Item Type': itemType,
+    'Item Code': itemCode,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+
+  const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
+    PatientUHID: g(currentPatient, 'uhid'),
+    PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    source: source,
+    ItemName: itemName,
+    ItemType: itemType,
+    ItemCode: itemCode,
+    ItemPrice: itemPrice,
+    LOB: 'Diagnostics',
+    ...pharmacyCircleAttributes,
+  };
+  postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+}
+
+export function DiagnosticBannerClick(slideIndex: number, itemId: number) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED] = {
+    position: slideIndex,
+    itemId: itemId,
+  };
+
+  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
+}

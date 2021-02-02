@@ -206,6 +206,7 @@ export const BOOK_APPOINTMENT = gql`
         appointmentType
         patientId
         displayId
+        paymentOrderId
       }
     }
   }
@@ -2264,6 +2265,25 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
   }
 `;
 
+export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
+  query findDiagnosticsWidgetsPricing($cityID: Int!, $itemIDs: [Int]!) {
+    findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics {
+        itemId
+        packageCalculatedMrp
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
   query getDiagnosticsHomePageItems($cityID: Int!) {
     getDiagnosticsHomePageItems(cityID: $cityID) {
@@ -2464,6 +2484,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           updatedDate
           currentStatus
           itemDetails
+          trackingUrl
           medicineOrdersStatus {
             id
             orderStatus
@@ -4568,6 +4589,15 @@ export const GET_USER_PROFILE_TYPE = gql`
   query getUserProfileType($mobileNumber: String!) {
     getUserProfileType(mobileNumber: $mobileNumber) {
       profile
+    }
+  }
+`;
+
+export const UPDATE_APPOINTMENT = gql`
+  mutation updateAppointment($appointmentInput: UpdateAppointmentInput) {
+    updateAppointment(appointmentInput: $appointmentInput) {
+      error
+      status
     }
   }
 `;

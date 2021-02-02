@@ -160,6 +160,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
 const styles = StyleSheet.create({
   stickyBottomComponent: {
     ...theme.viewStyles.shadowStyle,
+    backgroundColor: theme.colors.WHITE,
     flexDirection: 'row',
     borderTopWidth: 0.6,
     borderStyle: 'dashed',

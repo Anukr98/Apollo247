@@ -102,6 +102,8 @@ const Common = {
   RED: '#C5411E',
   LIGHTISH_GRAY: '#93B7C5',
   LIGHT_ORANGE: '#FCB716',
+  CALL_BG_GRAY: '#E5E5E5',
+  CALL_LIGHT_GRAY: '#EAEAEA',
 };
 
 const Header = {

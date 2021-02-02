@@ -1102,11 +1102,31 @@ export const getDiagnosticsSearchResults = (
   });
 };
 
+export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getWidgets = `${baseurl}/${pageName}/getwidgets`;
+  return Axios.get(getWidgets, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
 export const searchProceduresAndSymptoms = (
   params: ProceduresAndSymptomsParams
 ): Promise<AxiosResponse<ProceduresAndSymptomsResponse>> => {
   const url = AppConfig.Configuration.PROCEDURE_SYMPTOMS_SEARCH_URL;
   return Axios.get(url, {
     params: params,
+  });
+};
+
+export const getDiagnosticTestDetails = (pageName: string, itemId: number): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getDetails = `${baseurl}/${pageName}/${itemId}`;
+  return Axios.get(getDetails, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
   });
 };

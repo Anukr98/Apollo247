@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
   doctorNameStyles: {
     paddingTop: 0,
     paddingLeft: 0,
+    flex: 1,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SEARCH_DOCTOR_NAME,
@@ -169,7 +170,12 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
   },
-  doctorNameViewStyle: { flexDirection: 'row', paddingTop: 35, justifyContent: 'space-between' },
+  doctorNameViewStyle: {
+    flexDirection: 'row',
+    paddingTop: 35,
+    justifyContent: 'space-between',
+    flex: 1,
+  },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -637,14 +643,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <View style={styles.doctorNameViewStyle}>
                 <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
-                {/* Hiding Share Icon from Card */}
-                {/* <TouchableOpacity
+                <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => props.onPressShare && props.onPressShare(rowData)}
                   style={{ paddingLeft: 5 }}
                 >
                   <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
-                </TouchableOpacity> */}
+                </TouchableOpacity>
               </View>
               {renderSpecialities()}
               {isCircleDoctorOnSelectedConsultMode

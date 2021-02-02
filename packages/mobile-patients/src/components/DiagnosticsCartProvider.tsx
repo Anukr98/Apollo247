@@ -52,6 +52,11 @@ export interface DiagnosticArea {
   value: string;
 }
 
+export interface TestBreadcrumbLink {
+  title: string;
+  onPress?: () => void;
+}
+
 export interface DiagnosticsCartContextProps {
   forPatientId: string;
   setPatientId: ((id: string) => void) | null;
@@ -140,6 +145,12 @@ export interface DiagnosticsCartContextProps {
 
   getUniqueId: string;
   setUniqueId: ((value: string) => void) | null;
+
+  testListingBreadCrumbs: TestBreadcrumbLink[] | undefined;
+  setTestListingBreadCrumbs: ((items: TestBreadcrumbLink[]) => void) | null;
+
+  testDetailsBreadCrumbs: TestBreadcrumbLink[] | undefined;
+  setTestDetailsBreadCrumbs: ((items: TestBreadcrumbLink[]) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -216,6 +227,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setIsDiagnosticCircleSubscription: null,
   getUniqueId: '',
   setUniqueId: null,
+  testListingBreadCrumbs: [],
+  setTestListingBreadCrumbs: null,
+  testDetailsBreadCrumbs: [],
+  setTestDetailsBreadCrumbs: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -282,6 +297,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['diagnosticAreas']
   >([]);
   const [getUniqueId, setUniqueId] = useState<DiagnosticsCartContextProps['getUniqueId']>('');
+
+  const [testListingBreadCrumbs, setTestListingBreadCrumbs] = useState<
+    DiagnosticsCartContextProps['testListingBreadCrumbs']
+  >();
+
+  const [testDetailsBreadCrumbs, setTestDetailsBreadCrumbs] = useState<
+    DiagnosticsCartContextProps['testDetailsBreadCrumbs']
+  >();
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -654,6 +677,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
         getUniqueId,
         setUniqueId,
+
+        testListingBreadCrumbs,
+        setTestListingBreadCrumbs,
+        testDetailsBreadCrumbs,
+        setTestDetailsBreadCrumbs,
       }}
     >
       {props.children}

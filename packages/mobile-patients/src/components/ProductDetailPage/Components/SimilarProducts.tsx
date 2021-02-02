@@ -44,6 +44,7 @@ export const SimilarProducts: React.FC<SimilarProductsProps> = (props) => {
         navigation={props.navigation}
         addToCartSource={isSimilarProducts ? 'Similar Widget' : 'Pharmacy PDP'}
         movedFrom={ProductPageViewedSource.SIMILAR_PRODUCTS}
+        contentContainerStyle={{ marginLeft: -18 }}
       />
     </View>
   );

@@ -50,6 +50,7 @@
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
     "covidContactText": "Contact our Coronavirus Helpline",
+    "oneTimePhysicalCharge": "One-time Hospital Registration Charges might be \napplicable for new users.",
     "covidScanBannerText": "Take the Coronavirus Risk Scan",
     "covidHeading": "Worried about Coronavirus?",
     "covidHelpText": "We are here to help you.",
@@ -432,8 +433,18 @@
     "sameSlotError" : "Cannot book same slot",
     "refundInitiateText": "Your refund for amount ₹{{refundAmount}} has been initiated. It takes 4-5 working days for processing.",
     "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
+    "collectionFromText" : "Sample collection address",
     "orderCancelledSuccessText": "Your order has been cancelled successfully!",
-    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!"
+    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!",
+    "stepsToBook": "3 simple steps to get lab test done",
+    "certificateText":"Certified safety and quality fullfiled by Apollo Diagnostics.",
+    "stepsToBookHeading" : "How it works",
+    "bookOnline" : "Book Online",
+    "bookOnlineSubText":"Select a test or package and book appointment on Apollo 247",
+    "hcSample":"Home Sample Collection",
+    "hcSampleSubText": "Certified Phlebotomist visits your home for sample collection at selected slot time",
+    "fastReport":"Fast & Accurate Reports",
+    "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -881,5 +892,13 @@
     "NO_RESULTS_FOUND": "No Results Found",
     "MARKER_TEXT": "MOVE MAP TO ADJUST",
     "HELP_US_LOCATE_TEXT": "Help us locate your address"
+  },
+  "accessLocationPopUp":{
+    "chooseFromAddressText":"Choose from saved addresses",
+    "headerMessage":"Select delivery location",
+    "currentLocationText":"Use my current location",
+    "defaultPincodeText" : "Enter Delivery Pincode",
+    "testPincodeText" : "Enter pincode here",
+    "addNewAddressText":"Add New Address"
   }
 }

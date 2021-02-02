@@ -38,6 +38,7 @@ import {
   postWebEngagePHR,
   isValidSearch,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -206,7 +207,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
 
   const onSearchHealthRecords = (_searchText: string) => {
     setSearchLoading(true);
-    searchPHRApiWithAuthToken(_searchText, prismAuthToken, 'HealthConditions')
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken, 'Hospitalization')
       .then(({ data }) => {
         setHealthRecordSearchResults([]);
         if (data?.response) {
@@ -220,6 +221,14 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+              '{0}',
+              'Hospitalizations'
+            ) as WebEngageEventName,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);

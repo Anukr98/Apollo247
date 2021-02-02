@@ -149,6 +149,7 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICATION = 'MEDICATION',
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
+  FAMILY_HISTORY = 'FAMILY HISTORY',
 }
 
 export const getPhrHighlightText = (highlightText: string) => {
@@ -550,7 +551,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Out for Delivery';
+      statusString = 'Order Dispatched';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -1336,7 +1337,8 @@ export const isValidTestSlot = (
 
 export const isValidTestSlotWithArea = (
   slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
-  date: Date
+  date: Date,
+  customSlot?: boolean
 ) => {
   return (
     (moment(date)
@@ -1353,7 +1355,12 @@ export const isValidTestSlotWithArea = (
         )
       : true) &&
     moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
-      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+      moment(
+        customSlot
+          ? AppConfig.Configuration.DIAGNOSTIC_COVID_MAX_SLOT_TIME.trim()
+          : AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(),
+        'HH:mm'
+      )
     )
   );
 };
@@ -1463,6 +1470,24 @@ export const postWebEngagePHR = (
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
     'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+  };
+  postWebEngageEvent(webEngageEventName, eventAttributes);
+};
+
+export const phrSearchWebEngageEvents = (
+  webEngageEventName: WebEngageEventName,
+  currentPatient: any,
+  searchKey: string
+) => {
+  const eventAttributes = {
+    searchKey,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
     'Patient Gender': g(currentPatient, 'gender'),
     'Mobile Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
@@ -1814,15 +1839,15 @@ export const nameFormater = (
   caseFormat?: 'lower' | 'upper' | 'title' | 'camel' | 'default'
 ) => {
   if (caseFormat === 'title') {
-    return _.startCase(name.toLowerCase());
+    return _.startCase(name?.toLowerCase());
   } else if (caseFormat === 'camel') {
-    return _.camelCase(name);
+    return _.camelCase(name!);
   } else if (caseFormat === 'lower') {
-    return _.lowerCase(name);
+    return _.lowerCase(name!);
   } else if (caseFormat === 'upper') {
-    return _.upperCase(name);
+    return _.upperCase(name!);
   } else {
-    return _.capitalize(name.replace(/_/g, ' '));
+    return _.capitalize(name?.replace(/_/g, ' '));
   }
 };
 

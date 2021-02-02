@@ -536,6 +536,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             const mrpToDisplay = pricesForItem?.mrpToDisplay!;
 
             props.navigation.navigate(AppRoutes.TestDetails, {
+              itemId: `${product?.itemId}`,
+              comingFrom: AppRoutes.SearchTestScene,
               testDetails: {
                 Rate: price,
                 specialPrice: specialPrice! || price,
@@ -604,7 +606,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: product?.diagnostic_item_id,
-            source: 'Partial Search',
+            source: 'Full Search',
+            comingFrom: AppRoutes.SearchTestScene,
           });
         }}
         onPressAddToCart={() => {
