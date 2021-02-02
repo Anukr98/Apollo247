@@ -126,6 +126,7 @@
   "help": "Help",
   "cancel": "Cancel",
   "needHelp": "Need Help",
+  "return_order_submit_message":"Your return request has been submitted. Someone from our team will call you soon.",
   "needHelpSubmitMessage": "Thank you for bringing this to our notice. We’ll gather the details regarding your issue and immediately after that someone from our team will call you.",
   "recentConsults": "RECENT CONSULTS",
   "recentOrders": "RECENT ORDERS",
