@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { JoinWaitingRoomView } from '@aph/mobile-patients/src/components/Consult/JoinWaitingRoomView';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
@@ -248,6 +249,8 @@ type rescheduleType = {
   isPaid: number;
 };
 
+const { text } = theme.viewStyles;
+const { LIGHT_BLUE } = theme.colors;
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
     ...theme.viewStyles.yellowTextStyle,
@@ -281,7 +284,6 @@ const styles = StyleSheet.create({
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
     paddingTop: 10,
-    paddingHorizontal: 20,
     ...theme.viewStyles.shadowStyle,
   },
   displayId: {
@@ -298,6 +300,7 @@ const styles = StyleSheet.create({
   doctorNameStyle: {
     paddingTop: 8,
     paddingBottom: 5,
+    paddingHorizontal: 20,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansSemiBold(16),
     color: theme.colors.LIGHT_BLUE,
@@ -313,6 +316,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.SKY_BLUE,
     marginBottom: 11,
+    paddingHorizontal: 20,
   },
   imageView: {
     width: 80,
@@ -369,14 +373,9 @@ const styles = StyleSheet.create({
     height: 40,
   },
   centerTxt: {
-    position: 'absolute',
-    left: 20,
-    top: '50%',
-    width: width - 40,
-    color: 'white',
-    ...theme.fonts.IBMPlexSansSemiBold(13),
+    ...text('M', 15, LIGHT_BLUE),
     textAlign: 'center',
-    zIndex: 1,
+    marginTop: 15,
   },
   textInputContainerStyles: {
     backgroundColor: 'white',
@@ -580,8 +579,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
-    top: height / 2 - 61,
-    left: width / 2 - 45,
+    top: height / 2 - 81,
+    width: width,
   },
   userThumbnailIcon: {
     width: 90,
@@ -712,6 +711,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
+  const [isConsultedWithDoctorBefore, setConsultedWithDoctorBefore] = useState(false);
   const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   const MedicinePrescriptions = currentCaseSheet?.filter(
     (item: any) => item?.medicinePrescription !== null
@@ -1484,6 +1484,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
         if (yesCount && yesCount > 0) {
           setShowConnectAlertPopup(false);
+          setConsultedWithDoctorBefore(true);
         } else {
           setShowConnectAlertPopup(true);
         }
@@ -1499,6 +1500,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ConsultedBefore: connected ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
+    setConsultedWithDoctorBefore(connected);
     setLoading(true);
 
     updateExternalConnect(client, doctorId, patientId, connected, channel)
@@ -5438,24 +5440,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return <></>;
   };
 
+  const isFilesUploadedByPatient = messages?.find((m) => m.message === imageconsult);
+  const isVitalsCompleted =
+    !displayChatQuestions || messages?.find((m) => m.message === vitalsCompletedByPatient);
+  const isDoctorAttemptedCall = messages?.find((m) => m.message === endCallMsg);
+  const isDrCheckingRecords =
+    !isDoctorAttemptedCall &&
+    (isFilesUploadedByPatient || isVitalsCompleted || isConsultedWithDoctorBefore);
+  const avgTimeForDoctorToJoin = 5;
+
   const renderJoinCallHeader = () => {
+    const doctor = appointmentData?.doctorInfo?.displayName;
+    const text = isDrCheckingRecords
+      ? `${doctor} is online and going through your records!`
+      : `${doctor} is Online!`;
+    const ctaHeading = isDrCheckingRecords ? 'JOIN WAIT ROOM' : 'JOIN';
+
     return (
-      <View style={styles.callHeaderView}>
-        <View style={styles.callHeaderRow}>
-          <Text style={styles.joinRoomDescriptionText}>
-            {appointmentData.doctorInfo.displayName} is online!
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              patientJoinedCall.current = true;
-              joinCallHandler();
-              postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
-            }}
-          >
-            <Text style={styles.joinBtnTxt}>JOIN AUDIO/VIDEO ROOM</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <JoinWaitingRoomView
+        onPress={() => {
+          patientJoinedCall.current = true;
+          joinCallHandler();
+          postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
+        }}
+        title={text}
+        rightTitle={ctaHeading}
+      />
     );
   };
 
@@ -5688,12 +5698,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             ? renderToastMessages()
             : null}
           {waitAndEndCall()}
-          {patientJoinedCall.current && !subscriberConnected.current && (
-            <Text style={styles.centerTxt}>
-              {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
-            </Text>
-          )}
-
           {!showVideo && renderDisableVideoSubscriber()}
           {(!subscriberConnected.current ||
             isDoctorVideoPaused ||
@@ -5786,6 +5790,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           />
         ) : (
           <UserThumbnailIcon style={styles.userThumbnailIcon} />
+        )}
+        {patientJoinedCall.current && !subscriberConnected.current && (
+          <Text style={styles.centerTxt}>
+            {isDrCheckingRecords
+              ? `${doctorName} is going through your details.\nOn average, it takes ${avgTimeForDoctorToJoin} minutes!`
+              : `${doctorName} is yet to Join!`}
+          </Text>
         )}
       </View>
     );
