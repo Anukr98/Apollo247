@@ -141,7 +141,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const billNumber = props.navigation.getParam('billNumber');
   const isCancelOrder = props.navigation.getParam('isCancelOrder');
   const isOrderHelp = props.navigation.getParam('isOrderHelp');
-  const queryCategory = props.navigation.getParam('queryCategory') || '';
+  const queryCategory = props.navigation.getParam('queryCategory') || string.pharmacy;
   const email = props.navigation.getParam('email') || '';
   const breadCrumb = props.navigation.getParam('breadCrumb') || [];
   const refetchOrders = props.navigation.getParam('refetchOrders');
@@ -152,6 +152,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
   const client = useApolloClient();
+  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -2018,7 +2019,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const renderMoreMenu = () => {
     if (isOrderCancelNotAllowed(order!)) {
-      return <View style={{ width: 24 }} />;
+      return null;
     }
     return (
       <MaterialMenu
@@ -2039,8 +2040,25 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           }
         }}
       >
-        <More />
+        <More style={{ marginLeft: 10 }} />
       </MaterialMenu>
+    );
+  };
+
+  const renderHelpHeader = () => {
+    return (
+      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderRightComponent = () => {
+    return (
+      <View style={styles.headerViewStyle}>
+        {renderHelpHeader()}
+        {renderMoreMenu()}
+      </View>
     );
   };
 
@@ -2069,6 +2087,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     } else {
       getCancellationReasons();
     }
+  };
+
+  const onPressHelp = () => {
+    const { category } = NeedHelp[0];
+    let breadCrudArray: BreadcrumbProps['links'] =
+      breadCrumb?.length > 1
+        ? [...breadCrumb, { title: string.help }]
+        : [
+            { title: string.needHelp },
+            { title: category },
+            { title: string.productDetail },
+            { title: string.help },
+          ];
+    props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+      isOrderRelatedIssue: true,
+      medicineOrderStatus: order?.currentStatus,
+      orderId: billNumber || orderAutoId,
+      queryCategory,
+      email,
+      breadCrumb: breadCrudArray,
+      fromOrderFlow: true,
+    });
   };
 
   const renderHelpButton = () => {
@@ -2142,7 +2182,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={'ORDER DETAILS'}
             container={{ borderBottomWidth: 0 }}
-            rightComponent={renderMoreMenu()}
+            rightComponent={renderRightComponent()}
             onPressLeftIcon={() => {
               handleBack();
             }}
@@ -2216,7 +2256,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 : !loading && renderOrderSummary()}
             </ScrollView>
             {renderReOrderButton()}
-            {renderHelpButton()}
+            {/* {renderHelpButton()} */}
           </>
         )}
       </SafeAreaView>
@@ -2367,4 +2407,6 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     marginBottom: 10,
   },
+  helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
+  headerViewStyle: { flex: 1, flexDirection: 'row', alignItems: 'center' },
 });

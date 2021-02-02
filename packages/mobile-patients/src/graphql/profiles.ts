@@ -206,6 +206,7 @@ export const BOOK_APPOINTMENT = gql`
         appointmentType
         patientId
         displayId
+        paymentOrderId
       }
     }
   }
@@ -2251,6 +2252,25 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         packageCalculatedMrp
         testDescription
         inclusions
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
+export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
+  query findDiagnosticsWidgetsPricing($cityID: Int!, $itemIDs: [Int]!) {
+    findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics {
+        itemId
+        packageCalculatedMrp
         diagnosticPricing {
           mrp
           price

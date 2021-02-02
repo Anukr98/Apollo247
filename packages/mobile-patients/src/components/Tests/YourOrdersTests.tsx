@@ -517,6 +517,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const checkSlotSelection = () => {
     const dt = moment(selectedOrder?.slotDateTimeInUTC).format('YYYY-MM-DD') || null;
     const tm = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm') || null;
+
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
+    const checkCovidItem = orderItemId?.map((item) =>
+      AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item))
+    );
+
+    const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
+    const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
+
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
         query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
@@ -530,13 +539,24 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
+        const covidItem_Slot_StartTime = moment(
+          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
+          'HH:mm'
+        );
+
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
 
+        const diagnosticSlotsToShow = isContainOnlyCovidItem
+          ? updatedDiagnosticSlots?.filter((item) =>
+              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
+            )
+          : updatedDiagnosticSlots;
+
         const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots?.forEach((item) => {
+        diagnosticSlotsToShow?.forEach((item) => {
           if (isValidTestSlotWithArea(item!, date)) {
             slotsArray.push({
               employeeCode: 'apollo_employee_code',
@@ -736,6 +756,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderRescheduleOrderOverlay = () => {
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
@@ -751,6 +772,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           zipCode={Number(pincode!)}
           slotInfo={selectedTimeSlot}
           isReschdedule={true}
+          itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
             rescheduleDate = date1;

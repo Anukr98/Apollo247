@@ -540,6 +540,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           }
         })
         .catch((e) => {
+          setProcedures([]);
+          setSymptoms([]);
           setisSearching(false);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
           console.log('Error occured while searching Doctor', e);
@@ -845,7 +847,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       !showSpinner &&
       !isSearching &&
       searchSpecialities &&
-      searchSpecialities.length === 0
+      searchSpecialities.length === 0 &&
+      (!procedures || procedures?.length === 0) &&
+      (!symptoms || symptoms?.length === 0)
         ? true
         : false;
     return (
