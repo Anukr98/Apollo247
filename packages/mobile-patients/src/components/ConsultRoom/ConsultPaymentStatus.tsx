@@ -899,15 +899,15 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     autoCompletePlaceSearch(searchText)
       .then((obj) => {
         try {
-          if (obj.data.predictions) {
-            const address = obj.data.predictions.map(
+          if (obj?.data?.predictions) {
+            const address = obj.data.predictions?.map(
               (item: {
                 place_id: string;
                 structured_formatting: {
                   main_text: string;
                 };
               }) => {
-                return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                return { name: item?.structured_formatting?.main_text, placeId: item?.place_id };
               }
             );
             setlocationSearchList(address);
