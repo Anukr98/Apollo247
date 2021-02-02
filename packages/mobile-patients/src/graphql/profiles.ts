@@ -2264,6 +2264,25 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
   }
 `;
 
+export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
+  query findDiagnosticsWidgetsPricing($cityID: Int!, $itemIDs: [Int]!) {
+    findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics {
+        itemId
+        packageCalculatedMrp
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
   query getDiagnosticsHomePageItems($cityID: Int!) {
     getDiagnosticsHomePageItems(cityID: $cityID) {
