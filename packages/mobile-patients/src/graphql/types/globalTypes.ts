@@ -128,11 +128,13 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_CANCELLED_REQUEST = "ORDER_CANCELLED_REQUEST",
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
+  ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
@@ -912,6 +914,8 @@ export interface CreateUserSubscriptionInput {
   storeCode: one_apollo_store_code;
   sub_plan_id?: string | null;
   source_meta_data?: SourceMetaData | null;
+  expires_in?: number | null;
+  renewNow?: boolean | null;
 }
 
 export interface DeleteHealthRecordFilesInput {
@@ -1177,6 +1181,7 @@ export interface MedicineCartOMSInput {
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
+  isConsultRequired?: boolean | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1328,6 +1333,11 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
+}
+
+export interface PatientLocation {
+  city?: string | null;
+  pincode?: number | null;
 }
 
 export interface PatientMedicalParameters {
@@ -1510,6 +1520,11 @@ export interface ShopAddress {
 
 export interface SourceMetaData {
   source_identifier?: string | null;
+}
+
+export interface UpdateAppointmentInput {
+  appointmentId: string;
+  patientLocation?: PatientLocation | null;
 }
 
 export interface UpdateAppointmentSessionInput {
