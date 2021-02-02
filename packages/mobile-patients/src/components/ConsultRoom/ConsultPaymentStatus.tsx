@@ -7,8 +7,6 @@ import {
   Copy,
   CircleLogo,
   LocationOn,
-  BackArrow,
-  Mascot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -18,6 +16,7 @@ import {
   GET_APPOINTMENT_DATA,
   GET_TRANSACTION_STATUS,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  UPDATE_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   postAppsFlyerEvent,
@@ -78,6 +77,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
 import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
+import {
+  updateAppointmentVariables,
+  updateAppointment,
+} from '@aph/mobile-patients/src/graphql/types/updateAppointment';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import {
@@ -94,7 +97,6 @@ import {
   LocationData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { Overlay } from 'react-native-elements';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
@@ -187,6 +189,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               .then((response) => {
                 setLoading?.(false);
                 response && setLocationDetails?.(response);
+                saveLocationWithConsultation(response);
               })
               .catch((e) => {
                 CommonBugFender('ConsultPaymentStatus__ALLOW_AUTO_DETECT', e);
@@ -918,70 +921,76 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       });
   };
 
+  const saveLocationWithConsultation = async (location: LocationData) => {
+    setLoading?.(true);
+    try {
+      const query: updateAppointmentVariables = {
+        appointmentInput: {
+          appointmentId: orderId,
+          patientLocation: {
+            city: location?.city,
+            pincode: Number(location?.pincode),
+          },
+        },
+      };
+      await client.query<updateAppointment>({
+        query: UPDATE_APPOINTMENT,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
+    }
+  };
+
   const renderSearchManualLocation = () => {
-    return (
-      <Overlay
-        onRequestClose={() => setShowLocationPopup(false)}
-        isVisible={showLocationPopup}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
-        fullScreen
-        transparent
-        overlayStyle={styles.overlayStyle}
-      >
-        <View style={styles.searchLocationView}>
-          <Mascot style={styles.userIcon} />
-          <View style={styles.rowCenter}>
-            <TouchableOpacity onPress={() => setShowLocationPopup(false)}>
-              <BackArrow style={styles.backIcon} />
-            </TouchableOpacity>
-            <Text style={styles.locationTitle}>Current Location</Text>
-          </View>
-          <View style={styles.innerSearchView}>
-            <LocationOn />
-            <TextInputComponent
-              inputStyle={{ marginLeft: 10 }}
-              autoFocus={true}
-              onChangeText={(value) => {
-                setLocationSearchText(value);
-                if (value?.length > 2) {
-                  autoSearchPlaces(value);
-                  setshowLocations(true);
-                } else {
-                  setshowLocations(false);
-                }
-              }}
-            />
-          </View>
-          {showLocations && (
-            <View style={styles.locationView}>
-              <ScrollView>
+    if (showLocationPopup) {
+      return (
+        <View style={styles.locationMainView}>
+          <View style={styles.currentLocationView}>
+            <Text style={styles.currentLocationText}>Current Location</Text>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 7 }}>
+                <TextInputComponent
+                  autoFocus={true}
+                  onChangeText={(value) => {
+                    setLocationSearchText(value);
+                    if (value.length > 2) {
+                      autoSearchPlaces(value);
+                      setshowLocations(true);
+                    } else {
+                      setshowLocations(false);
+                    }
+                  }}
+                />
+              </View>
+              <View style={styles.locationIconView}>
+                <LocationOn />
+              </View>
+            </View>
+            {showLocations && (
+              <View>
                 {locationSearchList?.map((item, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.locationItem,
-                      {
-                        marginBottom: i === locationSearchList?.length - 1 ? 12 : 0,
-                      },
-                    ]}
-                  >
+                  <View key={i} style={styles.searchedLocationItem}>
                     <Text
-                      style={styles.locations}
+                      style={styles.citiesText}
                       onPress={() => {
-                        setShowLocationPopup(false);
                         saveLocationDetails(item);
+                        setShowLocationPopup(false);
                       }}
                     >
                       {item?.name}
                     </Text>
                   </View>
                 ))}
-              </ScrollView>
-            </View>
-          )}
+              </View>
+            )}
+          </View>
         </View>
-      </Overlay>
-    );
+      );
+    }
   };
 
   const saveLocationDetails = (item: { name: string; placeId: string }) => {
@@ -1022,7 +1031,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
           getPlaceInfoByLatLng(coordinates.lat, coordinates.lng)
             .then((response) => {
-              setLoading?.(false);
               const addrComponents =
                 g(response, 'data', 'results', '0' as any, 'address_components') || [];
               if (addrComponents.length > 0) {
@@ -1031,6 +1039,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
                   pincode: findAddrComponents('postal_code', addrComponents),
                   lastUpdated: new Date().getTime(),
                 });
+                const locationInput = {
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                  lastUpdated: new Date().getTime(),
+                };
+                saveLocationWithConsultation(locationInput);
               }
             })
             .catch((error) => {
@@ -1039,7 +1053,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         }
       })
       .catch((error) => {
-        setLoading?.(false);
         CommonBugFender('DoctorSearchListing_getPlaceInfoByPlaceId', error);
       });
   };
@@ -1054,7 +1067,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           <View style={styles.rowCenter}>
             <LocationOn />
             <Text style={styles.savedLocationText}>
-              {locationDetails?.city} {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ""}
+              {locationDetails?.city}{' '}
+              {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ''}
             </Text>
           </View>
           <TouchableOpacity
@@ -1245,69 +1259,6 @@ const styles = StyleSheet.create({
     height: 27,
     marginRight: 5,
   },
-  locationSearchView: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
-    zIndex: 1,
-    elevation: 15,
-  },
-  searchLocationView: {
-    ...theme.viewStyles.cardViewStyle,
-    width: windowWidth,
-    padding: 20,
-    marginTop: 'auto',
-    paddingTop: 24,
-    minHeight: 250,
-  },
-  overlayStyle: {
-    padding: 0,
-    margin: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
-    elevation: 0,
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  locationTitle: {
-    color: theme.colors.CARD_HEADER,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  backIcon: {
-    marginRight: 16,
-    width: 24,
-    height: 15,
-  },
-  userIcon: {
-    position: 'absolute',
-    top: -32,
-    right: 20,
-  },
-  innerSearchView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '75%',
-    marginLeft: 20,
-    marginTop: 10,
-  },
-  locationItem: {
-    marginTop: 12,
-  },
-  locationView: {
-    ...theme.viewStyles.cardViewStyle,
-    width: '75%',
-    marginLeft: 50,
-    paddingHorizontal: 16,
-    maxHeight: 150,
-  },
-  locations: {
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
-  },
   savedLocationView: {
     marginHorizontal: 0.06 * windowWidth,
     marginBottom: 20,
@@ -1335,5 +1286,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 7,
+  },
+  locationMainView: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    zIndex: 15,
+    elevation: 15,
+  },
+  currentLocationText: {
+    color: theme.colors.CARD_HEADER,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  currentLocationView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: 235,
+    padding: 16,
+    marginTop: 40,
+  },
+  locationIconView: {
+    marginLeft: 20,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  searchedLocationItem: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+    paddingVertical: 7,
+  },
+  citiesText: {
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(18),
   },
 });
