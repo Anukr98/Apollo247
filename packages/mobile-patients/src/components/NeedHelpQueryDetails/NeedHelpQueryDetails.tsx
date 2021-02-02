@@ -33,6 +33,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -44,15 +45,20 @@ export interface Props
     isOrderRelatedIssue?: boolean;
     medicineOrderStatus?: MEDICINE_ORDER_STATUS;
     isConsult?: boolean;
+    fromOrderFlow?: boolean;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const pageTitle = navigation.getParam('pageTitle') || string.help.toUpperCase();
   const queryCategory = navigation.getParam('queryCategory') || '';
-  const email = navigation.getParam('email') || '';
+  const [email, setEmail] = useState(navigation.getParam('email') || '');
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
+  const isFromOrderFlow = navigation.getParam('fromOrderFlow') || false;
+  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(
+    isFromOrderFlow && !email ? true : false
+  );
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const { getFilteredReasons, saveNeedHelpQuery } = Helpers;
   const queryReasons = getFilteredReasons(queryCategory, isOrderRelatedIssue);
@@ -255,12 +261,24 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return <Text style={styles.heading}>{text}</Text>;
   };
 
+  const renderEmailPopup = () => {
+    return showEmailPopup ? (
+      <NeedHelpEmailPopup
+        onPressSendORConfirm={(email) => {
+          setShowEmailPopup(false);
+          setEmail(email);
+        }}
+      />
+    ) : null;
+  };
+
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
       {renderReasons()}
+      {renderEmailPopup()}
     </SafeAreaView>
   );
 };
