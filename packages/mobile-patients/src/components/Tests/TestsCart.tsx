@@ -504,7 +504,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
-    const selectedAddr = addresses.find((item) => item?.id == deliveryAddressId);
+    const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
 
     DiagnosticNonServiceableAddressSelected(
       selectedAddr,
