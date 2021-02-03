@@ -175,6 +175,7 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { DiagnosticCartViewed, DiagnosticProceedToPay } from './Events';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
@@ -444,20 +445,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [diagnosticServiceabilityData]);
 
   useEffect(() => {
-    if (selectedTab == tabs[0].title) {
-      if (
-        selectedTimeSlot?.slotInfo?.slot! &&
-        areaSelected &&
-        deliveryAddressId != '' &&
-        cartItems?.length > 0
-      ) {
-        validateDiagnosticCoupon();
-        fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
-      }
-    } else {
-      setHcCharges!(0);
+    if (
+      selectedTimeSlot?.slotInfo?.slot! &&
+      areaSelected &&
+      deliveryAddressId != '' &&
+      cartItems?.length > 0
+    ) {
+      validateDiagnosticCoupon();
+      fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
-  }, [selectedTab, selectedTimeSlot, deliveryAddressId, cartItems]);
+  }, [diagnosticSlot, deliveryAddressId, cartItems]);
 
   useEffect(() => {
     if (deliveryAddressId != '') {
@@ -465,78 +462,42 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [deliveryAddressId]);
 
-  const fireCircleBenifitAppliedEvent = () => {
-    const circleMembershipType = setCircleMembershipType(
-      circlePlanValidity?.startDate!,
-      circlePlanValidity?.endDate!
-    );
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED] = {
-      'Patient UHID': currentPatient?.uhid,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer ID': currentPatient?.id,
-      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
-      'Membership Type': circleMembershipType,
-      'Circle Membership Start Date': circlePlanValidity?.startDate!,
-      'Circle Membership End Date': circlePlanValidity?.endDate!,
-    };
-    isDiagnosticCircleSubscription &&
-      postWebEngageEvent(
-        WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED,
-        CircleEventAttributes
-      );
-  };
-
   useEffect(() => {
     if (cartItems.length) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
-        'Total items in cart': cartItems.length,
-        // 'Delivery charge': deliveryCharges,
-        'Total Discount': couponDiscount,
-        'Net after discount': grandTotal,
-        'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
-        'Cart Items': cartItems.map(
-          (item) =>
-            (({
-              id: item.id,
-              name: item.name,
-              price: item.price,
-              specialPrice: item.specialPrice || item.price,
-            } as unknown) as DiagnosticsCartItem)
-        ),
-      };
-      if (diagnosticSlot) {
-        eventAttributes['Delivery charge'] = hcCharges;
-      }
-      if (coupon) {
-        eventAttributes['Coupon code used'] = coupon.code;
-      }
-      fireCircleBenifitAppliedEvent();
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
+      DiagnosticCartViewed(
+        currentPatient,
+        cartItems,
+        couponDiscount,
+        grandTotal,
+        uploadPrescriptionRequired,
+        diagnosticSlot,
+        coupon,
+        hcCharges,
+        circlePlanValidity,
+        circleSubscriptionId,
+        isDiagnosticCircleSubscription
+      );
     }
   }, [hcCharges]);
 
   const postwebEngageProceedToPayEvent = () => {
-    const diffInDays = date.getDate() - new Date().getDate();
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
-      'Patient Name selected': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Total items in cart': cartItems.length,
-      'Sub Total': cartTotal,
-      // 'Delivery charge': deliveryCharges,
-      'Net after discount': grandTotal,
-      'Prescription Uploaded?': false, //from backend
-      'Prescription Mandatory?': uploadPrescriptionRequired,
-      'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
-      'Pin Code': pinCode,
-      'Service Area': 'Diagnostic',
-      'Area Name': String((areaSelected as areaObject).value),
-      'No of Days ahead of Order Date selected': diffInDays,
-      'Home collection charges': hcCharges,
-      'Collection Time Slot': selectedTimeSlot?.slotInfo?.startTime!,
-    };
-    if (selectedTab === tabs[0].title) {
-      eventAttributes['Delivery Date Time'] = date;
-    }
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
+    const mode = selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit';
+    const area = String((areaSelected as areaObject).value);
+
+    DiagnosticProceedToPay(
+      date,
+      currentPatient,
+      cartItems,
+      cartTotal,
+      grandTotal,
+      uploadPrescriptionRequired,
+      mode,
+      pinCode,
+      'Diagnostic',
+      area,
+      hcCharges,
+      selectedTimeSlot?.slotInfo?.startTime!
+    );
   };
 
   const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
@@ -614,21 +575,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setselectedTimeSlot(undefined);
         setDiagnosticAreas!([]);
         setAreaSelected!({});
-        const selectedAddressIndex = addresses.findIndex(
-          (address) => address.id == deliveryAddressId
-        );
-        // fetchAreasForAddress(
-        //   addresses[selectedAddressIndex].id,
-        //   addresses[selectedAddressIndex].zipcode!
-        // );
       }
     }
   }, [deliveryAddressId, diagnosticSlot, cartItems]);
-
-  // useEffect(() => {
-  //   clinics.length == 0 && fetchStorePickup();
-  //   slicedStoreList.length == 0 && filterClinics(clinicId, true, true);
-  // }, [clinicId]);
 
   useEffect(() => {
     if (testCentresLoaded) {
