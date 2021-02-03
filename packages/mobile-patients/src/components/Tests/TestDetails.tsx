@@ -177,7 +177,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [moreInclusions, setMoreInclusions] = useState(false);
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
-  const [sectionLoading, setSectionLoading] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
 
   const itemName =
@@ -227,8 +226,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       console.log({ result });
       setCmsTestDetails(result);
       setLoadingContext?.(false);
-      setSectionLoading(true);
-      //pass through props.
+
       !!result?.diagnosticWidgetsData &&
         result?.diagnosticWidgetsData?.length > 0 &&
         fetchWidgetPrices(result?.diagnosticWidgetsData, diagnosticServiceabilityData?.cityId!);
@@ -357,7 +355,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     }
     setWidgetsData(newWidgetsData);
-    setTimeout(() => setSectionLoading(false), 100);
     setLoadingContext?.(false);
   };
 
@@ -917,19 +914,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               leftText={nameFormater(data?.diagnosticWidgetTitle, 'title')}
               leftTextStyle={styles.widgetHeading}
             />
-            {sectionLoading ? (
-              renderSectionLoader(188)
-            ) : (
-              <PackageCard
-                data={data}
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={false}
-                navigation={props.navigation}
-                source={'Details Page'}
-                sourceScreen={AppRoutes.TestDetails}
-              />
-            )}
+
+            <PackageCard
+              data={data}
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={isDiagnosticLocationServiceable}
+              isVertical={false}
+              navigation={props.navigation}
+              source={'Details Page'}
+              sourceScreen={AppRoutes.TestDetails}
+            />
           </>
         ) : null}
       </View>
@@ -951,34 +945,18 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               leftTextStyle={styles.widgetHeading}
             />
 
-            {sectionLoading ? (
-              renderSectionLoader(188)
-            ) : (
-              <ItemCard
-                data={data}
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={false}
-                navigation={props.navigation}
-                source={'Details Page'}
-                sourceScreen={AppRoutes.TestDetails}
-              />
-            )}
+            <ItemCard
+              data={data}
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={isDiagnosticLocationServiceable}
+              isVertical={false}
+              navigation={props.navigation}
+              source={'Details Page'}
+              sourceScreen={AppRoutes.TestDetails}
+            />
           </>
         ) : null}
       </View>
-    );
-  };
-
-  const renderSectionLoader = (height: number = 100) => {
-    return (
-      <Spinner
-        style={{
-          height,
-          position: 'relative',
-          backgroundColor: 'transparent',
-        }}
-      />
     );
   };
 
