@@ -1424,6 +1424,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         const params = event.url?.substring(index + deeplinkBaseUrl.length)?.split('+');
         const appointmentId = params[0];
         const callType = params[1];
+        isAudio.current = callType === 'AUDIO';
         console.log('>>>params--', params);
         console.log('>>>appointmentId--', appointmentId);
         if (isDoctorCall) {
@@ -5447,7 +5448,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const isDrCheckingRecords =
     !isDoctorAttemptedCall &&
     (isFilesUploadedByPatient || isVitalsCompleted || isConsultedWithDoctorBefore);
-  const avgTimeForDoctorToJoin = 5;
+  const avgTimeForDoctorToJoinInMinutes = 5;
 
   const renderJoinCallHeader = () => {
     const doctor = appointmentData?.doctorInfo?.displayName;
@@ -5457,15 +5458,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const ctaHeading = isDrCheckingRecords ? 'JOIN WAIT ROOM' : 'JOIN';
 
     return (
-      <JoinWaitingRoomView
-        onPress={() => {
-          patientJoinedCall.current = true;
-          joinCallHandler();
-          postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
-        }}
-        title={text}
-        rightTitle={ctaHeading}
-      />
+      !loading && (
+        <JoinWaitingRoomView
+          onPress={() => {
+            patientJoinedCall.current = true;
+            joinCallHandler();
+            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
+          }}
+          title={text}
+          rightTitle={ctaHeading}
+        />
+      )
     );
   };
 
@@ -5697,7 +5700,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
             ? renderToastMessages()
             : null}
-          {waitAndEndCall()}
           {!showVideo && renderDisableVideoSubscriber()}
           {(!subscriberConnected.current ||
             isDoctorVideoPaused ||
@@ -5793,8 +5795,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         )}
         {patientJoinedCall.current && !subscriberConnected.current && (
           <Text style={styles.centerTxt}>
-            {isDrCheckingRecords
-              ? `${doctorName} is going through your details.\nOn average, it takes ${avgTimeForDoctorToJoin} minutes!`
+            {callTimer > avgTimeForDoctorToJoinInMinutes * 60
+              ? 'Unfortunately, it appears that\nthe doctor is still busy.\nYou will receive a call shortly!'
+              : isDrCheckingRecords
+              ? `${doctorName} is going through your details.\nOn average, it takes ${avgTimeForDoctorToJoinInMinutes} minutes!`
               : `${doctorName} is yet to Join!`}
           </Text>
         )}
@@ -5802,12 +5806,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const callMinutes = Math.floor(callTimer / 60);
-  const callSeconds = callTimer - callMinutes * 60;
-
-  const callTimerStarted = `${
-    callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
-  } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
+  const callTimerStarted = moment.utc(callTimer * 1000).format('mm : ss');
 
   const renderToastMessages = () => {
     if (callStatus.current === disconnecting && callToastStatus.current === '') {
@@ -5970,7 +5969,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             callStatus.current = disconnecting;
             callToastStatus.current = 'You Disconnected the call';
             isErrorToast.current = true;
-            if (isAudioCall) {
+            if (isAudio.current) {
               handleEndAudioCall();
             } else {
               handleEndCall();
@@ -5983,11 +5982,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const waitAndEndCall = () => {
-    if (patientJoinedCall.current && !subscriberConnected.current && callMinutes === 5) {
-      handleEndCall();
+  useEffect(() => {
+    if (
+      patientJoinedCall.current &&
+      !subscriberConnected.current &&
+      callTimer === avgTimeForDoctorToJoinInMinutes * 60
+    ) {
+      callStatus.current = ' ';
+      callToastStatus.current = disconnecting;
+      isErrorToast.current = true;
+      setTimeout(() => {
+        if (isAudio.current) {
+          handleEndAudioCall();
+        } else {
+          handleEndCall();
+        }
+      }, 1000);
     }
-  };
+  }, [callTimer]);
 
   const handleEndCall = () => {
     setTimeout(() => {
