@@ -423,9 +423,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkPatientAge = () => {
-    let age = getAge(currentPatient?.dateOfBirth);
-    if (age <= 10) {
-      renderAlert(string.diagnostics.minorAgeText);
+    let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
+
+    if (age! <= 10 || age == null) {
+      renderAlert(age == null ? string.common.tryAgainLater : string.diagnostics.minorAgeText);
       setIsMinor(true);
       setDeliveryAddressId!('');
       setDiagnosticAreas!([]);
@@ -2416,7 +2417,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               'Patient UHID': g(currentPatient, 'id'),
               'Total items in cart': cartItems.length,
               'Order Amount': grandTotal,
+              'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
+              'Appointment time': slotStartTime!,
+              'Item ids': cartItemsWithId,
             };
+
             props.navigation.navigate(AppRoutes.PaymentMethods, {
               paymentId: response?.data?.createOrderInternal?.payment_order_id!,
               amount: grandTotal,
@@ -2442,58 +2447,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading!(false);
         });
     }
-  };
-
-  const onPressCross = () => {
-    setModalVisible(false);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
-  };
-
-  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
-    setModalVisible(false);
-    setLoading!(false);
-    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
-      goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderId: orderId,
-      comingFrom: AppRoutes.TestsCart,
-    });
-  };
-
-  const renderDiagnosticHelpText = () => {
-    const textMediumStyle = theme.viewStyles.text('R', 14, '#02475b', 1, 22);
-    const textBoldStyle = theme.viewStyles.text('B', 14, '#02475b', 1, 22);
-    const PhoneNumberTextStyle = theme.viewStyles.text('R', 14, '#fc9916', 1, 22);
-    const ontapNumber = (number: string) => {
-      Linking.openURL(`tel:${number}`)
-        .then(() => {})
-        .catch((e) => {
-          CommonBugFender('TestsCheckoutScene_Linking_mobile', e);
-        });
-    };
-
-    return (
-      <Text style={{ margin: 20, marginTop: 0 }}>
-        <Text style={textMediumStyle}>{'For '}</Text>
-        <Text style={textBoldStyle}>{'Test Orders,'}</Text>
-        <Text style={textMediumStyle}>
-          {' to know the Order Status / Reschedule / Cancel, please call — \n'}
-        </Text>
-        <Text onPress={() => ontapNumber('040 44442424')} style={PhoneNumberTextStyle}>
-          {'040 44442424'}
-        </Text>
-        <Text style={textMediumStyle}>{' / '}</Text>
-        <Text onPress={() => ontapNumber('040 33442424')} style={PhoneNumberTextStyle}>
-          {'040 33442424'}
-        </Text>
-      </Text>
-    );
   };
 
   const removeDisabledCartItems = (disabledCartItemIds: string[]) => {
