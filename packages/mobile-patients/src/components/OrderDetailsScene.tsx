@@ -698,6 +698,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             </Text>
           </View>
         </View>
+        <View style={styles.line} />
+        {renderInconvenienceView()}
         {!!!orderStatusList.find(
           (item) =>
             item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
@@ -1338,11 +1340,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {!isNotTatBreach &&
-          order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
-          statusToConsiderTatBreach.includes(order?.currentStatus!)
-            ? renderInconvenienceView()
-            : null}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
@@ -1552,15 +1549,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderInconvenienceView = () => {
+    const patientWhtsappQuery = `I have a query regarding my order ${billNumber ||
+      orderAutoId}, status = ${orderDetails?.currentStatus}`;
     return (
-      <View>
-        <View style={styles.cardStyle}>
-          <PendingIcon style={styles.pendingIconStyle} />
-          <Text style={styles.inconvenienceText}>
-            {string.OrderSummery.tatBreach_InconvenienceText}
-          </Text>
-        </View>
-        <ChatWithUs />
+      <View style={styles.chatView}>
+        <Text style={styles.queryText}>In case of any issues/queries:</Text>
+        <ChatWithUs text={patientWhtsappQuery} />
       </View>
     );
   };
@@ -2409,4 +2403,26 @@ const styles = StyleSheet.create({
   },
   helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
   headerViewStyle: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  line: {
+    width: screenWidth,
+    height: 0.5,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.3,
+  },
+  chatView: {
+    marginVertical: 10,
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  queryText: {
+    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
+    paddingBottom: 10,
+    paddingTop: 4,
+    marginRight: 6,
+  },
+  chatBtnTxt: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
+  },
 });
