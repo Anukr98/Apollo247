@@ -420,9 +420,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkPatientAge = () => {
-    let age = getAge(currentPatient?.dateOfBirth);
-    if (age <= 10) {
-      renderAlert(string.diagnostics.minorAgeText);
+    let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
+
+    if (age! <= 10 || age == null) {
+      renderAlert(age == null ? string.common.tryAgainLater : string.diagnostics.minorAgeText);
       setIsMinor(true);
       setDeliveryAddressId!('');
       setDiagnosticAreas!([]);
