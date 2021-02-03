@@ -29,6 +29,7 @@ import {
   DiagnosticAddToCartEvent,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 export interface PackageCardProps {
   onPress?: () => void;
@@ -88,13 +89,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
         ]}
       >
-        {renderPercentageDiscountTag(
-          promoteCircle && isCircleSubscribed
-            ? circleDiscount
-            : promoteDiscount
-            ? specialDiscount
-            : discount
-        )}
         <View>
           <View style={{ minHeight: 100 }}>
             <View style={styles.topPackageView}>
@@ -108,6 +102,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
               source={{ uri: imageUrl }}
               style={styles.imageStyle}
             /> */}
+              {renderPercentageDiscount(
+                promoteCircle && isCircleSubscribed
+                  ? circleDiscount
+                  : promoteDiscount
+                  ? specialDiscount
+                  : discount
+              )}
             </View>
             {!!inclusions && inclusions?.length > 0 ? (
               <View>
@@ -134,13 +135,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     );
   };
 
-  const renderPercentageDiscountTag = (discount: string | number) => {
+  const renderPercentageDiscount = (discount: string | number) => {
     return (
       <>
-        {!!discount ? (
-          <View style={styles.discountTagView}>
-            <OfferIcon style={styles.offerIconStyle} />
-            <Text style={styles.discountTagText}>-{Number(discount).toFixed(0)}%</Text>
+        {!!discount && discount > 0 ? (
+          <View style={styles.percentageDiscountView}>
+            <Text style={styles.percentageDiscountText}>{Number(discount).toFixed(0)}% off</Text>
           </View>
         ) : null}
       </>
@@ -325,6 +325,10 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
+    if (sourceScreen == AppRoutes.TestDetails) {
+      return;
+    }
+
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!; //more than price (black)
     const circlePrice = pricesForItem?.circlePrice!;
@@ -509,24 +513,6 @@ const styles = StyleSheet.create({
     right: 16,
     position: 'absolute',
   },
-  discountTagView: {
-    elevation: 20,
-    position: 'absolute',
-    right: 12,
-    top: 0,
-    zIndex: 1,
-  },
-  discountTagText: {
-    flex: 1,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
-    ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24),
-    top: 5,
-  },
   offerIconStyle: {
     height: 45,
     width: 45,
@@ -537,5 +523,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowColor: 'white',
     elevation: 0,
+  },
+  percentageDiscountView: {
+    backgroundColor: colors.DISCOUNT_LIGHT_BLUE,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: colors.DISCOUNT_BLUE_COLOR,
+    height: 30,
+    width: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  percentageDiscountText: {
+    ...theme.viewStyles.text('M', 10, colors.DISCOUNT_BLUE_COLOR, 1, 12),
+    textAlign: 'center',
   },
 });

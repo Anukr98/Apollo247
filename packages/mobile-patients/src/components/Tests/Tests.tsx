@@ -133,6 +133,7 @@ import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
+import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -142,6 +143,7 @@ const imagesArray = [
 ];
 
 const whyBookUsArray = [
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.png') },
   { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.png') },
   { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.png') },
   { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.png') },
@@ -214,7 +216,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [error, setError] = useState<boolean>(false);
 
   const [bannerLoading, setBannerLoading] = useState(true);
-  const [imgHeight, setImgHeight] = useState(150);
+  const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
 
@@ -873,6 +875,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         shadowRadius: 8,
         elevation: 4,
       },
+      searchInput: { minHeight: undefined, paddingVertical: 8 },
+      searchInputContainer: { marginBottom: 15, marginTop: 5 },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -912,10 +916,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View
         pointerEvents={!isSeviceableObjectEmpty && serviceableObject?.city != '' ? 'auto' : 'none'}
-        style={styles.searchViewShadow}
+        // style={styles.searchViewShadow}
       >
-        <Input
-          autoFocus={!locationDetails ? false : focusSearch}
+        <SearchInput
+          _isSearchFocused={isSearchFocused}
+          autoFocus={
+            !diagnosticLocation && !pharmacyLocation && !locationDetails ? false : focusSearch!
+          }
           onSubmitEditing={() => {
             if (searchText?.length > 2) {
               props.navigation.navigate(AppRoutes.SearchTestScene, {
@@ -924,9 +931,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           }}
           value={searchText}
-          autoCapitalize="none"
-          spellCheck={false}
-          onFocus={() => setSearchFocused(true)}
+          onFocus={() => {
+            setSearchFocused(true);
+          }}
           onBlur={() => {
             setSearchFocused(false);
             setDiagnosticResults([]);
@@ -957,33 +964,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
               search(value);
             }
           }}
-          leftIcon={isSearchFocused ? <View /> : leftIconView}
-          autoCorrect={false}
-          rightIcon={isSearchFocused ? rigthIconView : <View />}
+          _rigthIconView={rigthIconView}
           placeholder="Search tests &amp; packages"
-          selectionColor={itemsNotFound ? '#890000' : '#00b38e'}
-          underlineColorAndroid="transparent"
-          placeholderTextColor="rgba(1,48,91, 0.4)"
-          inputStyle={styles.inputStyle}
-          inputContainerStyle={[
-            styles.inputContainerStyle,
-            itemsNotFound
-              ? {
-                  borderColor: '#890000',
-                }
-              : {},
-          ]}
-          leftIconContainerStyle={styles.leftIconContainerStyle}
-          rightIconContainerStyle={styles.rightIconContainerStyle}
-          style={styles.style}
-          containerStyle={styles.containerStyle}
-          errorStyle={{
-            ...theme.viewStyles.text('M', 12, '#890000'),
-            marginHorizontal: 10,
-          }}
-          errorMessage={
-            itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
-          }
+          _itemsNotFound={itemsNotFound}
+          inputStyle={styles.searchInput}
+          containerStyle={styles.searchInputContainer}
         />
       </View>
     );
@@ -1430,7 +1415,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderWhyBookUs = () => {
     return (
-      <View style={{ marginBottom: 10, marginTop: '2%' }}>
+      <View style={{ marginBottom: 15, marginTop: '2%' }}>
         <View style={{ marginLeft: 32 }}>
           <Text style={styles.whyBookUsHeading}>{nameFormater('why book with us', 'upper')} ?</Text>
         </View>
@@ -1459,8 +1444,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress} key={index.toString()}>
         <ImageNative
+          key={index.toString()}
           resizeMode="contain"
-          style={{ width: '100%', minHeight: imgHeight, resizeMode: 'contain' }}
+          style={{ width: '100%', height: imgHeight }}
           source={item?.image}
         />
       </TouchableOpacity>
@@ -1494,7 +1480,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderBookingStepsModal = () => {
-    const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 2 : 1.5;
+    const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 1.7 : 1.5;
     return showAphAlert!({
       unDismissable: isunDismissable(),
       removeTopIcon: true,
@@ -1534,7 +1520,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     <View style={{ width: '82%' }}>
                       <ImageBackground
                         source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.png')}
-                        style={{ height: 110, width: 300 }}
+                        style={{ height: index == 1 ? 115 : 110, width: 300 }}
                         resizeMode={'contain'}
                       >
                         <Text style={styles.stepsToBookModalMainTextHeading}>{item.heading}</Text>
@@ -1588,8 +1574,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {/* {uploadPrescriptionCTA()} */}
-        {renderYourOrders()}
         {renderBanner()}
+        {renderYourOrders()}
         {renderStepsToBook()}
 
         {renderBottomViews()}
