@@ -946,6 +946,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
+    setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
@@ -1043,6 +1044,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Need_Help_Return_Order_Sub_Reason',
       PROD: 'Need_Help_Return_Order_Sub_Reason',
     },
+    Need_Help_Return_Pharma_Order_Success_Message: {
+      PROD: 'Need_Help_Return_Pharma_Order_Success_Message',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1088,6 +1092,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
+        'Need_Help_Return_Pharma_Order_Success_Message',
+        (key) => config.getString(key)
+      );
+      needHelpReturnPharmaOrderSuccessMessage &&
+        setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
