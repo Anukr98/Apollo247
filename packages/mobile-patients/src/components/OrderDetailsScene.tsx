@@ -251,6 +251,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     : g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails', 'billNumber');
 
   const [showRateDeliveryBtn, setShowRateDeliveryBtn] = useState(false);
+  const orderDeliveryDate = order?.medicineOrdersStatus?.find(
+    (i) => i?.orderStatus === order?.currentStatus
+  )?.statusDate;
+
+  const hideWhtsappQueryOption = moment(new Date()).diff(moment(orderDeliveryDate), 'hours') > 48;
 
   useEffect(() => {
     if (isCancelOrder && !loading) {
@@ -698,8 +703,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             </Text>
           </View>
         </View>
-        <View style={styles.line} />
-        {renderInconvenienceView()}
         {!!!orderStatusList.find(
           (item) =>
             item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
@@ -2244,6 +2247,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
+            {!hideWhtsappQueryOption && renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
                 ? renderOrderHistory()

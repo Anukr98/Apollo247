@@ -148,16 +148,6 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
     );
   };
 
-  const renderChatWithUs = () => {
-    return (
-      <ChatWithUs
-        phoneNumber={'4041894343'}
-        text={'On-hold order: I want to chat with the pharmacist'}
-        url={AppConfig.Configuration.MED_ORDER_ON_HOLD_ORDER_WHATSAPP_LINK}
-      />
-    );
-  };
-
   const renderUploadPrescription = () => {
     return (
       <View
@@ -248,20 +238,6 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
         {props.showCurrentStatusDesc && props.showReUploadPrescription
           ? renderUploadPrescription()
           : null}
-        {/**
-         * for on hold
-         */}
-        {props.showCurrentStatusDesc && props.showChatWithUs ? renderChatWithUs() : null}
-        {/**
-         * for Non-Cart orders with call me details.
-         */}
-        {props.showCurrentStatusDesc && props.showDescriptionChatOption ? (
-          <ChatWithUs
-            phoneNumber={'4041894343'}
-            text={'I want to inform the pharmacist regarding my medicines'}
-            url={AppConfig.Configuration.MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK}
-          />
-        ) : null}
         {props.status == orderStatusForNewItems && props.showNewItemsDescription && (
           <View>
             <View style={styles.newItemsOuterView}>
@@ -277,15 +253,6 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
                 <TouchableOpacity onPress={props.onPressViewSummary} style={styles.newItemsTouch}>
                   <Text style={styles.customOrangeOption}>VIEW ORDER SUMMARY</Text>
                 </TouchableOpacity>
-                {(props.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
-                  props.isPrescriptionUploaded == '') ||
-                props.isPrescriptionUploaded == null ? null : (
-                  <ChatWithUs
-                    phoneNumber={'4041894343'}
-                    text={'I have a query regarding the items in my verified order'}
-                    url={AppConfig.Configuration.MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK}
-                  />
-                )}
               </View>
             ) : null}
           </View>
