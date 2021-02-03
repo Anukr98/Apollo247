@@ -15,8 +15,8 @@ import {
   AppsFlyerEventName,
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { circleValidity, PharmacyCircleEvent } from '../ShoppingCartProvider';
-import { DiagnosticsCartItem } from '../DiagnosticsCartProvider';
+import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -282,4 +282,62 @@ export function DiagnosticProceedToPay(
     eventAttributes['Delivery Date Time'] = date;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
+}
+
+export function DiagnosticNonServiceableAddressSelected(
+  selectedAddr: any,
+  currentPatient: any,
+  pincode: string | number,
+  cartItems: DiagnosticsCartItem[],
+  cartItemsWithId: any
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE] = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    State: selectedAddr?.state || '',
+    City: selectedAddr?.city || '',
+    PinCode: Number(pincode),
+    'Number of items in cart': cartItemsWithId.length,
+    'Items in cart': cartItems,
+  };
+  postWebEngageEvent(
+    WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE,
+    eventAttributes
+  );
+}
+
+export function DiagnosticAreaSelected(selectedAddr: any, area: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
+    'Address Pincode': Number(selectedAddr?.zipcode!),
+    'Area Selected': area,
+    Servicability: 'Yes',
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
+}
+
+export function DiagnosticAppointmentTimeSlot(
+  selectedAddr: any,
+  area: string,
+  time: string,
+  diffInDays: number
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
+    'Address Pincode': Number(selectedAddr?.zipcode!),
+    'Area Selected': area,
+    'Time Selected': time,
+    'No of Days ahead of Order Date selected': diffInDays,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
+}
+
+export function DiagnosticPaymentInitiated(
+  grandTotal: number,
+  serviceArea: 'Diagnostic' | 'Pharmacy',
+  LOB: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+    Amount: grandTotal,
+    ServiceArea: serviceArea,
+    LOB: LOB,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
 }

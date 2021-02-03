@@ -430,7 +430,8 @@
     "hcSample":"Home Sample Collection",
     "hcSampleSubText": "Certified Phlebotomist visits your home for sample collection at selected slot time",
     "fastReport":"Fast & Accurate Reports",
-    "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime"
+    "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
+    "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability"
   },
   "orders": {
     "urOrders": "MY ORDERS",

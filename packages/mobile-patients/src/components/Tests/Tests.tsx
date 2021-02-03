@@ -303,9 +303,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
    * fetch widgets
    */
   useEffect(() => {
-    getHomePageWidgets(
-      (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
-    );
+    // getHomePageWidgets(
+    //   (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
+    // );
     getDiagnosticBanner();
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(currentPatient, isDiagnosticLocationServiceable);
