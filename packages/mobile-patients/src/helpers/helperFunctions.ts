@@ -563,7 +563,16 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Ready at Store';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Return Requested';
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
+      statusString = 'Return Successful';
       break;
     case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
       statusString = 'Purchased In-store';

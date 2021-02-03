@@ -985,6 +985,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
         ],
         [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
+        [MEDICINE_ORDER_STATUS.RETURN_ACCEPTED]: [
+          '',
+          `Your order #${orderAutoId} has been successfully returned.`,
+        ],
       };
 
       const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
@@ -2090,6 +2094,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const onPressHelp = () => {
+    const currentStatusDate = order?.medicineOrdersStatus?.find(
+      (i) => i?.orderStatus === order?.currentStatus
+    )?.statusDate;
     const { category } = NeedHelp[0];
     let breadCrudArray: BreadcrumbProps['links'] =
       breadCrumb?.length > 1
@@ -2105,6 +2112,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       medicineOrderStatus: order?.currentStatus,
       orderId: billNumber || orderAutoId,
       queryCategory,
+      medicineOrderStatusDate: currentStatusDate,
       email,
       breadCrumb: breadCrudArray,
       fromOrderFlow: true,

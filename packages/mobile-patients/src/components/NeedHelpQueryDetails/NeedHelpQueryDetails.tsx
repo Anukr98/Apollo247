@@ -11,6 +11,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
+  RETURN_PHARMA_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderShipmentDetails,
@@ -24,6 +25,10 @@ import {
   SendHelpEmail,
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
+import {
+  returnPharmaOrder,
+  returnPharmaOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/returnPharmaOrder';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -94,7 +99,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const { needHelpToContactInMessage } = useAppCommonData();
+  const {
+    needHelpToContactInMessage,
+    needHelpReturnPharmaOrderSuccessMessage,
+  } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
   const [queryIndex, setQueryIndex] = useState<number>();
   const [comments, setComments] = useState<string>('');
@@ -107,10 +115,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   let fin = '';
 
   useEffect(() => {
+    const queryReasonsIndex = queryReasons?.findIndex((item) => item === string.common.return_text);
     if (medicineOrderStatusDate) {
-      const queryReasonsIndex = queryReasons?.findIndex(
-        (item) => item === string.common.return_text
-      );
       const showReturnOrder =
         moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
       if (!(medicineOrderStatus === MEDICINE_ORDER_STATUS.DELIVERED && showReturnOrder)) {
@@ -118,6 +124,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         updatedQueryReasons?.splice(queryReasonsIndex, 1);
         setQueryReasons(updatedQueryReasons);
       }
+    } else {
+      const updatedQueryReasons: string[] = queryReasons;
+      updatedQueryReasons?.splice(queryReasonsIndex, 1);
+      setQueryReasons(updatedQueryReasons);
     }
   }, []);
 
@@ -394,6 +404,75 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     setComments('');
   };
 
+  const onSuccessReturnPharmaOrder = () => {
+    showAphAlert!({
+      title: string.common.hiWithSmiley,
+      description: needHelpReturnPharmaOrderSuccessMessage || string.return_order_submit_message,
+      unDismissable: true,
+      onPressOk: () => {
+        hideAphAlert!();
+        navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+          })
+        );
+      },
+    });
+  };
+
+  const onSubmitReturnPharmaOrder = async () => {
+    try {
+      setLoading!(true);
+      const needHelp = AppConfig.Configuration.NEED_HELP;
+      const category = needHelp.find(({ category }) => category === queryCategory);
+      const queryOrderId = Number(orderId) || null;
+      const orderType =
+        category?.id == 'pharmacy'
+          ? ORDER_TYPE.PHARMACY
+          : category?.id == 'virtualOnlineConsult'
+          ? ORDER_TYPE.CONSULT
+          : null;
+      const variables: returnPharmaOrderVariables = {
+        returnPharmaOrderInput: {
+          category: queryCategory,
+          reason: queryReasons[queryIndex!],
+          comments: comments,
+          patientId: currentPatient?.id,
+          email: email,
+          orderId: queryOrderId,
+          orderType,
+          orderFiles: getAddedReturnOrderImages(),
+          subReason: selectedReturnOrderSubReason,
+        },
+      };
+      const response = await client.mutate<returnPharmaOrder, returnPharmaOrderVariables>({
+        mutation: RETURN_PHARMA_ORDER,
+        variables,
+      });
+      setLoading!(false);
+      const return_order_status = g(response, 'data', 'returnPharmaOrder', 'status');
+      if (return_order_status === 'success') {
+        returnOrderWebEngageEvents(WebEngageEventName.RETURN_REQUEST_SUBMITTED);
+        onSuccessReturnPharmaOrder();
+        setShowReturnPopup(false);
+        closeReturnView();
+        if (orderType && queryOrderId) {
+          saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
+        }
+      } else {
+        closeReturnView();
+        onError();
+      }
+    } catch (error) {
+      console.log('RETURN_PHARMA_ORDER error', error);
+      closeReturnView();
+      setLoading!(false);
+      onError();
+    }
+  };
+
   const renderReturnOrderView = () => {
     const submit_request =
       selectedReturnOrderSubReason && returnOrderImages?.length > 0 ? false : true;
@@ -436,12 +515,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           />
           <Button
             title={string.common.submit_request}
-            onPress={() => {
-              returnOrderWebEngageEvents(WebEngageEventName.RETURN_REQUEST_SUBMITTED);
-              setShowReturnPopup(false);
-              onSubmit();
-              closeReturnView();
-            }}
+            onPress={onSubmitReturnPharmaOrder}
             disabled={submit_request}
             style={[
               styles.returnPolicyButtonStyle,
