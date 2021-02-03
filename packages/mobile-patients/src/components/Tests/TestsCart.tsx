@@ -517,7 +517,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const setWebEngageEventForAreaSelection = (item: areaObject) => {
     const area = String(item?.value);
-    const selectedAddr = addresses.find((item) => item?.id == deliveryAddressId);
+    const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
 
     DiagnosticAreaSelected(selectedAddr, area);
   };
@@ -526,7 +526,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const diffInDays = date.getDate() - new Date().getDate();
     const area = (areaSelected as any)?.value;
     const timeSlot = selectedTimeSlot?.slotInfo?.startTime!;
-    const selectedAddr = addresses.find((item) => item?.id == deliveryAddressId);
+    const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
 
     DiagnosticAppointmentTimeSlot(selectedAddr, area, timeSlot, diffInDays);
   };
