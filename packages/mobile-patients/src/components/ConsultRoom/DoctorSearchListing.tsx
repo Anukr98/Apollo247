@@ -991,7 +991,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const backDataFunctionality = () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     const movedata = props.navigation.getParam('MoveDoctor') || '';
     if (movedata == 'MoveDoctor') {
       props.navigation.goBack();
@@ -1017,7 +1016,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
       } catch (error) {}
     }
-    return false;
+    return true;
   };
 
   const renderTopView = () => {
