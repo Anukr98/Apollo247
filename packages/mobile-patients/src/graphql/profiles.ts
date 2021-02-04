@@ -229,6 +229,14 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
   }
 `;
 
+export const RETURN_PHARMA_ORDER = gql`
+  mutation returnPharmaOrder($returnPharmaOrderInput: ReturnPharmaOrderInput) {
+    returnPharmaOrder(returnPharmaOrderInput: $returnPharmaOrderInput) {
+      status
+    }
+  }
+`;
+
 export const SAVE_SEARCH = gql`
   mutation saveSearch($saveSearchInput: SaveSearchInput!) {
     saveSearch(saveSearchInput: $saveSearchInput) {
@@ -1936,7 +1944,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         orderTat
         medicineOrdersStatus {
           id
-          # statusDate
+          statusDate
           orderStatus
           hideStatus
           statusMessage

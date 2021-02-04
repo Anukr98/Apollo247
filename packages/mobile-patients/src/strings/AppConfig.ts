@@ -268,12 +268,36 @@ const Apollo247Config = {
   },
 };
 
+export const ReturnOrderSubReason = [
+  {
+    subReasonID: 1,
+    subReason: 'Damaged Items',
+  },
+  {
+    subReasonID: 2,
+    subReason: 'Wrong Items were delivered',
+  },
+  {
+    subReasonID: 3,
+    subReason: 'Wrong quantity received',
+  },
+  {
+    subReasonID: 4,
+    subReason: 'Items are near expiry date',
+  },
+  {
+    subReasonID: 5,
+    subReason: 'Other issues',
+  },
+];
+
 export const NeedHelp = [
   {
     category: 'Pharmacy',
     id: 'pharmacy',
-    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8],
     options: [
+      'I want to return my order',
       'I would like to cancel the order!',
       'I would like to know the Delivery status of my order.',
       'I need to know why my order was cancelled',
@@ -526,6 +550,7 @@ const ConfigurationDev = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -580,6 +605,7 @@ const ConfigurationQA = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -634,6 +660,7 @@ const ConfigurationQA2 = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -688,6 +715,7 @@ const ConfigurationQA3 = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -736,6 +764,7 @@ const ConfigurationVAPT = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -789,6 +818,7 @@ const ConfigurationProd = {
   ...appStaticVariables,
   ...Apollo247Config.prod,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -843,6 +873,7 @@ const ConfigurationPERFORM = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -898,6 +929,7 @@ const ConfigurationDevReplica = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:

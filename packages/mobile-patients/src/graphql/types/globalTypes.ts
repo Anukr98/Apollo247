@@ -1451,6 +1451,18 @@ export interface RescheduleDiagnosticsInput {
   slotId: string;
 }
 
+export interface ReturnPharmaOrderInput {
+  category?: string | null;
+  reason?: string | null;
+  subReason?: string | null;
+  comments?: string | null;
+  patientId?: string | null;
+  email: string;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
+  orderFiles?: fileProperties[] | null;
+}
+
 export interface SUBSCRIPTION_DETAILS {
   userSubscriptionId?: string | null;
   plan?: PLAN | null;
@@ -1577,6 +1589,11 @@ export interface UploadDocumentInput {
 export interface VerifyVPA {
   vpa: string;
   merchant_id?: string | null;
+}
+
+export interface fileProperties {
+  fileType?: string | null;
+  base64FileInput?: string | null;
 }
 
 export interface prescriptionPrismFileProperties {
