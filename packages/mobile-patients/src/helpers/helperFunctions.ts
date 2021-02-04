@@ -2126,6 +2126,7 @@ export const overlyCallPermissions = (
             onPress: () => {
               hideAphAlert!();
               onPressDeny();
+              callback?.();
             },
           },
           {
@@ -2234,6 +2235,7 @@ export const overlyCallPermissions = (
                 onPress: () => {
                   hideAphAlert!();
                   onPressDeny();
+                  callback?.();
                 },
               },
               {

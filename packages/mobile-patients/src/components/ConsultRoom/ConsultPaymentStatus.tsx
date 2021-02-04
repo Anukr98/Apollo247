@@ -25,6 +25,7 @@ import {
   overlyCallPermissions,
   g,
   doRequestAndAccessLocationModified,
+  checkPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   autoCompletePlaceSearch,
@@ -102,7 +103,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
-  const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [showSpinner, setShowSpinner] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [refNo, setrefNo] = useState<string>('');
   const [displayId, setdisplayId] = useState<String>('');
@@ -161,7 +162,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     getUserSubscriptionsByStatus();
-    !locationDetails && askLocationPermission();
   }, []);
 
   const askLocationPermission = () => {
@@ -246,13 +246,23 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
-          overlyCallPermissions(
-            currentPatient.firstName,
-            doctorName,
-            showAphAlert,
-            hideAphAlert,
-            true
-          );
+          checkPermissions(['camera', 'microphone']).then((response: any) => {
+            const { camera, microphone } = response;
+            if (camera === 'authorized' && microphone === 'authorized') {
+              !locationDetails && askLocationPermission();
+            } else {
+              overlyCallPermissions(
+                currentPatient.firstName,
+                doctorName,
+                showAphAlert,
+                hideAphAlert,
+                true,
+                () => {
+                  !locationDetails && askLocationPermission();
+                }
+              );
+            }
+          });
         } else {
           fireOrderFailedEvent();
         }
@@ -260,9 +270,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
         setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
         setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
-        setLoading?.(false);
+        setShowSpinner?.(false);
       })
       .catch((error) => {
+        setShowSpinner?.(false);
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
@@ -1089,21 +1100,24 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <SafeAreaView style={styles.container}>
         <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-        <View style={styles.container}>
-          <ScrollView style={styles.container}>
-            {renderStatusCard()}
-            {circleSavings > 0 && !circleSubscriptionId
-              ? renderAddedCirclePlanWithValidity()
-              : null}
-            {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
-            {locationDetails && renderSavedLocation()}
-            {appointmentHeader()}
-            {appointmentCard()}
-            {renderNote()}
-          </ScrollView>
-          {renderButton()}
-        </View>
-        {showSpinner && <Spinner />}
+        {!showSpinner ? (
+          <View style={styles.container}>
+            <ScrollView style={styles.container}>
+              {renderStatusCard()}
+              {circleSavings > 0 && !circleSubscriptionId
+                ? renderAddedCirclePlanWithValidity()
+                : null}
+              {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
+              {locationDetails && renderSavedLocation()}
+              {appointmentHeader()}
+              {appointmentCard()}
+              {renderNote()}
+            </ScrollView>
+            {renderButton()}
+          </View>
+        ) : (
+          <Spinner />
+        )}
         {notificationAlert && (
           <NotificationPermissionAlert
             onPressOutside={() => setNotificationAlert(false)}

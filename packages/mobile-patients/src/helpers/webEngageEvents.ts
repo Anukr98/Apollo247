@@ -1122,6 +1122,9 @@ export interface WebEngageEvents {
     'Order Amount': number; // Optional
     'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
+    'Appointment Date'?:string;
+    'Appointment time'?: string;
+    'Item ids'?:any
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode?: 'Prepaid' | 'Cash';
