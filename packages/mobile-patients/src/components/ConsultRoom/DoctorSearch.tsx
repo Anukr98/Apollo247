@@ -1444,6 +1444,29 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderDoctorSearches = () => {
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
+      const SpecialitiesList = (searchText.length > 2 ? searchSpecialities : Specialities) || [];
+      let totalNoOfBuckets = 0;
+      if (procedures?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (symptoms?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (SpecialitiesList?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (doctorsList?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      const visibleDataCount = totalNoOfBuckets === 2 ? 6 : totalNoOfBuckets === 1 ? -1 : 2; // -1 representing for all data
+      const showViewAllDoctors =
+        visibleDataCount === 6 && doctorsList?.length <= 6
+          ? false
+          : !showAllSearchedDoctorData && doctorsList?.length > 2;
+      const showAllData =
+        procedures?.length === 0 && symptoms?.length === 0 && SpecialitiesList?.length === 0
+          ? true
+          : showAllSearchedDoctorData;
       return (
         <View>
           <View style={styles.row}>
@@ -1451,7 +1474,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               sectionTitle={'Matching Doctors — ' + doctorsList.length}
               style={{ marginBottom: 0 }}
             />
-            {!showAllSearchedDoctorData && doctorsList?.length > 2 && (
+            {showViewAllDoctors && (
               <TouchableOpacity
                 onPress={() => {
                   setShowAllSearchedDoctorData(true);
@@ -1469,7 +1492,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           </View>
           <SearchResultCard
             data={doctorsList}
-            showAllData={showAllSearchedDoctorData}
+            showAllData={showAllData}
+            visibleDataCount={visibleDataCount}
             componentName="doctor"
             navigation={props.navigation}
             onPressCallback={(item: any, index: number) => {
