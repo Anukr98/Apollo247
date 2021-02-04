@@ -4891,6 +4891,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === endCallMsg ||
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
+      rowData.message === patientJoinedMeetingRoom ||
       rowData.message === acceptedCallMsg ||
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
