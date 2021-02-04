@@ -119,7 +119,9 @@ export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
       <FlatList
         keyExtractor={(_, index) => index.toString()}
         data={
-          data?.length > 2 && !showAllData
+          visibleDataCount === -1
+            ? data
+            : data?.length > 2 && !showAllData
             ? data?.slice(0, visibleDataCount ? visibleDataCount : 2)
             : data
         }

@@ -1444,13 +1444,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderDoctorSearches = () => {
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
-      const SpecialitiesList = searchText.length > 2 ? searchSpecialities : Specialities;
-      const visibleDataCount =
-        (procedures?.length === 0 && doctorsList?.length > 2) ||
-        (symptoms?.length === 0 && doctorsList?.length > 2) ||
-        (SpecialitiesList?.length === 0 && doctorsList?.length > 2)
-          ? 6
-          : 2;
+      const SpecialitiesList = (searchText.length > 2 ? searchSpecialities : Specialities) || [];
+      let totalNoOfBuckets = 0;
+      if (procedures?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (symptoms?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (SpecialitiesList?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (doctorsList?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      const visibleDataCount = totalNoOfBuckets === 2 ? 6 : totalNoOfBuckets === 1 ? -1 : 2; // -1 representing for all data
       const showViewAllDoctors =
         visibleDataCount === 6 && doctorsList?.length <= 6
           ? false
