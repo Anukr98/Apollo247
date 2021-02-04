@@ -13,7 +13,7 @@ export interface GetAllGroupBannersOfUser_GetAllGroupBannersOfUser_response {
   __typename: "GroupPlanBannerType";
   _id: string | null;
   is_active: boolean | null;
-  banner: string;
+  banner: string | null;
   banner_template_info: any | null;
   cta_action: any | null;
   meta: any | null;

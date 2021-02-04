@@ -224,6 +224,9 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         responseMessage
         bankTxnId
         orderId
+        appointment{
+         id
+        }
       }
     }
   }

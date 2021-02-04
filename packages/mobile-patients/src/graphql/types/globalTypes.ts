@@ -128,18 +128,26 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_CANCELLED_REQUEST = "ORDER_CANCELLED_REQUEST",
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
+  ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
+  ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
+  PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
+  PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
+  SAMPLE_COLLECTED_IN_LAB = "SAMPLE_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
+  SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -905,6 +913,8 @@ export interface CreateUserSubscriptionInput {
   storeCode: one_apollo_store_code;
   sub_plan_id?: string | null;
   source_meta_data?: SourceMetaData | null;
+  expires_in?: number | null;
+  renewNow?: boolean | null;
 }
 
 export interface DeleteHealthRecordFilesInput {
@@ -1338,8 +1348,10 @@ export interface PatientProfileInput {
   gender: Gender;
   relation: Relation;
   emailAddress: string;
-  photoUrl: string;
+  photoUrl?: string | null;
   mobileNumber: string;
+  partnerId?: string | null;
+  id?: string | null;
 }
 
 export interface PaymentReference {
@@ -1360,6 +1372,8 @@ export interface PaymentReference {
   GATEWAYNAME?: string | null;
   BANKTXNID?: string | null;
   BANKNAME?: string | null;
+  backend_activation?: boolean | null;
+  done_by?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1457,7 +1471,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
+  slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
