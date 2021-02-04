@@ -1458,15 +1458,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       if (doctorsList?.length > 0) {
         totalNoOfBuckets++;
       }
+      const noOtherBucket =
+        procedures?.length === 0 && symptoms?.length === 0 && SpecialitiesList?.length === 0;
       const visibleDataCount = totalNoOfBuckets === 2 ? 6 : totalNoOfBuckets === 1 ? -1 : 2; // -1 representing for all data
       const showViewAllDoctors =
-        (visibleDataCount === 6 && doctorsList?.length <= 6) || totalNoOfBuckets === 1
+        (visibleDataCount === 6 && doctorsList?.length <= 6) ||
+        (totalNoOfBuckets === 1 && noOtherBucket)
           ? false
           : !showAllSearchedDoctorData && doctorsList?.length > 2;
-      const showAllData =
-        procedures?.length === 0 && symptoms?.length === 0 && SpecialitiesList?.length === 0
-          ? true
-          : showAllSearchedDoctorData;
+      const showAllData = noOtherBucket ? true : showAllSearchedDoctorData;
       return (
         <View>
           <View style={styles.row}>
