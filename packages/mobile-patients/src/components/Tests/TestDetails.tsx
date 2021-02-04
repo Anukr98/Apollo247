@@ -708,12 +708,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             )}
           </View>
         ) : circleDiscountSaving > 0 && groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
-          <View style={styles.rowStyle}>
+          <View style={[styles.rowStyle, { alignSelf: 'flex-end' }]}>
             <CircleHeading isSubscribed={false} />
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
+              {
+                marginHorizontal: '1%',
+              },
               styles.savingsText
             )}
           </View>
