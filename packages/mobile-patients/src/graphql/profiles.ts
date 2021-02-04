@@ -2051,6 +2051,16 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        diagnosticOrdersStatus{
+          id
+          orderStatus
+          itemId
+          itemName
+          packageId
+          packageName
+          hideStatus
+          statusMessage
+        }
         diagnosticOrderLineItems {
           id
           itemId
