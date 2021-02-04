@@ -57,6 +57,7 @@ import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
+  BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   SequenceForDiagnosticStatus,
   TestCancelReasons,
   TestReschedulingReasons,
@@ -754,10 +755,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     /**
      * show cancel & reschdule if status is something like this.
      */
-    const isCancelRescheduleValid = order?.diagnosticOrdersStatus?.find((item) =>
-      statusForCancelReschedule.includes(item?.orderStatus!)
+    const isCancelValid = order?.diagnosticOrdersStatus?.find((item) =>
+      BLACK_LIST_CANCEL_STATUS_ARRAY.includes(item?.orderStatus!)
     );
 
+    const showCancel = isCancelValid == undefined ? true : false;
+
+    const isRescheduleValid = order?.diagnosticOrdersStatus?.find((item: any) =>
+      BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(item?.orderStatus)
+    );
+
+    const showReschedule = isRescheduleValid == undefined ? true : false;
     /**
      * as per previous check
      */
@@ -767,8 +775,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     //show the reschedule option :-
 
-    const showPreTesting = isCancelRescheduleValid && checkIfPreTestingExists(order);
-    const showRescheduleOption = isCancelRescheduleValid && order?.rescheduleCount! <= 3;
+    const showPreTesting = showReschedule && checkIfPreTestingExists(order);
+    const showRescheduleOption = showReschedule && order?.rescheduleCount! <= 3;
     /**
      *  1. show reports generated, if any of the status of the test goes into sample collected.
      *  2. if status is pickup requested, then show cancel - reschedule option prior 2hrs to pick up date-time
@@ -785,12 +793,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         patientName={patientName}
         isComingFrom={'individualOrders'}
         showDateTime={
-          isCancelRescheduleValid && order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showCancel && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
             ? showDateTime
             : false
         }
         showRescheduleCancel={
-          isCancelRescheduleValid && order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
         ordersData={order?.diagnosticOrderLineItems!}
         dateTime={`Rescheduled For: ${dtTm}`}
@@ -809,7 +817,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ]}
         onPressCancel={() => onPressTestCancel(order)}
         onPressReschedule={() => onPressTestReschedule(order)}
-        showTestPreparation={showPreTesting}
+        showTestPreparation={showPreTesting!}
         onOptionPress={() => _openOrderSummary(order)}
         onPressViewReport={() => _navigateToPHR()}
       />
