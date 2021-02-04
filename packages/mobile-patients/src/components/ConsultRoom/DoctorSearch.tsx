@@ -1443,8 +1443,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderDoctorSearches = () => {
-    if (searchText.length > 2 && doctorsList?.length > 0) {
-      const SpecialitiesList = (searchText?.length > 2 ? searchSpecialities : Specialities) || [];
+    if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
+      const SpecialitiesList = (searchText.length > 2 ? searchSpecialities : Specialities) || [];
       let totalNoOfBuckets = 0;
       if (procedures?.length > 0) {
         totalNoOfBuckets++;
