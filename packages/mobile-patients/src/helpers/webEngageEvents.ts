@@ -224,6 +224,7 @@ export enum WebEngageEventName {
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR No. of users clicked on records in {0} - app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
@@ -1122,9 +1123,9 @@ export interface WebEngageEvents {
     'Order Amount': number; // Optional
     'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
-    'Appointment Date'?:string;
+    'Appointment Date'?: string;
     'Appointment time'?: string;
-    'Item ids'?:any
+    'Item ids'?: any;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode?: 'Prepaid' | 'Cash';
@@ -1133,8 +1134,8 @@ export interface WebEngageEvents {
     LOB: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
-   position: number;
-   itemId: number;
+    position: number;
+    itemId: number;
   };
 
   // ********** ConsultEvents ********** \\
