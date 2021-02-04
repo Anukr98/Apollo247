@@ -1460,7 +1460,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       }
       const visibleDataCount = totalNoOfBuckets === 2 ? 6 : totalNoOfBuckets === 1 ? -1 : 2; // -1 representing for all data
       const showViewAllDoctors =
-        visibleDataCount === 6 && doctorsList?.length <= 6
+        (visibleDataCount === 6 && doctorsList?.length <= 6) || totalNoOfBuckets === 1
           ? false
           : !showAllSearchedDoctorData && doctorsList?.length > 2;
       const showAllData =
