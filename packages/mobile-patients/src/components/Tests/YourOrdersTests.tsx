@@ -422,7 +422,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
-    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+    return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
   const checkIfPreTestingExists = (

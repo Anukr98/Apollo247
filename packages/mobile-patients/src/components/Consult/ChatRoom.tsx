@@ -552,7 +552,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [heightList, setHeightList] = useState<number>(
     isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
   );
-  const [status, setStatus] = useState<STATUS>(appointmentData.status);
+  const status = useRef<STATUS>(appointmentData.status);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
@@ -1076,7 +1076,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status !== STATUS.COMPLETED) {
+    if (!disableChat && status.current !== STATUS.COMPLETED) {
       callPermissions();
     }
   }, []);
@@ -1116,7 +1116,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       requestToJrDoctor();
       if (
         !disableChat &&
-        status !== STATUS.COMPLETED &&
+        status.current !== STATUS.COMPLETED &&
         !appointmentData.hideHealthRecordNudge &&
         !isVoipCall &&
         !fromIncomingCall
@@ -1132,7 +1132,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const getPatientApiCallWithHistory = async () => {
-    if (!disableChat && status !== STATUS.COMPLETED && displayChatQuestions) {
+    if (!disableChat && status.current !== STATUS.COMPLETED && displayChatQuestions) {
       getPatientApiCall(true);
     }
   };
@@ -1163,7 +1163,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
-    if (!disableChat && status !== STATUS.COMPLETED) {
+    if (!disableChat && status.current !== STATUS.COMPLETED) {
       getAppointmentCount();
     }
     getSecretaryData();
@@ -1979,7 +1979,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const CheckDoctorPresentInChat = () => {
-    if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
+    if (status.current === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
 
     updateNumberOfParticipants(USER_STATUS.ENTERING);
     pubnub
@@ -2528,7 +2528,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const HereNowPubnub = (message: string) => {
-    if (status !== STATUS.COMPLETED) return;
+    if (status.current !== STATUS.COMPLETED) return;
 
     pubnub
       .hereNow({
@@ -2671,7 +2671,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
           console.log(appointmentData, 'appointmentData APIForUpdateAppointmentData');
-          setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
+          // setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
+          status.current = data.data.getAppointmentData.appointmentsHistory[0].status;
 
           // APP-2803: removed No show logic
 
@@ -2918,6 +2919,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const doctorWillConnectShortlyAutomatedText = () => {
     setTimeout(() => {
+      if (doctorJoinedChat || status.current === STATUS.COMPLETED) {
+        return;
+      }
       const automatedText = [
         'Please wait while the doctor connects with you shortly. Thanks for your patience.',
       ];
@@ -2941,6 +2945,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const rescheduleOrCancelAppointmentAutomatedText = () => {
     setTimeout(() => {
+      if (doctorJoinedChat || status.current === STATUS.COMPLETED) {
+        return;
+      }
       const automatedText = [
         'We are sorry to keep you waiting. You can  reschedule/cancel this appointment by clicking on the icon at the top right of this screen.',
       ];
@@ -3062,7 +3069,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdCount > 0 &&
         isJdAllowed === true &&
         !!(textChange && !jrDoctorJoined.current) &&
-        status !== STATUS.COMPLETED &&
+        status.current !== STATUS.COMPLETED &&
         jdAssigned
       ) {
         pubnub.publish(
@@ -3092,7 +3099,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const stopCallingNoticationApi =
       (await AsyncStorage.getItem(notify_async_key + appointmentData.id)) || '';
     if (
-      status === STATUS.PENDING &&
+      status.current === STATUS.PENDING &&
       stopCallingNoticationApi != appointmentData.id + appointmentData.appointmentDateTime
     ) {
       notificationIntervalId = BackgroundTimer.setInterval(() => {
@@ -3295,7 +3302,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setShowCallAbandmentPopup(true);
       } else if (message.message.message === appointmentComplete) {
         setTextChange(false);
-        setStatus(STATUS.COMPLETED);
+        // setStatus(STATUS.COMPLETED);
+        status.current = STATUS.COMPLETED;
         APIForUpdateAppointmentData(true);
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
@@ -3431,7 +3439,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       );
 
-      if (status !== STATUS.COMPLETED) {
+      if (status.current !== STATUS.COMPLETED) {
         postConsultCardEvents(WebEngageEventName.CHAT_WITH_DOCTOR);
       } else {
         postConsultCardEvents(WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT);
@@ -5527,7 +5535,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // Consult in Progress
       currentProgressBarPosition.current = 1;
     } else {
-      if (status === STATUS.COMPLETED) {
+      if (status.current === STATUS.COMPLETED) {
         if (!isProgressBarVisible.current) {
           time = `Consult is completed`;
         }
@@ -7244,10 +7252,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           rightIcon={
             <TouchableOpacity
-              disabled={doctorJoinedChat || status === STATUS.COMPLETED}
+              disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
               onPress={() => onPressCalender()}
             >
-              {doctorJoinedChat || status === STATUS.COMPLETED ? (
+              {doctorJoinedChat || status.current === STATUS.COMPLETED ? (
                 <InactiveCalenderIcon style={styles.calenderIcon} />
               ) : (
                 <ActiveCalenderIcon style={styles.calenderIcon} />

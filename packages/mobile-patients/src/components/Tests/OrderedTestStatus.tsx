@@ -327,7 +327,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   ) => {
     try {
       setLoading!(true);
-      const arrayOfId = packageId.length == 1 ? [Number(packageId)] : packageId;
+      const arrayOfId = orderSelected?.diagnosticOrderLineItems?.[index]?.itemId;
       const res: any = await getPackageInclusions(client, arrayOfId);
       if (res) {
         const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
@@ -520,7 +520,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
-    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+    return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
   const getFormattedTime = (time: string) => {
@@ -541,7 +541,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     const statusTime = getFormattedTime(order?.statusDate);
     const dtTm = `${dt}${isHomeVisit ? `, ${statusTime}` : ''}`;
     const currentStatus =
-      isPrepaid && DIAGNOSTIC_JUSPAY_REFUND_STATUS?.length > 0
+      isPrepaid && refundStatusArr?.length > 0
         ? orderSelected?.orderStatus
         : DIAGNOSTIC_ORDER_FAILED_STATUS.includes(orderSelected?.orderStatus)
         ? orderSelected?.orderStatus
