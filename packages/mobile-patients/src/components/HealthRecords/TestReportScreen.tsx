@@ -54,6 +54,8 @@ import {
   phrSortByDate,
   getPhrHighlightText,
   isValidSearch,
+  phrSearchWebEngageEvents,
+  postWebEngageIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -70,6 +72,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -194,6 +197,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const { phrSession, setPhrSession } = useAppCommonData();
 
   const gotoPHRHomeScreen = () => {
     if (!callApi && !callPhrMainApi) {
@@ -577,6 +581,13 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
+    postWebEngageIfNewSession(
+      'Test Report',
+      currentPatient,
+      selectedItem,
+      phrSession,
+      setPhrSession
+    );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
       labResults: true,

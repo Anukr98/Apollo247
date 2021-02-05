@@ -73,6 +73,7 @@ import {
   isValidText,
   postWebEngagePHR,
   handleGraphQlError,
+  postWebEngageIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -104,6 +105,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { Overlay, ListItem } from 'react-native-elements';
 import _ from 'lodash';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -589,6 +591,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
+  const { phrSession, setPhrSession } = useAppCommonData();
 
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
   const [imageUpdate, setImageUpdate] = useState<boolean>(false);
@@ -1104,12 +1107,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Doctor Consultation',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Doctor Consultation',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_DOCTOR_CONSULTATIONS,
               'Doctor Consultation',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Doctor Consultation',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
@@ -1169,12 +1186,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Allergy',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Allergy',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_ALLERGY,
               'Allergy',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Allergy',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
@@ -1233,12 +1264,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Medication',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Medication',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_MEDICATION,
               'Medication',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Medication',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
@@ -1294,12 +1339,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Health Restriction',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Health Restriction',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_HEALTH_RESTRICTIONS,
               'Health Restriction',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Health Restriction',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
@@ -1354,12 +1413,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Medical Condition',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Medical Condition',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_MEDICAL_CONDITION,
               'Medical Condition',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Medical Condition',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
@@ -1404,12 +1477,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             'Family History',
             inputData
           );
+          postWebEngageIfNewSession(
+            'Family History',
+            currentPatient,
+            inputData,
+            phrSession,
+            setPhrSession
+          );
         } else {
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_ADD_FAMILY_HISTORY,
             'Family History',
             inputData
+          );
+          postWebEngageIfNewSession(
+            'Family History',
+            currentPatient,
+            inputData,
+            phrSession,
+            setPhrSession
           );
         }
         gotoHealthRecordsHomeScreen();
@@ -1457,12 +1544,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Test Report',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Test Report',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_TEST_REPORT,
               'Test Report',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Test Report',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
@@ -1510,12 +1611,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Hospitalization',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Hospitalization',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_HOSPITALIZATIONS,
               'Hospitalization',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Hospitalization',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
@@ -1562,8 +1677,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Bill',
               inputData
             );
+            postWebEngageIfNewSession('Bill', currentPatient, inputData, phrSession, setPhrSession);
           } else {
             postWebEngagePHR(currentPatient, WebEngageEventName.PHR_ADD_BILLS, 'Bill', inputData);
+            postWebEngageIfNewSession('Bill', currentPatient, inputData, phrSession, setPhrSession);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1615,12 +1732,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               'Insurance',
               inputData
             );
+            postWebEngageIfNewSession(
+              'Insurance',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_ADD_INSURANCE,
               'Insurance',
               inputData
+            );
+            postWebEngageIfNewSession(
+              'Insurance',
+              currentPatient,
+              inputData,
+              phrSession,
+              setPhrSession
             );
           }
           gotoHealthRecordsHomeScreen();
