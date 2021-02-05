@@ -267,8 +267,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [coupon]);
 
   useEffect(() => {
-    !!circleMembershipCharges ? setIsFreeDelivery?.(true) : setIsFreeDelivery?.(false);
-  }, [circleMembershipCharges]);
+    !!circleMembershipCharges && isCircleSubscription
+      ? setIsFreeDelivery?.(true)
+      : setIsFreeDelivery?.(false);
+  }, [circleMembershipCharges, isCircleSubscription]);
 
   useEffect(() => {
     onFinishUpload();
