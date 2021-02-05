@@ -755,7 +755,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
           if (appointmentData) {
             try {
-            console.log("csk","here1")
               if (appointmentData?.[0]?.doctorInfo !== null) {
                 props.navigation.dispatch(
                   StackActions.reset({
@@ -778,12 +777,12 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               }
             } catch (error) {
 
-            console.log("csk","here2",error)
+            console.log("csk",error)
             }
           }
         } catch (error) {
           setLoading && setLoading(false);
-            console.log("csk","here3",error)
+            console.log("csk",error)
           props.navigation.navigate('APPOINTMENTS');
         }
       })

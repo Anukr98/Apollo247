@@ -1243,8 +1243,7 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  return_url?: string | null;
-  gateway_id?: number | null;
+  patient_id?: any | null;
 }
 
 export interface OrderInput {
