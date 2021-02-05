@@ -192,6 +192,8 @@ export interface AppCommonDataContextProps {
   setNeedHelpToContactInMessage: ((value: string) => void) | null;
   needHelpReturnPharmaOrderSuccessMessage: string;
   setNeedHelpReturnPharmaOrderSuccessMessage: ((value: string) => void) | null;
+  phrSession: string;
+  setPhrSession: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
   setCurrentLocationFetched: ((value: boolean) => void) | null;
   notificationCount: number;
@@ -275,6 +277,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setNeedHelpToContactInMessage: null,
   needHelpReturnPharmaOrderSuccessMessage: '',
   setNeedHelpReturnPharmaOrderSuccessMessage: null,
+  phrSession: '',
+  setPhrSession: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
   setCurrentLocationFetched: null,
   notificationCount: 0,
@@ -401,6 +405,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
     needHelpReturnPharmaOrderSuccessMessage,
     setNeedHelpReturnPharmaOrderSuccessMessage,
   ] = useState<AppCommonDataContextProps['needHelpReturnPharmaOrderSuccessMessage']>('');
+
+  const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
 
@@ -568,6 +574,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setNeedHelpToContactInMessage,
         needHelpReturnPharmaOrderSuccessMessage,
         setNeedHelpReturnPharmaOrderSuccessMessage,
+        phrSession,
+        setPhrSession,
         notificationCount,
         setNotificationCount,
         allNotifications,
