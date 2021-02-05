@@ -185,9 +185,17 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={styles.bulletText}>10% of pharmaceutical products</Text>
           </View>
+          {/**
+           * silver - 10%
+           * gold - 15%
+           * platinum - 20%
+           */}
           <View style={styles.pointsContainer}>
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
-            <Text style={styles.bulletText}>10% of Apollo brand products</Text>
+            <Text style={styles.bulletText}>
+              {membershipType === 'Silver' ? '10' : membershipType === 'Gold' ? '15' : '20'}% of
+              Apollo brand products
+            </Text>
           </View>
           <Text
             style={{
