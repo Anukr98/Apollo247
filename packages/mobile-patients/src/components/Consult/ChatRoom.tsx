@@ -553,6 +553,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     justifyContent: 'center',
     borderRadius: 0,
+    zIndex: 1
   },
   tapText: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE),
