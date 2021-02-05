@@ -92,8 +92,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
+  const orders = props.navigation.getParam('orders');
   const price = props.navigation.getParam('price');
-  const orderId = props.navigation.getParam('orderId');
+  const transId = props.navigation.getParam('transId');
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
@@ -120,11 +121,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
+    console.log('transId >>>', transId);
     client
       .query({
         query: GET_PHARMA_TRANSACTION_STATUS,
         variables: {
-          orderId: orderId,
+          orderId: transId,
         },
         fetchPolicy: 'no-cache',
       })
@@ -138,7 +140,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
-        fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        // fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
       .catch((error) => {
         setLoading(false);
@@ -230,7 +232,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    fireOrderSuccessEvent(orderAutoId);
+    // fireOrderSuccessEvent(orderAutoId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
@@ -295,7 +297,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const errorPopUp = () => {
-    fireOrderFailedEvent();
+    // fireOrderFailedEvent();
     showAphAlert!({
       title: `Hi ${currentPatient?.firstName || ''}!`,
       description: `Your order failed due to some temporary issue :( Please submit the order again.`,
@@ -481,7 +483,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           >
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Order ID : </Text>
             <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
-              {orderId}
+              {transId}
             </Text>
           </View>
           {!!paymentRefId && (
@@ -620,11 +622,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const handleButton = () => {
     if (status == success || paymentMode === 'COD') {
       clearCircleSubscriptionData();
-      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-        goToHomeOnBack: true,
-        showOrderSummaryTab: false,
-        orderAutoId: orderId,
-      });
+      // props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      //   goToHomeOnBack: true,
+      //   showOrderSummaryTab: false,
+      //   orderAutoId: orderId,
+      // });
+      props.navigation.navigate(AppRoutes.YourOrdersScene);
     } else if (status == failure || status == aborted) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription && setIsCircleSubscription(false);

@@ -423,39 +423,37 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           items: serviceableItems,
         };
         try {
+          console.log('tatInput >>', tatInput);
           const res = await getDeliveryTAT247(tatInput);
           const response = res?.data?.response;
-          console.log('response >>>', response);
+          console.log('response >>>', JSON.stringify(response));
           setOrders?.(response);
-          const tatTimeStamp = response?.tatU;
-          if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = response?.tat;
-            const { distance, storeCode, storeType } = response;
-            if (deliveryDate) {
-              const inventoryData = response?.items || [];
-              setloading!(false);
-              if (inventoryData?.length) {
-                setStoreType(storeType);
-                setShopId(storeCode);
-                setStoreDistance(distance);
-                setdeliveryTime?.(deliveryDate);
-                addressSelectedEvent(selectedAddress, deliveryDate);
-                addressChange &&
-                  NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
-                updatePricesAfterTat(inventoryData, updatedCartItems);
-              }
-              addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
-            } else {
-              addressChange && NavigateToCartSummary(genericServiceableDate);
-              handleTatApiFailure(selectedAddress, {});
-            }
-          } else {
-            handleTatApiFailure(selectedAddress, {});
-            addressChange && NavigateToCartSummary(genericServiceableDate);
+          // const deliveryDate = response[0]?.tat;
+          // if (deliveryDate) {
+          let inventoryData: any = [];
+          response?.forEach((order: any) => {
+            inventoryData = inventoryData.concat(order?.items);
+          });
+          setloading!(false);
+          console.log('inventoryData >>', inventoryData);
+          if (inventoryData?.length) {
+            // setStoreType(storeType);
+            // setShopId(storeCode);
+            // setStoreDistance(distance);
+            // setdeliveryTime?.(deliveryDate);
+            addressSelectedEvent(selectedAddress, response[0]?.tat);
+            addressChange && NavigateToCartSummary();
+            updatePricesAfterTat(inventoryData, updatedCartItems);
           }
+          // addressChange && NavigateToCartSummary();
+          // } else {
+          //   addressChange && NavigateToCartSummary();
+          //   handleTatApiFailure(selectedAddress, {});
+          // }
         } catch (error) {
+          console.log('error >>>>', error);
           handleTatApiFailure(selectedAddress, error);
-          addressChange && NavigateToCartSummary(genericServiceableDate);
+          addressChange && NavigateToCartSummary();
         }
       } catch (error) {
         handleTatApiFailure(selectedAddress, error);
@@ -564,20 +562,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
     );
   }
-  function NavigateToCartSummary(
-    deliveryTime: string,
-    storeDistance?: number,
-    storeType?: string,
-    shopId?: string
-  ) {
-    !hasUnserviceableproduct() &&
-      isfocused &&
-      props.navigation.navigate(AppRoutes.CartSummary, {
-        deliveryTime: deliveryTime,
-        storeDistance: storeDistance,
-        tatType: storeType,
-        shopId: shopId,
-      });
+  function NavigateToCartSummary() {
+    !hasUnserviceableproduct() && isfocused && props.navigation.navigate(AppRoutes.CartSummary);
   }
 
   async function validatePharmaCoupon() {

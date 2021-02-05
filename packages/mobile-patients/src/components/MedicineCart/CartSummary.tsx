@@ -1,6 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
-import { View, SafeAreaView, StyleSheet, ScrollView, AppState, AppStateStatus } from 'react-native';
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  AppState,
+  AppStateStatus,
+  Text,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -59,7 +67,8 @@ import {
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import moment from 'moment';
-
+import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
+import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
 export interface CartSummaryProps extends NavigationScreenProps {}
 
 export const CartSummary: React.FC<CartSummaryProps> = (props) => {
@@ -77,6 +86,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     deliveryTime,
     setdeliveryTime,
     pharmacyCircleAttributes,
+    orders,
   } = useShoppingCart();
   const { setPharmacyLocation, setAxdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -415,7 +425,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       <Header
         container={styles.header}
         leftIcon={'backArrow'}
-        title={'ORDER SUMMARY'}
+        title={'REVIEW ORDER'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
           props.navigation.goBack();
@@ -428,12 +438,24 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return <SelectedAddress orderType={'Delivery'} onPressChange={() => showAddressPopup()} />;
   };
 
+  const renderAmountSection = () => {
+    return (
+      <View>
+        <View style={styles.amountHeader}>
+          <Text style={styles.amountHeaderText}>ORDER SUMMARY</Text>
+        </View>
+        <AmountCard />
+      </View>
+    );
+  };
   const renderTatCard = () => {
-    return <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={deliveryTime} />;
+    return orders?.length > 1 ? null : (
+      <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={deliveryTime} />
+    );
   };
 
   const renderCartItems = () => {
-    return <CartItemsList screen={'summary'} />;
+    return <Shipments />;
   };
 
   const renderuploadPrescriptionPopup = () => {
@@ -489,6 +511,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderHeader()}
           {renderAddress()}
+          {renderAmountSection()}
           {renderTatCard()}
           {renderCartItems()}
           {uploadPrescriptionRequired && renderPrescriptions()}
@@ -534,5 +557,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 13,
     marginVertical: 9,
+  },
+  amountHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+    borderBottomWidth: 0.5,
+    borderColor: 'rgba(2,71,91, 0.3)',
+    marginTop: 20,
+    marginBottom: 15,
+    marginHorizontal: 20,
+  },
+  amountHeaderText: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansBold(13),
   },
 });

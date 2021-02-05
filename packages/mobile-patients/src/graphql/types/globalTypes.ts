@@ -128,18 +128,26 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_CANCELLED_REQUEST = "ORDER_CANCELLED_REQUEST",
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
   ORDER_PLACED = "ORDER_PLACED",
+  ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
+  ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
+  PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
+  PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
+  SAMPLE_COLLECTED_IN_LAB = "SAMPLE_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
+  SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -552,6 +560,7 @@ export enum SpecialtySearchType {
 export enum SubscriptionStatus {
   ACTIVE = "ACTIVE",
   CANCELLED = "CANCELLED",
+  DEFERRED_ACTIVE = "DEFERRED_ACTIVE",
   DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
   DISABLED = "DISABLED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
@@ -903,6 +912,9 @@ export interface CreateUserSubscriptionInput {
   DOB?: any | null;
   storeCode: one_apollo_store_code;
   sub_plan_id?: string | null;
+  source_meta_data?: SourceMetaData | null;
+  expires_in?: number | null;
+  renewNow?: boolean | null;
 }
 
 export interface DeleteHealthRecordFilesInput {
@@ -1168,6 +1180,7 @@ export interface MedicineCartOMSInput {
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
+  isConsultRequired?: boolean | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1191,9 +1204,53 @@ export interface MedicineOrderCancelOMSInput {
   cancelReasonText?: string | null;
 }
 
+export interface MedicineOrderShipmentInput {
+  shopId?: string | null;
+  tatType?: string | null;
+  estimatedAmount?: number | null;
+  deliveryCharges?: number | null;
+  orderTat?: string | null;
+  coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
+  packagingCharges?: number | null;
+  showPrescriptionAtStore?: boolean | null;
+  shopAddress?: ShopAddress | null;
+  savedDeliveryCharge?: number | null;
+  totalCashBack?: number | null;
+  storeDistanceKm?: number | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
+}
+
 export interface MedicinePaymentMqInput {
   mid?: string | null;
   orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  refundAmount?: number | null;
+  bankName?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
+  email?: string | null;
+  CODCity?: CODCity | null;
+  orderId?: string | null;
+  paymentMode?: PAYMENT_METHODS | null;
+  healthCredits?: number | null;
+  partnerInfo?: string | null;
+  planId?: string | null;
+  storeCode?: ONE_APOLLO_STORE_CODE | null;
+  subPlanId?: string | null;
+  payload?: string | null;
+  healthCreditsSub?: number | null;
+}
+
+export interface MedicinePaymentMqV2Input {
+  mid?: string | null;
+  transactionId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
   paymentRefId?: string | null;
@@ -1231,8 +1288,7 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  return_url?: string | null;
-  gateway_id?: number | null;
+  patient_id?: any | null;
 }
 
 export interface OrderInput {
@@ -1336,8 +1392,10 @@ export interface PatientProfileInput {
   gender: Gender;
   relation: Relation;
   emailAddress: string;
-  photoUrl: string;
+  photoUrl?: string | null;
   mobileNumber: string;
+  partnerId?: string | null;
+  id?: string | null;
 }
 
 export interface PaymentReference {
@@ -1358,6 +1416,8 @@ export interface PaymentReference {
   GATEWAYNAME?: string | null;
   BANKTXNID?: string | null;
   BANKNAME?: string | null;
+  backend_activation?: boolean | null;
+  done_by?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1455,7 +1515,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
+  slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
@@ -1467,6 +1527,25 @@ export interface SaveDeviceTokenInput {
   deviceToken: string;
   deviceOS: string;
   patientId: string;
+}
+
+export interface SaveMedicineOrderV2Input {
+  patientId: string;
+  estimatedAmount?: number | null;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
+  coupon?: string | null;
+  patientAddressId?: string | null;
+  prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
+  customerComment?: string | null;
+  subscriptionDetails?: SUBSCRIPTION_DETAILS_PHARMA | null;
+  planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
+  healthCreditUsed?: number | null;
+  isConsultRequired?: boolean | null;
+  shipments?: (MedicineOrderShipmentInput | null)[] | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1496,6 +1575,10 @@ export interface ShopAddress {
   state?: string | null;
   zipcode?: string | null;
   stateCode?: string | null;
+}
+
+export interface SourceMetaData {
+  source_identifier?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {

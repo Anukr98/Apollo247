@@ -20,6 +20,8 @@ import {
   SAVE_MEDICINE_ORDER_OMS,
   SAVE_MEDICINE_ORDER_PAYMENT,
   GET_ONEAPOLLO_USER,
+  SAVE_MEDICINE_ORDER_OMS_V2,
+  SAVE_MEDICINE_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   MedicineCartOMSItem,
@@ -28,11 +30,22 @@ import {
   BOOKINGSOURCE,
   DEVICE_TYPE,
   ONE_APOLLO_STORE_CODE,
+  PLAN_PURCHASE_DETAILS_PHARMA,
+  PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+import {
+  saveMedicineOrderV2,
+  saveMedicineOrderV2Variables,
+  saveMedicineOrderV2_saveMedicineOrderV2_orders,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
+import {
+  saveMedicineOrderPaymentMqV2,
+  saveMedicineOrderPaymentMqV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderPaymentMqV2';
 import {
   aphConsole,
   g,
@@ -138,6 +151,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     defaultCirclePlan,
     circlePlanSelected,
     pharmacyCircleAttributes,
+    shipments,
+    orders,
   } = useShoppingCart();
   const { pharmacyUserTypeAttribute } = useAppCommonData();
 
@@ -183,9 +198,21 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       variables: orderInfo,
     });
 
+  const saveOrderV2 = (orderInfo: saveMedicineOrderV2Variables) =>
+    client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS_V2,
+      variables: orderInfo,
+    });
+
   const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
     client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
       mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+      variables: paymentInfo,
+    });
+
+  const savePaymentV2 = (paymentInfo: saveMedicineOrderPaymentMqV2Variables) =>
+    client.mutate<saveMedicineOrderPaymentMqV2, saveMedicineOrderPaymentMqV2Variables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT_V2,
       variables: paymentInfo,
     });
 
@@ -230,6 +257,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         props.navigation.navigate(AppRoutes.MedicineCart);
         renderErrorPopup(string.common.tryAgainLater);
       });
+    console.log('orders >>>>', orders);
     return () => {
       // setLoading && setLoading(false);
     };
@@ -433,9 +461,84 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
   };
 
+  const placeOrderV2 = (transactionId: number, orderType: string, isCOD?: boolean) => {
+    const paymentInfo: saveMedicineOrderPaymentMqV2Variables = {
+      medicinePaymentMqInput: {
+        transactionId: transactionId,
+        amountPaid: getFormattedAmount(grandTotal),
+        paymentType:
+          orderType == 'COD'
+            ? MEDICINE_ORDER_PAYMENT_TYPE.COD
+            : MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+    if (orderType == 'HCorder') {
+      paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
+      paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
+      paymentInfo.medicinePaymentMqInput['healthCredits'] = !!circleMembershipCharges
+        ? getFormattedAmount(grandTotal - circleMembershipCharges)
+        : getFormattedAmount(grandTotal);
+      if (circleMembershipCharges) {
+        paymentInfo.medicinePaymentMqInput['healthCreditsSub'] = circleMembershipCharges;
+      }
+    }
+    if (!circleSubscriptionId && !!circleMembershipCharges) {
+      paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
+      paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
+      paymentInfo.medicinePaymentMqInput['storeCode'] =
+        Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
+    }
+    console.log('paymentInfo >>>', paymentInfo);
+    savePaymentV2(paymentInfo)
+      .then(({ data }) => {
+        console.log('data >>>', data);
+        const { errorCode, errorMessage } = g(data, 'saveMedicineOrderPaymentMqV2') || {};
+        console.log({ data });
+        console.log({ errorCode, errorMessage });
+        setLoading && setLoading(false);
+        if (errorCode || errorMessage) {
+          // Order-failed
+          showAphAlert!({
+            title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+            description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+          });
+        } else {
+          // Order-Success, Show popup here & clear cart info
+          try {
+            // postwebEngageCheckoutCompletedEvent(
+            //   `${orderAutoId}`,
+            //   orderId,
+            //   // orderType == 'COD',
+            //   isCOD
+            // );
+            // firePurchaseEvent(orderId);
+          } catch (error) {
+            console.log(error);
+          }
+          props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+            status: 'PAYMENT_PENDING',
+            price: getFormattedAmount(grandTotal),
+            transactionId: transactionId,
+          });
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('CheckoutScene_savePayment', e);
+        setLoading && setLoading(false);
+        aphConsole.log({ e });
+        showAphAlert!({
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+        });
+      });
+  };
+
   const redirectToPaymentGateway = async (
-    orderId: string,
-    orderAutoId: number,
+    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
+    transactionId: number,
     paymentMode: string,
     bankCode: string,
     orderInfo: saveMedicineOrderOMSVariables
@@ -455,14 +558,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const token = await firebaseAuth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, false),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${transactionId}`, false),
     };
     const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
+      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${transactionId}`),
     };
+    console.log(' >>>>>>> navigate payment page <<<<<<<<<<<<<');
     props.navigation.navigate(AppRoutes.PaymentScene, {
-      orderId,
-      orderAutoId,
+      orders,
+      transactionId,
       token,
       amount: getFormattedAmount(grandTotal - burnHC),
       burnHC: burnHC,
@@ -574,7 +678,40 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       },
     };
 
-    console.log(JSON.stringify(orderInfo));
+    const planPurchaseDetails: PLAN_PURCHASE_DETAILS_PHARMA = {
+      TYPE: PLAN.CARE_PLAN,
+      PlanAmount: circleMembershipCharges || 0,
+      planId: Circle.CIRCLEPlan,
+      subPlanId: circleSubPlanId || '',
+    };
+    const OrderInfoV2: saveMedicineOrderV2Variables = {
+      medicineOrderInput: {
+        patientId: currentPatient?.id || '',
+        medicineDeliveryType: deliveryType!,
+        estimatedAmount,
+        bookingSource: BOOKINGSOURCE.MOBILE,
+        deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+        appVersion: DeviceInfo.getVersion(),
+        coupon: coupon ? coupon.coupon : '',
+        patientAddressId: deliveryAddressId,
+        prescriptionImageUrl: [
+          ...physicalPrescriptions.map((item) => item.uploadedUrl),
+          ...ePrescriptions.map((item) => item.uploadedUrl),
+        ].join(','),
+        prismPrescriptionFileId: [
+          ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
+          ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
+        ].join(','),
+        customerComment: '',
+        subscriptionDetails: circleSubscriptionId
+          ? { userSubscriptionId: circleSubscriptionId }
+          : null,
+        planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
+        healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
+        shipments: shipments,
+      },
+    };
+    console.log(JSON.stringify(OrderInfoV2));
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PAYMENT_INITIATED] = {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
@@ -583,30 +720,26 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 
-    saveOrder(orderInfo)
+    saveOrderV2(OrderInfoV2)
       .then(({ data }) => {
-        const { orderId, orderAutoId, errorCode, errorMessage } =
-          g(data, 'saveMedicineOrderOMS')! || {};
-        console.log({ orderAutoId, orderId, errorCode, errorMessage });
-
+        console.log('data >>>>', data);
+        const { orders, transactionId, errorCode, errorMessage } = data?.saveMedicineOrderV2 || {};
+        console.log(orders, transactionId, errorCode, errorMessage);
         if (errorCode || errorMessage) {
-          // Order-failed
           showAphAlert!({
             title: `Uh oh.. :(`,
             description: `Order failed, ${errorMessage}.`,
           });
-          setLoading && setLoading(false);
+          setLoading?.(false);
           return;
         } else {
           if (isCOD) {
-            console.log('isCashOnDelivery\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'COD', true);
+            placeOrderV2(transactionId!, 'COD', true);
           } else if (hcOrder) {
-            console.log('HCorder\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'HCorder', false);
+            placeOrderV2(transactionId!, 'HCorder', false);
           } else {
             console.log('Redirect To Payment Gateway');
-            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode, orderInfo)
+            redirectToPaymentGateway(orders!, transactionId!, paymentMode, bankCode, orderInfo)
               .catch((e) => {
                 CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
               })

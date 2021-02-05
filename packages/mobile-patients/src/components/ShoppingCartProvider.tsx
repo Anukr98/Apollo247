@@ -1,4 +1,8 @@
-import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_DELIVERY_TYPE,
+  MedicineOrderShipmentInput,
+  MedicineCartOMSItem,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -225,6 +229,7 @@ export interface ShoppingCartContextProps {
   setPdpBreadCrumbs: ((items: BreadcrumbLink[]) => void) | null;
   orders: any;
   setOrders: ((orders: any[]) => void) | null;
+  shipments: (MedicineOrderShipmentInput | null)[];
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -328,6 +333,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPdpBreadCrumbs: null,
   orders: [],
   setOrders: null,
+  shipments: [],
 });
 
 const AsyncStorageKeys = {
@@ -436,6 +442,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
+  const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
     AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
@@ -619,13 +626,24 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const deliveryCharges =
     isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCircleSubscription
       ? 0
-      : cartTotal > 0 &&
-        cartTotal - productDiscount - couponDiscount <
-          AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
-      ? AppConfig.Configuration.DELIVERY_CHARGES
-      : 0;
+      : getDeliveryFee();
 
-  const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
+  function getDeliveryFee() {
+    let deliveryfee = 0;
+    orders?.forEach((order: any) => {
+      deliveryfee = deliveryfee + order?.deliveryCharge || 0;
+    });
+    return deliveryfee;
+  }
+  const packagingCharges = getPackagingFee();
+
+  function getPackagingFee() {
+    let packagingFee = 0;
+    orders?.forEach((order: any) => {
+      packagingFee = packagingFee + order?.packingCharges || 0;
+    });
+    return packagingFee;
+  }
 
   const grandTotal = parseFloat(
     (
@@ -708,6 +726,77 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setdeliveryTime('');
   };
 
+  useEffect(() => {
+    updateShipments();
+  }, [orders, coupon, cartItems]);
+
+  function updateShipments() {
+    let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];
+    orders?.forEach((order: any) => {
+      let shipment: MedicineOrderShipmentInput | null = {};
+      const sku = order?.items?.map((item: any) => item?.sku);
+      let shipmentCouponDiscount = 0;
+      let shipmentProductDiscount = 0;
+      let shipmentTotal = 0;
+      const items: (MedicineCartOMSItem | null)[] = cartItems
+        ?.map((item) => {
+          console.log(
+            'item.couponPrice >>>',
+            formatNumber(item?.couponPrice ? item.price - item?.couponPrice : 0)
+          );
+          if (sku.includes(item?.id)) {
+            const discountedPrice = formatNumber(
+              (coupon && item.couponPrice) || item.specialPrice || item.price
+            );
+            shipmentCouponDiscount =
+              shipmentCouponDiscount +
+              formatNumber(
+                item.quantity * (item?.couponPrice ? item.price - item?.couponPrice : 0)
+              );
+            shipmentProductDiscount =
+              shipmentProductDiscount +
+              formatNumber(item.quantity * (item.price - (item?.specialPrice || item.price)));
+            shipmentTotal = shipmentTotal + formatNumber(item.price * item.quantity);
+            return {
+              medicineSKU: item.id,
+              medicineName: item.name,
+              quantity: item.quantity,
+              mrp: formatNumber(item.price),
+              price: discountedPrice,
+              specialPrice: Number(item.specialPrice || item.price),
+              itemValue: formatNumber(item.price * item.quantity), // (multiply MRP with quantity)
+              itemDiscount: formatNumber(
+                item.price * item.quantity - discountedPrice * item.quantity
+              ), // (diff of (MRP - discountedPrice) * quantity)
+              isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
+              mou: Number(item.mou),
+              isMedicine: item.isMedicine ? '1' : '0',
+              couponFree: item?.isFreeCouponProduct ? 1 : 0,
+            } as MedicineCartOMSItem;
+          }
+        })
+        .filter((item) => item);
+      let estimatedAmount =
+        shipmentTotal +
+        order?.packingCharges +
+        order?.deliveryCharge -
+        shipmentCouponDiscount -
+        shipmentProductDiscount;
+      console.log('shipmentTotal >>>', shipmentTotal);
+      shipment['shopId'] = order['storeCode'];
+      shipment['tatType'] = order['storeType'];
+      shipment['estimatedAmount'] = estimatedAmount;
+      shipment['deliveryCharges'] = order['deliveryCharge'];
+      shipment['orderTat'] = order['tat'];
+      shipment['couponDiscount'] = shipmentCouponDiscount;
+      shipment['productDiscount'] = shipmentProductDiscount;
+      shipment['packagingCharges'] = order['packingCharges'];
+      shipment['storeDistanceKm'] = order['distance'];
+      shipment['items'] = items;
+      shipmentsArray.push(shipment);
+    });
+    setShipments(shipmentsArray);
+  }
   useEffect(() => {
     // update cart items from async storage the very first time app opened
     const updateCartItemsFromStorage = async () => {
@@ -980,6 +1069,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPdpBreadCrumbs,
         orders,
         setOrders,
+        shipments,
       }}
     >
       {props.children}

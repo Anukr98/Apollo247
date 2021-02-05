@@ -855,9 +855,7 @@ export const autoCompletePlaceSearch = (
 
 let cancelGetDeliveryTAT247: Canceler | undefined;
 
-export const getDeliveryTAT247 = (
-  params: TatApiInput247
-): Promise<AxiosResponse<GetTatResponse247>> => {
+export const getDeliveryTAT247 = (params: TatApiInput247): Promise<AxiosResponse<any>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
   const url = `${config.UATTAT_CONFIG[0]}/v2/tat`;

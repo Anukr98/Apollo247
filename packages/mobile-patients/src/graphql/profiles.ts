@@ -1909,6 +1909,20 @@ export const SAVE_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
+  mutation saveMedicineOrderV2($medicineOrderInput: SaveMedicineOrderV2Input!) {
+    saveMedicineOrderV2(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      transactionId
+      orders {
+        id
+        orderAutoId
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
     SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
@@ -1916,6 +1930,17 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
       errorMessage
       # orderId
       # orderAutoId
+    }
+  }
+`;
+
+export const SAVE_MEDICINE_ORDER_PAYMENT_V2 = gql`
+  mutation saveMedicineOrderPaymentMqV2($medicinePaymentMqInput: MedicinePaymentMqV2Input!) {
+    saveMedicineOrderPaymentMqV2(medicinePaymentMqInput: $medicinePaymentMqInput) {
+      errorCode
+      errorMessage
+      paymentOrderId
+      orderStatus
     }
   }
 `;
