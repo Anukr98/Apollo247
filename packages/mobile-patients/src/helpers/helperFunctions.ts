@@ -1513,7 +1513,7 @@ export const getUsageKey = (type: string) => {
     case 'Hospitalization':
       return 'hospitalizations-usage';
     case 'Allergy':
-    case 'Medications':
+    case 'Medication':
     case 'Health Restriction':
     case 'Family History':
     case 'Medical Condition':
@@ -1546,7 +1546,7 @@ export const postWebEngageIfNewSession = (
     };
     const usageKey = getUsageKey(type);
     obj[usageKey] = sessionId;
-    setPhrSession!(JSON.stringify(obj));
+    setPhrSession?.(JSON.stringify(obj));
     postWebEngagePHR(
       currentPatient,
       WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
@@ -1567,7 +1567,7 @@ export const postWebEngageIfNewSession = (
       sessionId = `${+new Date()}`;
       const newSessionObj = { ...sessionObj };
       newSessionObj[usageKey] = sessionId;
-      setPhrSession!(JSON.stringify(newSessionObj));
+      setPhrSession?.(JSON.stringify(newSessionObj));
       postWebEngagePHR(
         currentPatient,
         WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
