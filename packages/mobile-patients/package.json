@@ -15,6 +15,7 @@
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
     "jetify": "jetify",
+    "android-dev": "adb reverse tcp:8081 tcp:8081 && react-native run-android",
     "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec && npx jetify"
   },
   "devDependencies": {

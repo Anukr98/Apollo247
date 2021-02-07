@@ -46,6 +46,7 @@ import {
   isValidSearch,
   getPhrHighlightText,
   phrSearchWebEngageEvents,
+  postWebEngageIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -76,6 +77,7 @@ import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/Heal
 import { GET_PRISM_AUTH_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -190,6 +192,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
     const healthConditionsArray: any[] = [];
@@ -453,6 +456,56 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     );
   };
 
+  const postWebEngageEventsOnRecordPress = (headerTitle: string, selectedItem: any) => {
+    switch (headerTitle) {
+      case HEALTH_CONDITIONS_TITLE.ALLERGY:
+        postWebEngageIfNewSession(
+          'Allergy',
+          currentPatient,
+          selectedItem,
+          phrSession,
+          setPhrSession
+        );
+        break;
+      case HEALTH_CONDITIONS_TITLE.MEDICATION:
+        postWebEngageIfNewSession(
+          'Medication',
+          currentPatient,
+          selectedItem,
+          phrSession,
+          setPhrSession
+        );
+        break;
+      case HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION:
+        postWebEngageIfNewSession(
+          'Health Restriction',
+          currentPatient,
+          selectedItem,
+          phrSession,
+          setPhrSession
+        );
+        break;
+      case HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION:
+        postWebEngageIfNewSession(
+          'Medical Condition',
+          currentPatient,
+          selectedItem,
+          phrSession,
+          setPhrSession
+        );
+        break;
+      case HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY:
+        postWebEngageIfNewSession(
+          'Family History',
+          currentPatient,
+          selectedItem,
+          phrSession,
+          setPhrSession
+        );
+        break;
+    }
+  };
+
   const onHealthCardItemPress = (selectedItem: any) => {
     const headerTitle = selectedItem?.allergyName
       ? HEALTH_CONDITIONS_TITLE.ALLERGY
@@ -465,6 +518,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       : selectedItem?.diseaseName
       ? HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
       : '';
+    postWebEngageEventsOnRecordPress(headerTitle, selectedItem);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       healthCondition: true,

@@ -22,6 +22,7 @@ interface SearchResultProps {
   onPressCallback: (item: any, index: number) => void;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   postSymptomTrackEvent?: (() => void) | null;
+  visibleDataCount?: number;
 }
 
 export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
@@ -32,6 +33,7 @@ export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
     onPressCallback,
     postSymptomTrackEvent,
     navigation,
+    visibleDataCount,
   } = props;
 
   const renderItems = (item: any, index: number) => {
@@ -116,7 +118,13 @@ export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
     <View style={styles.container}>
       <FlatList
         keyExtractor={(_, index) => index.toString()}
-        data={data?.length > 2 && !showAllData ? data?.slice(0, 2) : data}
+        data={
+          visibleDataCount === -1
+            ? data
+            : data?.length > 2 && !showAllData
+            ? data?.slice(0, visibleDataCount ? visibleDataCount : 2)
+            : data
+        }
         renderItem={({ item, index }) => renderItems(item, index)}
       />
     </View>

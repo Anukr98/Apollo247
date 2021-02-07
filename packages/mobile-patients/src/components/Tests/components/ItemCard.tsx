@@ -30,6 +30,7 @@ import {
   DiagnosticHomePageWidgetClicked,
   DiagnosticAddToCartEvent,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -73,6 +74,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const name = getItem?.itemTitle;
     const parameters = getItem?.itemParameter;
 
+    const promoteCircle = pricesForItem?.promoteCircle;
+    const promoteDiscount = pricesForItem?.promoteDiscount;
+    const circleDiscount = pricesForItem?.circleDiscount;
+    const specialDiscount = pricesForItem?.specialDiscount;
+    const discount = pricesForItem?.discount;
+
     const isAddedToCart = !!cartItems?.find(
       (items) => Number(items?.id) == Number(getItem?.itemId)
     );
@@ -89,12 +96,22 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
           ]}
         >
-          <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
-            source={{ uri: imageUrl }}
-            style={styles.imageStyle}
-          />
-
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ width: '69%' }}>
+              <Image
+                placeholderStyle={styles.imagePlaceholderStyle}
+                source={{ uri: imageUrl }}
+                style={styles.imageStyle}
+              />
+            </View>
+            {renderPercentageDiscount(
+              promoteCircle && isCircleSubscribed
+                ? circleDiscount
+                : promoteDiscount
+                ? specialDiscount
+                : discount
+            )}
+          </View>
           <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
             <Text style={styles.itemNameText} numberOfLines={2}>
               {name}
@@ -108,6 +125,18 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
         </View>
       </TouchableOpacity>
+    );
+  };
+
+  const renderPercentageDiscount = (discount: string | number) => {
+    return (
+      <>
+        {!!discount && discount > 0 ? (
+          <View style={styles.percentageDiscountView}>
+            <Text style={styles.percentageDiscountText}>{Number(discount).toFixed(0)}% off</Text>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -283,6 +312,10 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
+    if (sourceScreen == AppRoutes.TestDetails) {
+      return;
+    }
+
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!; //more than price (black)
     const circlePrice = pricesForItem?.circlePrice!;
@@ -461,5 +494,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowColor: 'white',
     elevation: 0,
+  },
+  percentageDiscountView: {
+    backgroundColor: colors.DISCOUNT_LIGHT_BLUE,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: colors.DISCOUNT_BLUE_COLOR,
+    height: 30,
+    width: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  percentageDiscountText: {
+    ...theme.viewStyles.text('M', 10, colors.DISCOUNT_BLUE_COLOR, 1, 12),
+    textAlign: 'center',
   },
 });

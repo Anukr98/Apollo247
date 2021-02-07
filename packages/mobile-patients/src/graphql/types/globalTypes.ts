@@ -140,6 +140,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
+  PHLEBO_PENDING = "PHLEBO_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -1180,6 +1181,7 @@ export interface MedicineCartOMSInput {
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
+  isConsultRequired?: boolean | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1446,6 +1448,18 @@ export interface RescheduleDiagnosticsInput {
   slotId: string;
 }
 
+export interface ReturnPharmaOrderInput {
+  category?: string | null;
+  reason?: string | null;
+  subReason?: string | null;
+  comments?: string | null;
+  patientId?: string | null;
+  email: string;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
+  orderFiles?: fileProperties[] | null;
+}
+
 export interface SUBSCRIPTION_DETAILS {
   userSubscriptionId?: string | null;
   plan?: PLAN | null;
@@ -1517,6 +1531,11 @@ export interface SourceMetaData {
   source_identifier?: string | null;
 }
 
+export interface UpdateAppointmentInput {
+  appointmentId: string;
+  patientLocation?: PatientLocation | null;
+}
+
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
@@ -1567,6 +1586,11 @@ export interface UploadDocumentInput {
 export interface VerifyVPA {
   vpa: string;
   merchant_id?: string | null;
+}
+
+export interface fileProperties {
+  fileType?: string | null;
+  base64FileInput?: string | null;
 }
 
 export interface prescriptionPrismFileProperties {

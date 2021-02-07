@@ -92,6 +92,8 @@ export enum WebEngageEventName {
   DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
   SEARCH_SUGGESTIONS = 'Search suggestions',
   SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
+  RETURN_REQUEST_START = 'Return Request Start',
+  RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -222,6 +224,7 @@ export enum WebEngageEventName {
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR No. of users clicked on records in {0} - app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
@@ -1120,6 +1123,9 @@ export interface WebEngageEvents {
     'Order Amount': number; // Optional
     'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
+    'Appointment Date'?: string;
+    'Appointment time'?: string;
+    'Item ids'?: any;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode?: 'Prepaid' | 'Cash';
@@ -1128,8 +1134,8 @@ export interface WebEngageEvents {
     LOB: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
-   position: number;
-   itemId: number;
+    position: number;
+    itemId: number;
   };
 
   // ********** ConsultEvents ********** \\

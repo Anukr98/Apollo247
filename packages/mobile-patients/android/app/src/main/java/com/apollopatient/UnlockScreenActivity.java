@@ -1,6 +1,7 @@
 package com.apollopatient;
 
 
+import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -125,7 +126,9 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 Uri uri = Uri.parse(deeplinkUri);
                 Log.e("deeplinkUri", uri.toString());
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+
                 finish();
+
                 startActivity(intent);
             }
         });
@@ -165,6 +168,19 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         ringtone.stop();
         vibrator.cancel();
+        if(Build.VERSION.SDK_INT >= 26){
+            Log.d("csk","sdk--"+Build.VERSION.SDK_INT);
+            KeyguardManager km = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
+            km.requestDismissKeyguard(this, null);
+
+        }
+        else
+        {
+
+            Log.d("csk","sdk--"+Build.VERSION.SDK_INT);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        }
+
     }
 
     @Override

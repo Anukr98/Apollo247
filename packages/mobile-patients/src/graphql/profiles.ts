@@ -232,6 +232,14 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
   }
 `;
 
+export const RETURN_PHARMA_ORDER = gql`
+  mutation returnPharmaOrder($returnPharmaOrderInput: ReturnPharmaOrderInput) {
+    returnPharmaOrder(returnPharmaOrderInput: $returnPharmaOrderInput) {
+      status
+    }
+  }
+`;
+
 export const SAVE_SEARCH = gql`
   mutation saveSearch($saveSearchInput: SaveSearchInput!) {
     saveSearch(saveSearchInput: $saveSearchInput) {
@@ -1939,7 +1947,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         orderTat
         medicineOrdersStatus {
           id
-          # statusDate
+          statusDate
           orderStatus
           hideStatus
           statusMessage
@@ -2046,6 +2054,16 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        diagnosticOrdersStatus{
+          id
+          orderStatus
+          itemId
+          itemName
+          packageId
+          packageName
+          hideStatus
+          statusMessage
+        }
         diagnosticOrderLineItems {
           id
           itemId
@@ -2255,6 +2273,25 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         packageCalculatedMrp
         testDescription
         inclusions
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
+export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
+  query findDiagnosticsWidgetsPricing($cityID: Int!, $itemIDs: [Int]!) {
+    findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics {
+        itemId
+        packageCalculatedMrp
         diagnosticPricing {
           mrp
           price
@@ -4578,6 +4615,15 @@ export const GET_USER_PROFILE_TYPE = gql`
   query getUserProfileType($mobileNumber: String!) {
     getUserProfileType(mobileNumber: $mobileNumber) {
       profile
+    }
+  }
+`;
+
+export const UPDATE_APPOINTMENT = gql`
+  mutation updateAppointment($appointmentInput: UpdateAppointmentInput) {
+    updateAppointment(appointmentInput: $appointmentInput) {
+      error
+      status
     }
   }
 `;
