@@ -5,6 +5,7 @@ import { MyAccount } from '@aph/mobile-patients/src/components/Account/MyAccount
 import { NotificationSettings } from '@aph/mobile-patients/src/components/Account/NotificationSettings';
 import { ChatRoom } from '@aph/mobile-patients/src/components/Consult/ChatRoom';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
+import { AppointmentDetailsPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetailsPhysical';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
 import {
   ConsultRoom,
@@ -127,6 +128,7 @@ import { TestPaymentStatus } from '@aph/mobile-patients/src/components/Tests/Tes
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
+import { PaymentCheckoutPhysical } from '@aph/mobile-patients/src/components/Consult/PaymentCheckoutPhysical';
 import { CircleSubscription } from '@aph/mobile-patients/src/components/CirclePlan/CircleSubscription';
 import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionPaymentGateway';
 import { PrescriptionOrderSummary } from '@aph/mobile-patients/src/components/Medicines/PrescriptionOrderSummary';
@@ -158,6 +160,7 @@ export enum AppRoutes {
   DoctorDetails = 'DoctorDetails',
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
+  AppointmentDetailsPhysical = 'AppointmentDetailsPhysical',
   StorPickupScene = 'StorPickupScene',
   SearchTestScene = 'SearchTestScene',
   MedicineSearch = 'MedicineSearch',
@@ -247,6 +250,7 @@ export enum AppRoutes {
   SearchAppointmentScreen = 'SearchAppointmentScreen',
   AppointmentFilterScene = 'AppointmentFilterScene',
   PaymentCheckout = 'PaymentCheckout',
+  PaymentCheckoutPhysical='PaymentCheckoutPhysical',
   CircleSubscription = 'CircleSubscription',
   SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
@@ -354,6 +358,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AppointmentDetails]: {
     screen: AppointmentDetails,
+  },
+  [AppRoutes.AppointmentDetailsPhysical]: {
+    screen: AppointmentDetailsPhysical,
   },
   [AppRoutes.SearchTestScene]: {
     screen: SearchTestScene,
@@ -628,6 +635,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PaymentCheckout]: {
     screen: PaymentCheckout,
+  },
+  [AppRoutes.PaymentCheckoutPhysical]: {
+    screen: PaymentCheckoutPhysical,
   },
   [AppRoutes.CircleSubscription]: {
     screen: CircleSubscription,

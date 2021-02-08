@@ -12,7 +12,10 @@ import {
   ManageProfileIcon,
   MyMembershipIcon,
   NeedHelpIcon,
+  Apollo247Icon,
   OneApollo,
+  ArrowRight,
+  Down,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -64,6 +67,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width } = Dimensions.get('window');
 
@@ -109,29 +113,13 @@ const styles = StyleSheet.create({
     marginRight: 20,
     marginBottom: 17,
   },
-  // noteIcon: {
-  //   width: 24,
-  //   height: 24,
-  //   bottom: 0,
-  //   right: 0,
-  //   top: 0,
-  //   position: 'absolute',
-  // },
-  // noteIconstyles: {
-  //   // marginRight: 20,
-  //   // marginBottom: 17,
-  // },
-  // cartIconstyles: {
-  //   // marginRight: 24,
-  // },
-  // cartIcon: {
-  //   width: 24,
-  //   height: 24,
-  //   // bottom: 0,
-  //   // right: 24,
-  //   // top: 0,
-  //   // position: 'absolute',
-  // },
+  aboutContainer: {
+    marginLeft: 40,
+    marginVertical: 12,
+  },
+  aboutTextItem: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+  },
 });
 type Appointments = {
   date: string;
@@ -158,6 +146,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const [codePushVersion, setCodePushVersion] = useState<string>('');
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
+  const [showAboutUsSection, setShowAboutUsSection] = useState<boolean>(false);
   const [profileDetails, setprofileDetails] = useState<
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
@@ -169,6 +158,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setHdfcUserSubscriptions,
     setBannerData,
     setCircleSubscription,
+    setPhrSession,
   } = useAppCommonData();
   const {
     setIsDiagnosticCircleSubscription,
@@ -315,6 +305,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       signOut();
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
+      setPhrSession?.('');
       AsyncStorage.removeItem('circlePlanSelected');
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
@@ -466,6 +457,33 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.PROFILE_ACCESSED, eventAttributes);
   };
 
+  const renderAboutApollo = () => {
+    return (
+      <View>
+        {string.aboutApolloList.map((item, index) => {
+          return (
+            <TouchableOpacity
+              style={[
+                styles.aboutContainer,
+                {
+                  marginTop: index === 0 ? 20 : 12,
+                },
+              ]}
+              key={index}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: item.url,
+                });
+              }}
+            >
+              <Text style={styles.aboutTextItem}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
+
   const renderRows = () => {
     return (
       <View>
@@ -510,7 +528,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
         />
         <ListCard
-          title={'OneApollo Membership'}
+          title={'OneApollo Memberships'}
           leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
@@ -535,13 +553,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('Need Help');
           }}
         />
-        {/* <ListCard
-          // container={{ marginBottom: 32 }}
-          container={{ marginTop: 4 }}
-          title={'Notification Settings'}
-          leftIcon={<NotificaitonAccounts />}
-          onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
-        /> */}
+        <ListCard
+          container={{ height: 'auto' }}
+          title={'About Apollo 247'}
+          leftIcon={<Apollo247Icon />}
+          rightIcon={showAboutUsSection ? <Down /> : <ArrowRight />}
+          onPress={() => setShowAboutUsSection(!showAboutUsSection)}
+          children={showAboutUsSection ? renderAboutApollo() : null}
+        />
         <ListCard
           container={{ marginBottom: 32 }}
           title={'Logout'}

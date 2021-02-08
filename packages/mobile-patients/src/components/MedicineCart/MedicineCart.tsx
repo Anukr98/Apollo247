@@ -686,9 +686,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const { data } = response;
         const { Stores } = data;
         if (Stores?.length) {
-          setshowStorePickupCard(false);
-        } else {
           setshowStorePickupCard(true);
+        } else {
+          setshowStorePickupCard(false);
         }
       } catch (error) {
         console.log(error);

@@ -22,6 +22,7 @@ export interface FAQComponentProps {
   headerSeparatorStyle?: ViewStyle;
   containerStyle?: ViewStyle;
   arrowStyle?: ImageStyle;
+  horizontalLine?: ViewStyle;
 }
 
 export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
@@ -45,7 +46,9 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
                 : null;
             }}
           >
-            <Text style={props.questionStyle}>{value.question}</Text>
+            <Text style={props.questionStyle}>
+              {props.data ? value?.faqQuestion : value.question}
+            </Text>
             <ArrowRight
               style={[
                 props.arrowStyle,
@@ -53,10 +56,10 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
                   transform: [
                     {
                       rotate: !!(previousIndex != -1 && index === previousIndex)
-                        ? '270deg'
-                        : !!(activeIndex === index)
                         ? '90deg'
-                        : '270deg',
+                        : !!(activeIndex === index)
+                        ? '270deg'
+                        : '90deg',
                     },
                   ],
                 },
@@ -66,11 +69,11 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
           {!!(previousIndex != -1 && index === previousIndex) ? (
             <></>
           ) : activeIndex === index ? (
-            <Text style={props.answerStyle}>{value.answer}</Text>
+            <Text style={props.answerStyle}>{props.data ? value?.faqAnswer : value.answer}</Text>
           ) : (
             <></>
           )}
-          {faq.length - 1 !== index && <View style={styles.horizontalLine} />}
+          {faq.length - 1 !== index && <View style={props.horizontalLine} />}
         </View>
       );
     });
@@ -124,4 +127,5 @@ FAQComponent.defaultProps = {
   questionStyle: styles.faqQuestion,
   answerStyle: styles.faqAnswer,
   headerSeparatorStyle: styles.horizontalLine,
+  horizontalLine: styles.horizontalLine,
 };

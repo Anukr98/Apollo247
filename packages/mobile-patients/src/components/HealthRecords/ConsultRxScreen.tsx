@@ -58,6 +58,7 @@ import {
   isValidSearch,
   getPhrHighlightText,
   phrSearchWebEngageEvents,
+  postWebEngageIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -212,7 +213,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   }> | null>(null);
   const { setLoading: setGlobalLoading } = useUIElements();
   const { addMultipleCartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
-  const { locationDetails, setLocationDetails } = useAppCommonData();
+  const { locationDetails, setLocationDetails, phrSession, setPhrSession } = useAppCommonData();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -827,6 +828,13 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
+    postWebEngageIfNewSession(
+      'Doctor Consultation',
+      currentPatient,
+      selectedItem,
+      phrSession,
+      setPhrSession
+    );
     if (selectedItem?.patientId) {
       postConsultCardClickEvent(selectedItem?.id);
       props.navigation.navigate(AppRoutes.ConsultDetails, {

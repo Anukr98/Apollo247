@@ -41,7 +41,6 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { ScrollableFooter } from '@aph/mobile-patients/src/components/ui/ScrollableFooter';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import { ReasonPopUp } from '@aph/mobile-patients/src/components/ui/ReasonPopUp';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -54,14 +53,11 @@ import {
   isValidTestSlotWithArea,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WhatsAppIcon,
-  DropdownGreen,
-  CrossPopup,
-  BackArrow,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
+  BLACK_LIST_CANCEL_STATUS_ARRAY,
+  BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   SequenceForDiagnosticStatus,
   TestCancelReasons,
   TestReschedulingReasons,
@@ -69,21 +65,12 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import {
-  getDiagnosticsOrderStatus,
-  getDiagnosticsOrderStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
 import _ from 'lodash';
-import {
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
 import { TestSlotSelectionOverlay } from './TestSlotSelectionOverlay';
-import { areaObject } from './TestsCart';
 import {
   getDiagnosticSlotsWithAreaID,
   getDiagnosticSlotsWithAreaIDVariables,
@@ -92,7 +79,6 @@ import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
-import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
@@ -112,87 +98,6 @@ export interface DiagnosticsOrderList
 const width = Dimensions.get('window').width;
 const isSmallDevice = width < 380;
 const sequenceOfStatus = SequenceForDiagnosticStatus;
-const styles = StyleSheet.create({
-  noDataCard: {
-    height: 'auto',
-    shadowRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
-    shadowColor: 'white',
-    elevation: 0,
-  },
-  chatWithUsView: { paddingBottom: 10, paddingTop: 5 },
-  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
-  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
-  chatWithUsText: {
-    textAlign: 'center',
-    paddingRight: 0,
-    marginHorizontal: 5,
-    ...theme.viewStyles.text('B', 14, colors.APP_YELLOW),
-  },
-  dropdownOverlayStyle: {
-    padding: 0,
-    margin: 0,
-    height: 'auto',
-    borderRadius: 10,
-  },
-  cancelReasonHeadingView: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: theme.colors.WHITE,
-    padding: 18,
-    marginBottom: 24,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    flexDirection: 'row',
-  },
-  cancelReasonHeadingText: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SHERPA_BLUE,
-    textAlign: 'center',
-    marginHorizontal: '20%',
-  },
-  cancelReasonContentHeading: {
-    marginBottom: 12,
-    color: '#0087ba',
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
-  },
-  cancelReasonContentView: { flexDirection: 'row', alignItems: 'center' },
-  cancelReasonContentText: {
-    flex: 0.9,
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
-  },
-  reasonCancelDropDownExtraView: {
-    marginTop: 5,
-    backgroundColor: '#00b38e',
-    height: 2,
-  },
-  cancelReasonSubmitButton: { margin: 16, marginTop: 32, width: 'auto' },
-  reasonCancelOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-start',
-    flex: 1,
-    left: 0,
-    right: 0,
-    zIndex: 3000,
-  },
-  reasonCancelCrossTouch: { marginTop: 80, alignSelf: 'flex-end' },
-  reasonCancelView: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-  },
-  orderSummaryOuterView: {
-    marginHorizontal: 20,
-    flexDirection: 'row',
-    marginVertical: '15%',
-  },
-});
 
 export interface YourOrdersTestProps extends NavigationScreenProps {}
 
@@ -240,6 +145,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
     DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
     DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+    DIAGNOSTIC_ORDER_STATUS.PHLEBO_PENDING,
+    DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
   ];
   var rescheduleDate: Date,
     rescheduleSlotObject: {
@@ -422,7 +329,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
-    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+    return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
   const checkIfPreTestingExists = (
@@ -517,6 +424,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const checkSlotSelection = () => {
     const dt = moment(selectedOrder?.slotDateTimeInUTC).format('YYYY-MM-DD') || null;
     const tm = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm') || null;
+
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
+    const checkCovidItem = orderItemId?.map((item) =>
+      AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item))
+    );
+
+    const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
+    const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
+
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
         query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
@@ -530,13 +446,24 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
+        const covidItem_Slot_StartTime = moment(
+          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
+          'HH:mm'
+        );
+
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
 
+        const diagnosticSlotsToShow = isContainOnlyCovidItem
+          ? updatedDiagnosticSlots?.filter((item) =>
+              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
+            )
+          : updatedDiagnosticSlots;
+
         const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots?.forEach((item) => {
+        diagnosticSlotsToShow?.forEach((item) => {
           if (isValidTestSlotWithArea(item!, date)) {
             slotsArray.push({
               employeeCode: 'apollo_employee_code',
@@ -736,6 +663,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderRescheduleOrderOverlay = () => {
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
@@ -751,6 +679,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           zipCode={Number(pincode!)}
           slotInfo={selectedTimeSlot}
           isReschdedule={true}
+          itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
             rescheduleDate = date1;
@@ -789,7 +718,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const _navigateToYourTestDetails = (order: any) => {
     showSummaryPopup && setSummaryPopup(!showSummaryPopup);
     props.navigation.navigate(AppRoutes.OrderedTestStatus, {
-      orderId: order!.id,
+      orderId: order?.id,
       selectedOrder: order,
       setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
         setOrders(orders),
@@ -822,11 +751,32 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const patientName = g(currentPatient, 'firstName');
 
     const showDateTime = order?.isRescheduled ? true : false;
-    const isCancelRescheduleValid =
-      moment(getUTCDateTime).diff(moment(), 'minutes') > 120 &&
-      statusForCancelReschedule.includes(currentStatus);
-    const showPreTesting = isCancelRescheduleValid && checkIfPreTestingExists(order);
-    const showRescheduleOption = isCancelRescheduleValid && order?.rescheduleCount! <= 3;
+
+    /**
+     * show cancel & reschdule if status is something like this.
+     */
+    const isCancelValid = order?.diagnosticOrdersStatus?.find((item) =>
+      BLACK_LIST_CANCEL_STATUS_ARRAY.includes(item?.orderStatus!)
+    );
+
+    const showCancel = isCancelValid == undefined ? true : false;
+
+    const isRescheduleValid = order?.diagnosticOrdersStatus?.find((item: any) =>
+      BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(item?.orderStatus)
+    );
+
+    const showReschedule = isRescheduleValid == undefined ? true : false;
+    /**
+     * as per previous check
+     */
+    // const isCancelRescheduleValid =
+    //   moment(getUTCDateTime).diff(moment(), 'minutes') > 120 &&
+    //   statusForCancelReschedule.includes(currentStatus);
+
+    //show the reschedule option :-
+
+    const showPreTesting = showReschedule && checkIfPreTestingExists(order);
+    const showRescheduleOption = showReschedule && order?.rescheduleCount! <= 3;
     /**
      *  1. show reports generated, if any of the status of the test goes into sample collected.
      *  2. if status is pickup requested, then show cancel - reschedule option prior 2hrs to pick up date-time
@@ -843,12 +793,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         patientName={patientName}
         isComingFrom={'individualOrders'}
         showDateTime={
-          isCancelRescheduleValid && order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showCancel && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
             ? showDateTime
             : false
         }
         showRescheduleCancel={
-          isCancelRescheduleValid && order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
         ordersData={order?.diagnosticOrderLineItems!}
         dateTime={`Rescheduled For: ${dtTm}`}
@@ -867,7 +817,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ]}
         onPressCancel={() => onPressTestCancel(order)}
         onPressReschedule={() => onPressTestReschedule(order)}
-        showTestPreparation={showPreTesting}
+        showTestPreparation={showPreTesting!}
         onOptionPress={() => _openOrderSummary(order)}
         onPressViewReport={() => _navigateToPHR()}
       />
@@ -937,7 +887,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
-          {/* {!loading && !error && renderChatWithUs()} */}
           {renderCancelPopUp()}
           {renderReschedulePopUp()}
         </ScrollView>
@@ -946,3 +895,85 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  noDataCard: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+  chatWithUsView: { paddingBottom: 10, paddingTop: 5 },
+  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
+  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  chatWithUsText: {
+    textAlign: 'center',
+    paddingRight: 0,
+    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, colors.APP_YELLOW),
+  },
+  dropdownOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    height: 'auto',
+    borderRadius: 10,
+  },
+  cancelReasonHeadingView: {
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: theme.colors.WHITE,
+    padding: 18,
+    marginBottom: 24,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    flexDirection: 'row',
+  },
+  cancelReasonHeadingText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'center',
+    marginHorizontal: '20%',
+  },
+  cancelReasonContentHeading: {
+    marginBottom: 12,
+    color: '#0087ba',
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  cancelReasonContentView: { flexDirection: 'row', alignItems: 'center' },
+  cancelReasonContentText: {
+    flex: 0.9,
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+  },
+  reasonCancelDropDownExtraView: {
+    marginTop: 5,
+    backgroundColor: '#00b38e',
+    height: 2,
+  },
+  cancelReasonSubmitButton: { margin: 16, marginTop: 32, width: 'auto' },
+  reasonCancelOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    flex: 1,
+    left: 0,
+    right: 0,
+    zIndex: 3000,
+  },
+  reasonCancelCrossTouch: { marginTop: 80, alignSelf: 'flex-end' },
+  reasonCancelView: {
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  orderSummaryOuterView: {
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    marginVertical: '15%',
+  },
+});

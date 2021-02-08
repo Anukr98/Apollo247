@@ -582,7 +582,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           marginBottom: 16,
         }}
       >
-        {renderLocation()}
+{/*         {renderLocation()} */}
         {renderTimings()}
       </View>
     </View>

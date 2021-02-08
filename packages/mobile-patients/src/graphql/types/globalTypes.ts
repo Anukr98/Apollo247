@@ -1381,6 +1381,11 @@ export interface PatientFeedbackInput {
   transactionId: string;
 }
 
+export interface PatientLocation {
+  city?: string | null;
+  pincode?: number | null;
+}
+
 export interface PatientMedicalParameters {
   patientId: string;
   height?: string | null;
@@ -1494,6 +1499,18 @@ export interface RescheduleDiagnosticsInput {
   slotId: string;
 }
 
+export interface ReturnPharmaOrderInput {
+  category?: string | null;
+  reason?: string | null;
+  subReason?: string | null;
+  comments?: string | null;
+  patientId?: string | null;
+  email: string;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
+  orderFiles?: fileProperties[] | null;
+}
+
 export interface SUBSCRIPTION_DETAILS {
   userSubscriptionId?: string | null;
   plan?: PLAN | null;
@@ -1584,6 +1601,11 @@ export interface SourceMetaData {
   source_identifier?: string | null;
 }
 
+export interface UpdateAppointmentInput {
+  appointmentId: string;
+  patientLocation?: PatientLocation | null;
+}
+
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
@@ -1634,6 +1656,11 @@ export interface UploadDocumentInput {
 export interface VerifyVPA {
   vpa: string;
   merchant_id?: string | null;
+}
+
+export interface fileProperties {
+  fileType?: string | null;
+  base64FileInput?: string | null;
 }
 
 export interface prescriptionPrismFileProperties {

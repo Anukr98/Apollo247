@@ -22,6 +22,7 @@ import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } fr
 import { FacebookLoader } from 'react-native-easy-content-loader';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -29,6 +30,7 @@ export interface Props
     breadCrumb: BreadcrumbProps['links'];
     queryCategory: string;
     email: string;
+    fromOrderFlow?: boolean;
   }> {}
 
 export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
@@ -38,7 +40,9 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     { title: string.pharmacy },
   ];
   const queryCategory = navigation.getParam('queryCategory') || string.pharmacy;
-  const email = navigation.getParam('email') || '';
+  const [email, setEmail] = useState(navigation.getParam('email') || '');
+  const isFromOrderFlow = navigation.getParam('fromOrderFlow') || false;
+  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(isFromOrderFlow);
 
   const { currentPatient } = useAllCurrentPatients();
   const [displayAll, setDisplayAll] = useState<boolean>(false);
@@ -73,9 +77,13 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
 
   const renderItem = ({ item }: ListRenderItemInfo<MedOrder>) => {
     const onPressHelp = () => {
+      const currentStatusDate = item?.medicineOrdersStatus?.find(
+        (i) => i?.orderStatus === item?.currentStatus
+      )?.statusDate;
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         medicineOrderStatus: item.currentStatus,
+        medicineOrderStatusDate: currentStatusDate,
         orderId: item.billNumber || item.orderAutoId,
         queryCategory,
         email,
@@ -91,6 +99,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.productDetail }] as BreadcrumbProps['links'],
+        fromOrderFlow: isFromOrderFlow,
       });
     };
     return (
@@ -160,6 +169,17 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     ) : null;
   };
 
+  const renderEmailPopup = () => {
+    return showEmailPopup ? (
+      <NeedHelpEmailPopup
+        onPressSendORConfirm={(email) => {
+          setShowEmailPopup(false);
+          setEmail(email);
+        }}
+      />
+    ) : null;
+  };
+
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
@@ -169,6 +189,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
       {renderError()}
       {renderOrders()}
       {renderSections(displayAll)}
+      {renderEmailPopup()}
     </SafeAreaView>
   );
 };

@@ -315,7 +315,7 @@ export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
 );
 
 export const ArrowRight: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')}/>
 );
 
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (
@@ -1066,6 +1066,9 @@ export const WhatsAppIcon: React.FC<IconProps> = (props) => (
 export const NeedHelpIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_round_live_help.png')} />
 );
+export const Apollo247Icon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_Apollo.png')} />
+);
 
 export const PrimaryIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/primary.png')} />
@@ -1682,7 +1685,7 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
 
 export const CallCollapseIcon: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ ...theme.viewStyles.cardViewStyle, borderRadius: 20, width: 40, height: 40 }}
+    style={{borderRadius: 20, width: 40, height: 40 }}
     {...props}
     source={require('./icons/callCollapse.png')}
     resizeMode="contain"
