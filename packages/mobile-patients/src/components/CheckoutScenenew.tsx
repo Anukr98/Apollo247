@@ -257,7 +257,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         props.navigation.navigate(AppRoutes.MedicineCart);
         renderErrorPopup(string.common.tryAgainLater);
       });
-    console.log('orders >>>>', orders);
     return () => {
       // setLoading && setLoading(false);
     };
