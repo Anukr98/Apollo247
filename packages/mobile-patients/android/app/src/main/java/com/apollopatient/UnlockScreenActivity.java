@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -39,6 +40,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     private static final String TAG = "MessagingService";
     private Ringtone ringtone;
     private Vibrator vibrator;
+    RelativeLayout unlockRelativeLayout;
     LocalBroadcastManager mLocalBroadcastManager;
     BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -76,6 +78,15 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
         this.ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
         this.vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+
+        unlockRelativeLayout=findViewById(R.id.unlockLayout);
+        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        if( km.inKeyguardRestrictedInputMode() ) {
+            unlockRelativeLayout.setVisibility(View.VISIBLE);
+        } else {
+            //it is not locked
+            unlockRelativeLayout.setVisibility(View.GONE);
+        }
 
         //ringtoneManager end
 
@@ -180,6 +191,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
             Log.d("csk","sdk--"+Build.VERSION.SDK_INT);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         }
+
 
     }
 

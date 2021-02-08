@@ -140,7 +140,6 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
-  PHLEBO_PENDING = "PHLEBO_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -1378,6 +1377,8 @@ export interface PaymentReference {
   GATEWAYNAME?: string | null;
   BANKTXNID?: string | null;
   BANKNAME?: string | null;
+  backend_activation?: boolean | null;
+  done_by?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1487,7 +1488,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
+  slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
