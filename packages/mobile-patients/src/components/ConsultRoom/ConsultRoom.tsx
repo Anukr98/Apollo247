@@ -145,7 +145,7 @@ import DeviceInfo from 'react-native-device-info';
 import { ScrollView } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
@@ -154,6 +154,14 @@ import {
   preFetchSDK,
   createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+
+
+import { CircleTypeCard1 } from '../ui/CircleTypeCard1';
+import { CircleTypeCard2 } from '../ui/CircleTypeCard2';
+import { CircleTypeCard3 } from '../ui/CircleTypeCard3';
+import { CircleTypeCard4 } from '../ui/CircleTypeCard4';
+import { CircleTypeCard5 } from '../ui/CircleTypeCard5';
+import { CircleTypeCard6 } from '../ui/CircleTypeCard6';
 
 const { Vitals } = NativeModules;
 
@@ -368,6 +376,59 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
     flex: 1,
+  },
+  circleContainer:{
+    backgroundColor: theme.colors.WHITE,
+    marginTop: 15,
+    marginBottom: 10,
+    padding: 6,
+    width: '100%',
+    alignSelf: 'center',
+  },
+
+  circleCardsContainer:{
+  flex:1,
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  marginHorizontal: 4,
+  marginVertical:8,
+  },
+  circleCards:{
+  ...theme.viewStyles.cardViewStyle,
+  shadowOffset: { width: 1, height: 2 },
+  elevation: 4,
+  flexDirection: 'row',
+  height: 88,
+  width: width / 2.6,
+  marginRight: 3,
+  marginBottom: 2,
+  borderWidth: 1.2,
+  borderStyle:'solid',
+  borderColor:'#FC9916',
+  padding:8,
+  borderRadius:12,
+  },
+  circleCardsTexts:{
+  flex:0.6,
+  alignItems:'flex-start',
+  justifyContent:'center',
+  },
+  circleCardsImages:{
+  flex:0.4,
+  alignItems:'center',
+  justifyContent:'center'
+  },
+  circleCardsImage:{
+  alignSelf: 'center',
+  width: '100%',
+  height: '100%'
+  },
+  circleRowsContainer:{
+  flexDirection:'row',
+  alignItems:'center',
+  justifyContent:'center',
+  marginVertical:5,
+  flex:1,
   },
 });
 
@@ -1927,6 +1988,125 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+
+
+  const datac =[
+                            {
+                              imageUrl: require('../ui/icons/ConsultationSavings.png'),
+                              title: `Savings on${"\n"}Consultation`,
+                              value:"341",
+                            },
+                            {
+                              imageUrl: require('../ui/icons/PharmacyDelivery.png'),
+                              title: `Savings on${"\n"}Pharmacy`,
+                              value:"444",
+                            },
+                            {
+                              imageUrl: require('../ui/icons/prohealth.png'),
+                              title: `Free${"\n"}Access to`,
+                              value:"ProHealth",
+                            },
+                            {
+                              imageUrl: require('../ui/icons/FreeDelivery.png'),
+                              title: `Free${"\n"}Delivery on`,
+                              value:"Medicines",
+                            },
+                            {
+                              imageUrl: require('../ui/icons/Diagnostics.png'),
+                              title: `Savings on${"\n"}Diagnostics`,
+                              value:"666",
+                            },
+                            {
+                              imageUrl: require('../ui/icons/OnlineDoc.png'),
+                              title: `24/7 Doctor${"\n"}on call`,
+                              value:"3/5",
+                            }
+                          ];
+
+  const renderCircleCards = (item) =>
+  {
+  return (
+  <View style={styles.circleCardsContainer}>
+  <TouchableOpacity activeOpacity={1} onPress={()=>console.log('flat hi')}>
+         <View style={styles.circleCards}>
+
+         <View style={styles.circleCardsTexts}>
+
+           <Text style={{...theme.viewStyles.text('L', 12, '#02475B', 1, 16)}}>{item?.title}</Text>
+           <Text style={{...theme.viewStyles.text('M', 16, '#02475B', 1, 18)}}>₹{item?.value}</Text>
+         </View>
+
+         <View style={styles.circleCardsImages}>
+         <ImageBackground style={styles.circleCardsImage}
+                source={item?.imageUrl} />
+         </View>
+
+                    </View>
+                  </TouchableOpacity>
+                  </View>
+         );
+   }
+
+  const renderCircle = () => {
+    return (
+      <View style={styles.circleContainer}>
+
+      <CircleTypeCard1
+        onButtonPress={()=>console.log('circle button pressed')}
+        savings={"565"}
+        credits={"767"}
+        expiry={"21"}
+       />
+      {/*<CircleTypeCard2
+        onButtonPress={()=>console.log('circle button pressed')}
+        credits={"767"}
+        expiry={"21"}
+       />
+      <CircleTypeCard3
+        onButtonPress={()=>console.log('circle button pressed')}
+        credits={"767"}
+        savings={"251"}
+       />
+      <CircleTypeCard4
+        onButtonPress={()=>console.log('circle button pressed')}
+        credits={"767"}
+        savings={"251"}
+       />
+
+      <CircleTypeCard5
+        onButtonPress={()=>console.log('circle button pressed')}
+        savings={"565"}
+        credits={"767"}
+        expired={"21/01"}
+       />
+      <CircleTypeCard6
+        onButtonPress={()=>console.log('circle button pressed')}
+        savings={"565"}
+        credits={"767"}
+        expired={"21/01"}
+       />
+       */}
+        <View style={styles.circleRowsContainer}>
+
+        <FlatList
+                horizontal={true}
+                data={datac}
+                renderItem={({item}) =>renderCircleCards(item)}
+                keyExtractor={(item, index) => index.toString()+"circle"}
+        />
+        </View>
+
+
+        <View style={styles.circleRowsContainer}>
+         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}>Circle Member </Text>
+         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 1, 16)}}>saves ₹342 per month.</Text>
+         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}> You can too - Renew now!</Text>
+        </View>
+
+      </View>
+    );
+  };
+
   const renderCovidMainView = () => {
     return (
       <View
@@ -2372,6 +2552,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderCircle()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
