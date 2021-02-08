@@ -755,19 +755,19 @@ export const ShoppingCartProvider: React.FC = (props) => {
               formatNumber(item?.quantity * (item?.price - (item?.specialPrice || item?.price)));
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
             return {
-              medicineSKU: item.id,
-              medicineName: item.name,
-              quantity: item.quantity,
-              mrp: formatNumber(item.price),
+              medicineSKU: item?.id,
+              medicineName: item?.name,
+              quantity: item?.quantity,
+              mrp: formatNumber(item?.price),
               price: discountedPrice,
-              specialPrice: Number(item.specialPrice || item.price),
-              itemValue: formatNumber(item.price * item.quantity), // (multiply MRP with quantity)
+              specialPrice: Number(item?.specialPrice || item?.price),
+              itemValue: formatNumber(item?.price * item?.quantity), // (multiply MRP with quantity)
               itemDiscount: formatNumber(
-                item.price * item.quantity - discountedPrice * item.quantity
+                item?.price * item?.quantity - discountedPrice * item?.quantity
               ), // (diff of (MRP - discountedPrice) * quantity)
-              isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
-              mou: Number(item.mou),
-              isMedicine: item.isMedicine ? '1' : '0',
+              isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
+              mou: Number(item?.mou),
+              isMedicine: item?.isMedicine ? '1' : '0',
               couponFree: item?.isFreeCouponProduct ? 1 : 0,
             } as MedicineCartOMSItem;
           }

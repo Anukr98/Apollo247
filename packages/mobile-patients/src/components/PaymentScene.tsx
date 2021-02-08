@@ -258,7 +258,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
     const storeCode =
       Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
-    let url = `${baseUrl}/${isStorePickup ? 'paymed' : 'paymedv2'}?amount=${totalAmount}& ${
+    let url = `${baseUrl}/${isStorePickup ? 'paymed' : 'paymedv2'}?amount=${totalAmount}&${
       isStorePickup ? 'oid' : 'transId'
     }=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
