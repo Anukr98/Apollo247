@@ -336,7 +336,6 @@ const styles = StyleSheet.create({
   height: height,
   width: width,
   flex: 1,
-  top: statusBarHeight(),
   left: 0,
   right: 0,
   bottom: 0,
@@ -952,7 +951,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
 
 
         {cancelAppointment && (
-          <View style={styles.cancelView}>
+          <View style={[styles.cancelView,{top: statusBarHeight()}]}>
             <TouchableOpacity
               onPress={() => {
                 CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
