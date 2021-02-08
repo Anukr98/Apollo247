@@ -115,7 +115,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     const queryReasonsIndex = queryReasons?.findIndex((item) => item === string.common.return_text);
-    if (medicineOrderStatusDate && medicineOrderStatus === MEDICINE_ORDER_STATUS.DELIVERED) {
+    if (medicineOrderStatusDate) {
       const showReturnOrder =
         moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
       if (!(medicineOrderStatus === MEDICINE_ORDER_STATUS.DELIVERED && showReturnOrder)) {
