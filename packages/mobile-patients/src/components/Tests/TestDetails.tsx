@@ -26,6 +26,7 @@ import {
   g,
   nameFormater,
   isSmallDevice,
+  filterHtmlContent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -84,6 +85,7 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import HTML from 'react-native-render-html';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -151,6 +153,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setIsDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
+    deliveryAddressId: diagnosticDeliveryAddressId,
   } = useDiagnosticsCart();
   const {
     setIsCircleSubscription,
@@ -160,6 +163,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setIsFreeDelivery,
     setCirclePlanValidity,
     pharmacyCircleAttributes,
+    deliveryAddressId,
   } = useShoppingCart();
   const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
@@ -178,6 +182,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
+  console.log({ deliveryAddressId });
+  console.log({ diagnosticDeliveryAddressId });
 
   const itemName =
     testDetails?.ItemName ||
@@ -561,16 +567,28 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setReadMore(!readMore);
   }
 
+  function filterDiagnosticHTMLContent(content: string = '') {
+    return content
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;rn/g, '>')
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, '\n')
+      .replace(/\.t/g, '.');
+  }
+
   const renderDescription = (showDescription: string) => {
+    const formattedText = filterDiagnosticHTMLContent(showDescription);
     return (
       <>
-        <View style={styles.overViewContainer}>
+        <View style={[styles.overViewContainer, { width: readMore ? '85%' : '100%' }]}>
           {readMore ? (
-            <Text style={styles.packageDescriptionText} numberOfLines={1}>
+            <Text style={styles.packageDescriptionText} numberOfLines={2}>
               {stripHtml(showDescription)}
             </Text>
           ) : (
-            <Text style={styles.packageDescriptionText}>{stripHtml(showDescription)}</Text>
+            <HTML html={formattedText} baseFontStyle={styles.packageDescriptionText} />
           )}
         </View>
         <TouchableOpacity
@@ -1106,7 +1124,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   overViewContainer: {
-    width: '85%',
     marginTop: 10,
   },
   readMoreTouch: { alignSelf: 'flex-end', marginTop: 10 },
