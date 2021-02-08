@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
 
 export interface PaymentSceneProps
   extends NavigationScreenProps<{
-    orderId: string;
-    orderAutoId: number;
+    orders: any;
+    transactionId: number;
     token: string;
     amount: number;
     burnHC: number;
@@ -73,6 +73,7 @@ export interface PaymentSceneProps
     orderInfo: saveMedicineOrderOMSVariables;
     planId?: string;
     subPlanId?: string;
+    isStorePickup: boolean;
   }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
@@ -85,12 +86,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
   const burnHC = props.navigation.getParam('burnHC');
-  const orderAutoId = props.navigation.getParam('orderAutoId');
-  const orderId = props.navigation.getParam('orderId');
+  const orders = props.navigation.getParam('orders');
+  const transactionId = props.navigation.getParam('transactionId');
   const authToken = props.navigation.getParam('token');
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const bankCode = props.navigation.getParam('bankCode');
+  const isStorePickup = props.navigation.getParam('isStorePickup');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const coupon = props.navigation.getParam('coupon');
@@ -142,14 +144,14 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const navigateToOrderDetails = (showOrderSummaryTab: boolean) => {
-    hideAphAlert!();
-    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-      goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderAutoId,
-    });
-  };
+  // const navigateToOrderDetails = (showOrderSummaryTab: boolean) => {
+  //   hideAphAlert!();
+  //   props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+  //     goToHomeOnBack: true,
+  //     showOrderSummaryTab,
+  //     orderAutoId,
+  //   });
+  // };
 
   const firePurchaseEvent = () => {
     let items: any = [];
@@ -212,18 +214,20 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
       status: status,
       price: totalAmount,
-      orderId: orderAutoId,
+      transId: transactionId,
+      orders: orders,
       orderInfo: orderInfo,
       deliveryTime: deliveryTime,
       checkoutEventAttributes: checkoutEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
+      isStorePickup: isStorePickup,
     });
   };
 
   const onWebViewStateChange = (data: NavState, WebViewRef: any) => {
     const redirectedUrl = data.url;
     const loading = data.loading;
-    console.log({ redirectedUrl, data });
+    console.log('redirectedUrl >>>>>>', redirectedUrl);
     if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1 &&
@@ -232,7 +236,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       WebViewRef.stopLoading();
       // handleOrderSuccess();
       clearCartInfo && clearCartInfo();
-      fireOrderEvent(true);
+      // fireOrderEvent(true);
       navigationToPaymentStatus('PAYMENT_SUCCESS');
     } else if (
       redirectedUrl &&
@@ -244,7 +248,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       if (!!circleMembershipCharges) {
         navigationToPaymentStatus('PAYMENT_FAILED');
       } else {
-        fireOrderEvent(false);
+        // fireOrderEvent(false);
         navigationToPaymentStatus('PAYMENT_PENDING');
       }
     }
@@ -254,7 +258,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
     const storeCode =
       Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
-    let url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+    let url = `${baseUrl}/${isStorePickup ? 'paymed' : 'paymedv2'}?amount=${totalAmount}&${
+      isStorePickup ? 'oid' : 'transId'
+    }=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
     }${bankCode ? '&bankCode=' + bankCode : ''}`;
 
@@ -263,10 +269,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         subPlanId ? '&subPlanId=' + subPlanId : ''
       }${'&storeCode=' + storeCode}`;
     }
-
-    // PATH: /paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile
-    // SUCCESS_PATH: /mob?tk=<>&status=<>
-    console.log({ totalAmount, orderAutoId, authToken, url });
+    console.log({ totalAmount, transactionId, authToken, url });
     console.log(`%cMEDICINE_PG_URL:\t${url}`, 'color: #bada55');
 
     let WebViewRef: any;
