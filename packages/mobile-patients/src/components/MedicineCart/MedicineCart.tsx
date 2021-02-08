@@ -424,35 +424,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
         };
         try {
-          console.log('tatInput >>', tatInput);
           const res = await getDeliveryTAT247(tatInput);
           const response = res?.data?.response;
-          console.log('response >>>', JSON.stringify(response));
           setOrders?.(response);
-          // const deliveryDate = response[0]?.tat;
-          // if (deliveryDate) {
           let inventoryData: any = [];
           response?.forEach((order: any) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          console.log('inventoryData >>', inventoryData);
           if (inventoryData?.length) {
-            // setStoreType(storeType);
-            // setShopId(storeCode);
-            // setStoreDistance(distance);
-            // setdeliveryTime?.(deliveryDate);
             addressSelectedEvent(selectedAddress, response[0]?.tat);
             addressChange && NavigateToCartSummary();
             updatePricesAfterTat(inventoryData, updatedCartItems);
+          } else {
+            addressChange && NavigateToCartSummary();
+            handleTatApiFailure(selectedAddress, {});
           }
-          // addressChange && NavigateToCartSummary();
-          // } else {
-          //   addressChange && NavigateToCartSummary();
-          //   handleTatApiFailure(selectedAddress, {});
-          // }
         } catch (error) {
-          console.log('error >>>>', error);
           handleTatApiFailure(selectedAddress, error);
           addressChange && NavigateToCartSummary();
         }

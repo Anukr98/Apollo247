@@ -741,23 +741,19 @@ export const ShoppingCartProvider: React.FC = (props) => {
       let shipmentTotal = 0;
       const items: (MedicineCartOMSItem | null)[] = cartItems
         ?.map((item) => {
-          console.log(
-            'item.couponPrice >>>',
-            formatNumber(item?.couponPrice ? item.price - item?.couponPrice : 0)
-          );
           if (sku.includes(item?.id)) {
             const discountedPrice = formatNumber(
-              (coupon && item.couponPrice) || item.specialPrice || item.price
+              (coupon && item?.couponPrice) || item?.specialPrice || item?.price
             );
             shipmentCouponDiscount =
               shipmentCouponDiscount +
               formatNumber(
-                item.quantity * (item?.couponPrice ? item.price - item?.couponPrice : 0)
+                item?.quantity * (item?.couponPrice ? item?.price - item?.couponPrice : 0)
               );
             shipmentProductDiscount =
               shipmentProductDiscount +
-              formatNumber(item.quantity * (item.price - (item?.specialPrice || item.price)));
-            shipmentTotal = shipmentTotal + formatNumber(item.price * item.quantity);
+              formatNumber(item?.quantity * (item?.price - (item?.specialPrice || item?.price)));
+            shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
             return {
               medicineSKU: item.id,
               medicineName: item.name,

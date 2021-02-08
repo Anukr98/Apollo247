@@ -62,7 +62,7 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
   };
 
   const renderOrders = () => {
-    return orders.map((order: any, index: any) => {
+    return orders?.map((order: any, index: any) => {
       return (
         <View>
           {renderCartItemsHeader(index, order?.items || [])}
