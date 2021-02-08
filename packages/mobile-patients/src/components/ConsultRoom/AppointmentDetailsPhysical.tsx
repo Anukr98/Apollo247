@@ -646,10 +646,10 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                                   <View style={styles.row}>
 
                                       <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14 }]}>
-                                        {data.doctorInfo.doctorHospital[0].facility
-                                                             ? `${data?.doctorInfo?.doctorHospital[0]?.facility?.name}, ${data?.doctorInfo?.doctorHospital[0]?.facility?.streetLine1}`
+                                        {data.doctorInfo?.doctorHospital?.[0]?.facility
+                                                             ? `${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name}, ${data?.doctorInfo?.doctorHospital?.[0]?.facility?.streetLine1}`
                                                              : ''
-                                        }{"\n"+data?.doctorInfo?.doctorHospital[0]?.facility?.city}
+                                        }{"\n"+data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
                                       </Text>
                                       <TouchableOpacity onPress={()=>{openMaps()}}>
                                       <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14,color:'#FC9916' }]}>
@@ -665,8 +665,8 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                     };
 
                     const openMaps = () =>{
-                    let query=`${data?.doctorInfo?.doctorHospital[0]?.facility?.name},
-                                ${data?.doctorInfo?.doctorHospital[0]?.facility?.city}`;
+                    let query=`${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name},
+                                ${data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}`;
                     let url=`google.navigation:q=${query}`
                     Linking.openURL(url)
 
@@ -719,11 +719,11 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                   Data:
                     data.data &&
                     data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
+                    data?.data?.bookRescheduleAppointment?.appointmentDetails,
                   DoctorName:
                     props.navigation.state.params!.data &&
                     props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
+                    props.navigation.state.params!.data?.doctorInfo?.fullName,
                 },
               }),
             ],
@@ -827,7 +827,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         const message = e.message ? e.message.split(':')[1].trim() : '';
         if (message == 'INVALID_APPOINTMENT_ID') {
           showAphAlert!({
-            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+            title: `Hi, ${(currentPatient && currentPatient?.firstName) || ''} :)`,
             description: 'Ongoing / Completed appointments cannot be cancelled.',
           });
         }
@@ -888,9 +888,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           />
           <View
             style={{
-              backgroundColor: theme.colors.CARD_BG,
-              paddingTop: 20,
-              paddingHorizontal: 20,
+              backgroundColor: theme.colors.CARD_BG,paddingTop: 20,paddingHorizontal: 20,
               ...theme.viewStyles.shadowStyle,
             }}
           >
@@ -930,10 +928,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           >
             <View style={{ height: 60, alignItems: 'flex-end' }}>
               <TouchableOpacity
-                style={{
-                  height: 60,
-                  paddingRight: 25,
-                  backgroundColor: 'transparent',
+                style={{height: 60,paddingRight: 25,backgroundColor: 'transparent',
                 }}
                 onPress={() => {
                   setBottompopup(false);
@@ -1016,7 +1011,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+            title={`Hi, ${(currentPatient && currentPatient?.firstName) || ''} :)`}
             description={
               "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!"
             }
@@ -1062,7 +1057,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         )}
         {/* {sucesspopup && (
           <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+            title={`Hi, ${(currentPatient && currentPatient?.firstName) || ''} :)`}
             description={'Appointment sucessfully cancelled'}
           >
             <View
@@ -1107,9 +1102,9 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             setdisplayoverlay={() => setdisplayoverlay(false)}
             navigation={props.navigation}
             doctor={doctorDetails ? doctorDetails : null}
-            patientId={currentPatient ? currentPatient.id : ''}
-            clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
-            doctorId={doctorDetails && doctorDetails.id}
+            patientId={currentPatient ? currentPatient?.id : ''}
+            clinics={doctorDetails.doctorHospital ? doctorDetails?.doctorHospital : []}
+            doctorId={doctorDetails && doctorDetails?.id}
             renderTab={'Visit Clinic'}
             rescheduleCount={newRescheduleCount && newRescheduleCount}
             appointmentId={data.id}
@@ -1126,7 +1121,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             navigation={props.navigation}
             doctor={doctorDetails ? doctorDetails : null}
             patientId={currentPatient ? currentPatient.id : ''}
-            clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+            clinics={doctorDetails.doctorHospital ? doctorDetails?.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
             isbelowthree={belowThree}
             setdisplayoverlay={() => reshedulePopUpMethod()}
