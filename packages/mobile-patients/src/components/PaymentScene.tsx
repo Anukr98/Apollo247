@@ -73,6 +73,7 @@ export interface PaymentSceneProps
     orderInfo: saveMedicineOrderOMSVariables;
     planId?: string;
     subPlanId?: string;
+    isStorePickup: boolean;
   }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
@@ -91,6 +92,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const bankCode = props.navigation.getParam('bankCode');
+  const isStorePickup = props.navigation.getParam('isStorePickup');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const coupon = props.navigation.getParam('coupon');
@@ -218,6 +220,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       deliveryTime: deliveryTime,
       checkoutEventAttributes: checkoutEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
+      isStorePickup: isStorePickup,
     });
   };
 
@@ -232,9 +235,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     ) {
       WebViewRef.stopLoading();
       // handleOrderSuccess();
-      // clearCartInfo && clearCartInfo();
+      clearCartInfo && clearCartInfo();
       // fireOrderEvent(true);
-      console.log(' >>>>>>>>> navigate to payment status <<<<<<<<<<<<');
       navigationToPaymentStatus('PAYMENT_SUCCESS');
     } else if (
       redirectedUrl &&
@@ -256,7 +258,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
     const storeCode =
       Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
-    let url = `${baseUrl}/paymedv2?amount=${totalAmount}&transId=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+    let url = `${baseUrl}/${isStorePickup ? 'paymed' : 'paymedv2'}?amount=${totalAmount}& ${
+      isStorePickup ? 'oid' : 'transId'
+    }=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
     }${bankCode ? '&bankCode=' + bankCode : ''}`;
 

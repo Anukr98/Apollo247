@@ -4032,6 +4032,24 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
   }
 `;
 
+export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
+  query pharmaPaymentStatusV2($transactionId: Int!) {
+    pharmaPaymentStatusV2(transactionId: $transactionId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
+      paymentMode
+      planPurchaseDetails {
+        planPurchased
+        totalCashBack
+        planValidity
+      }
+    }
+  }
+`;
+
 export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
   query consultOrders($patientId: String!, $pageNo: Int!, $pageSize: Int!) {
     consultOrders(patientId: $patientId, pageNo: $pageNo, pageSize: $pageSize) {

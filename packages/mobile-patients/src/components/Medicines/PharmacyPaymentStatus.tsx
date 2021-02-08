@@ -15,6 +15,7 @@ import {
   GET_PHARMA_TRANSACTION_STATUS,
   SAVE_MEDICINE_ORDER_PAYMENT,
   SAVE_MEDICINE_ORDER_OMS,
+  GET_PHARMA_TRANSACTION_STATUS_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -95,6 +96,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const orders = props.navigation.getParam('orders');
   const price = props.navigation.getParam('price');
   const transId = props.navigation.getParam('transId');
+  const isStorePickup = props.navigation.getParam('isStorePickup');
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
@@ -121,17 +123,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
-    console.log('transId >>>', transId);
+    const apiCall = isStorePickup
+      ? GET_PHARMA_TRANSACTION_STATUS
+      : GET_PHARMA_TRANSACTION_STATUS_V2;
+    const variables = isStorePickup ? { orderId: transId } : { transactionId: transId };
+
     client
       .query({
-        query: GET_PHARMA_TRANSACTION_STATUS,
-        variables: {
-          orderId: transId,
-        },
+        query: apiCall,
+        variables: variables,
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        const pharmaPaymentStatus = res?.data?.pharmaPaymentStatus;
+        const pharmaPaymentStatus = isStorePickup
+          ? res?.data?.pharmaPaymentStatus
+          : res?.data?.pharmaPaymentStatusV2;
         setorderDateTime(pharmaPaymentStatus?.orderDateTime);
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
@@ -483,7 +489,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           >
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Order ID : </Text>
             <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
-              {transId}
+              {orders.map(
+                (item: any, index: number) =>
+                  item?.orderAutoId + (index != orders?.length - 1 && ', ')
+              )}
             </Text>
           </View>
           {!!paymentRefId && (

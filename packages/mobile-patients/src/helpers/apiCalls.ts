@@ -216,6 +216,7 @@ export interface TatApiInput247 {
     sku: string;
     qty: number;
   }[];
+  userType: 'regular' | 'circle';
 }
 
 export interface ServiceAbilityApiInput {

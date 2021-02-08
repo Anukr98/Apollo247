@@ -648,6 +648,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const grandTotal = parseFloat(
     (
       cartTotal +
+      packagingCharges +
       deliveryCharges -
       couponDiscount -
       productDiscount +

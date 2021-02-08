@@ -421,6 +421,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           lat: selectedAddress?.latitude!,
           lng: selectedAddress?.longitude!,
           items: serviceableItems,
+          userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
         };
         try {
           console.log('tatInput >>', tatInput);

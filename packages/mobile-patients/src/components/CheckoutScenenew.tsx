@@ -461,7 +461,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
   };
 
-  const placeOrderV2 = (transactionId: number, orderType: string, isCOD?: boolean) => {
+  const placeOrderV2 = (
+    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
+    transactionId: number,
+    orderType: string,
+    isCOD?: boolean
+  ) => {
     const paymentInfo: saveMedicineOrderPaymentMqV2Variables = {
       medicinePaymentMqInput: {
         transactionId: transactionId,
@@ -521,7 +526,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
-            transactionId: transactionId,
+            transId: transactionId,
+            orders: orders,
           });
         }
       })
@@ -563,7 +569,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const appsflyerEventAttributes = {
       ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${transactionId}`),
     };
-    console.log(' >>>>>>> navigate payment page <<<<<<<<<<<<<');
     props.navigation.navigate(AppRoutes.PaymentScene, {
       orders,
       transactionId,
@@ -580,6 +585,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       orderInfo: orderInfo,
       planId: circlePlanId || '',
       subPlanId: circleSubPlanId || '',
+      isStorePickup,
     });
   };
 
@@ -720,57 +726,122 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 
-    saveOrderV2(OrderInfoV2)
-      .then(({ data }) => {
-        console.log('data >>>>', data);
-        const { orders, transactionId, errorCode, errorMessage } = data?.saveMedicineOrderV2 || {};
-        console.log(orders, transactionId, errorCode, errorMessage);
-        if (errorCode || errorMessage) {
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Order failed, ${errorMessage}.`,
-          });
-          setLoading?.(false);
-          return;
-        } else {
-          if (isCOD) {
-            placeOrderV2(transactionId!, 'COD', true);
-          } else if (hcOrder) {
-            placeOrderV2(transactionId!, 'HCorder', false);
-          } else {
-            console.log('Redirect To Payment Gateway');
-            redirectToPaymentGateway(orders!, transactionId!, paymentMode, bankCode, orderInfo)
-              .catch((e) => {
-                CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
-              })
-              .finally(() => {
-                setLoading && setLoading(false);
+    isStorePickup
+      ? saveOrder(orderInfo)
+          .then(({ data }) => {
+            const { orderId, orderAutoId, errorCode, errorMessage } =
+              g(data, 'saveMedicineOrderOMS')! || {};
+            console.log({ orderAutoId, orderId, errorCode, errorMessage });
+
+            if (errorCode || errorMessage) {
+              // Order-failed
+              showAphAlert!({
+                title: `Uh oh.. :(`,
+                description: `Order failed, ${errorMessage}.`,
               });
-          }
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('CheckoutScene_saveOrder', error);
-        setLoading && setLoading(false);
+              setLoading && setLoading(false);
+              return;
+            } else {
+              if (isCOD) {
+                console.log('isCashOnDelivery\t', { orderId, orderAutoId });
+                placeOrder(orderId, orderAutoId, 'COD', true);
+              } else if (hcOrder) {
+                console.log('HCorder\t', { orderId, orderAutoId });
+                placeOrder(orderId, orderAutoId, 'HCorder', false);
+              } else {
+                console.log('Redirect To Payment Gateway');
+                let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
+                orders[0] = {
+                  __typename: 'MedicineOrderIds',
+                  id: orderId,
+                  orderAutoId: orderAutoId,
+                };
+                redirectToPaymentGateway(orders, orderAutoId, paymentMode, bankCode, orderInfo)
+                  .catch((e) => {
+                    CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
+                  })
+                  .finally(() => {
+                    setLoading && setLoading(false);
+                  });
+              }
+            }
+          })
+          .catch((error) => {
+            CommonBugFender('CheckoutScene_saveOrder', error);
+            setLoading && setLoading(false);
 
-        const isPriceMismatch =
-          g(error, 'graphQLErrors', '0', 'message') == 'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
-        const isCouponError =
-          g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
+            const isPriceMismatch =
+              g(error, 'graphQLErrors', '0', 'message') ==
+              'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
+            const isCouponError =
+              g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
 
-        if (isPriceMismatch || isCouponError) {
-          props.navigation.goBack();
-        }
+            if (isPriceMismatch || isCouponError) {
+              props.navigation.goBack();
+            }
 
-        showAphAlert!({
-          title: string.common.uhOh,
-          description: isPriceMismatch
-            ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
-            : isCouponError
-            ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
-            : `Your order failed due to some temporary issue :( Please submit the order again.`,
-        });
-      });
+            showAphAlert!({
+              title: string.common.uhOh,
+              description: isPriceMismatch
+                ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
+                : isCouponError
+                ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+                : `Your order failed due to some temporary issue :( Please submit the order again.`,
+            });
+          })
+      : saveOrderV2(OrderInfoV2)
+          .then(({ data }) => {
+            console.log('data >>>>', data);
+            const { orders, transactionId, errorCode, errorMessage } =
+              data?.saveMedicineOrderV2 || {};
+            console.log(orders, transactionId, errorCode, errorMessage);
+            if (errorCode || errorMessage) {
+              showAphAlert!({
+                title: `Uh oh.. :(`,
+                description: `Order failed, ${errorMessage}.`,
+              });
+              setLoading?.(false);
+              return;
+            } else {
+              if (isCOD) {
+                placeOrderV2(orders!, transactionId!, 'COD', true);
+              } else if (hcOrder) {
+                placeOrderV2(orders!, transactionId!, 'HCorder', false);
+              } else {
+                console.log('Redirect To Payment Gateway');
+                redirectToPaymentGateway(orders!, transactionId!, paymentMode, bankCode, orderInfo)
+                  .catch((e) => {
+                    CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
+                  })
+                  .finally(() => {
+                    setLoading && setLoading(false);
+                  });
+              }
+            }
+          })
+          .catch((error) => {
+            CommonBugFender('CheckoutScene_saveOrder', error);
+            setLoading && setLoading(false);
+
+            const isPriceMismatch =
+              g(error, 'graphQLErrors', '0', 'message') ==
+              'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
+            const isCouponError =
+              g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
+
+            if (isPriceMismatch || isCouponError) {
+              props.navigation.goBack();
+            }
+
+            showAphAlert!({
+              title: string.common.uhOh,
+              description: isPriceMismatch
+                ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
+                : isCouponError
+                ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+                : `Your order failed due to some temporary issue :( Please submit the order again.`,
+            });
+          });
   };
 
   const firePurchaseEvent = (orderId: string) => {
