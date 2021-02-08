@@ -214,6 +214,12 @@ const styles = StyleSheet.create({
        paddingTop: 22,
        paddingBottom: 14,
      },
+     sucessPopupView:{
+     flexDirection: 'row',
+                                     marginHorizontal: 20,
+                                     alignItems: 'flex-end',
+                                     justifyContent: 'flex-end',
+                                   },
   careLogoText: {
     ...theme.viewStyles.text('SB', 7, theme.colors.WHITE),
   },
@@ -324,6 +330,31 @@ const styles = StyleSheet.create({
     padding: 8,
     marginRight: 15,
     marginVertical: 5,
+  },
+  cancelView:{
+  position: 'absolute',
+  height: height,
+  width: width,
+  flex: 1,
+  top: statusBarHeight(),
+  left: 0,
+  right: 0,
+  bottom: 0,
+  },
+  cancelSubView:{margin: 0,
+                  height: height,
+                  width: width,
+                  backgroundColor: 'transparent',},
+  cancelSubView2:{
+  backgroundColor: 'white',
+  width: 100,
+  height: 45,
+  marginLeft: width - 120,
+  marginTop: 40,
+  borderRadius: 10,
+  alignItems: 'center',
+  justifyContent: 'center',
+  ...theme.viewStyles.shadowStyle,
   },
   ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
   ctaOrangeTextStyle: {
@@ -888,7 +919,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           />
           <View
             style={{
-              backgroundColor: theme.colors.CARD_BG,paddingTop: 20,paddingHorizontal: 20,
+              backgroundColor: theme.colors.CARD_BG,padding: 20,
               ...theme.viewStyles.shadowStyle,
             }}
           >
@@ -898,101 +929,47 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
               }}
             >
               <View style={{ flex: 1 }}>
+
                 <Text
                   style={{
                     ...theme.fonts.IBMPlexSansMedium(12),
                     color: theme.colors.SEARCH_EDUCATION_COLOR,
                     paddingBottom: 4,
-                  }}
-                >
+                  }}>
                   #{data.displayId}
                 </Text>
                 {renderDoctorCard()}
                 {renderPatient()}
                 {renderPrice()}
 
-
-
               </View>
-
 
             </View>
           </View>
 
 
         </SafeAreaView>
-        {bottompopup && (
-          <BottomPopUp
-            title={'Hi:)'}
-            description="Opps ! The selected slot is unavailable. Please choose a different one"
-          >
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <TouchableOpacity
-                style={{height: 60,paddingRight: 25,backgroundColor: 'transparent',
-                }}
-                onPress={() => {
-                  setBottompopup(false);
-                }}
-              >
-                <Text
-                  style={{
-                    paddingTop: 16,
-                    ...theme.viewStyles.yellowTextStyle,
-                  }}
-                >
-                  OK, GOT IT
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </BottomPopUp>
-        )}
+
 
         {cancelAppointment && (
-          <View
-            style={{
-              position: 'absolute',
-              height: height,
-              width: width,
-              flex: 1,
-              top: statusBarHeight(),
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-          >
+          <View style={styles.cancelView}>
             <TouchableOpacity
               onPress={() => {
                 CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
                 setCancelAppointment(false);
               }}
             >
-              <View
-                style={{
-                  margin: 0,
-                  height: height,
-                  width: width,
-                  backgroundColor: 'transparent',
-                }}
-              >
+
+          <View style={styles.cancelSubView}>
                 <TouchableOpacity
                   onPress={() => {
                     setShowCancelPopup(true);
                     setCancelAppointment(false);
                   }}
                 >
+
                   <View
-                    style={{
-                      backgroundColor: 'white',
-                      width: 100,
-                      height: 45,
-                      marginLeft: width - 120,
-                      marginTop: 40,
-                      borderRadius: 10,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      ...theme.viewStyles.shadowStyle,
-                    }}
-                  >
+                    style={styles.cancelSubView2}>
                     <Text
                       style={{
                         backgroundColor: 'white',
@@ -1061,13 +1038,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             description={'Appointment sucessfully cancelled'}
           >
             <View
-              style={{
-                flexDirection: 'row',
-                marginHorizontal: 20,
-                //justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end',
-              }}
+              style={styles.sucessPopupView}
             >
               <View style={{ height: 60 }}>
                 <TouchableOpacity
