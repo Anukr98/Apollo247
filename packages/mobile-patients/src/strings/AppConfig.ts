@@ -75,9 +75,9 @@ const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
-  DIAGNOSTIC_COVID_MAX_SLOT_TIME: '16:00',
-  DIAGNOSTIC_COVID_MIN_SLOT_TIME: '11:00',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2446, 2613, 2614], //last two for testing rupose on uat
+  DIAGNOSTIC_COVID_MAX_SLOT_TIME: '15:00',
+  DIAGNOSTIC_COVID_MIN_SLOT_TIME: '10:00',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462], //last two for testing rupose on uat
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
   PACKAGING_CHARGES: 0,
