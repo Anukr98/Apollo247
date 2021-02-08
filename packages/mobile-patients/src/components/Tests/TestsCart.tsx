@@ -621,6 +621,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         return;
       }
       setLoading!(true);
+      //clearing on changing user
+      setDiagnosticAreas?.([]);
+      setAreaSelected?.({});
       const userId = g(currentPatient, 'id');
       const addressApiCall = await client.query<
         getPatientAddressList,
