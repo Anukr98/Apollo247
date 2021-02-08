@@ -186,6 +186,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
 
+  const getAllObjectForNull = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == null
+  );
+
   const getDiscountObject = orderDetails?.diagnosticOrderLineItems?.filter(
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
@@ -271,7 +275,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     )
   );
 
-  const totalIndividualDiagonsticsCharges = newArr?.reduce((prevVal, currVal) => prevVal + currVal);
+  const totalIndividualDiagonsticsCharges =
+    !!getAllObjectForNull && getAllObjectForNull?.length > 0
+      ? orderDetails?.totalPrice
+      : newArr?.reduce((prevVal, currVal) => prevVal + currVal, 0);
 
   const HomeCollectionCharges =
     orderDetails?.collectionCharges != null
