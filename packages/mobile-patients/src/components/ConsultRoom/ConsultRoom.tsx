@@ -2132,12 +2132,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const onPressVaccineTracker = () => {
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINE_TRACKER);
     try {
-      const userMobNo = g(currentPatient, 'mobileNumber');
-      const openUrl = `${AppConfig.Configuration.COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
-      console.log('openUrl', openUrl);
-      props.navigation.navigate(AppRoutes.CovidScan, {
-        covidUrl: openUrl,
-      });
+      // const userMobNo = g(currentPatient, 'mobileNumber');
+      const openUrl = AppConfig.Configuration.COVID_VACCINE_TRACKER_URL;
+      Linking.openURL(openUrl);
+      
     } catch (e) {}
   };
 
