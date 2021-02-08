@@ -575,6 +575,14 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, theme.colors.APP_RED),
     textAlign: 'center',
   },
+  audioDisableContainer: {
+    width: 85,
+    alignSelf: 'center',
+    backgroundColor: theme.colors.CALL_BG_GRAY,
+    borderRadius: 4,
+    paddingVertical: 2,
+    marginTop: 'auto',
+  },
   userThumbnailView: {
     position: 'absolute',
     alignItems: 'center',
@@ -2172,7 +2180,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-
+      eventsAfterConnectionDestroyed();
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
@@ -2259,15 +2267,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED,
         JSON.stringify(error)
       );
+      setDowngradeToAudio(false);
       if (error.reason === 'quality') {
         setSnackbarState(false);
-        setDowngradeToAudio(false);
       }
     },
     videoDisableWarning: (error: string) => {
       // console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
+      callToastStatus.current =
+        'Internet connection at the doctor’s end appears to be unstable if the problem persists, the video will be automatically turned off.';
     },
     videoDisableWarningLifted: (error: string) => {
+      callToastStatus.current = '';
+      setDowngradeToAudio(false);
       // console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
   };
@@ -2296,7 +2308,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         );
         fireWebengageEventForCallAnswer(WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON);
         callEndWebengageEvent('Network');
-        eventsAfterConnectionDestroyed();
         setTimeout(() => {
           setSnackbarState(true);
           setHandlerMessage('Check the network connection.');
@@ -2329,7 +2340,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         });
       }, 2000);
       console.log('session stream connectionDestroyed!', event);
-      eventsAfterConnectionDestroyed();
     },
     sessionConnected: (event: string) => {
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_CONNECTED, JSON.stringify(event));
@@ -2343,12 +2353,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         JSON.stringify(event)
       );
       console.log('session stream sessionDisconnected!', event);
-      eventsAfterConnectionDestroyed();
+      // eventsAfterConnectionDestroyed();
     },
     sessionReconnected: (event: string) => {
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       console.log('session stream sessionReconnected!', event);
+      callToastStatus.current = 'Reconnected';
+      callStatus.current = 'Connected';
+      subscriberConnected.current = true;
+      setTimeout(() => {
+        callToastStatus.current = '';
+      }, 2000);
       KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
@@ -2357,6 +2373,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         JSON.stringify(event)
       );
       console.log('session stream sessionReconnecting!', event);
+      callStatus.current = 'Reconnecting...';
+      callToastStatus.current = 'Reconnecting Call...';
       setSessionReconnectMsg();
       KeepAwake.activate();
     },
@@ -2380,8 +2398,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
       eventsAfterConnectionDestroyed();
+      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
       callEndWebengageEvent('Network');
@@ -2391,8 +2409,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
       console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
       if (event.stream.name !== (g(currentPatient, 'firstName') || 'patient')) {
-        setCallerAudio(event.stream.hasAudio);
-        setCallerVideo(event.stream.hasVideo);
+        const hasAudio = event?.stream?.hasAudio;
+        const hasVideo = event?.stream?.hasVideo;
+        setCallerAudio(hasAudio);
+        setCallerVideo(hasVideo);
+        setDowngradeToAudio(!hasVideo);
       }
     },
     otrnError: (error: string) => {
@@ -5726,16 +5747,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           },
         ]}
       >
-        <Text
-          style={[
-            styles.disabledVideoAudioText,
-            {
-              marginTop: 'auto',
-            },
-          ]}
-        >
-          Your audio is off
-        </Text>
+        <View style={styles.audioDisableContainer}>
+          <Text style={styles.disabledVideoAudioText}>Your audio is off</Text>
+        </View>
       </View>
     );
   };
