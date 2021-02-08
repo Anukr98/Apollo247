@@ -224,6 +224,9 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         responseMessage
         bankTxnId
         orderId
+        appointment{
+         id
+        }
       }
     }
   }
@@ -3496,6 +3499,11 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        patientInfo{
+        firstName
+        lastName
+        gender
+        }
         doctorInfo {
           id
           salutation

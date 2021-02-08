@@ -322,6 +322,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: '#02475b',
   },
+  bottomAlertTitle:{
+  height: 60,
+  paddingRight: 25,
+  backgroundColor: 'transparent',
+  justifyContent: 'center',
+  },
   profileIcon: {
     width: 38,
     height: 38,
@@ -699,8 +705,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const showFreeConsultOverlay = (params: any) => {
-    const { isJdQuestionsComplete, appointmentDateTime } = params?.appointmentData;
-    const { skipAutoQuestions } = params;
+
+console.log("csk",JSON.stringify(params))
+    const { isJdQuestionsComplete, appointmentDateTime,doctorInfo} = params?.appointmentData;
+    const { skipAutoQuestions,isPhysicalConsultBooked} = params;
     const doctorName = params?.doctorName?.includes('Dr')
       ? params?.doctorName
       : `Dr ${params?.doctorName}`;
@@ -710,12 +718,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (!isJdQuestionsComplete && !skipAutoQuestions) {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
     }
+    if (isPhysicalConsultBooked) {
+    console.log("csk hos",doctorInfo.doctorHospital[0])
+    let hospitalLocation=doctorInfo.doctorHospital[0].facility.name;
+           description = `
+           Your appointment has been successfully booked with ${doctorName} for ${appointmentDate}, ${appointmentTime} at ${hospitalLocation}.
+           Please note that you will need to pay ₹${doctorInfo.physicalConsultationFees} + One-time registration charges
+           (For new users) at the hospital Reception.
+           `;
+         }
     showAphAlert!({
       unDismissable: false,
       title: 'Appointment Confirmation',
       description: description,
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
+        {isPhysicalConsultBooked?(
+        <TouchableOpacity
+                    activeOpacity={1}
+                    style={styles.bottomAlertTitle}
+                    onPress={() => {
+                      hideAphAlert!();
+                      props.navigation.navigate('APPOINTMENTS');
+                    }}
+                  >
+        <Text style={theme.viewStyles.yellowTextStyle}>VIEW DETAILS</Text>
+        </TouchableOpacity>
+        ):(
           <TouchableOpacity
             activeOpacity={1}
             style={{
@@ -733,6 +762,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           >
             <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
           </TouchableOpacity>
+          )}
         </View>
       ),
     });
