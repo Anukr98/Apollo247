@@ -235,7 +235,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     ) {
       WebViewRef.stopLoading();
       // handleOrderSuccess();
-      clearCartInfo && clearCartInfo();
       // fireOrderEvent(true);
       navigationToPaymentStatus('PAYMENT_SUCCESS');
     } else if (
