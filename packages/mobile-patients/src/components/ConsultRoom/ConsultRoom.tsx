@@ -383,6 +383,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     justifyContent: 'center',
   },
+  congratulationsDescriptionPhysical: {
+    marginHorizontal: 10,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
 });
 
 type menuOptions = {
@@ -718,28 +725,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const doctorName = params?.doctorName?.includes('Dr')
       ? params?.doctorName
       : `Dr ${params?.doctorName}`;
+      let physical=false;
     const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
     const appointmentTime = moment(appointmentDateTime).format('h:mm a');
+    let hospitalLocation="";
     let description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please be in the consult room before the appointment time.`;
     if (!isJdQuestionsComplete && !skipAutoQuestions) {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
     }
     if (isPhysicalConsultBooked) {
-      let hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
-      description = `
-           Your appointment has been successfully booked with ${doctorName} for ${dateFormatter(
-        appointmentDateTime
-      )} at ${hospitalLocation}.
-           Please note that you will need to pay ₹${
-             doctorInfo?.physicalConsultationFees
-           } + One-time registration charges
-           (For new users) at the hospital Reception.
-           `;
-    }
+      hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
+      description = ``;
+      physical=true;
+         }
     showAphAlert!({
       unDismissable: false,
       title: 'Appointment Confirmation',
-      description: description,
+      description:description,
+      physical:physical,
+      physicalText: (
+      <Text style={styles.congratulationsDescriptionPhysical}>
+      Your appointment has been successfully booked with {doctorName} for <Text style={{color:'#02475B'}}>{dateFormatter(appointmentDateTime)} at {hospitalLocation+".\n\n"}</Text>
+      Please note that you will need to pay <Text style={{color:'#02475B'}}>₹{doctorInfo.physicalConsultationFees} + One-time registration charges</Text> (For new users) at the hospital Reception.
+      </Text>
+      ),
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
           {isPhysicalConsultBooked ? (

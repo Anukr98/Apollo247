@@ -108,6 +108,8 @@ type AphAlertParams = {
   style?: StyleProp<ViewStyle>;
   onPressOk?: () => void;
   removeTopIcon?: boolean;
+  physical?: boolean;
+  physicalText?: React.ReactNode;
 };
 
 export const UIElementsProvider: React.FC = (props) => {
@@ -254,10 +256,13 @@ export const UIElementsProvider: React.FC = (props) => {
               hideAphAlert();
             }
           }}
+          physical={alertParams.physical}
+          physicalText={alertParams.physicalText}
           removeTopIcon={alertParams.removeTopIcon}
         >
           {alertParams.children || (g(alertParams, 'CTAs', 'length') ? null : renderOkButton)}
           {renderCTAs()}
+
         </BottomPopUp>
       )
     );
