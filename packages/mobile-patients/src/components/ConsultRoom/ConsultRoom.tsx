@@ -50,6 +50,9 @@ import {
   VaccineTracker,
   ChatBot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { initiateDocOnCall, initiateDocOnCallVariables } from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall'
+import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
+import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -132,6 +135,7 @@ import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Dimensions,
   Image,
   ImageBackground,
@@ -820,6 +824,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
   };
+
+  // Call an apollo doctor logic handler 
+  const initiateCallDoctor = (mobileNumber: string) => {
+     client
+       .query<initiateDocOnCall, initiateDocOnCallVariables>({
+     query: INITIATE_DOC_ON_CALL,
+    variables: {
+     mobileNumber,
+    callType: docOnCallType.COVID_VACCINATION_QUERY,
+    },
+    fetchPolicy: 'no-cache',
+    })
+    .then((response) => {
+    response.data.initiateDocOnCall.success
+     ? Alert.alert('You will be connected to the doctor shortly')
+     : Alert.alert('Error while connecting to the Doctor, Please try again')
+    })
+    .catch((error) => {
+       console.log(error);
+       Alert.alert('Error while connecting to the Doctor, Please try again')
+    });
+    };
 
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
@@ -2033,14 +2059,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={styles.covidBtnStyle}>
             <CovidButton iconbase={PhoneDoctor} 
              title = {'Call an Apollo Doctor'} 
-             onPress={()=> console.log('Pressed')}/>
+             onPress={()=> onPressCallDoctor()}/>
             </View>
           </View>
             <View style={{ flexDirection: "row", justifyContent: 'space-around', alignItems: 'center' }}>
             <View style={styles.covidBtnStyle}>
             <CovidButton iconbase={ChatBot} 
              title = {'Chat with us'} 
-             onPress={()=> chatWithUS()}/>
+             onPress={()=> onPressChatWithUS()}/>
             </View>
             <View style={styles.covidBtnStyle}>
             <CovidButton iconbase={VaccineTracker} 
@@ -2060,13 +2086,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <DashedLine style={styles.plainLine} />;
   };
 
-  const chatWithUS = () =>{
+  const onPressChatWithUS = () =>{
     try {
-      // const userMobNo = g(currentPatient, 'mobileNumber');
       const openUrl = AppConfig.Configuration.CHAT_WITH_US;
       Linking.openURL(openUrl);
       
     } catch (e) {}
+  }
+
+  const onPressCallDoctor = async() => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    if (storedPhoneNumber) {
+      initiateCallDoctor(storedPhoneNumber);
+    }
+    else {
+      Alert.alert('Please try again later');
+    }
+
   }
 
   const renderCovidHelpButtons = () => {
