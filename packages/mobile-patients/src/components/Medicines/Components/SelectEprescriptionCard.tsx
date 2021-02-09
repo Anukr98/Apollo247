@@ -37,6 +37,16 @@ const styles = StyleSheet.create({
     right: 7,
     top: 7,
   },
+  pdfIconContainer: {
+    position: 'absolute',
+    left: 7,
+    top: 10,
+  },
+  pdfIcon: {
+    backgroundColor: 'grey',
+    paddingHorizontal: 2,
+    borderRadius: 4,
+  },
 });
 
 export interface SelectEprescriptionCardProps {
@@ -78,6 +88,13 @@ export const SelectEprescriptionCard: React.FC<SelectEprescriptionCardProps> = (
         <Text style={theme.viewStyles.text('R', 13, theme.colors.LIGHT_BLUE, 0.6, 24)}>{date}</Text>
       </View>
       <View style={styles.checkContainer}>{selected ? <CheckedIcon /> : <UnCheck />}</View>
+      {isPdf && (
+        <View style={styles.pdfIconContainer}>
+          <View style={styles.pdfIcon}>
+            <Text style={theme.viewStyles.text('M', 10, theme.colors.WHITE, 1, 13)}>PDF</Text>
+          </View>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
