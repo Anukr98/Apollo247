@@ -39,25 +39,6 @@ const paymentGatewayBaseUrl: string =
     ? 'https://devpmt.apollo247.com'
     : 'https://aph-staging-pmt.apollo247.com';
 
-const paymentGatewayBaseUrl: string =
-  APP_ENV == AppEnv.PROD
-    ? 'https://pmt.apollo247.com'
-    : APP_ENV == AppEnv.QA
-    ? 'https://aph-staging-pmt.apollo247.com'
-    : APP_ENV == AppEnv.QA2
-    ? 'https://qapmt.apollo247.com'
-    : APP_ENV == AppEnv.QA3
-    ? 'https://qathreepmt.apollo247.com'
-    : APP_ENV == AppEnv.PERFORM
-    ? 'https://aspmt.apollo247.com'
-    : APP_ENV == AppEnv.VAPT
-    ? 'https://stagingpmt.apollo247.com'
-    : APP_ENV == AppEnv.DEV
-    ? 'https://aph-dev-pmt.apollo247.com'
-    : APP_ENV == AppEnv.DEVReplica
-    ? 'https://devpmt.apollo247.com'
-    : 'https://aph-staging-pmt.apollo247.com';
-
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
