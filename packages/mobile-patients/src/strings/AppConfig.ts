@@ -39,6 +39,25 @@ const paymentGatewayBaseUrl: string =
     ? 'https://devpmt.apollo247.com'
     : 'https://aph-staging-pmt.apollo247.com';
 
+const paymentGatewayBaseUrl: string =
+  APP_ENV == AppEnv.PROD
+    ? 'https://pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA
+    ? 'https://aph-staging-pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA2
+    ? 'https://qapmt.apollo247.com'
+    : APP_ENV == AppEnv.QA3
+    ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.PERFORM
+    ? 'https://aspmt.apollo247.com'
+    : APP_ENV == AppEnv.VAPT
+    ? 'https://stagingpmt.apollo247.com'
+    : APP_ENV == AppEnv.DEV
+    ? 'https://aph-dev-pmt.apollo247.com'
+    : APP_ENV == AppEnv.DEVReplica
+    ? 'https://devpmt.apollo247.com'
+    : 'https://aph-staging-pmt.apollo247.com';
+
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
@@ -1223,7 +1242,6 @@ export const stepsToBookArray = [
 ];
 
 export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
-  
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
@@ -1234,10 +1252,9 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
-]
+];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
-  
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
@@ -1247,9 +1264,8 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
-
-]
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+];
 
 // SAMPLE_NOT_COLLECTED_IN_LAB
 // ORDER_CANCELLED_AFTER_REGISTRATION

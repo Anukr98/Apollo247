@@ -275,10 +275,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [coupon]);
 
   useEffect(() => {
-    if (!!circleMembershipCharges) {
-      setIsFreeDelivery && setIsFreeDelivery(true);
-    }
-  }, [circleMembershipCharges]);
+    !!circleMembershipCharges && isCircleSubscription
+      ? setIsFreeDelivery?.(true)
+      : setIsFreeDelivery?.(false);
+  }, [circleMembershipCharges, isCircleSubscription]);
 
   useEffect(() => {
     onFinishUpload();

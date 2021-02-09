@@ -153,6 +153,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     pharmacyCircleAttributes,
     shipments,
     orders,
+    setIsFreeDelivery,
   } = useShoppingCart();
   const { pharmacyUserTypeAttribute } = useAppCommonData();
 
@@ -215,6 +216,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       mutation: SAVE_MEDICINE_ORDER_PAYMENT_V2,
       variables: paymentInfo,
     });
+
+  useEffect(() => {
+    !!circleMembershipCharges ? setIsFreeDelivery?.(true) : setIsFreeDelivery?.(false);
+  }, [circleMembershipCharges]);
 
   useEffect(() => {
     fetchHealthCredits();
@@ -1407,11 +1412,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           title={'CASH ON DELIVERY'}
           onPress={() => initiateOrder('', '', true, false)}
         />
-        {!!isOneApolloSelected && (
+        {!!circleMembershipCharges ? (
+          <Text style={styles.codAlertMsg}>
+            {'!Remove Circle Membership on Cart Page to avail COD'}
+          </Text>
+        ) : !!isOneApolloSelected ? (
           <Text style={styles.codAlertMsg}>
             {'! COD option is not available along with OneApollo Health Credits.'}
           </Text>
-        )}
+        ) : null}
       </View>
     );
   };
@@ -1463,7 +1472,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
             {availableHC != 0 && renderOneApolloOption()}
             {renderNewCOD()}
-            {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()}
+            {/* {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()} */}
             {showPaymentOptions && (
               <>
                 {renderPaymentOptions()}
@@ -1646,7 +1655,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 0.05 * windowWidth,
   },
   codAlertMsg: {
-    ...theme.viewStyles.text('M', 11, theme.colors.LIGHT_BLUE, 1, 18),
+    ...theme.viewStyles.text('B', 11, theme.colors.LIGHT_BLUE, 1, 18),
     marginTop: 6,
     marginHorizontal: 25,
   },

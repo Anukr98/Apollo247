@@ -83,6 +83,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     cartItems,
     coupon,
     circlePlanSelected,
+    circleMembershipCharges,
+    setCirclePlanSelected,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
@@ -640,6 +642,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     } else if (status == failure || status == aborted) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription && setIsCircleSubscription(false);
+      setCirclePlanSelected?.(null);
       props.navigation.navigate(AppRoutes.MedicineCart);
     } else {
       clearCircleSubscriptionData();
@@ -740,7 +743,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                 ? renderCircleSavingsOnPurchase()
                 : null}
               {renderCODNote()}
-              {renderCODButton()}
+              {!circleMembershipCharges && renderCODButton()}
               {appointmentHeader()}
               {appointmentCard()}
               {renderNote()}
