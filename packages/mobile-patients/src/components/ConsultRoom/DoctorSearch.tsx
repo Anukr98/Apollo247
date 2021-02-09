@@ -61,7 +61,6 @@ import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  BackHandler,
   Dimensions,
   FlatList,
   Image,
@@ -406,20 +405,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   }, [currentPatient]);
 
-  useEffect(() => {
-    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      return () => {
-        _didFocus && _didFocus.remove();
-        _willBlur && _willBlur.remove();
-      };
-    });
-  }, []);
-
   const client = useApolloClient();
 
   const newUserPastSearch = async () => {
@@ -429,15 +414,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       newPatientId && fetchConsultedDoctors(newPatientId);
     }, 1500);
   };
+
   const handleBack = async () => {
-    if (isSearchFocused) {
-      setIsSearchFocused(false);
-      Keyboard.dismiss();
-    } else {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      props.navigation.goBack();
-      return false;
-    }
+    props.navigation.goBack();
   };
 
   const moveSelectedToTop = () => {
@@ -797,47 +776,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    const didFocusSubscription = props.navigation.addListener('didFocus', () => {
       !!searchText && fetchSearchData();
     });
-
-    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    });
-
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
-      willBlurSubscription && willBlurSubscription.remove();
     };
   }, [searchText]);
 
   const backDataFunctionality = async () => {
-    try {
-      if (isSearchFocused) {
-        setIsSearchFocused(false);
-        Keyboard.dismiss();
-      } else {
-        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-        const MoveDoctor = props.navigation.getParam('movedFrom') || '';
-
-        console.log('MoveDoctor', MoveDoctor);
-        CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
-      }
-    } catch (error) {}
-
-    return false;
+    setIsSearchFocused(false);
+    Keyboard.dismiss();
+    props.navigation.goBack();
   };
   const renderSearch = () => {
     const hasError =

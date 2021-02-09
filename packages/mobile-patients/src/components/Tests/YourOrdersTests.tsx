@@ -24,7 +24,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -34,6 +34,7 @@ import {
   FlatList,
   ScrollView,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -124,6 +125,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [showSummaryPopup, setSummaryPopup] = useState<boolean>(false);
+  const showSummaryPopupRef = useRef<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<
     getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList
   >();
@@ -173,6 +175,31 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       variables: { rescheduleDiagnosticsInput: rescheduleDiagnosticsInput },
       fetchPolicy: 'no-cache',
     });
+
+  const handleBack = () => {
+    if (showSummaryPopupRef.current) {
+      setSummaryPopup(false);
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    showSummaryPopupRef.current = showSummaryPopup;
+  }, [showSummaryPopup]);
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     fetchOrders(false);

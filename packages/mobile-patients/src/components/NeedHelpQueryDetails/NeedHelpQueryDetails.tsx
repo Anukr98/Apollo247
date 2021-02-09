@@ -686,6 +686,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderEmailPopup = () => {
     return showEmailPopup ? (
       <NeedHelpEmailPopup
+        onRequestClose={() => setShowEmailPopup(false)}
         onPressSendORConfirm={(textEmail) => {
           setEmail(textEmail);
           setIsEmail(true);
