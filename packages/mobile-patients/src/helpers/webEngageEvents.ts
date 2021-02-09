@@ -134,7 +134,7 @@ export enum WebEngageEventName {
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
   READ_ARTICLES = 'Read Articles',
-  HDFC_HEALTHY_LIFE = 'HDFC HealthyLife',
+  HDFC_HEALTHY_LIFE = 'Explore HDFC Tile Clicked on Homepage',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
@@ -664,7 +664,18 @@ export interface WebEngageEvents {
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
   [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
-  [WebEngageEventName.HDFC_HEALTHY_LIFE]: { clicked: true };
+  [WebEngageEventName.HDFC_HEALTHY_LIFE]: {
+    HDFCMembershipState: 'Active' | 'Inactive';
+    HDFCMembershipLevel: HdfcPlan;
+    Circle_Member: 'Yes' | 'No';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
