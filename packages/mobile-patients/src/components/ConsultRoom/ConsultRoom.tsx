@@ -377,6 +377,12 @@ const styles = StyleSheet.create({
     marginRight: 6,
     flex: 1,
   },
+  goToConsultRoom: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
 });
 
 type menuOptions = {
@@ -707,7 +713,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const showFreeConsultOverlay = (params: any) => {
-    console.log('csk', JSON.stringify(params));
     const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
     const { skipAutoQuestions, isPhysicalConsultBooked } = params;
     const doctorName = params?.doctorName?.includes('Dr')
@@ -720,8 +725,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
     }
     if (isPhysicalConsultBooked) {
-      console.log('csk hos', doctorInfo.doctorHospital[0]);
-      let hospitalLocation = doctorInfo.doctorHospital[0].facility.name;
+      let hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility.name;
       description = `
            Your appointment has been successfully booked with ${doctorName} for ${dateFormatter(
         appointmentDateTime
@@ -752,12 +756,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ) : (
             <TouchableOpacity
               activeOpacity={1}
-              style={{
-                height: 60,
-                paddingRight: 25,
-                backgroundColor: 'transparent',
-                justifyContent: 'center',
-              }}
+              style={styles.goToConsultRoom}
               onPress={() => {
                 hideAphAlert!();
                 props.navigation.navigate(AppRoutes.ChatRoom, {
