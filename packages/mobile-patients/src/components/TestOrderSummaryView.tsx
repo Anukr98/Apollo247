@@ -16,9 +16,9 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Props } from 'react-native-image-zoom-viewer/built/image-viewer.type';
 import { ScrollView } from 'react-native-gesture-handler';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -27,131 +27,6 @@ export interface LineItemPricing {
 
 const { height, width } = Dimensions.get('window');
 const isSmallDevice = width < 370;
-
-const styles = StyleSheet.create({
-  horizontalline: {
-    borderBottomColor: '#02475b',
-    borderBottomWidth: 2,
-    marginVertical: 10,
-  },
-  horizontalline1: {
-    borderBottomColor: '#02475b',
-    borderBottomWidth: 2,
-    marginVertical: 10,
-    marginTop: height * 0.04, //0.22
-  },
-  hideText: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
-    color: '#02475b',
-    textAlign: 'right',
-    marginLeft: isSmallDevice ? 16 : 20,
-  },
-  orderName: {
-    opacity: 0.6,
-    paddingRight: 10,
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
-    color: '#02475b',
-  },
-  subView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-    alignItems: 'center',
-  },
-  commonText: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
-    color: '#01475b',
-    marginBottom: 5,
-    marginTop: 5,
-    lineHeight: 20,
-    flexWrap: 'wrap',
-  },
-  commonTax: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 18,
-  },
-  headeingView: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    marginTop: 16,
-  },
-  deliveryText: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
-    color: '#0087ba',
-  },
-  testsummeryHeading: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
-    letterSpacing: 0.25,
-    color: '#02475b',
-    marginTop: 6,
-  },
-  payment: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#f7f8f5',
-    lineHeight: 20,
-    marginHorizontal: -16,
-    padding: 16,
-    marginTop: 5,
-    marginBottom: 12,
-  },
-  paymentText1: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
-  },
-  paymentText: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14),
-  },
-  lineSeparator: {
-    borderBottomColor: '#02475b',
-    borderBottomWidth: 2,
-    marginVertical: 10,
-    marginTop: height * 0.1,
-  },
-  grossTotalView: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 18,
-  },
-  orderSummaryView: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    margin: 20,
-    // padding: 16,
-  },
-  headerOuterView: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: '#ffffff',
-    height: 50,
-    borderRadius: 10,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  orderSummaryText: {
-    ...theme.fonts.IBMPlexSansSemiBold(isSmallDevice ? 15 : 16),
-    color: '#02475b',
-    textAlign: 'left',
-    marginTop: 15,
-    marginLeft: 20,
-  },
-  viewOrderDetailsContainer: {
-    zIndex: 1000,
-    height: 50,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-  },
-  viewOrderDetailsTouch: {
-    height: '100%',
-    width: '100%',
-  },
-});
 
 export interface TestOrderSummaryViewProps {
   orderDetails: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
@@ -164,10 +39,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
   showViewOrderDetails,
   onPressViewDetails,
 }) => {
-  const { currentPatient } = useAllCurrentPatients();
   const getFormattedDateTime = (time: string) => {
     return moment(time).format('D MMM YYYY | hh:mm A');
   };
+  const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
@@ -340,6 +215,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
             <View style={styles.subView}>
               <Text style={styles.orderName}>Date/Time</Text>
               <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.createdDate)}</Text>
+            </View>
+            <View style={styles.subView}>
+              <Text style={styles.orderName}>Order Type</Text>
+              <Text style={styles.hideText}>{isPrepaid ? 'Prepaid' : 'COD'}</Text>
             </View>
             {/* {!!orderDetails.slotTimings && (
           <View style={styles.subView}>
@@ -557,3 +436,128 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  horizontalline: {
+    borderBottomColor: '#02475b',
+    borderBottomWidth: 2,
+    marginVertical: 10,
+  },
+  horizontalline1: {
+    borderBottomColor: '#02475b',
+    borderBottomWidth: 2,
+    marginVertical: 10,
+    marginTop: height * 0.04, //0.22
+  },
+  hideText: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
+    color: '#02475b',
+    textAlign: 'right',
+    marginLeft: isSmallDevice ? 16 : 20,
+  },
+  orderName: {
+    opacity: 0.6,
+    paddingRight: 10,
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: '#02475b',
+  },
+  subView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  commonText: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: '#01475b',
+    marginBottom: 5,
+    marginTop: 5,
+    lineHeight: 20,
+    flexWrap: 'wrap',
+  },
+  commonTax: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
+  headeingView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+  deliveryText: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
+    color: '#0087ba',
+  },
+  testsummeryHeading: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 9.5 : 10),
+    letterSpacing: 0.25,
+    color: '#02475b',
+    marginTop: 6,
+  },
+  payment: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: '#f7f8f5',
+    lineHeight: 20,
+    marginHorizontal: -16,
+    padding: 16,
+    marginTop: 5,
+    marginBottom: 12,
+  },
+  paymentText1: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+  },
+  paymentText: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14),
+  },
+  lineSeparator: {
+    borderBottomColor: '#02475b',
+    borderBottomWidth: 2,
+    marginVertical: 10,
+    marginTop: height * 0.1,
+  },
+  grossTotalView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
+  orderSummaryView: {
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    margin: 20,
+    // padding: 16,
+  },
+  headerOuterView: {
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: '#ffffff',
+    height: 50,
+    borderRadius: 10,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  orderSummaryText: {
+    ...theme.fonts.IBMPlexSansSemiBold(isSmallDevice ? 15 : 16),
+    color: '#02475b',
+    textAlign: 'left',
+    marginTop: 15,
+    marginLeft: 20,
+  },
+  viewOrderDetailsContainer: {
+    zIndex: 1000,
+    height: 50,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  viewOrderDetailsTouch: {
+    height: '100%',
+    width: '100%',
+  },
+});

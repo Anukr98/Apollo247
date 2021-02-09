@@ -2060,6 +2060,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           packageName
           hideStatus
           statusMessage
+          statusDate
         }
         diagnosticOrderLineItems {
           id
@@ -2177,6 +2178,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         createdDate
         collectionCharges
         slotDateTimeInUTC
+        paymentType
         diagnosticOrderLineItems {
           id
           itemId
