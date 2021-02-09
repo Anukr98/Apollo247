@@ -536,7 +536,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             : '',
         items: cartItems.map((item) => {
           const discountedPrice = getFormattedAmount(
-            (coupon && item.couponPrice) || item.specialPrice || item.price
+            coupon && item.couponPrice == 0
+              ? 0
+              : (coupon && item.couponPrice) || item.specialPrice || item.price
           ); // since couponPrice & specialPrice can be undefined
           return {
             medicineSKU: item.id,
