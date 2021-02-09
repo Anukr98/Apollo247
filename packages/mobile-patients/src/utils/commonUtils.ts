@@ -438,5 +438,5 @@ export const isFloat = (n: number) => {
 };
 
 export const convertNumberToDecimal = (n: number | null | string) => {
-  return n ? (isFloat(Number(n)) ? Number(n)?.toFixed(2) : n) : '';
+  return n ? (isFloat(Number(n)) ? Number(n)?.toFixed(2) : n) : n;
 };
