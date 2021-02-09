@@ -63,11 +63,10 @@ const styles = StyleSheet.create({
   },
   cameraView: {
     height: height / 2.5,
-    marginBottom: 140,
   },
   cameraActionsContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: Platform.OS === 'ios' ? 20 : height / 4.3,
   },
   cameraClickIcon: {
     resizeMode: 'contain',
