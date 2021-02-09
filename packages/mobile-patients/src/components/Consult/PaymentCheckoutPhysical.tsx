@@ -266,9 +266,14 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         <View style={{flexDirection:'row',justifyContent:'space-between'}}>
         <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
 
+        {/*
+        (
         <TouchableOpacity onPress={()=>setShowProfilePopUp(true)}>
         <Text style={[styles.priceBreakupTitle,{color:'#FC9916'}]}>CHANGE PROFILE</Text>
         </TouchableOpacity>
+        )
+        */}
+
         </View>
         <View style={styles.seperatorLine} />
         <Text style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap',fontSize:14 }]}>

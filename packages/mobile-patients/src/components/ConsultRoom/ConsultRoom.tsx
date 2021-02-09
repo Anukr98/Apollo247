@@ -377,6 +377,13 @@ const styles = StyleSheet.create({
     marginRight: 6,
     flex: 1,
   },
+  congratulationsDescriptionPhysical: {
+    marginHorizontal: 10,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
 });
 
 type menuOptions = {
@@ -716,13 +723,14 @@ console.log("csk",JSON.stringify(params))
       : `Dr ${params?.doctorName}`;
     const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
     const appointmentTime = moment(appointmentDateTime).format('h:mm a');
+    let hospitalLocation="";
     let description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please be in the consult room before the appointment time.`;
     if (!isJdQuestionsComplete && !skipAutoQuestions) {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
     }
     if (isPhysicalConsultBooked) {
     console.log("csk hos",doctorInfo.doctorHospital[0])
-    let hospitalLocation=doctorInfo.doctorHospital[0].facility.name;
+    hospitalLocation=doctorInfo.doctorHospital[0].facility.name;
            description = `
            Your appointment has been successfully booked with ${doctorName} for ${dateFormatter(appointmentDateTime)} at ${hospitalLocation}.
            Please note that you will need to pay ₹${doctorInfo.physicalConsultationFees} + One-time registration charges
@@ -732,7 +740,13 @@ console.log("csk",JSON.stringify(params))
     showAphAlert!({
       unDismissable: false,
       title: 'Appointment Confirmation',
-      description: description,
+      physical:true,
+      physicalText: (
+      <Text style={styles.congratulationsDescriptionPhysical}>
+      Your appointment has been successfully booked with {doctorName} for <Text style={{color:'#02475B'}}>{dateFormatter(appointmentDateTime)} at {hospitalLocation+".\n"}</Text>
+      Please note that you will need to pay <Text style={{color:'#02475B'}}>₹{doctorInfo.physicalConsultationFees} + One-time registration charges</Text> (For new users) at the hospital Reception.
+      </Text>
+      ),
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
         {isPhysicalConsultBooked?(
