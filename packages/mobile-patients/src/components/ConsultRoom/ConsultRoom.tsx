@@ -725,13 +725,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
     }
     if (isPhysicalConsultBooked) {
-      let hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility.name;
+      let hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
       description = `
            Your appointment has been successfully booked with ${doctorName} for ${dateFormatter(
         appointmentDateTime
       )} at ${hospitalLocation}.
            Please note that you will need to pay ₹${
-             doctorInfo.physicalConsultationFees
+             doctorInfo?.physicalConsultationFees
            } + One-time registration charges
            (For new users) at the hospital Reception.
            `;
