@@ -2156,7 +2156,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           >
             <Text style={[styles.plusTextStyle, id !== 1 && { color: '#FFFFFF' }]}>{'+'}</Text>
             <Text style={[styles.addMoreTextStyle, id !== 1 && { color: '#FFFFFF' }]}>
-              {id !== 1 ? 'ADD PAGE' : 'ADD MORE PAGES'}
+              {'ADD PAGE'}
             </Text>
           </TouchableOpacity>
         </View>
