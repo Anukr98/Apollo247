@@ -45,6 +45,8 @@ import {
   TestsIcon,
   WhiteArrowRightIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+
+import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -722,7 +724,7 @@ console.log("csk",JSON.stringify(params))
     console.log("csk hos",doctorInfo.doctorHospital[0])
     let hospitalLocation=doctorInfo.doctorHospital[0].facility.name;
            description = `
-           Your appointment has been successfully booked with ${doctorName} for ${appointmentDate}, ${appointmentTime} at ${hospitalLocation}.
+           Your appointment has been successfully booked with ${doctorName} for ${dateFormatter(appointmentDateTime)} at ${hospitalLocation}.
            Please note that you will need to pay ₹${doctorInfo.physicalConsultationFees} + One-time registration charges
            (For new users) at the hospital Reception.
            `;

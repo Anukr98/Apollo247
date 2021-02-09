@@ -393,11 +393,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           textColor: theme.colors.SKY_BLUE,
         },
         { image: <CTPrescription />, description: string.consultType.inperson.point5 },
-        {
-          image: <CTChat />,
-          description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
-          textColor: theme.colors.SKY_BLUE,
-        },
+
       ]
     );
   };
