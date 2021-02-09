@@ -322,6 +322,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         af_currency: 'INR',
         'Circle Cashback amount':
           circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+        'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+        'Prescription Option selected': uploadPrescriptionRequired
+          ? 'Prescription Upload'
+          : 'Not Applicable',
         ...pharmacyCircleAttributes!,
         ...pharmacyUserTypeAttribute,
       };
@@ -359,6 +363,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   ) => {
     const eventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isCOD),
+      'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+      'Prescription Option selected': uploadPrescriptionRequired
+        ? 'Prescription Upload'
+        : 'Not Applicable',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
