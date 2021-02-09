@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 export const getDate = (date: string) => {
-  let formattedDate = format(date, 'DD MMM YYYY, h:mm A');
+  let formattedDate = format(date || new Date(), 'DD MMM YYYY, h:mm A');
   return formattedDate;
 };
 

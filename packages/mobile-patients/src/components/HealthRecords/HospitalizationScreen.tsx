@@ -416,10 +416,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
             item?.date
           ).format('DD MMM, YYYY')}`
         : moment(item?.date).format('DD MMM YYYY');
-    const soureName =
-      item?.hospitalName && getSourceName(item?.source!) === string.common.clicnical_document_text
-        ? item?.hospitalName
-        : getSourceName(item?.source!) || '-';
+    const soureName = getSourceName(item?.source!) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
       getSourceName(item?.source!) === string.common.clicnical_document_text ||

@@ -134,27 +134,28 @@ export enum WebEngageEventName {
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
   READ_ARTICLES = 'Read Articles',
-  HDFC_HEALTHY_LIFE = 'HDFC HealthyLife',
+  HDFC_HEALTHY_LIFE = 'Explore HDFC Tile Clicked on Homepage',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
+  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
-  DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
-  DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
   DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
+  DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
+  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
+
+  DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
 
@@ -663,7 +664,18 @@ export interface WebEngageEvents {
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
   [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
-  [WebEngageEventName.HDFC_HEALTHY_LIFE]: { clicked: true };
+  [WebEngageEventName.HDFC_HEALTHY_LIFE]: {
+    HDFCMembershipState: 'Active' | 'Inactive';
+    HDFCMembershipLevel: HdfcPlan;
+    Circle_Member: 'Yes' | 'No';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later

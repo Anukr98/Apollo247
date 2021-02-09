@@ -32,5 +32,6 @@ const styles = StyleSheet.create({
   },
   rightText: {
     ...text('B', 13, APP_YELLOW),
+    textAlign: 'center',
   },
 });

@@ -502,6 +502,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderSuccessPopup = (orderAutoId: string) => {
+    props.navigation.pop(2, { immediate: true });
     showAphAlert!({
       title: 'Hi :)',
       ctaContainerStyle: {
@@ -519,9 +520,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           type: 'orange-link',
           onPress: () => {
             hideAphAlert!();
-
-            props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-              goToHomeOnBack: true,
+            props.navigation.push(AppRoutes.OrderDetailsScene, {
               showOrderSummaryTab: false,
               orderAutoId: orderAutoId,
             });
