@@ -485,7 +485,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   ) {
     const orderSelected = !!orderInfo ? orderInfo : orders;
     let splitOrderDetails: any = {};
-    if (orderSelected.length > 1) {
+    if (orderSelected?.length > 1) {
       orderSelected?.forEach((order: any, index: number) => {
         const momentTatDate = moment(order?.tat);
         splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
@@ -872,7 +872,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       }
     }
     let splitOrderDetails: any = {};
-    if (orders.length > 1) {
+    if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
           getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;

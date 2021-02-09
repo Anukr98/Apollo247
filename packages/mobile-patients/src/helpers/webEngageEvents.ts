@@ -13,6 +13,7 @@ type PrescriptionOptions =
   | 'Prescription Later'
   | 'Virtual Consult'
   | 'Not Applicable';
+type SiteType = 'Hub' | 'LVDC' | 'CVDC';
 
 export enum ProductPageViewedSource {
   NOTIFICATION = 'notification',
@@ -1515,8 +1516,8 @@ export interface WebEngageEvents {
     Shipment_2_Value?: number;
     Shipment_1_Items?: number; // number of items
     Shipment_2_Items?: number;
-    Shipment_1_Site_Type?: 'Hub' | 'LVDC' | 'CVDC';
-    Shipment_2_Site_Type?: 'Hub' | 'LVDC' | 'CVDC';
+    Shipment_1_Site_Type?: SiteType;
+    Shipment_2_Site_Type?: SiteType;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
