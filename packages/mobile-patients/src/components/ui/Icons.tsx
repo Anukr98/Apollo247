@@ -1482,6 +1482,22 @@ export const CovidOrange: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_covid_orange.png')} />
 );
 
+export const FaqsArticles: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/faq.png')} />
+)
+
+export const VaccineTracker: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/vaccine-tracker.png')} />
+)
+
+export const ChatBot: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/chatWithUs.png')} />
+)
+
+export const PhoneDoctor: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/phone-doctor.png')} />
+)
+
 export const DashedLine: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
 );
