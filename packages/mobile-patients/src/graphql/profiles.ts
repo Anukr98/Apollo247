@@ -4601,3 +4601,11 @@ export const UPDATE_APPOINTMENT = gql`
     }
   }
 `;
+
+export const INITIATE_DOC_ON_CALL = gql`
+  query initiateDocOnCall($mobileNumber: String, $callType: docOnCallType) {
+    initiateDocOnCall(mobileNumber: $mobileNumber, callType: $callType) {
+      success
+    }
+  }
+`;
