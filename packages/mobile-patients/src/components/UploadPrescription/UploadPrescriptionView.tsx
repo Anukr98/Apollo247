@@ -571,7 +571,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           return;
         }
         const uploadedImages = formatResponse(images);
-        console.log('GALLERY IMAGE>>>>>>>>>>>>>>> ', JSON.stringify(uploadedImages));
         setPhysicalPrescriptions &&
           setPhysicalPrescriptions([...physicalPrescriptions, ...uploadedImages]);
         props.navigation.navigate(AppRoutes.UploadPrescription, {
