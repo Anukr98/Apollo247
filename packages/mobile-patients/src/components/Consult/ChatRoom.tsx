@@ -2413,7 +2413,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         const hasVideo = event?.stream?.hasVideo;
         setCallerAudio(hasAudio);
         setCallerVideo(hasVideo);
-        setDowngradeToAudio(!hasVideo);
+        hasVideo && setDowngradeToAudio(false);
       }
     },
     otrnError: (error: string) => {
