@@ -34,167 +34,10 @@ import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_JUSPAY_REFUND_STATUS,
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
+  AppConfig,
+  DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 const width = Dimensions.get('window').width;
-
-const styles = StyleSheet.create({
-  containerStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    padding: 16,
-    paddingBottom: 12,
-  },
-  viewRowStyle: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  detailsViewStyle: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  titleStyle: {
-    ...theme.fonts.IBMPlexSansMedium(15),
-    lineHeight: 24,
-    color: theme.colors.SHERPA_BLUE,
-    textTransform: 'capitalize',
-    marginBottom: 6,
-  },
-  descriptionStyle: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    letterSpacing: 0.04,
-    color: theme.colors.LIGHT_BLUE,
-    opacity: 0.6,
-    flex: 1,
-  },
-  idStyle: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.SHERPA_BLUE,
-    opacity: 0.6,
-    flex: 1,
-    textAlign: 'right',
-  },
-  statusStyle: {
-    ...theme.fonts.IBMPlexSansMedium(12.5),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.CARD_SUBTEXT,
-    textTransform: 'capitalize',
-  },
-  dateTimeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(12.5),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.CARD_SUBTEXT,
-    flex: 1,
-    textAlign: 'left',
-  },
-  separator: {
-    height: 1,
-    backgroundColor: theme.colors.LIGHT_BLUE,
-    opacity: 0.2,
-    marginTop: 15,
-    marginBottom: 8,
-  },
-  statusIconStyle: {
-    height: 28,
-    width: 28,
-  },
-  progressLineContainer: {
-    flexDirection: 'row',
-    flex: 1,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  progressLineDone: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#00b38e',
-    marginTop: 20,
-    marginBottom: 16,
-  },
-  progressLineBefore: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#0087ba',
-  },
-  progressLineAfter: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#00b38e',
-    opacity: 0.2,
-  },
-  testOptionsOuterView: {
-    marginTop: 16,
-    marginBottom: 7,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginLeft: -32, //align with medicine
-  },
-  rightButtonOuterView: {
-    flex: 0.7,
-    flexDirection: 'row',
-  },
-  rightButtonText: {
-    ...theme.viewStyles.yellowTextStyle,
-    fontSize: width > 380 ? 13 : 12,
-  },
-  separatorLine: {
-    borderLeftWidth: 1,
-    backgroundColor: theme.colors.LIGHT_BLUE,
-    marginTop: 3,
-    marginLeft: 2,
-    marginRight: 3,
-    marginBottom: 2,
-    opacity: 0.2,
-  },
-  packageNameText: {
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-    lineHeight: 24,
-    color: theme.colors.SHERPA_BLUE,
-    textTransform: 'capitalize',
-    marginBottom: 6,
-    textAlign: 'left',
-  },
-  packageNameView: { marginLeft: '10%' },
-  packageNameSeparator: { marginLeft: -16, width: '110%', marginBottom: 8, height: 1.5 },
-  testNameView: { backgroundColor: '#F7F8F5', flex: 1, paddingTop: 3, paddingLeft: 10 },
-  testNameText: {
-    ...theme.fonts.IBMPlexSansSemiBold(11),
-    lineHeight: 24,
-    color: theme.colors.SHERPA_BLUE,
-    textTransform: 'capitalize',
-  },
-  moreText: {
-    ...theme.fonts.IBMPlexSansRegular(12),
-    lineHeight: 24,
-    color: theme.colors.SHERPA_BLUE,
-    textTransform: 'none',
-    fontWeight: 'normal',
-  },
-  testPreparationView: { alignSelf: 'flex-end', width: '80%' },
-  testPreparationInnerView: { flexDirection: 'row', justifyContent: 'flex-end' },
-  pendingIconStyle: { marginTop: '3%', height: 10, width: 10, resizeMode: 'contain' },
-  preTestingText: {
-    marginHorizontal: 5,
-    ...theme.fonts.IBMPlexSansRegular(10),
-    lineHeight: 24,
-    color: theme.colors.SHERPA_BLUE,
-  },
-  arrowIconStyle: {
-    marginTop: '1%',
-    height: 20,
-    width: 20,
-    resizeMode: 'contain',
-    tintColor: '#B3C8CE',
-  },
-  testIconStyle: { marginTop: '2%', height: 24, width: 24, resizeMode: 'contain' },
-  failureText: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.INPUT_FAILURE_TEXT,
-    lineHeight: 24,
-  },
-});
 
 type OrderStatusType = DIAGNOSTIC_ORDER_STATUS | REFUND_STATUSES;
 
@@ -226,28 +69,38 @@ export interface TestOrderCardProps {
   // isReschedule?: boolean;
 }
 
+const statusToBeShown = DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW;
+
 export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const [showDisclaimer, setShowDisclaimer] = useState<boolean>(false);
   const isOrderWithProgressIcons =
-    props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED ||
+    statusToBeShown.includes(props.status!) ||
     (props.showRefund && DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(props.refundStatus!));
 
   const getProgressWidth = (status: OrderStatusType, progresDirection: 'left' | 'right') => {
     if (progresDirection == 'left') {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
         return 0; //0
-      } else if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED) {
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
+        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN
+      ) {
         return 2;
-      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
+        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+      ) {
         return 3; //4
-      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB ||
+        status == 'SAMPLE_NOT_COLLECTED_IN_LAB'
+      ) {
+        return 4;
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+      ) {
         return 4;
       } else if (
         status == REFUND_STATUSES.PENDING ||
@@ -262,11 +115,25 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     } else {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
         return 5; //3
-      } else if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED) {
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
+        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN
+      ) {
+        return 5; //4
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
+        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+      ) {
         return 4;
-      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
-        return 3;
-      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB ||
+        status == 'SAMPLE_NOT_COLLECTED_IN_LAB'
+      ) {
+        return 2;
+      } else if (
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
+        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+      ) {
         return 2;
       } else if (
         status == REFUND_STATUSES.PENDING ||
@@ -286,8 +153,8 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     //   //Change once we get all the status list from API
     //   return <View style={styles.progressLineDone} />;
     // }
-    const statusToCheck = props.showRefund ? props.refundStatus! : props.status;
-    const statusTextToShow = props.showRefund ? props.refundStatus! : props.statusText;
+    const statusToCheck = props.showRefund ? props.refundStatus! : props.status!;
+    const statusTextToShow = props.showRefund ? props.refundStatus! : props.statusText!;
     if (isOrderWithProgressIcons) {
       return (
         <View style={{ marginLeft: -20 }}>
@@ -324,7 +191,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
               getTextAlign(statusToCheck),
             ]}
           >
-            {getTestOrderStatusText(statusTextToShow!)}
+            {getTestOrderStatusText(statusTextToShow!, 'TestOrderCard')}
           </Text>
         </View>
       );
@@ -371,18 +238,28 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         };
         break;
       case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+      case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
         return {
           textAlign: 'left',
           marginLeft: '20%',
         };
         break;
       case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
+      case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
         return {
           textAlign: 'center',
           marginLeft: 0,
         };
         break;
+      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
+      case 'SAMPLE_NOT_COLLECTED_IN_LAB':
+        return {
+          textAlign: 'center',
+          marginLeft: '10%',
+        };
+        break;
       case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
+      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB:
         return {
           textAlign: 'center',
           marginLeft: '20%',
@@ -768,3 +645,162 @@ TestOrderCard.defaultProps = {
   showTestPreparation: true,
   isTypeOfPackage: false,
 };
+
+const styles = StyleSheet.create({
+  containerStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 16,
+    paddingBottom: 12,
+  },
+  viewRowStyle: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  detailsViewStyle: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  titleStyle: {
+    ...theme.fonts.IBMPlexSansMedium(15),
+    lineHeight: 24,
+    color: theme.colors.SHERPA_BLUE,
+    textTransform: 'capitalize',
+    marginBottom: 6,
+  },
+  descriptionStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    letterSpacing: 0.04,
+    color: theme.colors.LIGHT_BLUE,
+    opacity: 0.6,
+    flex: 1,
+  },
+  idStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SHERPA_BLUE,
+    opacity: 0.6,
+    flex: 1,
+    textAlign: 'right',
+  },
+  statusStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12.5),
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    color: theme.colors.CARD_SUBTEXT,
+    textTransform: 'capitalize',
+  },
+  dateTimeStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12.5),
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    color: theme.colors.CARD_SUBTEXT,
+    flex: 1,
+    textAlign: 'left',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.2,
+    marginTop: 15,
+    marginBottom: 8,
+  },
+  statusIconStyle: {
+    height: 28,
+    width: 28,
+  },
+  progressLineContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  progressLineDone: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#00b38e',
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  progressLineBefore: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#0087ba',
+  },
+  progressLineAfter: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#00b38e',
+    opacity: 0.2,
+  },
+  testOptionsOuterView: {
+    marginTop: 16,
+    marginBottom: 7,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginLeft: -32, //align with medicine
+  },
+  rightButtonOuterView: {
+    flex: 0.7,
+    flexDirection: 'row',
+  },
+  rightButtonText: {
+    ...theme.viewStyles.yellowTextStyle,
+    fontSize: width > 380 ? 13 : 12,
+  },
+  separatorLine: {
+    borderLeftWidth: 1,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    marginTop: 3,
+    marginLeft: 2,
+    marginRight: 3,
+    marginBottom: 2,
+    opacity: 0.2,
+  },
+  packageNameText: {
+    ...theme.fonts.IBMPlexSansSemiBold(16),
+    lineHeight: 24,
+    color: theme.colors.SHERPA_BLUE,
+    textTransform: 'capitalize',
+    marginBottom: 6,
+    textAlign: 'left',
+  },
+  packageNameView: { marginLeft: '10%' },
+  packageNameSeparator: { marginLeft: -16, width: '110%', marginBottom: 8, height: 1.5 },
+  testNameView: { backgroundColor: '#F7F8F5', flex: 1, paddingTop: 3, paddingLeft: 10 },
+  testNameText: {
+    ...theme.fonts.IBMPlexSansSemiBold(11),
+    lineHeight: 24,
+    color: theme.colors.SHERPA_BLUE,
+    textTransform: 'capitalize',
+  },
+  moreText: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 24,
+    color: theme.colors.SHERPA_BLUE,
+    textTransform: 'none',
+    fontWeight: 'normal',
+  },
+  testPreparationView: { alignSelf: 'flex-end', width: '80%' },
+  testPreparationInnerView: { flexDirection: 'row', justifyContent: 'flex-end' },
+  pendingIconStyle: { marginTop: '3%', height: 10, width: 10, resizeMode: 'contain' },
+  preTestingText: {
+    marginHorizontal: 5,
+    ...theme.fonts.IBMPlexSansRegular(10),
+    lineHeight: 24,
+    color: theme.colors.SHERPA_BLUE,
+  },
+  arrowIconStyle: {
+    marginTop: '1%',
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+    tintColor: '#B3C8CE',
+  },
+  testIconStyle: { marginTop: '2%', height: 24, width: 24, resizeMode: 'contain' },
+  failureText: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    color: theme.colors.INPUT_FAILURE_TEXT,
+    lineHeight: 24,
+  },
+});

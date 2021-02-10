@@ -468,6 +468,13 @@ export enum PharmaDiscountApplicableOn {
   SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
+export enum PrescriptionType {
+  CONSULT = "CONSULT",
+  LATER = "LATER",
+  NA = "NA",
+  UPLOADED = "UPLOADED",
+}
+
 export enum REFUND_STATUS {
   REFUND_FAILED = "REFUND_FAILED",
   REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
@@ -1183,7 +1190,7 @@ export interface MedicineCartOMSInput {
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
-  isConsultRequired?: boolean | null;
+  prescriptionType?: PrescriptionType | null;
 }
 
 export interface MedicineCartOMSItem {
