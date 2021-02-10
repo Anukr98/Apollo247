@@ -302,6 +302,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
+  mapsStyle:{
+  margin: 6,
+  flexWrap: 'wrap',
+  fontSize:14,
+  color:'#FC9916'
+  },
   popDescriptionStyle: {
     marginHorizontal: 24,
     marginTop: 8,
@@ -681,8 +687,13 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                                                              : ''
                                         }{"\n"+data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
                                       </Text>
-                                      {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>{openMaps()}}>
-                                      <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14,color:'#FC9916' }]}>
+                                      {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>{
+                                      try{
+                                      openMaps()
+                                      }
+                                      catch(e){}
+                                      }}>
+                                      <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                                       https://www.google.com/maps/dir/
                                       </Text>
                                       </TouchableOpacity>)}

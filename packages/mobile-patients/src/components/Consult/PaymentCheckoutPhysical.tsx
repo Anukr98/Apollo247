@@ -356,8 +356,13 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                           : ''
                       }${doctor?.doctorHospital?.[0].facility?.city}`}
                     </Text>
-                    {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>{openMaps()}}>
-                    <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14,color:'#FC9916' }]}>
+                    {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>{
+                    try{
+                    openMaps()
+                    }catch(e){}
+
+                    }}>
+                    <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                     https://www.google.com/maps/dir/
                     </Text>
                     </TouchableOpacity>)}
@@ -1221,5 +1226,11 @@ const styles = StyleSheet.create({
     marginTop: 27,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(18),
+  },
+  mapsStyle:{
+  margin: 6,
+  flexWrap: 'wrap',
+  fontSize:14,
+  color:'#FC9916'
   },
 });
