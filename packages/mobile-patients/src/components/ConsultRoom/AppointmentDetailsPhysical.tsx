@@ -681,11 +681,11 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                                                              : ''
                                         }{"\n"+data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
                                       </Text>
-                                      <TouchableOpacity onPress={()=>{openMaps()}}>
+                                      {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>{openMaps()}}>
                                       <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14,color:'#FC9916' }]}>
                                       https://www.google.com/maps/dir/
                                       </Text>
-                                      </TouchableOpacity>
+                                      </TouchableOpacity>)}
                                   </View>
                                 </View>
 
