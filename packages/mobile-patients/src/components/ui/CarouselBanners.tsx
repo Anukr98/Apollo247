@@ -61,7 +61,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { bannerData, hdfcUserSubscriptions, circleSubscription } = useAppCommonData();
+  const { bannerData, hdfcUserSubscriptions, circleSubscription, hdfcStatus } = useAppCommonData();
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(
     circleActivated || false
   );
@@ -427,10 +427,17 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
           props.navigation.navigate('TESTS');
         } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
-          props.navigation.navigate(AppRoutes.MembershipDetails, {
-            membershipType: g(hdfcUserSubscriptions, 'name'),
-            isActive: g(hdfcUserSubscriptions, 'isActive'),
-          });
+          if (hdfcUserSubscriptions != null && hdfcStatus == 'active') {
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: g(hdfcUserSubscriptions, 'name'),
+              isActive: g(hdfcUserSubscriptions, 'isActive'),
+            });
+          } else {
+            const openUrl = AppConfig.Configuration.HDFC_HEALTHY_LIFE_URL;
+            props.navigation.navigate(AppRoutes.CovidScan, {
+              covidUrl: openUrl,
+            });
+          }
         } else if (action == hdfc_values.DIETECIAN_LANDING) {
           props.navigation.navigate('DoctorSearchListing', {
             specialities: hdfc_values.DIETICS_SPECIALITY_NAME,

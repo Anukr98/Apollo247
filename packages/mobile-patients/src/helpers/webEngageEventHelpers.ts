@@ -91,7 +91,9 @@ export const postPhamracyCartAddressSelectedSuccess = (
   deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
   pharmacyCircleEvent: PharmacyCircleEvent,
   tatHrs: PhamracyCartAddressSelectedSuccess['TAT_Hrs'],
-  pharmacyUserTypeAttribute: PharmacyUserTypeEvent
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent,
+  isSplitCart?: boolean,
+  splitOrderDetails?: any
 ) => {
   const eventAttributes: PhamracyCartAddressSelectedSuccess = {
     'TAT Displayed': tatDisplayed,
@@ -100,8 +102,10 @@ export const postPhamracyCartAddressSelectedSuccess = (
     Pincode: pincode,
     'Delivery TAT': deliveryTat,
     TAT_Hrs: tatHrs,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
     ...pharmacyCircleEvent,
     ...pharmacyUserTypeAttribute,
+    ...splitOrderDetails,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
 

@@ -40,9 +40,8 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     { title: string.pharmacy },
   ];
   const queryCategory = navigation.getParam('queryCategory') || string.pharmacy;
-  const [email, setEmail] = useState(navigation.getParam('email') || '');
+  const email = navigation.getParam('email') || '';
   const isFromOrderFlow = navigation.getParam('fromOrderFlow') || false;
-  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(isFromOrderFlow);
 
   const { currentPatient } = useAllCurrentPatients();
   const [displayAll, setDisplayAll] = useState<boolean>(false);
@@ -77,13 +76,18 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
 
   const renderItem = ({ item }: ListRenderItemInfo<MedOrder>) => {
     const onPressHelp = () => {
+      const currentStatusDate = item?.medicineOrdersStatus?.find(
+        (i) => i?.orderStatus === item?.currentStatus
+      )?.statusDate;
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         medicineOrderStatus: item.currentStatus,
+        medicineOrderStatusDate: currentStatusDate,
         orderId: item.billNumber || item.orderAutoId,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
+        fromOrderFlow: isFromOrderFlow,
       });
     };
     const onPress = (isCancelOrder?: boolean) => {
@@ -146,6 +150,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const renderIssueNotRelatedToOrder = () => {
     const onPress = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+        fromOrderFlow: isFromOrderFlow,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
@@ -165,17 +170,6 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     ) : null;
   };
 
-  const renderEmailPopup = () => {
-    return showEmailPopup ? (
-      <NeedHelpEmailPopup
-        onPressSendORConfirm={(email) => {
-          setShowEmailPopup(false);
-          setEmail(email);
-        }}
-      />
-    ) : null;
-  };
-
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
@@ -185,7 +179,6 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
       {renderError()}
       {renderOrders()}
       {renderSections(displayAll)}
-      {renderEmailPopup()}
     </SafeAreaView>
   );
 };

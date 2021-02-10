@@ -47,7 +47,7 @@ export const ChatWithUs: React.FC<ChatWithUsProps> = (props) => {
 
 const styles = StyleSheet.create({
   chatWithUsView: { paddingBottom: 10, paddingTop: 4 },
-  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
+  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' },
   whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
   chatWithUsText: {
     textAlign: 'center',

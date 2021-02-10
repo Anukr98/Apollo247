@@ -21,6 +21,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -220,6 +221,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
+  const renderNoticeText = () => {
+    return (
+      <View style={{ marginVertical: 10 }}>
+        <Text style={styles.phleboText}>{string.diagnostics.orderSuccessPhaleboText}</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -229,6 +238,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderOrderPlacedMsg()}
             {renderBookingInfo()}
             {renderCartSavings()}
+            {renderNoticeText()}
             {backToHome()}
           </>
         </ScrollView>
@@ -378,11 +388,12 @@ const styles = StyleSheet.create({
   },
   separator: {
     borderColor: 'rgba(2,71,91,0.4)',
-    marginTop: 50,
+    marginTop: 40,
     borderBottomWidth: 1,
   },
   homeScreen: {
     ...theme.viewStyles.text('B', 16, '#FC9916'),
     marginVertical: 20,
   },
+  phleboText: { ...theme.fonts.IBMPlexSansRegular(12), lineHeight: 18, color: '#FF748E' },
 });

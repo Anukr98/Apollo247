@@ -9,6 +9,19 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYP
 // GraphQL query operation: getDiagnosticOrdersList
 // ====================================================
 
+export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus {
+  __typename: "DiagnosticOrdersStatus";
+  id: string;
+  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
+  itemId: number | null;
+  itemName: string | null;
+  packageId: number | null;
+  packageName: string | null;
+  hideStatus: boolean | null;
+  statusMessage: string | null;
+  statusDate: any | null;
+}
+
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   itemType: string | null;
@@ -89,6 +102,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   visitNo: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   paymentOrderId: string | null;
+  diagnosticOrdersStatus: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
 
