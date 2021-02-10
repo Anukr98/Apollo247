@@ -426,7 +426,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
 
     if (age! <= 10 || age == null) {
-      renderAlert(age == null ? string.common.tryAgainLater : string.diagnostics.minorAgeText);
+      renderAlert(age == null ? string.common.contactCustomerCare : string.diagnostics.minorAgeText);
       setIsMinor(true);
       setDeliveryAddressId!('');
       setDiagnosticAreas!([]);
