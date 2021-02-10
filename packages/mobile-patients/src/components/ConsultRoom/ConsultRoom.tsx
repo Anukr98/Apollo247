@@ -837,7 +837,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchPolicy: 'no-cache',
     })
     .then((response) => {
-    response.data.initiateDocOnCall.success
+      response?.data?.initiateDocOnCall?.success
      ? Alert.alert('You will be connected to the doctor shortly')
      : Alert.alert('Error while connecting to the Doctor, Please try again')
     })
@@ -2034,6 +2034,48 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderReadArticleContent = () => {
+    return (
+    <View style={styles.covidBtnStyle}>
+      <View style={styles.covidStyler}>
+         <CovidButton iconbase={CovidOrange} 
+         title = {string.common.readLatestArticles} 
+         onPress={()=> onPressReadArticles()}/>
+      </View>
+      </View>);
+  }
+
+  const renderCovidContainer = () => {
+  return(
+      <View style={styles.covidStyler}>
+        <View style={{ flexDirection: "row", height: 40}}>
+            <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={FaqsArticles} 
+                title = {'FAQs & Articles'} 
+                onPress={()=> onPressLearnAboutCovid()}/>
+            </View>
+            <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={PhoneDoctor} 
+                title = {'Call an Apollo Doctor'} 
+                onPress={()=> onPressCallDoctor()}/>
+            </View>
+        </View>
+        <View style={{ flexDirection: "row", justifyContent: 'space-around', alignItems: 'center' }}>
+              <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={ChatBot} 
+                title = {'Chat with us'} 
+                onPress={()=> onPressChatWithUS()}/>
+              </View>
+              <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={VaccineTracker} 
+                title = {'Vaccine Tracker'} 
+                onPress={()=> onPressVaccineTracker()}/>
+              </View>
+        </View>
+      </View>
+    );
+  }
+
   const renderContent = (title: string, description: string) => {
     return (
       <View>
@@ -2041,42 +2083,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18), marginTop: 16 }}>
           {description}
         </Text>
-        {title === string.common.healthBlog ?  <View style={styles.covidBtnStyle}>
-        <View style={styles.covidStyler}>
-           <CovidButton iconbase={CovidOrange} 
-           title = {string.common.readLatestArticles} 
-           onPress={()=> onPressReadArticles()}/>
-            </View>
-            </View>:null}
-        {title === string.common.covid19VaccineInfo
-          ? <View style={styles.covidStyler}>
-            <View style={{ flexDirection: "row", height: 40}}>
-            <View style={styles.covidBtnStyle}>
-            <CovidButton iconbase={FaqsArticles} 
-             title = {'FAQs & Articles'} 
-             onPress={()=> onPressLearnAboutCovid()}/>
-            </View>
-            <View style={styles.covidBtnStyle}>
-            <CovidButton iconbase={PhoneDoctor} 
-             title = {'Call an Apollo Doctor'} 
-             onPress={()=> onPressCallDoctor()}/>
-            </View>
-          </View>
-            <View style={{ flexDirection: "row", justifyContent: 'space-around', alignItems: 'center' }}>
-            <View style={styles.covidBtnStyle}>
-            <CovidButton iconbase={ChatBot} 
-             title = {'Chat with us'} 
-             onPress={()=> onPressChatWithUS()}/>
-            </View>
-            <View style={styles.covidBtnStyle}>
-            <CovidButton iconbase={VaccineTracker} 
-             title = {'Vaccine Tracker'} 
-             onPress={()=> onPressVaccineTracker()}/>
-            </View>
-            </View>
-            </View>
-          : null}
-          
+        {title === string.common.healthBlog ?  renderReadArticleContent():renderCovidContainer()}
         {renderDashedLine()}
       </View>
     );
