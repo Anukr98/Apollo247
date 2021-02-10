@@ -140,6 +140,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     pharmacyCircleAttributes,
     newAddressAdded,
     setNewAddressAdded,
+    orders,
+    setOrders,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -273,10 +275,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [coupon]);
 
   useEffect(() => {
-    if (!!circleMembershipCharges) {
-      setIsFreeDelivery && setIsFreeDelivery(true);
-    }
-  }, [circleMembershipCharges]);
+    !!circleMembershipCharges && isCircleSubscription
+      ? setIsFreeDelivery?.(true)
+      : setIsFreeDelivery?.(false);
+  }, [circleMembershipCharges, isCircleSubscription]);
 
   useEffect(() => {
     onFinishUpload();
@@ -419,39 +421,28 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           lat: selectedAddress?.latitude!,
           lng: selectedAddress?.longitude!,
           items: serviceableItems,
+          userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
           const response = res?.data?.response;
-          const tatTimeStamp = response?.tatU;
-          if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = response?.tat;
-            const { distance, storeCode, storeType } = response;
-            if (deliveryDate) {
-              const inventoryData = response?.items || [];
-              setloading!(false);
-              if (inventoryData?.length) {
-                setStoreType(storeType);
-                setShopId(storeCode);
-                setStoreDistance(distance);
-                setdeliveryTime?.(deliveryDate);
-                addressSelectedEvent(selectedAddress, deliveryDate);
-                addressChange &&
-                  NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
-                updatePricesAfterTat(inventoryData, updatedCartItems);
-              }
-              addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
-            } else {
-              addressChange && NavigateToCartSummary(genericServiceableDate);
-              handleTatApiFailure(selectedAddress, {});
-            }
+          setOrders?.(response);
+          let inventoryData: any = [];
+          response?.forEach((order: any) => {
+            inventoryData = inventoryData.concat(order?.items);
+          });
+          setloading!(false);
+          if (inventoryData?.length) {
+            addressSelectedEvent(selectedAddress, response[0]?.tat);
+            addressChange && NavigateToCartSummary();
+            updatePricesAfterTat(inventoryData, updatedCartItems);
           } else {
+            addressChange && NavigateToCartSummary();
             handleTatApiFailure(selectedAddress, {});
-            addressChange && NavigateToCartSummary(genericServiceableDate);
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
-          addressChange && NavigateToCartSummary(genericServiceableDate);
+          addressChange && NavigateToCartSummary();
         }
       } catch (error) {
         handleTatApiFailure(selectedAddress, error);
@@ -560,20 +551,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
     );
   }
-  function NavigateToCartSummary(
-    deliveryTime: string,
-    storeDistance?: number,
-    storeType?: string,
-    shopId?: string
-  ) {
-    !hasUnserviceableproduct() &&
-      isfocused &&
-      props.navigation.navigate(AppRoutes.CartSummary, {
-        deliveryTime: deliveryTime,
-        storeDistance: storeDistance,
-        tatType: storeType,
-        shopId: shopId,
-      });
+  function NavigateToCartSummary() {
+    !hasUnserviceableproduct() && isfocused && props.navigation.navigate(AppRoutes.CartSummary);
   }
 
   async function validatePharmaCoupon() {
@@ -695,9 +674,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const { data } = response;
         const { Stores } = data;
         if (Stores?.length) {
-          setshowStorePickupCard(false);
-        } else {
           setshowStorePickupCard(true);
+        } else {
+          setshowStorePickupCard(false);
         }
       } catch (error) {
         console.log(error);

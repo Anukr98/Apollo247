@@ -224,6 +224,9 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         responseMessage
         bankTxnId
         orderId
+        appointment{
+         id
+        }
       }
     }
   }
@@ -1918,6 +1921,20 @@ export const SAVE_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
+  mutation saveMedicineOrderV2($medicineOrderInput: SaveMedicineOrderV2Input!) {
+    saveMedicineOrderV2(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      transactionId
+      orders {
+        id
+        orderAutoId
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
     SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
@@ -1925,6 +1942,17 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
       errorMessage
       # orderId
       # orderAutoId
+    }
+  }
+`;
+
+export const SAVE_MEDICINE_ORDER_PAYMENT_V2 = gql`
+  mutation saveMedicineOrderPaymentMqV2($medicinePaymentMqInput: MedicinePaymentMqV2Input!) {
+    saveMedicineOrderPaymentMqV2(medicinePaymentMqInput: $medicinePaymentMqInput) {
+      errorCode
+      errorMessage
+      paymentOrderId
+      orderStatus
     }
   }
 `;
@@ -3498,6 +3526,11 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        patientInfo{
+        firstName
+        lastName
+        gender
+        }
         doctorInfo {
           id
           salutation
@@ -4037,6 +4070,24 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       paymentStatus
       paymentDateTime
       orderDateTime
+      paymentMode
+      planPurchaseDetails {
+        planPurchased
+        totalCashBack
+        planValidity
+      }
+    }
+  }
+`;
+
+export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
+  query pharmaPaymentStatusV2($transactionId: Int!) {
+    pharmaPaymentStatusV2(transactionId: $transactionId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
       paymentMode
       planPurchaseDetails {
         planPurchased

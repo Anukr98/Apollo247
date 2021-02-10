@@ -87,9 +87,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
   const isFromOrderFlow = navigation.getParam('fromOrderFlow') || false;
-  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(
-    isFromOrderFlow && !email ? true : false
-  );
+  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(false);
+  const [isEmail, setIsEmail] = useState<boolean>(false);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const { getFilteredReasons, saveNeedHelpQuery } = Helpers;
@@ -124,12 +123,19 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         updatedQueryReasons?.splice(queryReasonsIndex, 1);
         setQueryReasons(updatedQueryReasons);
       }
-    } else {
-      const updatedQueryReasons: string[] = queryReasons;
-      updatedQueryReasons?.splice(queryReasonsIndex, 1);
-      setQueryReasons(updatedQueryReasons);
     }
   }, []);
+
+  useEffect(() => {
+    if (isEmail) {
+      if (showReturnUI) {
+        onSubmitReturnPharmaOrder();
+      } else {
+        onSubmit();
+      }
+      setShowEmailPopup(false);
+    }
+  }, [isEmail]);
 
   const getOrderDetails = async (orderId: string) => {
     const variables: GetMedicineOrderShipmentDetailsVariables = {
@@ -222,6 +228,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         variables,
       });
       setLoading!(false);
+      setIsEmail(false);
       onSuccess();
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
@@ -247,6 +254,16 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       />,
       isOrderShipped && isDeliveryStatusQuery ? renderShipmentQueryCTAs() : renderSubmitCTA(),
     ];
+  };
+
+  const onSubmitShowEmailPopup = async () => {
+    if (isFromOrderFlow) {
+      setShowEmailPopup(true);
+    } else if (showReturnUI) {
+      onSubmitReturnPharmaOrder();
+    } else {
+      onSubmit();
+    }
   };
 
   const renderShipmentQueryCTAs = () => {
@@ -282,7 +299,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         <Text onPress={onPress} style={styles.submit}>
           {string.trackYourShipment}
         </Text>
-        <Text onPress={onSubmit} style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}>
+        <Text
+          onPress={onSubmitShowEmailPopup}
+          style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}
+        >
           {string.reportIssue}
         </Text>
       </View>
@@ -291,7 +311,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderSubmitCTA = () => {
     return (
-      <Text onPress={onSubmit} style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}>
+      <Text
+        onPress={onSubmitShowEmailPopup}
+        style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}
+      >
         {string.submit.toUpperCase()}
       </Text>
     );
@@ -452,6 +475,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         variables,
       });
       setLoading!(false);
+      setIsEmail(false);
       const return_order_status = g(response, 'data', 'returnPharmaOrder', 'status');
       if (return_order_status === 'success') {
         returnOrderWebEngageEvents(WebEngageEventName.RETURN_REQUEST_SUBMITTED);
@@ -515,7 +539,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           />
           <Button
             title={string.common.submit_request}
-            onPress={onSubmitReturnPharmaOrder}
+            onPress={onSubmitShowEmailPopup}
             disabled={submit_request}
             style={[
               styles.returnPolicyButtonStyle,
@@ -662,9 +686,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderEmailPopup = () => {
     return showEmailPopup ? (
       <NeedHelpEmailPopup
-        onPressSendORConfirm={(email) => {
-          setShowEmailPopup(false);
-          setEmail(email);
+        onRequestClose={() => setShowEmailPopup(false)}
+        onPressSendORConfirm={(textEmail) => {
+          setEmail(textEmail);
+          setIsEmail(true);
         }}
       />
     ) : null;

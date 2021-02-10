@@ -54,11 +54,13 @@ const styles = StyleSheet.create({
 export interface ButtonProps {
   title?: string;
   description?: string;
+  physicalText?: string;
   titleStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   onPressBack?: () => void;
   removeTopIcon?: boolean;
+  physical?: boolean;
 }
 
 export const BottomPopUp: React.FC<ButtonProps> = (props) => {
@@ -69,9 +71,12 @@ export const BottomPopUp: React.FC<ButtonProps> = (props) => {
           {!!props.title && (
             <Text style={[styles.congratulationsTextStyle, props.titleStyle]}>{props.title}</Text>
           )}
-          {!!props.description && (
-            <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
-          )}
+          {props.physical?
+           props.physicalText :
+           !!props.description && (
+                       <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
+                     )
+           }
           {props.children}
           {!props.removeTopIcon && <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />}
         </TouchableOpacity>

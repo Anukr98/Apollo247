@@ -5,6 +5,7 @@ import { MyAccount } from '@aph/mobile-patients/src/components/Account/MyAccount
 import { NotificationSettings } from '@aph/mobile-patients/src/components/Account/NotificationSettings';
 import { ChatRoom } from '@aph/mobile-patients/src/components/Consult/ChatRoom';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
+import { AppointmentDetailsPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetailsPhysical';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
 import {
   ConsultRoom,
@@ -159,6 +160,7 @@ export enum AppRoutes {
   DoctorDetails = 'DoctorDetails',
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
+  AppointmentDetailsPhysical = 'AppointmentDetailsPhysical',
   StorPickupScene = 'StorPickupScene',
   SearchTestScene = 'SearchTestScene',
   MedicineSearch = 'MedicineSearch',
@@ -356,6 +358,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AppointmentDetails]: {
     screen: AppointmentDetails,
+  },
+  [AppRoutes.AppointmentDetailsPhysical]: {
+    screen: AppointmentDetailsPhysical,
   },
   [AppRoutes.SearchTestScene]: {
     screen: SearchTestScene,

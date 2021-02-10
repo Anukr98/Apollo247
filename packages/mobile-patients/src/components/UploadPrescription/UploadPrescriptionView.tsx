@@ -63,11 +63,10 @@ const styles = StyleSheet.create({
   },
   cameraView: {
     height: height / 2.5,
-    marginBottom: 140,
   },
   cameraActionsContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: Platform.OS === 'ios' ? 20 : height / 4.3,
   },
   cameraClickIcon: {
     resizeMode: 'contain',
@@ -572,7 +571,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           return;
         }
         const uploadedImages = formatResponse(images);
-        console.log('GALLERY IMAGE>>>>>>>>>>>>>>> ', JSON.stringify(uploadedImages));
         setPhysicalPrescriptions &&
           setPhysicalPrescriptions([...physicalPrescriptions, ...uploadedImages]);
         props.navigation.navigate(AppRoutes.UploadPrescription, {
