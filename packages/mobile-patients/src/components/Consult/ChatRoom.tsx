@@ -838,7 +838,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const isDoctorVideoPaused = isPaused == 'audio/video' || isPaused == 'video';
   const doctorProfileUrl = appointmentData?.doctorInfo?.photoUrl;
-
+  const showDoctorProfile =
+    !subscriberConnected.current ||
+    isDoctorVideoPaused ||
+    (isAudioCall && callerAudio) ||
+    (isAudioCall && !callerVideo);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -5677,7 +5681,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             />
             <OTSubscriber
               style={
-                isDoctorVideoPaused
+                showDoctorProfile
                   ? { width: 0, height: 0 }
                   : !downgradeToAudio
                   ? subscriberStyles
@@ -5733,11 +5737,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             ? renderToastMessages()
             : null}
           {!showVideo && renderDisableVideoSubscriber()}
-          {(!subscriberConnected.current ||
-            isDoctorVideoPaused ||
-            (isAudioCall && callerAudio) ||
-            (isAudioCall && !callerVideo)) &&
-            renderNoSubscriberConnectedThumbnail()}
+          {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
           {!PipView && renderChatNotificationIcon()}
           {!PipView && renderBottomButtons()}
         </View>
