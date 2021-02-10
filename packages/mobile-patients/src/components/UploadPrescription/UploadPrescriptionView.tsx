@@ -380,7 +380,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
               <PreviousPrescriptionIcon style={styles.galleryIcon} />
             </TouchableOpacity>
             <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>SELECT FROM</Text>
-            <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>E-PRESCRIPTIONS</Text>
+            <Text style={theme.viewStyles.text('SB', 15, '#979797', 1, 19)}>MY PRESCRIPTIONS</Text>
           </View>
         </View>
       </View>
