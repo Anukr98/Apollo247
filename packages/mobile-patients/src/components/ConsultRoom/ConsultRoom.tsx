@@ -50,7 +50,10 @@ import {
   VaccineTracker,
   ChatBot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { initiateDocOnCall, initiateDocOnCallVariables } from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall'
+import {
+  initiateDocOnCall,
+  initiateDocOnCallVariables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
 import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
 import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -240,11 +243,17 @@ const styles = StyleSheet.create({
     marginTop: 6,
     ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
   },
-  covidBtnStyle: {
-    flex: 1,
+  readArticleStyle: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
     height: 50,
+  },
+  covidContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   labelView: {
     position: 'absolute',
@@ -364,13 +373,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
   },
-  covidStyler : {
-    flex:1,
-    justifyContent:'center',
-    alignItems:'center', 
-    marginHorizontal: 20,
-    marginTop: 5
-  },
   topTextStyle: {
     ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
     textAlign: 'center',
@@ -398,6 +400,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
     flex: 1,
+  },
+  covidSubContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    flex: 0.48,
+    left: 5,
+    right: 5,
+    width: '50%',
   },
   goToConsultRoom: {
     height: 60,
@@ -867,27 +877,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
   };
 
-  // Call an apollo doctor logic handler 
+  // Call an apollo doctor logic handler
   const initiateCallDoctor = (mobileNumber: string) => {
-     client
-       .query<initiateDocOnCall, initiateDocOnCallVariables>({
-     query: INITIATE_DOC_ON_CALL,
-    variables: {
-     mobileNumber,
-    callType: docOnCallType.COVID_VACCINATION_QUERY,
-    },
-    fetchPolicy: 'no-cache',
-    })
-    .then((response) => {
-      response?.data?.initiateDocOnCall?.success
-     ? Alert.alert('You will be connected to the doctor shortly')
-     : Alert.alert('Error while connecting to the Doctor, Please try again')
-    })
-    .catch((error) => {
-       console.log(error);
-       Alert.alert('Error while connecting to the Doctor, Please try again')
-    });
-    };
+    client
+      .query<initiateDocOnCall, initiateDocOnCallVariables>({
+        query: INITIATE_DOC_ON_CALL,
+        variables: {
+          mobileNumber,
+          callType: docOnCallType.COVID_VACCINATION_QUERY,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        response?.data?.initiateDocOnCall?.success
+          ? Alert.alert('You will be connected to the doctor shortly')
+          : Alert.alert('Error while connecting to the Doctor, Please try again');
+      })
+      .catch((error) => {
+        console.log(error);
+        Alert.alert('Error while connecting to the Doctor, Please try again');
+      });
+  };
 
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
@@ -2075,48 +2085,61 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
-
+  // Read Article Container Styling
   const renderReadArticleContent = () => {
     return (
-    <View style={styles.covidBtnStyle}>
-      <View style={styles.covidStyler}>
-         <CovidButton iconbase={CovidOrange} 
-         title = {string.common.readLatestArticles} 
-         onPress={()=> onPressReadArticles()}/>
-      </View>
-      </View>);
-  }
-
-  const renderCovidContainer = () => {
-  return(
-      <View style={styles.covidStyler}>
-        <View style={{ flexDirection: "row", height: 40}}>
-            <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={FaqsArticles} 
-                title = {'FAQs & Articles'} 
-                onPress={()=> onPressLearnAboutCovid()}/>
-            </View>
-            <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={PhoneDoctor} 
-                title = {'Call an Apollo Doctor'} 
-                onPress={()=> onPressCallDoctor()}/>
-            </View>
-        </View>
-        <View style={{ flexDirection: "row", justifyContent: 'space-around', alignItems: 'center' }}>
-              <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={ChatBot} 
-                title = {'Chat with us'} 
-                onPress={()=> onPressChatWithUS()}/>
-              </View>
-              <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={VaccineTracker} 
-                title = {'Vaccine Tracker'} 
-                onPress={()=> onPressVaccineTracker()}/>
-              </View>
+      <View style={styles.readArticleStyle}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginHorizontal: 20,
+            marginTop: 3,
+            height: 80,
+          }}
+        >
+          <CovidButton
+            iconbase={CovidOrange}
+            title={string.common.readLatestArticles}
+            onPress={() => onPressReadArticles()}
+          />
         </View>
       </View>
     );
-  }
+  };
+
+  // Covid Information Container styling
+  const renderCovidContainer = () => {
+    return (
+      <View style={styles.covidContainer}>
+        <View style={styles.covidSubContainer}>
+          <CovidButton
+            iconbase={FaqsArticles}
+            title={'FAQs & Articles'}
+            onPress={() => onPressLearnAboutCovid()}
+          />
+          <CovidButton
+            iconbase={ChatBot}
+            title={'Chat with us'}
+            onPress={() => onPressChatWithUS()}
+          />
+        </View>
+        <View style={styles.covidSubContainer}>
+          <CovidButton
+            iconbase={PhoneDoctor}
+            title={'Call an Apollo Doctor'}
+            onPress={() => onPressCallDoctor()}
+          />
+          <CovidButton
+            iconbase={VaccineTracker}
+            title={'Vaccine Tracker'}
+            onPress={() => onPressVaccineTracker()}
+          />
+        </View>
+      </View>
+    );
+  };
 
   const renderContent = (title: string, description: string) => {
     return (
@@ -2125,7 +2148,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18), marginTop: 16 }}>
           {description}
         </Text>
-        {title === string.common.healthBlog ?  renderReadArticleContent():renderCovidContainer()}
+        {title === string.common.healthBlog ? renderReadArticleContent() : renderCovidContainer()}
         {renderDashedLine()}
       </View>
     );
@@ -2135,8 +2158,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <DashedLine style={styles.plainLine} />;
   };
 
-  const onPressChatWithUS = () =>{
-
+  const onPressChatWithUS = () => {
     postHomeWEGEvent(WebEngageEventName.CHAT_WITH_US);
     try {
       const openUrl = AppConfig.Configuration.CHAT_WITH_US;
@@ -2144,19 +2166,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         covidUrl: openUrl,
       });
     } catch (e) {}
+  };
 
-  }
-
-  const onPressCallDoctor = async() => {
+  const onPressCallDoctor = async () => {
     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
     if (storedPhoneNumber) {
       initiateCallDoctor(storedPhoneNumber);
-    }
-    else {
+    } else {
       Alert.alert('Please try again later');
     }
-
-  }
+  };
 
   const renderCovidHelpButtons = () => {
     return (
