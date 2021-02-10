@@ -149,11 +149,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             (item: any) => item?.itemId?.toString() == key
           );
         let sortedSelectedObj: any;
-        sortedSelectedObj =
-          key != null &&
-          data?.[key]?.sort(function(a: any, b: any) {
-            return new Date(b.statusDate).valueOf() - new Date(a.statusDate).valueOf();
-          });
+        var lengthOfObject = data?.[key]?.length - 1;
+        sortedSelectedObj = key != null && data?.[key]?.[lengthOfObject];
         const getUTCDateTime = orderSelected?.slotDateTimeInUTC;
         const dt = moment(
           getUTCDateTime != null ? getUTCDateTime : orderSelected?.diagnosticDate!
@@ -164,20 +161,18 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             : orderSelected?.slotTimings;
 
         objArray.push({
-          id: sortedSelectedObj?.[0]?.id,
+          id: sortedSelectedObj?.id,
           displayId: orderSelected?.displayId!,
           slotTimings: tm,
           patientName: currentPatient?.firstName,
           showDateTime: dt,
           itemId: key,
           currentStatus:
-            refundStatusArr?.length > 0
-              ? refundStatusArr?.[0]?.status
-              : sortedSelectedObj?.[0]?.orderStatus,
-          packageId: sortedSelectedObj?.[0]?.packageId,
-          itemName: sortedSelectedObj?.[0]?.itemName,
-          packageName: sortedSelectedObj?.[0]?.packageName,
-          statusDate: sortedSelectedObj?.[0]?.statusDate,
+            refundStatusArr?.length > 0 ? refundStatusArr?.status : sortedSelectedObj?.orderStatus,
+          packageId: sortedSelectedObj?.packageId,
+          itemName: sortedSelectedObj?.itemName,
+          packageName: sortedSelectedObj?.packageName,
+          statusDate: sortedSelectedObj?.statusDate,
           testPreparationData: '',
         });
       }
