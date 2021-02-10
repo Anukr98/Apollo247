@@ -67,6 +67,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
   },
+  noteContainer:{
+    margin: 12,
+    padding: 2,
+    justifyContent:'center',
+    alignItems:'center'
+  },
 });
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
@@ -324,19 +330,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
   const renderFootNote = () => {
     return (
-      <View
-        style={{
-          margin: 12,
-          padding: 2,
-          justifyContent:'center',
-          alignItems:'center'
-        }}>
-        <Text
-          style={[
-            theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0),
-            { textAlign: 'justify' },
-          ]}
-        >
+      <View style={styles.noteContainer}>
+        <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
           Note: Pay at Reception is available.
         </Text>
       </View>

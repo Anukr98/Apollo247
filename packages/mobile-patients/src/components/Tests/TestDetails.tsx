@@ -26,6 +26,7 @@ import {
   g,
   nameFormater,
   isSmallDevice,
+  filterHtmlContent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -46,6 +47,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -73,9 +75,17 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import {
+  findDiagnosticsWidgetsPricing,
+  findDiagnosticsWidgetsPricingVariables,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import HTML from 'react-native-render-html';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -111,7 +121,6 @@ export interface CMSTestInclusions {
   sampleTypeName: string;
   inclusionName: string;
 }
-
 export interface CMSTestDetails {
   diagnosticItemName: string;
   diagnosticFAQs: any;
@@ -123,6 +132,7 @@ export interface CMSTestDetails {
   diagnosticPretestingRequirement: string;
   diagnosticOverview: any;
   diagnosticInclusionName: any;
+  diagnosticWidgetsData: any;
 }
 
 export interface TestDetailsProps
@@ -143,6 +153,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setIsDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
+    deliveryAddressId: diagnosticDeliveryAddressId,
   } = useDiagnosticsCart();
   const {
     setIsCircleSubscription,
@@ -152,8 +163,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setIsFreeDelivery,
     setCirclePlanValidity,
     pharmacyCircleAttributes,
+    deliveryAddressId,
   } = useShoppingCart();
-  const { diagnosticServiceabilityData } = useAppCommonData();
+  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
@@ -169,6 +181,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [moreInclusions, setMoreInclusions] = useState(false);
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
+  const [widgetsData, setWidgetsData] = useState([] as any);
+  console.log({ deliveryAddressId });
+  console.log({ diagnosticDeliveryAddressId });
 
   const itemName =
     testDetails?.ItemName ||
@@ -178,15 +193,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     '';
 
   const hdfc_values = string.Hdfc_values;
-  const currentItemId = testInfo?.ItemID;
-  aphConsole.log('currentItemId : ' + currentItemId);
+  aphConsole.log('currentItemId : ' + itemId);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
-  const findItemFromCart = cartItems?.find(
-    (item) => item?.id == testInfo?.ItemID || item?.id == testDetails?.ItemID
-  );
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
+
+  const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
+    client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
+      query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+      context: {
+        sourceHeaders,
+      },
+      variables: {
+        cityID: Number(cityId) || 9,
+        itemIDs: listOfId,
+      },
+      fetchPolicy: 'no-cache',
+    });
 
   /**
    * fetching the details wrt itemId
@@ -201,15 +225,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, []);
 
   const fetchTestDetails_CMS = async (itemId: string | number) => {
-    setLoadingContext!(true);
+    setLoadingContext?.(true);
     const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
       console.log({ result });
       setCmsTestDetails(result);
-      setLoadingContext!(false);
+      setLoadingContext?.(false);
+
+      !!result?.diagnosticWidgetsData &&
+        result?.diagnosticWidgetsData?.length > 0 &&
+        fetchWidgetPrices(result?.diagnosticWidgetsData, diagnosticServiceabilityData?.cityId!);
     } else {
-      setLoadingContext!(false);
+      setLoadingContext?.(false);
       setErrorState(true);
       setCmsTestDetails([]);
     }
@@ -220,7 +248,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     listOfIds = [Number(itemId)];
 
     try {
-      setLoadingContext!(true);
+      setLoadingContext?.(true);
       const {
         data: { findDiagnosticsByItemIDsAndCityID },
       } = await client.query<
@@ -237,7 +265,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      console.log({ findDiagnosticsByItemIDsAndCityID });
       const {
         rate,
         gender,
@@ -300,8 +327,41 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       console.log({ error });
       setErrorState(true);
     } finally {
-      setLoadingContext!(false);
+      setLoadingContext?.(false);
     }
+  };
+
+  const fetchWidgetPrices = async (widgetsData: any, cityId: string) => {
+    const itemIds = widgetsData?.map((item: any) =>
+      item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
+    );
+    //restriction less than 12.
+    const res = Promise.all(
+      itemIds?.map((item: any) =>
+        fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+      )
+    );
+
+    const response = (await res)?.map((item: any) =>
+      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+    );
+    let newWidgetsData = [...widgetsData];
+
+    for (let i = 0; i < widgetsData?.length; i++) {
+      for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
+        const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
+          (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
+        );
+        if (findIndex !== -1) {
+          (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
+            response?.[i]?.[j]?.packageCalculatedMrp),
+            (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
+              response?.[i]?.[j]?.diagnosticPricing);
+        }
+      }
+    }
+    setWidgetsData(newWidgetsData);
+    setLoadingContext?.(false);
   };
 
   const homeBreadCrumb: TestBreadcrumbLink = {
@@ -457,7 +517,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
     const showGender =
       (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
-      (!!testInfo && `FOR ${gender[testInfo?.Gender]}`);
+      (!!testInfo && `FOR ${gender?.[testInfo?.Gender]}`) ||
+      'Both';
     const showDescription =
       (!!cmsTestDetails &&
         cmsTestDetails?.diagnosticOverview?.length > 0 &&
@@ -506,16 +567,28 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setReadMore(!readMore);
   }
 
+  function filterDiagnosticHTMLContent(content: string = '') {
+    return content
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;rn/g, '>')
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, '\n')
+      .replace(/\.t/g, '.');
+  }
+
   const renderDescription = (showDescription: string) => {
+    const formattedText = filterDiagnosticHTMLContent(showDescription);
     return (
       <>
-        <View style={styles.overViewContainer}>
+        <View style={[styles.overViewContainer, { width: readMore ? '85%' : '100%' }]}>
           {readMore ? (
-            <Text style={styles.packageDescriptionText} numberOfLines={1}>
+            <Text style={styles.packageDescriptionText} numberOfLines={2}>
               {stripHtml(showDescription)}
             </Text>
           ) : (
-            <Text style={styles.packageDescriptionText}>{stripHtml(showDescription)}</Text>
+            <HTML html={formattedText} baseFontStyle={styles.packageDescriptionText} />
           )}
         </View>
         <TouchableOpacity
@@ -653,12 +726,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             )}
           </View>
         ) : circleDiscountSaving > 0 && groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
-          <View style={styles.rowStyle}>
+          <View style={[styles.rowStyle, { alignSelf: 'flex-end' }]}>
             <CircleHeading isSubscribed={false} />
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
+              {
+                marginHorizontal: '1%',
+              },
               styles.savingsText
             )}
           </View>
@@ -821,7 +896,87 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         containerStyle={{ marginLeft: 20, marginRight: 25 }}
         data={cmsTestDetails?.diagnosticFAQs}
         arrowStyle={{ tintColor: theme.colors.APP_YELLOW }}
+        horizontalLine={styles.faqLine}
       />
+    );
+  };
+
+  const renderWidgetsView = () => {
+    const sortWidgets =
+      !!widgetsData &&
+      widgetsData?.length > 0 &&
+      widgetsData?.sort(
+        (a: any, b: any) =>
+          Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
+      );
+
+    return !!sortWidgets && sortWidgets.map((item: any) => renderWidgets(item));
+  };
+
+  const renderWidgets = (data: any) => {
+    if (data?.diagnosticWidgetType == 'Package') {
+      return renderPackageWidget(data);
+    } else {
+      return renderTestWidgets(data);
+    }
+  };
+
+  const renderPackageWidget = (data: any) => {
+    const isPricesAvailable =
+      !!data &&
+      data?.diagnosticWidgetData?.length > 0 &&
+      data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
+    return (
+      <View>
+        {isPricesAvailable ? (
+          <>
+            <SectionHeader
+              leftText={nameFormater(data?.diagnosticWidgetTitle, 'title')}
+              leftTextStyle={styles.widgetHeading}
+            />
+
+            <PackageCard
+              data={data}
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={isDiagnosticLocationServiceable}
+              isVertical={false}
+              navigation={props.navigation}
+              source={'Details Page'}
+              sourceScreen={AppRoutes.TestDetails}
+            />
+          </>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderTestWidgets = (data: any) => {
+    const isPricesAvailable =
+      !!data &&
+      data?.diagnosticWidgetData?.length > 0 &&
+      data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
+
+    return (
+      <View>
+        {!!isPricesAvailable ? (
+          <>
+            <SectionHeader
+              leftText={nameFormater(data?.diagnosticWidgetTitle, 'title')}
+              leftTextStyle={styles.widgetHeading}
+            />
+
+            <ItemCard
+              data={data}
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={isDiagnosticLocationServiceable}
+              isVertical={false}
+              navigation={props.navigation}
+              source={'Details Page'}
+              sourceScreen={AppRoutes.TestDetails}
+            />
+          </>
+        ) : null}
+      </View>
     );
   };
 
@@ -886,10 +1041,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {!!testInfo && !!cmsTestDetails && renderItemCard()}
             {renderWhyBookUs()}
             {renderDescriptionCard()}
-            {!!cmsTestDetails?.diagnosticFAQs &&
-            cmsTestDetails?.diagnosticFAQs?.length > 0 &&
-            cmsTestDetails?.diagnosticFAQs?.[0]?.diagnosticFAQs?.length > 0
+            {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
               ? renderFAQView()
+              : null}
+            {!!cmsTestDetails?.diagnosticWidgetsData &&
+            cmsTestDetails?.diagnosticWidgetsData?.length > 0
+              ? renderWidgetsView()
               : null}
           </ScrollView>
           <StickyBottomComponent>
@@ -967,7 +1124,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   overViewContainer: {
-    width: '85%',
     marginTop: 10,
   },
   readMoreTouch: { alignSelf: 'flex-end', marginTop: 10 },
@@ -1077,5 +1233,15 @@ const styles = StyleSheet.create({
   faqHeadingText: {
     ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0.35),
     marginTop: 10,
+  },
+  widgetHeading: {
+    ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+    textAlign: 'left',
+  },
+  faqLine: {
+    marginVertical: 8,
+    borderTopColor: '#02475B',
+    opacity: 0.3,
+    borderTopWidth: 1,
   },
 });

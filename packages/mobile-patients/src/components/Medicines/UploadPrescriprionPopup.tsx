@@ -162,6 +162,7 @@ export interface UploadPrescriprionPopupProps {
     type?: 'Camera' | 'Gallery'
   ) => void;
   isProfileImage?: boolean;
+  uploadImage?: boolean;
   phrUpload?: boolean;
   openCamera?: boolean;
 }
@@ -298,6 +299,10 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     } else {
       openGallery();
     }
+  };
+
+  const onClickGalleryImage = async () => {
+    openGallery();
   };
 
   const onBrowseClicked = async () => {
@@ -523,7 +528,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
             activeOpacity={1}
             style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
-            onPress={onClickGallery}
+            onPress={props.uploadImage ? onClickGalleryImage : onClickGallery}
           >
             <GalleryIcon />
             <Text style={styles.yelloTextStyle}>{props.optionTexts.gallery}</Text>

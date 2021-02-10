@@ -542,7 +542,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   };
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
-    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+    return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
   const getFormattedTime = (time: string) => {
@@ -563,7 +563,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     const statusTime = getFormattedTime(order?.statusDate);
     const dtTm = `${dt}${isHomeVisit ? `, ${statusTime}` : ''}`;
     const currentStatus =
-      isPrepaid && DIAGNOSTIC_JUSPAY_REFUND_STATUS?.length > 0
+      isPrepaid && refundStatusArr?.length > 0
         ? orderSelected?.orderStatus
         : DIAGNOSTIC_ORDER_FAILED_STATUS.includes(orderSelected?.orderStatus)
         ? orderSelected?.orderStatus
@@ -572,7 +572,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       ? orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
       : currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED ||
         orderSelected?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED;
-
     return (
       <TestOrderCard
         key={`${order?.id}`}

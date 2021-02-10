@@ -1220,9 +1220,53 @@ export interface MedicineOrderCancelOMSInput {
   cancelReasonText?: string | null;
 }
 
+export interface MedicineOrderShipmentInput {
+  shopId?: string | null;
+  tatType?: string | null;
+  estimatedAmount?: number | null;
+  deliveryCharges?: number | null;
+  orderTat?: string | null;
+  coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
+  packagingCharges?: number | null;
+  showPrescriptionAtStore?: boolean | null;
+  shopAddress?: ShopAddress | null;
+  savedDeliveryCharge?: number | null;
+  totalCashBack?: number | null;
+  storeDistanceKm?: number | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
+}
+
 export interface MedicinePaymentMqInput {
   mid?: string | null;
   orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  refundAmount?: number | null;
+  bankName?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
+  email?: string | null;
+  CODCity?: CODCity | null;
+  orderId?: string | null;
+  paymentMode?: PAYMENT_METHODS | null;
+  healthCredits?: number | null;
+  partnerInfo?: string | null;
+  planId?: string | null;
+  storeCode?: ONE_APOLLO_STORE_CODE | null;
+  subPlanId?: string | null;
+  payload?: string | null;
+  healthCreditsSub?: number | null;
+}
+
+export interface MedicinePaymentMqV2Input {
+  mid?: string | null;
+  transactionId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
   paymentRefId?: string | null;
@@ -1395,7 +1439,6 @@ export interface PaymentReference {
   BANKNAME?: string | null;
   backend_activation?: boolean | null;
   done_by?: string | null;
-  sub_plan_id?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1469,6 +1512,18 @@ export interface RescheduleDiagnosticsInput {
   slotId: string;
 }
 
+export interface ReturnPharmaOrderInput {
+  category?: string | null;
+  reason?: string | null;
+  subReason?: string | null;
+  comments?: string | null;
+  patientId?: string | null;
+  email: string;
+  orderId?: number | null;
+  orderType?: ORDER_TYPE | null;
+  orderFiles?: fileProperties[] | null;
+}
+
 export interface SUBSCRIPTION_DETAILS {
   userSubscriptionId?: string | null;
   plan?: PLAN | null;
@@ -1505,6 +1560,25 @@ export interface SaveDeviceTokenInput {
   deviceToken: string;
   deviceOS: string;
   patientId: string;
+}
+
+export interface SaveMedicineOrderV2Input {
+  patientId: string;
+  estimatedAmount?: number | null;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
+  coupon?: string | null;
+  patientAddressId?: string | null;
+  prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
+  customerComment?: string | null;
+  subscriptionDetails?: SUBSCRIPTION_DETAILS_PHARMA | null;
+  planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
+  healthCreditUsed?: number | null;
+  isConsultRequired?: boolean | null;
+  shipments?: (MedicineOrderShipmentInput | null)[] | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1595,6 +1669,11 @@ export interface UploadDocumentInput {
 export interface VerifyVPA {
   vpa: string;
   merchant_id?: string | null;
+}
+
+export interface fileProperties {
+  fileType?: string | null;
+  base64FileInput?: string | null;
 }
 
 export interface prescriptionPrismFileProperties {

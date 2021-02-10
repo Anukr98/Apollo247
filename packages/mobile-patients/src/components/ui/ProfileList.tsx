@@ -110,7 +110,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
 
-  const { isUHID, setPhrNotificationData } = useAppCommonData();
+  const { isUHID, setPhrNotificationData, setPhrSession } = useAppCommonData();
 
   const titleCase = (str: string) => {
     var splitStr = str.toLowerCase().split(' ');
@@ -327,6 +327,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             profileArray && setProfile(pfl);
             if (pfl?.id) {
               callPhrNotificationApi(pfl?.id);
+              setPhrSession?.('');
             }
           }
           saveUserChange &&

@@ -251,6 +251,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     : g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails', 'billNumber');
 
   const [showRateDeliveryBtn, setShowRateDeliveryBtn] = useState(false);
+  const orderDeliveryDate = order?.medicineOrdersStatus?.find(
+    (i) => i?.orderStatus === order?.currentStatus
+  )?.statusDate;
+
+  const hideWhtsappQueryOption = moment(new Date()).diff(moment(orderDeliveryDate), 'hours') > 48;
 
   useEffect(() => {
     if (isCancelOrder && !loading) {
@@ -985,6 +990,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
         ],
         [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
+        [MEDICINE_ORDER_STATUS.RETURN_ACCEPTED]: [
+          '',
+          `Your order #${orderAutoId} has been successfully returned.`,
+        ],
       };
 
       const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
@@ -1338,11 +1347,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {!isNotTatBreach &&
-          order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
-          statusToConsiderTatBreach.includes(order?.currentStatus!)
-            ? renderInconvenienceView()
-            : null}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
@@ -1552,15 +1556,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderInconvenienceView = () => {
+    const patientWhtsappQuery = `I have a query regarding my order. ${
+      orderDetails?.currentStatus
+    }, ID: ${billNumber || orderAutoId}`;
     return (
-      <View>
-        <View style={styles.cardStyle}>
-          <PendingIcon style={styles.pendingIconStyle} />
-          <Text style={styles.inconvenienceText}>
-            {string.OrderSummery.tatBreach_InconvenienceText}
-          </Text>
-        </View>
-        <ChatWithUs />
+      <View style={styles.chatView}>
+        <Text style={styles.queryText}>In case of any issues/queries:</Text>
+        <ChatWithUs text={patientWhtsappQuery} />
       </View>
     );
   };
@@ -2090,6 +2092,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const onPressHelp = () => {
+    const currentStatusDate = order?.medicineOrdersStatus?.find(
+      (i) => i?.orderStatus === order?.currentStatus
+    )?.statusDate;
     const { category } = NeedHelp[0];
     let breadCrudArray: BreadcrumbProps['links'] =
       breadCrumb?.length > 1
@@ -2105,6 +2110,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       medicineOrderStatus: order?.currentStatus,
       orderId: billNumber || orderAutoId,
       queryCategory,
+      medicineOrderStatusDate: currentStatusDate,
       email,
       breadCrumb: breadCrudArray,
       fromOrderFlow: true,
@@ -2112,11 +2118,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderHelpButton = () => {
+    const currentStatusDate = order?.medicineOrdersStatus?.find(
+      (i) => i?.orderStatus === order?.currentStatus
+    )?.statusDate;
     const onPress = () => {
       props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         medicineOrderStatus: order?.currentStatus,
         orderId: billNumber || orderAutoId,
+        medicineOrderStatusDate: currentStatusDate,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
@@ -2250,6 +2260,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
+            {!hideWhtsappQueryOption && renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
                 ? renderOrderHistory()
@@ -2409,4 +2420,26 @@ const styles = StyleSheet.create({
   },
   helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
   headerViewStyle: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  line: {
+    width: screenWidth,
+    height: 0.5,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.3,
+  },
+  chatView: {
+    marginVertical: 10,
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  queryText: {
+    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
+    paddingBottom: 10,
+    paddingTop: 4,
+    marginRight: 6,
+  },
+  chatBtnTxt: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
+  },
 });

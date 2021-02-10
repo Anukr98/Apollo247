@@ -4,14 +4,14 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { GrayEditIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { Overlay } from 'react-native-elements';
+import { Overlay, OverlayProps } from 'react-native-elements';
 
-export interface NeedHelpEmailPopupProps {
+export interface NeedHelpEmailPopupProps extends Omit<OverlayProps, 'children' | 'isVisible'> {
   onPressSendORConfirm: (email: string) => void;
 }
 
 export const NeedHelpEmailPopup: React.FC<NeedHelpEmailPopupProps> = (props) => {
-  const { onPressSendORConfirm } = props;
+  const { onPressSendORConfirm, ...overlayProps } = props;
   const { currentPatient } = useAllCurrentPatients();
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailValidation, setEmailValidation] = useState<boolean>(
@@ -75,6 +75,7 @@ export const NeedHelpEmailPopup: React.FC<NeedHelpEmailPopupProps> = (props) => 
       fullScreen
       transparent
       overlayStyle={styles.overlayStyle}
+      {...overlayProps}
     >
       <View style={styles.popupMainViewStyle}>
         {renderEmailField()}

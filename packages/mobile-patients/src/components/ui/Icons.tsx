@@ -1701,7 +1701,7 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
 
 export const CallCollapseIcon: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ ...theme.viewStyles.cardViewStyle, borderRadius: 20, width: 40, height: 40 }}
+    style={{borderRadius: 20, width: 40, height: 40 }}
     {...props}
     source={require('./icons/callCollapse.png')}
     resizeMode="contain"

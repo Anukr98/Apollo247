@@ -707,7 +707,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
             paymentStatus: 'SUCCESS',
             paymentDateTime: paymentDateTime,
             responseCode: coupon,
-            responseMessage: 'Coupon applied',
+            responseMessage: 'Physical Mobile Api Call',
             bankTxnId: '',
             orderId: id,
           },
@@ -729,7 +729,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           )
         );
         setLoading!(false);
-        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
+        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, g(data, 'makeAppointmentPayment', 'appointment','appointment', 'id'));
       })
       .catch((e) => {
         setLoading!(false);
@@ -738,6 +738,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
+  console.log("csk","handleOrderSuccess",appointmentId);
     setLoading && setLoading(true);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
@@ -748,6 +749,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+      console.log("csk","getAppointmentData-->",JSON.stringify(_data));
         try {
           setLoading && setLoading(false);
           const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
@@ -763,6 +765,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                         routeName: AppRoutes.ConsultRoom,
                         params: {
                           isFreeConsult: true,
+                          isPhysicalConsultBooked:true,
                           doctorName: doctorName,
                           appointmentData: appointmentData[0],
                           skipAutoQuestions: doctor?.skipAutoQuestions,
@@ -772,10 +775,14 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   })
                 );
               }
-            } catch (error) {}
+            } catch (error) {
+
+            console.log("csk",error)
+            }
           }
         } catch (error) {
           setLoading && setLoading(false);
+            console.log("csk",error)
           props.navigation.navigate('APPOINTMENTS');
         }
       })

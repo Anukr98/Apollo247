@@ -271,7 +271,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     )
   );
 
-  const totalIndividualDiagonsticsCharges = newArr?.reduce((prevVal, currVal) => prevVal + currVal);
+  const totalIndividualDiagonsticsCharges = newArr?.reduce(
+    (prevVal, currVal) => prevVal + currVal,
+    0
+  );
 
   const HomeCollectionCharges =
     orderDetails?.collectionCharges != null

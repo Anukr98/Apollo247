@@ -53,6 +53,7 @@ import {
 import { initiateDocOnCall, initiateDocOnCallVariables } from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall'
 import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
 import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -338,6 +339,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: '#02475b',
   },
+  bottomAlertTitle: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
   profileIcon: {
     width: 38,
     height: 38,
@@ -391,6 +398,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
     flex: 1,
+  },
+  goToConsultRoom: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
   },
 });
 
@@ -722,8 +735,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const showFreeConsultOverlay = (params: any) => {
-    const { isJdQuestionsComplete, appointmentDateTime } = params?.appointmentData;
-    const { skipAutoQuestions } = params;
+    const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
+    const { skipAutoQuestions, isPhysicalConsultBooked } = params;
     const doctorName = params?.doctorName?.includes('Dr')
       ? params?.doctorName
       : `Dr ${params?.doctorName}`;
@@ -733,29 +746,49 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (!isJdQuestionsComplete && !skipAutoQuestions) {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
     }
+    if (isPhysicalConsultBooked) {
+      let hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
+      description = `
+           Your appointment has been successfully booked with ${doctorName} for ${dateFormatter(
+        appointmentDateTime
+      )} at ${hospitalLocation}.
+           Please note that you will need to pay ₹${
+             doctorInfo?.physicalConsultationFees
+           } + One-time registration charges
+           (For new users) at the hospital Reception.
+           `;
+    }
     showAphAlert!({
       unDismissable: false,
       title: 'Appointment Confirmation',
       description: description,
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 60,
-              paddingRight: 25,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              hideAphAlert!();
-              props.navigation.navigate(AppRoutes.ChatRoom, {
-                data: params?.appointmentData,
-              });
-            }}
-          >
-            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
-          </TouchableOpacity>
+          {isPhysicalConsultBooked ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.bottomAlertTitle}
+              onPress={() => {
+                hideAphAlert!();
+                props.navigation.navigate('APPOINTMENTS');
+              }}
+            >
+              <Text style={theme.viewStyles.yellowTextStyle}>VIEW DETAILS</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.goToConsultRoom}
+              onPress={() => {
+                hideAphAlert!();
+                props.navigation.navigate(AppRoutes.ChatRoom, {
+                  data: params?.appointmentData,
+                });
+              }}
+            >
+              <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ),
     });
@@ -811,6 +844,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     if (eventName == WebEngageEventName.BOOK_DOCTOR_APPOINTMENT) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
+    if (eventName == WebEngageEventName.HDFC_HEALTHY_LIFE) {
+      const subscription_name = hdfcUserSubscriptions?.name;
+      const newAttributes = {
+        HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+        HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
+        Circle_Member: !!circleSubscriptionId ? 'Yes' : 'No',
+      };
+      eventAttributes = { ...eventAttributes, ...newAttributes };
     }
     postWebEngageEvent(eventName, eventAttributes);
   };
