@@ -478,7 +478,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         break;
       case HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION:
         postWebEngageIfNewSession(
-          'Health Restriction',
+          'Restriction',
           currentPatient,
           selectedItem,
           phrSession,
@@ -487,7 +487,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         break;
       case HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION:
         postWebEngageIfNewSession(
-          'Medical Condition',
+          'MedicalCondition',
           currentPatient,
           selectedItem,
           phrSession,

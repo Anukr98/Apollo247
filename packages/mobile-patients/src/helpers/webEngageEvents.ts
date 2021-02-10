@@ -231,7 +231,7 @@ export enum WebEngageEventName {
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
-  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR No. of users clicked on records in {0} - app',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}-app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
