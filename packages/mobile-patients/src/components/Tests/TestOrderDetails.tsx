@@ -206,8 +206,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     orderStatusList[0] = !!individualTestStatus ? individualTestStatus : [];
   }
 
-  console.log({ orderStatusList });
-
   const getAuthToken = async () => {
     setLoading?.(true);
     client
@@ -262,7 +260,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   if (refundStatusArr?.length > 0) {
     const getObject = createRefundObject();
-    console.log({ getObject });
 
     const isAlreadyPresent = orderStatusList?.[0]?.find(
       (item: any) => item?.orderStatus == getObject?.[0]?.orderStatus

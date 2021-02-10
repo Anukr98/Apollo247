@@ -154,8 +154,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           data?.[key]?.sort(function(a: any, b: any) {
             return new Date(b.statusDate).valueOf() - new Date(a.statusDate).valueOf();
           });
-        //descending order
-        console.log({ sortedSelectedObj });
         const getUTCDateTime = orderSelected?.slotDateTimeInUTC;
         const dt = moment(
           getUTCDateTime != null ? getUTCDateTime : orderSelected?.diagnosticDate!
@@ -165,40 +163,25 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             ? moment(getUTCDateTime).format('hh:mm A')
             : orderSelected?.slotTimings;
 
-        //check here for the refund
-        if (refundStatusArr?.length > 0) {
-          objArray.push({
-            id: sortedSelectedObj?.[0]?.id,
-            displayId: orderSelected?.displayId!,
-            slotTimings: tm,
-            patientName: currentPatient?.firstName,
-            showDateTime: dt,
-            itemId: key,
-            currentStatus: refundStatusArr?.[0]?.status,
-            packageId: sortedSelectedObj?.[0]?.packageId,
-            itemName: sortedSelectedObj?.[0]?.itemName,
-            packageName: sortedSelectedObj?.[0]?.packageName,
-            statusDate: sortedSelectedObj?.[0]?.statusDate,
-            testPreparationData: '',
-          });
-        } else {
-          objArray.push({
-            id: sortedSelectedObj?.[0]?.id,
-            displayId: orderSelected?.displayId!,
-            slotTimings: tm,
-            patientName: currentPatient?.firstName,
-            showDateTime: dt,
-            itemId: key,
-            currentStatus: sortedSelectedObj?.[0]?.orderStatus,
-            packageId: sortedSelectedObj?.[0]?.packageId,
-            itemName: sortedSelectedObj?.[0]?.itemName,
-            packageName: sortedSelectedObj?.[0]?.packageName,
-            statusDate: sortedSelectedObj?.[0]?.statusDate,
-            testPreparationData: '',
-          });
-        }
+        objArray.push({
+          id: sortedSelectedObj?.[0]?.id,
+          displayId: orderSelected?.displayId!,
+          slotTimings: tm,
+          patientName: currentPatient?.firstName,
+          showDateTime: dt,
+          itemId: key,
+          currentStatus:
+            refundStatusArr?.length > 0
+              ? refundStatusArr?.[0]?.status
+              : sortedSelectedObj?.[0]?.orderStatus,
+          packageId: sortedSelectedObj?.[0]?.packageId,
+          itemName: sortedSelectedObj?.[0]?.itemName,
+          packageName: sortedSelectedObj?.[0]?.packageName,
+          statusDate: sortedSelectedObj?.[0]?.statusDate,
+          testPreparationData: '',
+        });
       }
-      setLoading!(false);
+      setLoading?.(false);
       setIndividualTestData(objArray);
     });
   };
