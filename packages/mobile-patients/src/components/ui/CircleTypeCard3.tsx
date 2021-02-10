@@ -121,7 +121,7 @@ export const CircleTypeCard3: React.FC<CircleTypeCard3Props> = (props) => {
 
     <View style={styles.planContainer}>
          <Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}>Available Health Credits:</Text>
-         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 1, 16)}}> ₹{credits}</Text>
+         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 1, 16)}}> {credits}</Text>
     </View>
 
     </View>

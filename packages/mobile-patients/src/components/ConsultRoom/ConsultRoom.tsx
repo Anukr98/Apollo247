@@ -68,7 +68,8 @@ import {
   SAVE_VOIP_DEVICE_TOKEN,
   UPDATE_PATIENT_APP_VERSION,
   GET_USER_PROFILE_TYPE,
-  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE
+  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+  GET_ONEAPOLLO_USER
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -590,6 +591,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [serviceable, setserviceable] = useState<String>('');
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
+  const [renewNow, setRenewNow] = useState<String>('');
+  const [isCircleMember, setIsCircleMember] = useState<String>('');
+  const [circleSavings, setCircleSavings] = useState<number>(-1);
+  const [healthCredits, setHealthCredits] = useState<number>(-1);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
@@ -1055,6 +1060,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     callAPIForNotificationResult();
     setWebEngageScreenNames('Home Screen');
     fetchCircleSavings();
+    fetchHealthCredits();
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
     setBannerData && setBannerData([]); // default banners to be empty
@@ -1293,6 +1299,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
+          setIsCircleMember && setIsCircleMember('yes');
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1301,6 +1308,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             endDate: data?.APOLLO?.[0]?.end_date,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setRenewNow(data?.APOLLO?.[0].renewNow?'yes':'no');
           setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
           setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
           paymentStoredVal &&
@@ -1308,6 +1316,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference(paymentStoredVal);
         } else {
           AsyncStorage.setItem('isCircleMember', 'no');
+          setIsCircleMember && setIsCircleMember('no');
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -1357,8 +1366,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const diagnosticsSavings = savings?.diagnostics || 0;
         const deliverySavings = savings?.delivery || 0;
         const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+        setCircleSavings && setCircleSavings(totalSavings);
 
         console.log('csk val2',JSON.stringify(res),totalSavings);
+      } catch (error) {
+        CommonBugFender('MyMembership_fetchCircleSavings', error);
+        console.log('csk val2',error);
+      }
+    };
+const fetchHealthCredits = async () => {
+      try {
+        const res = await client.query({
+                                        query: GET_ONEAPOLLO_USER,
+                                        variables: {
+                                          patientId: g(currentPatient, 'id'),
+                                        },
+                                        fetchPolicy: 'no-cache',
+                                      });
+        const credits = res?.data?.getOneApolloUser?.availableHC;
+
+        console.log('csk val7',JSON.stringify(res));
+        setHealthCredits && setHealthCredits(credits);
+
       } catch (error) {
         CommonBugFender('MyMembership_fetchCircleSavings', error);
         console.log('csk val2',error);
@@ -2069,12 +2098,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                             {
                               imageUrl: require('../ui/icons/ConsultationSavings.png'),
                               title: `Savings on${"\n"}Consultation`,
-                              value:"341",
+                              value:"₹341",
                             },
                             {
                               imageUrl: require('../ui/icons/PharmacyDelivery.png'),
                               title: `Savings on${"\n"}Pharmacy`,
-                              value:"444",
+                              value:"₹444",
                             },
                             {
                               imageUrl: require('../ui/icons/prohealth.png'),
@@ -2089,7 +2118,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                             {
                               imageUrl: require('../ui/icons/Diagnostics.png'),
                               title: `Savings on${"\n"}Diagnostics`,
-                              value:"666",
+                              value:"₹666",
                             },
                             {
                               imageUrl: require('../ui/icons/OnlineDoc.png'),
@@ -2108,7 +2137,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          <View style={styles.circleCardsTexts}>
 
            <Text style={{...theme.viewStyles.text('L', 12, '#02475B', 1, 16)}}>{item?.title}</Text>
-           <Text style={{...theme.viewStyles.text('M', 16, '#02475B', 1, 18)}}>₹{item?.value}</Text>
+           <Text style={{...theme.viewStyles.text('M', 16, '#02475B', 1, 18)}}>{item?.value}</Text>
          </View>
 
          <View style={styles.circleCardsImages}>
@@ -2150,49 +2179,57 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
+    const renew=renewNow!=='' && renewNow==='yes'?true:false;
 
-    console.log("csk value",circlePlanStatus,circlePlanValidity,circleStatus,expiry,expired,circlePlanId)
+
+    console.log("csk value",isCircleMember,circlePlanValidity,circleStatus,expiry,
+    expired,renew,"savings->",circleSavings,'hc->',healthCredits)
     return (
       <View style={styles.circleContainer}>
 
-      <CircleTypeCard1
+      {(expiry>0 && circleStatus==='active' && renew && circleSavings>0)?
+        (<CircleTypeCard1
         onButtonPress={()=>{
         console.log('circle button pressed')
         renderCircleSubscriptionPlans()
         }}
-        savings={"565"}
-        credits={"767"}
+        savings={circleSavings}
+        credits={healthCredits}
         expiry={expiry}
-       />
-      {/*<CircleTypeCard2
+       />):
+       (expiry>0 && circleStatus==='active' && renew)?
+        (<CircleTypeCard2
         onButtonPress={()=>console.log('circle button pressed')}
-        credits={"767"}
-        expiry={"21"}
-       />
-      <CircleTypeCard3
+        credits={healthCredits}
+        expiry={expiry}
+       />):
+       (expiry>0 && circleStatus==='active' && !renew && circleSavings>0)?
+        (<CircleTypeCard3
         onButtonPress={()=>console.log('circle button pressed')}
-        credits={"767"}
-        savings={"251"}
-       />
-      <CircleTypeCard4
+        credits={healthCredits}
+        savings={savings}
+       />):
+       (expiry>0 && circleStatus==='active' && !renew)?
+       (<CircleTypeCard4
         onButtonPress={()=>console.log('circle button pressed')}
-        credits={"767"}
-        savings={"251"}
-       />
-
-      <CircleTypeCard5
+        credits={healthCredits}
+        savings={savings}
+       />):
+       (expiry<0 && circleSavings>0)?
+       (<CircleTypeCard5
         onButtonPress={()=>console.log('circle button pressed')}
-        savings={"565"}
-        credits={"767"}
-        expired={"21/01"}
-       />
-      <CircleTypeCard6
+        savings={savings}
+        credits={healthCredits}
+        expired={expired}
+       />):
+        (expiry<0)?
+        (<CircleTypeCard6
         onButtonPress={()=>console.log('circle button pressed')}
-        savings={"565"}
-        credits={"767"}
-        expired={"21/01"}
-       />
-       */}
+        savings={savings}
+        credits={healthCredits}
+        expired={expired}
+       />):(null)
+       }
         <View style={[styles.circleRowsContainer,{paddingRight:10}]}>
 
           {circleDataLoading &&
@@ -2220,9 +2257,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
 
         <View style={styles.circleRowsContainer}>
+        {
+        (expiry>0 && circleSavings<=0)?
+         (<Text>
          <Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}>Circle Member </Text>
-         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 1, 16)}}>saves ₹342 per month.</Text>
+         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 1, 16)}}>saves ₹848 per month.</Text>
          <Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}> You can too - Renew now!</Text>
+         </Text>):
+         (expiry<0)?
+         (<Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}>You’re missing out on benefits - Renew your membership now!!! </Text>)
+         :(null)
+         }
         </View>
 
       </View>
@@ -2674,7 +2719,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderCircle()}</View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>{
+              isCircleMember==='yes' && renderCircle()
+              }</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
