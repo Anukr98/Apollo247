@@ -232,6 +232,7 @@ export enum WebEngageEventName {
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
   COMPLETED_AUTOMATED_QUESTIONS = 'Completed Automated Questions',
   JD_COMPLETED = 'JD Completed',
+  CHAT_WITH_US = 'Chat with us',
   PRESCRIPTION_RECEIVED = 'Prescription Received',
   SD_CONSULTATION_STARTED = 'SD Consultation Started',
   SD_VIDEO_CALL_STARTED = 'SD Video call started',

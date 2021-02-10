@@ -2136,11 +2136,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressChatWithUS = () =>{
+
+    postHomeWEGEvent(WebEngageEventName.CHAT_WITH_US);
     try {
       const openUrl = AppConfig.Configuration.CHAT_WITH_US;
-      Linking.openURL(openUrl);
-      
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: openUrl,
+      });
     } catch (e) {}
+    
   }
 
   const onPressCallDoctor = async() => {
@@ -2264,10 +2268,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const onPressVaccineTracker = () => {
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINE_TRACKER);
     try {
-      // const userMobNo = g(currentPatient, 'mobileNumber');
       const openUrl = AppConfig.Configuration.COVID_VACCINE_TRACKER_URL;
-      Linking.openURL(openUrl);
-      
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: openUrl,
+      });
     } catch (e) {}
   };
 
