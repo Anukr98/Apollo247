@@ -356,12 +356,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                           : ''
                       }${doctor?.doctorHospital?.[0].facility?.city}`}
                     </Text>
-                    {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>{
-                    try{
-                    openMaps()
-                    }catch(e){}
-
-                    }}>
+                    {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>openMaps()}>
                     <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                     https://www.google.com/maps/dir/
                     </Text>
@@ -378,7 +373,18 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   let query=`${doctor?.doctorHospital?.[0].facility?.streetLine1},
               ${doctor?.doctorHospital?.[0].facility?.city}`;
   let url=`google.navigation:q=${query}`
-  Linking.openURL(url)
+
+  try {
+        Linking.canOpenURL(url).then((supported) => {
+          if (supported) {
+            Linking.openURL(url);
+          } else {
+            setBugFenderLog('FAILED_OPEN_URL', url);
+          }
+        });
+    } catch (e) {
+      setBugFenderLog('FAILED_OPEN_URL', url);
+    }
 
   }
 

@@ -687,12 +687,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                                                              : ''
                                         }{"\n"+data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
                                       </Text>
-                                      {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>{
-                                      try{
-                                      openMaps()
-                                      }
-                                      catch(e){}
-                                      }}>
+                                      {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>openMaps()}>
                                       <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                                       https://www.google.com/maps/dir/
                                       </Text>
@@ -709,8 +704,18 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                     let query=`${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name},
                                 ${data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}`;
                     let url=`google.navigation:q=${query}`
-                    Linking.openURL(url)
 
+                    try {
+                            Linking.canOpenURL(url).then((supported) => {
+                              if (supported) {
+                                Linking.openURL(url);
+                              } else {
+                                setBugFenderLog('FAILED_OPEN_URL', url);
+                              }
+                            });
+                        } catch (e) {
+                          setBugFenderLog('FAILED_OPEN_URL', url);
+                        }
                     }
   const rescheduleAPI = (availability: any) => {
     console.log('availability', availability);
