@@ -85,7 +85,8 @@
     "consultedDoctors": "Consulted Doctors",
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
-    "HdfcHealthLifeText": "Explore HDFC HealthyLife"
+    "HdfcHealthLifeText": "Explore HDFC HealthyLife",
+    "contactCustomerCare": "Something went wrong, please contact customer support"
   },
   "components": {
     "medicineDetails": {
