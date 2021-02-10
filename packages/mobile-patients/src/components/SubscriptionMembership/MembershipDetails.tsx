@@ -21,7 +21,7 @@ import {
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
-import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
+import { Hdfc_values, Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import {
   useAppCommonData,
   CirclePlanSummary,
@@ -1090,7 +1090,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             AVAILABLE BENEFITS
           </Text>
           {renderCircleBenefits(circleSubscription?.benefits)}
-          <FAQComponent />
+          <FAQComponent data={Circle.FAQ} />
           {renderTermsAndConditions()}
         </View>
       </ScrollView>

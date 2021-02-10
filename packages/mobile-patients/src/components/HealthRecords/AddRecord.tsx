@@ -1340,7 +1340,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postWebEngageIfNewSession(
-              'Health Restriction',
+              'Restriction',
               currentPatient,
               inputData,
               phrSession,
@@ -1354,7 +1354,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postWebEngageIfNewSession(
-              'Health Restriction',
+              'Restriction',
               currentPatient,
               inputData,
               phrSession,
@@ -1414,7 +1414,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postWebEngageIfNewSession(
-              'Medical Condition',
+              'MedicalCondition',
               currentPatient,
               inputData,
               phrSession,
@@ -1428,7 +1428,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postWebEngageIfNewSession(
-              'Medical Condition',
+              'MedicalCondition',
               currentPatient,
               inputData,
               phrSession,

@@ -631,6 +631,12 @@ export enum ZoneType {
   STATE = "STATE",
 }
 
+export enum docOnCallType {
+  CIRCLE = "CIRCLE",
+  COVID_VACCINATION_QUERY = "COVID_VACCINATION_QUERY",
+  HDFC = "HDFC",
+}
+
 export enum mediaPrescriptionSource {
   EPRESCRIPTION = "EPRESCRIPTION",
   SELF = "SELF",

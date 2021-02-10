@@ -231,13 +231,14 @@ export enum WebEngageEventName {
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
-  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR No. of users clicked on records in {0} - app',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}-app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
   COMPLETED_AUTOMATED_QUESTIONS = 'Completed Automated Questions',
   JD_COMPLETED = 'JD Completed',
+  CHAT_WITH_US = 'Chat with us',
   PRESCRIPTION_RECEIVED = 'Prescription Received',
   SD_CONSULTATION_STARTED = 'SD Consultation Started',
   SD_VIDEO_CALL_STARTED = 'SD Video call started',

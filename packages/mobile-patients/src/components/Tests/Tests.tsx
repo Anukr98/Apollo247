@@ -492,7 +492,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
-          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, '', 'initialFetchAddress');
+          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
           setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
           return;
         }
@@ -508,7 +508,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
         setDeliveryAddressId!(deliveryAddress?.id);
-        checkIsPinCodeServiceable(deliveryAddress?.zipcode!, '', 'fetchAddressResponse');
+        checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
         setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
       } else {
         checkLocation(addressList);
@@ -1001,7 +1001,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
 
-      checkIsPinCodeServiceable(address?.zipcode!, '', 'defaultAddress');
+      checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
       setLoadingContext!(false);
     } catch (error) {
       setLoadingContext!(false);
@@ -1030,7 +1030,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         hideAphAlert!();
         //if this needs to be done, if location permission is denied or anywhere.
         if (!defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation) {
-          checkIsPinCodeServiceable('500034', '', 'noLocation');
+          checkIsPinCodeServiceable('500034', undefined, 'noLocation');
         }
       },
       children: !pincodeInput ? (

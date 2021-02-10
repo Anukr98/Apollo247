@@ -356,11 +356,11 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                           : ''
                       }${doctor?.doctorHospital?.[0].facility?.city}`}
                     </Text>
-                    <TouchableOpacity onPress={()=>{openMaps()}}>
-                    <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14,color:'#FC9916' }]}>
+                    {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>openMaps()}>
+                    <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                     https://www.google.com/maps/dir/
                     </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity>)}
                 </View>
               </View>
 
@@ -373,7 +373,18 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   let query=`${doctor?.doctorHospital?.[0].facility?.streetLine1},
               ${doctor?.doctorHospital?.[0].facility?.city}`;
   let url=`google.navigation:q=${query}`
-  Linking.openURL(url)
+
+  try {
+        Linking.canOpenURL(url).then((supported) => {
+          if (supported) {
+            Linking.openURL(url);
+          } else {
+            setBugFenderLog('FAILED_OPEN_URL', url);
+          }
+        });
+    } catch (e) {
+      setBugFenderLog('FAILED_OPEN_URL', url);
+    }
 
   }
 
@@ -1221,5 +1232,11 @@ const styles = StyleSheet.create({
     marginTop: 27,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(18),
+  },
+  mapsStyle:{
+  margin: 6,
+  flexWrap: 'wrap',
+  fontSize:14,
+  color:'#FC9916'
   },
 });

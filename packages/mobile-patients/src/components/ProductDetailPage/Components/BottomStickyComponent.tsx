@@ -23,6 +23,7 @@ export interface BottomStickyComponentProps {
   setShowAddedToCart: (show: boolean) => void;
   isBanned: boolean;
   cashback: number;
+  deliveryError?: string;
 }
 
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
@@ -40,22 +41,24 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     setShowAddedToCart,
     isBanned,
     cashback,
+    deliveryError,
   } = props;
   const { cartItems, updateCartItem, circleSubscriptionId } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   const renderCartCTA = () => {
-    const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
+    const showAddToCart = isInStock && !deliveryError;
+    const ctaText = showAddToCart ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
     return (
       <View>
         <TouchableOpacity
           onPress={() => {
-            isInStock ? onAddToCart() : onNotifyMeClick(name);
+            showAddToCart ? onAddToCart() : onNotifyMeClick(name);
           }}
           activeOpacity={0.7}
-          style={isInStock ? styles.addToCartCta : styles.notifyCta}
+          style={showAddToCart ? styles.addToCartCta : styles.notifyCta}
         >
-          <Text style={isInStock ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
+          <Text style={showAddToCart ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
         </TouchableOpacity>
       </View>
     );

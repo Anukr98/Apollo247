@@ -15,6 +15,7 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
+import CovidButton from './Components/CovidStyles';
 import {
   ApolloHealthProIcon,
   CartIcon,
@@ -44,8 +45,14 @@ import {
   TestsCartIcon,
   TestsIcon,
   WhiteArrowRightIcon,
+  FaqsArticles,
+  PhoneDoctor,
+  VaccineTracker,
+  ChatBot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-
+import { initiateDocOnCall, initiateDocOnCallVariables } from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall'
+import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
+import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -129,7 +136,9 @@ import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Dimensions,
+  Image,
   ImageBackground,
   Linking,
   NativeModules,
@@ -230,6 +239,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 6,
     ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
+  },
+  covidBtnStyle: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 50,
   },
   labelView: {
     position: 'absolute',
@@ -348,6 +363,13 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     flexDirection: 'row',
     flex: 1,
+  },
+  covidStyler : {
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center', 
+    marginHorizontal: 20,
+    marginTop: 5
   },
   topTextStyle: {
     ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
@@ -853,6 +875,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
   };
+
+  // Call an apollo doctor logic handler 
+  const initiateCallDoctor = (mobileNumber: string) => {
+     client
+       .query<initiateDocOnCall, initiateDocOnCallVariables>({
+     query: INITIATE_DOC_ON_CALL,
+    variables: {
+     mobileNumber,
+    callType: docOnCallType.COVID_VACCINATION_QUERY,
+    },
+    fetchPolicy: 'no-cache',
+    })
+    .then((response) => {
+      response?.data?.initiateDocOnCall?.success
+     ? Alert.alert('You will be connected to the doctor shortly')
+     : Alert.alert('Error while connecting to the Doctor, Please try again')
+    })
+    .catch((error) => {
+       console.log(error);
+       Alert.alert('Error while connecting to the Doctor, Please try again')
+    });
+    };
 
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
@@ -2041,6 +2085,48 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderReadArticleContent = () => {
+    return (
+    <View style={styles.covidBtnStyle}>
+      <View style={styles.covidStyler}>
+         <CovidButton iconbase={CovidOrange} 
+         title = {string.common.readLatestArticles} 
+         onPress={()=> onPressReadArticles()}/>
+      </View>
+      </View>);
+  }
+
+  const renderCovidContainer = () => {
+  return(
+      <View style={styles.covidStyler}>
+        <View style={{ flexDirection: "row", height: 40}}>
+            <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={FaqsArticles} 
+                title = {'FAQs & Articles'} 
+                onPress={()=> onPressLearnAboutCovid()}/>
+            </View>
+            <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={PhoneDoctor} 
+                title = {'Call an Apollo Doctor'} 
+                onPress={()=> onPressCallDoctor()}/>
+            </View>
+        </View>
+        <View style={{ flexDirection: "row", justifyContent: 'space-around', alignItems: 'center' }}>
+              <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={ChatBot} 
+                title = {'Chat with us'} 
+                onPress={()=> onPressChatWithUS()}/>
+              </View>
+              <View style={styles.covidBtnStyle}>
+                <CovidButton iconbase={VaccineTracker} 
+                title = {'Vaccine Tracker'} 
+                onPress={()=> onPressVaccineTracker()}/>
+              </View>
+        </View>
+      </View>
+    );
+  }
+
   const renderContent = (title: string, description: string) => {
     return (
       <View>
@@ -2048,10 +2134,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18), marginTop: 16 }}>
           {description}
         </Text>
-        {renderContentButton(title)}
-        {title === string.common.covid19VaccineInfo
-          ? renderContentButton(string.common.covidVaccineTracker)
-          : null}
+        {title === string.common.healthBlog ?  renderReadArticleContent():renderCovidContainer()}
         {renderDashedLine()}
       </View>
     );
@@ -2060,6 +2143,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderDashedLine = () => {
     return <DashedLine style={styles.plainLine} />;
   };
+
+  const onPressChatWithUS = () =>{
+
+    postHomeWEGEvent(WebEngageEventName.CHAT_WITH_US);
+    try {
+      const openUrl = AppConfig.Configuration.CHAT_WITH_US;
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: openUrl,
+      });
+    } catch (e) {}
+
+  }
+
+  const onPressCallDoctor = async() => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    if (storedPhoneNumber) {
+      initiateCallDoctor(storedPhoneNumber);
+    }
+    else {
+      Alert.alert('Please try again later');
+    }
+
+  }
 
   const renderCovidHelpButtons = () => {
     return (
@@ -2104,15 +2210,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderContentButton = (title: string) => {
     const btnTitle =
-      title === string.common.covidVaccineTracker
-        ? string.common.covidVaccineTracker
-        : title === string.common.healthBlog
+       title === string.common.healthBlog
         ? string.common.readLatestArticles
-        : title === string.common.covid19VaccineInfo
-        ? string.common.learnAboutCovid
         : '';
-    return (
-      <TouchableOpacity
+    return 
+       (<TouchableOpacity
         activeOpacity={0.5}
         style={{
           shadowColor: '#4c808080',
@@ -2128,12 +2230,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           flex: 1,
         }}
         onPress={() => {
-          btnTitle === string.common.covidVaccineTracker
-            ? onPressVaccineTracker()
-            : btnTitle === string.common.readLatestArticles
+             btnTitle === string.common.readLatestArticles
             ? onPressReadArticles()
-            : btnTitle === string.common.learnAboutCovid
-            ? onPressLearnAboutCovid()
             : null;
         }}
       >
@@ -2146,12 +2244,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             alignItems: 'center',
           }}
         >
-          {btnTitle === string.common.covidVaccineTracker ? (
-            <CovidRiskLevel style={{ width: 20, height: 20 }} />
-          ) : btnTitle === string.common.readLatestArticles ? (
+          { btnTitle === string.common.readLatestArticles ? (
             <LatestArticle style={{ width: 20, height: 20 }} />
-          ) : btnTitle === string.common.learnAboutCovid ? (
-            <CovidOrange style={{ width: 20, height: 20 }} />
           ) : null}
         </View>
         <View
@@ -2167,8 +2261,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {btnTitle}
           </Text>
         </View>
-      </TouchableOpacity>
-    );
+      </TouchableOpacity>)
   };
 
   const onPressReadArticles = () => {
@@ -2186,7 +2279,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     try {
       const userMobNo = g(currentPatient, 'mobileNumber');
       const openUrl = `${AppConfig.Configuration.COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
-      console.log('openUrl', openUrl);
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });
