@@ -140,7 +140,6 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
-  PHLEBO_PENDING = "PHLEBO_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -259,7 +258,10 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   CANCELLED = "CANCELLED",
   CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_COMPLETED = "CONSULT_COMPLETED",
+  CONSULT_PENDING = "CONSULT_PENDING",
   DELIVERED = "DELIVERED",
+  DELIVERY_ATTEMPTED = "DELIVERY_ATTEMPTED",
   ITEMS_RETURNED = "ITEMS_RETURNED",
   ON_HOLD = "ON_HOLD",
   ORDER_BILLED = "ORDER_BILLED",
@@ -464,6 +466,13 @@ export enum PaymentStatus {
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
+export enum PrescriptionType {
+  CONSULT = "CONSULT",
+  LATER = "LATER",
+  NA = "NA",
+  UPLOADED = "UPLOADED",
 }
 
 export enum REFUND_STATUS {
@@ -1181,7 +1190,7 @@ export interface MedicineCartOMSInput {
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
-  isConsultRequired?: boolean | null;
+  prescriptionType?: PrescriptionType | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1378,6 +1387,9 @@ export interface PaymentReference {
   GATEWAYNAME?: string | null;
   BANKTXNID?: string | null;
   BANKNAME?: string | null;
+  backend_activation?: boolean | null;
+  done_by?: string | null;
+  sub_plan_id?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1487,7 +1499,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
+  slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
@@ -1532,6 +1544,7 @@ export interface ShopAddress {
 
 export interface SourceMetaData {
   source_identifier?: string | null;
+  sub_plan_id?: string | null;
 }
 
 export interface UpdateAppointmentInput {
