@@ -107,6 +107,7 @@ type AphAlertParams = {
   unDismissable?: boolean;
   style?: StyleProp<ViewStyle>;
   onPressOk?: () => void;
+  onPressOutside?: () => void;
   removeTopIcon?: boolean;
   physical?: boolean;
   physicalText?: React.ReactNode;
@@ -183,8 +184,10 @@ export const UIElementsProvider: React.FC = (props) => {
   const handleBack = async () => {
     console.log('handleBack Called');
     if (!alertParams.unDismissable) {
-      // setLoading(false);
       hideAphAlert();
+    }
+    if (alertParams.onPressOutside) {
+      alertParams.onPressOutside();
     }
     return true;
   };
@@ -255,6 +258,9 @@ export const UIElementsProvider: React.FC = (props) => {
             if (!alertParams.unDismissable) {
               hideAphAlert();
             }
+            if (alertParams.onPressOutside) {
+              alertParams.onPressOutside();
+            }
           }}
           physical={alertParams.physical}
           physicalText={alertParams.physicalText}
@@ -262,7 +268,6 @@ export const UIElementsProvider: React.FC = (props) => {
         >
           {alertParams.children || (g(alertParams, 'CTAs', 'length') ? null : renderOkButton)}
           {renderCTAs()}
-
         </BottomPopUp>
       )
     );
