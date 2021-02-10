@@ -1491,7 +1491,7 @@ export const phrSearchWebEngageEvents = (
 
 export const getUsageKey = (type: string) => {
   switch (type) {
-    case 'Doctor Consultation':
+    case 'Doctor Consults':
       return 'consults-usage';
     case 'Test Report':
       return 'testReports-usage';
@@ -1499,9 +1499,9 @@ export const getUsageKey = (type: string) => {
       return 'hospitalizations-usage';
     case 'Allergy':
     case 'Medication':
-    case 'Health Restriction':
+    case 'Restriction':
     case 'Family History':
-    case 'Medical Condition':
+    case 'MedicalCondition':
       return 'healthConditions-usage';
     case 'Bill':
       return 'bills-usage';

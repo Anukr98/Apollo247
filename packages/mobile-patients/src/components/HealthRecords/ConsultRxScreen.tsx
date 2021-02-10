@@ -821,7 +821,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   const onHealthCardItemPress = (selectedItem: any) => {
     postWebEngageIfNewSession(
-      'Doctor Consultation',
+      'Doctor Consults',
       currentPatient,
       selectedItem,
       phrSession,
