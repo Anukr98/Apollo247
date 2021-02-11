@@ -38,6 +38,8 @@ import {
   postWebEngagePHR,
   isValidSearch,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
+  postWebEngageIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -61,6 +63,7 @@ import {
   SearchDarkPhrIcon,
   HospitalPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -158,6 +161,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
     getLatestHospitalizationRecords();
@@ -317,6 +321,13 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const onHealthCardItemPress = (selectedItem: HospitalizationType) => {
+    postWebEngageIfNewSession(
+      'Hospitalization',
+      currentPatient,
+      selectedItem,
+      phrSession,
+      setPhrSession
+    );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       hospitalization: true,

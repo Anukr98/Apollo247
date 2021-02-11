@@ -34,6 +34,8 @@ import {
   postWebEngageEvent,
   isValidSearch,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
+  postWebEngageIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -63,6 +65,7 @@ import {
   BillPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import moment from 'moment';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -160,6 +163,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
     getLatestMedicalBillRecords();
@@ -333,6 +337,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalBillsType) => {
+    postWebEngageIfNewSession('Bill', currentPatient, selectedItem, phrSession, setPhrSession);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalBill: true,

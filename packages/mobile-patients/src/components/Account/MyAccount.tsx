@@ -169,6 +169,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setHdfcUserSubscriptions,
     setBannerData,
     setCircleSubscription,
+    setPhrSession,
   } = useAppCommonData();
   const {
     setIsDiagnosticCircleSubscription,
@@ -315,6 +316,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       signOut();
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
+      setPhrSession?.('');
       AsyncStorage.removeItem('circlePlanSelected');
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
