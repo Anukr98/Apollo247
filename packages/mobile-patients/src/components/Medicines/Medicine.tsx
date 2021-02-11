@@ -806,9 +806,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               type_id:
                 (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1
                   ? 'PHARMA'
-                  : (item!.categoryName || '').toLowerCase().indexOf('pl') > -1
-                  ? 'PL'
-                  : 'FMCG',
+                  : (item!.categoryName || '').toLowerCase().indexOf('fmcg') > -1
+                  ? 'FMCG'
+                  : 'PL',
               mou: item!.mou!,
               sell_online: 1,
             } as MedicineProduct)
