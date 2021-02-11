@@ -409,6 +409,14 @@ const styles = StyleSheet.create({
     right: 5,
     width: '50%',
   },
+  readArticleSubContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 3,
+    height: 80,
+  },
   goToConsultRoom: {
     height: 60,
     paddingRight: 25,
@@ -2089,16 +2097,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderReadArticleContent = () => {
     return (
       <View style={styles.readArticleStyle}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginHorizontal: 20,
-            marginTop: 3,
-            height: 80,
-          }}
-        >
+        <View style={styles.readArticleSubContainer}>
           <CovidButton
             iconbase={CovidOrange}
             title={string.common.readLatestArticles}
@@ -2116,7 +2115,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.covidSubContainer}>
           <CovidButton
             iconbase={FaqsArticles}
-            title={'FAQs & Articles'}
+            title={string.common.faqsArticles}
             onPress={() => onPressLearnAboutCovid()}
           />
           <CovidButton
@@ -2128,12 +2127,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.covidSubContainer}>
           <CovidButton
             iconbase={PhoneDoctor}
-            title={'Call an Apollo Doctor'}
+            title={string.common.callDoctor}
             onPress={() => onPressCallDoctor()}
           />
           <CovidButton
             iconbase={VaccineTracker}
-            title={'Vaccine Tracker'}
+            title={string.common.covidVaccineTracker}
             onPress={() => onPressVaccineTracker()}
           />
         </View>
@@ -2219,59 +2218,54 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderContentButton = (title: string) => {
-    const btnTitle =
-       title === string.common.healthBlog
-        ? string.common.readLatestArticles
-        : '';
-    return 
-       (<TouchableOpacity
-        activeOpacity={0.5}
+    const btnTitle = title === string.common.healthBlog ? string.common.readLatestArticles : '';
+    return;
+    <TouchableOpacity
+      activeOpacity={0.5}
+      style={{
+        shadowColor: '#4c808080',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
+        elevation: 5,
+        backgroundColor: '#fff',
+        flexDirection: 'row',
+        height: 0.06 * height,
+        marginTop: 16,
+        borderRadius: 10,
+        flex: 1,
+      }}
+      onPress={() => {
+        btnTitle === string.common.readLatestArticles ? onPressReadArticles() : null;
+      }}
+    >
+      <View
         style={{
-          shadowColor: '#4c808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.4,
-          shadowRadius: 5,
-          elevation: 5,
-          backgroundColor: '#fff',
-          flexDirection: 'row',
-          height: 0.06 * height,
-          marginTop: 16,
-          borderRadius: 10,
-          flex: 1,
-        }}
-        onPress={() => {
-             btnTitle === string.common.readLatestArticles
-            ? onPressReadArticles()
-            : null;
+          flex: 0.17,
+          borderTopLeftRadius: 10,
+          borderBottomLeftRadius: 10,
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          { btnTitle === string.common.readLatestArticles ? (
-            <LatestArticle style={{ width: 20, height: 20 }} />
-          ) : null}
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
-            {btnTitle}
-          </Text>
-        </View>
-      </TouchableOpacity>)
+        {btnTitle === string.common.readLatestArticles ? (
+          <LatestArticle style={{ width: 20, height: 20 }} />
+        ) : null}
+      </View>
+      <View
+        style={{
+          flex: 0.83,
+          borderTopRightRadius: 10,
+          borderBottomRightRadius: 10,
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+        }}
+      >
+        <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
+          {btnTitle}
+        </Text>
+      </View>
+    </TouchableOpacity>;
   };
 
   const onPressReadArticles = () => {
