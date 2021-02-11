@@ -791,25 +791,25 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           'recommendedProducts'
         ) || [];
       const formattedRecommendedProducts = _recommendedProducts
-        .filter((item) => (item!.status || '').toLowerCase() == 'enabled')
+        .filter((item) => (item?.status || '').toLowerCase() == 'enabled')
         .map(
           (item) =>
             ({
-              image: item!.productImage ? getImageUrl(item!.productImage) : null,
+              image: item?.productImage ? getImageUrl(item?.productImage) : null,
               is_in_stock: 1,
-              is_prescription_required: item!.isPrescriptionNeeded!,
-              name: item!.productName!,
-              price: Number(item!.productPrice!),
+              is_prescription_required: item?.isPrescriptionNeeded,
+              name: item?.productName,
+              price: Number(item?.productPrice),
               special_price:
-                item!.productSpecialPrice == item!.productPrice! ? '' : item!.productSpecialPrice,
-              sku: item!.productSku!,
+                item?.productSpecialPrice == item?.productPrice ? '' : item?.productSpecialPrice,
+              sku: item?.productSku,
               type_id:
-                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1
+                (item?.categoryName || '').toLowerCase().indexOf('pharma') > -1
                   ? 'PHARMA'
-                  : (item!.categoryName || '').toLowerCase().indexOf('fmcg') > -1
+                  : (item?.categoryName || '').toLowerCase().indexOf('fmcg') > -1
                   ? 'FMCG'
                   : 'PL',
-              mou: item!.mou!,
+              mou: item?.mou,
               sell_online: 1,
             } as MedicineProduct)
         );
