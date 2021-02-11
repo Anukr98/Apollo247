@@ -426,11 +426,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         })
         .catch((e: any) => {
           console.log(e);
-          currentPatient &&
-            handleGraphQlError(
-              e,
-              'Something went wrong while downloading test report. Please try again.'
-            );
+          setLoading?.(false);
+          currentPatient && handleGraphQlError(e, 'Report is yet not available');
         });
     }
   };
