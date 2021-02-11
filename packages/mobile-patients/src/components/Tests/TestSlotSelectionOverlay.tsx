@@ -35,11 +35,13 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   areaId: string;
   isReschdedule?: boolean;
   slotBooked?: string;
+  isTodaySlotUnavailable?: boolean;
   onSchedule: (date: Date, slotInfo: TestSlot) => void;
   itemId?: any[];
 }
 
 export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> = (props) => {
+  const { isTodaySlotUnavailable } = props;
   const { cartItems } = useDiagnosticsCart();
 
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
@@ -229,12 +231,20 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
             .toDate()
         : date;
 
+    const minDateToShow = props.isReschdedule
+      ? new Date()
+      : !!isTodaySlotUnavailable && isTodaySlotUnavailable
+      ? moment(new Date())
+          .add(1, 'day')
+          .toDate()
+      : new Date();
+
     return (
       <CalendarView
         styles={{ marginBottom: 16 }}
         date={dateToHighlight}
+        // minDate={new Date()}
         minDate={new Date()}
-        // minDate={minDate}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {
           setDate(selectedDate);

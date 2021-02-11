@@ -77,7 +77,6 @@ const appStaticVariables = {
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
   DIAGNOSTIC_COVID_MAX_SLOT_TIME: '15:00',
   DIAGNOSTIC_COVID_MIN_SLOT_TIME: '10:00',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462], //last two for testing rupose on uat
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
   PACKAGING_CHARGES: 0,
@@ -572,6 +571,7 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // QA
@@ -627,6 +627,7 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // QA2
@@ -682,6 +683,7 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // QA3
@@ -731,6 +733,7 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // VAPT
@@ -786,6 +789,7 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 //Production
 const ConfigurationProd = {
@@ -840,6 +844,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613,2446,2462],
 };
 
 //PERFORMANCE
@@ -1120,6 +1125,7 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
     DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
     DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
     DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+    DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
     DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
     DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
     DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
