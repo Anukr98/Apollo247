@@ -69,7 +69,7 @@ public class MyFirebaseMessagingService
             if (startCallType.equals(notifDataType) || disconnectCallType.equals(notifDataType)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                     if (startCallType.equals(notifDataType)) {
-                        cancelCall();
+                        cancelCall(); /* Cancel the first call incase if a user is notified or called twice by a doc*/
                         sendNotifications(remoteMessage);
                     } else if (disconnectCallType.equals(notifDataType)) {
                         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
