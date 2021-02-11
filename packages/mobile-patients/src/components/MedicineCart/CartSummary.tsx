@@ -37,6 +37,7 @@ import {
   g,
   formatAddress,
   formatAddressToLocation,
+  getShipmentPrice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -69,6 +70,8 @@ import {
 import moment from 'moment';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
 import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
+import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+
 export interface CartSummaryProps extends NavigationScreenProps {}
 
 export const CartSummary: React.FC<CartSummaryProps> = (props) => {
@@ -87,6 +90,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setdeliveryTime,
     pharmacyCircleAttributes,
     orders,
+    circleSubscriptionId,
+    isCircleSubscription,
+    setOrders,
   } = useShoppingCart();
   const { setPharmacyLocation, setAxdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -105,6 +111,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   );
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
+  const [lastCartItems, setlastCartItems] = useState(
+    cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId
+  );
   const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
 
@@ -129,6 +138,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       availabilityTat(deliveryAddressId);
     }
   }, [appState]);
+
+  useEffect(() => {
+    availabilityTat(deliveryAddressId);
+  }, [cartItems]);
 
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
@@ -179,8 +192,14 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }
 
   async function availabilityTat(id: string) {
+    const newCartItems =
+      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
+    if (newCartItems == lastCartItems) {
+      return;
+    }
     if (id && cartItems.length > 0) {
       setloading(true);
+      setlastCartItems(newCartItems);
       const skus = cartItems.map((item) => item.id);
       const selectedAddress: any = addresses.find((item) => item.id == id);
       try {
@@ -205,29 +224,22 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           lat: selectedAddress?.latitude!,
           lng: selectedAddress?.longitude!,
           items: serviceableItems,
+          userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
+          const response = res?.data?.response;
+          setOrders?.(response);
+          let inventoryData: any = [];
+          response?.forEach((order: any) => {
+            inventoryData = inventoryData.concat(order?.items);
+          });
           setloading!(false);
-          const tatResponse = res?.data?.response;
-          const tatTimeStamp = tatResponse?.tatU;
-          if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = tatResponse?.tat;
-            if (deliveryDate) {
-              const inventoryData = tatResponse?.items || [];
-              if (inventoryData && inventoryData.length) {
-                setStoreType(tatResponse?.storeType);
-                setShopId(tatResponse?.storeCode);
-                setStoreDistance(tatResponse?.distance);
-                setdeliveryTime?.(deliveryDate);
-                addressSelectedEvent(selectedAddress, deliveryDate);
-                updatePricesAfterTat(inventoryData, updatedCartItems);
-                if (unserviceableSkus.length) {
-                  props.navigation.goBack();
-                }
-              }
-            } else {
-              handleTatApiFailure(selectedAddress, {});
+          if (inventoryData?.length) {
+            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+            updatePricesAfterTat(inventoryData, updatedCartItems);
+            if (unserviceableSkus.length) {
+              props.navigation.goBack();
             }
           } else {
             handleTatApiFailure(selectedAddress, {});
@@ -259,8 +271,23 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   function addressSelectedEvent(
     address: savePatientAddress_savePatientAddress_patientAddress,
-    tatDate: string
+    tatDate: string,
+    orderInfo?: MedicineOrderShipmentInput[]
   ) {
+    const orderSelected = !!orderInfo ? orderInfo : orders;
+    let splitOrderDetails: any = {};
+    if (orderSelected?.length > 1) {
+      orderSelected?.forEach((order: any, index: number) => {
+        const momentTatDate = moment(order?.tat);
+        splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
+          momentTatDate.diff(currentDate, 'h') / 24
+        );
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
+      });
+    }
     const currentDate = moment()
       .hour(0)
       .minute(0)
@@ -277,7 +304,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
-      pharmacyUserTypeAttribute!
+      pharmacyUserTypeAttribute!,
+      orderSelected?.length > 1,
+      splitOrderDetails
     );
   }
 
@@ -450,12 +479,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
   const renderTatCard = () => {
     return orders?.length > 1 ? null : (
-      <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={deliveryTime} />
+      <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={orders[0]?.tat} />
     );
   };
 
   const renderCartItems = () => {
-    return <Shipments />;
+    return <Shipments setloading={setloading} />;
   };
 
   const renderuploadPrescriptionPopup = () => {

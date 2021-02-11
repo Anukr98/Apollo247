@@ -50,6 +50,7 @@ import {
   g,
   formatAddress,
   formatAddressToLocation,
+  getShipmentPrice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -519,16 +520,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     );
   }
 
-  const getShipmentPrice = (shipmentItems: any) => {
-    let total = 0;
-    if (shipmentItems?.length) {
-      shipmentItems?.forEach((order: any) => {
-        total += order?.mrp;
-      });
-    }
-    return total;
-  };
-
   async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
     try {
       const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
@@ -903,21 +894,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
-          props.navigation.navigate('MEDICINES', { focusSearch: true });
           setCoupon!(null);
-          navigatedFrom === 'registration'
-            ? props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.ConsultRoom,
-                    }),
-                  ],
-                })
-              )
-            : props.navigation.navigate('MEDICINES', { focusSearch: true });
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: AppRoutes.Medicine,
+                }),
+              ],
+            })
+          );
         }}
       >
         <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), color: theme.colors.APP_YELLOW }}>
