@@ -117,6 +117,7 @@ import {
   doRequestAndAccessLocationModified,
   g,
   getPhrNotificationAllCount,
+  handleGraphQlError,
   overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
@@ -898,12 +899,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .then((response) => {
         response?.data?.initiateDocOnCall?.success
-          ? Alert.alert('You will be connected to the doctor shortly')
-          : Alert.alert('Error while connecting to the Doctor, Please try again');
+          ? handleGraphQlError('You will be connected to the doctor shortly')
+          : handleGraphQlError('Error while connecting to the Doctor, Please try again');
       })
       .catch((error) => {
         console.log(error);
-        Alert.alert('Error while connecting to the Doctor, Please try again');
+        handleGraphQlError('Error while connecting to the Doctor, Please try again');
       });
   };
 
