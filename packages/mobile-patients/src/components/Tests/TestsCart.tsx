@@ -282,6 +282,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isMinor, setIsMinor] = useState<boolean>(false);
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
+  const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
   const {
@@ -1189,6 +1190,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
         if (isSameDate && uniqueSlots?.length == 0) {
+          setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
             .toDate();
@@ -1196,6 +1198,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           checkSlotSelection(item, changedDate);
         } else {
           setSlots(slotsArray);
+          todaySlotNotAvailable && setTodaySlotNotAvailable(false);
           const slotDetails = getTestSlotDetailsByTime(
             slotsArray,
             uniqueSlots?.[0]?.startTime!,
@@ -2629,6 +2632,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
           isVisible={displaySchedule}
+          isTodaySlotUnavailable={todaySlotNotAvailable}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
           zipCode={parseInt(zipCode, 10)}
