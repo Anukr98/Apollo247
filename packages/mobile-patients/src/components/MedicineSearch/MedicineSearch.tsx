@@ -35,8 +35,11 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
@@ -65,7 +68,11 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     removeCartItem,
     pinCode,
     pharmacyCircleAttributes,
+    cartItems,
   } = useShoppingCart();
+  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+
+  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,
@@ -124,13 +131,30 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const renderCartIcon = () => (
+    <View>
+      <TouchableOpacity
+        style={{ alignItems: 'flex-end' }}
+        activeOpacity={1}
+        onPress={() =>
+          navigation.navigate(
+            diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+          )
+        }
+      >
+        <CartIcon />
+        {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
+      </TouchableOpacity>
+    </View>
+  );
+
   const renderHeader = () => {
     const onPressLeftIcon = () => navigation.goBack();
     return (
       <Header
         leftIcon="backArrow"
         onPressLeftIcon={onPressLeftIcon}
-        titleComponent={renderSearchBar()}
+        titleComponent={renderCartIcon()}
         titleTextViewStyle={styles.headerSearchBarContainer}
         container={styles.headerContainer}
       />
@@ -153,17 +177,19 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     };
 
     return (
-      <MedSearchBar
-        value={searchText}
-        onChangeText={onChangeText}
-        onFocus={() => setSearchFocused(true)}
-        onBlur={() => setSearchFocused(false)}
-        isFocused={isSearchFocused}
-        minCharacterLength={3}
-        onSearchSend={onSearchSend}
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-      />
+      <View style={styles.searchContainer}>
+        <MedSearchBar
+          value={searchText}
+          onChangeText={onChangeText}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
+          isFocused={isSearchFocused}
+          minCharacterLength={3}
+          onSearchSend={onSearchSend}
+          errorMessage={errorMessage}
+          isLoading={isLoading}
+        />
+      </View>
     );
   };
 
@@ -317,6 +343,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
+      {renderSearchBar()}
       {renderSearchResults()}
       <View style={container}>
         {renderSections()}
@@ -344,4 +371,8 @@ const styles = StyleSheet.create({
   badge: { marginRight: 10, marginBottom: 10 },
   productViewContainer: { marginRight: 20, marginBottom: 10 },
   productViewContainer2: { marginRight: 0, marginBottom: 10 },
+  searchContainer: {
+    padding: 10,
+    backgroundColor: theme.colors.WHITE,
+  },
 });

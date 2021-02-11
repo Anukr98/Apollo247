@@ -51,11 +51,13 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(12),
     lineHeight: 16,
     color: '#01475B',
+    paddingRight: 5,
   },
   bodyTxt: {
     ...theme.fonts.IBMPlexSansRegular(10),
     lineHeight: 13,
     color: '#01475B',
     marginTop: 5,
+    paddingRight: 5,
   },
 });
