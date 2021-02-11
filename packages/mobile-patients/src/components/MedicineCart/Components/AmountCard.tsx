@@ -75,7 +75,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     return packagingCharges ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Packaging Charges</Text>
-        <Text style={styles.text}>₹{packagingCharges.toFixed(2)}</Text>
+        <Text style={styles.text}>+₹{packagingCharges.toFixed(2)}</Text>
       </View>
     ) : null;
   };

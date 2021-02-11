@@ -28,7 +28,7 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
         <Text style={styles.cartItemsHeaderText}> No. of items ({itemsCount})</Text>
       </View>
     ) : (
-      <View style={styles.cartItemsHeader}>
+      <View style={{ ...styles.cartItemsHeader, marginBottom: 15 }}>
         <Text style={styles.cartItemsHeaderText}>ITEMS IN YOUR CART</Text>
         <Text style={styles.cartItemsHeaderText}>{itemsCount}</Text>
       </View>
@@ -36,11 +36,13 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
   };
 
   const onUpdateQuantity = ({ id }: ShoppingCartItem, unit: number) => {
-    updateCartItem && updateCartItem({ id, quantity: unit });
+    updateCartItem?.({ id, quantity: unit });
+    setloading?.(true);
   };
 
   const onPressDelete = (item: ShoppingCartItem) => {
-    removeCartItem && removeCartItem(item.id);
+    removeCartItem?.(item.id);
+    setloading?.(true);
     postwebEngageProductRemovedEvent(item, currentPatient && currentPatient!.id);
   };
 
@@ -53,7 +55,13 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
           showsVerticalScrollIndicator={false}
           data={products}
           renderItem={({ item, index }) => {
-            return <CartItemCard2 item={item} />;
+            return (
+              <CartItemCard2
+                item={item}
+                onUpdateQuantity={(quantity) => onUpdateQuantity(item, quantity)}
+                onPressDelete={() => onPressDelete(item)}
+              />
+            );
           }}
           keyExtractor={(item) => item.id}
         />
