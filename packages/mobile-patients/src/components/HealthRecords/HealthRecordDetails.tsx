@@ -994,6 +994,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
         console.log('error ', err);
+        currentPatient && handleGraphQlError(err, 'Report is yet not available');
         setLoading && setLoading(false);
       })
       .finally(() => {
