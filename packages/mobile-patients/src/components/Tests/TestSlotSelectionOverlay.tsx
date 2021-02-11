@@ -233,8 +233,8 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       <CalendarView
         styles={{ marginBottom: 16 }}
         date={dateToHighlight}
-        // minDate={new Date()}
-        minDate={dateToHighlight}
+        minDate={new Date()}
+        // minDate={minDate}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {
           setDate(selectedDate);
