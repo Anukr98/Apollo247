@@ -234,6 +234,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         styles={{ marginBottom: 16 }}
         date={dateToHighlight}
         minDate={new Date()}
+        // minDate={minDate}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {
           setDate(selectedDate);
