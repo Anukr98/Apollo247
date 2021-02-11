@@ -69,6 +69,7 @@ public class MyFirebaseMessagingService
             if (startCallType.equals(notifDataType) || disconnectCallType.equals(notifDataType)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                     if (startCallType.equals(notifDataType)) {
+                        cancelCall();
                         sendNotifications(remoteMessage);
                     } else if (disconnectCallType.equals(notifDataType)) {
                         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
@@ -105,6 +106,16 @@ public class MyFirebaseMessagingService
         } catch (Exception e) {
             Log.e("onMessageReceived error", e.getMessage() + "\n" + e.toString());
         }
+    }
+
+    private void cancelCall(){
+        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+        vibrator.cancel();
+        Intent stopIntent = new Intent(this, RingtonePlayingService.class);
+        this.stopService(stopIntent);
+        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
+        localBroadcastManager.sendBroadcast(new Intent("com.unlockscreenactivity.action.close"));
     }
 
     private void showUnlockScreen(RemoteMessage remoteMessage, boolean isAppRunning) {
