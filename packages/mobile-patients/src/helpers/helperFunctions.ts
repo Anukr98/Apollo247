@@ -1506,7 +1506,7 @@ export const phrSearchWebEngageEvents = (
 
 export const getUsageKey = (type: string) => {
   switch (type) {
-    case 'Doctor Consultation':
+    case 'Doctor Consults':
       return 'consults-usage';
     case 'Test Report':
       return 'testReports-usage';
@@ -1514,9 +1514,9 @@ export const getUsageKey = (type: string) => {
       return 'hospitalizations-usage';
     case 'Allergy':
     case 'Medication':
-    case 'Health Restriction':
+    case 'Restriction':
     case 'Family History':
-    case 'Medical Condition':
+    case 'MedicalCondition':
       return 'healthConditions-usage';
     case 'Bill':
       return 'bills-usage';
@@ -2455,10 +2455,11 @@ export const takeToHomePage = (props: any) => {
 };
 export const isSmallDevice = width < 370;
 
-export const getTestOrderStatusText = (status: string) => {
+export const getTestOrderStatusText = (status: string, screenName : string) => {
   let statusString = '';
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
+    case 'ORDER_CANCELLED_AFTER_REGISTRATION':
       statusString = 'Order Cancelled';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
@@ -2466,21 +2467,33 @@ export const getTestOrderStatusText = (status: string) => {
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED:
       statusString = 'Order Initiated';
-      break;
+      break; 
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
-      statusString = 'Pickup Requested';
+      statusString =  screenName == AppRoutes.TestOrderDetails ? 'Order confirmed' : 'Order Initiated'
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
-      statusString = 'Pickup Confirmed';
+    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
+      statusString =  screenName == AppRoutes.TestOrderDetails ? 'Phlebo is on the way' : 'Pickup Confirmed'
       break;
+    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
+      statusString =  'Sample collected' 
+    break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED:
+        statusString == 'Order rescheduled'
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
-      statusString = 'Sample Collected';
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
+    case 'SAMPLE_NOT_COLLECTED_IN_LAB':
+      statusString = screenName == AppRoutes.TestOrderDetails ?'Sample Submitted' :'Sample Collected';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
-      statusString = 'Sample Received in Lab';
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
+      statusString =  screenName == AppRoutes.TestOrderDetails ? 'Reports awaited' :'Sample Received in Lab';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
       statusString = 'Report Generated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB:
+      statusString = 'Sample rejected'
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED:
       statusString = 'Order Completed';

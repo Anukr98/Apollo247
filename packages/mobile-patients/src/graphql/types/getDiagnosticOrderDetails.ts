@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
+import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticOrderDetails
@@ -98,6 +98,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   createdDate: any;
   collectionCharges: number | null;
   slotDateTimeInUTC: any | null;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

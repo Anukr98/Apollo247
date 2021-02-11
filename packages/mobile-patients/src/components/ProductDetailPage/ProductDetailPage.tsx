@@ -471,7 +471,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         lng: longitude,
       } as TatApiInput247)
         .then((res) => {
-          const deliveryDate = g(res, 'data', 'response', 'tat');
+          const deliveryDate = res?.data?.response?.[0]?.tat;
           const currentDate = moment();
           if (deliveryDate) {
             if (checkButtonClicked) {
@@ -848,6 +848,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 setShowAddedToCart={setShowAddedToCart}
                 isSellOnline={medicineDetails?.sell_online === 1}
                 isBanned={medicineDetails?.banned === 'Yes'}
+                deliveryError={deliveryError}
               />
             </View>
             {isPharma && (
@@ -926,6 +927,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               setShowAddedToCart={setShowAddedToCart}
               isBanned={medicineDetails?.banned === 'Yes'}
               cashback={cashback}
+              deliveryError={deliveryError}
             />
           )}
         {!loading &&

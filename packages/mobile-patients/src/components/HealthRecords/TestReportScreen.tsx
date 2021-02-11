@@ -440,7 +440,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           : type === FILTER_TYPE.SOURCE
           ? _.lowerCase(data2?.labTestSource || data2?.source)
           : _.lowerCase(data2?.packageName);
-      if (type === FILTER_TYPE.DATE || !type) {
+      if (type === FILTER_TYPE.DATE) {
         return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
       }
       return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;

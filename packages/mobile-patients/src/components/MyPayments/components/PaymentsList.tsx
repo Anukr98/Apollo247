@@ -87,7 +87,7 @@ const PaymentsList: FC<IProps> = (props) => {
             console.log('payments-->', g(res.data, 'consultOrders', 'appointments').length);
             console.log('pageNo-->', pageNo + 1);
             let array = paymentsList;
-            array = array.concat(g(res.data, 'consultOrders', 'appointments'));
+            array = array.concat(g(res.data, 'consultOrders', 'appointments')?.filter((item)=>item.appointmentType==="ONLINE"));
             setpaymentsList(array);
             setpageNo(pageNo + 1);
           }

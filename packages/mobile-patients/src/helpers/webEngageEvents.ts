@@ -8,6 +8,12 @@ import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonD
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
+type PrescriptionOptions =
+  | 'Prescription Upload'
+  | 'Prescription Later'
+  | 'Virtual Consult'
+  | 'Not Applicable';
+type SiteType = 'Hub' | 'LVDC' | 'CVDC';
 
 export enum ProductPageViewedSource {
   NOTIFICATION = 'notification',
@@ -225,7 +231,7 @@ export enum WebEngageEventName {
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
-  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR No. of users clicked on records in {0} - app',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}-app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
@@ -911,6 +917,12 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
+    'Split Cart'?: YesOrNo;
+    'Prescription Option selected'?: PrescriptionOptions;
+    Shipment_1_Value?: number; // amount after discount
+    Shipment_2_Value?: number;
+    Shipment_1_Items?: number; // number of items
+    Shipment_2_Items?: number;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -995,6 +1007,8 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
     User_Type?: PharmaUserStatus;
+    'Split Cart'?: YesOrNo;
+    'Prescription Option selected'?: PrescriptionOptions;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1496,6 +1510,15 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
+    'Split Cart': YesOrNo;
+    Shipment_1_TAT?: Date;
+    Shipment_2_TAT?: Date;
+    Shipment_1_Value?: number; // amount after discount
+    Shipment_2_Value?: number;
+    Shipment_1_Items?: number; // number of items
+    Shipment_2_Items?: number;
+    Shipment_1_Site_Type?: SiteType;
+    Shipment_2_Site_Type?: SiteType;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {

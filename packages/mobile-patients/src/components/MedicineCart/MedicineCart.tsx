@@ -102,6 +102,7 @@ import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
 import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
 import AsyncStorage from '@react-native-community/async-storage';
+import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -433,7 +434,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           });
           setloading!(false);
           if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat);
+            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
             addressChange && NavigateToCartSummary();
             updatePricesAfterTat(inventoryData, updatedCartItems);
           } else {
@@ -479,8 +480,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   function addressSelectedEvent(
     address: savePatientAddress_savePatientAddress_patientAddress,
-    tatDate: string
+    tatDate: string,
+    orderInfo?: MedicineOrderShipmentInput[]
   ) {
+    const orderSelected = !!orderInfo ? orderInfo : orders;
+    let splitOrderDetails: any = {};
+    if (orderSelected?.length > 1) {
+      orderSelected?.forEach((order: any, index: number) => {
+        const momentTatDate = moment(order?.tat);
+        splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
+          momentTatDate.diff(currentDate, 'h') / 24
+        );
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
+      });
+    }
     const currentDate = moment()
       .hour(0)
       .minute(0)
@@ -497,9 +513,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
-      pharmacyUserTypeAttribute!
+      pharmacyUserTypeAttribute!,
+      orderSelected?.length > 1,
+      splitOrderDetails
     );
   }
+
+  const getShipmentPrice = (shipmentItems: any) => {
+    let total = 0;
+    if (shipmentItems?.length) {
+      shipmentItems?.forEach((order: any) => {
+        total += order?.mrp;
+      });
+    }
+    return total;
+  };
 
   async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
     try {
@@ -843,6 +871,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         return;
       }
     }
+    let splitOrderDetails: any = {};
+    if (orders?.length > 1) {
+      orders?.forEach((order: any, index: number) => {
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+      });
+    }
+    const isPrescriptionUploaded = physicalPrescriptions?.length > 0;
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       storeDistance: storeDistance,
@@ -854,7 +891,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
-      pharmacyUserTypeAttribute!
+      pharmacyUserTypeAttribute!,
+      orders?.length > 1,
+      splitOrderDetails,
+      isPrescriptionUploaded
     );
   }
 

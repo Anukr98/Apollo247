@@ -1433,7 +1433,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           />
         )}
         {orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY &&
-          shipmentTrackingUrl &&
+          !!shipmentTrackingUrl &&
           renderCourierTrackingCta()}
         {isDelivered ? (
           <View

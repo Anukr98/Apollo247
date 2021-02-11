@@ -102,7 +102,8 @@
     "consultedDoctors": "Consulted Doctors",
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
-    "HdfcHealthLifeText": "Explore HDFC HealthyLife"
+    "HdfcHealthLifeText": "Explore HDFC HealthyLife",
+    "contactCustomerCare": "Something went wrong, please contact customer support"
   },
   "components": {
     "medicineDetails": {
@@ -458,7 +459,8 @@
     "hcSampleSubText": "Certified Phlebotomist visits your home for sample collection at selected slot time",
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
-    "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability"
+    "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "unableToFetchStatus":"Something went wrong. We are unable to fetch status"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -825,56 +827,56 @@
     ],
     "FAQ": [
       {
-        "question": "What is the Apollo 24|7 CIRCLE Membership program?",
-        "answer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
+        "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
+        "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
       {
-        "question": "Sounds good. Tell me more about the plans?",
-        "answer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
+        "faqQuestion": "Sounds good. Tell me more about the plans?",
+        "faqAnswer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
       },
       {
-        "question": "How Do I Sign Up for a Circle Membership?",
-        "answer": "It’s simple! If you’re a part of Apollo 24|7 already, you can click on the link above and sign up. If you’re new to Apollo 24|7, download the app today and get started."
+        "faqQuestion": "How Do I Sign Up for a Circle Membership?",
+        "faqAnswer": "It’s simple! If you’re a part of Apollo 24|7 already, you can click on the link above and sign up. If you’re new to Apollo 24|7, download the app today and get started."
       },
       {
-        "question": "Is annual membership better than the monthly membership?",
-        "answer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!"
+        "faqQuestion": "Is annual membership better than the monthly membership?",
+        "faqAnswer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!"
       },
       {
-        "question": "Can I buy Circle Membership using my health credits?",
-        "answer": "Yes, you can! If you have Health Credits that equal the price of the membership. If not, you can always pay via our easy payment methods."
+        "faqQuestion": "Can I buy Circle Membership using my health credits?",
+        "faqAnswer": "Yes, you can! If you have Health Credits that equal the price of the membership. If not, you can always pay via our easy payment methods."
       },
       {
-        "question": "Where will I get the Circle cashback?",
-        "answer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
+        "faqQuestion": "Where will I get the Circle cashback?",
+        "faqAnswer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
       },
       {
-        "question": "How can I use Circle cashback?",
-        "answer": "You can use your Circle cashback as Health Credits to buy medicines and Apollo branded products on Apollo 24|7"
+        "faqQuestion": "How can I use Circle cashback?",
+        "faqAnswer": "You can use your Circle cashback as Health Credits to buy medicines and Apollo branded products on Apollo 24|7"
       },
       {
-        "question": "Can I cancel Circle membership after purchasing it?",
-        "answer": "Yes, but we do recommend retaining it to continue enjoying its privileges and benefits."
+        "faqQuestion": "Can I cancel Circle membership after purchasing it?",
+        "faqAnswer": "Circle membership is non-refundable, however you can contact us using the Need Help section in My Account and we will try our best to help you out."
       },
       {
-        "question": "Can the offers change after I buy the membership?",
-        "answer": "Yes, it’s possible but we will always aim to upgrade benefits so that you get the best out of your Circle membership"
+        "faqQuestion": "Can the offers change after I buy the membership?",
+        "faqAnswer": "Yes, it’s possible but we will always aim to upgrade benefits so that you get the best out of your Circle membership"
       },
       {
-        "question": "What does Circle Cashback mean? Is it different from One Apollo Cashback?",
-        "answer": "Every time you make a transaction through Circle, you will be rewarded with Circle Cashback that you can use to purchase medicines and Apollo-branded products. It’s the same as OneApollo Cashback."
+        "faqQuestion": "What does Circle Cashback mean? Is it different from One Apollo Cashback?",
+        "faqAnswer": "Every time you make a transaction through Circle, you will be rewarded with Circle Cashback that you can use to purchase medicines and Apollo-branded products. It’s the same as OneApollo Cashback."
       },
       {
-        "question": "Can Circle cashback be used to pay for a Virtual Consultation?",
-        "answer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
+        "faqQuestion": "Can Circle cashback be used to pay for a Virtual Consultation?",
+        "faqAnswer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
       },
       {
-        "question": "What is URLife Program offering?",
-        "answer": "The URLife Program will be available on Circle soon. Stay tuned!"
+        "faqQuestion": "What is URLife Program offering?",
+        "faqAnswer": "The URLife Program will be available on Circle soon. Stay tuned!"
       },
       {
-        "question": "Will some of these features be part of the Apollo Hospital experience as well?",
-        "answer": "Not as of now, but we are working towards it so you get the best out of Circle"
+        "faqQuestion": "Will some of these features be part of the Apollo Hospital experience as well?",
+        "faqAnswer": "Not as of now, but we are working towards it so you get the best out of Circle"
       }
     ],
     "video_links": [

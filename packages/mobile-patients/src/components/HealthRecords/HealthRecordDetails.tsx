@@ -980,11 +980,16 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         //some headers ..
       })
       .then((res) => {
+        const { respInfo } = res;
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
-        Platform.OS === 'ios'
-          ? RNFetchBlob.ios.previewDocument(res.path())
-          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        if (respInfo?.status === 405) {
+          currentPatient && handleGraphQlError(respInfo, 'Report is yet not available');
+        } else {
+          postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        }
       })
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
