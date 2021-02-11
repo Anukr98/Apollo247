@@ -296,7 +296,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
                 });
                 break;
               case 'FAMILYHISTORY':
-                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: _recordData });
                 break;
             }
           });
