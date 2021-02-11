@@ -130,6 +130,7 @@ export interface UploadPrescriptionProps
     showOptions?: boolean;
     isReUpload?: boolean;
     orderAutoId?: string;
+    source?: string;
   }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -137,6 +138,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
   const isComingFromReUpload = props.navigation.getParam('isReUpload') || false;
   const orderId = props.navigation.getParam('orderAutoId');
+  const source = props.navigation.getParam('source') || '';
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { pharmacyUserType } = useAppCommonData();
@@ -194,7 +196,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       subTitle: 'Our pharmacist will call you to confirm the required items',
     },
   ];
-  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(NEED_ALL_MEDICINES);
+  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
   const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] = useState<number>(
     type === 'Camera' ? 1 : 0
   );
@@ -997,19 +999,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const onPressProceed = () => {
-    const phyPrescription = isPhysicalPresciptionProps
-      ? PhysicalPrescriptionsProps
-      : physicalPrescriptions;
-    const e_Prescription = isEPresciptionProps ? EPrescriptionsProps : ePrescriptions;
-    if (e_Prescription.length > 0) {
-      isEPresciptionProps
-        ? setEPrescriptionsProps([...EPrescriptionsProps])
-        : setEPrescriptions && setEPrescriptions([...e_Prescription]);
+    if (isPhysicalPresciptionProps) {
+      setPhysicalPrescriptionsProps([...phyPrescriptionsProp]);
+      setPhysicalPrescriptions && setPhysicalPrescriptions([...phyPrescriptionsProp]);
+    } else {
+      setPhysicalPrescriptions && setPhysicalPrescriptions([...physicalPrescriptions]);
     }
-    if (phyPrescription.length > 0) {
-      isPhysicalPresciptionProps
-        ? setPhysicalPrescriptionsProps([...phyPrescriptionsProp])
-        : setPhysicalPrescriptions && setPhysicalPrescriptions([...physicalPrescriptions]);
+    if (isEPresciptionProps) {
+      setEPrescriptionsProps([...EPrescriptionsProps]);
+      setEPrescriptions && setEPrescriptions([...EPrescriptionsProps]);
+    } else {
+      setEPrescriptions && setEPrescriptions([...ePrescriptions]);
     }
     props.navigation.navigate(AppRoutes.MedicineSearch, {
       showButton: true,
@@ -1086,7 +1086,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           title={'SUBMIT PRESCRIPTION'}
           leftIcon="backArrow"
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => {
+            if (source === 'UploadPrescription') {
+              props.navigation.navigate(AppRoutes.UploadPrescriptionView, {
+                phyPrescriptionUploaded: PhysicalPrescriptionsProps,
+                ePresscriptionUploaded: EPrescriptionsProps,
+              });
+            } else {
+              props.navigation.goBack();
+            }
+          }}
         />
         <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 150 }}>
           {renderPhysicalPrescriptions()}
@@ -1101,7 +1110,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               textAlign: 'right',
             }}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.UploadPrescriptionView);
+              props.navigation.navigate(AppRoutes.UploadPrescriptionView, {
+                phyPrescriptionUploaded: PhysicalPrescriptionsProps,
+                ePresscriptionUploaded: EPrescriptionsProps,
+              });
             }}
           >
             ADD MORE PRESCRIPTIONS

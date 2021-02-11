@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
   Image,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { RNCamera as Camera } from 'react-native-camera';
@@ -49,6 +50,7 @@ import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-imag
 import {
   PhysicalPrescription,
   useShoppingCart,
+  EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
@@ -202,11 +204,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface UploadPrescriptionViewProps extends NavigationScreenProps {}
+export interface UploadPrescriptionViewProps extends NavigationScreenProps {
+  phyPrescriptionUploaded: PhysicalPrescription[];
+  ePresscriptionUploaded: EPrescription[];
+}
 
 const MAX_FILE_SIZE = 2000000; // 2MB
 
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
+  const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
+  const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
   const {
     ePrescriptions,
     setEPrescriptions,
@@ -221,6 +228,18 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   const [isCameraAccessGranted, setIsCameraAccessGranted] = useState<boolean>(true);
   let _camera = useRef(null);
   let actionSheetRef: ActionSheet;
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    props.navigation.goBack();
+    return true;
+  };
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -288,11 +307,12 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           <TouchableOpacity
             style={styles.cameraActionButton}
             onPress={() => {
-              setPhysicalPrescriptions &&
-                setPhysicalPrescriptions([...physicalPrescriptions, ...imageClickData]);
               removeClickedPhoto();
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 type: 'Camera',
+                phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
+                ePrescriptionsProp: ePresscriptionUploaded,
+                source: 'UploadPrescription',
               });
             }}
           >
@@ -528,10 +548,11 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           } as PhysicalPrescription)
       );
       setShowSpinner(false);
-      setPhysicalPrescriptions &&
-        setPhysicalPrescriptions([...physicalPrescriptions, ...documentData]);
       props.navigation.navigate(AppRoutes.UploadPrescription, {
         type: 'Gallery',
+        phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
+        ePrescriptionsProp: ePresscriptionUploaded,
+        source: 'UploadPrescription',
       });
     } catch (e) {
       setShowSpinner(false);
@@ -571,10 +592,11 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           return;
         }
         const uploadedImages = formatResponse(images);
-        setPhysicalPrescriptions &&
-          setPhysicalPrescriptions([...physicalPrescriptions, ...uploadedImages]);
         props.navigation.navigate(AppRoutes.UploadPrescription, {
           type: 'Gallery',
+          phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
+          ePrescriptionsProp: ePresscriptionUploaded,
+          source: 'UploadPrescription',
         });
       })
       .catch((e: Error) => {
@@ -611,9 +633,11 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           if (selectedEPres.length == 0) {
             return;
           }
-          setEPrescriptions && setEPrescriptions([...ePrescriptions, ...selectedEPres]);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             type: 'E-Prescription',
+            ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],
+            phyPrescriptionsProp: phyPrescriptionUploaded,
+            source: 'UploadPrescription',
           });
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
