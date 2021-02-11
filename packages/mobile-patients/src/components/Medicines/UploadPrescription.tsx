@@ -93,14 +93,15 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import moment from 'moment';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
-    paddingTop: 16,
-    marginTop: 20,
-    marginBottom: 16,
+    paddingTop: 7,
+    marginTop: 5,
+    marginBottom: 7,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     backgroundColor: theme.colors.CARD_BG,
   },
   labelView: {
+    flexDirection: 'row',
     marginHorizontal: 20,
     paddingBottom: 8,
     borderBottomWidth: 0.5,
@@ -108,6 +109,10 @@ const styles = StyleSheet.create({
   },
   leftText: {
     color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  starText: {
+    color: theme.colors.RED,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   textStyle: {
@@ -487,7 +492,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 ? UPLOAD_FILE_TYPES.JPEG
                 : item.fileType == 'png'
                 ? UPLOAD_FILE_TYPES.PNG
-                : item.fileType == 'pdf'
+                : item.fileType == 'pdf' || item.fileType == 'application/pdf'
                 ? UPLOAD_FILE_TYPES.PDF
                 : UPLOAD_FILE_TYPES.JPEG,
             patientId: g(currentPatient, 'id')!,
@@ -539,10 +544,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       unDismissable: true,
     });
 
-  const renderLabel = (label: string) => {
+  const renderLabel = (label: string, renderStar?: boolean) => {
     return (
       <View style={styles.labelView}>
         <Text style={styles.leftText}>{label}</Text>
+        {!!renderStar && <Text style={styles.starText}>{` *`}</Text>}
       </View>
     );
   };
@@ -743,7 +749,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderMedicineDetailOptions = () => {
     return (
       <View style={styles.prescriptionCardStyle}>
-        <View>{renderLabel('Specify Your Medicine Details')}</View>
+        <View>{renderLabel('Choose a suitable option below', true)}</View>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
