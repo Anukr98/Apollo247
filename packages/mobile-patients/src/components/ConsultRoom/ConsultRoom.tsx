@@ -2179,7 +2179,7 @@ const fetchHealthCredits = async () => {
 
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
-    const renew=renewNow!=='' && renewNow==='yes'?true:false;
+    const renew=renewNow!=='' && renewNow==='yes'?false:true;
 
 
     console.log("csk value",isCircleMember,circlePlanValidity,circleStatus,expiry,
@@ -2205,27 +2205,41 @@ const fetchHealthCredits = async () => {
        />):
        (expiry>0 && circleStatus==='active' && !renew && circleSavings>0)?
         (<CircleTypeCard3
-        onButtonPress={()=>console.log('circle button pressed')}
+        onButtonPress={()=>{
+                              console.log('circle button pressed')
+                              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                                          membershipType: 'CIRCLE PLAN',
+                                          isActive: true,
+                                        });
+                                }
+                                }
         credits={healthCredits}
-        savings={savings}
+        savings={circleSavings}
        />):
        (expiry>0 && circleStatus==='active' && !renew)?
        (<CircleTypeCard4
-        onButtonPress={()=>console.log('circle button pressed')}
+        onButtonPress={()=>{
+                              console.log('circle button pressed')
+                              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                                          membershipType: 'CIRCLE PLAN',
+                                          isActive: true,
+                                        });
+                                }
+                                }
         credits={healthCredits}
-        savings={savings}
+        savings={circleSavings}
        />):
        (expiry<0 && circleSavings>0)?
        (<CircleTypeCard5
         onButtonPress={()=>console.log('circle button pressed')}
-        savings={savings}
+        savings={circleSavings}
         credits={healthCredits}
         expired={expired}
        />):
         (expiry<0)?
         (<CircleTypeCard6
         onButtonPress={()=>console.log('circle button pressed')}
-        savings={savings}
+        savings={circleSavings}
         credits={healthCredits}
         expired={expired}
        />):(null)
