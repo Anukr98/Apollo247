@@ -2254,29 +2254,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderContentButton = (title: string) => {
-    const btnTitle = title === string.common.healthBlog ? string.common.readLatestArticles : '';
-    return;
-    <TouchableOpacity
-      activeOpacity={0.5}
-      style={styles.renderContent}
-      onPress={() => {
-        btnTitle === string.common.readLatestArticles ? onPressReadArticles() : null;
-      }}
-    >
-      <View style={{}}>
-        {btnTitle === string.common.readLatestArticles ? (
-          <LatestArticle style={{ width: 20, height: 20 }} />
-        ) : null}
-      </View>
-      <View style={styles.renderSubContent}>
-        <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
-          {btnTitle}
-        </Text>
-      </View>
-    </TouchableOpacity>;
-  };
-
   const onPressReadArticles = () => {
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
