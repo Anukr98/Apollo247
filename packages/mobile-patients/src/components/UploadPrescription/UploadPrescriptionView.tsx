@@ -473,7 +473,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
     return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
       const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
-      uri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+      uri = Platform.OS === 'ios' ? decodeURI(uri.replace('file://', '')) : uri;
       let compressedImageUri = '';
       if (!isPdf) {
         // Image Quality 0-100
