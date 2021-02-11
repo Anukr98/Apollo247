@@ -9,19 +9,21 @@ const { height } = Dimensions.get('window');
 interface Props {
   onPress: () => void;
   title: string;
-  iconbase: iconBase;
+  iconBase: IconBase;
 }
 const CovidButton = (props: Props) => (
   <TouchableOpacity style={styles.buttonStyle} activeOpacity={0.5} onPress={props.onPress}>
     <View style={styles.viewStyle}>
-      <props.iconbase style={{ width: 20, height: 20 }} />
+      <props.iconBase style={{ width: 20, height: 20 }} />
     </View>
     <View style={styles.viewSubContainer}>
-      {props.title === string.common.callDoctor ? (
-        <Text style={styles.smallTextStyle}>{props.title}</Text>
-      ) : (
-        <Text style={styles.mediumTextStyle}>{props.title}</Text>
-      )}
+      <Text
+        style={
+          props.title === string.common.callDoctor ? styles.smallTextStyle : styles.mediumTextStyle
+        }
+      >
+        {props.title}
+      </Text>
     </View>
   </TouchableOpacity>
 );

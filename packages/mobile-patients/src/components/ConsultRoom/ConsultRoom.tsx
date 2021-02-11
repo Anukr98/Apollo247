@@ -424,6 +424,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     justifyContent: 'center',
   },
+  renderContent: {
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    height: 0.06 * height,
+    marginTop: 16,
+    borderRadius: 10,
+    flex: 1,
+  },
+  renderSubContent: {
+    flex: 0.17,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 type menuOptions = {
@@ -899,12 +919,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .then((response) => {
         response?.data?.initiateDocOnCall?.success
-          ? handleGraphQlError('You will be connected to the doctor shortly')
-          : handleGraphQlError('Error while connecting to the Doctor, Please try again');
+          ? Alert.alert('You will be connected to the doctor shortly')
+          : handleGraphQlError(response, 'Error while connecting to the Doctor, Please try again');
       })
       .catch((error) => {
         console.log(error);
-        handleGraphQlError('Error while connecting to the Doctor, Please try again');
+        handleGraphQlError(error, 'Error while connecting to the Doctor, Please try again');
       });
   };
 
@@ -2100,7 +2120,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.readArticleStyle}>
         <View style={styles.readArticleSubContainer}>
           <CovidButton
-            iconbase={CovidOrange}
+            iconBase={CovidOrange}
             title={string.common.readLatestArticles}
             onPress={() => onPressReadArticles()}
           />
@@ -2115,24 +2135,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.covidContainer}>
         <View style={styles.covidSubContainer}>
           <CovidButton
-            iconbase={FaqsArticles}
+            iconBase={FaqsArticles}
             title={string.common.faqsArticles}
             onPress={() => onPressLearnAboutCovid()}
           />
           <CovidButton
-            iconbase={ChatBot}
+            iconBase={ChatBot}
             title={'Chat with us'}
             onPress={() => onPressChatWithUS()}
           />
         </View>
         <View style={styles.covidSubContainer}>
           <CovidButton
-            iconbase={PhoneDoctor}
+            iconBase={PhoneDoctor}
             title={string.common.callDoctor}
             onPress={() => onPressCallDoctor()}
           />
           <CovidButton
-            iconbase={VaccineTracker}
+            iconBase={VaccineTracker}
             title={string.common.covidVaccineTracker}
             onPress={() => onPressVaccineTracker()}
           />
@@ -2223,45 +2243,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return;
     <TouchableOpacity
       activeOpacity={0.5}
-      style={{
-        shadowColor: '#4c808080',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-        elevation: 5,
-        backgroundColor: '#fff',
-        flexDirection: 'row',
-        height: 0.06 * height,
-        marginTop: 16,
-        borderRadius: 10,
-        flex: 1,
-      }}
+      style={styles.renderContent}
       onPress={() => {
         btnTitle === string.common.readLatestArticles ? onPressReadArticles() : null;
       }}
     >
-      <View
-        style={{
-          flex: 0.17,
-          borderTopLeftRadius: 10,
-          borderBottomLeftRadius: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View style={{}}>
         {btnTitle === string.common.readLatestArticles ? (
           <LatestArticle style={{ width: 20, height: 20 }} />
         ) : null}
       </View>
-      <View
-        style={{
-          flex: 0.83,
-          borderTopRightRadius: 10,
-          borderBottomRightRadius: 10,
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-        }}
-      >
+      <View style={styles.renderSubContent}>
         <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
           {btnTitle}
         </Text>
