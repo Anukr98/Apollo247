@@ -863,10 +863,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {hospitalization ? (
           <Text style={styles.sourceTextStyle}>
-            {data?.hospitalName &&
-            getSourceName(data?.source) === string.common.clicnical_document_text
-              ? data?.hospitalName
-              : getSourceName(data?.source) || '-'}
+            {data?.hospitalName ? data?.hospitalName : getSourceName(data?.source) || '-'}
           </Text>
         ) : null}
         <View style={styles.separatorLineStyle} />
@@ -988,6 +985,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
         console.log('error ', err);
+        currentPatient && handleGraphQlError(err);
         setLoading && setLoading(false);
       })
       .finally(() => {
