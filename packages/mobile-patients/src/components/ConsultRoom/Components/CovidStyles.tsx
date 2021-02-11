@@ -18,13 +18,9 @@ const CovidButton = (props: Props) => (
     </View>
     <View style={styles.viewSubContainer}>
       {props.title === string.common.callDoctor ? (
-        <Text style={[theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW, 1, 18)]}>
-          {props.title}
-        </Text>
+        <Text style={styles.smallTextStyle}>{props.title}</Text>
       ) : (
-        <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
-          {props.title}
-        </Text>
+        <Text style={styles.mediumTextStyle}>{props.title}</Text>
       )}
     </View>
   </TouchableOpacity>
@@ -57,9 +53,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
-  textStyle :{
-    {[theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW, 1, 18)]}
-  }
+  smallTextStyle: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW, 1, 18),
+  },
+  mediumTextStyle: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18),
+  },
 });
 // eslint-disable-next-line import/no-default-export
 export default CovidButton;
