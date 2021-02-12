@@ -121,7 +121,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     if (selectedAddress && deliveryTime != undefined) {
       return (
         <TatCard
-          deliveryTime={deliveryTime}
+          deliveryTime={orders[0]?.tat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
           onPressTatCard={onPressTatCard}
