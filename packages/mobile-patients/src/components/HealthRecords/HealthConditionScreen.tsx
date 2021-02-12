@@ -302,6 +302,14 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+              '{0}',
+              'Health Conditions'
+            ) as WebEngageEventName,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);
