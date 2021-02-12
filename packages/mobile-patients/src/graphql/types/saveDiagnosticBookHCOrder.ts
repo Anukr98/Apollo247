@@ -13,8 +13,6 @@ export interface saveDiagnosticBookHCOrder_saveDiagnosticBookHCOrder {
   __typename: "saveBookHomeCollectionOrderResult";
   orderId: string | null;
   displayId: string | null;
-  status: boolean | null;
-  errorMessageToDisplay: string | null;
 }
 
 export interface saveDiagnosticBookHCOrder {

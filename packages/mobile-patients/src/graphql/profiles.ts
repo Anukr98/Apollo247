@@ -3787,8 +3787,6 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
     saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
       orderId
       displayId
-      status
-      errorMessageToDisplay
     }
   }
 `;
