@@ -2365,50 +2365,55 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       postPaymentInitiatedWebengage();
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
-          const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
-          const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
-          const orders: OrderVerticals = {
-            diagnostics: [{ order_id: orderId, amount: grandTotal }],
-          };
-          const orderInput: OrderCreate = {
-            orders: orders,
-            total_amount: grandTotal,
-          };
-          const response = await createOrderInternal(orderInput);
-          if (response?.data?.createOrderInternal?.success) {
-            const isInitiated: boolean = await isSDKInitialised();
-            !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
-            const orderInfo = {
-              orderId: orderId,
-              displayId: displayId,
-              diagnosticDate: date!,
-              slotTime: slotTimings!,
-              cartSaving: cartSaving,
-              circleSaving: circleSaving,
-              cartHasAll: allItems != undefined ? true : false,
-              amount: grandTotal,
+          //in case duplicate test, price mismatch, address mismatch, slot issue
+          if (!data?.saveDiagnosticBookHCOrder?.status) {
+            let message =
+              data?.saveDiagnosticBookHCOrder?.errorMessageToDisplay ||
+              string.diagnostics.bookingOrderFailedMessage;
+            renderAlert(message);
+          } else {
+            const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
+            const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
+            const orders: OrderVerticals = {
+              diagnostics: [{ order_id: orderId, amount: grandTotal }],
             };
-            const addr =
-              deliveryAddressId && addresses?.find((item) => item?.id == deliveryAddressId);
-            const store = clinicId && clinics.find((item) => item.CentreCode == clinicId);
-            const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
-              'Order ID': orderId,
-              Pincode: parseInt(selectedAddr?.zipcode!),
-              'Patient UHID': g(currentPatient, 'id'),
-              'Total items in cart': cartItems.length,
-              'Order Amount': grandTotal,
-              'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
-              'Appointment time': slotStartTime!,
-              'Item ids': cartItemsWithId,
+            const orderInput: OrderCreate = {
+              orders: orders,
+              total_amount: grandTotal,
             };
+            const response = await createOrderInternal(orderInput);
+            if (response?.data?.createOrderInternal?.success) {
+              const isInitiated: boolean = await isSDKInitialised();
+              !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
+              const orderInfo = {
+                orderId: orderId,
+                displayId: displayId,
+                diagnosticDate: date!,
+                slotTime: slotTimings!,
+                cartSaving: cartSaving,
+                circleSaving: circleSaving,
+                cartHasAll: allItems != undefined ? true : false,
+                amount: grandTotal,
+              };
+              const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+                'Order ID': orderId,
+                Pincode: parseInt(selectedAddr?.zipcode!),
+                'Patient UHID': g(currentPatient, 'id'),
+                'Total items in cart': cartItems.length,
+                'Order Amount': grandTotal,
+                'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
+                'Appointment time': slotStartTime!,
+                'Item ids': cartItemsWithId,
+              };
 
-            props.navigation.navigate(AppRoutes.PaymentMethods, {
-              paymentId: response?.data?.createOrderInternal?.payment_order_id!,
-              amount: grandTotal,
-              orderId: orderId,
-              orderDetails: orderInfo,
-              eventAttributes,
-            });
+              props.navigation.navigate(AppRoutes.PaymentMethods, {
+                paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+                amount: grandTotal,
+                orderId: orderId,
+                orderDetails: orderInfo,
+                eventAttributes,
+              });
+            }
           }
         })
         .catch((error) => {
@@ -2438,7 +2443,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
-    checkDuplicateItems();
+    // checkDuplicateItems();
+    proceedForBooking();
   };
 
   const checkDuplicateItems = () => {
