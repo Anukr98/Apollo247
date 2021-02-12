@@ -1170,6 +1170,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             shopId: shopId,
           })
         }
+        screen={'MedicineCart'}
+        onPressReviewOrder={() => props.navigation.navigate(AppRoutes.CartSummary)}
       />
     );
   };
