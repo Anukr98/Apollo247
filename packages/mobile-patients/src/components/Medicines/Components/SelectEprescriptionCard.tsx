@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Image } from 'rea
 import Pdf from 'react-native-pdf';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CheckedIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
+import moment from 'moment';
 
 const { width } = Dimensions.get('window');
 
@@ -11,7 +12,6 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     marginHorizontal: 5,
     marginVertical: 20,
-    alignItems: 'center',
     width: '30%',
   },
   pdfThumbnail: {
@@ -23,19 +23,25 @@ const styles = StyleSheet.create({
   },
   hrImage: {
     resizeMode: 'cover',
-    width: width / 4,
-    height: width / 3.5,
+    width: '100%',
+    height: width / 3.3,
     borderRadius: 8,
-    marginTop: 3,
   },
-  hrHeading: {
-    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 24),
-    marginLeft: 7,
-  },
+  hrHeading: theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 20),
   checkContainer: {
     position: 'absolute',
     right: 7,
     top: 7,
+  },
+  pdfIconContainer: {
+    position: 'absolute',
+    left: 7,
+    top: 10,
+  },
+  pdfIcon: {
+    backgroundColor: 'grey',
+    paddingHorizontal: 2,
+    borderRadius: 4,
   },
 });
 
@@ -51,6 +57,7 @@ export interface SelectEprescriptionCardProps {
 
 export const SelectEprescriptionCard: React.FC<SelectEprescriptionCardProps> = (props) => {
   const { selected, isPdf, url, heading, date, onLongPressCard, onPressCard } = props;
+  const prescriptionDate = moment(date).format('DD MMM YYYY');
 
   return (
     <TouchableOpacity
@@ -75,9 +82,18 @@ export const SelectEprescriptionCard: React.FC<SelectEprescriptionCardProps> = (
         <Text numberOfLines={1} style={styles.hrHeading}>
           {heading}
         </Text>
-        <Text style={theme.viewStyles.text('R', 13, theme.colors.LIGHT_BLUE, 0.6, 24)}>{date}</Text>
+        <Text style={theme.viewStyles.text('R', 13, theme.colors.LIGHT_BLUE, 0.6, 24)}>
+          {prescriptionDate}
+        </Text>
       </View>
       <View style={styles.checkContainer}>{selected ? <CheckedIcon /> : <UnCheck />}</View>
+      {isPdf && (
+        <View style={styles.pdfIconContainer}>
+          <View style={styles.pdfIcon}>
+            <Text style={theme.viewStyles.text('M', 10, theme.colors.WHITE, 1, 13)}>PDF</Text>
+          </View>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };

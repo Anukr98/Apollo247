@@ -149,6 +149,7 @@ export enum HEALTH_CONDITIONS_TITLE {
   MEDICATION = 'MEDICATION',
   HEALTH_RESTRICTION = 'RESTRICTION',
   MEDICAL_CONDITION = 'MEDICAL CONDITION',
+  FAMILY_HISTORY = 'FAMILY HISTORY',
 }
 
 export const getPhrHighlightText = (highlightText: string) => {
@@ -562,7 +563,16 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Ready at Store';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Return Requested';
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
+      statusString = 'Return Successful';
       break;
     case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
       statusString = 'Purchased In-store';
@@ -1336,7 +1346,8 @@ export const isValidTestSlot = (
 
 export const isValidTestSlotWithArea = (
   slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
-  date: Date
+  date: Date,
+  customSlot?: boolean
 ) => {
   return (
     (moment(date)
@@ -1353,7 +1364,12 @@ export const isValidTestSlotWithArea = (
         )
       : true) &&
     moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
-      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+      moment(
+        customSlot
+          ? AppConfig.Configuration.DIAGNOSTIC_COVID_MAX_SLOT_TIME.trim()
+          : AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(),
+        'HH:mm'
+      )
     )
   );
 };
@@ -1468,6 +1484,104 @@ export const postWebEngagePHR = (
     'Customer ID': g(currentPatient, 'id'),
   };
   postWebEngageEvent(webEngageEventName, eventAttributes);
+};
+
+export const phrSearchWebEngageEvents = (
+  webEngageEventName: WebEngageEventName,
+  currentPatient: any,
+  searchKey: string
+) => {
+  const eventAttributes = {
+    searchKey,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+  };
+  postWebEngageEvent(webEngageEventName, eventAttributes);
+};
+
+export const getUsageKey = (type: string) => {
+  switch (type) {
+    case 'Doctor Consults':
+      return 'consults-usage';
+    case 'Test Report':
+      return 'testReports-usage';
+    case 'Hospitalization':
+      return 'hospitalizations-usage';
+    case 'Allergy':
+    case 'Medication':
+    case 'Restriction':
+    case 'Family History':
+    case 'MedicalCondition':
+      return 'healthConditions-usage';
+    case 'Bill':
+      return 'bills-usage';
+    case 'Insurance':
+      return 'insurance-usage';
+  }
+};
+
+export const postWebEngageIfNewSession = (
+  type: string,
+  currentPatient: any,
+  data: any,
+  phrSession: string,
+  setPhrSession: ((value: string) => void) | null
+) => {
+  let session = phrSession;
+  let sessionId;
+  if (!session) {
+    sessionId = `${+new Date()}`;
+    const obj: any = {
+      'consults-usage': null,
+      'testReports-usage': null,
+      'hospitalizations-usage': null,
+      'healthConditions-usage': null,
+      'bills-usage': null,
+      'insurance-usage': null,
+    };
+    const usageKey = getUsageKey(type);
+    obj[usageKey] = sessionId;
+    setPhrSession?.(JSON.stringify(obj));
+    postWebEngagePHR(
+      currentPatient,
+      WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+        '{0}',
+        type
+      ) as WebEngageEventName,
+      type,
+      {
+        sessionId,
+        ...data,
+      }
+    );
+  } else {
+    const sessionObj = JSON.parse(session);
+    const usageKey = getUsageKey(type);
+    sessionId = sessionObj[usageKey];
+    if (!sessionId) {
+      sessionId = `${+new Date()}`;
+      const newSessionObj = { ...sessionObj };
+      newSessionObj[usageKey] = sessionId;
+      setPhrSession?.(JSON.stringify(newSessionObj));
+      postWebEngagePHR(
+        currentPatient,
+        WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+          '{0}',
+          type
+        ) as WebEngageEventName,
+        type,
+        {
+          sessionId,
+          ...data,
+        }
+      );
+    }
+  }
 };
 
 export const postWEGNeedHelpEvent = (
@@ -1814,15 +1928,15 @@ export const nameFormater = (
   caseFormat?: 'lower' | 'upper' | 'title' | 'camel' | 'default'
 ) => {
   if (caseFormat === 'title') {
-    return _.startCase(name.toLowerCase());
+    return _.startCase(name?.toLowerCase());
   } else if (caseFormat === 'camel') {
-    return _.camelCase(name);
+    return _.camelCase(name!);
   } else if (caseFormat === 'lower') {
-    return _.lowerCase(name);
+    return _.lowerCase(name!);
   } else if (caseFormat === 'upper') {
-    return _.upperCase(name);
+    return _.upperCase(name!);
   } else {
-    return _.capitalize(name.replace(/_/g, ' '));
+    return _.capitalize(name?.replace(/_/g, ' '));
   }
 };
 
@@ -2092,6 +2206,7 @@ export const overlyCallPermissions = (
             onPress: () => {
               hideAphAlert!();
               onPressDeny();
+              callback?.();
             },
           },
           {
@@ -2200,6 +2315,7 @@ export const overlyCallPermissions = (
                 onPress: () => {
                   hideAphAlert!();
                   onPressDeny();
+                  callback?.();
                 },
               },
               {
@@ -2339,10 +2455,11 @@ export const takeToHomePage = (props: any) => {
 };
 export const isSmallDevice = width < 370;
 
-export const getTestOrderStatusText = (status: string) => {
+export const getTestOrderStatusText = (status: string, screenName: string) => {
   let statusString = '';
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
+    case 'ORDER_CANCELLED_AFTER_REGISTRATION':
       statusString = 'Order Cancelled';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
@@ -2352,19 +2469,35 @@ export const getTestOrderStatusText = (status: string) => {
       statusString = 'Order Initiated';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
-      statusString = 'Pickup Requested';
+      statusString =
+        screenName == AppRoutes.TestOrderDetails ? 'Order confirmed' : 'Order Initiated';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
-      statusString = 'Pickup Confirmed';
+    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
+      statusString =
+        screenName == AppRoutes.TestOrderDetails ? 'Phlebo is on the way' : 'Pickup Confirmed';
       break;
+    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
+      statusString = 'Sample collected';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED:
+      statusString == 'Order rescheduled';
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
-      statusString = 'Sample Collected';
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
+    case 'SAMPLE_NOT_COLLECTED_IN_LAB':
+      statusString =
+        screenName == AppRoutes.TestOrderDetails ? 'Sample Submitted' : 'Sample Collected';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
-      statusString = 'Sample Received in Lab';
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
+      statusString =
+        screenName == AppRoutes.TestOrderDetails ? 'Reports awaited' : 'Sample Received in Lab';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
       statusString = 'Report Generated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB:
+      statusString = 'Sample rejected';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED:
       statusString = 'Order Completed';
@@ -2392,4 +2525,14 @@ export const getTestOrderStatusText = (status: string) => {
       statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
+};
+
+export const getShipmentPrice = (shipmentItems: any) => {
+  let total = 0;
+  if (shipmentItems?.length) {
+    shipmentItems?.forEach((order: any) => {
+      total += order?.mrp;
+    });
+  }
+  return total;
 };

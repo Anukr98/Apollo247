@@ -33,6 +33,8 @@ import {
   postWebEngageEvent,
   isValidSearch,
   getPhrHighlightText,
+  phrSearchWebEngageEvents,
+  postWebEngageIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -62,6 +64,7 @@ import {
   SearchDarkPhrIcon,
   InsurancePhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -159,6 +162,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
     getLatestMedicalInsuranceRecords();
@@ -221,6 +225,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
+          phrSearchWebEngageEvents(
+            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+              '{0}',
+              'Insurances'
+            ) as WebEngageEventName,
+            currentPatient,
+            _searchText
+          );
         } else {
           getAuthToken();
           setSearchLoading(false);
@@ -341,6 +353,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalInsuranceType) => {
+    postWebEngageIfNewSession('Insurance', currentPatient, selectedItem, phrSession, setPhrSession);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalInsurance: true,

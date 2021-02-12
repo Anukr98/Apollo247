@@ -7,10 +7,10 @@ import { GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID } from '@aph/mobile-patients/src/grap
 import {
   formatTestSlotWithBuffer,
   g,
+  isValidTestSlotWithArea,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
   handleGraphQlError,
-  isValidTestSlotWithArea,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -21,7 +21,10 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import {
   getDiagnosticSlotsWithAreaID,
   getDiagnosticSlotsWithAreaIDVariables,
+  getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   zipCode: number;
@@ -32,10 +35,15 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   areaId: string;
   isReschdedule?: boolean;
   slotBooked?: string;
+  isTodaySlotUnavailable?: boolean;
   onSchedule: (date: Date, slotInfo: TestSlot) => void;
+  itemId?: any[];
 }
 
 export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> = (props) => {
+  const { isTodaySlotUnavailable } = props;
+  const { cartItems } = useDiagnosticsCart();
+
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
@@ -49,7 +57,17 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!).format('hh:mm') || null;
   const isSameDate = moment().isSame(moment(date), 'date');
+  const itemId = props.itemId;
 
+  const checkCovidItem = props.isReschdedule
+    ? itemId?.map((item) =>
+        AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item))
+      )
+    : cartItems?.map((item) =>
+        AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item?.id))
+      );
+  const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
+  const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
   type UniqueSlotType = typeof uniqueSlots[0];
 
   const fetchSlots = () => {
@@ -72,9 +90,18 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
 
+        const covidItem_Slot_StartTime = moment(
+          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
+          'HH:mm'
+        );
+        const diagnosticSlotsToShow = isContainOnlyCovidItem
+          ? updatedDiagnosticSlots?.filter((item) =>
+              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
+            )
+          : updatedDiagnosticSlots;
         const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots?.forEach((item) => {
-          if (isValidTestSlotWithArea(item!, date)) {
+        diagnosticSlotsToShow?.forEach((item) => {
+          if (isValidTestSlotWithArea(item!, date, isContainOnlyCovidItem!)) {
             //all the hardcoded values are not returned by api.
             slotsArray.push({
               employeeCode: 'apollo_employee_code',
@@ -204,10 +231,19 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
             .toDate()
         : date;
 
+    const minDateToShow = props.isReschdedule
+      ? new Date()
+      : !!isTodaySlotUnavailable && isTodaySlotUnavailable
+      ? moment(new Date())
+          .add(1, 'day')
+          .toDate()
+      : new Date();
+
     return (
       <CalendarView
         styles={{ marginBottom: 16 }}
         date={dateToHighlight}
+        // minDate={new Date()}
         minDate={new Date()}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {

@@ -1,6 +1,7 @@
 package com.apollopatient;
 
 
+import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -22,6 +23,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -38,6 +40,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     private static final String TAG = "MessagingService";
     private Ringtone ringtone;
     private Vibrator vibrator;
+    RelativeLayout unlockRelativeLayout;
     LocalBroadcastManager mLocalBroadcastManager;
     BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -75,6 +78,15 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
         this.ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
         this.vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+
+        unlockRelativeLayout=findViewById(R.id.unlockLayout);
+        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        if( km.inKeyguardRestrictedInputMode() ) {
+            unlockRelativeLayout.setVisibility(View.VISIBLE);
+        } else {
+            //it is not locked
+            unlockRelativeLayout.setVisibility(View.GONE);
+        }
 
         //ringtoneManager end
 
@@ -125,7 +137,9 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 Uri uri = Uri.parse(deeplinkUri);
                 Log.e("deeplinkUri", uri.toString());
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+
                 finish();
+
                 startActivity(intent);
             }
         });
@@ -165,6 +179,20 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         ringtone.stop();
         vibrator.cancel();
+        if(Build.VERSION.SDK_INT >= 26){
+            Log.d("csk","sdk--"+Build.VERSION.SDK_INT);
+            KeyguardManager km = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
+            km.requestDismissKeyguard(this, null);
+
+        }
+        else
+        {
+
+            Log.d("csk","sdk--"+Build.VERSION.SDK_INT);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        }
+
+
     }
 
     @Override

@@ -90,6 +90,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 11,
   },
+  noteContainer:{
+    margin: 12,
+    padding: 2,
+    justifyContent:'center',
+    alignItems:'center'
+  },
   buttonStyle: {
     width: '100%',
     height: 44,
@@ -327,6 +333,13 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </View>
           ))}
         </View>
+        {!isOnlineSelected?(
+        <View style={styles.noteContainer}>
+        <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
+        Note: Pay at Reception is available.
+        </Text>
+        </View>
+        ):null}
       </View>
     );
   };
@@ -380,11 +393,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           textColor: theme.colors.SKY_BLUE,
         },
         { image: <CTPrescription />, description: string.consultType.inperson.point5 },
-        {
-          image: <CTChat />,
-          description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
-          textColor: theme.colors.SKY_BLUE,
-        },
+
       ]
     );
   };

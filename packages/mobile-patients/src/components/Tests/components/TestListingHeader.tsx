@@ -36,9 +36,7 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
   const renderHeaderRightView = () => {
     const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
     const onPressCartIcon = () => {
-      navigation.navigate(
-        diagnosticCartItems?.length ? AppRoutes.TestsCart : AppRoutes.MedAndTestCart
-      );
+      navigation.navigate(AppRoutes.MedAndTestCart);
     };
     const onPressSearchIcon = () => {
       navigation.navigate(AppRoutes.SearchTestScene);

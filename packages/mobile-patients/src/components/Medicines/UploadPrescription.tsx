@@ -93,14 +93,15 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import moment from 'moment';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
-    paddingTop: 16,
-    marginTop: 20,
-    marginBottom: 16,
+    paddingTop: 7,
+    marginTop: 5,
+    marginBottom: 7,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     backgroundColor: theme.colors.CARD_BG,
   },
   labelView: {
+    flexDirection: 'row',
     marginHorizontal: 20,
     paddingBottom: 8,
     borderBottomWidth: 0.5,
@@ -108,6 +109,10 @@ const styles = StyleSheet.create({
   },
   leftText: {
     color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  starText: {
+    color: theme.colors.RED,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   textStyle: {
@@ -130,6 +135,7 @@ export interface UploadPrescriptionProps
     showOptions?: boolean;
     isReUpload?: boolean;
     orderAutoId?: string;
+    source?: string;
   }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -137,6 +143,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
   const isComingFromReUpload = props.navigation.getParam('isReUpload') || false;
   const orderId = props.navigation.getParam('orderAutoId');
+  const source = props.navigation.getParam('source') || '';
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { pharmacyUserType } = useAppCommonData();
@@ -194,7 +201,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       subTitle: 'Our pharmacist will call you to confirm the required items',
     },
   ];
-  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>(NEED_ALL_MEDICINES);
+  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
   const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] = useState<number>(
     type === 'Camera' ? 1 : 0
   );
@@ -485,7 +492,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 ? UPLOAD_FILE_TYPES.JPEG
                 : item.fileType == 'png'
                 ? UPLOAD_FILE_TYPES.PNG
-                : item.fileType == 'pdf'
+                : item.fileType == 'pdf' || item.fileType == 'application/pdf'
                 ? UPLOAD_FILE_TYPES.PDF
                 : UPLOAD_FILE_TYPES.JPEG,
             patientId: g(currentPatient, 'id')!,
@@ -502,6 +509,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderSuccessPopup = (orderAutoId: string) => {
+    props.navigation.pop(2, { immediate: true });
     showAphAlert!({
       title: 'Hi :)',
       ctaContainerStyle: {
@@ -519,9 +527,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           type: 'orange-link',
           onPress: () => {
             hideAphAlert!();
-
-            props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-              goToHomeOnBack: true,
+            props.navigation.push(AppRoutes.OrderDetailsScene, {
               showOrderSummaryTab: false,
               orderAutoId: orderAutoId,
             });
@@ -538,10 +544,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       unDismissable: true,
     });
 
-  const renderLabel = (label: string) => {
+  const renderLabel = (label: string, renderStar?: boolean) => {
     return (
       <View style={styles.labelView}>
         <Text style={styles.leftText}>{label}</Text>
+        {!!renderStar && <Text style={styles.starText}>{` *`}</Text>}
       </View>
     );
   };
@@ -742,7 +749,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderMedicineDetailOptions = () => {
     return (
       <View style={styles.prescriptionCardStyle}>
-        <View>{renderLabel('Specify Your Medicine Details')}</View>
+        <View>{renderLabel('Choose a suitable option below', true)}</View>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -998,19 +1005,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const onPressProceed = () => {
-    const phyPrescription = isPhysicalPresciptionProps
-      ? PhysicalPrescriptionsProps
-      : physicalPrescriptions;
-    const e_Prescription = isEPresciptionProps ? EPrescriptionsProps : ePrescriptions;
-    if (e_Prescription.length > 0) {
-      isEPresciptionProps
-        ? setEPrescriptionsProps([...EPrescriptionsProps])
-        : setEPrescriptions && setEPrescriptions([...e_Prescription]);
+    if (isPhysicalPresciptionProps) {
+      setPhysicalPrescriptionsProps([...phyPrescriptionsProp]);
+      setPhysicalPrescriptions && setPhysicalPrescriptions([...phyPrescriptionsProp]);
+    } else {
+      setPhysicalPrescriptions && setPhysicalPrescriptions([...physicalPrescriptions]);
     }
-    if (phyPrescription.length > 0) {
-      isPhysicalPresciptionProps
-        ? setPhysicalPrescriptionsProps([...phyPrescriptionsProp])
-        : setPhysicalPrescriptions && setPhysicalPrescriptions([...physicalPrescriptions]);
+    if (isEPresciptionProps) {
+      setEPrescriptionsProps([...EPrescriptionsProps]);
+      setEPrescriptions && setEPrescriptions([...EPrescriptionsProps]);
+    } else {
+      setEPrescriptions && setEPrescriptions([...ePrescriptions]);
     }
     props.navigation.navigate(AppRoutes.MedicineSearch, {
       showButton: true,
@@ -1087,7 +1092,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           title={'SUBMIT PRESCRIPTION'}
           leftIcon="backArrow"
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => {
+            if (source === 'UploadPrescription') {
+              props.navigation.navigate(AppRoutes.UploadPrescriptionView, {
+                phyPrescriptionUploaded: PhysicalPrescriptionsProps,
+                ePresscriptionUploaded: EPrescriptionsProps,
+              });
+            } else {
+              props.navigation.goBack();
+            }
+          }}
         />
         <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 150 }}>
           {renderPhysicalPrescriptions()}
@@ -1102,7 +1116,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               textAlign: 'right',
             }}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.UploadPrescriptionView);
+              props.navigation.navigate(AppRoutes.UploadPrescriptionView, {
+                phyPrescriptionUploaded: PhysicalPrescriptionsProps,
+                ePresscriptionUploaded: EPrescriptionsProps,
+              });
             }}
           >
             ADD MORE PRESCRIPTIONS

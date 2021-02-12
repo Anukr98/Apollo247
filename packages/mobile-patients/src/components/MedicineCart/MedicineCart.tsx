@@ -50,6 +50,7 @@ import {
   g,
   formatAddress,
   formatAddressToLocation,
+  getShipmentPrice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -102,6 +103,7 @@ import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
 import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
 import AsyncStorage from '@react-native-community/async-storage';
+import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -140,6 +142,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     pharmacyCircleAttributes,
     newAddressAdded,
     setNewAddressAdded,
+    orders,
+    setOrders,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -273,10 +277,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [coupon]);
 
   useEffect(() => {
-    if (!!circleMembershipCharges) {
-      setIsFreeDelivery && setIsFreeDelivery(true);
-    }
-  }, [circleMembershipCharges]);
+    !!circleMembershipCharges && isCircleSubscription
+      ? setIsFreeDelivery?.(true)
+      : setIsFreeDelivery?.(false);
+  }, [circleMembershipCharges, isCircleSubscription]);
 
   useEffect(() => {
     onFinishUpload();
@@ -419,39 +423,28 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           lat: selectedAddress?.latitude!,
           lng: selectedAddress?.longitude!,
           items: serviceableItems,
+          userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
           const response = res?.data?.response;
-          const tatTimeStamp = response?.tatU;
-          if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = response?.tat;
-            const { distance, storeCode, storeType } = response;
-            if (deliveryDate) {
-              const inventoryData = response?.items || [];
-              setloading!(false);
-              if (inventoryData?.length) {
-                setStoreType(storeType);
-                setShopId(storeCode);
-                setStoreDistance(distance);
-                setdeliveryTime?.(deliveryDate);
-                addressSelectedEvent(selectedAddress, deliveryDate);
-                addressChange &&
-                  NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
-                updatePricesAfterTat(inventoryData, updatedCartItems);
-              }
-              addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
-            } else {
-              addressChange && NavigateToCartSummary(genericServiceableDate);
-              handleTatApiFailure(selectedAddress, {});
-            }
+          setOrders?.(response);
+          let inventoryData: any = [];
+          response?.forEach((order: any) => {
+            inventoryData = inventoryData.concat(order?.items);
+          });
+          setloading!(false);
+          if (inventoryData?.length) {
+            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+            addressChange && NavigateToCartSummary();
+            updatePricesAfterTat(inventoryData, updatedCartItems);
           } else {
+            addressChange && NavigateToCartSummary();
             handleTatApiFailure(selectedAddress, {});
-            addressChange && NavigateToCartSummary(genericServiceableDate);
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
-          addressChange && NavigateToCartSummary(genericServiceableDate);
+          addressChange && NavigateToCartSummary();
         }
       } catch (error) {
         handleTatApiFailure(selectedAddress, error);
@@ -488,8 +481,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   function addressSelectedEvent(
     address: savePatientAddress_savePatientAddress_patientAddress,
-    tatDate: string
+    tatDate: string,
+    orderInfo?: MedicineOrderShipmentInput[]
   ) {
+    const orderSelected = !!orderInfo ? orderInfo : orders;
+    let splitOrderDetails: any = {};
+    if (orderSelected?.length > 1) {
+      orderSelected?.forEach((order: any, index: number) => {
+        const momentTatDate = moment(order?.tat);
+        splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
+          momentTatDate.diff(currentDate, 'h') / 24
+        );
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
+      });
+    }
     const currentDate = moment()
       .hour(0)
       .minute(0)
@@ -506,7 +514,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
-      pharmacyUserTypeAttribute!
+      pharmacyUserTypeAttribute!,
+      orderSelected?.length > 1,
+      splitOrderDetails
     );
   }
 
@@ -560,20 +570,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
     );
   }
-  function NavigateToCartSummary(
-    deliveryTime: string,
-    storeDistance?: number,
-    storeType?: string,
-    shopId?: string
-  ) {
-    !hasUnserviceableproduct() &&
-      isfocused &&
-      props.navigation.navigate(AppRoutes.CartSummary, {
-        deliveryTime: deliveryTime,
-        storeDistance: storeDistance,
-        tatType: storeType,
-        shopId: shopId,
-      });
+  function NavigateToCartSummary() {
+    !hasUnserviceableproduct() && isfocused && props.navigation.navigate(AppRoutes.CartSummary);
   }
 
   async function validatePharmaCoupon() {
@@ -695,9 +693,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const { data } = response;
         const { Stores } = data;
         if (Stores?.length) {
-          setshowStorePickupCard(false);
-        } else {
           setshowStorePickupCard(true);
+        } else {
+          setshowStorePickupCard(false);
         }
       } catch (error) {
         console.log(error);
@@ -864,6 +862,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         return;
       }
     }
+    let splitOrderDetails: any = {};
+    if (orders?.length > 1) {
+      orders?.forEach((order: any, index: number) => {
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+      });
+    }
+    const isPrescriptionUploaded = physicalPrescriptions?.length > 0;
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       storeDistance: storeDistance,
@@ -875,7 +882,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
-      pharmacyUserTypeAttribute!
+      pharmacyUserTypeAttribute!,
+      orders?.length > 1,
+      splitOrderDetails,
+      isPrescriptionUploaded
     );
   }
 
@@ -884,21 +894,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
-          props.navigation.navigate('MEDICINES', { focusSearch: true });
           setCoupon!(null);
-          navigatedFrom === 'registration'
-            ? props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.ConsultRoom,
-                    }),
-                  ],
-                })
-              )
-            : props.navigation.navigate('MEDICINES', { focusSearch: true });
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: AppRoutes.Medicine,
+                }),
+              ],
+            })
+          );
         }}
       >
         <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), color: theme.colors.APP_YELLOW }}>

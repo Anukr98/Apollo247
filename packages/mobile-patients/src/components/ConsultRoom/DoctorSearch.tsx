@@ -61,7 +61,6 @@ import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  BackHandler,
   Dimensions,
   FlatList,
   Image,
@@ -406,20 +405,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   }, [currentPatient]);
 
-  useEffect(() => {
-    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      return () => {
-        _didFocus && _didFocus.remove();
-        _willBlur && _willBlur.remove();
-      };
-    });
-  }, []);
-
   const client = useApolloClient();
 
   const newUserPastSearch = async () => {
@@ -429,15 +414,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       newPatientId && fetchConsultedDoctors(newPatientId);
     }, 1500);
   };
+
   const handleBack = async () => {
-    if (isSearchFocused) {
-      setIsSearchFocused(false);
-      Keyboard.dismiss();
-    } else {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      props.navigation.goBack();
-      return false;
-    }
+    props.navigation.goBack();
   };
 
   const moveSelectedToTop = () => {
@@ -540,6 +519,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           }
         })
         .catch((e) => {
+          setProcedures([]);
+          setSymptoms([]);
           setisSearching(false);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
           console.log('Error occured while searching Doctor', e);
@@ -795,47 +776,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    const didFocusSubscription = props.navigation.addListener('didFocus', () => {
       !!searchText && fetchSearchData();
     });
-
-    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    });
-
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
-      willBlurSubscription && willBlurSubscription.remove();
     };
   }, [searchText]);
 
   const backDataFunctionality = async () => {
-    try {
-      if (isSearchFocused) {
-        setIsSearchFocused(false);
-        Keyboard.dismiss();
-      } else {
-        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-        const MoveDoctor = props.navigation.getParam('movedFrom') || '';
-
-        console.log('MoveDoctor', MoveDoctor);
-        CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
-      }
-    } catch (error) {}
-
-    return false;
+    setIsSearchFocused(false);
+    Keyboard.dismiss();
+    props.navigation.goBack();
   };
   const renderSearch = () => {
     const hasError =
@@ -845,7 +797,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       !showSpinner &&
       !isSearching &&
       searchSpecialities &&
-      searchSpecialities.length === 0
+      searchSpecialities.length === 0 &&
+      (!procedures || procedures?.length === 0) &&
+      (!symptoms || symptoms?.length === 0)
         ? true
         : false;
     return (
@@ -1440,6 +1394,29 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderDoctorSearches = () => {
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
+      const SpecialitiesList = (searchText.length > 2 ? searchSpecialities : Specialities) || [];
+      let totalNoOfBuckets = 0;
+      if (procedures?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (symptoms?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (SpecialitiesList?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      if (doctorsList?.length > 0) {
+        totalNoOfBuckets++;
+      }
+      const noOtherBucket =
+        procedures?.length === 0 && symptoms?.length === 0 && SpecialitiesList?.length === 0;
+      const visibleDataCount = totalNoOfBuckets === 2 ? 6 : totalNoOfBuckets === 1 ? -1 : 2; // -1 representing for all data
+      const showViewAllDoctors =
+        (visibleDataCount === 6 && doctorsList?.length <= 6) ||
+        (totalNoOfBuckets === 1 && noOtherBucket)
+          ? false
+          : !showAllSearchedDoctorData && doctorsList?.length > 2;
+      const showAllData = noOtherBucket ? true : showAllSearchedDoctorData;
       return (
         <View>
           <View style={styles.row}>
@@ -1447,7 +1424,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               sectionTitle={'Matching Doctors — ' + doctorsList.length}
               style={{ marginBottom: 0 }}
             />
-            {!showAllSearchedDoctorData && doctorsList?.length > 2 && (
+            {showViewAllDoctors && (
               <TouchableOpacity
                 onPress={() => {
                   setShowAllSearchedDoctorData(true);
@@ -1465,7 +1442,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           </View>
           <SearchResultCard
             data={doctorsList}
-            showAllData={showAllSearchedDoctorData}
+            showAllData={showAllData}
+            visibleDataCount={visibleDataCount}
             componentName="doctor"
             navigation={props.navigation}
             onPressCallback={(item: any, index: number) => {

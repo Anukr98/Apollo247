@@ -2,6 +2,7 @@ import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponent
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import React from 'react';
 import {
   Dimensions,
@@ -25,7 +26,11 @@ import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/glo
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { DiagnosticHomePageWidgetClicked } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticHomePageWidgetClicked,
+  DiagnosticAddToCartEvent,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -39,11 +44,16 @@ export interface ItemCardProps {
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: string;
+  sourceScreen: string;
 }
 
 export const ItemCard: React.FC<ItemCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, navigation, source } = props;
+  const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
+
+  const actualItemsToShow =
+    data?.diagnosticWidgetData?.length > 0 &&
+    data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
 
   const renderItemCard = (item: any) => {
     const getItem = item?.item;
@@ -64,6 +74,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const name = getItem?.itemTitle;
     const parameters = getItem?.itemParameter;
 
+    const promoteCircle = pricesForItem?.promoteCircle;
+    const promoteDiscount = pricesForItem?.promoteDiscount;
+    const circleDiscount = pricesForItem?.circleDiscount;
+    const specialDiscount = pricesForItem?.specialDiscount;
+    const discount = pricesForItem?.discount;
+
     const isAddedToCart = !!cartItems?.find(
       (items) => Number(items?.id) == Number(getItem?.itemId)
     );
@@ -80,12 +96,22 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
           ]}
         >
-          <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
-            source={{ uri: imageUrl }}
-            style={styles.imageStyle}
-          />
-
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ width: '69%' }}>
+              <Image
+                placeholderStyle={styles.imagePlaceholderStyle}
+                source={{ uri: imageUrl }}
+                style={styles.imageStyle}
+              />
+            </View>
+            {renderPercentageDiscount(
+              promoteCircle && isCircleSubscribed
+                ? circleDiscount
+                : promoteDiscount
+                ? specialDiscount
+                : discount
+            )}
+          </View>
           <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
             <Text style={styles.itemNameText} numberOfLines={2}>
               {name}
@@ -99,6 +125,18 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
         </View>
       </TouchableOpacity>
+    );
+  };
+
+  const renderPercentageDiscount = (discount: string | number) => {
+    return (
+      <>
+        {!!discount && discount > 0 ? (
+          <View style={styles.percentageDiscountView}>
+            <Text style={styles.percentageDiscountText}>{Number(discount).toFixed(0)}% off</Text>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -234,7 +272,16 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const planToConsider = pricesForItem?.planToConsider;
+    const discountToDisplay = pricesForItem?.discountToDisplay;
+    const mrpToDisplay = pricesForItem?.mrpToDisplay;
 
+    DiagnosticAddToCartEvent(
+      item?.itemTitle,
+      `${item?.itemId}`,
+      mrpToDisplay,
+      discountToDisplay,
+      data?.diagnosticWidgetTitle
+    );
     addCartItem!({
       id: `${item?.itemId}`,
       mou: 1,
@@ -265,6 +312,10 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
+    if (sourceScreen == AppRoutes.TestDetails) {
+      return;
+    }
+
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!; //more than price (black)
     const circlePrice = pricesForItem?.circlePrice!;
@@ -277,6 +328,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
     navigation.navigate(AppRoutes.TestDetails, {
       itemId: item?.itemId,
+      comingFrom: sourceScreen,
       testDetails: {
         Rate: price,
         specialPrice: specialPrice! || price,
@@ -327,21 +379,39 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     );
   };
 
+  const renderError = () => {
+    if (props.isVertical)
+      return (
+        <Card
+          cardContainer={styles.errorCardContainer}
+          heading={string.common.uhOh}
+          description={'Something went wrong.'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      );
+    else {
+      return null;
+    }
+  };
+
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
-        {data?.diagnosticWidgetData?.length > 0 ? (
+        {actualItemsToShow?.length > 0 ? (
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
             bounces={false}
             keyExtractor={(_, index) => `${index}`}
             showsHorizontalScrollIndicator={false}
             horizontal={!props.isVertical}
-            data={data?.diagnosticWidgetData}
+            data={actualItemsToShow}
             renderItem={renderItemCard}
             initialNumToRender={12}
           />
-        ) : null}
+        ) : (
+          renderError()
+        )}
       </View>
     </>
   );
@@ -417,5 +487,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     bottom: 10,
+  },
+  errorCardContainer: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+  percentageDiscountView: {
+    backgroundColor: colors.DISCOUNT_LIGHT_BLUE,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: colors.DISCOUNT_BLUE_COLOR,
+    height: 30,
+    width: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  percentageDiscountText: {
+    ...theme.viewStyles.text('M', 10, colors.DISCOUNT_BLUE_COLOR, 1, 12),
+    textAlign: 'center',
   },
 });

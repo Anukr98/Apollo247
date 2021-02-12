@@ -15,6 +15,7 @@ import {
   GET_PHARMA_TRANSACTION_STATUS,
   SAVE_MEDICINE_ORDER_PAYMENT,
   SAVE_MEDICINE_ORDER_OMS,
+  GET_PHARMA_TRANSACTION_STATUS_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -82,6 +83,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     cartItems,
     coupon,
     circlePlanSelected,
+    circleMembershipCharges,
+    setCirclePlanSelected,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
@@ -92,8 +95,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
+  const orders = props.navigation.getParam('orders');
   const price = props.navigation.getParam('price');
-  const orderId = props.navigation.getParam('orderId');
+  const transId = props.navigation.getParam('transId');
+  const isStorePickup = props.navigation.getParam('isStorePickup');
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
@@ -120,16 +125,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
+    const apiCall = isStorePickup
+      ? GET_PHARMA_TRANSACTION_STATUS
+      : GET_PHARMA_TRANSACTION_STATUS_V2;
+    const variables = isStorePickup ? { orderId: transId } : { transactionId: transId };
+
     client
       .query({
-        query: GET_PHARMA_TRANSACTION_STATUS,
-        variables: {
-          orderId: orderId,
-        },
+        query: apiCall,
+        variables: variables,
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        const pharmaPaymentStatus = res?.data?.pharmaPaymentStatus;
+        const pharmaPaymentStatus = isStorePickup
+          ? res?.data?.pharmaPaymentStatus
+          : res?.data?.pharmaPaymentStatusV2;
         setorderDateTime(pharmaPaymentStatus?.orderDateTime);
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
@@ -138,7 +148,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
-        fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        // fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
       .catch((error) => {
         setLoading(false);
@@ -230,7 +240,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    fireOrderSuccessEvent(orderAutoId);
+    // fireOrderSuccessEvent(orderAutoId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
@@ -295,7 +305,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const errorPopUp = () => {
-    fireOrderFailedEvent();
+    // fireOrderFailedEvent();
     showAphAlert!({
       title: `Hi ${currentPatient?.firstName || ''}!`,
       description: `Your order failed due to some temporary issue :( Please submit the order again.`,
@@ -481,7 +491,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           >
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Order ID : </Text>
             <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
-              {orderId}
+              {orders.map(
+                (item: any, index: number) =>
+                  item?.orderAutoId + (index != orders?.length - 1 && ', ')
+              )}
             </Text>
           </View>
           {!!paymentRefId && (
@@ -620,14 +633,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const handleButton = () => {
     if (status == success || paymentMode === 'COD') {
       clearCircleSubscriptionData();
-      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-        goToHomeOnBack: true,
-        showOrderSummaryTab: false,
-        orderAutoId: orderId,
-      });
+      // props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      //   goToHomeOnBack: true,
+      //   showOrderSummaryTab: false,
+      //   orderAutoId: orderId,
+      // });
+      props.navigation.navigate(AppRoutes.YourOrdersScene);
     } else if (status == failure || status == aborted) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription && setIsCircleSubscription(false);
+      setCirclePlanSelected?.(null);
       props.navigation.navigate(AppRoutes.MedicineCart);
     } else {
       clearCircleSubscriptionData();
@@ -728,7 +743,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                 ? renderCircleSavingsOnPurchase()
                 : null}
               {renderCODNote()}
-              {renderCODButton()}
+              {!circleMembershipCharges && renderCODButton()}
               {appointmentHeader()}
               {appointmentCard()}
               {renderNote()}

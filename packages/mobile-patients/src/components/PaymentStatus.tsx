@@ -86,7 +86,13 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
-  const { clearCartInfo, cartItems, coupon } = useShoppingCart();
+  const {
+    clearCartInfo,
+    cartItems,
+    coupon,
+    orders,
+    uploadPrescriptionRequired,
+  } = useShoppingCart();
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -288,7 +294,17 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       'Payment Success Order Id': newOrderId,
     };
     postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
-    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+    const pharmaCheckoutEventAttributes = {
+      ...checkoutEventAttributes,
+      'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+      'Prescription Option selected': uploadPrescriptionRequired
+        ? 'Prescription Upload'
+        : 'Not Applicable',
+    };
+    postWebEngageEvent(
+      WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED,
+      pharmaCheckoutEventAttributes
+    );
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
     firePurchaseEvent();
   };
