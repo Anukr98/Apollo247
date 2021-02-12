@@ -131,6 +131,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [showSummaryPopup, setSummaryPopup] = useState<boolean>(false);
+  const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const showSummaryPopupRef = useRef<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<
     getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList
@@ -536,6 +537,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         });
 
         const uniqueSlots = getUniqueTestSlots(slotsArray);
+        const isSameDate = moment().isSame(moment(date), 'date');
+        if (isSameDate && uniqueSlots?.length == 0) {
+          setTodaySlotNotAvailable(true);
+        } else {
+          todaySlotNotAvailable && setTodaySlotNotAvailable(false);
+        }
+
         setSlots(slotsArray);
         uniqueSlots?.length &&
           setselectedTimeSlot(
@@ -726,6 +734,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           heading="Schedule Appointment"
           date={date}
           areaId={String(selectedOrder?.areaId)}
+          isTodaySlotUnavailable={todaySlotNotAvailable}
           maxDate={moment()
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}

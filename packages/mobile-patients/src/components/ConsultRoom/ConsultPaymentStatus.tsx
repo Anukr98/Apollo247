@@ -7,6 +7,7 @@ import {
   Copy,
   CircleLogo,
   LocationOn,
+  Remove,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -961,8 +962,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       return (
         <View style={styles.locationMainView}>
           <View style={styles.currentLocationView}>
-            <Text style={styles.currentLocationText}>Current Location</Text>
-            <View style={{ flexDirection: 'row' }}>
+            <View style={[styles.spaceRow, { marginTop: 0 }]}>
+              <Text style={styles.currentLocationText}>Current Location</Text>
+              <TouchableOpacity onPress={() => setShowLocationPopup(false)}>
+                <Remove />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.locationInput}>
               <View style={{ flex: 7 }}>
                 <TextInputComponent
                   autoFocus={true}
@@ -1335,5 +1341,9 @@ const styles = StyleSheet.create({
   citiesText: {
     color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansMedium(18),
+  },
+  locationInput: {
+    flexDirection: 'row',
+    marginTop: 5,
   },
 });

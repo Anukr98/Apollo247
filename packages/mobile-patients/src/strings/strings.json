@@ -21,6 +21,9 @@
     "upload": "UPLOAD",
     "submit_request": "SUBMIT REQUEST",
     "continue": "CONTINUE",
+    "callDoctor": "Call an Apollo Doctor",
+    "faqsArticles": "FAQs & Articles",
+    "covidVaccineTracker": "Vaccine Tracker",
     "upload_more": "+ UPLOAD MORE",
     "date_placeholder_text": "DD MMM, YYYY",
     "select_text": "Select",
@@ -178,8 +181,8 @@
       "question": "How to consult in person?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
-      "point3": "Make payment",
-      "point4": "Visit the doctor at Hospital/Clinic",
+      "point3": "Visit the doctor at Hospital/Clinic",
+      "point4": "Make payment",
       "point5": "Receive prescriptions instantly",
       "point6": "Follow Up via text - valid for 7 days"
     },
@@ -458,7 +461,8 @@
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
-    "unableToFetchStatus": "Something went wrong. We are unable to fetch status"
+    "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
+    "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date."
   },
   "orders": {
     "urOrders": "MY ORDERS",

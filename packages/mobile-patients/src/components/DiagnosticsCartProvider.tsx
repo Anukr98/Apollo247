@@ -38,7 +38,7 @@ export interface DiagnosticClinic extends Clinic {
 }
 
 export interface DiagnosticSlot {
-  employeeSlotId: number;
+  employeeSlotId: number | string;
   diagnosticBranchCode: string;
   diagnosticEmployeeCode: string;
   slotStartTime: string;

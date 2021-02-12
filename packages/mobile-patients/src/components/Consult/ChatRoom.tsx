@@ -2188,6 +2188,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
+      eventsAfterConnectionDestroyed();
     },
     error: (error: string) => {
       openTokErrorWebEngageEvents(

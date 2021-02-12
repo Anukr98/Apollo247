@@ -50,7 +50,10 @@ import {
   VaccineTracker,
   ChatBot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { initiateDocOnCall, initiateDocOnCallVariables } from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall'
+import {
+  initiateDocOnCall,
+  initiateDocOnCallVariables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
 import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
 import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -114,6 +117,7 @@ import {
   doRequestAndAccessLocationModified,
   g,
   getPhrNotificationAllCount,
+  handleGraphQlError,
   overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
@@ -240,11 +244,17 @@ const styles = StyleSheet.create({
     marginTop: 6,
     ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
   },
-  covidBtnStyle: {
-    flex: 1,
+  readArticleStyle: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
     height: 50,
+  },
+  covidContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   labelView: {
     position: 'absolute',
@@ -364,13 +374,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
   },
-  covidStyler : {
-    flex:1,
-    justifyContent:'center',
-    alignItems:'center', 
-    marginHorizontal: 20,
-    marginTop: 5
-  },
   topTextStyle: {
     ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
     textAlign: 'center',
@@ -399,11 +402,47 @@ const styles = StyleSheet.create({
     marginRight: 6,
     flex: 1,
   },
+  covidSubContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    flex: 0.48,
+    left: 5,
+    right: 5,
+    width: '50%',
+  },
+  readArticleSubContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 3,
+    height: 80,
+  },
   goToConsultRoom: {
     height: 60,
     paddingRight: 25,
     backgroundColor: 'transparent',
     justifyContent: 'center',
+  },
+  renderContent: {
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    height: 0.06 * height,
+    marginTop: 16,
+    borderRadius: 10,
+    flex: 1,
+  },
+  renderSubContent: {
+    flex: 0.17,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   congratulationsDescriptionPhysical: {
     marginHorizontal: 10,
@@ -747,10 +786,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const doctorName = params?.doctorName?.includes('Dr')
       ? params?.doctorName
       : `Dr ${params?.doctorName}`;
-      let physical=false;
+    let physical = false;
     const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
     const appointmentTime = moment(appointmentDateTime).format('h:mm a');
-    let hospitalLocation="";
+    let hospitalLocation = '';
     let description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please be in the consult room before the appointment time.`;
     if (!isJdQuestionsComplete && !skipAutoQuestions) {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
@@ -758,18 +797,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (isPhysicalConsultBooked) {
       hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
       description = ``;
-      physical=true;
-         }
+      physical = true;
+    }
     showAphAlert!({
       unDismissable: false,
       title: 'Appointment Confirmation',
-      description:description,
-      physical:physical,
+      description: description,
+      physical: physical,
       physicalText: (
-      <Text style={styles.congratulationsDescriptionPhysical}>
-      Your appointment has been successfully booked with {doctorName} for <Text style={{color:'#02475B'}}>{dateFormatter(appointmentDateTime)} at {hospitalLocation+".\n\n"}</Text>
-      Please note that you will need to pay <Text style={{color:'#02475B'}}>₹{doctorInfo.physicalConsultationFees} + One-time registration charges</Text> (For new users) at the hospital Reception.
-      </Text>
+        <Text style={styles.congratulationsDescriptionPhysical}>
+          Your appointment has been successfully booked with {doctorName} for{' '}
+          <Text style={{ color: '#02475B' }}>
+            {dateFormatter(appointmentDateTime)} at {hospitalLocation + '.\n\n'}
+          </Text>
+          Please note that you will need to pay{' '}
+          <Text style={{ color: '#02475B' }}>
+            ₹{doctorInfo.physicalConsultationFees} + One-time registration charges
+          </Text>{' '}
+          (For new users) at the hospital Reception.
+        </Text>
       ),
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
@@ -876,27 +922,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
   };
 
-  // Call an apollo doctor logic handler 
+  // Call an apollo doctor logic handler
   const initiateCallDoctor = (mobileNumber: string) => {
-     client
-       .query<initiateDocOnCall, initiateDocOnCallVariables>({
-     query: INITIATE_DOC_ON_CALL,
-    variables: {
-     mobileNumber,
-    callType: docOnCallType.COVID_VACCINATION_QUERY,
-    },
-    fetchPolicy: 'no-cache',
-    })
-    .then((response) => {
-      response?.data?.initiateDocOnCall?.success
-     ? Alert.alert('You will be connected to the doctor shortly')
-     : Alert.alert('Error while connecting to the Doctor, Please try again')
-    })
-    .catch((error) => {
-       console.log(error);
-       Alert.alert('Error while connecting to the Doctor, Please try again')
-    });
-    };
+    client
+      .query<initiateDocOnCall, initiateDocOnCallVariables>({
+        query: INITIATE_DOC_ON_CALL,
+        variables: {
+          mobileNumber,
+          callType: docOnCallType.COVID_VACCINATION_QUERY,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        response?.data?.initiateDocOnCall?.success
+          ? Alert.alert('You will be connected to the doctor shortly')
+          : handleGraphQlError(response, 'Error while connecting to the Doctor, Please try again');
+      })
+      .catch((error) => {
+        console.log(error);
+        handleGraphQlError(error, 'Error while connecting to the Doctor, Please try again');
+      });
+  };
 
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
@@ -2084,48 +2130,52 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
-
+  // Read Article Container Styling
   const renderReadArticleContent = () => {
     return (
-    <View style={styles.covidBtnStyle}>
-      <View style={styles.covidStyler}>
-         <CovidButton iconbase={CovidOrange} 
-         title = {string.common.readLatestArticles} 
-         onPress={()=> onPressReadArticles()}/>
-      </View>
-      </View>);
-  }
-
-  const renderCovidContainer = () => {
-  return(
-      <View style={styles.covidStyler}>
-        <View style={{ flexDirection: "row", height: 40}}>
-            <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={FaqsArticles} 
-                title = {'FAQs & Articles'} 
-                onPress={()=> onPressLearnAboutCovid()}/>
-            </View>
-            <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={PhoneDoctor} 
-                title = {'Call an Apollo Doctor'} 
-                onPress={()=> onPressCallDoctor()}/>
-            </View>
-        </View>
-        <View style={{ flexDirection: "row", justifyContent: 'space-around', alignItems: 'center' }}>
-              <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={ChatBot} 
-                title = {'Chat with us'} 
-                onPress={()=> onPressChatWithUS()}/>
-              </View>
-              <View style={styles.covidBtnStyle}>
-                <CovidButton iconbase={VaccineTracker} 
-                title = {'Vaccine Tracker'} 
-                onPress={()=> onPressVaccineTracker()}/>
-              </View>
+      <View style={styles.readArticleStyle}>
+        <View style={styles.readArticleSubContainer}>
+          <CovidButton
+            iconBase={CovidOrange}
+            title={string.common.readLatestArticles}
+            onPress={() => onPressReadArticles()}
+          />
         </View>
       </View>
     );
-  }
+  };
+
+  // Covid Information Container styling
+  const renderCovidContainer = () => {
+    return (
+      <View style={styles.covidContainer}>
+        <View style={styles.covidSubContainer}>
+          <CovidButton
+            iconBase={FaqsArticles}
+            title={string.common.faqsArticles}
+            onPress={() => onPressLearnAboutCovid()}
+          />
+          <CovidButton
+            iconBase={ChatBot}
+            title={'Chat with us'}
+            onPress={() => onPressChatWithUS()}
+          />
+        </View>
+        <View style={styles.covidSubContainer}>
+          <CovidButton
+            iconBase={PhoneDoctor}
+            title={string.common.callDoctor}
+            onPress={() => onPressCallDoctor()}
+          />
+          <CovidButton
+            iconBase={VaccineTracker}
+            title={string.common.covidVaccineTracker}
+            onPress={() => onPressVaccineTracker()}
+          />
+        </View>
+      </View>
+    );
+  };
 
   const renderContent = (title: string, description: string) => {
     return (
@@ -2134,7 +2184,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18), marginTop: 16 }}>
           {description}
         </Text>
-        {title === string.common.healthBlog ?  renderReadArticleContent():renderCovidContainer()}
+        {title === string.common.healthBlog ? renderReadArticleContent() : renderCovidContainer()}
         {renderDashedLine()}
       </View>
     );
@@ -2144,8 +2194,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <DashedLine style={styles.plainLine} />;
   };
 
-  const onPressChatWithUS = () =>{
-
+  const onPressChatWithUS = () => {
     postHomeWEGEvent(WebEngageEventName.CHAT_WITH_US);
     try {
       const openUrl = AppConfig.Configuration.CHAT_WITH_US;
@@ -2153,19 +2202,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         covidUrl: openUrl,
       });
     } catch (e) {}
+  };
 
-  }
-
-  const onPressCallDoctor = async() => {
+  const onPressCallDoctor = async () => {
     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
     if (storedPhoneNumber) {
       initiateCallDoctor(storedPhoneNumber);
-    }
-    else {
+    } else {
       Alert.alert('Please try again later');
     }
-
-  }
+  };
 
   const renderCovidHelpButtons = () => {
     return (
@@ -2206,62 +2252,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         )}
       </View>
     );
-  };
-
-  const renderContentButton = (title: string) => {
-    const btnTitle =
-       title === string.common.healthBlog
-        ? string.common.readLatestArticles
-        : '';
-    return 
-       (<TouchableOpacity
-        activeOpacity={0.5}
-        style={{
-          shadowColor: '#4c808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.4,
-          shadowRadius: 5,
-          elevation: 5,
-          backgroundColor: '#fff',
-          flexDirection: 'row',
-          height: 0.06 * height,
-          marginTop: 16,
-          borderRadius: 10,
-          flex: 1,
-        }}
-        onPress={() => {
-             btnTitle === string.common.readLatestArticles
-            ? onPressReadArticles()
-            : null;
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          { btnTitle === string.common.readLatestArticles ? (
-            <LatestArticle style={{ width: 20, height: 20 }} />
-          ) : null}
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
-            {btnTitle}
-          </Text>
-        </View>
-      </TouchableOpacity>)
   };
 
   const onPressReadArticles = () => {
