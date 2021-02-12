@@ -2443,8 +2443,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
-    // checkDuplicateItems();
-    proceedForBooking();
+    checkDuplicateItems();
+    // proceedForBooking();
   };
 
   const checkDuplicateItems = () => {
