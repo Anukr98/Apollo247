@@ -76,6 +76,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [cardTypes, setCardTypes] = useState<any>([]);
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
   const [isCardValid, setisCardValid] = useState<boolean>(true);
+  const [phonePeReady, setphonePeReady] = useState<boolean>(false);
+  const [googlePayReady, setGooglePayReady] = useState<boolean>(false);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -86,6 +88,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       method: 'GOOGLEPAY',
       source: require('@aph/mobile-patients/src/components/ui/icons/GPay.png'),
     },
+    {
+      bank: 'Phone Pe',
+      method: 'PHONEPE',
+      source: require('@aph/mobile-patients/src/components/ui/icons/PhonePe.png'),
+    },
   ];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -94,8 +101,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     fecthPaymentOptions();
     fetchTopBanks();
-    isGooglePayReady();
     isPhonePeReady();
+    setTimeout(() => {
+      isGooglePayReady();
+    }, 1000);
     return () => eventListener.remove();
   }, []);
 
@@ -115,7 +124,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         var payload = data.payload || {};
         if (payload?.error) {
           console.log('error >>>>>>>>', payload);
-          handleError(payload?.errorMessage);
+          payload?.payload?.action != 'isDeviceReady' && handleError(payload?.errorMessage);
         }
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
           const banks = payload?.payload?.paymentMethods?.filter(
@@ -128,6 +137,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
         } else if (payload?.payload?.action == 'isDeviceReady') {
           console.log(payload);
+          payload?.requestId == 'phonePe' && payload?.payload?.status && setphonePeReady(true);
+          payload?.requestId == 'googlePay' && payload?.payload?.status && setGooglePayReady(true);
         }
         break;
       default:
@@ -351,6 +362,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         onPressUPIApp={onPressUPIApp}
         onPressPay={onPressVPAPay}
         setisVPAvalid={setisVPAvalid}
+        phonePeReady={phonePeReady}
+        googlePayReady={googlePayReady}
       />
     );
   };

@@ -10,10 +10,20 @@ export interface UPIPaymentsProps {
   onPressPay: (VPA: string) => void;
   isVPAvalid: boolean;
   setisVPAvalid: (arg: boolean) => void;
+  phonePeReady: boolean;
+  googlePayReady: boolean;
 }
 
 export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
-  const { upiApps, onPressUPIApp, onPressPay, isVPAvalid, setisVPAvalid } = props;
+  const {
+    upiApps,
+    onPressUPIApp,
+    onPressPay,
+    isVPAvalid,
+    setisVPAvalid,
+    phonePeReady,
+    googlePayReady,
+  } = props;
   const [VPA, setVPA] = useState<string>('');
 
   const isValid = (VPA: string) => {
@@ -36,11 +46,28 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     );
   };
 
+  const showUPI = (upi: any) => {
+    console.log(upi);
+    if (upi == 'PHONEPE') {
+      return phonePeReady ? true : false;
+    } else if (upi == 'GOOGLEPAY') {
+      return googlePayReady ? true : false;
+    } else {
+      return false;
+    }
+  };
+
   const renderUPIApps = () => {
-    return upiApps?.length ? (
+    return upiApps?.length && (googlePayReady || phonePeReady) ? (
       <View>
         <Text style={styles.UPIHeader}>Select your UPI App</Text>
-        <FlatList style={{ marginTop: 12 }} data={upiApps} renderItem={(item) => upiApp(item)} />
+        <FlatList
+          style={{ marginTop: 12 }}
+          data={upiApps}
+          renderItem={(item) => {
+            return showUPI(item?.item?.method) ? upiApp(item) : null;
+          }}
+        />
         <Text style={styles.or}>OR</Text>
       </View>
     ) : null;
