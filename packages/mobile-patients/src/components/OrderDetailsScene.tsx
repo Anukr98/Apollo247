@@ -1556,7 +1556,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderInconvenienceView = () => {
-    const patientWhtsappQuery = `I have a query regarding my order. ${
+    const patientWhtsappQuery = `I have a query regarding my order. Status_${
       orderDetails?.currentStatus
     }, ID: ${billNumber || orderAutoId}`;
     return (
