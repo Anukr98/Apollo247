@@ -396,24 +396,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
-    const itemIds = widgetsData?.map((item: any) =>
+    //filter the items.
+    const filterWidgets = widgetsData?.filter(
+      (item: any) => !!item?.diagnosticWidgetData && item?.diagnosticWidgetData?.length > 0
+    );
+    const itemIds = filterWidgets?.map((item: any) =>
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
     //restriction less than 12.
     const res = Promise.all(
-      itemIds?.map((item: any) =>
-        fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
-      )
+      !!itemIds &&
+        itemIds?.length > 0 &&
+        itemIds?.map((item: any) =>
+          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+        )
     );
 
     const response = (await res)?.map((item: any) =>
       g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
     );
-    let newWidgetsData = [...widgetsData];
+    let newWidgetsData = [...filterWidgets];
 
-    for (let i = 0; i < widgetsData?.length; i++) {
-      for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
-        const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
+    for (let i = 0; i < filterWidgets?.length; i++) {
+      for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+        const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
           (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
         );
         if (findIndex !== -1) {
