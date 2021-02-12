@@ -1227,7 +1227,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'height' : undefined}
           style={{ flex: 1 }}
           {...keyboardVerticalOffset}
         >
