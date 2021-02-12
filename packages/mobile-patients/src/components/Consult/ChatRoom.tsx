@@ -828,21 +828,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const [callDuration, setCallDuration] = useState<number>(0);
 
-  const isPaused = !callerAudio
-    ? !callerVideo && isCall
+  const isPaused = subscriberConnected.current
+    ? !callerAudio && !callerVideo
       ? 'audio/video'
-      : 'audio'
-    : !callerVideo && isCall
-    ? 'video'
+      : !callerVideo
+      ? 'video'
+      : !callerAudio
+      ? 'audio'
+      : ''
     : '';
 
-  const isDoctorVideoPaused = isPaused == 'audio/video' || isPaused == 'video';
   const doctorProfileUrl = appointmentData?.doctorInfo?.photoUrl;
-  const showDoctorProfile =
-    !subscriberConnected.current ||
-    isDoctorVideoPaused ||
-    (isAudioCall && callerAudio) ||
-    (isAudioCall && !callerVideo);
+  const showDoctorProfile = !callerVideo;
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -6164,6 +6161,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     AsyncStorage.setItem('callDisconnected', 'false');
     if (isAudio.current && !patientJoinedCall.current) {
       setShowVideo(false);
+      setCallerVideo(false);
       setIsAudioCall(true);
     } else {
       setShowVideo(true);
