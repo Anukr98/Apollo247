@@ -184,6 +184,10 @@ export interface AppCommonDataContextProps {
   setUrology: ((arg0: { id: string; data: getDoctorsBySpecialtyAndFilters }) => void) | null;
   needHelpToContactInMessage: string;
   setNeedHelpToContactInMessage: ((value: string) => void) | null;
+  needHelpReturnPharmaOrderSuccessMessage: string;
+  setNeedHelpReturnPharmaOrderSuccessMessage: ((value: string) => void) | null;
+  phrSession: string;
+  setPhrSession: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
   setCurrentLocationFetched: ((value: boolean) => void) | null;
   notificationCount: number;
@@ -262,6 +266,10 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setUrology: null,
   needHelpToContactInMessage: '',
   setNeedHelpToContactInMessage: null,
+  needHelpReturnPharmaOrderSuccessMessage: '',
+  setNeedHelpReturnPharmaOrderSuccessMessage: null,
+  phrSession: '',
+  setPhrSession: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
   setCurrentLocationFetched: null,
   notificationCount: 0,
@@ -380,6 +388,13 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [needHelpToContactInMessage, setNeedHelpToContactInMessage] = useState<
     AppCommonDataContextProps['needHelpToContactInMessage']
   >('');
+
+  const [
+    needHelpReturnPharmaOrderSuccessMessage,
+    setNeedHelpReturnPharmaOrderSuccessMessage,
+  ] = useState<AppCommonDataContextProps['needHelpReturnPharmaOrderSuccessMessage']>('');
+
+  const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
 
@@ -538,6 +553,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setEnt,
         needHelpToContactInMessage,
         setNeedHelpToContactInMessage,
+        needHelpReturnPharmaOrderSuccessMessage,
+        setNeedHelpReturnPharmaOrderSuccessMessage,
+        phrSession,
+        setPhrSession,
         notificationCount,
         setNotificationCount,
         allNotifications,

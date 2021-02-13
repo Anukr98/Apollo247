@@ -216,6 +216,9 @@ export enum WebEngageEventName {
   PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records - app',
   PHR_USER_LINKING = 'PHR User Linking - app',
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
+  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
+  PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}-app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
@@ -1102,8 +1105,11 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
     'Order Amount': number; // Optional
-    'Payment mode'?: 'COD' | 'Online'; // Optional
-    'Circle discount': number;
+    'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
+    'Circle discount'?: number;
+    'Appointment Date'?: string;
+    'Appointment time'?: string;
+    'Item ids'?: any;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Paymentmode: 'Online' | 'COD';
