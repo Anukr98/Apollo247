@@ -17,6 +17,7 @@ import {
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface ShoppingCartItem {
   id: string;
@@ -624,7 +625,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCircleSubscription
+    isFreeDelivery ||
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
+    isCircleSubscription ||
+    hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : getDeliveryFee();
 
