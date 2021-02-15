@@ -2322,7 +2322,7 @@ const fetchHealthCredits = async () => {
 
   const renderCircle = () => {
 
-    const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
+    const expiry=circlePlanValidity?-timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
     const renew=renewNow!=='' && renewNow==='yes'?true:false;
 
