@@ -4409,11 +4409,13 @@ export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
     $mobile_number: String!
     $banner_context: String!
     $user_state: UserState
+    $banner_display_type:[BannerDisplayType!]
   ) {
     GetAllGroupBannersOfUser(
       mobile_number: $mobile_number
       banner_context: $banner_context
       user_state: $user_state
+      banner_display_type: $banner_display_type
     ) {
       code
       success

@@ -36,4 +36,5 @@ export interface GetAllGroupBannersOfUserVariables {
   mobile_number: string;
   banner_context: string;
   user_state?: UserState | null;
+  banner_display_type?: BannerDisplayType[] | null;
 }

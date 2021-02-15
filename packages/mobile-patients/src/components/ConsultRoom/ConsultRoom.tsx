@@ -57,7 +57,7 @@ import {
   initiateDocOnCallVariables,
 } from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
 import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
-import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { docOnCallType, BannerDisplayType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -1564,7 +1564,8 @@ const fetchHealthCredits = async () => {
 
   const getUserBanners = async () => {
     setHdfcLoading(true);
-    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME);
+    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [BannerDisplayType.banner,BannerDisplayType.card]);
+    console.log("csk banner",JSON.stringify(res))
     setHdfcLoading(false);
     if (res) {
       setBannerData && setBannerData(res);
@@ -2415,14 +2416,20 @@ const fetchHealthCredits = async () => {
        />):
        (expiry<0 && circleSavings>0)?
        (<CircleTypeCard5
-        onButtonPress={()=>console.log('circle button pressed')}
+        onButtonPress={()=>{
+                setShowCirclePlans(true)
+                console.log('circle button5 pressed')
+                }}
         savings={circleSavings}
         credits={healthCredits}
         expired={expired}
        />):
         (expiry<0)?
         (<CircleTypeCard6
-        onButtonPress={()=>console.log('circle button pressed')}
+        onButtonPress={()=>{
+                setShowCirclePlans(true)
+                console.log('circle button6 pressed')
+                }}
         savings={circleSavings}
         credits={healthCredits}
         expired={expired}
