@@ -178,12 +178,12 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 
-import { CircleTypeCard1 } from '../ui/CircleTypeCard1';
-import { CircleTypeCard2 } from '../ui/CircleTypeCard2';
-import { CircleTypeCard3 } from '../ui/CircleTypeCard3';
-import { CircleTypeCard4 } from '../ui/CircleTypeCard4';
-import { CircleTypeCard5 } from '../ui/CircleTypeCard5';
-import { CircleTypeCard6 } from '../ui/CircleTypeCard6';
+import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
+import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
+import { CircleTypeCard3 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard3';
+import { CircleTypeCard4 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard4';
+import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard5';
+import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
 
 const { Vitals } = NativeModules;
 
@@ -1539,7 +1539,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
       } catch (error) {
         CommonBugFender('MyMembership_fetchCircleSavings', error);
-        console.log('csk error',error);
+        console.log('error',error);
       }
     };
 const fetchHealthCredits = async () => {
@@ -1557,7 +1557,7 @@ const fetchHealthCredits = async () => {
 
       } catch (error) {
         CommonBugFender('MyMembership_fetchCircleSavings', error);
-        console.log('csk error',error);
+        console.log('error',error);
       }
     };
 
@@ -1565,7 +1565,7 @@ const fetchHealthCredits = async () => {
   const getUserBanners = async () => {
     setHdfcLoading(true);
     const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [BannerDisplayType.banner,BannerDisplayType.card]);
-    console.log("csk banner",JSON.stringify(res))
+
     setHdfcLoading(false);
     if (res) {
       setBannerData && setBannerData(res);
@@ -2296,7 +2296,7 @@ const fetchHealthCredits = async () => {
    }
 
    const renderCircleSubscriptionPlans = () => {
-   console.log("csk zzzz",showCirclePlans,circlePlanValidity?.endDate,healthCredits,membershipPlans)
+
        return (
          <CircleMembershipPlans
            navigation={props.navigation}
