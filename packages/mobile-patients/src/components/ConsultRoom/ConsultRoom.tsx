@@ -2271,6 +2271,7 @@ const fetchHealthCredits = async () => {
                               title: item?.banner_template_info?.headerText1,
                               value:''
                               }));
+  console.log("csk bd",JSON.stringify(datatosend));
   return datatosend;
   }
 
@@ -2327,6 +2328,8 @@ const fetchHealthCredits = async () => {
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
     const renew=renewNow!=='' && renewNow==='yes'?true:false;
+
+    const cardlist=dataBannerCards();
 
 
     console.log("csk value",isCircleMember,circlePlanValidity,circleStatus,expiry,
@@ -2392,6 +2395,8 @@ const fetchHealthCredits = async () => {
         expired={expired}
        />):(null)
        }
+
+        {cardlist.length>0?(
         <View style={[styles.circleRowsContainer,{paddingRight:10}]}>
 
           {circleDataLoading &&
@@ -2407,7 +2412,7 @@ const fetchHealthCredits = async () => {
 
         <FlatList
                 horizontal={true}
-                data={dataBannerCards()}
+                data={cardlist}
                 renderItem={({item}) =>renderCircleCards(item)}
                 keyExtractor={(item, index) => index.toString()+"circle"}
         />
@@ -2417,6 +2422,7 @@ const fetchHealthCredits = async () => {
            </View>
 
         </View>
+        ):(null)}
 
 
         <View style={styles.circleRowsContainer}>
