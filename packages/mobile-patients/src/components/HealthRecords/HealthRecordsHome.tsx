@@ -832,19 +832,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <Header
         title={'HEALTH RECORDS'}
         leftIcon={'homeIcon'}
-        rightComponent={
-          <ProfileList
-            showProfilePic={true}
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={renderProfileImage()}
-            listContainerStyle={{ marginLeft: 6, marginTop: 44 }}
-            selectedProfile={profile}
-            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-            onProfileChange={() => setUpdatePatientDetailsApi(true)}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-        }
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={() => {
           setPhrNotificationData && setPhrNotificationData(null);
