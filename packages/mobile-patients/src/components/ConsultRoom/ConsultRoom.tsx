@@ -1445,15 +1445,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          * data?.APOLLO ----> Circle data
          */
         const circleData = data?.APOLLO?.[0];
-        if (circleData?._id && circleData?.status === 'active') {
+        if (circleData?._id) {
           const paymentRef = circleData?.payment_reference;
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
-          setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+
+          if (circleData?.status === 'active') {
+            setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          }
+
           const planValidity = {
             startDate: circleData?.start_date,
             endDate: circleData?.end_date,
