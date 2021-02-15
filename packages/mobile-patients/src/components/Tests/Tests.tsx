@@ -1532,14 +1532,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       <Image source={item.image} style={styles.stepsToBookModalIconStyle} />
                     </View>
                     <View style={{ width: '82%' }}>
-                      <ImageBackground
-                        source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.png')}
-                        style={{ height: index == 1 ? 115 : 110, width: 300 }}
-                        resizeMode={'contain'}
-                      >
-                        <Text style={styles.stepsToBookModalMainTextHeading}>{item.heading}</Text>
-                        <Text style={styles.stepsToBookModalMainTextSubText}>{item.subtext}</Text>
-                      </ImageBackground>
+                      {index == stepsToBookArray?.length - 1 ? (
+                        <View>{renderStepsToBookText(item.heading, item.subtext)}</View>
+                      ) : (
+                        <ImageBackground
+                          source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.png')}
+                          style={{ height: index == 1 ? 118 : 108, width: 300 }}
+                          resizeMode={'contain'}
+                        >
+                          {renderStepsToBookText(item.heading, item.subtext)}
+                        </ImageBackground>
+                      )}
                     </View>
                   </View>
                 </>
@@ -1549,6 +1552,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
         </View>
       ),
     });
+  };
+
+  const renderStepsToBookText = (heading: string, subText: string) => {
+    return (
+      <>
+        <Text style={styles.stepsToBookModalMainTextHeading}>{heading}</Text>
+        <Text style={styles.stepsToBookModalMainTextSubText}>{subText}</Text>
+      </>
+    );
   };
 
   const renderCertificateView = () => {

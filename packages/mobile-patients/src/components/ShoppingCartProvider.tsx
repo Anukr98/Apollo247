@@ -630,24 +630,19 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isCircleSubscription ||
     hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
-      : getDeliveryFee();
+      : cartTotal > 0 &&
+        cartTotal - productDiscount - couponDiscount <
+          AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+      ? AppConfig.Configuration.DELIVERY_CHARGES
+      : 0;
 
-  function getDeliveryFee() {
-    let deliveryfee = 0;
-    orders?.forEach((order: any) => {
-      deliveryfee = deliveryfee + order?.deliveryCharge || 0;
-    });
-    return deliveryfee;
-  }
-  const packagingCharges = getPackagingFee();
-
-  function getPackagingFee() {
-    let packagingFee = 0;
-    orders?.forEach((order: any) => {
-      packagingFee = packagingFee + order?.packingCharges || 0;
-    });
-    return packagingFee;
-  }
+  const packagingCharges = isCircleSubscription
+    ? 0
+    : cartTotal > 0 &&
+      cartTotal - productDiscount - couponDiscount <
+        AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_PACKAGING
+    ? AppConfig.Configuration.PACKAGING_CHARGES
+    : 0;
 
   const grandTotal = parseFloat(
     (
@@ -777,21 +772,16 @@ export const ShoppingCartProvider: React.FC = (props) => {
           }
         })
         .filter((item) => item);
-      let estimatedAmount =
-        shipmentTotal +
-        order?.packingCharges +
-        order?.deliveryCharge -
-        shipmentCouponDiscount -
-        shipmentProductDiscount;
+      let estimatedAmount = shipmentTotal - shipmentCouponDiscount - shipmentProductDiscount;
       console.log('shipmentTotal >>>', shipmentTotal);
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
       shipment['estimatedAmount'] = estimatedAmount;
-      shipment['deliveryCharges'] = order['deliveryCharge'];
+      shipment['deliveryCharges'] = orders?.length ? deliveryCharges / orders?.length : 0;
       shipment['orderTat'] = order['tat'];
       shipment['couponDiscount'] = shipmentCouponDiscount;
       shipment['productDiscount'] = shipmentProductDiscount;
-      shipment['packagingCharges'] = order['packingCharges'];
+      shipment['packagingCharges'] = orders?.length ? packagingCharges / orders?.length : 0;
       shipment['storeDistanceKm'] = order['distance'];
       shipment['items'] = items;
       shipmentsArray.push(shipment);
