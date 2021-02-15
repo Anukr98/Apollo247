@@ -2296,7 +2296,7 @@ const fetchHealthCredits = async () => {
 
   const dataBannerCards=()=>{
   const datatoadd=bannerData?.filter((item)=>item?.banner_display_type==='card');
-  const datatosend= datatoadd.map(item=>({
+  const datatosend= datatoadd?.map(item=>({
                               imageUrl:{uri:item?.banner} ,
                               title: item?.banner_template_info?.headerText1,
                               value:''
