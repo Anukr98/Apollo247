@@ -9,6 +9,7 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -81,7 +82,8 @@ import {
   UPDATE_PATIENT_APP_VERSION,
   GET_USER_PROFILE_TYPE,
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
-  GET_ONEAPOLLO_USER
+  GET_ONEAPOLLO_USER,
+  GET_PLAN_DETAILS_BY_PLAN_ID
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -632,6 +634,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
+  const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
@@ -666,6 +669,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
@@ -676,6 +680,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
   const [healthCredits, setHealthCredits] = useState<number>(-1);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
@@ -1203,6 +1208,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setWebEngageScreenNames('Home Screen');
     fetchCircleSavings();
     fetchHealthCredits();
+    fetchCarePlans();
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
     setBannerData && setBannerData([]); // default banners to be empty
@@ -1490,6 +1496,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCircleDataLoading(false);
 
   };
+
+    const fetchCarePlans = async () => {
+      try {
+        const res = await client.query<GetPlanDetailsByPlanId>({
+          query: GET_PLAN_DETAILS_BY_PLAN_ID,
+          fetchPolicy: 'no-cache',
+          variables: {
+            plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
+          },
+        });
+        const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
+        if (membershipPlans) {
+          setMembershipPlans(membershipPlans);
+          const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
+          if (defaultPlan?.length > 0) {
+            setDefaultCirclePlan(defaultPlan[0]);
+          }
+        }
+      } catch (error) {
+        CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
+      }
+    };
+
   const fetchCircleSavings = async () => {
       try {
         const res = await client.query({
@@ -2300,23 +2329,24 @@ const fetchHealthCredits = async () => {
    }
 
    const renderCircleSubscriptionPlans = () => {
+   console.log("csk zzzz",showCirclePlans,circlePlanValidity?.endDate,healthCredits,membershipPlans)
        return (
          <CircleMembershipPlans
            navigation={props.navigation}
            isModal={true}
-           closeModal={() => null}
+           closeModal={() => setShowCirclePlans(false)}
            buyNow={true}
-           membershipPlans={{}}
+           membershipPlans={membershipPlans}
            source={'Consult'}
            from={string.banner_context.HOME}
-           healthCredits={'44'}
+           healthCredits={healthCredits}
            onPurchaseWithHCCallback={(res: any) => {
              fireCirclePurchaseEvent(
                currentPatient,
                res?.data?.CreateUserSubscription?.response?.end_date
              );
              planPurchased.current = true;
-             planValidity.current = '';
+             planValidity.current = circlePlanValidity?.endDate;
              setShowCircleActivation(true);
            }}
          />
@@ -2341,8 +2371,8 @@ const fetchHealthCredits = async () => {
       {(expiry>0 && circleStatus==='active' && renew && circleSavings>0)?
         (<CircleTypeCard1
         onButtonPress={()=>{
-        console.log('circle button pressed')
-        renderCircleSubscriptionPlans()
+        setShowCirclePlans(true)
+        console.log('circle button1 pressed')
         }}
         savings={circleSavings}
         credits={healthCredits}
@@ -2350,7 +2380,10 @@ const fetchHealthCredits = async () => {
        />):
        (expiry>0 && circleStatus==='active' && renew)?
         (<CircleTypeCard2
-        onButtonPress={()=>console.log('circle button pressed')}
+        onButtonPress={()=>{
+        setShowCirclePlans(true)
+        console.log('circle button2 pressed')
+                }}
         credits={healthCredits}
         expiry={expiry}
        />):
@@ -2952,6 +2985,7 @@ const fetchHealthCredits = async () => {
               <View style={{ backgroundColor: '#f0f1ec' }}>{
               isCircleMember==='yes' && renderCircle()
               }</View>
+              {showCirclePlans && renderCircleSubscriptionPlans()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
