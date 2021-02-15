@@ -2271,16 +2271,17 @@ const fetchHealthCredits = async () => {
   return datatosend;
   }
 
-  const renderCircleCards = (item) =>
+  const renderCircleCards = (item,darktheme) =>
   {
   return (
   <View style={styles.circleCardsContainer}>
   <TouchableOpacity activeOpacity={1} onPress={()=>console.log('flat hi')}>
-         <View style={styles.circleCards}>
+         <View style={darktheme?([styles.circleCards,{borderColor:'#666666'}]):(styles.circleCards)}>
 
          <View style={styles.circleCardsTexts}>
 
-           <Text style={{...theme.viewStyles.text('L', 12, '#02475B', 1, 16)}}>{item?.title}</Text>
+           <Text style={darktheme?({...theme.viewStyles.text('L', 12, '#666666', 0.6, 16)}):
+           ({...theme.viewStyles.text('L', 12, '#02475B', 1, 16)})}>{item?.title}</Text>
            <Text style={{...theme.viewStyles.text('M', 16, '#02475B', 1, 18)}}>{item?.value}</Text>
          </View>
 
@@ -2325,6 +2326,7 @@ const fetchHealthCredits = async () => {
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
     const renew=renewNow!=='' && renewNow==='yes'?true:false;
+    const darktheme= expiry>0?false:true;
 
     const cardlist=dataBannerCards();
 
@@ -2419,7 +2421,7 @@ const fetchHealthCredits = async () => {
         <FlatList
                 horizontal={true}
                 data={cardlist}
-                renderItem={({item}) =>renderCircleCards(item)}
+                renderItem={({item}) =>renderCircleCards(item,darktheme)}
                 keyExtractor={(item, index) => index.toString()+"circle"}
         />
 
