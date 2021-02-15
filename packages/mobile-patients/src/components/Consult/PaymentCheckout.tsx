@@ -347,8 +347,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             onApplyCoupon: onApplyCoupon,
           });
         }}
+        showRemoveBtn={coupon ? true : false}
+        onRemoveCoupon={() => removeCoupon()}
       />
     );
+  };
+
+  const removeCoupon = () => {
+    setCoupon('');
+    setCouponDiscountFees(0);
+    setDoctorDiscountedFees(0);
   };
 
   const renderCouponSavingsView = () => {
