@@ -216,6 +216,7 @@ export interface TatApiInput247 {
     sku: string;
     qty: number;
   }[];
+  userType: 'regular' | 'circle';
 }
 
 export interface ServiceAbilityApiInput {
@@ -523,6 +524,24 @@ export interface SymptomsSpecialities {
   description?: string;
   diseases?: string[];
   name: string;
+}
+
+export interface ProceduresAndSymptomsParams {
+  text: string;
+}
+
+interface ProceduresAndSymptomsResponse {
+  hits?: number;
+  results: ProceduresAndSymptomsResult[];
+  status?: string;
+}
+
+export interface ProceduresAndSymptomsResult {
+  description?: string;
+  id?: string;
+  name: string;
+  speciality?: string;
+  tag: string;
 }
 
 const config = AppConfig.Configuration;
@@ -837,12 +856,10 @@ export const autoCompletePlaceSearch = (
 
 let cancelGetDeliveryTAT247: Canceler | undefined;
 
-export const getDeliveryTAT247 = (
-  params: TatApiInput247
-): Promise<AxiosResponse<GetTatResponse247>> => {
+export const getDeliveryTAT247 = (params: TatApiInput247): Promise<AxiosResponse<any>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  const url = `${config.UATTAT_CONFIG[0]}/v2/tat`;
   return Axios.post(url, params, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -1078,6 +1095,38 @@ export const getDiagnosticsSearchResults = (
   const baseurl = config.DRUPAL_CONFIG[0];
   const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
   return Axios.get(getSearchResults, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getWidgets = `${baseurl}/${pageName}/getwidgets`;
+  return Axios.get(getWidgets, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const searchProceduresAndSymptoms = (
+  params: ProceduresAndSymptomsParams
+): Promise<AxiosResponse<ProceduresAndSymptomsResponse>> => {
+  const url = AppConfig.Configuration.PROCEDURE_SYMPTOMS_SEARCH_URL;
+  return Axios.get(url, {
+    params: params,
+  });
+};
+
+export const getDiagnosticTestDetails = (
+  pageName: string,
+  itemId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getDetails = `${baseurl}/${pageName}/${itemId}`;
+  return Axios.get(getDetails, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
     },

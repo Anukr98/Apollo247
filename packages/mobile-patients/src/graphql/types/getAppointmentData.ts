@@ -3,11 +3,18 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Gender, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getAppointmentData
 // ====================================================
+
+export interface getAppointmentData_getAppointmentData_appointmentsHistory_patientInfo {
+  __typename: "Patient";
+  firstName: string | null;
+  lastName: string | null;
+  gender: Gender | null;
+}
 
 export interface getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
@@ -101,6 +108,7 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory {
   appointmentState: APPOINTMENT_STATE | null;
   isJdQuestionsComplete: boolean | null;
   isSeniorConsultStarted: boolean | null;
+  patientInfo: getAppointmentData_getAppointmentData_appointmentsHistory_patientInfo | null;
   doctorInfo: getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo | null;
   appointmentPayments: (getAppointmentData_getAppointmentData_appointmentsHistory_appointmentPayments | null)[] | null;
   caseSheet: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet | null)[] | null;

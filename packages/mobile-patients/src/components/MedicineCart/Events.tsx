@@ -19,12 +19,17 @@ import {
   FirebaseEventName,
   FirebaseEvents,
 } from '@aph/mobile-patients/src//helpers/firebaseEvents';
+import { PharmacyUserTypeEvent } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export function postwebEngageProceedToPayEvent(
   shoppingCart: ShoppingCartContextProps,
   isStorePickup: boolean,
   deliveryTime: string,
-  pharmacyCircleEvent: PharmacyCircleEvent
+  pharmacyCircleEvent: PharmacyCircleEvent,
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent,
+  isSplitCart?: boolean,
+  splitCartDetails?: any,
+  isPrescriptionUploaded?: boolean
 ) {
   const {
     cartTotal,
@@ -52,7 +57,13 @@ export function postwebEngageProceedToPayEvent(
     'Pin Code': pinCode,
     'Service Area': 'Pharmacy',
     'No. of out of stock items': numberOfOutOfStockItems,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
+    'Prescription Option selected': !!isPrescriptionUploaded
+      ? 'Prescription Upload'
+      : 'Not Applicable',
+    ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
+    ...splitCartDetails,
   };
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
@@ -64,7 +75,8 @@ export function postwebEngageProceedToPayEvent(
 export function PharmacyCartViewedEvent(
   shoppingCart: ShoppingCartContextProps,
   id: string,
-  pharmacyCircleEvent: PharmacyCircleEvent
+  pharmacyCircleEvent: PharmacyCircleEvent,
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart.cartItems.length,
@@ -87,6 +99,7 @@ export function PharmacyCartViewedEvent(
     ),
     'Service Area': 'Pharmacy',
     'Customer ID': id,
+    ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
   };
   if (shoppingCart.coupon) {

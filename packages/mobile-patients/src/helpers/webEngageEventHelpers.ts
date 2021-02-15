@@ -14,6 +14,7 @@ import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from './AppsFlyerEvents';
 import { PharmacyCircleEvent } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { PharmacyUserTypeEvent } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 type MyOrdersClicked = WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED];
 
 export const postMyOrdersClicked = (
@@ -89,7 +90,10 @@ export const postPhamracyCartAddressSelectedSuccess = (
   tatDisplayed: PhamracyCartAddressSelectedSuccess['TAT Displayed'],
   deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
   pharmacyCircleEvent: PharmacyCircleEvent,
-  tatHrs: PhamracyCartAddressSelectedSuccess['TAT_Hrs']
+  tatHrs: PhamracyCartAddressSelectedSuccess['TAT_Hrs'],
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent,
+  isSplitCart?: boolean,
+  splitOrderDetails?: any
 ) => {
   const eventAttributes: PhamracyCartAddressSelectedSuccess = {
     'TAT Displayed': tatDisplayed,
@@ -98,7 +102,10 @@ export const postPhamracyCartAddressSelectedSuccess = (
     Pincode: pincode,
     'Delivery TAT': deliveryTat,
     TAT_Hrs: tatHrs,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
     ...pharmacyCircleEvent,
+    ...pharmacyUserTypeAttribute,
+    ...splitOrderDetails,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
 

@@ -126,6 +126,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
+  const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
   const client = useApolloClient();
   const voipAppointmentId = useRef<string>('');
   const voipPatientId = useRef<string>('');
@@ -145,7 +146,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { setPhrNotificationData } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
+    takeToConsultRoom && getData('ConsultRoom', undefined, false);
+  }, [takeToConsultRoom]);
+
+  useEffect(() => {
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
@@ -296,6 +300,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               console.log('linking', url);
             } catch (e) {}
           } else {
+            settakeToConsultRoom(true);
             fireAppOpenedEvent('');
           }
         })
@@ -941,6 +946,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
+    setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
@@ -1034,6 +1040,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Need_Help',
       PROD: 'Need_Help',
     },
+    Need_Help_Return_Order_Sub_Reason: {
+      QA: 'QA_Need_Help_Return_Order_Sub_Reason',
+      PROD: 'Need_Help_Return_Order_Sub_Reason',
+    },
+    Need_Help_Return_Pharma_Order_Success_Message: {
+      PROD: 'Need_Help_Return_Pharma_Order_Success_Message',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1080,6 +1093,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
+      const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
+        'Need_Help_Return_Pharma_Order_Success_Message',
+        (key) => config.getString(key)
+      );
+      needHelpReturnPharmaOrderSuccessMessage &&
+        setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
+
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
         'MIN_CART_VALUE_FOR_FREE_DELIVERY',
@@ -1108,6 +1128,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Need_Help',
         'NEED_HELP',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.NEED_HELP
+      );
+
+      setAppConfig(
+        'Need_Help_Return_Order_Sub_Reason',
+        'RETURN_ORDER_SUB_REASON',
+        (key) =>
+          JSON.parse(config.getString(key)) || AppConfig.Configuration.RETURN_ORDER_SUB_REASON
       );
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>

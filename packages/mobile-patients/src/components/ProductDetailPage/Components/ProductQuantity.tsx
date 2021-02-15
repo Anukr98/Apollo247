@@ -22,6 +22,7 @@ export interface ProductQuantityProps {
   isSellOnline: boolean;
   isBanned: boolean;
   productForm: string;
+  deliveryError?: string;
 }
 
 export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
@@ -40,6 +41,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     isSellOnline,
     isBanned,
     productForm,
+    deliveryError,
   } = props;
   const { cartItems, updateCartItem } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -81,17 +83,18 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
   );
 
   const renderCartCTA = () => {
-    const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
+    const showAddToCart = isInStock && !deliveryError;
+    const ctaText = showAddToCart ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
     return (
       <View>
         <TouchableOpacity
           onPress={() => {
-            isInStock ? onAddToCart() : onNotifyMeClick(name);
+            showAddToCart ? onAddToCart() : onNotifyMeClick(name);
           }}
           activeOpacity={0.7}
-          style={isInStock ? styles.addToCartCta : styles.notifyCta}
+          style={showAddToCart ? styles.addToCartCta : styles.notifyCta}
         >
-          <Text style={isInStock ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
+          <Text style={showAddToCart ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
         </TouchableOpacity>
       </View>
     );

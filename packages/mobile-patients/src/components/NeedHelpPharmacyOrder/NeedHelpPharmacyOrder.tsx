@@ -22,6 +22,7 @@ import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } fr
 import { FacebookLoader } from 'react-native-easy-content-loader';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -29,6 +30,7 @@ export interface Props
     breadCrumb: BreadcrumbProps['links'];
     queryCategory: string;
     email: string;
+    fromOrderFlow?: boolean;
   }> {}
 
 export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
@@ -39,6 +41,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   ];
   const queryCategory = navigation.getParam('queryCategory') || string.pharmacy;
   const email = navigation.getParam('email') || '';
+  const isFromOrderFlow = navigation.getParam('fromOrderFlow') || false;
 
   const { currentPatient } = useAllCurrentPatients();
   const [displayAll, setDisplayAll] = useState<boolean>(false);
@@ -73,13 +76,18 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
 
   const renderItem = ({ item }: ListRenderItemInfo<MedOrder>) => {
     const onPressHelp = () => {
+      const currentStatusDate = item?.medicineOrdersStatus?.find(
+        (i) => i?.orderStatus === item?.currentStatus
+      )?.statusDate;
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         medicineOrderStatus: item.currentStatus,
+        medicineOrderStatusDate: currentStatusDate,
         orderId: item.billNumber || item.orderAutoId,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
+        fromOrderFlow: isFromOrderFlow,
       });
     };
     const onPress = (isCancelOrder?: boolean) => {
@@ -91,6 +99,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.productDetail }] as BreadcrumbProps['links'],
+        fromOrderFlow: isFromOrderFlow,
       });
     };
     return (
@@ -141,6 +150,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const renderIssueNotRelatedToOrder = () => {
     const onPress = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+        fromOrderFlow: isFromOrderFlow,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],

@@ -24,7 +24,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const { circleSubscription, totalCircleSavings } = useAppCommonData();
   const [slideIndex, setSlideIndex] = useState(0);
   const videoLinks = strings.Circle.video_links;
-  
+
   const renderCircleExpiryBanner = () => {
     return (
       <View style={[styles.expiryBanner, { alignItems: 'center' }]}>
@@ -72,7 +72,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           </View>
           <View style={{ marginLeft: 20 }}>
             <Text style={theme.viewStyles.text('M', 16, '#01475B', 1, 24, 0.35)}>
-              UNLIMITED Doctor Consult
+              INSTANT discount on Virtual Consultations
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -93,7 +93,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           </View>
           <View style={{ marginLeft: 20 }}>
             <Text style={theme.viewStyles.text('M', 16, '#01475B', 1, 24, 0.35)}>
-              Get 20% Cashback on Medicines
+              Upto 15% cashback on all Pharmacy products
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -112,12 +112,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
   const renderViewCarousel = () => {
     return (
-      <View
-        style={{ backgroundColor: '#FFFFFF' }}
-      >
-        <Text style={styles.howToHeader}>
-          How to Book Consult?
-        </Text>
+      <View style={{ backgroundColor: '#FFFFFF' }}>
+        <Text style={styles.howToHeader}>How to Book Consult?</Text>
         <Carousel
           onSnapToItem={setSlideIndex}
           data={videoLinks}
@@ -138,21 +134,21 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
     );
   };
 
-  const rendeSliderVideo = ({item}) => {
+  const rendeSliderVideo = ({ item }) => {
     return (
       <View style={{ flex: 1 }}>
         <WebView
           allowsFullscreenVideo
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction
-          source={{ uri: item }} 
+          source={{ uri: item }}
           style={{
             width: screenWidth,
             height: 150,
           }}
         />
       </View>
-    )
+    );
   };
 
   const renderDot = (active: boolean) => (
@@ -249,8 +245,9 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   return (
     <View>
       {renderCircleExpiryBanner()}
-      {((totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed) > 0) ? 
-        renderCircleSavings() : renderViewCarousel()}
+      {totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed > 0
+        ? renderCircleSavings()
+        : renderViewCarousel()}
     </View>
   );
 };
@@ -329,5 +326,5 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 14, '#02475B', 1, 18),
     paddingLeft: 15,
     marginBottom: 7,
-  }
+  },
 });

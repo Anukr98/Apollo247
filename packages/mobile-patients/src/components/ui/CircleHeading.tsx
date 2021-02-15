@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   circleIconStyle: {
-    height: 20,
-    width: isSmallDevice ? 32 : 36,
+    height: isSmallDevice ? 17 : 20,
+    width: isSmallDevice ? 28 : 36,
     resizeMode: 'contain',
     marginRight: 2,
   },

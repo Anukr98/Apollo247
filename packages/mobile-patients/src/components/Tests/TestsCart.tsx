@@ -8,16 +8,13 @@ import {
   formatTestSlotWithBuffer,
   getUniqueTestSlots,
   getTestSlotDetailsByTime,
-  postWebEngageEvent,
   isValidTestSlotWithArea,
   isEmptyObject,
   getDiscountPercentage,
   postAppsFlyerEvent,
   postFirebaseEvent,
-  setCircleMembershipType,
   isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -39,10 +36,7 @@ import {
   CheckedIcon,
   CircleLogo,
   CouponIcon,
-  CrossYellow,
   DropdownGreen,
-  OrderPlacedCheckedIcon,
-  RadioButtonIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
@@ -68,7 +62,6 @@ import {
   VALIDATE_DIAGNOSTIC_COUPON,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_DIAGNOSTIC_ORDER,
-  SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -84,7 +77,6 @@ import {
 import {
   BOOKINGSOURCE,
   DEVICETYPE,
-  DiagnosticBookHomeCollectionInput,
   DiagnosticLineItem,
   DiagnosticOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -119,7 +111,6 @@ import {
   Keyboard,
   Dimensions,
   Linking,
-  Modal,
   Platform,
 } from 'react-native';
 import {
@@ -156,7 +147,7 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { fonts } from '../../theme/fonts';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
@@ -169,10 +160,6 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import {
-  DiagnosticBookHomeCollection,
-  DiagnosticBookHomeCollectionVariables,
-} from '@aph/mobile-patients/src/graphql/types/DiagnosticBookHomeCollection';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import {
@@ -183,125 +170,16 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  DiagnosticAppointmentTimeSlot,
+  DiagnosticAreaSelected,
+  DiagnosticCartViewed,
+  DiagnosticNonServiceableAddressSelected,
+  DiagnosticPaymentInitiated,
+  DiagnosticProceedToPay,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
-const styles = StyleSheet.create({
-  labelView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: 4,
-    borderBottomWidth: 0.5,
-    borderColor: 'rgba(2,71,91, 0.3)',
-    marginHorizontal: 20,
-  },
-  labelTextStyle: {
-    color: theme.colors.FILTER_CARD_LABEL,
-    ...theme.fonts.IBMPlexSansBold(13),
-  },
-  yellowTextStyle: {
-    ...theme.viewStyles.yellowTextStyle,
-    paddingTop: 16,
-  },
-  blueTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(screenWidth < 380 ? 14 : 16),
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
-  },
-  dateTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
-  },
-  separatorStyle: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-  },
-  medicineCostStyle: {
-    ...theme.fonts.IBMPlexSansBold(11),
-    lineHeight: 20,
-    color: theme.colors.SHERPA_BLUE,
-  },
-  rowSpaceBetweenStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 5,
-  },
-  subtitleStyle: {
-    ...theme.fonts.IBMPlexSansMedium(13),
-    color: theme.colors.SHERPA_BLUE,
-    marginBottom: 5,
-  },
-  menuItemContainer: {
-    marginHorizontal: 0,
-    padding: 0,
-    margin: 0,
-  },
-  menuMenuContainerStyle: {
-    marginLeft: screenWidth * 0.25,
-    marginTop: 30,
-  },
-  menuScrollViewContainerStyle: { paddingVertical: 0 },
-  menuItemTextStyle: {
-    ...theme.viewStyles.text('M', 14, '#01475b'),
-    padding: 0,
-    margin: 0,
-  },
-  menuBottomPadding: { paddingBottom: 0 },
-  dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
-  locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
-  locationTextUnderline: {
-    height: 2,
-    backgroundColor: '#00b38e',
-    opacity: 1,
-  },
-  scrollViewOuterView: {
-    flexDirection: 'row',
-    marginTop: '10%',
-    width: '70%',
-    height: 90,
-  },
-  orderPlacedText: {
-    flexWrap: 'wrap',
-    textAlign: 'left',
-    alignSelf: 'center',
-    ...theme.fonts.IBMPlexSansRegular(14),
-    lineHeight: 22,
-    color: theme.colors.SKY_BLUE,
-  },
-  bookingIdText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...fonts.IBMPlexSansMedium(14),
-    lineHeight: 22,
-  },
-  bookingNumberText: {
-    color: theme.colors.APP_GREEN,
-    ...fonts.IBMPlexSansMedium(14),
-    lineHeight: 22,
-    marginHorizontal: 4,
-  },
-  horizontalSeparator: { width: screenWidth - 40, marginLeft: -16, height: 1, opacity: 0.4 },
-  placeholderText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...fonts.IBMPlexSansRegular(11),
-    lineHeight: 16,
-    letterSpacing: 1,
-  },
-  contentText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...fonts.IBMPlexSansMedium(14),
-    lineHeight: 22,
-  },
-  totalSavingOuterView: {
-    marginVertical: 20,
-    borderColor: theme.colors.APP_GREEN,
-    borderWidth: 2,
-    borderRadius: 5,
-    padding: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    borderStyle: 'dashed',
-  },
-});
 
 type clinicHoursData = {
   week: string;
@@ -404,6 +282,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isMinor, setIsMinor] = useState<boolean>(false);
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
+  const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
   const {
@@ -426,8 +305,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
-  const [isModalVisible, setModalVisible] = useState<boolean>(false);
-  const [isCashOnDelivery, setCashOnDelivery] = useState(true);
   const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
 
@@ -477,9 +354,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkPatientAge = () => {
-    let age = getAge(currentPatient?.dateOfBirth);
-    if (age <= 10) {
-      renderAlert(string.diagnostics.minorAgeText);
+    let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
+
+    if (age! <= 10 || age == null) {
+      renderAlert(
+        age == null ? string.common.contactCustomerCare : string.diagnostics.minorAgeText
+      );
       setIsMinor(true);
       setDeliveryAddressId!('');
       setDiagnosticAreas!([]);
@@ -495,26 +375,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   useEffect(() => {
-    if (cartItemsWithId.length > 0) {
+    if (cartItemsWithId?.length > 0) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
     }
   }, [diagnosticServiceabilityData]);
 
   useEffect(() => {
-    if (selectedTab == tabs[0].title) {
-      if (
-        selectedTimeSlot?.slotInfo?.slot! &&
-        areaSelected &&
-        deliveryAddressId != '' &&
-        cartItems?.length > 0
-      ) {
-        validateDiagnosticCoupon();
-        fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
-      }
-    } else {
-      setHcCharges!(0);
+    if (
+      selectedTimeSlot?.slotInfo?.slot! &&
+      areaSelected &&
+      deliveryAddressId != '' &&
+      cartItems?.length > 0
+    ) {
+      validateDiagnosticCoupon();
+      fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
-  }, [selectedTab, selectedTimeSlot, deliveryAddressId, cartItems]);
+  }, [diagnosticSlot, deliveryAddressId, cartItems]);
 
   useEffect(() => {
     if (deliveryAddressId != '') {
@@ -522,163 +398,74 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [deliveryAddressId]);
 
-  const fireCircleBenifitAppliedEvent = () => {
-    const circleMembershipType = setCircleMembershipType(
-      circlePlanValidity?.startDate!,
-      circlePlanValidity?.endDate!
-    );
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED] = {
-      'Patient UHID': currentPatient?.uhid,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer ID': currentPatient?.id,
-      'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
-      'Membership Type': circleMembershipType,
-      'Circle Membership Start Date': circlePlanValidity?.startDate!,
-      'Circle Membership End Date': circlePlanValidity?.endDate!,
-    };
-    isDiagnosticCircleSubscription &&
-      postWebEngageEvent(
-        WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED,
-        CircleEventAttributes
-      );
-  };
-
   useEffect(() => {
-    if (cartItems.length) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
-        'Total items in cart': cartItems.length,
-        // 'Delivery charge': deliveryCharges,
-        'Total Discount': couponDiscount,
-        'Net after discount': grandTotal,
-        'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
-        'Cart Items': cartItems.map(
-          (item) =>
-            (({
-              id: item.id,
-              name: item.name,
-              price: item.price,
-              specialPrice: item.specialPrice || item.price,
-            } as unknown) as DiagnosticsCartItem)
-        ),
-      };
-      if (diagnosticSlot) {
-        eventAttributes['Delivery charge'] = hcCharges;
-      }
-      if (coupon) {
-        eventAttributes['Coupon code used'] = coupon.code;
-      }
-      fireCircleBenifitAppliedEvent();
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
+    if (cartItems?.length) {
+      DiagnosticCartViewed(
+        currentPatient,
+        cartItems,
+        couponDiscount,
+        grandTotal,
+        uploadPrescriptionRequired,
+        diagnosticSlot,
+        coupon,
+        hcCharges,
+        circlePlanValidity,
+        circleSubscriptionId,
+        isDiagnosticCircleSubscription
+      );
     }
   }, [hcCharges]);
 
   const postwebEngageProceedToPayEvent = () => {
-    const diffInDays = date.getDate() - new Date().getDate();
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
-      'Patient Name selected': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Total items in cart': cartItems.length,
-      'Sub Total': cartTotal,
-      // 'Delivery charge': deliveryCharges,
-      'Net after discount': grandTotal,
-      'Prescription Uploaded?': false, //from backend
-      'Prescription Mandatory?': uploadPrescriptionRequired,
-      'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
-      'Pin Code': pinCode,
-      'Service Area': 'Diagnostic',
-      'Area Name': String((areaSelected as areaObject).value),
-      'No of Days ahead of Order Date selected': diffInDays,
-      'Home collection charges': hcCharges,
-      'Collection Time Slot': selectedTimeSlot?.slotInfo?.startTime!,
-    };
-    if (selectedTab === tabs[0].title) {
-      eventAttributes['Delivery Date Time'] = date;
-    }
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
+    const mode = selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit';
+    const area = String((areaSelected as areaObject)?.value);
+
+    DiagnosticProceedToPay(
+      date,
+      currentPatient,
+      cartItems,
+      cartTotal,
+      grandTotal,
+      uploadPrescriptionRequired,
+      mode,
+      pinCode,
+      'Diagnostic',
+      area,
+      hcCharges,
+      selectedTimeSlot?.slotInfo?.startTime!
+    );
   };
 
   const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
-    const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      State: selectedAddr?.state || '',
-      City: selectedAddr?.city || '',
-      PinCode: parseInt(pincode!),
-      'Number of items in cart': cartItemsWithId.length,
-      'Items in cart': cartItems,
-    };
-    postWebEngageEvent(
-      WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE,
-      eventAttributes
+    const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+
+    DiagnosticNonServiceableAddressSelected(
+      selectedAddr,
+      currentPatient,
+      pincode,
+      cartItems,
+      cartItemsWithId
     );
   };
 
   const setWebEngageEventForAreaSelection = (item: areaObject) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
-      'Address Pincode': parseInt(selectedAddr?.zipcode!),
-      'Area Selected': String(item?.value),
-      Servicability: 'Yes',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
+    const area = String(item?.value);
+    const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+
+    DiagnosticAreaSelected(selectedAddr, area);
   };
 
   const setWebEnageEventForAppointmentTimeSlot = () => {
     const diffInDays = date.getDate() - new Date().getDate();
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
-      'Address Pincode': parseInt(selectedAddr?.zipcode!),
-      'Area Selected': (areaSelected as any).value,
-      'Time Selected': selectedTimeSlot?.slotInfo?.startTime!,
-      'No of Days ahead of Order Date selected': diffInDays,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
-  };
-  const fireOrderFailedEvent = (orderId: any) => {
-    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
-      OrderID: orderId,
-      Price: Number(grandTotal),
-      CouponCode: coupon ? coupon.code : '',
-      PaymentType: isCashOnDelivery ? 'COD' : 'Prepaid',
-      LOB: 'Diagnostics',
-    };
-    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
-    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+    const area = (areaSelected as any)?.value;
+    const timeSlot = selectedTimeSlot?.slotInfo?.startTime!;
+    const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+
+    DiagnosticAppointmentTimeSlot(selectedAddr, area, timeSlot, diffInDays);
   };
 
   const postPaymentInitiatedWebengage = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
-      Amount: grandTotal,
-      ServiceArea: 'Diagnostic',
-      LOB: 'Diagnostic',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
-  };
-
-  const firePurchaseEvent = (orderId: string) => {
-    let items: any = [];
-    cartItems.forEach((item, index) => {
-      let itemObj: any = {};
-      itemObj.item_name = item.name; // Product Name or Doctor Name
-      itemObj.item_id = item.id; // Product SKU or Doctor ID
-      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
-      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
-      itemObj.item_category = 'Diagnostics'; // 'Pharmacy' or 'Consultations'
-      itemObj.item_category2 = ''; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
-      itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
-      itemObj.index = index + 1; // Item sequence number in the list
-      itemObj.quantity = 1; // "1" or actual quantity
-      items.push(itemObj);
-    });
-    let code: any = coupon ? coupon.code : null;
-    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      coupon: code,
-      currency: 'INR',
-      items: items,
-      transaction_id: orderId,
-      value: Number(grandTotal),
-      LOB: 'Diagnostics',
-    };
-    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, eventAttributes);
+    DiagnosticPaymentInitiated(grandTotal, 'Diagnostic', 'Diagnostic');
   };
 
   useEffect(() => {
@@ -690,19 +477,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatientId]);
 
   useEffect(() => {
+    if (cartItems?.length == 0) {
+      setselectedTimeSlot?.(undefined);
+      setDiagnosticAreas?.([]);
+      setAreaSelected?.({});
+      setDeliveryAddressId?.('');
+    }
     if (deliveryAddressId) {
       if (diagnosticSlot) {
-        setDate(new Date(diagnosticSlot.date));
+        setDate(new Date(diagnosticSlot?.date));
         setselectedTimeSlot({
-          date: new Date(diagnosticSlot.date),
+          date: new Date(diagnosticSlot?.date),
           diagnosticBranchCode: '',
-          employeeCode: diagnosticSlot.diagnosticEmployeeCode,
+          employeeCode: diagnosticSlot?.diagnosticEmployeeCode,
           employeeName: '', // not sending name to API hence keeping empty
           slotInfo: {
             __typename: 'SlotInfo',
-            endTime: diagnosticSlot.slotEndTime,
-            slot: diagnosticSlot.employeeSlotId,
-            startTime: diagnosticSlot.slotStartTime,
+            endTime: diagnosticSlot?.slotEndTime,
+            slot: String(diagnosticSlot?.employeeSlotId),
+            startTime: diagnosticSlot?.slotStartTime,
             status: 'empty',
           },
         });
@@ -711,21 +504,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setselectedTimeSlot(undefined);
         setDiagnosticAreas!([]);
         setAreaSelected!({});
-        const selectedAddressIndex = addresses.findIndex(
-          (address) => address.id == deliveryAddressId
-        );
-        // fetchAreasForAddress(
-        //   addresses[selectedAddressIndex].id,
-        //   addresses[selectedAddressIndex].zipcode!
-        // );
       }
     }
   }, [deliveryAddressId, diagnosticSlot, cartItems]);
-
-  useEffect(() => {
-    clinics.length == 0 && fetchStorePickup();
-    slicedStoreList.length == 0 && filterClinics(clinicId, true, true);
-  }, [clinicId]);
 
   useEffect(() => {
     if (testCentresLoaded) {
@@ -737,14 +518,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               .then((obj) => {
                 try {
                   if (
-                    obj.data.results.length > 0 &&
-                    obj.data.results[0].address_components.length > 0
+                    obj?.data?.results?.length > 0 &&
+                    obj?.data?.results?.[0]?.address_components?.length > 0
                   ) {
-                    const address = obj.data.results[0].address_components[0].short_name;
-                    const addrComponents = obj.data.results[0].address_components || [];
+                    const addrComponents = obj?.data?.results?.[0]?.address_components || [];
                     const _pincode = (
-                      addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
-                      {}
+                      addrComponents?.find(
+                        (item: any) => item?.types.indexOf('postal_code') > -1
+                      ) || {}
                     ).long_name;
                     filterClinics(_pincode || '');
                   }
@@ -775,10 +556,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
   const fetchAddresses = async () => {
     try {
-      if (addresses.length) {
+      if (addresses?.length) {
         return;
       }
       setLoading!(true);
+      //clearing on changing user
+      setDiagnosticAreas?.([]);
+      setAreaSelected?.({});
       const userId = g(currentPatient, 'id');
       const addressApiCall = await client.query<
         getPatientAddressList,
@@ -794,11 +578,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const addressList =
         (addressApiCall.data.getPatientAddressList
           .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
-      setAddresses!(addressList);
-      setMedAddresses!(addressList);
-      setLoading!(false);
+      setAddresses?.(addressList);
+      setMedAddresses?.(addressList);
+      setLoading?.(false);
     } catch (error) {
-      setLoading!(false);
+      setLoading?.(false);
       renderAlert(`Something went wrong, unable to fetch addresses.`);
     }
   };
@@ -806,22 +590,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
     if (deliveryAddressId != '') {
-      const selectedAddressIndex = addresses.findIndex(
-        (address) => address.id == deliveryAddressId
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
       );
       fetchAreasForAddress(
-        addresses[selectedAddressIndex].id,
-        addresses[selectedAddressIndex].zipcode!
+        addresses?.[selectedAddressIndex]?.id,
+        addresses?.[selectedAddressIndex]?.zipcode!
       );
     }
   };
 
   const getPinCodeServiceability = async () => {
-    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
-    const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
     if (!!pinCodeFromAddress) {
-      setPinCode!(pinCodeFromAddress);
-      setLoading!(true);
+      setPinCode?.(pinCodeFromAddress);
+      setLoading?.(true);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -835,7 +621,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .then(({ data }) => {
           const serviceableData = g(data, 'getPincodeServiceability');
-          if (serviceableData && serviceableData.cityName != '') {
+          if (serviceableData && serviceableData?.cityName != '') {
             setAddressCityId!(String(serviceableData?.cityID!) || '');
             setDeliveryAddressCityId!(String(serviceableData?.cityID));
             getDiagnosticsAvailability(serviceableData?.cityID!, cartItems)
@@ -846,11 +632,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               })
               .catch((e) => {
                 CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-                setLoading!(false);
+                setLoading?.(false);
                 errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
               });
           } else {
-            setLoading!(false);
+            setLoading?.(false);
             showAphAlert!({
               unDismissable: true,
               title: string.common.uhOh,
@@ -860,17 +646,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ),
               onPressOk: () => {
                 hideAphAlert!();
-                setDeliveryAddressCityId!('');
-                setDeliveryAddressId!('');
+                setDeliveryAddressCityId?.('');
+                setDeliveryAddressId?.('');
               },
             });
           }
         })
         .catch((e) => {
           CommonBugFender('Tests_', e);
-          setLoading!(false);
-          setDeliveryAddressCityId!('');
-          setDeliveryAddressId!('');
+          setLoading?.(false);
+          setDeliveryAddressCityId?.('');
+          setDeliveryAddressId?.('');
           console.log('getDiagnosticsPincode serviceability Error\n', { e });
         });
     }
@@ -886,10 +672,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
     let isItemDisable = false,
       isPriceChange = false;
-    if (cartItems.length > 0) {
-      cartItems.map((cartItem) => {
+    if (cartItems?.length > 0) {
+      cartItems?.map((cartItem) => {
         const isItemInCart = results?.findIndex(
-          (item: any) => String(item.itemId) === String(cartItem.id)
+          (item: any) => String(item?.itemId) === String(cartItem?.id)
         );
 
         if (isItemInCart !== -1) {
@@ -941,8 +727,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               onPressOk: () => {
                 hideAphAlert!();
                 fetchAreasForAddress(
-                  addresses[selectedAddressIndex].id,
-                  addresses[selectedAddressIndex].zipcode!
+                  addresses?.[selectedAddressIndex]?.id,
+                  addresses?.[selectedAddressIndex]?.zipcode!
                 );
               },
             });
@@ -974,7 +760,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         //if items not available
         if (disabledCartItems.length) {
           isItemDisable = true;
-          const disabledCartItemIds = disabledCartItems.map((item) => item.id);
+          const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading!(false);
           removeDisabledCartItems(disabledCartItemIds);
 
@@ -984,8 +770,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             onPressOk: () => {
               hideAphAlert!();
               fetchAreasForAddress(
-                addresses[selectedAddressIndex].id,
-                addresses[selectedAddressIndex].zipcode!
+                addresses?.[selectedAddressIndex]?.id,
+                addresses?.[selectedAddressIndex]?.zipcode!
               );
             },
           });
@@ -995,8 +781,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         isPriceChange = false;
         isItemDisable = false;
         fetchAreasForAddress(
-          addresses[selectedAddressIndex].id,
-          addresses[selectedAddressIndex].zipcode!
+          addresses?.[selectedAddressIndex]?.id,
+          addresses?.[selectedAddressIndex]?.zipcode!
         );
       }
     }
@@ -1054,7 +840,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     itemIds: string | number[],
     func: (
       product: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics
-    ) => void,
+    ) => void | null,
     comingFrom: string
   ) => {
     const removeSpaces = typeof itemIds == 'string' ? itemIds.replace(/\s/g, '').split(',') : null;
@@ -1062,18 +848,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const listOfIds =
       typeof itemIds == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : itemIds;
 
-    console.log('address city id' + deliveryAddressCityId);
-    console.log('source is ' + sourceScreen);
     const cityIdToPass =
       deliveryAddressId != ''
-        ? parseInt(deliveryAddressCityId)
+        ? Number(deliveryAddressCityId)
         : !!sourceScreen
         ? 9
-        : parseInt(diagnosticServiceabilityData?.cityId! || '9');
-    console.log('cityId..' + cityIdToPass);
-    console.log('typeof cityId ' + typeof cityIdToPass);
+        : Number(diagnosticServiceabilityData?.cityId! || '9');
     {
-      setLoading!(true);
+      setLoading?.(true);
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
           query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
@@ -1154,10 +936,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const fetchAreasForAddress = (id: string, pincode: string) => {
     //wrt to address
-    if (cartItems.length == 0) {
+    if (cartItems?.length == 0) {
       return;
     }
-    setLoading!(true);
+    setLoading?.(true);
     client
       .query<getAreas, getAreasVariables>({
         context: {
@@ -1171,16 +953,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        setLoading!(false);
+        setLoading?.(false);
         const getDiagnosticAreas = g(data, 'getAreas', 'areas') || [];
-        if (data.getAreas.status) {
-          setDiagnosticAreas!(getDiagnosticAreas);
+        if (data?.getAreas?.status) {
+          setDiagnosticAreas?.(getDiagnosticAreas);
         } else {
           setDeliveryAddressId && setDeliveryAddressId('');
-          setDiagnosticAreas!([]);
-          setAreaSelected!({});
+          setDiagnosticAreas?.([]);
+          setAreaSelected?.({});
           setselectedTimeSlot(undefined);
-          setLoading!(false);
+          setLoading?.(false);
           setWebEngageEventForAddressNonServiceable(pincode);
           showAphAlert!({
             title: string.common.uhOh,
@@ -1189,9 +971,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         }
       })
       .catch((e) => {
-        setLoading!(false);
-        setDiagnosticAreas!([]);
-        setAreaSelected!({});
+        setLoading?.(false);
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
         setselectedTimeSlot(undefined);
         setWebEngageEventForAddressNonServiceable(pincode);
         CommonBugFender('TestsCart_getArea selection', e);
@@ -1208,27 +990,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const renderItemsInCart = () => {
     const cartItemsCount =
-      cartItems.length > 10 || cartItems.length == 0
+      cartItems?.length > 10 || cartItems?.length == 0
         ? `${cartItems.length}`
         : `0${cartItems.length}`;
 
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
-        {cartItems.length == 0 && (
-          <Text
-            style={{
-              color: theme.colors.FILTER_CARD_LABEL,
-              ...theme.fonts.IBMPlexSansMedium(13),
-              margin: 20,
-              textAlign: 'center',
-              opacity: 0.3,
-            }}
-          >
-            Your Cart is empty
-          </Text>
-        )}
-        {cartItems.map((test, index, array) => {
+        {cartItems?.length == 0 && <Text style={styles.cartEmpty}>Your Cart is empty</Text>}
+        {cartItems?.map((test, index, array) => {
           const itemPackageMrp = test?.packageMrp!;
           const specialPrice = test?.specialPrice!;
           const price = test?.price!; //more than price (black)
@@ -1292,6 +1062,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   test.id,
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
+                      comingFrom: AppRoutes.TestsCart,
                       testDetails: {
                         ItemID: test?.id,
                         ItemName: test?.name,
@@ -1355,8 +1126,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const checkSlotSelection = (item: areaObject) => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+  const checkSlotSelection = (item: areaObject, changedDate?: Date) => {
+    let dateToCheck = !!changedDate ? changedDate : date;
+    setLoading?.(true);
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+
+    const checkCovidItem = cartItems?.map((item) =>
+      AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item?.id))
+    );
+    const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
+    const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
 
     client
       .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
@@ -1366,16 +1147,27 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
         variables: {
-          selectedDate: moment(date).format('YYYY-MM-DD'),
+          selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: parseInt((item as any).key!),
         },
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+
+        const covidItem_Slot_StartTime = moment(
+          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
+          'HH:mm'
+        );
+        const diagnosticSlotsToShow = isContainOnlyCovidItem
+          ? diagnosticSlots?.filter((item) =>
+              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
+            )
+          : diagnosticSlots;
+
         const slotsArray: TestSlot[] = [];
-        diagnosticSlots!.forEach((item) => {
-          if (isValidTestSlotWithArea(item!, date)) {
+        diagnosticSlotsToShow?.forEach((item) => {
+          if (isValidTestSlotWithArea(item!, dateToCheck, isContainOnlyCovidItem)) {
             slotsArray.push({
               employeeCode: 'apollo_employee_code',
               employeeName: 'apollo_employee_name',
@@ -1385,7 +1177,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 startTime: item?.Timeslot!,
                 slot: item?.TimeslotID,
               },
-              date: date,
+              date: dateToCheck,
               diagnosticBranchCode: 'apollo_route',
             } as TestSlot);
           }
@@ -1395,15 +1187,42 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
         console.log('ARRAY OF SLOTS', { slotsArray });
 
-        setSlots(slotsArray);
-        uniqueSlots.length &&
-          setselectedTimeSlot(
-            getTestSlotDetailsByTime(slotsArray, uniqueSlots[0].startTime!, uniqueSlots[0].endTime!)
+        // if slot is empty then refetch it for next date
+        const isSameDate = moment().isSame(moment(dateToCheck), 'date');
+        if (isSameDate && uniqueSlots?.length == 0) {
+          setTodaySlotNotAvailable(true);
+          let changedDate = moment(dateToCheck) //date
+            .add(1, 'day')
+            .toDate();
+          setDate(changedDate);
+          checkSlotSelection(item, changedDate);
+        } else {
+          setSlots(slotsArray);
+          todaySlotNotAvailable && setTodaySlotNotAvailable(false);
+          const slotDetails = getTestSlotDetailsByTime(
+            slotsArray,
+            uniqueSlots?.[0]?.startTime!,
+            uniqueSlots?.[0]?.endTime!
           );
-        setDisplaySchedule(true); //show slot popup
+          console.log({ slotDetails });
+          uniqueSlots?.length && setselectedTimeSlot(slotDetails);
 
-        setDeliveryAddressId!(addresses[selectedAddressIndex].id);
-        setPinCode!(addresses[selectedAddressIndex]!.zipcode!);
+          setDiagnosticSlot!({
+            slotStartTime: slotDetails?.slotInfo?.startTime!,
+            slotEndTime: slotDetails?.slotInfo?.endTime!,
+            date: dateToCheck?.getTime(), //date
+            employeeSlotId: slotDetails?.slotInfo?.slot!,
+            diagnosticBranchCode: slotDetails?.diagnosticBranchCode,
+            diagnosticEmployeeCode: slotDetails?.employeeCode,
+            city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
+          });
+          setLoading?.(false);
+        }
+
+        // setDisplaySchedule(true); //show slot popup
+
+        setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id);
+        setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
       })
       .catch((e) => {
         CommonBugFender('TestsCart_checkServicability', e);
@@ -1411,15 +1230,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
-
+        setLoading?.(false);
         if (noHubSlots) {
-          setDeliveryAddressId!(addresses[selectedAddressIndex].id);
-          setPinCode!(addresses[selectedAddressIndex]!.zipcode!);
+          setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id);
+          setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
           showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: `Sorry! There are no slots available on ${moment(date).format(
-              'DD MMM, YYYY'
-            )}. Please choose another date.`,
+            title: string.common.uhOh,
+            description: string.diagnostics.noSlotAvailable.replace(
+              '{{date}}',
+              moment(dateToCheck).format('DD MMM, YYYY')
+            ),
             onPressOk: () => {
               setDisplaySchedule(true);
               hideAphAlert && hideAphAlert();
@@ -1440,6 +1260,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       KeyName: dataname,
       addressDetails: address,
       ComingFrom: comingFrom,
+      source: 'Diagnostics Cart' as AddressSource,
     });
   };
 
@@ -1460,8 +1281,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderHomeDelivery = () => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
-    const addressListLength = addresses.length;
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    const addressListLength = addresses?.length;
     const spliceStartIndex =
       selectedAddressIndex == addressListLength - 1
         ? selectedAddressIndex - 1
@@ -1473,7 +1296,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         style={{ marginTop: 8, marginHorizontal: 16 }}
         pointerEvents={cartItems?.length > 0 && !isMinor ? 'auto' : 'none'}
       >
-        {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
+        {addresses?.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
               key={item.id}
@@ -1500,17 +1323,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   });
                 } else {
                   AddressSelectedEvent(item);
-                  setDeliveryAddressId!(item.id);
-                  setDiagnosticAreas!([]);
-                  setAreaSelected!({});
-                  setDiagnosticSlot!(null);
+                  setDeliveryAddressId?.(item.id);
+                  setDiagnosticAreas?.([]);
+                  setAreaSelected?.({});
+                  setDiagnosticSlot?.(null);
                   // fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}
               containerStyle={{ marginTop: 16 }}
               showEditIcon={true}
               onPressEdit={() => _navigateToEditAddress('Update', item, AppRoutes.TestsCart)}
-              hideSeparator={index + 1 === array.length}
+              hideSeparator={index + 1 === array?.length}
             />
           );
         })}
@@ -1530,7 +1353,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ADD NEW ADDRESS
           </Text>
           <View>
-            {addresses.length > 2 && (
+            {addresses?.length > 2 && (
               <Text
                 style={styles.yellowTextStyle}
                 onPress={() => {
@@ -1543,8 +1366,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         setDiagnosticSlot && setDiagnosticSlot(null);
                         setselectedTimeSlot(undefined);
 
-                        setDiagnosticAreas!([]);
-                        setAreaSelected!({});
+                        setDiagnosticAreas?.([]);
+                        setAreaSelected?.({});
 
                         // fetchAreasForAddress(id, pincode!);
                       }
@@ -1722,7 +1545,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <>
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.dateTextStyle}>Date</Text>
-              <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
+              <Text style={styles.dateTextStyle}>
+                {moment(selectedTimeSlot?.date).format('DD MMM, YYYY')}
+              </Text>
             </View>
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.dateTextStyle}>Time</Text>
@@ -2421,9 +2246,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
       ].join(','),
-      paymentType: isCashOnDelivery
-        ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
-        : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
+      paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
+
       // prismPrescriptionFileId: [
       //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
       //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
@@ -2447,41 +2271,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     saveOrder(orderInfo)
       .then(({ data }) => {
-        // const { orderId, displayId, errorCode, errorMessage } =
-        //   g(data, 'SaveDiagnosticOrder')! || {};
         console.log('data >>>>', data);
-        // if (errorCode || errorMessage) {
-        //   // Order-failed
-        //   setshowSpinner(false);
-        //   setLoading!(false);
-        //   showAphAlert!({
-        //     unDismissable: true,
-        //     title: string.common.uhOh,
-        //     description: string.diagnostics.bookingOrderFailedMessage,
-        //   });
-        //   fireOrderFailedEvent(orderId);
-        // } else {
-        //   // Order-Success
-        //   if (!isCashOnDelivery) {
-        //     // PG order, redirect to web page
-        //     redirectToPaymentGateway(orderId!, displayId!);
-        //     return;
-        //   }
-        //   // COD order, show popup here & clear cart info
-        //   postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
-
-        //   setModalVisible(true);
-        //   firePurchaseEvent(orderId!);
-        //   setOrderDetails({
-        //     orderId: orderId,
-        //     displayId: displayId,
-        //     diagnosticDate: date!,
-        //     slotTime: slotTimings!,
-        //     cartSaving: cartSaving,
-        //     circleSaving: circleSaving,
-        //   });
-        //   clearDiagnoticCartInfo && clearDiagnoticCartInfo();
-        // }
       })
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
@@ -2501,487 +2291,164 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const saveHomeCollectionOrder = () => {
-    const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
-    const slotTimings = (slotStartTime && slotEndTime
-      ? `${slotStartTime}-${slotEndTime}`
-      : ''
-    ).replace(' ', '');
-    const formattedDate = moment(date).format('YYYY-MM-DD');
-
-    const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
-
     console.log('unique id' + validateCouponUniqueId);
-    const allItems = cartItems?.find(
-      (item) =>
-        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
-        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-    );
+    //for circle members if unique id is blank, show error
+    if (
+      isDiagnosticCircleSubscription &&
+      (validateCouponUniqueId == '' || validateCouponUniqueId == null)
+    ) {
+      renderAlert(string.common.tryAgainLater);
+      setshowSpinner(false);
+    } else {
+      console.log({ diagnosticSlot });
+      const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
+      const slotTimings = (slotStartTime && slotEndTime
+        ? `${slotStartTime}-${slotEndTime}`
+        : ''
+      ).replace(' ', '');
+      const formattedDate = moment(date).format('YYYY-MM-DD');
 
-    const bookingOrderInfo: SaveBookHomeCollectionOrderInput = {
-      uniqueID: validateCouponUniqueId,
-      patientId: (currentPatient && currentPatient.id) || '',
-      patientAddressId: deliveryAddressId!,
-      // slotTimings: slotTimings,
-      slotDateTimeInUTC: dateTimeInUTC,
-      totalPrice: grandTotal,
-      prescriptionUrl: [
-        ...physicalPrescriptions.map((item) => item.uploadedUrl),
-        ...ePrescriptions.map((item) => item.uploadedUrl),
-      ].join(','),
-      diagnosticDate: formattedDate,
-      bookingSource: BOOKINGSOURCE.MOBILE,
-      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-      // paymentType: isCashOnDelivery
-      //   ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
-      //   : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
-      items: cartItems.map(
+      const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
+      const allItems = cartItems?.find(
         (item) =>
-          ({
-            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
-            price:
-              isDiagnosticCircleSubscription && item.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-                ? (item.circleSpecialPrice as number)
-                : item.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-                ? item.discountSpecialPrice
-                : (item.specialPrice as number) || item.price,
-            quantity: 1,
-            groupPlan: isDiagnosticCircleSubscription
-              ? item.groupPlan!
-              : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-              ? item?.groupPlan
-              : DIAGNOSTIC_GROUP_PLAN.ALL,
-          } as DiagnosticLineItem)
-      ),
-      slotId: employeeSlotId?.toString() || '0',
-      areaId: (areaSelected || ({} as any)).key!,
-      collectionCharges: hcCharges,
-      totalPriceExcludingDiscounts: totalPriceExcludingAnyDiscounts + hcCharges,
-      subscriptionInclusionId: null,
-      userSubscriptionId: circleSubscriptionId,
-      // prismPrescriptionFileId: [
-      //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
-      //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
-      // ].join(','),
-    };
+          item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
+          item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+      );
+      const bookingOrderInfo: SaveBookHomeCollectionOrderInput = {
+        uniqueID: validateCouponUniqueId,
+        patientId: (currentPatient && currentPatient.id) || '',
+        patientAddressId: deliveryAddressId!,
+        // slotTimings: slotTimings,
+        slotDateTimeInUTC: dateTimeInUTC,
+        totalPrice: grandTotal,
+        prescriptionUrl: [
+          ...physicalPrescriptions.map((item) => item.uploadedUrl),
+          ...ePrescriptions.map((item) => item.uploadedUrl),
+        ].join(','),
+        diagnosticDate: formattedDate,
+        bookingSource: BOOKINGSOURCE.MOBILE,
+        deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+        // paymentType: isCashOnDelivery
+        //   ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+        //   : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
+        items: cartItems.map(
+          (item) =>
+            ({
+              itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+              price:
+                isDiagnosticCircleSubscription && item.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+                  ? (item.circleSpecialPrice as number)
+                  : item.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+                  ? item.discountSpecialPrice
+                  : (item.specialPrice as number) || item.price,
+              quantity: 1,
+              groupPlan: isDiagnosticCircleSubscription
+                ? item.groupPlan!
+                : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+                ? item?.groupPlan
+                : DIAGNOSTIC_GROUP_PLAN.ALL,
+            } as DiagnosticLineItem)
+        ),
+        slotId: employeeSlotId?.toString() || '0',
+        areaId: (areaSelected || ({} as any)).key!,
+        collectionCharges: hcCharges,
+        totalPriceExcludingDiscounts: totalPriceExcludingAnyDiscounts + hcCharges,
+        subscriptionInclusionId: null,
+        userSubscriptionId: circleSubscriptionId,
+        // prismPrescriptionFileId: [
+        //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
+        //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
+        // ].join(','),
+      };
 
-    console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
-    postPaymentInitiatedWebengage();
-    saveHomeCollectionBookingOrder(bookingOrderInfo)
-      .then(async ({ data }) => {
-        const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
-        const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
-        const orders: OrderVerticals = {
-          diagnostics: [{ order_id: orderId, amount: grandTotal }],
-        };
-        const orderInput: OrderCreate = {
-          orders: orders,
-          total_amount: grandTotal,
-        };
-        const response = await createOrderInternal(orderInput);
-        if (response?.data?.createOrderInternal?.success) {
-          const isInitiated: boolean = await isSDKInitialised();
-          !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
-          const orderInfo = {
-            orderId: orderId,
-            displayId: displayId,
-            diagnosticDate: date!,
-            slotTime: slotTimings!,
-            cartSaving: cartSaving,
-            circleSaving: circleSaving,
-            cartHasAll: allItems != undefined ? true : false,
-            amount: grandTotal,
+      console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
+      postPaymentInitiatedWebengage();
+      saveHomeCollectionBookingOrder(bookingOrderInfo)
+        .then(async ({ data }) => {
+          //in case duplicate test, price mismatch, address mismatch, slot issue
+          // if (!data?.saveDiagnosticBookHCOrder?.status) {
+          //   let message =
+          //     data?.saveDiagnosticBookHCOrder?.errorMessageToDisplay ||
+          //     string.diagnostics.bookingOrderFailedMessage;
+          //   renderAlert(message);
+          // } else {
+          const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
+          const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
+          const orders: OrderVerticals = {
+            diagnostics: [{ order_id: orderId, amount: grandTotal }],
           };
-          const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
-          const store = clinicId && clinics.find((item) => item.CentreCode == clinicId);
-          const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
-            'Order ID': orderId,
-            Pincode: parseInt(selectedAddr?.zipcode!),
-            'Patient UHID': g(currentPatient, 'id'),
-            'Total items in cart': cartItems.length,
-            'Order Amount': grandTotal,
-            'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+          const orderInput: OrderCreate = {
+            orders: orders,
+            total_amount: grandTotal,
           };
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
-            paymentId: response?.data?.createOrderInternal?.payment_order_id!,
-            amount: grandTotal,
-            orderId: orderId,
-            orderDetails: orderInfo,
-            eventAttributes,
+          const response = await createOrderInternal(orderInput);
+          if (response?.data?.createOrderInternal?.success) {
+            const isInitiated: boolean = await isSDKInitialised();
+            !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
+            const orderInfo = {
+              orderId: orderId,
+              displayId: displayId,
+              diagnosticDate: date!,
+              slotTime: slotTimings!,
+              cartSaving: cartSaving,
+              circleSaving: circleSaving,
+              cartHasAll: allItems != undefined ? true : false,
+              amount: grandTotal,
+            };
+            const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+              'Order ID': orderId,
+              Pincode: parseInt(selectedAddr?.zipcode!),
+              'Patient UHID': g(currentPatient, 'id'),
+              'Total items in cart': cartItems.length,
+              'Order Amount': grandTotal,
+              'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
+              'Appointment time': slotStartTime!,
+              'Item ids': cartItemsWithId,
+            };
+
+            props.navigation.navigate(AppRoutes.PaymentMethods, {
+              paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+              amount: grandTotal,
+              orderId: orderId,
+              orderDetails: orderInfo,
+              eventAttributes,
+            });
+            // }
+          }
+        })
+        .catch((error) => {
+          CommonBugFender('TestsCheckoutScene_saveOrder', error);
+          console.log('DiagnosticBookHomeCollectionInput API Error\n', { error });
+          setshowSpinner(false);
+          setLoading!(false);
+          showAphAlert!({
+            unDismissable: true,
+            title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+            description: string.diagnostics.bookingOrderFailedMessage,
           });
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('TestsCheckoutScene_saveOrder', error);
-        console.log('DiagnosticBookHomeCollectionInput API Error\n', { error });
-        setshowSpinner(false);
-        setLoading!(false);
-        showAphAlert!({
-          unDismissable: true,
-          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
-          description: string.diagnostics.bookingOrderFailedMessage,
+        })
+        .finally(() => {
+          setshowSpinner(false);
+          setLoading!(false);
         });
-      })
-      .finally(() => {
-        setshowSpinner(false);
-        setLoading!(false);
-      });
-  };
-
-  const onPressCross = () => {
-    setModalVisible(false);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
-  };
-
-  const renderNewView = () => {
-    const pickupDate = moment(orderDetails?.diagnosticDate!).format('DD MMM');
-    const pickupYear = moment(orderDetails?.diagnosticDate!).format('YYYY');
-    const pickupTime = orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
-    const orderCartSaving = orderDetails?.cartSaving!;
-    const orderCircleSaving = orderDetails?.circleSaving!;
-    const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'transparent',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: 40,
-        }}
-      >
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={isModalVisible}
-          onRequestClose={() => {
-            setModalVisible(false);
-            onPressCross();
-          }}
-          onDismiss={() => {
-            setModalVisible(false);
-            onPressCross();
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              padding: 20,
-              marginTop: screenHeight > 600 ? '5%' : 0,
-            }}
-          >
-            <View style={{ alignSelf: 'flex-end' }}>
-              <TouchableOpacity onPress={() => onPressCross()}>
-                <CrossYellow style={{ height: 32, width: 32, resizeMode: 'contain' }} />
-              </TouchableOpacity>
-            </View>
-            <View style={{}}>
-              <Text style={{ ...theme.fonts.IBMPlexSansMedium(24) }}>
-                {`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-              </Text>
-            </View>
-            {/**
-             * order success view
-             */}
-            <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
-              <>
-                <View style={styles.scrollViewOuterView}>
-                  <OrderPlacedCheckedIcon style={{ marginRight: 20 }} />
-                  <Text style={styles.orderPlacedText}>
-                    Your order has been placed successfully.
-                  </Text>
-                </View>
-                {/** order view */}
-                <View style={{ backgroundColor: '#F7F8F5', padding: 16 }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      marginBottom: '5%',
-                    }}
-                  >
-                    <Text style={styles.bookingIdText}>Your Booking ID is </Text>
-                    <Text style={styles.bookingNumberText}>#{orderDetails?.displayId!}</Text>
-                  </View>
-                  <Spearator style={styles.horizontalSeparator} />
-                  {/**
-                   * mid - first view
-                   */}
-                  <View style={{ marginVertical: 28, marginHorizontal: 4 }}>
-                    <Text style={styles.placeholderText}>BOOKING DATE/TIME</Text>
-                    <Text style={styles.contentText}>
-                      {moment().format('DD MMM')}, {moment().format('YYYY')} |{' '}
-                      {moment().format('hh:mm A')}
-                    </Text>
-                  </View>
-                  {/**
-                   * mid - second view add a check for clinic selection as well
-                   */}
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    {pickupDate && pickupYear && (
-                      <View style={{ marginHorizontal: 4 }}>
-                        <Text style={styles.placeholderText}>PICKUP DATE</Text>
-                        <Text
-                          style={[
-                            styles.contentText,
-                            {
-                              marginVertical: 2,
-                            },
-                          ]}
-                        >
-                          {pickupDate}, {pickupYear}
-                        </Text>
-                      </View>
-                    )}
-                    {pickupTime && (
-                      <View style={{ marginHorizontal: 4 }}>
-                        <Text
-                          style={[
-                            styles.placeholderText,
-                            {
-                              marginHorizontal: 4,
-                            },
-                          ]}
-                        >
-                          PICKUP TIME
-                        </Text>
-                        <Text
-                          style={[
-                            styles.contentText,
-                            {
-                              marginVertical: 2,
-                            },
-                          ]}
-                        >
-                          {pickupTime}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-                {/**
-                 * top green view
-                 */}
-                {(orderCartSaving > 0 ||
-                  (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
-                  <View style={styles.totalSavingOuterView}>
-                    {(orderCartSaving > 0 ||
-                      (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
-                      <Text
-                        style={{
-                          color: '#02475b',
-                          ...theme.fonts.IBMPlexSansRegular(14),
-                          lineHeight: 16,
-                        }}
-                      >
-                        You
-                        <Text style={{ color: theme.colors.APP_GREEN }}>
-                          {' '}
-                          saved {string.common.Rs}
-                          {isDiagnosticCircleSubscription
-                            ? convertNumberToDecimal(
-                                Number(orderCartSaving) + Number(orderCircleSaving)
-                              )
-                            : convertNumberToDecimal(orderCartSaving)}
-                        </Text>{' '}
-                        on your purchase.
-                      </Text>
-                    )}
-
-                    {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
-                      <>
-                        <Spearator style={{ margin: 5 }} />
-
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View style={{ flexDirection: 'row' }}>
-                            <CircleLogo
-                              style={{
-                                height: 20,
-                                width: 34,
-                                resizeMode: 'contain',
-                              }}
-                            />
-                            <Text
-                              style={{
-                                color: theme.colors.APP_GREEN,
-                                ...theme.fonts.IBMPlexSansRegular(14),
-                                lineHeight: 16,
-                                alignSelf: 'flex-end',
-                              }}
-                            >
-                              Membership Discount
-                            </Text>
-                          </View>
-                          <Text
-                            style={{
-                              color: theme.colors.APP_GREEN,
-                              ...theme.fonts.IBMPlexSansRegular(14),
-                              lineHeight: 16,
-                              alignSelf: 'flex-end',
-                            }}
-                          >
-                            {string.common.Rs} {convertNumberToDecimal(orderCircleSaving)}
-                          </Text>
-                        </View>
-                      </>
-                    )}
-                    {/**
-                     * add a check a here that if it contains all or has all circle
-                     */}
-
-                    {showCartSaving! && (
-                      <>
-                        <Spearator style={{ margin: 5 }} />
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <Text
-                            style={{
-                              color: theme.colors.APP_GREEN,
-                              ...theme.fonts.IBMPlexSansRegular(14),
-                              lineHeight: 16,
-                              alignSelf: 'flex-end',
-                            }}
-                          >
-                            {' '}
-                            Cart Saving
-                          </Text>
-
-                          <Text
-                            style={{
-                              color: theme.colors.APP_GREEN,
-                              ...theme.fonts.IBMPlexSansRegular(14),
-                              lineHeight: 16,
-                              alignSelf: 'flex-end',
-                            }}
-                          >
-                            {string.common.Rs} {convertNumberToDecimal(orderCartSaving)}
-                          </Text>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                )}
-
-                {!isDiagnosticCircleSubscription &&
-                  orderCircleSaving > 0 &&
-                  orderCircleSaving > orderCartSaving && (
-                    <View
-                      style={{
-                        borderColor: theme.colors.APP_GREEN,
-                        borderWidth: 2,
-                        borderRadius: 5,
-                        padding: 16,
-                        paddingTop: 8,
-                        paddingBottom: 8,
-                        borderStyle: 'dashed',
-                        flexDirection: 'row',
-                        marginVertical: orderCartSaving > 0 ? 0 : 30,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: '#02475b',
-                          ...theme.fonts.IBMPlexSansRegular(14),
-                          lineHeight: 16,
-                        }}
-                      >
-                        You could have
-                        <Text style={{ color: theme.colors.APP_GREEN, fontWeight: 'bold' }}>
-                          {' '}
-                          saved extra {string.common.Rs}
-                          {convertNumberToDecimal(orderCircleSaving)}
-                        </Text>{' '}
-                        with
-                      </Text>
-                      <CircleLogo
-                        style={{
-                          resizeMode: 'contain',
-                          height: 20,
-                          width: 37,
-                          marginTop: -2,
-                        }}
-                      />
-                    </View>
-                  )}
-              </>
-              <View style={{ marginBottom: 20 }}></View>
-            </ScrollView>
-
-            <View style={{ height: 90 }}>{renderDiagnosticHelpText()}</View>
-            <Spearator style={{ opacity: 0.3, marginBottom: 20 }} />
-            <TouchableOpacity
-              style={{ alignItems: 'center', justifyContent: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
-            >
-              <Text style={{ ...theme.viewStyles.text('B', 16, '#FC9916'), marginVertical: '4%' }}>
-                VIEW ORDER SUMMARY
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      </View>
-    );
-  };
-
-  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
-    setModalVisible(false);
-    setLoading!(false);
-    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
-      goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderId: orderId,
-      comingFrom: AppRoutes.TestsCart,
-    });
-  };
-
-  const renderDiagnosticHelpText = () => {
-    const textMediumStyle = theme.viewStyles.text('R', 14, '#02475b', 1, 22);
-    const textBoldStyle = theme.viewStyles.text('B', 14, '#02475b', 1, 22);
-    const PhoneNumberTextStyle = theme.viewStyles.text('R', 14, '#fc9916', 1, 22);
-    const ontapNumber = (number: string) => {
-      Linking.openURL(`tel:${number}`)
-        .then(() => {})
-        .catch((e) => {
-          CommonBugFender('TestsCheckoutScene_Linking_mobile', e);
-        });
-    };
-
-    return (
-      <Text style={{ margin: 20, marginTop: 0 }}>
-        <Text style={textMediumStyle}>{'For '}</Text>
-        <Text style={textBoldStyle}>{'Test Orders,'}</Text>
-        <Text style={textMediumStyle}>
-          {' to know the Order Status / Reschedule / Cancel, please call — \n'}
-        </Text>
-        <Text onPress={() => ontapNumber('040 44442424')} style={PhoneNumberTextStyle}>
-          {'040 44442424'}
-        </Text>
-        <Text style={textMediumStyle}>{' / '}</Text>
-        <Text onPress={() => ontapNumber('040 33442424')} style={PhoneNumberTextStyle}>
-          {'040 33442424'}
-        </Text>
-      </Text>
-    );
+    }
   };
 
   const removeDisabledCartItems = (disabledCartItemIds: string[]) => {
     hideAphAlert!();
     setCartItems!(
-      cartItems.filter((cItem) => !disabledCartItemIds.find((dItem) => dItem == cItem.id))
+      cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
     checkDuplicateItems();
+    // proceedForBooking();
   };
 
   const checkDuplicateItems = () => {
-    const allInclusions = cartItems.map((item) => item?.inclusions);
+    const allInclusions = cartItems?.map((item) => item?.inclusions);
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
     const duplicateItems = mergedInclusions?.filter((e: any, i: any, a: any) => a.indexOf(e) !== i);
     if (duplicateItems?.length) {
@@ -3070,9 +2537,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           'data',
           'vaidateDiagnosticCoupon'
         );
+        //success only if items in the cart has circle applied
         if (validateApiResponse?.message == 'success') {
           setUniqueId!(validateApiResponse?.uniqueid!);
           setValidateCouponUniqueId(validateApiResponse?.uniqueid!);
+        }
+        //if not reqd => then set to "not required" and bypass
+        else {
+          setUniqueId!('not required');
+          setValidateCouponUniqueId('not required');
         }
         setLoading!(false);
       } catch (error) {
@@ -3165,6 +2638,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
           isVisible={displaySchedule}
+          isTodaySlotUnavailable={todaySlotNotAvailable}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
           zipCode={parseInt(zipCode, 10)}
@@ -3173,13 +2647,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             setDate(date);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot!({
-              slotStartTime: slotInfo.slotInfo.startTime!,
-              slotEndTime: slotInfo.slotInfo.endTime!,
+              slotStartTime: slotInfo?.slotInfo?.startTime!,
+              slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: date.getTime(),
               // employeeSlotId: parseInt(slotInfo.slotInfo.slot!),
-              employeeSlotId: slotInfo.slotInfo.slot!,
-              diagnosticBranchCode: slotInfo.diagnosticBranchCode,
-              diagnosticEmployeeCode: slotInfo.employeeCode,
+              employeeSlotId: slotInfo?.slotInfo?.slot!,
+              diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
+              diagnosticEmployeeCode: slotInfo?.employeeCode,
               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
             });
             setWebEnageEventForAppointmentTimeSlot();
@@ -3193,12 +2667,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             {renderProfiles()}
-            <MedicineUploadPrescriptionView
+            {/* <MedicineUploadPrescriptionView
               isTest={true}
               navigation={props.navigation}
               isMandatory={false}
               listOfTest={[]}
-            />
+            /> */}
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderTestSuggestions()} */}
@@ -3214,8 +2688,85 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
-      {isModalVisible && renderNewView()}
       {showSpinner && <Spinner />}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  labelView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+    borderBottomWidth: 0.5,
+    borderColor: 'rgba(2,71,91, 0.3)',
+    marginHorizontal: 20,
+  },
+  labelTextStyle: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansBold(13),
+  },
+  yellowTextStyle: {
+    ...theme.viewStyles.yellowTextStyle,
+    paddingTop: 16,
+  },
+  blueTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(screenWidth < 380 ? 14 : 16),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
+  },
+  dateTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
+  },
+  separatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  medicineCostStyle: {
+    ...theme.fonts.IBMPlexSansBold(11),
+    lineHeight: 20,
+    color: theme.colors.SHERPA_BLUE,
+  },
+  rowSpaceBetweenStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  subtitleStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 5,
+  },
+  menuItemContainer: {
+    marginHorizontal: 0,
+    padding: 0,
+    margin: 0,
+  },
+  menuMenuContainerStyle: {
+    marginLeft: screenWidth * 0.25,
+    marginTop: 30,
+  },
+  menuScrollViewContainerStyle: { paddingVertical: 0 },
+  menuItemTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#01475b'),
+    padding: 0,
+    margin: 0,
+  },
+  menuBottomPadding: { paddingBottom: 0 },
+  dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
+  locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
+  locationTextUnderline: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    opacity: 1,
+  },
+  cartEmpty: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansMedium(13),
+    margin: 20,
+    textAlign: 'center',
+    opacity: 0.3,
+  },
+});

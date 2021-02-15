@@ -635,6 +635,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
+    setEPrescriptions && setEPrescriptions([presToAdd]);
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',

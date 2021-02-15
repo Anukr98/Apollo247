@@ -16,7 +16,7 @@ export const PreviousQuery: React.FC<Props> = ({ query, ...listItemProps }) => {
   const renderRightElement = () => {
     const onPress = async () => {
       try {
-        const chatPreFilledMessage = `I want to know the status of my Help Ticket regarding ${order} ID - ${query.orderId}`;
+        const chatPreFilledMessage = `I want to know the status of my Help_Ticket regarding ${order} ID - ${query.orderId}`;
         const phoneNumber = query.orderType === ORDER_TYPE.CONSULT ? '8047104009' : '4041894343';
         const whatsAppScheme = `whatsapp://send?text=${chatPreFilledMessage}&phone=91${phoneNumber}`;
         const canOpenURL = await Linking.canOpenURL(whatsAppScheme);

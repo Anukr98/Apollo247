@@ -7,7 +7,7 @@ import {
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getPatientByMobileNumber } from '../graphql/types/getPatientByMobileNumber';
@@ -339,6 +339,18 @@ export const calculatePackageDiscounts = (
   return discount;
 };
 
+export const calculatePackageDiscountDiff = (
+  itemPackageMrp: number | string,
+  mrp: number,
+  discountedPrice: number
+) => {
+  const savings =
+    !!itemPackageMrp && itemPackageMrp > mrp
+      ? Number(itemPackageMrp) - Number(discountedPrice)
+      : Number(mrp) - Number(discountedPrice);
+  return savings;
+};
+
 export const calculateMrpToDisplay = (
   promoteCircle: boolean,
   promoteDiscount: boolean,
@@ -388,6 +400,17 @@ export const getPricesForItem = (
     discountPrice,
     discountSpecialPrice
   );
+  const discountDiffPrice = calculatePackageDiscountDiff(itemPackageMrp, price, specialPrice);
+  const circleDiscountDiffPrice = calculatePackageDiscountDiff(
+    itemPackageMrp,
+    circlePrice,
+    circleSpecialPrice
+  );
+  const specialDiscountDiffPrice = calculatePackageDiscountDiff(
+    itemPackageMrp,
+    discountPrice,
+    discountSpecialPrice
+  );
 
   const promoteCircle = getActiveItemsObject?.promoteCircle; //if circle discount is more
   const promoteDiscount = promoteCircle ? false : discount < specialDiscount; // if special discount is more than others.
@@ -423,6 +446,9 @@ export const getPricesForItem = (
     promoteDiscount,
     mrpToDisplay,
     discountToDisplay,
+    discountDiffPrice,
+    circleDiscountDiffPrice,
+    specialDiscountDiffPrice,
   };
 };
 
@@ -439,4 +465,17 @@ export const isFloat = (n: number) => {
 
 export const convertNumberToDecimal = (n: number | null | string) => {
   return n === 0 ? n : n ? (isFloat(Number(n)) ? Number(n)?.toFixed(2) : n) : '';
+};
+
+export const findAddrComponents = (
+  proptoFind: GooglePlacesType,
+  addrComponents: {
+    long_name: string;
+    short_name: string;
+    types: GooglePlacesType[];
+  }[]
+) => {
+  return (
+    (addrComponents?.find((item) => item?.types?.indexOf(proptoFind) > -1) || {})?.long_name || ''
+  );
 };

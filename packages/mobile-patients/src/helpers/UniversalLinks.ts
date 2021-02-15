@@ -250,6 +250,7 @@ const pushTheView = (
     case 'TestDetails':
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: id,
+        comingFrom: 'deeplink',
       });
       break;
 

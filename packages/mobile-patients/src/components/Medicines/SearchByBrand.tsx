@@ -160,6 +160,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     pharmacyLocation,
     isPharmacyLocationServiceable,
     axdcCode,
+    pharmacyUserType,
   } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -881,6 +882,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           keyword: _searchText,
           Source: 'Pharmacy Home',
           resultsdisplayed: products.length,
+          User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
       })

@@ -48,12 +48,14 @@ export const useGetPayments = (
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
+
         const { data } = res;
         const { consultOrders } = data;
         const { appointments } = consultOrders;
         const { meta } = consultOrders;
-        console.log('payments-->', appointments.length);
-        setPayments(appointments);
+        const freshAppointments= appointments?.filter((item)=>item.appointmentType==="ONLINE")
+        setPayments(freshAppointments);
+
         setmeta(meta);
         setLoading(false);
       })

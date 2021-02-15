@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
 
 RNSound.setCategory('Playback');
 let audioTrack: RNSound | null = null;
-
+let joinAudioTrack: RNSound | null = null;
+let disconnectAudioTrack: RNSound | null = null;
 export interface UIElementsContextProps {
   loading: boolean;
   setLoading: ((isLoading: boolean) => void) | null;
@@ -69,6 +70,8 @@ export interface UIElementsContextProps {
   setPrevVolume: () => void;
   maxVolume: () => void;
   audioTrack: RNSound | null;
+  joinAudioTrack: RNSound | null;
+  disconnectAudioTrack: RNSound | null;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -80,6 +83,8 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setPrevVolume: () => {},
   maxVolume: () => {},
   audioTrack: null,
+  joinAudioTrack: null,
+  disconnectAudioTrack: null,
 });
 
 type AphAlertCTAs = {
@@ -102,7 +107,10 @@ type AphAlertParams = {
   unDismissable?: boolean;
   style?: StyleProp<ViewStyle>;
   onPressOk?: () => void;
+  onPressOutside?: () => void;
   removeTopIcon?: boolean;
+  physical?: boolean;
+  physicalText?: React.ReactNode;
 };
 
 export const UIElementsProvider: React.FC = (props) => {
@@ -137,6 +145,22 @@ export const UIElementsProvider: React.FC = (props) => {
         console.log('erroraudiotrack', error);
       }
     );
+
+    joinAudioTrack = new RNSound(
+      'join_sound.mp3',
+      Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
+      (error) => {
+        console.log('erroraudiotrack', error);
+      }
+    );
+
+    disconnectAudioTrack = new RNSound(
+      'left_sound.mp3',
+      Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
+      (error) => {
+        console.log('erroraudiotrack', error);
+      }
+    );
   }, []);
 
   const setPrevVolume = async () => {
@@ -160,8 +184,10 @@ export const UIElementsProvider: React.FC = (props) => {
   const handleBack = async () => {
     console.log('handleBack Called');
     if (!alertParams.unDismissable) {
-      // setLoading(false);
       hideAphAlert();
+    }
+    if (alertParams.onPressOutside) {
+      alertParams.onPressOutside();
     }
     return true;
   };
@@ -232,7 +258,12 @@ export const UIElementsProvider: React.FC = (props) => {
             if (!alertParams.unDismissable) {
               hideAphAlert();
             }
+            if (alertParams.onPressOutside) {
+              alertParams.onPressOutside();
+            }
           }}
+          physical={alertParams.physical}
+          physicalText={alertParams.physicalText}
           removeTopIcon={alertParams.removeTopIcon}
         >
           {alertParams.children || (g(alertParams, 'CTAs', 'length') ? null : renderOkButton)}
@@ -274,6 +305,8 @@ export const UIElementsProvider: React.FC = (props) => {
         setPrevVolume,
         maxVolume,
         audioTrack,
+        joinAudioTrack,
+        disconnectAudioTrack,
       }}
     >
       <View style={{ flex: 1 }}>

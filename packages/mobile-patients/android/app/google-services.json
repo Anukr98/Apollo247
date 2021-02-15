@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:537093214409:android:6dd3ebe9e617bf5b",
         "android_client_info": {
-          "package_name": "com.apollo.doctorapp"
+          "package_name": "com.apollo.patientapp"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "537093214409-rtkkg34ocppdsmeqaq09erhppotgdjqb.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.apollo.doctorapp",
+            "package_name": "com.apollo.patientapp",
             "certificate_hash": "805028dbf865b274be3a6b0b2830c7322869c2e1"
           }
         },
@@ -43,7 +43,7 @@
               "client_id": "537093214409-6h3582g4ocvqtrek36g20lg6d94i26d9.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.apollo.doctor"
+                "bundle_id": "com.apollo.patientapp"
               }
             }
           ]

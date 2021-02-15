@@ -18,6 +18,7 @@ export interface bookAppointment_bookAppointment_appointment {
   appointmentType: APPOINTMENT_TYPE;
   patientId: string;
   displayId: number;
+  paymentOrderId: string | null;
 }
 
 export interface bookAppointment_bookAppointment {
