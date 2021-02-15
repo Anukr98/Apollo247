@@ -827,6 +827,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const subscriberConnected = useRef<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const [callDuration, setCallDuration] = useState<number>(0);
+  const hasDrJoined = useRef<boolean>(false);
+  hasDrJoined.current = doctorJoinedChat;
+  const isConsultStarted = useRef<boolean>(false);
 
   const isPaused = subscriberConnected.current
     ? !callerAudio && !callerVideo
@@ -1330,6 +1333,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoined(true);
         setDoctorJoinedChat && setDoctorJoinedChat(true);
         setTextChange(true);
+        isConsultStarted.current = true;
         setTimeout(() => {
           setDoctorJoined(false);
         }, 10000);
@@ -2822,7 +2826,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const doctorWillConnectShortlyAutomatedText = () => {
     setTimeout(() => {
-      if (doctorJoinedChat || status.current === STATUS.COMPLETED) {
+      if (
+        hasDrJoined.current ||
+        status.current === STATUS.COMPLETED ||
+        status.current === STATUS.IN_PROGRESS ||
+        isConsultStarted.current
+      ) {
         return;
       }
       const automatedText = [
@@ -2848,7 +2857,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const rescheduleOrCancelAppointmentAutomatedText = () => {
     setTimeout(() => {
-      if (doctorJoinedChat || status.current === STATUS.COMPLETED) {
+      if (
+        hasDrJoined.current ||
+        status.current === STATUS.COMPLETED ||
+        status.current === STATUS.IN_PROGRESS ||
+        isConsultStarted.current
+      ) {
         return;
       }
       const automatedText = [
