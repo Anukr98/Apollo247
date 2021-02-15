@@ -1444,23 +1444,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          * data?.HDFC ------> HDFC data
          * data?.APOLLO ----> Circle data
          */
-        if (data?.APOLLO?.[0]._id) {
-          const paymentRef = data?.APOLLO?.[0]?.payment_reference;
+        const circleData = data?.APOLLO?.[0];
+        if (circleData?._id && circleData?.status === 'active') {
+          const paymentRef = circleData?.payment_reference;
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          setRenewNow(data?.APOLLO?.[0].renewNow ? 'yes' : 'no');
-          setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
-          setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
+          setRenewNow(circleData?.renewNow ? 'yes' : 'no');
+          setCirclePlanId && setCirclePlanId(circleData?.plan_id);
+          setCircleStatus && setCircleStatus(circleData?.status);
           paymentStoredVal &&
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
