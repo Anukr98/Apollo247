@@ -1020,6 +1020,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Pharmacy_Delivery_Charges: {
       PROD: 'Pharmacy_Delivery_Charges',
     },
+    Min_Value_For_Pharmacy_Free_Packaging: {
+      PROD: 'Min_Value_For_Pharmacy_Free_Packaging',
+    },
+    Pharmacy_Packaging_Charges: {
+      PROD: 'Pharmacy_Packaging_Charges',
+    },
     top6_specailties: {
       QA: 'QA_top_specialties',
       DEV: 'DEV_top_specialties',
@@ -1112,7 +1118,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getNumber(key)
       );
 
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Packaging',
+        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
+        (key) => config.getNumber(key)
+      );
+
       setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
+
+      setAppConfig('Pharmacy_Packaging_Charges', 'PACKAGING_CHARGES', (key) =>
+        config.getNumber(key)
+      );
 
       setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
 
