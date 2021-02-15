@@ -1459,13 +1459,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }
 
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          setRenewNow(data?.APOLLO?.[0].renewNow ? 'yes' : 'no');
-          setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
-          setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
+          setRenewNow(circleData?.renewNow ? 'yes' : 'no');
+          setCirclePlanId && setCirclePlanId(circleData?.plan_id);
+          setCircleStatus && setCircleStatus(circleData?.status);
           paymentStoredVal &&
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
