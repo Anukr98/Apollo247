@@ -2088,6 +2088,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           packageName
           hideStatus
           statusMessage
+          statusDate
         }
         diagnosticOrderLineItems {
           id
@@ -2205,6 +2206,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         createdDate
         collectionCharges
         slotDateTimeInUTC
+        paymentType
         diagnosticOrderLineItems {
           id
           itemId
@@ -3785,6 +3787,8 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
     saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
       orderId
       displayId
+      status
+      errorMessageToDisplay
     }
   }
 `;
@@ -4667,6 +4671,14 @@ export const UPDATE_APPOINTMENT = gql`
     updateAppointment(appointmentInput: $appointmentInput) {
       error
       status
+    }
+  }
+`;
+
+export const INITIATE_DOC_ON_CALL = gql`
+  query initiateDocOnCall($mobileNumber: String, $callType: docOnCallType) {
+    initiateDocOnCall(mobileNumber: $mobileNumber, callType: $callType) {
+      success
     }
   }
 `;

@@ -302,6 +302,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
+  mapsStyle:{
+  margin: 6,
+  flexWrap: 'wrap',
+  fontSize:14,
+  color:'#FC9916'
+  },
   popDescriptionStyle: {
     marginHorizontal: 24,
     marginTop: 8,
@@ -681,11 +687,11 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                                                              : ''
                                         }{"\n"+data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
                                       </Text>
-                                      <TouchableOpacity onPress={()=>{openMaps()}}>
-                                      <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14,color:'#FC9916' }]}>
+                                      {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>openMaps()}>
+                                      <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                                       https://www.google.com/maps/dir/
                                       </Text>
-                                      </TouchableOpacity>
+                                      </TouchableOpacity>)}
                                   </View>
                                 </View>
 
@@ -698,8 +704,18 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                     let query=`${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name},
                                 ${data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}`;
                     let url=`google.navigation:q=${query}`
-                    Linking.openURL(url)
 
+                    try {
+                            Linking.canOpenURL(url).then((supported) => {
+                              if (supported) {
+                                Linking.openURL(url);
+                              } else {
+                                setBugFenderLog('FAILED_OPEN_URL', url);
+                              }
+                            });
+                        } catch (e) {
+                          setBugFenderLog('FAILED_OPEN_URL', url);
+                        }
                     }
   const rescheduleAPI = (availability: any) => {
     console.log('availability', availability);

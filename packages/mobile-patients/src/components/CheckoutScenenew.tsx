@@ -322,6 +322,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         af_currency: 'INR',
         'Circle Cashback amount':
           circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+        'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+        'Prescription Option selected': uploadPrescriptionRequired
+          ? 'Prescription Upload'
+          : 'Not Applicable',
         ...pharmacyCircleAttributes!,
         ...pharmacyUserTypeAttribute,
       };
@@ -359,6 +363,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   ) => {
     const eventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isCOD),
+      'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+      'Prescription Option selected': uploadPrescriptionRequired
+        ? 'Prescription Upload'
+        : 'Not Applicable',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -648,7 +656,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             : '',
         items: cartItems.map((item) => {
           const discountedPrice = getFormattedAmount(
-            (coupon && item.couponPrice) || item.specialPrice || item.price
+            coupon && item.couponPrice == 0
+              ? 0
+              : (coupon && item.couponPrice) || item.specialPrice || item.price
           ); // since couponPrice & specialPrice can be undefined
           return {
             medicineSKU: item.id,

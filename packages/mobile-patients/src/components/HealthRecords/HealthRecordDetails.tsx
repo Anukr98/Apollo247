@@ -410,8 +410,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const downloadPDFTestReport = () => {
     if (currentPatient?.id) {
       setLoading && setLoading(true);
-      if (!!data?.fileUrl) {
-        downloadDocument();
+      if (Platform.OS === 'android') {
+        if (!!data?.fileUrl) {
+          downloadDocument();
+        }
       }
       client
         .query<getLabResultpdf, getLabResultpdfVariables>({
@@ -428,11 +430,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         })
         .catch((e: any) => {
           console.log(e);
-          currentPatient &&
-            handleGraphQlError(
-              e,
-              'Something went wrong while downloading test report. Please try again.'
-            );
+          setLoading?.(false);
+          currentPatient && handleGraphQlError(e, 'Report is yet not available');
         });
     }
   };
@@ -451,12 +450,20 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : healthCondition
       ? 'HEALTH CONDITION REPORT'
       : 'TEST REPORT';
+    const btnTitle = labResults && Platform.OS === 'ios' ? 'SAVE ' : 'DOWNLOAD ';
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
+        {!!data.fileUrl && labResults && Platform.OS === 'ios' ? (
+          <Button
+            title={'SAVE ATTACHMENT'}
+            style={{ marginBottom: 20 }}
+            onPress={() => downloadDocument()}
+          />
+        ) : null}
         <Button
-          title={'DOWNLOAD ' + buttonTitle}
+          title={btnTitle + buttonTitle}
           onPress={() => (labResults ? downloadPDFTestReport() : downloadDocument())}
-        ></Button>
+        />
       </View>
     );
   };
@@ -976,7 +983,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         description: 'File downloaded by download manager.',
       },
     })
-      .fetch('GET', labResults ? pdfUrl || data?.fileUrl : data?.fileUrl, {
+      .fetch('GET', labResults ? pdfUrl || data?.fileUrl : data.fileUrl, {
         //some headers ..
       })
       .then((res) => {
@@ -989,6 +996,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
         console.log('error ', err);
+        currentPatient && handleGraphQlError(err);
         setLoading && setLoading(false);
       })
       .finally(() => {

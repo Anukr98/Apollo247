@@ -1433,7 +1433,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           />
         )}
         {orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY &&
-          shipmentTrackingUrl &&
+          !!shipmentTrackingUrl &&
           renderCourierTrackingCta()}
         {isDelivered ? (
           <View
@@ -1556,7 +1556,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderInconvenienceView = () => {
-    const patientWhtsappQuery = `I have a query regarding my order. ${
+    const patientWhtsappQuery = `I have a query regarding my order. Status_${
       orderDetails?.currentStatus
     }, ID: ${billNumber || orderAutoId}`;
     return (

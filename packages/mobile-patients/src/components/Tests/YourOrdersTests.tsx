@@ -9,6 +9,7 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+  GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -17,6 +18,7 @@ import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 
 import { CANCEL_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
@@ -39,6 +41,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -59,7 +62,7 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
-  SequenceForDiagnosticStatus,
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
   TestCancelReasons,
   TestReschedulingReasons,
 } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -90,6 +93,10 @@ import {
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
+import {
+  getOrderInternal,
+  getOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -98,7 +105,6 @@ export interface DiagnosticsOrderList
 }
 const width = Dimensions.get('window').width;
 const isSmallDevice = width < 380;
-const sequenceOfStatus = SequenceForDiagnosticStatus;
 
 export interface YourOrdersTestProps extends NavigationScreenProps {}
 
@@ -125,6 +131,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [showSummaryPopup, setSummaryPopup] = useState<boolean>(false);
+  const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const showSummaryPopupRef = useRef<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<
     getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList
@@ -136,6 +143,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const [selectedReasonForReschedule, setSelectedReasonForReschedule] = useState('');
   const [commentForReschedule, setCommentForReschedule] = useState('');
+  const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<
     getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
   >();
@@ -143,13 +151,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
-  const statusForCancelReschedule = [
-    DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-    DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-    DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
-    DIAGNOSTIC_ORDER_STATUS.PHLEBO_PENDING,
-    DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
-  ];
+
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -312,8 +314,35 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
+  const fetchRefundForOrder = async (orderSelected: any, itemNameExist: any, itemIdObject: any) => {
+    setRefundStatusArr(null);
+    setLoading?.(true);
+    client
+      .query<getOrderInternal, getOrderInternalVariables>({
+        query: GET_INTERNAL_ORDER,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          order_id: orderSelected?.paymentOrderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const refundData = g(data, 'getOrderInternal', 'refunds');
+        if (refundData?.length! > 0) {
+          setRefundStatusArr(refundData);
+        }
+        performNavigation(itemNameExist, orderSelected, itemIdObject, refundData);
+      })
+      .catch((e) => {
+        CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
+        setLoading?.(false);
+      });
+  };
+
   const onSubmitCancelOrder = (reason: string, comment: string) => {
-    setLoading!(true);
+    setLoading?.(true);
     setSelectedReasonForCancel(reason);
     setCommentForCancel(comment);
     setCancelReasonPopUp(false);
@@ -449,8 +478,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const checkSlotSelection = () => {
-    const dt = moment(selectedOrder?.slotDateTimeInUTC).format('YYYY-MM-DD') || null;
-    const tm = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm') || null;
+    const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
+    const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm') || null;
 
     const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
     const checkCovidItem = orderItemId?.map((item) =>
@@ -508,10 +537,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         });
 
         const uniqueSlots = getUniqueTestSlots(slotsArray);
+        const isSameDate = moment().isSame(moment(date), 'date');
+        if (isSameDate && uniqueSlots?.length == 0) {
+          setTodaySlotNotAvailable(true);
+        } else {
+          todaySlotNotAvailable && setTodaySlotNotAvailable(false);
+        }
+
         setSlots(slotsArray);
         uniqueSlots?.length &&
           setselectedTimeSlot(
-            getTestSlotDetailsByTime(slotsArray, uniqueSlots[0].startTime!, uniqueSlots[0].endTime!)
+            getTestSlotDetailsByTime(
+              slotsArray,
+              uniqueSlots?.[0]?.startTime!,
+              uniqueSlots?.[0]?.endTime!
+            )
           );
 
         //call the api to get the pincode.
@@ -546,8 +586,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const onPressTestReschedule = (item: any) => {
-    console.log({ item });
-    setSelectedOrderId(item.id);
+    setSelectedOrderId(item?.id);
     setSelectedOrder(item);
     setReschedulePopUp(true);
   };
@@ -603,7 +642,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const onSubmitRescheduleRequest = (reason: string, comment: string) => {
-    //show the slot pop up and call teh api
     setLoading!(true);
     setSelectedReasonForReschedule(reason);
     setCommentForReschedule(comment);
@@ -617,7 +655,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const onReschduleDoneSelected = () => {
-    setLoading!(true);
+    setLoading?.(true);
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
     const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
     const employeeSlot =
@@ -640,7 +678,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     console.log({ rescheduleDiagnosticsInput });
     rescheduleOrder(rescheduleDiagnosticsInput)
       .then((data) => {
-        console.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         console.log({ rescheduleResponse });
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
@@ -663,7 +700,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             description:
               rescheduleResponse?.message == 'SLOT_ALREADY_BOOKED'
                 ? string.diagnostics.sameSlotError
-                : rescheduleResponse?.message,
+                : string.common.tryAgainLater,
           });
         }
       })
@@ -697,6 +734,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           heading="Schedule Appointment"
           date={date}
           areaId={String(selectedOrder?.areaId)}
+          isTodaySlotUnavailable={todaySlotNotAvailable}
           maxDate={moment()
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
@@ -724,12 +762,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             setselectedTimeSlot(slotInfo);
 
             setDiagnosticSlot!({
-              slotStartTime: slotInfo.slotInfo.startTime!,
-              slotEndTime: slotInfo.slotInfo.endTime!,
+              slotStartTime: slotInfo?.slotInfo?.startTime!,
+              slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: date1.getTime(),
-              employeeSlotId: slotInfo.slotInfo.slot!,
-              diagnosticBranchCode: slotInfo.diagnosticBranchCode,
-              diagnosticEmployeeCode: slotInfo.employeeCode,
+              employeeSlotId: slotInfo?.slotInfo?.slot!,
+              diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
+              diagnosticEmployeeCode: slotInfo?.employeeCode,
               city: '', // not using city from this in order place API
             });
             console.log({ diagnosticSlot });
@@ -743,22 +781,101 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const _navigateToYourTestDetails = (order: any) => {
+    const isPrepaid = order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+    setLoading?.(true);
     showSummaryPopup && setSummaryPopup(!showSummaryPopup);
+
+    const itemLevelStatus = order?.diagnosticOrdersStatus?.map(
+      (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus) =>
+        item
+    );
+    /**
+     * if itemName == null , then directly show vertical tracking.
+     */
+    const itemNameExist = itemLevelStatus?.find(
+      (order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus) =>
+        order?.itemName != null && order?.itemId != null
+    );
+
+    const itemIdObject = _.groupBy(itemLevelStatus, 'itemId') as any;
+
+    //call refund api only if prepaid order + order level status is failed/cancelled
+
+    if (isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)) {
+      fetchRefundForOrder(order, itemNameExist, itemIdObject);
+    } else {
+      performNavigation(itemNameExist, order, itemIdObject);
+    }
+  };
+
+  function performNavigation(itemNameExist: any, order: any, itemIdObject: any, refundArray?: any) {
+    if (!!itemNameExist) {
+      _navigateToHorizontalTracking(order, itemIdObject, refundArray);
+    } else {
+      _navigateToVerticalTracking(order, itemIdObject, refundArray);
+    }
+  }
+
+  function _navigateToVerticalTracking(order: any, itemIdObject: any, refundArray?: any) {
+    const getUTCDateTime = order?.slotDateTimeInUTC;
+    const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
+      `D MMM YYYY`
+    );
+    const tm =
+      getUTCDateTime != null ? moment(getUTCDateTime).format('hh:mm A') : order?.slotTimings;
+
+    const updatedItemLevelStatus = itemIdObject?.['null']?.map((item: any) => ({
+      ...item,
+    }));
+
+    let selectedTestStatus = [];
+    const resultToShow = updatedItemLevelStatus?.[updatedItemLevelStatus?.length - 1];
+    selectedTestStatus.push({
+      id: resultToShow?.id,
+      displayId: order?.displayId,
+      slotTimings: tm,
+      patientName: currentPatient?.firstName,
+      showDateTime: dt,
+      itemId: resultToShow?.itemId,
+      currentStatus:
+        order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+          ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+          : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+
+      statusDate: resultToShow?.statusDate,
+    });
+    setLoading?.(false);
+    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+      orderId: order?.id,
+      setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
+        setOrders(orders),
+      selectedTest: selectedTestStatus,
+      selectedOrder: order,
+      individualTestStatus: updatedItemLevelStatus,
+      comingFrom: AppRoutes.YourOrdersTest,
+      refundStatusArr: refundArray || refundStatusArr,
+    });
+  }
+
+  function _navigateToHorizontalTracking(order: any, itemIdObject: any, refundArray?: any) {
+    setLoading?.(false);
     props.navigation.navigate(AppRoutes.OrderedTestStatus, {
       orderId: order?.id,
       selectedOrder: order,
+      itemLevelStatus: itemIdObject,
       setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
         setOrders(orders),
+      refundStatusArr: refundArray || refundStatusArr,
     });
-  };
+  }
 
-  const _openOrderSummary = (order: any) => {
+  function _openOrderSummary(order: any) {
     fetchOrderDetails(order);
-  };
+  }
 
-  const _navigateToPHR = () => {
+  function _navigateToPHR() {
     props.navigation.navigate(AppRoutes.HealthRecordsHome);
-  };
+  }
 
   const renderOrder = (order: DiagnosticsOrderList, index: number) => {
     if (order?.diagnosticOrderLineItems?.length == 0) {
@@ -778,7 +895,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const patientName = g(currentPatient, 'firstName');
 
     const showDateTime = order?.isRescheduled ? true : false;
-
+    const isPastOrder = moment(getUTCDateTime).diff(moment(), 'minutes') < 0;
     /**
      * show cancel & reschdule if status is something like this.
      */
@@ -786,13 +903,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       BLACK_LIST_CANCEL_STATUS_ARRAY.includes(item?.orderStatus!)
     );
 
-    const showCancel = isCancelValid == undefined ? true : false;
+    const showCancel = isCancelValid == undefined && !isPastOrder ? true : false;
 
     const isRescheduleValid = order?.diagnosticOrdersStatus?.find((item: any) =>
       BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(item?.orderStatus)
     );
 
-    const showReschedule = isRescheduleValid == undefined ? true : false;
+    const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
     /**
      * as per previous check
      */

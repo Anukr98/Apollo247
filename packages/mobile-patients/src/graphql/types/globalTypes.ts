@@ -145,6 +145,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
   SAMPLE_COLLECTED_IN_LAB = "SAMPLE_COLLECTED_IN_LAB",
+  SAMPLE_NOT_COLLECTED_IN_LAB = "SAMPLE_NOT_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
   SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
   SAMPLE_TESTED = "SAMPLE_TESTED",
@@ -468,6 +469,13 @@ export enum PharmaDiscountApplicableOn {
   SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
+export enum PrescriptionType {
+  CONSULT = "CONSULT",
+  LATER = "LATER",
+  NA = "NA",
+  UPLOADED = "UPLOADED",
+}
+
 export enum REFUND_STATUS {
   REFUND_FAILED = "REFUND_FAILED",
   REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
@@ -622,6 +630,12 @@ export enum WeekDay {
 export enum ZoneType {
   CITY = "CITY",
   STATE = "STATE",
+}
+
+export enum docOnCallType {
+  CIRCLE = "CIRCLE",
+  COVID_VACCINATION_QUERY = "COVID_VACCINATION_QUERY",
+  HDFC = "HDFC",
 }
 
 export enum mediaPrescriptionSource {
@@ -1183,7 +1197,7 @@ export interface MedicineCartOMSInput {
   healthCreditUsed?: number | null;
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
-  isConsultRequired?: boolean | null;
+  prescriptionType?: PrescriptionType | null;
 }
 
 export interface MedicineCartOMSItem {

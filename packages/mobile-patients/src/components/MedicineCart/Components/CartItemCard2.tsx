@@ -1,22 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  MedicineIcon,
+  MedicineRxIcon,
+  DropdownGreen,
+  DeleteBoldIcon,
+  DeleteIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-
+import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 export interface CartItemCard2Props {
   item: ShoppingCartItem;
   index?: number;
+  onUpdateQuantity: (quantity: number) => void;
+  onPressDelete: () => void;
 }
 
 export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
   const { coupon } = useShoppingCart();
-  const { item } = props;
+  const { item, onUpdateQuantity, onPressDelete } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
+  const itemAvailable = !item.unserviceable && !item.unavailableOnline;
 
   useEffect(() => {
     setmrp(item.price);
@@ -79,17 +89,43 @@ export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
           {discountedPrice || discountedPrice == 0
             ? renderPrice(discountedPrice)
             : renderPrice(mrp)}
+          {renderDelete()}
         </View>
       </View>
     );
   };
 
   const renderQuantity = () => {
-    return (
+    let maxQuantity: number = getMaxQtyForMedicineItem(item.maxOrderQty);
+    if (!!item.isFreeCouponProduct && item.quantity === 1) {
+      maxQuantity = 1;
+    }
+    const opitons = Array.from({
+      length: maxQuantity,
+    }).map((_, i) => {
+      return { key: (i + 1).toString(), value: i + 1 };
+    });
+    return !item?.isFreeCouponProduct || item?.quantity > 1 ? (
+      <View style={{ ...styles.quantityContainer, opacity: itemAvailable ? 1 : 0.3 }}>
+        <MaterialMenu
+          options={opitons}
+          selectedText={item.quantity!.toString()}
+          selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
+          onPress={(selectedQuantity) => {
+            itemAvailable && onUpdateQuantity(selectedQuantity.value as number);
+          }}
+        >
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ justifyContent: 'center' }}>
+              <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
+            </View>
+            <DropdownGreen />
+          </View>
+        </MaterialMenu>
+      </View>
+    ) : (
       <View style={styles.quantityContainer}>
-        <View style={{ justifyContent: 'center' }}>
-          <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
-        </View>
+        <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
       </View>
     );
   };
@@ -118,6 +154,19 @@ export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
       </View>
     );
   };
+
+  const renderDelete = () => {
+    return (
+      <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
+        {itemAvailable ? (
+          (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon />
+        ) : (
+          <DeleteBoldIcon />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.card}>
       {renderImage()}
@@ -134,7 +183,7 @@ const styles = StyleSheet.create({
     marginBottom: 9,
     flexDirection: 'row',
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 14,
     minHeight: 95,
   },
   itemName: {

@@ -670,7 +670,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   const renderHeader = () => (
     <Header
-      title={'SELECT FROM E-PRESCRIPTIONS'}
+      title={'SELECT FROM MY PRESCRIPTIONS'}
       leftIcon="backArrow"
       container={{
         ...theme.viewStyles.cardContainer,
