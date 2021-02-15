@@ -557,7 +557,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         {showCirclePlans && renderCircleSubscriptionPlans()}
         <Carousel
           onSnapToItem={setSlideIndex}
-          data={bannerData}
+          data={bannerData?.filter(i=>i?.banner_display_type==='banner')}
           renderItem={renderHdfcSliderItem}
           sliderWidth={width}
           itemWidth={width}

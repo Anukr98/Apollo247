@@ -1508,10 +1508,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
         setCircleSavings && setCircleSavings(totalSavings);
 
-        console.log('csk val2',JSON.stringify(res),totalSavings);
       } catch (error) {
         CommonBugFender('MyMembership_fetchCircleSavings', error);
-        console.log('csk val2',error);
+        console.log('csk error',error);
       }
     };
 const fetchHealthCredits = async () => {
@@ -1525,12 +1524,11 @@ const fetchHealthCredits = async () => {
                                       });
         const credits = res?.data?.getOneApolloUser?.availableHC;
 
-        console.log('csk val7',JSON.stringify(res));
         setHealthCredits && setHealthCredits(credits);
 
       } catch (error) {
         CommonBugFender('MyMembership_fetchCircleSavings', error);
-        console.log('csk val2',error);
+        console.log('csk error',error);
       }
     };
 
@@ -1538,7 +1536,6 @@ const fetchHealthCredits = async () => {
   const getUserBanners = async () => {
     setHdfcLoading(true);
     const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME);
-    console.log('csk val4',JSON.stringify(res));
     setHdfcLoading(false);
     if (res) {
       setBannerData && setBannerData(res);
@@ -2267,6 +2264,16 @@ const fetchHealthCredits = async () => {
                             }
                           ];
 
+  const dataBannerCards=()=>{
+  const datatoadd=bannerData?.filter((item)=>item?.banner_display_type==='card');
+  const datatosend= datatoadd.map(item=>({
+                              imageUrl:{uri:item?.banner} ,
+                              title: item?.banner_template_info?.headerText1,
+                              value:''
+                              }));
+  return datatosend;
+  }
+
   const renderCircleCards = (item) =>
   {
   return (
@@ -2319,11 +2326,12 @@ const fetchHealthCredits = async () => {
 
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
-    const renew=renewNow!=='' && renewNow==='yes'?false:true;
+    const renew=renewNow!=='' && renewNow==='yes'?true:false;
 
 
     console.log("csk value",isCircleMember,circlePlanValidity,circleStatus,expiry,
     expired,renew,"savings->",circleSavings,'hc->',healthCredits)
+
     return (
       <View style={styles.circleContainer}>
 
@@ -2396,9 +2404,10 @@ const fetchHealthCredits = async () => {
            <View style={styles.circleButtonLeft}>
              <ImageBackground style={styles.circleButtonImage} source={require('../ui/icons/PathLeft.png')} />
            </View>
+
         <FlatList
                 horizontal={true}
-                data={datac}
+                data={dataBannerCards()}
                 renderItem={({item}) =>renderCircleCards(item)}
                 keyExtractor={(item, index) => index.toString()+"circle"}
         />
