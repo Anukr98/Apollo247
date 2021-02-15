@@ -8,6 +8,7 @@ import {
   EmergencyCall,
   ExpressDeliveryLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {timeDiffDaysFromNow} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -26,11 +27,12 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const videoLinks = strings.Circle.video_links;
 
   const renderCircleExpiryBanner = () => {
+  const expiry=timeDiffDaysFromNow(circleSubscription?.endDate);
     return (
       <View style={[styles.expiryBanner, { alignItems: 'center' }]}>
         <CircleLogo style={styles.circleLogo} />
         <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
-          Membership expires on{' '}
+          Membership {expiry>0?"expires":"expired"} on{' '}
           <Text style={theme.viewStyles.text('M', 12, '#01475B')}>
             {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
           </Text>

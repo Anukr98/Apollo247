@@ -1426,7 +1426,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
-        status: ['active', 'deferred_inactive'],
+        status: ['active','deferred_active','deferred_inactive','disabled'],
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
