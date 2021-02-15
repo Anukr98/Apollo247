@@ -334,6 +334,14 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   parameterNameStyle: { ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) },
+  removeIconViewStyle: {
+    position: 'absolute',
+    right: -8,
+    zIndex: 99,
+    top: -8,
+    paddingBottom: 10,
+    paddingLeft: 10,
+  },
 });
 
 type RecordTypeType = {
@@ -2112,10 +2120,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
         <View style={styles.imageViewStyle}>
-          <TouchableOpacity
-            onPress={onPressRemoveIcon}
-            style={{ position: 'absolute', right: -8, zIndex: 99, top: -8 }}
-          >
+          <TouchableOpacity onPress={onPressRemoveIcon} style={styles.removeIconViewStyle}>
             <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />
           </TouchableOpacity>
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
