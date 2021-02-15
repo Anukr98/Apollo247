@@ -100,7 +100,7 @@ export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
 
             <View style={styles.subPlanOne}>
              <Image style={styles.circleLogo}
-             source={require('../ui/icons/circleLogo.png')} />
+             source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.png')} />
              </View>
 
              <View style={styles.subPlanTwo}>

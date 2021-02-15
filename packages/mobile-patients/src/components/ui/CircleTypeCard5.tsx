@@ -127,7 +127,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
             </Text>
 
              <Image style={styles.circleLogo}
-             source={require('../ui/icons/circleLogo.png')} />
+             source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.png')} />
              </View>
              <View style={styles.subPlanTwo}>
              <Text style={{...theme.viewStyles.text('M', 12, '#666666', 1, 16)}}>Previous{"\n"}Savings:</Text>

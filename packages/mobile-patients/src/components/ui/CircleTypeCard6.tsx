@@ -122,7 +122,7 @@ export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
             </Text>
 
              <Image style={styles.circleLogo}
-             source={require('../ui/icons/circleLogo.png')} />
+             source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.png')} />
              </View>
 
              <View style={styles.subPlanTwo}>
