@@ -57,7 +57,10 @@ import {
   initiateDocOnCallVariables,
 } from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
 import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
-import { docOnCallType, BannerDisplayType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  docOnCallType,
+  BannerDisplayType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -83,7 +86,7 @@ import {
   GET_USER_PROFILE_TYPE,
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
-  GET_PLAN_DETAILS_BY_PLAN_ID
+  GET_PLAN_DETAILS_BY_PLAN_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -176,7 +179,6 @@ import {
   preFetchSDK,
   createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-
 
 import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
 import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
@@ -466,7 +468,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
-  circleContainer:{
+  circleContainer: {
     backgroundColor: theme.colors.WHITE,
     marginTop: 15,
     marginBottom: 10,
@@ -475,85 +477,87 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
-  circleCardsContainer:{
-  flex:1,
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  marginHorizontal: 4,
-  marginVertical:8,
+  circleCardsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: 4,
+    marginVertical: 8,
   },
-  circleCards:{
-  ...theme.viewStyles.cardViewStyle,
-  shadowOffset: { width: 1, height: 2 },
-  elevation: 4,
-  flexDirection: 'row',
-  height: 88,
-  width: width / 2.6,
-  marginHorizontal: 3,
-  marginBottom: 2,
-  borderWidth: 1.2,
-  borderStyle:'solid',
-  borderColor:'#FC9916',
-  padding:8,
-  borderRadius:12,
+  circleCards: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 1, height: 2 },
+    elevation: 4,
+    flexDirection: 'row',
+    height: 88,
+    width: width / 2.6,
+    marginHorizontal: 3,
+    marginBottom: 2,
+    borderWidth: 1.2,
+    borderStyle: 'solid',
+    borderColor: '#FC9916',
+    padding: 8,
+    borderRadius: 12,
   },
-  circleCardsTexts:{
-  flex:0.6,
-  alignItems:'flex-start',
-  justifyContent:'center',
+  circleCardsTexts: {
+    flex: 0.6,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
-  circleCardsImages:{
-  flex:0.4,
-  alignItems:'center',
-  justifyContent:'center'
+  circleCardsImages: {
+    flex: 0.4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  circleCardsImage:{
-  alignSelf: 'center',
-  width: '100%',
-  height: '100%'
+  circleCardsImage: {
+    alignSelf: 'center',
+    width: '100%',
+    height: '100%',
   },
-  circleRowsContainer:{
-  flexDirection:'row',
-  alignItems:'center',
-  justifyContent:'center',
-  marginVertical:5,
-  flex:1,
+  circleRowsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 5,
+    flex: 1,
   },
-  circleButtonLeft:{
-  width:25,
-  height:25,
-  borderColor:'#f5f0f0',
-  borderRadius:12,
-  borderWidth: 1,
-  borderStyle:'solid',
-  backgroundColor:'#fff',
-  shadowColor: '#fff',
-  shadowOffset: { width: 0.2, height: 0.2 },
-  shadowOpacity: 0.3,
-  elevation: 1,
-  justifyContent:'center',
-  alignItems:'center',
-  position:'absolute',
-  left:-4,top:33,
-  },
-  circleButtonRight:{
-  width:25,
-    height:25,
-    borderColor:'#f5f0f0',
-    borderRadius:12,
+  circleButtonLeft: {
+    width: 25,
+    height: 25,
+    borderColor: '#f5f0f0',
+    borderRadius: 12,
     borderWidth: 1,
-    borderStyle:'solid',
-    backgroundColor:'#fff',
+    borderStyle: 'solid',
+    backgroundColor: '#fff',
     shadowColor: '#fff',
     shadowOffset: { width: 0.2, height: 0.2 },
     shadowOpacity: 0.3,
     elevation: 1,
-    justifyContent:'center',
-    alignItems:'center',
-    position:'absolute',
-    right:-3,top:33,
-    },
-    circleButtonImage:{width:7,height:12},
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    left: -4,
+    top: 33,
+  },
+  circleButtonRight: {
+    width: 25,
+    height: 25,
+    borderColor: '#f5f0f0',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    backgroundColor: '#fff',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0.2, height: 0.2 },
+    shadowOpacity: 0.3,
+    elevation: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    right: -3,
+    top: 33,
+  },
+  circleButtonImage: { width: 7, height: 12 },
 });
 
 type menuOptions = {
@@ -1422,7 +1426,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async () => {
-  setCircleDataLoading(true);
+    setCircleDataLoading(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -1454,7 +1458,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             endDate: data?.APOLLO?.[0]?.end_date,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          setRenewNow(data?.APOLLO?.[0].renewNow?'yes':'no');
+          setRenewNow(data?.APOLLO?.[0].renewNow ? 'yes' : 'no');
           setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
           setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
           paymentStoredVal &&
@@ -1494,77 +1498,76 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
     setCircleDataLoading(false);
-
   };
 
-    const fetchCarePlans = async () => {
-      try {
-        const res = await client.query<GetPlanDetailsByPlanId>({
-          query: GET_PLAN_DETAILS_BY_PLAN_ID,
-          fetchPolicy: 'no-cache',
-          variables: {
-            plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
-          },
-        });
-        const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
-        if (membershipPlans) {
-          setMembershipPlans(membershipPlans);
-          const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
-          if (defaultPlan?.length > 0) {
-            setDefaultCirclePlan(defaultPlan[0]);
-          }
+  const fetchCarePlans = async () => {
+    try {
+      const res = await client.query<GetPlanDetailsByPlanId>({
+        query: GET_PLAN_DETAILS_BY_PLAN_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
+        },
+      });
+      const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
+      if (membershipPlans) {
+        setMembershipPlans(membershipPlans);
+        const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
+        if (defaultPlan?.length > 0) {
+          setDefaultCirclePlan(defaultPlan[0]);
         }
-      } catch (error) {
-        CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
       }
-    };
+    } catch (error) {
+      CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
+    }
+  };
 
   const fetchCircleSavings = async () => {
-      try {
-        const res = await client.query({
-          query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
-          variables: {
-            mobile_number: currentPatient?.mobileNumber,
-          },
-          fetchPolicy: 'no-cache',
-        });
-        const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
-        const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
-        const consultSavings = savings?.consult || 0;
-        const pharmaSavings = savings?.pharma || 0;
-        const diagnosticsSavings = savings?.diagnostics || 0;
-        const deliverySavings = savings?.delivery || 0;
-        const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
-        setCircleSavings && setCircleSavings(totalSavings);
+    try {
+      const res = await client.query({
+        query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+        variables: {
+          mobile_number: currentPatient?.mobileNumber,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
+      const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
+      const consultSavings = savings?.consult || 0;
+      const pharmaSavings = savings?.pharma || 0;
+      const diagnosticsSavings = savings?.diagnostics || 0;
+      const deliverySavings = savings?.delivery || 0;
+      const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      setCircleSavings && setCircleSavings(totalSavings);
+    } catch (error) {
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+      console.log('error', error);
+    }
+  };
+  const fetchHealthCredits = async () => {
+    try {
+      const res = await client.query({
+        query: GET_ONEAPOLLO_USER,
+        variables: {
+          patientId: g(currentPatient, 'id'),
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const credits = res?.data?.getOneApolloUser?.availableHC;
 
-      } catch (error) {
-        CommonBugFender('MyMembership_fetchCircleSavings', error);
-        console.log('error',error);
-      }
-    };
-const fetchHealthCredits = async () => {
-      try {
-        const res = await client.query({
-                                        query: GET_ONEAPOLLO_USER,
-                                        variables: {
-                                          patientId: g(currentPatient, 'id'),
-                                        },
-                                        fetchPolicy: 'no-cache',
-                                      });
-        const credits = res?.data?.getOneApolloUser?.availableHC;
-
-        setHealthCredits && setHealthCredits(credits);
-
-      } catch (error) {
-        CommonBugFender('MyMembership_fetchCircleSavings', error);
-        console.log('error',error);
-      }
-    };
-
+      setHealthCredits && setHealthCredits(credits);
+    } catch (error) {
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+      console.log('error', error);
+    }
+  };
 
   const getUserBanners = async () => {
     setHdfcLoading(true);
-    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [BannerDisplayType.banner,BannerDisplayType.card]);
+    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [
+      BannerDisplayType.banner,
+      BannerDisplayType.card,
+    ]);
 
     setHdfcLoading(false);
     if (res) {
@@ -2259,192 +2262,206 @@ const fetchHealthCredits = async () => {
     }
   };
 
+  const dataBannerCards = () => {
+    const datatoadd = bannerData?.filter((item) => item?.banner_display_type === 'card');
+    const datatosend = datatoadd?.map((item) => ({
+      imageUrl: { uri: item?.banner },
+      title: item?.banner_template_info?.headerText1,
+      value: '',
+    }));
+    console.log('csk bd', JSON.stringify(datatosend));
+    return datatosend;
+  };
 
-  const dataBannerCards=()=>{
-  const datatoadd=bannerData?.filter((item)=>item?.banner_display_type==='card');
-  const datatosend= datatoadd?.map(item=>({
-                              imageUrl:{uri:item?.banner} ,
-                              title: item?.banner_template_info?.headerText1,
-                              value:''
-                              }));
-  console.log("csk bd",JSON.stringify(datatosend));
-  return datatosend;
-  }
+  const renderCircleCards = (item) => {
+    return (
+      <View style={styles.circleCardsContainer}>
+        <TouchableOpacity activeOpacity={1} onPress={() => console.log('flat hi')}>
+          <View style={styles.circleCards}>
+            <View style={styles.circleCardsTexts}>
+              <Text style={{ ...theme.viewStyles.text('L', 12, '#02475B', 1, 16) }}>
+                {item?.title}
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) }}>
+                {item?.value}
+              </Text>
+            </View>
 
-  const renderCircleCards = (item) =>
-  {
-  return (
-  <View style={styles.circleCardsContainer}>
-  <TouchableOpacity activeOpacity={1} onPress={()=>console.log('flat hi')}>
-         <View style={styles.circleCards}>
+            <View style={styles.circleCardsImages}>
+              <ImageBackground style={styles.circleCardsImage} source={item?.imageUrl} />
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
-         <View style={styles.circleCardsTexts}>
-
-           <Text style={{...theme.viewStyles.text('L', 12, '#02475B', 1, 16)}}>{item?.title}</Text>
-           <Text style={{...theme.viewStyles.text('M', 16, '#02475B', 1, 18)}}>{item?.value}</Text>
-         </View>
-
-         <View style={styles.circleCardsImages}>
-         <ImageBackground style={styles.circleCardsImage}
-                source={item?.imageUrl} />
-         </View>
-
-                    </View>
-                  </TouchableOpacity>
-                  </View>
-         );
-   }
-
-   const renderCircleSubscriptionPlans = () => {
-
-       return (
-         <CircleMembershipPlans
-           navigation={props.navigation}
-           isModal={true}
-           closeModal={() => setShowCirclePlans(false)}
-           buyNow={true}
-           membershipPlans={membershipPlans}
-           source={'Consult'}
-           from={string.banner_context.HOME}
-           healthCredits={healthCredits}
-           onPurchaseWithHCCallback={(res: any) => {
-             fireCirclePurchaseEvent(
-               currentPatient,
-               res?.data?.CreateUserSubscription?.response?.end_date
-             );
-             planPurchased.current = true;
-             planValidity.current = circlePlanValidity?.endDate;
-             setShowCircleActivation(true);
-           }}
-         />
-       );
-     };
+  const renderCircleSubscriptionPlans = () => {
+    return (
+      <CircleMembershipPlans
+        navigation={props.navigation}
+        isModal={true}
+        closeModal={() => setShowCirclePlans(false)}
+        buyNow={true}
+        membershipPlans={membershipPlans}
+        source={'Consult'}
+        from={string.banner_context.HOME}
+        healthCredits={healthCredits}
+        onPurchaseWithHCCallback={(res: any) => {
+          fireCirclePurchaseEvent(
+            currentPatient,
+            res?.data?.CreateUserSubscription?.response?.end_date
+          );
+          planPurchased.current = true;
+          planValidity.current = circlePlanValidity?.endDate;
+          setShowCircleActivation(true);
+        }}
+      />
+    );
+  };
 
   const renderCircle = () => {
+    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
+    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
 
-    const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
-    const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
-    const renew=renewNow!=='' && renewNow==='yes'?true:false;
+    const cardlist = dataBannerCards();
 
-    const cardlist=dataBannerCards();
-
-
-    console.log("csk value",isCircleMember,circlePlanValidity,circleStatus,expiry,
-    expired,renew,"savings->",circleSavings,'hc->',healthCredits)
+    console.log(
+      'csk value',
+      isCircleMember,
+      circlePlanValidity,
+      circleStatus,
+      expiry,
+      expired,
+      renew,
+      'savings->',
+      circleSavings,
+      'hc->',
+      healthCredits
+    );
 
     return (
       <View style={styles.circleContainer}>
+        {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
+          <CircleTypeCard1
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              console.log('circle button1 pressed');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expiry={expiry}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && renew ? (
+          <CircleTypeCard2
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              console.log('circle button2 pressed');
+            }}
+            credits={healthCredits}
+            expiry={expiry}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
+          <CircleTypeCard3
+            onButtonPress={() => {
+              console.log('circle button pressed');
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+              });
+            }}
+            credits={healthCredits}
+            savings={circleSavings}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
+          <CircleTypeCard4
+            onButtonPress={() => {
+              console.log('circle button pressed');
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+              });
+            }}
+            credits={healthCredits}
+            savings={circleSavings}
+          />
+        ) : expiry < 0 && circleSavings > 0 ? (
+          <CircleTypeCard5
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              console.log('circle button5 pressed');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expired={expired}
+          />
+        ) : expiry < 0 ? (
+          <CircleTypeCard6
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              console.log('circle button6 pressed');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expired={expired}
+          />
+        ) : null}
 
-      {(expiry>0 && circleStatus==='active' && renew && circleSavings>0)?
-        (<CircleTypeCard1
-        onButtonPress={()=>{
-        setShowCirclePlans(true)
-        console.log('circle button1 pressed')
-        }}
-        savings={circleSavings}
-        credits={healthCredits}
-        expiry={expiry}
-       />):
-       (expiry>0 && circleStatus==='active' && renew)?
-        (<CircleTypeCard2
-        onButtonPress={()=>{
-        setShowCirclePlans(true)
-        console.log('circle button2 pressed')
-                }}
-        credits={healthCredits}
-        expiry={expiry}
-       />):
-       (expiry>0 && circleStatus==='active' && !renew && circleSavings>0)?
-        (<CircleTypeCard3
-        onButtonPress={()=>{
-                              console.log('circle button pressed')
-                              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                                          membershipType: 'CIRCLE PLAN',
-                                          isActive: true,
-                                        });
-                                }
-                                }
-        credits={healthCredits}
-        savings={circleSavings}
-       />):
-       (expiry>0 && circleStatus==='active' && !renew)?
-       (<CircleTypeCard4
-        onButtonPress={()=>{
-                              console.log('circle button pressed')
-                              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                                          membershipType: 'CIRCLE PLAN',
-                                          isActive: true,
-                                        });
-                                }
-                                }
-        credits={healthCredits}
-        savings={circleSavings}
-       />):
-       (expiry<0 && circleSavings>0)?
-       (<CircleTypeCard5
-        onButtonPress={()=>{
-                setShowCirclePlans(true)
-                console.log('circle button5 pressed')
-                }}
-        savings={circleSavings}
-        credits={healthCredits}
-        expired={expired}
-       />):
-        (expiry<0)?
-        (<CircleTypeCard6
-        onButtonPress={()=>{
-                setShowCirclePlans(true)
-                console.log('circle button6 pressed')
-                }}
-        savings={circleSavings}
-        credits={healthCredits}
-        expired={expired}
-       />):(null)
-       }
+        {cardlist.length > 0 ? (
+          <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
+            {circleDataLoading && (
+              <Spinner
+                style={{ backgroundColor: 'transparent' }}
+                spinnerProps={{ size: 'small' }}
+              />
+            )}
 
-        {cardlist.length>0?(
-        <View style={[styles.circleRowsContainer,{paddingRight:10}]}>
+            <View style={styles.circleButtonLeft}>
+              <ImageBackground
+                style={styles.circleButtonImage}
+                source={require('../ui/icons/PathLeft.png')}
+              />
+            </View>
 
-          {circleDataLoading &&
-            (<Spinner
-             style={{ backgroundColor: 'transparent' }}
-             spinnerProps={{ size: 'small' }} />
-             )
-           }
+            <FlatList
+              horizontal={true}
+              data={cardlist}
+              renderItem={({ item }) => renderCircleCards(item)}
+              keyExtractor={(item, index) => index.toString() + 'circle'}
+            />
 
-           <View style={styles.circleButtonLeft}>
-             <ImageBackground style={styles.circleButtonImage} source={require('../ui/icons/PathLeft.png')} />
-           </View>
-
-        <FlatList
-                horizontal={true}
-                data={cardlist}
-                renderItem={({item}) =>renderCircleCards(item)}
-                keyExtractor={(item, index) => index.toString()+"circle"}
-        />
-
-           <View style={styles.circleButtonRight}>
-              <ImageBackground style={styles.circleButtonImage} source={require('../ui/icons/PathRight.png')} />
-           </View>
-
-        </View>
-        ):(null)}
-
+            <View style={styles.circleButtonRight}>
+              <ImageBackground
+                style={styles.circleButtonImage}
+                source={require('../ui/icons/PathRight.png')}
+              />
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.circleRowsContainer}>
-        {
-        (expiry>0 && circleSavings<=0)?
-         (<Text>
-         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}>Circle Member </Text>
-         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 1, 16)}}>saves ₹848 per month.</Text>
-         <Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}> You can too - Renew now!</Text>
-         </Text>):
-         (expiry<0)?
-         (<Text style={{...theme.viewStyles.text('M', 12, '#666666', 0.6, 16)}}>You’re missing out on benefits - Renew your membership now!!! </Text>)
-         :(null)
-         }
+          {expiry > 0 && circleSavings <= 0 ? (
+            <Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                Circle Member{' '}
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
+                saves ₹848 per month.
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                {' '}
+                You can too - Renew now!
+              </Text>
+            </Text>
+          ) : expiry < 0 ? (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+              You’re missing out on benefits - Renew your membership now!!!{' '}
+            </Text>
+          ) : null}
         </View>
-
       </View>
     );
   };
@@ -2633,7 +2650,6 @@ const fetchHealthCredits = async () => {
       </View>
     );
   };
-
 
   const onPressReadArticles = () => {
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
@@ -2887,9 +2903,9 @@ const fetchHealthCredits = async () => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{
-              isCircleMember==='yes' && renderCircle()
-              }</View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {isCircleMember === 'yes' && renderCircle()}
+              </View>
               {showCirclePlans && renderCircleSubscriptionPlans()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
