@@ -292,7 +292,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const updateRateDeliveryBtnVisibility = async () => {
-    setLoading!(true);
+    setLoading?.(true);
     try {
       if (!showRateDiagnosticBtn) {
         const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
@@ -412,7 +412,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
             const isStatusCompletedForPrepaid = true;
             const isStatusDone = true;
-
             return (
               <View style={{ flexDirection: 'row' }}>
                 {renderGraphicalStatus(
@@ -429,16 +428,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                       style={[
                         styles.statusTextStyle,
                         {
-                          color: DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)
-                            ? theme.colors.INPUT_FAILURE_TEXT
-                            : theme.colors.SHERPA_BLUE,
+                          color:
+                            DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                            order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                              ? theme.colors.INPUT_FAILURE_TEXT
+                              : theme.colors.SHERPA_BLUE,
                         },
                       ]}
                     >
-                      {nameFormater(
-                        getTestOrderStatusText(order?.orderStatus, AppRoutes.TestOrderDetails),
-                        'title'
-                      )}
+                      {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
                     </Text>
                     {isStatusDone ? <View style={styles.lineSeparator} /> : null}
                     {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}

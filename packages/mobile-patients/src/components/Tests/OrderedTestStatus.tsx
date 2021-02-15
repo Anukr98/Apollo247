@@ -248,7 +248,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           });
         }}
         status={currentStatus}
-        statusText={getTestOrderStatusText(currentStatus, AppRoutes.OrderedTestStatus)}
+        statusText={getTestOrderStatusText(currentStatus)}
         style={[
           { marginHorizontal: 20 },
           index < individualTestData.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },

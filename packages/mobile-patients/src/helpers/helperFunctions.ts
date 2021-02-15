@@ -2455,70 +2455,72 @@ export const takeToHomePage = (props: any) => {
 };
 export const isSmallDevice = width < 370;
 
-export const getTestOrderStatusText = (status: string, screenName: string) => {
+//customText needs to be shown for itemId = 8
+export const getTestOrderStatusText = (status: string, customText?:boolean) => {
   let statusString = '';
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
     case 'ORDER_CANCELLED_AFTER_REGISTRATION':
-      statusString = 'Order Cancelled';
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
+      statusString = 'Order cancelled';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
-      statusString = 'Order Failed';
+      statusString = 'Order failed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED:
-      statusString = 'Order Initiated';
+      statusString = 'Order initiated';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
-      statusString =
-        screenName == AppRoutes.TestOrderDetails ? 'Order confirmed' : 'Order Initiated';
+      statusString = 'Order confirmed'
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
       statusString =
-        screenName == AppRoutes.TestOrderDetails ? 'Phlebo is on the way' : 'Pickup Confirmed';
+       'Phlebo is on the way'
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
       statusString = 'Sample collected';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED:
-      statusString == 'Order rescheduled';
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST:
+      statusString = 'Order rescheduled';
+      break;
+    //last two status => report awaited (need not show in ui, so showing previous)
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
-    case 'SAMPLE_NOT_COLLECTED_IN_LAB':
-      statusString =
-        screenName == AppRoutes.TestOrderDetails ? 'Sample Submitted' : 'Sample Collected';
-      break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
-      statusString =
-        screenName == AppRoutes.TestOrderDetails ? 'Reports awaited' : 'Sample Received in Lab';
+      statusString = 'Sample submitted'
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
+      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted'
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
-      statusString = 'Report Generated';
+      statusString = 'Report generated';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB:
       statusString = 'Sample rejected';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED:
-      statusString = 'Order Completed';
+      statusString = 'Order completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING:
-      statusString = 'Payment Pending';
+      statusString = 'Payment pending';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
-      statusString = 'Payment Failed';
+      statusString = 'Payment failed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL:
-      statusString = 'Payment Successful';
+      statusString = 'Payment successful';
       break;
     case REFUND_STATUSES.SUCCESS:
-      statusString = 'Refund Proccessed';
+      statusString = 'Refund proccessed';
       break;
     case REFUND_STATUSES.PENDING:
     case REFUND_STATUSES.FAILURE:
     case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
     case REFUND_STATUSES.MANUAL_REVIEW:
-      statusString = 'Refund Initiated';
+      statusString = 'Refund initiated';
       break;
     default:
       statusString = status || '';

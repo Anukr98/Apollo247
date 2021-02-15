@@ -953,7 +953,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           _navigateToYourTestDetails(order);
         }}
         status={currentStatus}
-        statusText={getTestOrderStatusText(currentStatus, AppRoutes.YourOrdersTest)}
+        statusText={getTestOrderStatusText(currentStatus)}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
