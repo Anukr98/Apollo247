@@ -322,7 +322,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             { textAlign: 'justify' },
           ]}
         >
-          {isConsultOnline ? string.common.DisclaimerText : string.common.agreePhysicalConsultTC}
+          {selectedTab === tabs[0].title
+            ? string.common.DisclaimerText
+            : string.common.agreePhysicalConsultTC}
         </Text>
       </View>
     );
