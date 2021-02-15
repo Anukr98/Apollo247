@@ -53,7 +53,6 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
-  BackHandler,
 } from 'react-native';
 import { Text, Overlay } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -389,14 +388,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     relation.key === profileData.relation &&
     email === profileData.emailAddress &&
     photoUrl === profileData.photoUrl;
-
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    isEditProfile
-      ? props.navigation.goBack()
-      : props.navigation.navigate(AppRoutes.ConsultRoom, {});
-    return false;
-  };
 
   useEffect(() => {
     if (profileData) {
@@ -788,11 +779,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEditProfile ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() =>
-          isEditProfile
-            ? props.navigation.goBack()
-            : props.navigation.navigate(AppRoutes.ConsultRoom, {})
-        }
+        onPressLeftIcon={() => props.navigation.goBack()}
       />
     );
   };
@@ -1190,9 +1177,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <View style={styles.bottonButtonContainer}>
           <Button
             onPress={() => {
-              isEditProfile
-                ? props.navigation.goBack()
-                : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+              props.navigation.goBack();
             }}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}

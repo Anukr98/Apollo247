@@ -599,7 +599,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         }
       })
       .catch((e) => {
-        props.navigation.navigate(AppRoutes.ConsultRoom, {});
+        props.navigation.goBack();
         CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
         setshowSpinner(false);
         console.log('Error occured', e);
@@ -1512,26 +1512,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const moveBack = () => {
-    try {
-      const MoveDoctor = props.navigation.getParam('movedFrom') || '';
-
-      console.log('MoveDoctor', MoveDoctor);
-      if (MoveDoctor === 'registration') {
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
-      } else {
-        props.navigation.goBack();
-      }
-    } catch (error) {}
+    props.navigation.goBack();
   };
 
   const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {

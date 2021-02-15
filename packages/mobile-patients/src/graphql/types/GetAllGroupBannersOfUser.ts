@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { UserState } from "./globalTypes";
+import { UserState, BannerDisplayType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetAllGroupBannersOfUser
@@ -17,6 +17,7 @@ export interface GetAllGroupBannersOfUser_GetAllGroupBannersOfUser_response {
   banner_template_info: any | null;
   cta_action: any | null;
   meta: any | null;
+  banner_display_type: BannerDisplayType;
 }
 
 export interface GetAllGroupBannersOfUser_GetAllGroupBannersOfUser {

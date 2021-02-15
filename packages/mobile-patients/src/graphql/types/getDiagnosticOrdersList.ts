@@ -19,6 +19,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   packageName: string | null;
   hideStatus: boolean | null;
   statusMessage: string | null;
+  statusDate: any | null;
 }
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_itemObj {

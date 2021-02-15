@@ -15,6 +15,7 @@ import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_JUSPAY_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW,
   SequenceForDiagnosticStatus,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -74,122 +75,12 @@ import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labRe
 
 const OTHER_REASON = string.Diagnostics_Feedback_Others;
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
-const styles = StyleSheet.create({
-  headerShadowContainer: {
-    backgroundColor: theme.colors.WHITE,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 5,
-    zIndex: 1,
-  },
-  tabsContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    elevation: 4,
-    borderRadius: 0,
-    backgroundColor: theme.colors.CARD_BG,
-    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
-  },
-  chatWithUsView: { paddingBottom: 10, paddingTop: 5 },
-  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
-  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
-  chatWithUsText: {
-    textAlign: 'center',
-    paddingRight: 0,
-    marginHorizontal: 5,
-    ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW),
-  },
-  graphicalStatusViewStyle: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 28,
-    marginRight: 18,
-  },
-  verticalProgressLine: { flex: 1, width: 4, alignSelf: 'center' },
-  statusIconStyle: {
-    height: 28,
-    width: 28,
-  },
-  statusIconSmallStyle: {
-    height: 15,
-    width: 15,
-  },
-  viewRowStyle: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  dateTimeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.LIGHT_BLUE,
-  },
-  thankYouText: {
-    textAlign: 'center',
-    marginBottom: 12,
-    ...theme.viewStyles.text('SB', 13, '#01475b', 1, 21),
-  },
-  feedbackPop: { flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' },
-  statusDoneView: {
-    ...theme.viewStyles.cardViewStyle,
-    padding: 16,
-    marginBottom: 8,
-    flex: 1,
-  },
-  statusTextStyle: {
-    ...theme.fonts.IBMPlexSansSemiBold(15),
-    letterSpacing: 0.0,
-    flex: 1,
-  },
-  lineSeparator: {
-    height: 1,
-    backgroundColor: theme.colors.LIGHT_BLUE,
-    opacity: 0.1,
-    marginTop: 7,
-    marginBottom: 8,
-  },
-  statusLineSeperator: {
-    paddingHorizontal: 45,
-    marginTop: '8%',
-    paddingBottom: 25.5,
-  },
-  reportsGeneratedText: {
-    textAlign: 'center',
-    marginBottom: 6,
-    ...theme.viewStyles.text('M', 13, '#01475b', 1, 21),
-  },
-  rateDeliveryText: {
-    ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
-  },
-  preTestingCardView: { ...theme.viewStyles.cardViewStyle, padding: 16, flex: 1, marginTop: 13 },
-  buttonStyle: { width: '40%', marginBottom: 20, alignSelf: 'center' },
-  popUpOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-start',
-    flex: 1,
-    left: 0,
-    right: 0,
-    zIndex: 3000,
-  },
-  chatWithUsOuterView: {
-    margin: 30,
-    marginTop: 100,
-    justifyContent: 'flex-end',
-    alignSelf: 'flex-end',
-  },
-  reachUsOutText: {
-    textAlign: 'center',
-    ...theme.fonts.IBMPlexSansRegular(13),
-    color: theme.colors.SHERPA_BLUE,
-  },
-});
-
+/**
+ * this needs to be removed once hidestatus starts working
+ */
+const statusToBeShown = DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW;
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -212,6 +103,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const individualTestStatus = props.navigation.getParam('individualTestStatus');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const isPrepaid = selectedOrder?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -238,14 +130,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const sequenceOfStatus = SequenceForDiagnosticStatus;
 
-  const refetchOrders =
-    props.navigation.getParam('refetch') ||
-    useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
-      variables: {
-        patientId: currentPatient && currentPatient.id,
-      },
-      fetchPolicy: 'cache-first',
-    }).refetch;
+  const fetchOrderDetails = () =>
+    client.query<getDiagnosticOrderDetails, getDiagnosticOrdersListVariables>({
+      query: GET_DIAGNOSTIC_ORDER_LIST,
+      variables: { patientId: currentPatient && currentPatient.id },
+      fetchPolicy: 'no-cache',
+    });
 
   useEffect(() => {
     if (!currentPatient) {
@@ -298,20 +188,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return refundArr;
   };
 
-  Object.entries(individualTestStatus).filter((item: any) => {
-    if (item[0] == 'null') {
-      if (sizeOfIndividualTestStatus == 1) {
-        orderStatusList?.push(item[1]);
-      } else {
-        orderStatusList?.[0].push(item[1][0]);
-      }
-    } else if (item[0] == selectedTest?.itemId) {
-      orderStatusList.push(item[1]);
-    }
-  });
+  if (comingFrom == AppRoutes.OrderedTestStatus) {
+    //find the item id based on selected key.
+    const getNullObject = Object.entries(individualTestStatus).find(
+      ([key, value]) => key == 'null'
+    );
+    const existingStatus = getNullObject?.[1] || ([] as any);
+
+    const getSelectedKeyObject = Object.entries(individualTestStatus).find(
+      ([key, value]) => String(key) === String(selectedTest?.itemId)
+    );
+    const selectedStatusArray = getSelectedKeyObject?.[1] || ([] as any);
+    var statusArray = [...existingStatus, ...selectedStatusArray];
+
+    orderStatusList[0] = statusArray;
+  } else {
+    orderStatusList[0] = !!individualTestStatus ? individualTestStatus : [];
+  }
 
   const getAuthToken = async () => {
-    setLoading!(true);
+    setLoading?.(true);
     client
       .query<getPrismAuthToken, getPrismAuthTokenVariables>({
         query: GET_PRISM_AUTH_TOKEN,
@@ -359,14 +255,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         console.log('Error occured fetchTestReportsResult', { error });
         currentPatient && handleGraphQlError(error);
       })
-      .finally(() => setLoading!(false));
+      .finally(() => setLoading?.(false));
   }, []);
+
   if (refundStatusArr?.length > 0) {
     const getObject = createRefundObject();
-    const isPresent = orderStatusList?.[0].find(
+
+    const isAlreadyPresent = orderStatusList?.[0]?.find(
       (item: any) => item?.orderStatus == getObject?.[0]?.orderStatus
     );
-    if (!!isPresent && isPresent?.length > 0) {
+    //avoid pushing duplicates to list
+    if (isAlreadyPresent != undefined) {
     } else {
       getObject?.map((item) => orderStatusList?.[0]?.push(item));
     }
@@ -379,13 +278,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const handleBack = () => {
     if (!goToHomeOnBack) {
-      refetchOrders()
+      fetchOrderDetails()
         .then((data: any) => {
           const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
           setOrders(_orders);
         })
         .catch((e: Error) => {
-          CommonBugFender('TestOrderDetails_refetchOrders', e);
+          CommonBugFender('TestOrderDetails_fetchOrders', e);
         });
     }
     props.navigation.goBack();
@@ -393,7 +292,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const updateRateDeliveryBtnVisibility = async () => {
-    setLoading!(true);
+    setLoading?.(true);
     try {
       if (!showRateDiagnosticBtn) {
         const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
@@ -493,123 +392,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    const currentStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(selectedOrder?.orderStatus)
-      ? //  && isPrepaid
-        selectedOrder?.orderStatus
-      : selectedTest?.currentStatus;
-
-    let statusList = [];
-    if (currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
-      if (isPrepaid) {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
-          },
-          {
-            orderStatus: REFUND_STATUSES.PENDING,
-          },
-          {
-            orderStatus: REFUND_STATUSES.SUCCESS,
-          },
-        ];
-      } else {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
-          },
-        ];
-      }
-    } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) {
-      if (isPrepaid) {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-          },
-          {
-            orderStatus: REFUND_STATUSES.PENDING,
-          },
-          {
-            orderStatus: REFUND_STATUSES.SUCCESS,
-          },
-        ];
-      } else {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-          },
-        ];
-      }
-    } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED) {
-      statusList = [
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
-        },
-      ];
-    } else {
-      if (isPrepaid) {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
-          },
-        ];
-      } else {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
-          },
-        ];
-      }
-    }
-
-    const newList = statusList?.map(
-      (obj) =>
-        orderStatusList?.[0]?.find(
-          (o: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList) =>
-            o?.orderStatus === obj?.orderStatus
-        ) || obj
+    const newList = orderStatusList?.[0]?.filter((item: any) =>
+      statusToBeShown?.includes(item?.orderStatus)
     );
-
     scrollToSlots();
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {newList?.map((order, index, array) => {
+          {newList?.map((order: any, index: number, array: any) => {
             const isOrderFailedCase = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus);
             const isRefundCase = refundStatusArr?.length > 0;
             const compareStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(
@@ -620,16 +410,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               : sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
                 sequenceOfStatus.indexOf(order?.orderStatus);
 
-            const isStatusCompletedForPrepaid =
-              isPrepaid && DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(order?.orderStatus)
-                ? order?.statusDate
-                  ? true
-                  : false
-                : compareStatus;
-            const isStatusDone = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(selectedOrder?.orderStatus)
-              ? isStatusCompletedForPrepaid
-              : compareStatus;
-
+            const isStatusCompletedForPrepaid = true;
+            const isStatusDone = true;
             return (
               <View style={{ flexDirection: 'row' }}>
                 {renderGraphicalStatus(
@@ -646,13 +428,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                       style={[
                         styles.statusTextStyle,
                         {
-                          color: DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)
-                            ? theme.colors.INPUT_FAILURE_TEXT
-                            : theme.colors.SHERPA_BLUE,
+                          color:
+                            DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                            order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                              ? theme.colors.INPUT_FAILURE_TEXT
+                              : theme.colors.SHERPA_BLUE,
                         },
                       ]}
                     >
-                      {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
+                      {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
                     </Text>
                     {isStatusDone ? <View style={styles.lineSeparator} /> : null}
                     {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
@@ -776,6 +560,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
   };
 
+  const renderError = () => {
+    if (orderStatusList?.[0]?.length == 0) {
+      return (
+        <Card
+          cardContainer={[styles.noDataCard]}
+          heading={string.common.uhOh}
+          description={string.diagnostics.unableToFetchStatus}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      );
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -800,6 +598,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         />
         <ScrollView bounces={false}>
           {selectedTab == string.orders.trackOrder ? renderOrderTracking() : renderOrderSummary()}
+          {renderError()}
         </ScrollView>
       </SafeAreaView>
       {renderFeedbackPopup()}
@@ -807,3 +606,125 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  headerShadowContainer: {
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 5,
+    zIndex: 1,
+  },
+  tabsContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    elevation: 4,
+    borderRadius: 0,
+    backgroundColor: theme.colors.CARD_BG,
+    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+  },
+  chatWithUsView: { paddingBottom: 10, paddingTop: 5 },
+  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
+  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  chatWithUsText: {
+    textAlign: 'center',
+    paddingRight: 0,
+    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW),
+  },
+  graphicalStatusViewStyle: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 28,
+    marginRight: 18,
+  },
+  verticalProgressLine: { flex: 1, width: 4, alignSelf: 'center' },
+  statusIconStyle: {
+    height: 28,
+    width: 28,
+  },
+  statusIconSmallStyle: {
+    height: 15,
+    width: 15,
+  },
+  viewRowStyle: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  dateTimeStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    color: theme.colors.LIGHT_BLUE,
+  },
+  thankYouText: {
+    textAlign: 'center',
+    marginBottom: 12,
+    ...theme.viewStyles.text('SB', 13, '#01475b', 1, 21),
+  },
+  feedbackPop: { flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' },
+  statusDoneView: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 16,
+    marginBottom: 8,
+    flex: 1,
+  },
+  statusTextStyle: {
+    ...theme.fonts.IBMPlexSansSemiBold(15),
+    letterSpacing: 0.0,
+    flex: 1,
+  },
+  lineSeparator: {
+    height: 1,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.1,
+    marginTop: 7,
+    marginBottom: 8,
+  },
+  statusLineSeperator: {
+    paddingHorizontal: 45,
+    marginTop: '8%',
+    paddingBottom: 25.5,
+  },
+  reportsGeneratedText: {
+    textAlign: 'center',
+    marginBottom: 6,
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 21),
+  },
+  rateDeliveryText: {
+    ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
+  },
+  preTestingCardView: { ...theme.viewStyles.cardViewStyle, padding: 16, flex: 1, marginTop: 13 },
+  buttonStyle: { width: '40%', marginBottom: 20, alignSelf: 'center' },
+  popUpOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    flex: 1,
+    left: 0,
+    right: 0,
+    zIndex: 3000,
+  },
+  chatWithUsOuterView: {
+    margin: 30,
+    marginTop: 100,
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
+  },
+  reachUsOutText: {
+    textAlign: 'center',
+    ...theme.fonts.IBMPlexSansRegular(13),
+    color: theme.colors.SHERPA_BLUE,
+  },
+  noDataCard: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+});

@@ -8,20 +8,23 @@
     "new_profile_confirmation_text": "You cannot edit these details once you \nhave saved them. They will appear on all \nyour medical documents. Do you wish to \nconfirm?",
     "uhOh": "Uh oh.. :(",
     "hiWithSmiley": "Hi :)",
-    "return_text":"I want to return my order",
-    "return_policy_text":"Return Policy",
-    "return_policy_message1":"Apollo Pharmacy has a 2 day return policy, and we can allow returns  due to the following reasons:",
-    "return_policy_message2":"• Received a defective item;\n• The ordered item(s) is damaged during transit;\n• The ordered item(s) is past its expiry date;\n• Product(s)/Medicines(s) delivered do not match the order/prescription.",
-    "why_return_order_text":"Why are you returning this order?",
-    "select_returning_reason":"Select reason for returning",
-    "upload_image_text":"Upload Image",
-    "upload_image_file_size_text":"File size max upto 2MB. File type jpeg, jpg & png",
-    "add_comment_text":"Add Comments (Optional)",
-    "return_order_comment_text":"Enter your comments here…",
-    "upload":"UPLOAD",
-    "submit_request":"SUBMIT REQUEST",
-    "continue":"CONTINUE",
-    "upload_more":"+ UPLOAD MORE",
+    "return_text": "I want to return my order",
+    "return_policy_text": "Return Policy",
+    "return_policy_message1": "Apollo Pharmacy has a 2 day return policy, and we can allow returns  due to the following reasons:",
+    "return_policy_message2": "• Received a defective item;\n• The ordered item(s) is damaged during transit;\n• The ordered item(s) is past its expiry date;\n• Product(s)/Medicines(s) delivered do not match the order/prescription.",
+    "why_return_order_text": "Why are you returning this order?",
+    "select_returning_reason": "Select reason for returning",
+    "upload_image_text": "Upload Image",
+    "upload_image_file_size_text": "File size max upto 2MB. File type jpeg, jpg & png",
+    "add_comment_text": "Add Comments (Optional)",
+    "return_order_comment_text": "Enter your comments here…",
+    "upload": "UPLOAD",
+    "submit_request": "SUBMIT REQUEST",
+    "continue": "CONTINUE",
+    "callDoctor": "Call an Apollo Doctor",
+    "faqsArticles": "FAQs & Articles",
+    "covidVaccineTracker": "Vaccine Tracker",
+    "upload_more": "+ UPLOAD MORE",
     "date_placeholder_text": "DD MMM, YYYY",
     "select_text": "Select",
     "doctor_name_text": "Doctor name",
@@ -99,7 +102,8 @@
     "consultedDoctors": "Consulted Doctors",
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
-    "HdfcHealthLifeText": "Explore HDFC HealthyLife"
+    "HdfcHealthLifeText": "Explore HDFC HealthyLife",
+    "contactCustomerCare": "Something went wrong, please contact customer support"
   },
   "components": {
     "medicineDetails": {
@@ -126,7 +130,7 @@
   "help": "Help",
   "cancel": "Cancel",
   "needHelp": "Need Help",
-  "return_order_submit_message":"Your return request has been submitted. Someone from our team will call you soon.",
+  "return_order_submit_message": "Your return request has been submitted. Someone from our team will call you soon.",
   "needHelpSubmitMessage": "Thank you for bringing this to our notice. We’ll gather the details regarding your issue and immediately after that someone from our team will call you.",
   "recentConsults": "RECENT CONSULTS",
   "recentOrders": "RECENT ORDERS",
@@ -154,6 +158,7 @@
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
   "uploadPrescription": "UPLOAD PRESCRIPTION",
   "proceedToPay": "PROCEED TO PAY",
+  "reviewOrder": "REVIEW ORDER",
   "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
@@ -176,8 +181,8 @@
       "question": "How to consult in person?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
-      "point3": "Make payment",
-      "point4": "Visit the doctor at Hospital/Clinic",
+      "point3": "Visit the doctor at Hospital/Clinic",
+      "point4": "Make payment",
       "point5": "Receive prescriptions instantly",
       "point6": "Follow Up via text - valid for 7 days"
     },
@@ -219,7 +224,8 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [{
+    "arrayTest": [
+      {
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -238,7 +244,8 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [{
+    "startDoctor": [
+      {
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -267,7 +274,8 @@
     }
   },
   "consult_room": {
-    "specialities": [{
+    "specialities": [
+      {
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -301,7 +309,8 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [{
+      "data": [
+        {
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -313,7 +322,8 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [{
+      "data": [
+        {
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -340,7 +350,8 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [{
+    "filter_data": [
+      {
         "label": "City",
         "options": ["Hyderabad", "Chennai"]
       },
@@ -384,8 +395,8 @@
     "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification"
   },
   "diagnostics": {
-    "locationPermissionText":"Allow us to serve you better by entering your area pincode below.",
-    "serviceabilityFailureText":"Something went wrong. We're unable to check diagnostics serviceability for your location.",
+    "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",
+    "serviceabilityFailureText": "Something went wrong. We're unable to check diagnostics serviceability for your location.",
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
     "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
     "nonServiceableConfigPinCodeMsg": "Diagnostic services are not available in Pincode - {{pincode}} for now.",
@@ -405,12 +416,15 @@
     "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
     "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
     "specialDiscountText": "TESTS247 coupon pre-applied",
-    "unableToOpenReport" : "We are facing some issue in opening the report. Please try again later.",
-    "disclaimerText": [{
-      "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
-    }, {
-      "text": "Rescheduling can be done upto 3 times only"
-    }],
+    "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
+    "disclaimerText": [
+      {
+        "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
+      },
+      {
+        "text": "Rescheduling can be done upto 3 times only"
+      }
+    ],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
@@ -431,22 +445,24 @@
       "otherReasons": "Others (Please specify)"
     },
     "minorAgeText": "Lab tests cannot be booked for below 10 years",
-    "sameSlotError" : "Cannot book same slot",
+    "sameSlotError": "Cannot book same slot",
     "refundInitiateText": "Your refund for amount ₹{{refundAmount}} has been initiated. It takes 4-5 working days for processing.",
     "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
-    "collectionFromText" : "Sample collection address",
+    "collectionFromText": "Sample collection address",
     "orderCancelledSuccessText": "Your order has been cancelled successfully!",
-    "orderRescheduleSuccessText" :"Your order has been rescheduled for {{dateTime}}!",
+    "orderRescheduleSuccessText": "Your order has been rescheduled for {{dateTime}}!",
     "stepsToBook": "3 simple steps to get lab test done",
-    "certificateText":"Certified safety and quality fullfiled by Apollo Diagnostics.",
-    "stepsToBookHeading" : "How it works",
-    "bookOnline" : "Book Online",
-    "bookOnlineSubText":"Select a test or package and book appointment on Apollo 247",
-    "hcSample":"Home Sample Collection",
+    "certificateText": "Certified safety and quality fullfiled by Apollo Diagnostics.",
+    "stepsToBookHeading": "How it works",
+    "bookOnline": "Book Online",
+    "bookOnlineSubText": "Select a test or package and book appointment on Apollo 247",
+    "hcSample": "Home Sample Collection",
     "hcSampleSubText": "Certified Phlebotomist visits your home for sample collection at selected slot time",
-    "fastReport":"Fast & Accurate Reports",
+    "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
-    "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability"
+    "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
+    "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date."
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -495,7 +511,8 @@
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [{
+    "tabs": [
+      {
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -540,7 +557,8 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [{
+  "muiltdosages": [
+    {
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -661,9 +679,11 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [{
+      "QUESTIONAIRE": [
+        {
           "QUESTION": "Q1. Which type of diabetes are you living with?",
-          "OPTIONS": [{
+          "OPTIONS": [
+            {
               "key": "Pre-Diabetes",
               "value": "Pre-Diabetes"
             },
@@ -683,7 +703,8 @@
         },
         {
           "QUESTION": "Q2. For how many years have you lived with diabetes?",
-          "OPTIONS": [{
+          "OPTIONS": [
+            {
               "key": "lessThan2Years",
               "value": "Less than 2 years"
             },
@@ -806,57 +827,58 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
     ],
-    "FAQ": [{
-        "question": "What is the Apollo 24|7 CIRCLE Membership program?",
-        "answer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
+    "FAQ": [
+      {
+        "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
+        "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
       {
-        "question": "Sounds good. Tell me more about the plans?",
-        "answer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
+        "faqQuestion": "Sounds good. Tell me more about the plans?",
+        "faqAnswer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
       },
       {
-        "question": "How Do I Sign Up for a Circle Membership?",
-        "answer": "It’s simple! If you’re a part of Apollo 24|7 already, you can click on the link above and sign up. If you’re new to Apollo 24|7, download the app today and get started."
+        "faqQuestion": "How Do I Sign Up for a Circle Membership?",
+        "faqAnswer": "It’s simple! If you’re a part of Apollo 24|7 already, you can click on the link above and sign up. If you’re new to Apollo 24|7, download the app today and get started."
       },
       {
-        "question": "Is annual membership better than the monthly membership?",
-        "answer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!"
+        "faqQuestion": "Is annual membership better than the monthly membership?",
+        "faqAnswer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!"
       },
       {
-        "question": "Can I buy Circle Membership using my health credits?",
-        "answer": "Yes, you can! If you have Health Credits that equal the price of the membership. If not, you can always pay via our easy payment methods."
+        "faqQuestion": "Can I buy Circle Membership using my health credits?",
+        "faqAnswer": "Yes, you can! If you have Health Credits that equal the price of the membership. If not, you can always pay via our easy payment methods."
       },
       {
-        "question": "Where will I get the Circle cashback?",
-        "answer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
+        "faqQuestion": "Where will I get the Circle cashback?",
+        "faqAnswer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
       },
       {
-        "question": "How can I use Circle cashback?",
-        "answer": "You can use your Circle cashback as Health Credits to buy medicines and Apollo branded products on Apollo 24|7"
+        "faqQuestion": "How can I use Circle cashback?",
+        "faqAnswer": "You can use your Circle cashback as Health Credits to buy medicines and Apollo branded products on Apollo 24|7"
       },
       {
-        "question": "Can I cancel Circle membership after purchasing it?",
-        "answer": "Yes, but we do recommend retaining it to continue enjoying its privileges and benefits."
+        "faqQuestion": "Can I cancel Circle membership after purchasing it?",
+        "faqAnswer": "Circle membership is non-refundable, however you can contact us using the Need Help section in My Account and we will try our best to help you out."
       },
       {
-        "question": "Can the offers change after I buy the membership?",
-        "answer": "Yes, it’s possible but we will always aim to upgrade benefits so that you get the best out of your Circle membership"
+        "faqQuestion": "Can the offers change after I buy the membership?",
+        "faqAnswer": "Yes, it’s possible but we will always aim to upgrade benefits so that you get the best out of your Circle membership"
       },
       {
-        "question": "What does Circle Cashback mean? Is it different from One Apollo Cashback?",
-        "answer": "Every time you make a transaction through Circle, you will be rewarded with Circle Cashback that you can use to purchase medicines and Apollo-branded products. It’s the same as OneApollo Cashback."
+        "faqQuestion": "What does Circle Cashback mean? Is it different from One Apollo Cashback?",
+        "faqAnswer": "Every time you make a transaction through Circle, you will be rewarded with Circle Cashback that you can use to purchase medicines and Apollo-branded products. It’s the same as OneApollo Cashback."
       },
       {
-        "question": "Can Circle cashback be used to pay for a Virtual Consultation?",
-        "answer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
+        "faqQuestion": "Can Circle cashback be used to pay for a Virtual Consultation?",
+        "faqAnswer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
       },
       {
-        "question": "What is URLife Program offering?",
-        "answer": "The URLife Program will be available on Circle soon. Stay tuned!"
+        "faqQuestion": "What is URLife Program offering?",
+        "faqAnswer": "The URLife Program will be available on Circle soon. Stay tuned!"
       },
       {
-        "question": "Will some of these features be part of the Apollo Hospital experience as well?",
-        "answer": "Not as of now, but we are working towards it so you get the best out of Circle"
+        "faqQuestion": "Will some of these features be part of the Apollo Hospital experience as well?",
+        "faqAnswer": "Not as of now, but we are working towards it so you get the best out of Circle"
       }
     ],
     "video_links": [
@@ -895,12 +917,20 @@
     "MARKER_TEXT": "MOVE MAP TO ADJUST",
     "HELP_US_LOCATE_TEXT": "Help us locate your address"
   },
-  "accessLocationPopUp":{
-    "chooseFromAddressText":"Choose from saved addresses",
-    "headerMessage":"Select delivery location",
-    "currentLocationText":"Use my current location",
-    "defaultPincodeText" : "Enter Delivery Pincode",
-    "testPincodeText" : "Enter pincode here",
-    "addNewAddressText":"Add New Address"
-  }
+  "accessLocationPopUp": {
+    "chooseFromAddressText": "Choose from saved addresses",
+    "headerMessage": "Select delivery location",
+    "currentLocationText": "Use my current location",
+    "defaultPincodeText": "Enter Delivery Pincode",
+    "testPincodeText": "Enter pincode here",
+    "addNewAddressText": "Add New Address"
+  },
+  "aboutApolloList": [
+    { "title": "About Us", "url": "https://www.apollo247.com/aboutUs?isMobile=true" },
+    { "title": "Contact Us", "url": "https://www.apollo247.com/contact?isMobile=true" },
+    { "title": "FAQs", "url": "https://www.apollo247.com/faq?isMobile=true" },
+    { "title": "Terms and Conditions", "url": "https://www.apollo247.com/terms?isMobile=true" },
+    { "title": "Returns Policy", "url": "https://www.apollo247.com/returns?isMobile=true" },
+    { "title": "Privacy Policy", "url": "https://www.apollo247.com/privacy?isMobile=true" }
+  ]
 }

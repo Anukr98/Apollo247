@@ -8,6 +8,12 @@ import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonD
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
+type PrescriptionOptions =
+  | 'Prescription Upload'
+  | 'Prescription Later'
+  | 'Virtual Consult'
+  | 'Not Applicable';
+type SiteType = 'Hub' | 'LVDC' | 'CVDC';
 
 export enum ProductPageViewedSource {
   NOTIFICATION = 'notification',
@@ -134,27 +140,28 @@ export enum WebEngageEventName {
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
   READ_ARTICLES = 'Read Articles',
-  HDFC_HEALTHY_LIFE = 'HDFC HealthyLife',
+  HDFC_HEALTHY_LIFE = 'Explore HDFC Tile Clicked on Homepage',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
+  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
-  DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
-  DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
   DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
+  DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
+  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
+
+  DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
 
@@ -224,13 +231,14 @@ export enum WebEngageEventName {
   PHR_USER_DELINKING = 'PHR User DeLinking -app',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
-  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR No. of users clicked on records in {0} - app',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}-app',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
   COMPLETED_AUTOMATED_QUESTIONS = 'Completed Automated Questions',
   JD_COMPLETED = 'JD Completed',
+  CHAT_WITH_US = 'Chat with us',
   PRESCRIPTION_RECEIVED = 'Prescription Received',
   SD_CONSULTATION_STARTED = 'SD Consultation Started',
   SD_VIDEO_CALL_STARTED = 'SD Video call started',
@@ -663,7 +671,18 @@ export interface WebEngageEvents {
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
   [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
-  [WebEngageEventName.HDFC_HEALTHY_LIFE]: { clicked: true };
+  [WebEngageEventName.HDFC_HEALTHY_LIFE]: {
+    HDFCMembershipState: 'Active' | 'Inactive';
+    HDFCMembershipLevel: HdfcPlan;
+    Circle_Member: 'Yes' | 'No';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
@@ -898,6 +917,12 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
+    'Split Cart'?: YesOrNo;
+    'Prescription Option selected'?: PrescriptionOptions;
+    Shipment_1_Value?: number; // amount after discount
+    Shipment_2_Value?: number;
+    Shipment_1_Items?: number; // number of items
+    Shipment_2_Items?: number;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -982,6 +1007,8 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
     User_Type?: PharmaUserStatus;
+    'Split Cart'?: YesOrNo;
+    'Prescription Option selected'?: PrescriptionOptions;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1483,6 +1510,15 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
+    'Split Cart': YesOrNo;
+    Shipment_1_TAT?: Date;
+    Shipment_2_TAT?: Date;
+    Shipment_1_Value?: number; // amount after discount
+    Shipment_2_Value?: number;
+    Shipment_1_Items?: number; // number of items
+    Shipment_2_Items?: number;
+    Shipment_1_Site_Type?: SiteType;
+    Shipment_2_Site_Type?: SiteType;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {

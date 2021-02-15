@@ -297,9 +297,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   /** added so that if phramacy code change, then this also changes. */
   useEffect(() => {
-    setDiagnosticLocation!(pharmacyLocation!);
-    checkIsPinCodeServiceable(pharmacyLocation?.pincode!, 'manual');
-  }, [pharmacyLocation]);
+    setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
+    checkIsPinCodeServiceable(
+      !!pharmacyLocation ? pharmacyLocation?.pincode! : locationDetails?.pincode!,
+      'manual',
+      'initialPincode'
+    );
+  }, [pharmacyLocation]); //removed location details
 
   /**
    * fetch widgets
@@ -392,24 +396,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
-    const itemIds = widgetsData?.map((item: any) =>
+    //filter the items.
+    const filterWidgets = widgetsData?.filter(
+      (item: any) => !!item?.diagnosticWidgetData && item?.diagnosticWidgetData?.length > 0
+    );
+    const itemIds = filterWidgets?.map((item: any) =>
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
     //restriction less than 12.
     const res = Promise.all(
-      itemIds?.map((item: any) =>
-        fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
-      )
+      !!itemIds &&
+        itemIds?.length > 0 &&
+        itemIds?.map((item: any) =>
+          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+        )
     );
 
     const response = (await res)?.map((item: any) =>
       g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
     );
-    let newWidgetsData = [...widgetsData];
+    let newWidgetsData = [...filterWidgets];
 
-    for (let i = 0; i < widgetsData?.length; i++) {
-      for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
-        const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
+    for (let i = 0; i < filterWidgets?.length; i++) {
+      for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+        const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
           (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
         );
         if (findIndex !== -1) {
@@ -488,7 +498,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
-          checkIsPinCodeServiceable(deliveryAddress?.zipcode!);
+          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
           setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
           return;
         }
@@ -504,7 +514,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
         setDeliveryAddressId!(deliveryAddress?.id);
-        checkIsPinCodeServiceable(deliveryAddress?.zipcode!);
+        checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
         setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
       } else {
         checkLocation(addressList);
@@ -592,7 +602,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         response && setDiagnosticLocation!(response);
         response && !locationDetails && setLocationDetails!(response);
         setDeliveryAddressId!('');
-        checkIsPinCodeServiceable(response.pincode, 'Auto-select');
+        checkIsPinCodeServiceable(response.pincode, 'Auto-select', 'autoDetect');
       })
       .catch((e) => {
         setLoadingContext!(false);
@@ -611,9 +621,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   /**
    * check for the pincode serviceability
    */
-  const checkIsPinCodeServiceable = async (pincode: string, mode?: string) => {
+  const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
+      console.log({ pincode });
+      console.log({ comingFrom });
       setLoadingContext!(true);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
@@ -995,7 +1007,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
 
-      checkIsPinCodeServiceable(address?.zipcode!);
+      checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
       setLoadingContext!(false);
     } catch (error) {
       setLoadingContext!(false);
@@ -1008,11 +1020,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
     }
   }
-  function isunDismissable() {
-    return !defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation
-      ? true
-      : false;
-  }
 
   const checkLocation = (addresses: addressListType) => {
     !defaultAddress &&
@@ -1023,8 +1030,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
   const showAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
     return showAphAlert!({
-      unDismissable: isunDismissable(),
+      // unDismissable: isunDismissable(),
       removeTopIcon: true,
+      onPressOutside: () => {
+        hideAphAlert!();
+        //if this needs to be done, if location permission is denied or anywhere.
+        if (!defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation) {
+          checkIsPinCodeServiceable('500034', undefined, 'noLocation');
+        }
+      },
       children: !pincodeInput ? (
         <AccessLocation
           addresses={addressList}
@@ -1061,7 +1075,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           onPressApply={(pincode) => {
             if (pincode?.length == 6) {
               hideAphAlert!();
-              checkIsPinCodeServiceable(pincode, 'Manually');
+              checkIsPinCodeServiceable(pincode, 'Manually', 'pincodeManualApply');
             }
           }}
           onPressBack={() => showAccessLocationPopup(addressList, false)}
@@ -1482,7 +1496,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderBookingStepsModal = () => {
     const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 1.7 : 1.5;
     return showAphAlert!({
-      unDismissable: isunDismissable(),
+      unDismissable: false,
       removeTopIcon: true,
       children: (
         <View

@@ -224,6 +224,9 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         responseMessage
         bankTxnId
         orderId
+        appointment{
+         id
+        }
       }
     }
   }
@@ -1918,6 +1921,20 @@ export const SAVE_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
+  mutation saveMedicineOrderV2($medicineOrderInput: SaveMedicineOrderV2Input!) {
+    saveMedicineOrderV2(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      transactionId
+      orders {
+        id
+        orderAutoId
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
     SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
@@ -1925,6 +1942,17 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
       errorMessage
       # orderId
       # orderAutoId
+    }
+  }
+`;
+
+export const SAVE_MEDICINE_ORDER_PAYMENT_V2 = gql`
+  mutation saveMedicineOrderPaymentMqV2($medicinePaymentMqInput: MedicinePaymentMqV2Input!) {
+    saveMedicineOrderPaymentMqV2(medicinePaymentMqInput: $medicinePaymentMqInput) {
+      errorCode
+      errorMessage
+      paymentOrderId
+      orderStatus
     }
   }
 `;
@@ -2060,6 +2088,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           packageName
           hideStatus
           statusMessage
+          statusDate
         }
         diagnosticOrderLineItems {
           id
@@ -2177,6 +2206,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         createdDate
         collectionCharges
         slotDateTimeInUTC
+        paymentType
         diagnosticOrderLineItems {
           id
           itemId
@@ -3496,6 +3526,11 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        patientInfo{
+        firstName
+        lastName
+        gender
+        }
         doctorInfo {
           id
           salutation
@@ -3752,6 +3787,8 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
     saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
       orderId
       displayId
+      status
+      errorMessageToDisplay
     }
   }
 `;
@@ -4035,6 +4072,24 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       paymentStatus
       paymentDateTime
       orderDateTime
+      paymentMode
+      planPurchaseDetails {
+        planPurchased
+        totalCashBack
+        planValidity
+      }
+    }
+  }
+`;
+
+export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
+  query pharmaPaymentStatusV2($transactionId: Int!) {
+    pharmaPaymentStatusV2(transactionId: $transactionId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
       paymentMode
       planPurchaseDetails {
         planPurchased
@@ -4370,6 +4425,7 @@ export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
         banner_template_info
         cta_action
         meta
+        banner_display_type
       }
     }
   }
@@ -4616,6 +4672,14 @@ export const UPDATE_APPOINTMENT = gql`
     updateAppointment(appointmentInput: $appointmentInput) {
       error
       status
+    }
+  }
+`;
+
+export const INITIATE_DOC_ON_CALL = gql`
+  query initiateDocOnCall($mobileNumber: String, $callType: docOnCallType) {
+    initiateDocOnCall(mobileNumber: $mobileNumber, callType: $callType) {
+      success
     }
   }
 `;

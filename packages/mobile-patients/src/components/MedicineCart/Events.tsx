@@ -26,7 +26,10 @@ export function postwebEngageProceedToPayEvent(
   isStorePickup: boolean,
   deliveryTime: string,
   pharmacyCircleEvent: PharmacyCircleEvent,
-  pharmacyUserTypeAttribute: PharmacyUserTypeEvent
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent,
+  isSplitCart?: boolean,
+  splitCartDetails?: any,
+  isPrescriptionUploaded?: boolean
 ) {
   const {
     cartTotal,
@@ -54,8 +57,13 @@ export function postwebEngageProceedToPayEvent(
     'Pin Code': pinCode,
     'Service Area': 'Pharmacy',
     'No. of out of stock items': numberOfOutOfStockItems,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
+    'Prescription Option selected': !!isPrescriptionUploaded
+      ? 'Prescription Upload'
+      : 'Not Applicable',
     ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
+    ...splitCartDetails,
   };
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
