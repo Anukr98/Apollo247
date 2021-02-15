@@ -58,6 +58,11 @@ export enum BOOKING_SOURCE {
   WEB = "WEB",
 }
 
+export enum BannerDisplayType {
+  banner = "banner",
+  card = "card",
+}
+
 export enum BloodGroups {
   ABNegative = "ABNegative",
   ABPositive = "ABPositive",
@@ -1198,6 +1203,8 @@ export interface MedicineCartOMSInput {
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
   prescriptionType?: PrescriptionType | null;
+  tatCity?: string | null;
+  tatHours?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1237,6 +1244,8 @@ export interface MedicineOrderShipmentInput {
   totalCashBack?: number | null;
   storeDistanceKm?: number | null;
   items?: (MedicineCartOMSItem | null)[] | null;
+  tatCity?: string | null;
+  tatHours?: string | null;
 }
 
 export interface MedicinePaymentMqInput {
@@ -1440,6 +1449,7 @@ export interface PaymentReference {
   BANKNAME?: string | null;
   backend_activation?: boolean | null;
   done_by?: string | null;
+  sub_plan_id?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1578,8 +1588,8 @@ export interface SaveMedicineOrderV2Input {
   subscriptionDetails?: SUBSCRIPTION_DETAILS_PHARMA | null;
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
   healthCreditUsed?: number | null;
-  isConsultRequired?: boolean | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
+  prescriptionType?: PrescriptionType | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1613,6 +1623,7 @@ export interface ShopAddress {
 
 export interface SourceMetaData {
   source_identifier?: string | null;
+  sub_plan_id?: string | null;
 }
 
 export interface UpdateAppointmentInput {

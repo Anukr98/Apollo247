@@ -703,6 +703,15 @@ export const timeDiffFromNow = (toDate: string) => {
   }
   return timeDiff;
 };
+export const timeDiffDaysFromNow = (toDate: string) => {
+  let timeDiff: Number = 0;
+  const today: Date = new Date();
+  const date2: Date = new Date(toDate);
+  if (date2 && today) {
+    timeDiff = Math.ceil(((date2 as any) - (today as any)) / (60000*60*24));
+  }
+  return timeDiff;
+};
 
 export function g<T, P1 extends keyof NonNullable<T>>(
   obj: T,

@@ -550,6 +550,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const showBanner = bannerData && bannerData.length ? true : false;
+  const datatoshow= bannerData?.filter(i=>i?.banner_display_type==='banner');
   if (showBanner) {
     return (
       <View style={{ marginTop: 5, flex: 1 }}>
@@ -557,16 +558,16 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         {showCirclePlans && renderCircleSubscriptionPlans()}
         <Carousel
           onSnapToItem={setSlideIndex}
-          data={bannerData}
+          data={datatoshow}
           renderItem={renderHdfcSliderItem}
           sliderWidth={width}
           itemWidth={width}
           loop={true}
           autoplay={true}
         />
-        {bannerData && bannerData.length > 1 ? (
+        {datatoshow && datatoshow.length > 0 ? (
           <View style={styles.sliderDotsContainer}>
-            {bannerData?.map((_, index) =>
+            {datatoshow?.map((_, index) =>
               index == slideIndex ? renderDot(true) : renderDot(false)
             )}
           </View>
