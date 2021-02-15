@@ -524,10 +524,10 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   };
 
   const renderEPrescription = ({ item, index }) => {
-    const isPdf = true;
+    const isPdf = item?.uploadedUrl?.split('.')?.pop() === 'pdf';
     const selected = !!selectedPrescription[item.id];
     const heading = item?.doctorName || '';
-    const dateOfPrescription = item.date;
+    const dateOfPrescription = item?.date;
     return (
       <SelectEprescriptionCard
         selected={selected}
