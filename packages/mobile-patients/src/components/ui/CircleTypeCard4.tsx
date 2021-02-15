@@ -3,10 +3,13 @@ import { View, StyleSheet, Text, TouchableOpacity, Image, } from 'react-native';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { theme } from '../../theme/theme';
+
+
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { WebEngageEvents, WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
