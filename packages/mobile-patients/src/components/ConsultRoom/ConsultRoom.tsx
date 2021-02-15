@@ -2260,40 +2260,6 @@ const fetchHealthCredits = async () => {
   };
 
 
-
-  const datac =[
-                            {
-                              imageUrl: require('../ui/icons/ConsultationSavings.png'),
-                              title: `Savings on${"\n"}Consultation`,
-                              value:"₹341",
-                            },
-                            {
-                              imageUrl: require('../ui/icons/PharmacyDelivery.png'),
-                              title: `Savings on${"\n"}Pharmacy`,
-                              value:"₹444",
-                            },
-                            {
-                              imageUrl: require('../ui/icons/prohealth.png'),
-                              title: `Free${"\n"}Access to`,
-                              value:"ProHealth",
-                            },
-                            {
-                              imageUrl: require('../ui/icons/FreeDelivery.png'),
-                              title: `Free${"\n"}Delivery on`,
-                              value:"Medicines",
-                            },
-                            {
-                              imageUrl: require('../ui/icons/Diagnostics.png'),
-                              title: `Savings on${"\n"}Diagnostics`,
-                              value:"₹666",
-                            },
-                            {
-                              imageUrl: require('../ui/icons/OnlineDoc.png'),
-                              title: `24/7 Doctor${"\n"}on call`,
-                              value:"3/5",
-                            }
-                          ];
-
   const dataBannerCards=()=>{
   const datatoadd=bannerData?.filter((item)=>item?.banner_display_type==='card');
   const datatosend= datatoadd?.map(item=>({
