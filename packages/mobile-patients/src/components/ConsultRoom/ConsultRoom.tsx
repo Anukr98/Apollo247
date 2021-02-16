@@ -1437,6 +1437,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: query,
       });
+
+
+      console.log('csk subs plan',JSON.stringify(res))
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
         /**
@@ -2274,7 +2277,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: item?.banner_template_info?.headerText1,
       value: '',
     }));
-    console.log('csk bd', JSON.stringify(datatosend));
     return datatosend;
   };
 
@@ -2340,7 +2342,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
     const renew=renewNow!=='' && renewNow==='yes'?true:false;
-    const darktheme= expiry>0?false:true;
+    const darktheme= circleStatus === 'disabled'?true:false;
 
     const cardlist = dataBannerCards();
 
@@ -2355,7 +2357,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'savings->',
       circleSavings,
       'hc->',
-      healthCredits
+      healthCredits,
+      circleSubscriptionId,
     );
 
     return (
@@ -2403,7 +2406,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             credits={healthCredits}
             savings={circleSavings}
           />
-        ) : expiry < 0 && circleSavings > 0 ? (
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -2413,7 +2416,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             credits={healthCredits}
             expired={expired}
           />
-        ) : expiry < 0 ? (
+        ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);

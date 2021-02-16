@@ -892,7 +892,8 @@
   "banner_context": {
     "HOME": "HOME",
     "PHARMACY_HOME": "PHARMACY_HOME",
-    "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME"
+    "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME",
+    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS"
   },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",
