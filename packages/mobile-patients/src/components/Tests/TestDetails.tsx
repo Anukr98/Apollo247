@@ -222,7 +222,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     } else {
       setErrorState(true);
     }
-  }, []);
+  }, [itemId]);
 
   const fetchTestDetails_CMS = async (itemId: string | number) => {
     setLoadingContext?.(true);
@@ -378,7 +378,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
-      if (movedFrom == AppRoutes.Tests) {
+      if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
         breadcrumb.push({
           title: 'Order Tests',
           onPress: () => {
