@@ -728,7 +728,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     updateShipments();
-  }, [orders, coupon, cartItems]);
+  }, [orders, coupon, cartItems, deliveryCharges]);
 
   function updateShipments() {
     let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];
@@ -772,18 +772,24 @@ export const ShoppingCartProvider: React.FC = (props) => {
           }
         })
         .filter((item) => item);
-      let estimatedAmount = shipmentTotal - shipmentCouponDiscount - shipmentProductDiscount;
+      let shipmentDeliveryfee = orders?.length ? deliveryCharges / orders?.length : 0;
+      let estimatedAmount =
+        shipmentTotal + shipmentDeliveryfee - shipmentCouponDiscount - shipmentProductDiscount;
       console.log('shipmentTotal >>>', shipmentTotal);
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
       shipment['estimatedAmount'] = estimatedAmount;
-      shipment['deliveryCharges'] = orders?.length ? deliveryCharges / orders?.length : 0;
+      shipment['deliveryCharges'] = shipmentDeliveryfee;
       shipment['orderTat'] = order['tat'];
       shipment['couponDiscount'] = shipmentCouponDiscount;
       shipment['productDiscount'] = shipmentProductDiscount;
       shipment['packagingCharges'] = orders?.length ? packagingCharges / orders?.length : 0;
       shipment['storeDistanceKm'] = order['distance'];
       shipment['items'] = items;
+      shipment['tatCity'] = order['tatCity'];
+      shipment['tatHours'] = order['tatDuration'];
+      shipment['allocationProfileName'] = order['allocationProfileName'];
+      shipment['clusterId'] = order['clusterId'];
       shipmentsArray.push(shipment);
     });
     setShipments(shipmentsArray);

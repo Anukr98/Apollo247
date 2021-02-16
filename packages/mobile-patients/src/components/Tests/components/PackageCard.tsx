@@ -325,10 +325,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
-    if (sourceScreen == AppRoutes.TestDetails) {
-      return;
-    }
-
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!; //more than price (black)
     const circlePrice = pricesForItem?.circlePrice!;

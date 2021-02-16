@@ -1,7 +1,15 @@
 import { IconBase } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { height } = Dimensions.get('window');
@@ -10,20 +18,21 @@ interface Props {
   onPress: () => void;
   title: string;
   iconBase: IconBase;
+  buttonStyle?: StyleProp<ViewStyle>;
+  iconStyle?: StyleProp<ViewStyle>;
+  btnTitleStyle?: StyleProp<ViewStyle>;
 }
 const CovidButton = (props: Props) => (
-  <TouchableOpacity style={styles.buttonStyle} activeOpacity={0.5} onPress={props.onPress}>
+  <TouchableOpacity
+    style={[styles.buttonStyle, props.buttonStyle]}
+    activeOpacity={0.5}
+    onPress={props.onPress}
+  >
     <View style={styles.viewStyle}>
-      <props.iconBase style={{ width: 20, height: 20 }} />
+      <props.iconBase style={[styles.iconStyle, props.iconStyle]} />
     </View>
     <View style={styles.viewSubContainer}>
-      <Text
-        style={
-          props.title === string.common.callDoctor ? styles.smallTextStyle : styles.mediumTextStyle
-        }
-      >
-        {props.title}
-      </Text>
+      <Text style={[styles.titleStyle, props.btnTitleStyle]}>{props.title}</Text>
     </View>
   </TouchableOpacity>
 );
@@ -37,7 +46,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     backgroundColor: '#fff',
     flexDirection: 'row',
-    height: 0.06 * height,
+    height: 43,
     marginTop: 16,
     borderRadius: 10,
   },
@@ -55,11 +64,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
-  smallTextStyle: {
-    ...theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW, 1, 18),
-  },
-  mediumTextStyle: {
+  titleStyle: {
     ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18),
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
   },
 });
 // eslint-disable-next-line import/no-default-export

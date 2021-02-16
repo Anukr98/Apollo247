@@ -1314,6 +1314,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         {!!isWidget1 ? renderWidgets(isWidget1) : null}
+        {renderStepsToBook()}
         {renderCarouselBanners()}
         {!!isWidget2 ? renderWidgets(isWidget2) : null}
         {renderWhyBookUs()}
@@ -1602,7 +1603,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {/* {uploadPrescriptionCTA()} */}
         {renderBanner()}
         {renderYourOrders()}
-        {renderStepsToBook()}
 
         {renderBottomViews()}
       </TouchableOpacity>
