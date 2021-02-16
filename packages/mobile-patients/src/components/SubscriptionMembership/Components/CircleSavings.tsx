@@ -26,7 +26,7 @@ const screenWidth = Dimensions.get('window').width;
 export interface CircleSavingsProps extends NavigationScreenProps {}
 
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
-  const { circleSubscription, totalCircleSavings } = useAppCommonData();
+  const { circleSubscription, totalCircleSavings, healthCredits } = useAppCommonData();
   const [slideIndex, setSlideIndex] = useState(0);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const videoLinks = strings.Circle.video_links;
@@ -37,7 +37,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
   const renderCircleExpiryBanner = () => {
   const expiry=timeDiffDaysFromNow(circleSubscription?.endDate);
-  console.log('csk,csk sub',JSON.stringify(circleSubscription?.planSummary))
+  console.log('csk,csk sub',healthCredits,JSON.stringify(circleSubscription))
 
 
     return (
@@ -93,7 +93,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           membershipPlans={circleSubscription?.planSummary}
           source={'Consult'}
           from={strings.banner_context.MEMBERSHIP_DETAILS}
-          healthCredits={100}
+          healthCredits={healthCredits}
           onPurchaseWithHCCallback={(res: any) => {
             fireCirclePurchaseEvent(
               currentPatient,

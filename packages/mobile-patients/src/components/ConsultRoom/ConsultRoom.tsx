@@ -674,6 +674,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAxdcCode,
     circlePlanId,
     setCirclePlanId,
+    healthCredits,
+    setHealthCredits,
     setHdfcPlanId,
     setCircleStatus,
     circleStatus,
@@ -732,7 +734,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
-  const [healthCredits, setHealthCredits] = useState<number>(-1);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
