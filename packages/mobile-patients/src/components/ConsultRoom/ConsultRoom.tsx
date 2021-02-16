@@ -2317,7 +2317,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: item?.banner_template_info?.headerText1,
       value: '',
     }));
-    console.log('csk bd', JSON.stringify(datatosend));
     return datatosend;
   };
 
@@ -2397,21 +2396,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const darktheme = expiry > 0 ? false : true;
 
     const cardlist = dataBannerCards();
-
-    console.log(
-      'csk value',
-      isCircleMember,
-      circlePlanValidity,
-      circleStatus,
-      expiry,
-      expired,
-      renew,
-      'savings->',
-      circleSavings,
-      'hc->',
-      healthCredits
-    );
-
     return (
       <View style={styles.circleContainer}>
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (

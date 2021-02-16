@@ -786,6 +786,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['packagingCharges'] = orders?.length ? packagingCharges / orders?.length : 0;
       shipment['storeDistanceKm'] = order['distance'];
       shipment['items'] = items;
+      shipment['tatCity'] = order['tatCity'];
+      shipment['tatHours'] = order['tatDuration'];
+      shipment['allocationProfileName'] = order['allocationProfileName'];
+      shipment['clusterId'] = order['clusterId'];
       shipmentsArray.push(shipment);
     });
     setShipments(shipmentsArray);
