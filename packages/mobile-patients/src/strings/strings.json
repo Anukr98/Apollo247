@@ -420,9 +420,6 @@
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "disclaimerText": [
       {
-        "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
-      },
-      {
         "text": "Rescheduling can be done upto 3 times only"
       }
     ],
