@@ -127,7 +127,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
               data: resultForVisitNo,
               labResults: true,
             })
-          : renderReportError(string.diagnostics.unableToOpenReport);
+          : renderReportError(string.diagnostics.responseUnavailableForReport);
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);

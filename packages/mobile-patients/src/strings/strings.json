@@ -418,6 +418,7 @@
     "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
     "specialDiscountText": "TESTS247 coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
+    "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
     "disclaimerText": [
       {
         "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
