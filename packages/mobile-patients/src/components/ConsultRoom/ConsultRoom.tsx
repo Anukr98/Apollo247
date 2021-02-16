@@ -186,6 +186,8 @@ import { CircleTypeCard3 } from '@aph/mobile-patients/src/components/ui/CircleTy
 import { CircleTypeCard4 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard4';
 import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard5';
 import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
+import { Overlay } from 'react-native-elements';
+import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 
 const { Vitals } = NativeModules;
 
@@ -268,10 +270,24 @@ const styles = StyleSheet.create({
     height: 50,
   },
   covidContainer: {
-    flex: 1,
+    marginHorizontal: 20,
+    ...theme.viewStyles.cardViewStyle,
+    marginBottom: 20,
+  },
+  covidTitleContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 12,
+    marginHorizontal: 10,
+  },
+  covidTitle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.GREEN),
+    marginLeft: 10,
+    width: width - 100,
+  },
+  covidIcon: {
+    width: 20,
+    height: 20,
   },
   labelView: {
     position: 'absolute',
@@ -326,7 +342,7 @@ const styles = StyleSheet.create({
   plainLine: {
     width: '100%',
     height: 1,
-    marginVertical: 16,
+    marginVertical: 20,
   },
   badgelabelView: {
     position: 'absolute',
@@ -420,12 +436,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   covidSubContainer: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
-    flex: 0.48,
-    left: 5,
-    right: 5,
-    width: '50%',
+    justifyContent: 'space-between',
   },
   readArticleSubContainer: {
     flex: 1,
@@ -434,6 +447,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 3,
     height: 80,
+    backgroundColor: 'red',
+    width: '100%',
   },
   goToConsultRoom: {
     height: 60,
@@ -558,6 +573,38 @@ const styles = StyleSheet.create({
     top: 33,
   },
   circleButtonImage: { width: 7, height: 12 },
+  covidBtn: {
+    height: 38,
+    width: width / 2 - 35,
+    marginLeft: 10,
+    marginTop: 10,
+  },
+  activeAppointmentsContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  covidIconStyle: {
+    marginLeft: 10,
+  },
+  covidBtnTitle: {
+    ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
+    marginLeft: 8,
+    width: width / 2 - 80,
+  },
+  overlayStyle: {
+    width: width,
+    height: 'auto',
+    padding: 0,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
+  },
 });
 
 type menuOptions = {
@@ -691,6 +738,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
+  const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
 
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
@@ -1043,6 +1091,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   // Call an apollo doctor logic handler
   const initiateCallDoctor = (mobileNumber: string) => {
+    setLoading?.(true);
     client
       .query<initiateDocOnCall, initiateDocOnCallVariables>({
         query: INITIATE_DOC_ON_CALL,
@@ -1053,11 +1102,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
+        setLoading?.(false);
         response?.data?.initiateDocOnCall?.success
           ? Alert.alert('You will be connected to the doctor shortly')
           : handleGraphQlError(response, 'Error while connecting to the Doctor, Please try again');
       })
       .catch((error) => {
+        setLoading?.(false);
         console.log(error);
         handleGraphQlError(error, 'Error while connecting to the Doctor, Please try again');
       });
@@ -1430,7 +1481,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
-        status: ['active','deferred_active','deferred_inactive','disabled'],
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
@@ -2141,15 +2192,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{
-            marginTop: 20,
-            marginBottom: 32,
-            shadowColor: '#4c808080',
-            shadowOffset: { width: 0, height: 5 },
-            shadowOpacity: 0.4,
-            shadowRadius: 5,
-            elevation: 5,
-          }}
+          container={styles.activeAppointmentsContainer}
           title={'Active Appointments'}
           leftIcon={renderListCount(currentAppointments)}
           onPress={() => {
@@ -2278,19 +2321,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return datatosend;
   };
 
-  const renderCircleCards = (item,darktheme) =>
-  {
-  return (
-  <View style={styles.circleCardsContainer}>
-  <TouchableOpacity activeOpacity={1} onPress={()=>console.log('flat hi')}>
-         <View style={darktheme?([styles.circleCards,{borderColor:'#666666'}]):(styles.circleCards)}>
-
-         <View style={styles.circleCardsTexts}>
-
-           <Text style={darktheme?({...theme.viewStyles.text('L', 12, '#666666', 0.6, 16)}):
-           ({...theme.viewStyles.text('L', 12, '#02475B', 1, 16)})}>{item?.title}</Text>
-           <Text style={{...theme.viewStyles.text('M', 16, '#02475B', 1, 18)}}>{item?.value}</Text>
-         </View>
+  const renderCircleCards = (item, darktheme) => {
+    return (
+      <View style={styles.circleCardsContainer}>
+        <TouchableOpacity activeOpacity={1}>
+          <View
+            style={
+              darktheme ? [styles.circleCards, { borderColor: '#666666' }] : styles.circleCards
+            }
+          >
+            <View style={styles.circleCardsTexts}>
+              <Text
+                style={
+                  darktheme
+                    ? { ...theme.viewStyles.text('L', 12, '#666666', 0.6, 16) }
+                    : { ...theme.viewStyles.text('L', 12, '#02475B', 1, 16) }
+                }
+              >
+                {item?.title}
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) }}>
+                {item?.value}
+              </Text>
+            </View>
 
             <View style={styles.circleCardsImages}>
               <ImageBackground style={styles.circleCardsImage} source={item?.imageUrl} />
@@ -2326,11 +2379,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderCircle = () => {
-
-    const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
-    const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
-    const renew=renewNow!=='' && renewNow==='yes'?true:false;
-    const darktheme= expiry>0?false:true;
+    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
+    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
+    const darktheme = expiry > 0 ? false : true;
 
     const cardlist = dataBannerCards();
 
@@ -2431,12 +2485,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               />
             </View>
 
-        <FlatList
-                horizontal={true}
-                data={cardlist}
-                renderItem={({item}) =>renderCircleCards(item,darktheme)}
-                keyExtractor={(item, index) => index.toString()+"circle"}
-        />
+            <FlatList
+              horizontal={true}
+              data={cardlist}
+              renderItem={({ item }) => renderCircleCards(item, darktheme)}
+              keyExtractor={(item, index) => index.toString() + 'circle'}
+            />
 
             <View style={styles.circleButtonRight}>
               <ImageBackground
@@ -2526,7 +2580,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
           {renderContent(string.common.healthBlog, string.common.healthBlogDescription)}
-          {renderContent(string.common.covid19VaccineInfo, string.common.covidDescription)}
           {renderCovidHelpButtons()}
         </View>
       </View>
@@ -2535,15 +2588,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   // Read Article Container Styling
   const renderReadArticleContent = () => {
     return (
-      <View style={styles.readArticleStyle}>
-        <View style={styles.readArticleSubContainer}>
-          <CovidButton
-            iconBase={CovidOrange}
-            title={string.common.readLatestArticles}
-            onPress={() => onPressReadArticles()}
-          />
-        </View>
-      </View>
+      <CovidButton
+        iconBase={LatestArticle}
+        title={string.common.readLatestArticles}
+        onPress={() => onPressReadArticles()}
+      />
     );
   };
 
@@ -2551,26 +2600,42 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderCovidContainer = () => {
     return (
       <View style={styles.covidContainer}>
-        <View style={styles.covidSubContainer}>
-          <CovidButton
-            iconBase={FaqsArticles}
-            title={string.common.faqsArticles}
-            onPress={() => onPressLearnAboutCovid()}
-          />
-          <CovidButton
-            iconBase={ChatBot}
-            title={'Chat with us'}
-            onPress={() => onPressChatWithUS()}
-          />
+        <View style={styles.covidTitleContainer}>
+          <CovidOrange style={styles.covidIcon} />
+          <Text style={styles.covidTitle}>For COVID-19 Vaccination related queries</Text>
         </View>
         <View style={styles.covidSubContainer}>
           <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={styles.covidBtn}
+            btnTitleStyle={styles.covidBtnTitle}
+            iconBase={FaqsArticles}
+            title={string.common.faqsArticles}
+            onPress={() => onPressFAQ()}
+          />
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
+            btnTitleStyle={styles.covidBtnTitle}
             iconBase={PhoneDoctor}
             title={string.common.callDoctor}
             onPress={() => onPressCallDoctor()}
           />
+        </View>
+        <View style={[styles.covidSubContainer, { marginBottom: 15 }]}>
           <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={styles.covidBtn}
+            btnTitleStyle={styles.covidBtnTitle}
+            iconBase={ChatBot}
+            title={string.common.chatWithUs}
+            onPress={() => onPressChatWithUS()}
+          />
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
             iconBase={VaccineTracker}
+            btnTitleStyle={styles.covidBtnTitle}
             title={string.common.covidVaccineTracker}
             onPress={() => onPressVaccineTracker()}
           />
@@ -2586,7 +2651,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18), marginTop: 16 }}>
           {description}
         </Text>
-        {title === string.common.healthBlog ? renderReadArticleContent() : renderCovidContainer()}
+        {renderReadArticleContent()}
         {renderDashedLine()}
       </View>
     );
@@ -2597,7 +2662,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressChatWithUS = () => {
-    postHomeWEGEvent(WebEngageEventName.CHAT_WITH_US);
+    postHomeWEGEvent(WebEngageEventName.VACCINATION_CHAT_WITH_US);
     try {
       const openUrl = AppConfig.Configuration.CHAT_WITH_US;
       props.navigation.navigate(AppRoutes.CovidScan, {
@@ -2607,12 +2672,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressCallDoctor = async () => {
-    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    if (storedPhoneNumber) {
-      initiateCallDoctor(storedPhoneNumber);
-    } else {
-      Alert.alert('Please try again later');
-    }
+    postHomeWEGEvent(WebEngageEventName.VACCINATION_CALL_A_DOCTOR_CLICKED);
+    setShowHdfcConnectPopup(true);
   };
 
   const renderCovidHelpButtons = () => {
@@ -2667,7 +2728,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressVaccineTracker = () => {
-    postHomeWEGEvent(WebEngageEventName.COVID_VACCINE_TRACKER);
+    postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
     try {
       const userMobNo = g(currentPatient, 'mobileNumber');
       const openUrl = `${AppConfig.Configuration.COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
@@ -2677,19 +2738,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {}
   };
 
-  const onPressLearnAboutCovid = async () => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
-    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL.concat(
-      '&utm_token=',
-      currentDeviceToken,
-      '&utm_mobile_number=',
-      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
-    );
-
-    postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
+  const onPressFAQ = async () => {
+    postHomeWEGEvent(WebEngageEventName.FAQs_ARTICLES_CLICKED);
     props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: covidUrlWithPrm,
+      covidUrl: AppConfig.Configuration.COVID_UPDATES,
     });
   };
 
@@ -2763,59 +2815,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const renderCovidScanBanner = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={() => {
-          {
-            props.navigation.navigate(AppRoutes.CovidScan);
-          }
-        }}
-        style={{
-          height: 0.06 * height,
-          marginHorizontal: 20,
-          marginTop: 16,
-          borderRadius: 10,
-          flex: 1,
-          flexDirection: 'row',
-          backgroundColor: '#02475b',
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Scan style={{ height: 28, width: 21 }} />
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
-            {AppConfig.Configuration.HOME_SCREEN_COVIDSCAN_BANNER_TEXT}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
       <View style={[styles.labelView, containerStyle]}>
         <Text style={styles.labelText}>{count}</Text>
       </View>
     );
+  };
+
+  const handleProceedToConnectCall = async () => {
+    postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED);
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    if (storedPhoneNumber) {
+      initiateCallDoctor(storedPhoneNumber);
+    } else {
+      Alert.alert('Please try again later');
+    }
   };
 
   const renderTopIcons = () => {
@@ -2914,22 +2929,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {showCirclePlans && renderCircleSubscriptionPlans()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderCovidContainer()}</View>
               {renderCovidMainView()}
-              {/* {renderCovidHeader()}
-              {renderCovidCardView()} 
-              {renderCovidScanBanner()}
-              {renderEmergencyCallBanner()}*/}
             </View>
           </View>
-          {/* <View style={{ backgroundColor: '#f0f1ec' }}>
-            <NeedHelpAssistant
-              containerStyle={{ marginTop: 16, marginBottom: 32 }}
-              navigation={props.navigation}
-              onNeedHelpPress={() => {
-                postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');
-              }}
-            />
-          </View> */}
         </ScrollView>
       </SafeAreaView>
       {renderBottomTabBar()}
@@ -2973,6 +2976,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       )}
       <NotificationListener navigation={props.navigation} />
+      <Overlay
+        isVisible={showHdfcConnectPopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
+        overlayStyle={styles.overlayStyle}
+        onRequestClose={() => setShowHdfcConnectPopup(false)}
+      >
+        <HdfcConnectPopup
+          onClose={() => setShowHdfcConnectPopup(false)}
+          handleProceedToConnect={() => handleProceedToConnectCall()}
+        />
+      </Overlay>
     </View>
   );
 };

@@ -315,7 +315,7 @@ export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
 );
 
 export const ArrowRight: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')}/>
+  <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
 );
 
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (
@@ -1484,19 +1484,19 @@ export const CovidOrange: React.FC<IconProps> = (props) => (
 
 export const FaqsArticles: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/faq.png')} />
-)
+);
 
 export const VaccineTracker: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/vaccine-tracker.png')} />
-)
+  <IconBase size="md" {...props} source={require('./icons/vaccineTracker.png')} />
+);
 
 export const ChatBot: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/chatWithUs.png')} />
-)
+);
 
 export const PhoneDoctor: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/phone-doctor.png')} />
-)
+  <IconBase size="md" {...props} source={require('./icons/phoneDoctor.png')} />
+);
 
 export const DashedLine: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
@@ -1701,7 +1701,7 @@ export const HealthyLife: React.FC<IconProps> = (props) => (
 
 export const CallCollapseIcon: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{borderRadius: 20, width: 40, height: 40 }}
+    style={{ borderRadius: 20, width: 40, height: 40 }}
     {...props}
     source={require('./icons/callCollapse.png')}
     resizeMode="contain"

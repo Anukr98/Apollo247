@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.VAPT as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -94,7 +94,7 @@ const appStaticVariables = {
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
   MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
-  CHAT_WITH_US: 'https://www.apollo247.com/chat/chat-bot.html',
+  CHAT_WITH_US: 'https://www.apollo247.com/chat/chat-bot-vaccine.html',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
@@ -118,6 +118,7 @@ const appStaticVariables = {
   EXPRESS_MAXIMUM_HOURS: 6,
   PACKAGING_CHARGES: 0,
   MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
+  COVID_UPDATES: 'https://www.apollo247.com/blog/coronavirus-updates',
 };
 
 const DEV_top_specialties = [
