@@ -146,7 +146,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         {moment(planValidity).isValid() ? (
           <Text style={styles.description}>
             Valid till:{' '}
-            <Text style={styles.mediumText}>{moment(planValidity).format('D MMMM YYYY')}</Text>
+            <Text style={styles.mediumText}>{moment(planValidity.endDate).format('DD MMMM YYYY')}</Text>
           </Text>
         ) : null}
         {healthCredits && !circlePaymentDone ? (
