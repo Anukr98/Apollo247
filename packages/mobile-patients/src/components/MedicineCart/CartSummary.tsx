@@ -284,7 +284,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           momentTatDate.diff(currentDate, 'h') / 24
         );
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;
+          getShipmentPrice(order?.items) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
         splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
       });
@@ -401,12 +403,24 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       tatType: storeType,
       shopId: shopId,
     });
+    let splitOrderDetails: any = {};
+    if (orders?.length > 1) {
+      orders?.forEach((order: any, index: number) => {
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+      });
+    }
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
-      pharmacyUserTypeAttribute!
+      pharmacyUserTypeAttribute!,
+      orders?.length > 1,
+      splitOrderDetails
     );
   }
 
