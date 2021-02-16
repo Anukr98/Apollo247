@@ -728,7 +728,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     updateShipments();
-  }, [orders, coupon, cartItems]);
+  }, [orders, coupon, cartItems, deliveryCharges]);
 
   function updateShipments() {
     let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];
