@@ -3693,8 +3693,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderAllergyView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Do you have any allergy?', false)}
-        {renderAllergyTopView()}
+        {selectedRecordID ? null : renderListItem('Do you have any allergy?', false)}
+        {selectedRecordID ? null : renderAllergyTopView()}
         {allergyCheckbox ? renderAllergyDetails() : null}
       </View>
     );
@@ -3703,8 +3703,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderMedicationView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Are you taking any medication?', false)}
-        {renderMedicationTopView()}
+        {selectedRecordID ? null : renderListItem('Are you taking any medication?', false)}
+        {selectedRecordID ? null : renderMedicationTopView()}
         {medicationCheckbox ? renderMedicationDetails() : null}
       </View>
     );
@@ -3713,8 +3713,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderHealthRestrictionView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Do you have any health restrictions?', false)}
-        {renderHealthRestrictionTopView()}
+        {selectedRecordID ? null : renderListItem('Do you have any health restrictions?', false)}
+        {selectedRecordID ? null : renderHealthRestrictionTopView()}
         {healthRestrictionCheckbox ? renderHealthRestrictionDetails() : null}
       </View>
     );
@@ -3723,8 +3723,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderMedicalConditionView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Are you suffering from any medical condition?', false)}
-        {renderMedicalConditionTopView()}
+        {selectedRecordID
+          ? null
+          : renderListItem('Are you suffering from any medical condition?', false)}
+        {selectedRecordID ? null : renderMedicalConditionTopView()}
         {medicalConditionCheckbox ? renderMedicalConditionDetails() : null}
       </View>
     );
@@ -3733,8 +3735,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderFamilyHistoryView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Have any family medical history?', false)}
-        {renderFamilyHistoryTopView()}
+        {selectedRecordID ? null : renderListItem('Have any family medical history?', false)}
+        {selectedRecordID ? null : renderFamilyHistoryTopView()}
         {familyHistoryCheckbox ? renderFamilyHistoryDetails() : null}
       </View>
     );
