@@ -2443,6 +2443,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                isRenew:renew,
               });
             }}
             credits={healthCredits}
@@ -2455,6 +2456,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                isRenew: renew,
               });
             }}
             credits={healthCredits}

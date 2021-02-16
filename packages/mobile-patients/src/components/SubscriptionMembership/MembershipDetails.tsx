@@ -191,6 +191,7 @@ export interface MembershipDetailsProps extends NavigationScreenProps {
   membershipType: string;
   isActive: boolean;
   source?: string;
+  isRenew: boolean;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
@@ -1079,7 +1080,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <ScrollView bounces={false}>
         {renderMembershipBanner()}
-        <CircleSavings navigation={props.navigation} />
+        <CircleSavings navigation={props.navigation} isRenew={props.isRenew} />
         <View
           style={{
             backgroundColor: '#FFFFFF',

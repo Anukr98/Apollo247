@@ -108,6 +108,13 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
 
   const renderAskingBeforeUpgradation = () => {
     return (
+      <View>{from===string.banner_context.MEMBERSHIP_DETAILS?
+      <View>
+        <Text style={styles.bigTitle}>Payment Failed!</Text>
+        <Text style={styles.description}>Error While Upgrading your circle membership. Please try again or</Text>
+        <Text style={styles.btnText}>{string.circleDoctors.useAnotherPaymentMethod}</Text>
+      </View>
+      :(
       <View>
         <Text style={styles.bigTitle}>{string.circleDoctors.greatChoice}</Text>
         <Text style={styles.description}>
@@ -135,6 +142,9 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         >
           <Text style={styles.btnText}>{string.circleDoctors.useAnotherPaymentMethod}</Text>
         </TouchableOpacity>
+        </View>
+        )
+        }
       </View>
     );
   };

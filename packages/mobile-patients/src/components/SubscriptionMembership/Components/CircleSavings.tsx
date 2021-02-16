@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
@@ -10,6 +10,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {timeDiffDaysFromNow} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -23,7 +24,9 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const screenWidth = Dimensions.get('window').width;
 
-export interface CircleSavingsProps extends NavigationScreenProps {}
+export interface CircleSavingsProps extends NavigationScreenProps {
+  isRenew: boolean;
+}
 
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const { circleSubscription, totalCircleSavings, healthCredits } = useAppCommonData();
@@ -33,6 +36,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
+  const planValidity = useRef<string>('');
+  const planPurchased = useRef<boolean | undefined>(false);
 
 
   const renderCircleExpiryBanner = () => {
@@ -49,7 +54,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
           </Text>
         </Text>
-          <Button
+          { props.isRenew?
+          (<Button
                                title={`UPGRADE`}
                                style={{width:94,height:32}}
                                onPress={()=>{
@@ -57,6 +63,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
                                console.log('circle upgrade on membership page pressed')}}
                                disabled={false}
                              />
+          ):null
+          }
       </View>
     );
   };
@@ -99,8 +107,9 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
               currentPatient,
               res?.data?.CreateUserSubscription?.response?.end_date
             );
-            planPurchased.current = true;
-            planValidity.current = circleSubscription?.endDate;
+            planPurchased.current = res?.data?.CreateUserSubscription?.response?.status==='PAYMENT_FAILED'?false:true;
+            planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+            console.log('csk data callback',planPurchased,planValidity,JSON.stringify(res))
             setShowCircleActivation(true);
           }}
         />
@@ -111,17 +120,13 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           visible={showCircleActivation}
           closeModal={(planActivated) => {
             setShowCircleActivation(false);
-            if (planActivated) {
-              planActivationCallback && planActivationCallback();
-              // fireHCActivatedEvent(from);
-            }
           }}
-          defaultCirclePlan={defaultCirclePlan}
+          defaultCirclePlan={{}}
           navigation={props.navigation}
           circlePaymentDone={planPurchased.current}
-          circlePlanValidity={planValidity.current || props.circlePlanValidity}
-          from={from}
-          source={source}
+          circlePlanValidity={planValidity.current || circleSubscription?.endDate}
+          source={'Consult'}
+          from={strings.banner_context.MEMBERSHIP_DETAILS}
         />
       );
 
