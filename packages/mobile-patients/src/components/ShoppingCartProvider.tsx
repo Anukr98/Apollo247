@@ -772,12 +772,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
           }
         })
         .filter((item) => item);
-      let estimatedAmount = shipmentTotal - shipmentCouponDiscount - shipmentProductDiscount;
+      let shipmentDeliveryfee = orders?.length ? deliveryCharges / orders?.length : 0;
+      let estimatedAmount =
+        shipmentTotal + shipmentDeliveryfee - shipmentCouponDiscount - shipmentProductDiscount;
       console.log('shipmentTotal >>>', shipmentTotal);
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
       shipment['estimatedAmount'] = estimatedAmount;
-      shipment['deliveryCharges'] = orders?.length ? deliveryCharges / orders?.length : 0;
+      shipment['deliveryCharges'] = shipmentDeliveryfee;
       shipment['orderTat'] = order['tat'];
       shipment['couponDiscount'] = shipmentCouponDiscount;
       shipment['productDiscount'] = shipmentProductDiscount;
