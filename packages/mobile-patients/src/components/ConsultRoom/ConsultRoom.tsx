@@ -2282,7 +2282,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   {
   return (
   <View style={styles.circleCardsContainer}>
-  <TouchableOpacity activeOpacity={1} onPress={()=>console.log('flat hi')}>
+  <TouchableOpacity activeOpacity={1}
+  onPress={()=>{
+  console.log('card clicked')
+  !darktheme?(
+  props.navigation.navigate(AppRoutes.MembershipDetails, {
+                  membershipType: 'CIRCLE PLAN',
+                  isActive: true,
+                })
+  ) :(null)
+  }
+  }>
          <View style={darktheme?([styles.circleCards,{borderColor:'#666666'}]):(styles.circleCards)}>
 
          <View style={styles.circleCardsTexts}>
