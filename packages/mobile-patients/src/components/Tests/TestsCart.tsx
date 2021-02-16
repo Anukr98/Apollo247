@@ -172,12 +172,14 @@ import {
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
+  DiagnosticAddresssSelected,
+  DiagnosticAddToCartClicked,
   DiagnosticAppointmentTimeSlot,
   DiagnosticAreaSelected,
   DiagnosticCartViewed,
   DiagnosticNonServiceableAddressSelected,
-  DiagnosticPaymentInitiated,
   DiagnosticProceedToPay,
+  DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
@@ -290,6 +292,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationForDiagnostics,
     locationDetails,
     diagnosticServiceabilityData,
+    diagnosticLocation,
   } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -465,10 +468,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     DiagnosticAppointmentTimeSlot(selectedAddr, area, timeSlot, diffInDays);
   };
 
-  const postPaymentInitiatedWebengage = () => {
-    DiagnosticPaymentInitiated(grandTotal, 'Diagnostic', 'Diagnostic');
-  };
-
   useEffect(() => {
     onFinishUpload();
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
@@ -588,7 +587,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
+  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
@@ -597,6 +596,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       fetchAreasForAddress(
         addresses?.[selectedAddressIndex]?.id,
         addresses?.[selectedAddressIndex]?.zipcode!
+      );
+      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
+    } else {
+      DiagnosticRemoveFromCartClicked(
+        id,
+        name,
+        diagnosticLocation?.pincode! || locationDetails?.pincode!
       );
     }
   };
@@ -636,6 +642,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 setLoading?.(false);
                 errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
               });
+            DiagnosticAddresssSelected('Existing', 'Yes', pinCodeFromAddress, 'Cart page');
           } else {
             setLoading?.(false);
             showAphAlert!({
@@ -651,6 +658,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 setDeliveryAddressId?.('');
               },
             });
+            DiagnosticAddresssSelected('Existing', 'No', pinCodeFromAddress, 'Cart page');
           }
         })
         .catch((e) => {
@@ -801,10 +809,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         titleStyle={{ marginLeft: 20 }}
         rightComponent={
           <View>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => props.navigation.navigate('TESTS', { focusSearch: true })}
-            >
+            <TouchableOpacity activeOpacity={1} onPress={() => _navigateToHomePage()}>
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -820,6 +825,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       />
     );
   };
+
+  function _navigateToHomePage() {
+    DiagnosticAddToCartClicked();
+    props.navigation.navigate('TESTS', { focusSearch: true });
+  }
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -1107,7 +1117,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
-                cartItems.length == 0 ? setDeliveryAddressId!('') : null;
+                cartItems?.length == 0 ? setDeliveryAddressId!('') : null;
                 onRemoveCartItem(test);
               }}
               onChangeUnit={() => {}}
@@ -2188,14 +2198,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
-  const redirectToPaymentGateway = (orderId: string, paymentId: string) => {
-    props.navigation.navigate(AppRoutes.TestPayment, {
-      orderId,
-      price: grandTotal,
-      paymentId: paymentId,
-    });
-  };
-
   const bookDiagnosticOrder = async () => {
     setshowSpinner(true);
     if (selectedTab == tabs[0].title) {
@@ -2268,7 +2270,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
     };
 
-    postPaymentInitiatedWebengage();
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     saveOrder(orderInfo)
       .then(({ data }) => {
@@ -2363,7 +2364,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       };
 
       console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
-      postPaymentInitiatedWebengage();
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
           // in case duplicate test, price mismatch, address mismatch, slot issue
@@ -2397,11 +2397,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 amount: grandTotal,
               };
               const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
-                'Order ID': orderId,
+                'Order id': orderId,
                 Pincode: parseInt(selectedAddr?.zipcode!),
                 'Patient UHID': g(currentPatient, 'id'),
                 'Total items in cart': cartItems.length,
-                'Order Amount': grandTotal,
+                'Order amount': grandTotal,
                 'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
                 'Appointment time': slotStartTime!,
                 'Item ids': cartItemsWithId,

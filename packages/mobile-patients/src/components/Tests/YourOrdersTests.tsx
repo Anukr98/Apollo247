@@ -97,6 +97,7 @@ import {
   getOrderInternal,
   getOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
+import { DiagnosticRescheduleOrder } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -674,7 +675,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       reason: selectedReasonForReschedule,
       slotId: employeeSlot,
     };
-
+    DiagnosticRescheduleOrder(
+      selectedReasonForReschedule,
+      formatTime,
+      formattedDate,
+      String(selectedOrderId)
+    );
     console.log({ rescheduleDiagnosticsInput });
     rescheduleOrder(rescheduleDiagnosticsInput)
       .then((data) => {

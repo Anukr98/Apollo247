@@ -330,14 +330,96 @@ export function DiagnosticAppointmentTimeSlot(
 }
 
 export function DiagnosticPaymentInitiated(
+  mode: 'Prepaid' | 'Cash',
   grandTotal: number,
   serviceArea: 'Diagnostic' | 'Pharmacy',
-  LOB: string
+  LOB: string,
+  type: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+    Paymentmode: mode,
     Amount: grandTotal,
     ServiceArea: serviceArea,
     LOB: LOB,
+    type: type,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+}
+
+export function DiagnosticViewReportClicked() {
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, {});
+}
+
+//to do
+export function DiagnosticAddresssSelected(
+  type: 'New' | 'Existing',
+  serviceable: 'Yes' | 'No',
+  pincode: string | number,
+  source: 'Home page' | 'Cart page'
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE] = {
+    'Selection type': type,
+    Serviceability: serviceable,
+    Pincode: pincode,
+    Source: source,
+  };
+  console.log({ eventAttributes });
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
+}
+
+export function DiagnosticAddToCartClicked() {
+  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_ITEM_ADD_ON_CARTPAGE, {});
+}
+
+export function DiagnosticRemoveFromCartClicked(
+  itemId: string | number,
+  itemName: string,
+  pincode: string | number
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE] = {
+    'Item ID': itemId,
+    'Item name': itemName,
+    Pincode: pincode,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);
+}
+
+export function DiagnosticRescheduleOrder(
+  reason: string,
+  time: string,
+  date: string,
+  orderId: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE] = {
+    Reschedule: reason,
+    'Slot Time': time,
+    'Slot Date': date,
+    'Order id': orderId,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE, eventAttributes);
+}
+
+export function DiagnosticTrackOrderViewed(
+  currentPatient: any,
+  latestStatus: string,
+  orderId: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED] = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Latest Order Status': latestStatus,
+    'Order id': orderId,
+  };
+  console.log({ eventAttributes });
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED, eventAttributes);
+}
+
+export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string, reason: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN] = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Name': g(currentPatient, 'firstName'),
+    Rating: rating,
+    'Thing to Improve selected': reason,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
 }

@@ -76,6 +76,11 @@ import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labRe
 const OTHER_REASON = string.Diagnostics_Feedback_Others;
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import {
+  DiagnosticFeedbackSubmitted,
+  DiagnosticTrackOrderViewed,
+  DiagnosticViewReportClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 
 /**
  * this needs to be removed once hidestatus starts working
@@ -149,6 +154,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
+      let latestStatus = newList?.[newList?.length - 1]?.orderStatus;
+      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId);
+    }
+  }, [selectedTab]);
+
   const { data, loading, refetch } = useQuery<
     getDiagnosticOrderDetails,
     getDiagnosticOrderDetailsVariables
@@ -162,6 +174,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   var orderStatusList: any[] = [];
   var refundArr: any[] = [];
+  var newList: any[] = [];
   const sizeOfIndividualTestStatus = _.size(individualTestStatus);
 
   const createRefundObject = () => {
@@ -392,7 +405,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    const newList = orderStatusList?.[0]?.filter((item: any) =>
+    newList = orderStatusList?.[0]?.filter((item: any) =>
       statusToBeShown?.includes(item?.orderStatus)
     );
     scrollToSlots();
@@ -513,18 +526,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const onPressButton = (buttonTitle: string) => {
+    DiagnosticViewReportClicked();
     onPressViewReport();
   };
 
-  const postRatingGivenWebEngageEvent = (rating: string, reason: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      Rating: rating,
-      'Thing to Imporve selected': reason,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
-  };
+  function postRatingGivenWebEngageEvent(rating: string, reason: string) {
+    DiagnosticFeedbackSubmitted(currentPatient, rating, reason);
+  }
 
   const renderFeedbackPopup = () => {
     return (

@@ -115,6 +115,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { CertifiedCard } from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
 import {
+  DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
   DiagnosticHomePageSearchItem,
@@ -652,6 +653,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticLocationServiceable!(true);
             setServiceabilityMsg('');
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected('Existing', 'Yes', pincode, 'Home page');
           } else {
             obj = {
               cityId: '0',
@@ -665,6 +668,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             renderLocationNotServingPopUpForPincode(pincode);
             setServiceabilityMsg(string.diagnostics.nonServiceablePinCodeMsg);
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, false);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected('Existing', 'No', pincode, 'Home page');
           }
           getHomePageWidgets(obj?.cityId);
           setshowLocationpopup(false);
