@@ -162,6 +162,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       setDefaultAddress(address);
       availabilityTat(address.id);
     } else {
+      props.navigation.goBack();
       setDeliveryAddressId && setDeliveryAddressId('');
       setloading!(false);
       postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
@@ -537,8 +538,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-          {renderHeader()}
           {renderAddress()}
           {renderAmountSection()}
           {renderTatCard()}
