@@ -2537,11 +2537,17 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
   return statusString;
 };
 
-export const getShipmentPrice = (shipmentItems: any) => {
+export const getShipmentPrice = (shipmentItems: any, cartItems: any) => {
   let total = 0;
   if (shipmentItems?.length) {
     shipmentItems?.forEach((order: any) => {
-      total += order?.mrp;
+      let sku = order?.sku;
+      cartItems?.map((item: any) => {
+        if (sku.includes(item?.id)) {
+          const price = item?.price * item?.quantity;
+          total = total + Number(Number(price).toFixed(2));
+        }
+      });
     });
   }
   return total;

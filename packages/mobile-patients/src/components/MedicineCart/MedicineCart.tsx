@@ -493,7 +493,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           momentTatDate.diff(currentDate, 'h') / 24
         );
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) +
+          getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
@@ -868,7 +868,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) +
+          getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
