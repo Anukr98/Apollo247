@@ -2381,6 +2381,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             const orderInput: OrderCreate = {
               orders: orders,
               total_amount: grandTotal,
+              patient_id: currentPatient?.id,
             };
             const response = await createOrderInternal(orderInput);
             if (response?.data?.createOrderInternal?.success) {

@@ -220,6 +220,8 @@ export interface AppCommonDataContextProps {
   setAxdcCode: ((value: string) => void) | null;
   circlePlanId: string;
   setCirclePlanId: ((value: string) => void) | null;
+  healthCredits: number;
+  setHealthCredits: ((value: number) => void) | -1;
   hdfcPlanId: string;
   setHdfcPlanId: ((value: string) => void) | null;
   circleStatus: string;
@@ -299,6 +301,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setAxdcCode: null,
   circlePlanId: '',
   setCirclePlanId: null,
+  healthCredits: -1,
+  setHealthCredits: null,
   hdfcPlanId: '',
   setHdfcPlanId: null,
   circleStatus: '',
@@ -477,6 +481,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
+  const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>('');
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
@@ -596,6 +601,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setAxdcCode,
         circlePlanId,
         setCirclePlanId,
+        healthCredits,
+        setHealthCredits,
         hdfcPlanId,
         setHdfcPlanId,
         circleStatus,

@@ -302,6 +302,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [newAddressAddedHomePage]);
 
+  useEffect(() => {
+    if (newAddressAddedHomePage != '') {
+      checkIsPinCodeServiceable(newAddressAddedHomePage, '', 'newAddress');
+      setNewAddressAddedHomePage?.('');
+    }
+  }, [newAddressAddedHomePage]);
+
   /** added so that if phramacy code change, then this also changes. */
   useEffect(() => {
     setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
@@ -1326,6 +1333,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         {!!isWidget1 ? renderWidgets(isWidget1) : null}
+        {renderStepsToBook()}
         {renderCarouselBanners()}
         {!!isWidget2 ? renderWidgets(isWidget2) : null}
         {renderWhyBookUs()}
@@ -1489,10 +1497,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         onPress={() => {
           renderBookingStepsModal();
         }}
-        container={{
-          marginBottom: 24,
-          marginTop: 20,
-        }}
+        container={styles.stepsToBookContainer}
         title={string.diagnostics.stepsToBook}
         leftIcon={<WorkflowIcon />}
         rightIcon={<ArrowRightYellow style={{ resizeMode: 'contain' }} />}
@@ -1614,7 +1619,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {/* {uploadPrescriptionCTA()} */}
         {renderBanner()}
         {renderYourOrders()}
-        {renderStepsToBook()}
 
         {renderBottomViews()}
       </TouchableOpacity>
@@ -1959,5 +1963,9 @@ const styles = StyleSheet.create({
     marginBottom: '4%',
     marginHorizontal: 20,
     ...theme.viewStyles.text('R', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1, 20),
+  },
+  stepsToBookContainer: {
+    marginBottom: 24,
+    marginTop: 10,
   },
 });

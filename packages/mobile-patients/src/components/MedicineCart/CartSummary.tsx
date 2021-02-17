@@ -141,7 +141,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   useEffect(() => {
     availabilityTat(deliveryAddressId);
-  }, [cartItems]);
+  }, [cartItems, deliveryAddressId]);
 
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
@@ -160,8 +160,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
       setDefaultAddress(address);
-      availabilityTat(address.id);
     } else {
+      props.navigation.goBack();
       setDeliveryAddressId && setDeliveryAddressId('');
       setloading!(false);
       postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
@@ -283,7 +283,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           momentTatDate.diff(currentDate, 'h') / 24
         );
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) + order?.deliveryCharge || 0 + order?.packingCharges || 0;
+          getShipmentPrice(order?.items) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
         splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
       });
@@ -400,12 +402,24 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       tatType: storeType,
       shopId: shopId,
     });
+    let splitOrderDetails: any = {};
+    if (orders?.length > 1) {
+      orders?.forEach((order: any, index: number) => {
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+      });
+    }
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
-      pharmacyUserTypeAttribute!
+      pharmacyUserTypeAttribute!,
+      orders?.length > 1,
+      splitOrderDetails
     );
   }
 
@@ -537,8 +551,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-          {renderHeader()}
           {renderAddress()}
           {renderAmountSection()}
           {renderTatCard()}

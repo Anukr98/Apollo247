@@ -708,7 +708,7 @@ export const timeDiffDaysFromNow = (toDate: string) => {
   const today: Date = new Date();
   const date2: Date = new Date(toDate);
   if (date2 && today) {
-    timeDiff = Math.ceil(((date2 as any) - (today as any)) / (60000*60*24));
+    timeDiff = Math.ceil(((date2 as any) - (today as any)) / (60000 * 60 * 24));
   }
   return timeDiff;
 };
@@ -2465,7 +2465,7 @@ export const takeToHomePage = (props: any) => {
 export const isSmallDevice = width < 370;
 
 //customText needs to be shown for itemId = 8
-export const getTestOrderStatusText = (status: string, customText?:boolean) => {
+export const getTestOrderStatusText = (status: string, customText?: boolean) => {
   let statusString = '';
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
@@ -2480,12 +2480,11 @@ export const getTestOrderStatusText = (status: string, customText?:boolean) => {
       statusString = 'Order initiated';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
-      statusString = 'Order confirmed'
+      statusString = 'Order confirmed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
-      statusString =
-       'Phlebo is on the way'
+      statusString = 'Phlebo is on the way';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
       statusString = 'Sample collected';
@@ -2499,10 +2498,10 @@ export const getTestOrderStatusText = (status: string, customText?:boolean) => {
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
-      statusString = 'Sample submitted'
+      statusString = 'Sample submitted';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
-      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted'
+      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
       statusString = 'Report generated';

@@ -179,6 +179,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen_PrefetchAPIReuqest_catch', error);
     }
+
+    try {
+      AsyncStorage.setItem('APP_OPENED', 'true');
+    } catch (error) {
+      CommonBugFender('SplashScreen_App_opend_error', error);
+    }
+
   }, []);
 
   useEffect(() => {

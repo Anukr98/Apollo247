@@ -82,13 +82,14 @@ const styles = StyleSheet.create({
 
 export interface HdfcConnectPopupProps {
   onClose: () => void;
-  benefitId: string;
-  successCallback: () => void;
-  userSubscriptionId: string;
+  benefitId?: string;
+  successCallback?: () => void;
+  userSubscriptionId?: string;
+  handleProceedToConnect?: () => void;
 }
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
-  const { userSubscriptionId } = props;
+  const { userSubscriptionId, handleProceedToConnect, benefitId, onClose } = props;
   const { currentPatient } = useAllCurrentPatients();
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const { showAphAlert } = useUIElements();
@@ -98,6 +99,11 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
   const client = useApolloClient();
 
   const fireExotelApi = () => {
+    if (!benefitId) {
+      onClose?.();
+      handleProceedToConnect?.();
+      return;
+    }
     setDisableButton(true);
     setLoading(true);
     client

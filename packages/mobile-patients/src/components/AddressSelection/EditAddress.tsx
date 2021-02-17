@@ -235,7 +235,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
     setAddresses: setTestAddresses,
-    newAddressAddedHomePage,
     setNewAddressAddedHomePage,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -445,10 +444,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           } else {
             if (source == 'Tests') {
               setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
-              props.navigation.pop(2, { immediate: true });
-            } else {
-              props.navigation.pop(2, { immediate: true });
             }
+            props.navigation.pop(2, { immediate: true });
           }
         } else {
           setcity(isAddressServiceable?.city || '');

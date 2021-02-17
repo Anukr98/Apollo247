@@ -287,6 +287,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['ePrescriptions']
   >([]);
 
+  const [newAddressAddedHomePage, setNewAddressAddedHomePage] = useState<
+    DiagnosticsCartContextProps['newAddressAddedHomePage']
+  >('');
+
   const [diagnosticClinic, _setDiagnosticClinic] = useState<
     DiagnosticsCartContextProps['diagnosticClinic']
   >(null);
@@ -561,6 +565,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDiagnosticSlot(null);
     setAreaSelected({});
     setDiagnosticAreas([]);
+    setNewAddressAddedHomePage('');
   };
 
   useEffect(() => {

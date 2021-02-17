@@ -153,7 +153,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   //   });
   // };
 
-  const firePurchaseEvent = () => {
+  const firePurchaseEvent = (orderId: string) => {
     let items: any = [];
     cartItems.forEach((item, index) => {
       let itemObj: any = {};
@@ -191,7 +191,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
   };
 
-  const fireOrderEvent = (isSuccess?: boolean) => {
+  const fireOrderEvent = (isSuccess: boolean, orderId: string, orderAutoId: number) => {
     if (checkoutEventAttributes) {
       const paymentEventAttributes = {
         order_Id: orderId,
@@ -203,7 +203,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
       postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
-      firePurchaseEvent();
+      firePurchaseEvent(orderId);
       if (!!isSuccess) {
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
       }
@@ -235,8 +235,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     ) {
       WebViewRef.stopLoading();
       // handleOrderSuccess();
-      // fireOrderEvent(true);
       navigationToPaymentStatus('PAYMENT_SUCCESS');
+      orders?.forEach((order: any) => {
+        fireOrderEvent(true, order?.id!, order?.orderAutoId);
+      });
     } else if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1 &&
@@ -247,8 +249,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       if (!!circleMembershipCharges) {
         navigationToPaymentStatus('PAYMENT_FAILED');
       } else {
-        // fireOrderEvent(false);
         navigationToPaymentStatus('PAYMENT_PENDING');
+        orders?.forEach((order: any) => {
+          fireOrderEvent(false, order?.id!, order?.orderAutoId);
+        });
       }
     }
   };
