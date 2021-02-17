@@ -14,6 +14,7 @@ import {
 } from '../../graphql/types/initiateCallForPartner';
 import { INITIATE_CALL_FOR_PARTNER } from '../../graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   blurView: {
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
     top: Dimensions.get('window').height * 0.1,
   },
   popupView: {
-    width: '90%',
+    width: width - 40,
     height: 'auto',
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -47,11 +48,11 @@ const styles = StyleSheet.create({
   callIcon: {
     resizeMode: 'contain',
     width: 40,
+    alignSelf: 'center',
   },
   stepsContainer: {
     flexDirection: 'column',
     width: '50%',
-    alignItems: 'center',
   },
   lastStepContainer: {
     flexDirection: 'column',
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   cancelButton: {
     marginTop: 20,
@@ -77,6 +78,9 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     alignItems: 'center',
+  },
+  centerIcons: {
+    alignSelf: 'center',
   },
 });
 
@@ -145,7 +149,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
       >
         <View style={styles.containerRow}>
           <View style={styles.stepsContainer}>
-            <CallConnectIcon />
+            <CallConnectIcon style={styles.centerIcons} />
             <Text style={styles.stepsText}>{`Answer the call from 040-482-17258 to connect.`}</Text>
           </View>
           <View style={styles.stepsContainer}>
@@ -153,15 +157,14 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
             <Text style={styles.stepsText}>The same call will connect to the Doctor.</Text>
           </View>
         </View>
-        <View style={[styles.containerRow, { marginTop: 8 }]}>
+        <View style={[styles.containerRow, { marginTop: 8, alignItems: 'flex-end' }]}>
           <View style={styles.stepsContainer}>
             <GroupCallIcon style={styles.callIcon} />
             <Text style={styles.stepsText}>Wait for the Doctor to connect over the call.</Text>
           </View>
           <View style={styles.lastStepContainer}>
-            <Text style={styles.noteText}>*Note :</Text>
-            <Text style={theme.viewStyles.text('M', 12, '#01475B', 1, 20, 0.35)}>
-              Your personal phone number will not be shared.
+            <Text style={styles.stepsText}>
+              *Note: Your personal phone number will not be shared.
             </Text>
           </View>
         </View>
@@ -206,7 +209,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
     <View style={styles.blurView}>
       {loading && <Spinner />}
       <View style={styles.popupContainerView}>
-        <View style={{ width: '5.72%' }} />
+        <View />
         <View style={styles.popupView}>
           <Text style={theme.viewStyles.text('SB', 18, '#01475B')}>Connect to the Doctor</Text>
           <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 20, 0.35)}>
