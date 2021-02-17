@@ -880,7 +880,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <>
         {renderHeadingView(
-          'Genaral Advice',
+          'General Advice',
           <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
         )}
         {caseSheetDetails?.otherInstructions !== null ? (
