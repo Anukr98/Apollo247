@@ -1615,7 +1615,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const diagnosticsSavings = savings?.diagnostics || 0;
       const deliverySavings = savings?.delivery || 0;
       const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
-      setCircleSavings && setCircleSavings(totalSavings);
+      setCircleSavings && setCircleSavings(Math.ceil(totalSavings));
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
       console.log('error', error);
@@ -2435,7 +2435,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       circleSavings,
       'hc->',
       healthCredits,
-      circleSubscriptionId
+      circleSubscriptionId,
     );
 
     return (
