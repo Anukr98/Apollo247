@@ -2402,6 +2402,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           );
           planPurchased.current = true;
           planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+
+            getUserSubscriptionsByStatus();
+            getUserSubscriptionsWithBenefits();
+            circleActivatedRef.current = false;
           setShowCircleActivation(true);
           console.log('csk callback response',JSON.response(res))
         }}
