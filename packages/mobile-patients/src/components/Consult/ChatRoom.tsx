@@ -842,7 +842,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     : '';
 
   const doctorProfileUrl = appointmentData?.doctorInfo?.photoUrl;
-  const showDoctorProfile = !callerVideo;
+  const showDoctorProfile = !subscriberConnected.current || !callerVideo;
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
