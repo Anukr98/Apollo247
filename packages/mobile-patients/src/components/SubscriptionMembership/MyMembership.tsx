@@ -1,9 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, StackActions,NavigationActions, ScrollView } from 'react-navigation';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   EllipseBulletPoint,
   LockIcon,
@@ -32,6 +33,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -45,6 +48,7 @@ import {
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -165,6 +169,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     setHdfcUpgradeUserSubscriptions,
     setHdfcUserSubscriptions,
     setCircleSubscription,
+    isRenew,
+    healthCredits,
   } = useAppCommonData();
   const {
     circleSubscriptionId,
@@ -187,6 +193,10 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const subscription_name = showHdfcSubscriptions ? hdfcUserSubscriptions?.name : '';
   const client = useApolloClient();
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
+  const planValidity = useRef<string>('');
+  const planPurchased = useRef<boolean | undefined>(false);
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -249,6 +259,60 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     }
     return false;
   };
+
+
+
+     const renderCircleSubscriptionPlans = () => {
+          return (
+            <CircleMembershipPlans
+              navigation={props.navigation}
+              isModal={true}
+              closeModal={() => setShowCirclePlans(false)}
+              buyNow={true}
+              membershipPlans={circleSubscription?.planSummary}
+              source={'Consult'}
+              from={strings.banner_context.MEMBERSHIP_DETAILS}
+              healthCredits={healthCredits}
+              onPurchaseWithHCCallback={(res: any) => {
+                fireCirclePurchaseEvent(
+                  currentPatient,
+                  res?.data?.CreateUserSubscription?.response?.end_date
+                );
+                planPurchased.current = res?.data?.CreateUserSubscription?.response?.status==='PAYMENT_FAILED'?false:true;
+                planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+                console.log('csk data callback',planPurchased,planValidity,JSON.stringify(res))
+                setShowCircleActivation(true);
+              }}
+            />
+          );
+        };
+        const renderCircleMembershipActivated = () => (
+            <CircleMembershipActivation
+              visible={showCircleActivation}
+              closeModal={(planActivated) => {props.navigation.dispatch(
+                                                                StackActions.reset({
+                                                                  index: 0,
+                                                                  key: null,
+                                                                  actions: [
+                                                                    NavigationActions.navigate({
+                                                                      routeName: AppRoutes.ConsultRoom,
+                                                                      params: {
+                                                                        skipAutoQuestions: true,
+                                                                      },
+                                                                    }),
+                                                                  ],
+                                                                })
+                                                              );
+                setShowCircleActivation(false);
+              }}
+              defaultCirclePlan={{}}
+              navigation={props.navigation}
+              circlePaymentDone={planPurchased.current}
+              circlePlanValidity={{endDate:planValidity.current}}
+              source={'Consult'}
+              from={strings.banner_context.MEMBERSHIP_DETAILS}
+            />
+          );
 
   const getUserSubscriptionsWithBenefits = () => {
     setshowSpinner(true);
@@ -512,7 +576,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   ) => {
     const isCare = subscriptionName === Circle.planName;
     const buttonText = isCare
-      ? 'GO TO HOMEPAGE'
+      ? isRenew
+      ?'UPGRADE'
+      :'GO TO HOMEPAGE'
       : isCanUpgradeToPlan
       ? 'HOW TO AVAIL'
       : isActive
@@ -561,7 +627,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               postWebEngageEvent(WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED, eventAttributes);
               setUpgradeTransactionValue(transactionValue);
               setShowAvailPopup(true);
-            } else {
+            }else if(isRenew){
+            setShowCirclePlans(true);
+            console.log('upgrade in my membership clicked!',showCirclePlans)
+            }
+            else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
               if (isActive && !isCare) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED] = {
@@ -632,6 +702,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           container={styles.headerContainer}
           onPressLeftIcon={() => handleBack()}
         />
+
+       {showCircleActivation && renderCircleMembershipActivated()}
+       {showCirclePlans && renderCircleSubscriptionPlans()}
         {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
           <ScrollView bounces={false}>
             <View>

@@ -2399,8 +2399,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         from={string.banner_context.HOME}
         healthCredits={healthCredits}
         onPurchaseWithHCCallback={(res: any) => {
-
-  console.log('csk in purchase callback hc')
           fireCirclePurchaseEvent(
             currentPatient,
             res?.data?.CreateUserSubscription?.response?.end_date
@@ -2435,7 +2433,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
     const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
     const renew=renewNow!=='' && renewNow==='yes'?true:false;
-    !renew ? setIsRenew && setIsRenew(true): setIsRenew && setIsRenew(false);
+    renew ? setIsRenew && setIsRenew(true): setIsRenew && setIsRenew(false);
     const darktheme= circleStatus === 'disabled'?true:false;
 
     const cardlist = dataBannerCards();

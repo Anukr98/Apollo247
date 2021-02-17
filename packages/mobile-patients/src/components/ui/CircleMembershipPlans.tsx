@@ -553,6 +553,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ? AppConfig.Configuration.CIRCLE_CONSULT_URL
         : from === string.banner_context.HOME
         ? AppConfig.Configuration.CIRCLE_LANDING_URL
+        : from === string.banner_context.MEMBERSHIP_DETAILS
+        ? AppConfig.Configuration.CIRCLE_LANDING_URL
         : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
         ? AppConfig.Configuration.CIRCLE_TEST_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
@@ -601,7 +603,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const onPurchasePlanThroughHC = async () => {
-  console.log('csk in purchase via hc')
     setLoading && setLoading(true);
     try {
       const res = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
@@ -629,7 +630,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       });
       setLoading && setLoading(false);
 
-  console.log('csk in purchase via hc data',JSON.stringify(res))
       if (res?.data?.CreateUserSubscription?.success) {
         onPurchaseWithHCCallback!(res);
       } else {
