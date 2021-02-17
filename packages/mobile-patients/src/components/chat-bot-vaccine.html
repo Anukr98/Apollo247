@@ -1,0 +1,61 @@
+<html>
+  <body>
+    <script>
+      (function(I, n, f, o, b, i, p) {
+        I[b] =
+          I[b] ||
+          function() {
+            (I[b].q = I[b].q || []).push(arguments);
+          };
+        I[b].t = 1 * new Date();
+        i = n.createElement(f);
+        i.async = 1;
+        i.src = o;
+        p = n.getElementsByTagName(f)[0];
+        p.parentNode.insertBefore(i, p);
+      })(window, document, 'script', 'https://livechat.infobip.com/widget.js', 'liveChat');
+
+      liveChat('init', '6f743e92-3836-4442-838a-2071964c655c');
+    </script>
+    <script>
+      setTimeout(() => {
+        function detectMob() {
+          const toMatch = [
+            /Android/i,
+            /webOS/i,
+            /iPhone/i,
+            /iPad/i,
+            /iPod/i,
+            /BlackBerry/i,
+            /Windows Phone/i,
+          ];
+
+          return toMatch.some((toMatchItem) => {
+            return navigator.userAgent.match(toMatchItem);
+          });
+        }
+        if (detectMob()) {
+          if (document.getElementsByClassName('ib-close-mobile-button').length) {
+            document
+              .getElementsByClassName('ib-close-mobile-button')[0]
+              .addEventListener('click', closeWindow);
+          }
+          function closeWindow() {
+            window.close();
+            window.ReactNativeWebView.postMessage(JSON.stringify('back'));
+          }
+        } else {
+          if (document.getElementById('ib-button-messaging-icon')) {
+            document
+              .getElementById('ib-button-messaging-icon')
+              .addEventListener('click', closeWindow);
+          }
+          function closeWindow() {
+            window.close();
+            window.ReactNativeWebView.postMessage(JSON.stringify('back'));
+          }
+        }
+      }, 2000);
+    </script>
+  </body>
+</html>
