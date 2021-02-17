@@ -240,7 +240,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    // fireOrderSuccessEvent(orderAutoId);
+    fireOrderSuccessEvent(orderAutoId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
@@ -305,7 +305,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const errorPopUp = () => {
-    // fireOrderFailedEvent();
+    fireOrderFailedEvent();
     showAphAlert!({
       title: `Hi ${currentPatient?.firstName || ''}!`,
       description: `Your order failed due to some temporary issue :( Please submit the order again.`,
@@ -323,7 +323,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   const fireOrderSuccessEvent = (newOrderId: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
-      'Payment failed order id': orderId,
+      'Payment failed order id': orders?.[0]?.id,
       'Payment Success Order Id': newOrderId,
       status: true,
     };
@@ -335,7 +335,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   const fireOrderFailedEvent = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
-      'Payment failed order id': orderId,
+      'Payment failed order id': orders?.[0]?.id,
       status: false,
     };
     postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
