@@ -124,7 +124,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           defaultCirclePlan={{}}
           navigation={props.navigation}
           circlePaymentDone={planPurchased.current}
-          circlePlanValidity={planValidity.current || circleSubscription?.endDate}
+          circlePlanValidity={planValidity.current}
           source={'Consult'}
           from={strings.banner_context.MEMBERSHIP_DETAILS}
         />
