@@ -100,6 +100,7 @@ export enum WebEngageEventName {
   SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
   RETURN_REQUEST_START = 'Return Request Start',
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
+  HOME_VIEWED = 'Home page viewed',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',

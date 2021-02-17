@@ -782,7 +782,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     createHyperServiceObject();
+    logHomePageViewed();
   }, []);
+
+  //to be called only when the user lands via app launch
+   const logHomePageViewed = async () => {
+     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
+     if (isAppOpened) {
+       postHomeWEGEvent(WebEngageEventName.HOME_VIEWED);
+     }
+   };
 
   useEffect(() => {
     if (currentPatient?.id) {
@@ -864,6 +873,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
     });
+    
+    try {
+      AsyncStorage.removeItem('APP_OPENED');
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getAppOpenedKeyReadError', error);
+    }
+    
     return () => {
       didBlur && didBlur.remove();
     };
