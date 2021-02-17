@@ -1361,7 +1361,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {
                   ...theme.viewStyles.text(
                     'B',
-                    lengthOfTitle > 20 ? 14 : 16,
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
                     theme.colors.SHERPA_BLUE,
                     1,
                     20
@@ -1421,7 +1421,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {
                   ...theme.viewStyles.text(
                     'B',
-                    lengthOfTitle > 20 ? 14 : 16,
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
                     theme.colors.SHERPA_BLUE,
                     1,
                     20
