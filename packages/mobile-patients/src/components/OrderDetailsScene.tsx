@@ -968,7 +968,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ? `Your order has been picked-up by our courier partner and is in-transit. Shipment AWB number is ${shipmentNumber}.`
             : '',
           () => {},
-          showTracking ? renderTrackOrder : null,
+          null,
+          // showTracking ? renderTrackOrder : null,
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
@@ -1330,18 +1331,31 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
 
     const renderCourierTrackingCta = () => {
-      return (
-        <Button
-          style={styles.trackingOrderCta}
-          onPress={() => {
-            props.navigation.navigate(AppRoutes.CommonWebView, {
-              url: shipmentTrackingUrl,
-              isGoBack: true,
-            });
-          }}
-          title={'TRACK COURIER STATUS'}
-        />
-      );
+      const isDelhiveryOrder =
+        (shipmentTrackingProvider || '').toLowerCase().indexOf('delhivery') > -1;
+      if (!!shipmentTrackingUrl || isDelhiveryOrder) {
+        return (
+          <Button
+            style={styles.trackingOrderCta}
+            onPress={() => {
+              if (!!shipmentTrackingUrl) {
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: shipmentTrackingUrl,
+                  isGoBack: true,
+                });
+              } else if (isDelhiveryOrder) {
+                const shipmentNumber = order?.medicineOrderShipments?.[0]?.trackingNo;
+                const url = AppConfig.Configuration.MED_TRACK_SHIPMENT_URL;
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: url.replace('{{shipmentNumber}}', shipmentNumber),
+                  isGoBack: true,
+                });
+              }
+            }}
+            title={'TRACK COURIER STATUS'}
+          />
+        );
+      }
     };
 
     return (
@@ -1432,8 +1446,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             navigaitonProps={props.navigation}
           />
         )}
-        {orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY &&
-          !!shipmentTrackingUrl &&
+        {(orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
+          orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.SHIPPED) &&
           renderCourierTrackingCta()}
         {isDelivered ? (
           <View
