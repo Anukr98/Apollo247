@@ -864,6 +864,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
     });
+    
+    try {
+      AsyncStorage.removeItem('APP_OPENED');
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getAppOpenedKeyReadError', error);
+    }
+    
     return () => {
       didBlur && didBlur.remove();
     };
