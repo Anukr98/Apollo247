@@ -1446,9 +1446,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             navigaitonProps={props.navigation}
           />
         )}
-        {orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
-          (orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.SHIPPED &&
-            renderCourierTrackingCta())}
+        {(orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
+          orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.SHIPPED) &&
+          renderCourierTrackingCta()}
         {isDelivered ? (
           <View
             style={{
