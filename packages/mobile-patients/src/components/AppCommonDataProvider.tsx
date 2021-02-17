@@ -222,6 +222,8 @@ export interface AppCommonDataContextProps {
   setCirclePlanId: ((value: string) => void) | null;
   healthCredits: number;
   setHealthCredits: ((value: number) => void) | -1;
+  isRenew: boolean;
+  setIsRenew: ((value: boolean) => void) | false;
   hdfcPlanId: string;
   setHdfcPlanId: ((value: string) => void) | null;
   circleStatus: string;
@@ -303,6 +305,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCirclePlanId: null,
   healthCredits: -1,
   setHealthCredits: null,
+  isRenew: false,
+  setIsRenew: null,
   hdfcPlanId: '',
   setHdfcPlanId: null,
   circleStatus: '',
@@ -482,6 +486,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
   const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>('');
+  const [isRenew, setIsRenew] = useState<AppCommonDataContextProps['isRenew']>('');
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
@@ -603,6 +608,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCirclePlanId,
         healthCredits,
         setHealthCredits,
+        isRenew,
+        setIsRenew,
         hdfcPlanId,
         setHdfcPlanId,
         circleStatus,

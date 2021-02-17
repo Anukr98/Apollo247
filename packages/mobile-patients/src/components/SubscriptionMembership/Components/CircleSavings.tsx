@@ -29,7 +29,7 @@ export interface CircleSavingsProps extends NavigationScreenProps {
 }
 
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
-  const { circleSubscription, totalCircleSavings, healthCredits } = useAppCommonData();
+  const { circleSubscription, totalCircleSavings, healthCredits,isRenew } = useAppCommonData();
   const [slideIndex, setSlideIndex] = useState(0);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const videoLinks = strings.Circle.video_links;
@@ -54,7 +54,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
           </Text>
         </Text>
-          { props.isRenew?
+          { isRenew?
           (<Button
                                title={`UPGRADE`}
                                style={{width:94,height:32}}
