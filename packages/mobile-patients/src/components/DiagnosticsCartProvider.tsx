@@ -151,6 +151,9 @@ export interface DiagnosticsCartContextProps {
 
   testDetailsBreadCrumbs: TestBreadcrumbLink[] | undefined;
   setTestDetailsBreadCrumbs: ((items: TestBreadcrumbLink[]) => void) | null;
+
+  newAddressAddedHomePage: string;
+  setNewAddressAddedHomePage: ((value: string) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -231,6 +234,9 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setTestListingBreadCrumbs: null,
   testDetailsBreadCrumbs: [],
   setTestDetailsBreadCrumbs: null,
+
+  newAddressAddedHomePage: '',
+  setNewAddressAddedHomePage: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -280,6 +286,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [ePrescriptions, _setEPrescriptions] = useState<
     DiagnosticsCartContextProps['ePrescriptions']
   >([]);
+
+  const [newAddressAddedHomePage, setNewAddressAddedHomePage] = useState<
+    DiagnosticsCartContextProps['newAddressAddedHomePage']
+  >('');
 
   const [diagnosticClinic, _setDiagnosticClinic] = useState<
     DiagnosticsCartContextProps['diagnosticClinic']
@@ -551,6 +561,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDiagnosticSlot(null);
     setAreaSelected({});
     setDiagnosticAreas([]);
+    setNewAddressAddedHomePage('');
   };
 
   useEffect(() => {
@@ -682,6 +693,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setTestListingBreadCrumbs,
         testDetailsBreadCrumbs,
         setTestDetailsBreadCrumbs,
+
+        newAddressAddedHomePage,
+        setNewAddressAddedHomePage,
       }}
     >
       {props.children}
