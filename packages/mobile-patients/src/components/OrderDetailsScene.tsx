@@ -885,8 +885,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
       orderCancelText?: string
     ) => {
-      const shipmentNumber = order?.medicineOrderShipments?.[0]?.trackingNo;
-      const shipmentProvider = order?.medicineOrderShipments?.[0]?.trackingProvider;
+      const shipment = order?.medicineOrderShipments?.[0];
+      const driverDetails = shipment?.driverDetails;
+      const shipmentNumber = shipment?.trackingNo;
+      const shipmentProvider = shipment?.trackingProvider;
+      const showDriverDetails =
+        shipmentProvider !== 'Delhivery Express' &&
+        driverDetails?.driverName &&
+        driverDetails?.driverPhone;
       const showTracking = !!shipmentNumber && shipmentProvider === 'Delhivery Express';
 
       const renderTrackOrder = (
@@ -971,6 +977,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           null,
           // showTracking ? renderTrackOrder : null,
         ],
+        [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
+          '',
+          showDriverDetails
+            ? `Your order will be delivered soon by our Delivery Associate: ${driverDetails?.driverName}, ${driverDetails?.driverPhone}`
+            : showTracking
+            ? `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`
+            : '',
+        ],
+
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
           `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
@@ -981,10 +996,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
             );
           },
-        ],
-        [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
-          '',
-          `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`,
         ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',
