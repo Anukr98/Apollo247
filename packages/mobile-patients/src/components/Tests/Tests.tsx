@@ -171,6 +171,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     removeCartItem,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
+    newAddressAddedHomePage,
+    setNewAddressAddedHomePage,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -294,6 +296,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //     checkIsPinCodeServiceable(diagnosticPincode);
   //   }
   // }, [diagnosticPincode]);
+
+  useEffect(() => {
+    if (newAddressAddedHomePage != '') {
+      checkIsPinCodeServiceable(newAddressAddedHomePage, '', 'newAddress');
+      setNewAddressAddedHomePage?.('');
+    }
+  }, [newAddressAddedHomePage]);
 
   /** added so that if phramacy code change, then this also changes. */
   useEffect(() => {
@@ -1041,6 +1050,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       children: !pincodeInput ? (
         <AccessLocation
+          source={AppRoutes.Tests}
           addresses={addressList}
           onPressSelectAddress={(address) => {
             setDefaultAddress(address);
