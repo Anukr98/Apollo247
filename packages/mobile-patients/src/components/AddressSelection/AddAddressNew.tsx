@@ -438,9 +438,12 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       setLatitude(region?.latitude);
       setLongitude(region?.longitude);
       //on map drag, hit the google api to get the address from lat-long
-      fetchAdressFromLatLongGoogleApi(region?.latitude, region?.longitude);
+      fetchAdressFromLatLongGoogleApi(
+        region?.latitude + latitudeDelta,
+        region?.longitude + longitudeDelta
+      );
 
-      console.log(region.latitude, region.longitude);
+      console.log(region.latitude + latitudeDelta, region.longitude + longitudeDelta);
     }
 
     if (!isMapDragging && Platform.OS == 'android') {
