@@ -76,6 +76,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   >([]);
   const [refundStatusArr, setRefundStatusArr] = useState<any>(getRefundArray);
 
+  const statusNotToShowOnUi = [
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  ];
+
   const client = useApolloClient();
 
   const error = props.navigation.getParam('error');
@@ -151,6 +156,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         let sortedSelectedObj: any;
         var lengthOfObject = data?.[key]?.length - 1;
         sortedSelectedObj = key != null && data?.[key]?.[lengthOfObject];
+        var previousStatus = key != null && data?.[key]?.[lengthOfObject - 1];
         const getUTCDateTime = orderSelected?.slotDateTimeInUTC;
         const dt = moment(
           getUTCDateTime != null ? getUTCDateTime : orderSelected?.diagnosticDate!
@@ -168,7 +174,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           showDateTime: dt,
           itemId: key,
           currentStatus:
-            refundStatusArr?.length > 0 ? refundStatusArr?.status : sortedSelectedObj?.orderStatus,
+            refundStatusArr?.length > 0
+              ? refundStatusArr?.status
+              : statusNotToShowOnUi.includes(sortedSelectedObj?.orderStatus) && !!previousStatus
+              ? previousStatus?.orderStatus
+              : sortedSelectedObj?.orderStatus,
           packageId: sortedSelectedObj?.packageId,
           itemName: sortedSelectedObj?.itemName,
           packageName: sortedSelectedObj?.packageName,
