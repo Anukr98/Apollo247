@@ -56,7 +56,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
         </Text>
           { isRenew?
           (<Button
-                               title={`RENEW NOW`}
+                               title={`UPGRADE`}
                                style={{width:94,height:32}}
                                onPress={()=>{
                                setShowCirclePlans(true);
