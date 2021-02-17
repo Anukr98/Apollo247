@@ -993,7 +993,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
         [MEDICINE_ORDER_STATUS.RETURN_PICKUP]: [
           '',
-          `Your return has been successfully picked up, we will be processing for a Refund shortly.`,
+          `Your order items have been successfully returned, we will be processing for a refund shortly.`,
         ],
         [MEDICINE_ORDER_STATUS.RETURN_REQUESTED]: [
           '',
