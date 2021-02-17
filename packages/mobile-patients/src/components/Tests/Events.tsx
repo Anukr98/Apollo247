@@ -363,7 +363,6 @@ export function DiagnosticAddresssSelected(
     Pincode: pincode,
     Source: source,
   };
-  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
 }
 
@@ -410,7 +409,6 @@ export function DiagnosticTrackOrderViewed(
     'Latest Order Status': latestStatus,
     'Order id': orderId,
   };
-  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED, eventAttributes);
 }
 

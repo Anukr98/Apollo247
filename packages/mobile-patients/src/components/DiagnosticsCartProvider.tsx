@@ -154,6 +154,8 @@ export interface DiagnosticsCartContextProps {
 
   newAddressAddedHomePage: string;
   setNewAddressAddedHomePage: ((value: string) => void) | null;
+  newAddressAddedCartPage: string;
+  setNewAddressAddedCartPage: ((value: string) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -237,6 +239,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   newAddressAddedHomePage: '',
   setNewAddressAddedHomePage: null,
+  newAddressAddedCartPage: '',
+  setNewAddressAddedCartPage: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -291,6 +295,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['newAddressAddedHomePage']
   >('');
 
+  const [newAddressAddedCartPage, setNewAddressAddedCartPage] = useState<
+    DiagnosticsCartContextProps['newAddressAddedCartPage']
+  >('');
+
   const [diagnosticClinic, _setDiagnosticClinic] = useState<
     DiagnosticsCartContextProps['diagnosticClinic']
   >(null);
@@ -315,10 +323,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [testDetailsBreadCrumbs, setTestDetailsBreadCrumbs] = useState<
     DiagnosticsCartContextProps['testDetailsBreadCrumbs']
   >();
-
-  const [newAddressAddedHomePage, setNewAddressAddedHomePage] = useState<
-    DiagnosticsCartContextProps['newAddressAddedHomePage']
-  >('');
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -566,6 +570,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setAreaSelected({});
     setDiagnosticAreas([]);
     setNewAddressAddedHomePage('');
+    setNewAddressAddedHomePage('');
   };
 
   useEffect(() => {
@@ -700,6 +705,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
         newAddressAddedHomePage,
         setNewAddressAddedHomePage,
+        newAddressAddedCartPage,
+        setNewAddressAddedCartPage,
       }}
     >
       {props.children}

@@ -251,12 +251,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAreaSelected,
     diagnosticAreas,
     setDiagnosticAreas,
-    clearDiagnoticCartInfo,
     cartSaving,
     discountSaving,
     normalSaving,
     circleSaving,
     isDiagnosticCircleSubscription,
+    newAddressAddedCartPage,
+    setNewAddressAddedCartPage,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -642,7 +643,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 setLoading?.(false);
                 errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
               });
-            DiagnosticAddresssSelected('Existing', 'Yes', pinCodeFromAddress, 'Cart page');
+
+            DiagnosticAddresssSelected(
+              newAddressAddedCartPage != '' ? 'New' : 'Existing',
+              'Yes',
+              pinCodeFromAddress,
+              'Cart page'
+            );
+            newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           } else {
             setLoading?.(false);
             showAphAlert!({
@@ -658,7 +666,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 setDeliveryAddressId?.('');
               },
             });
-            DiagnosticAddresssSelected('Existing', 'No', pinCodeFromAddress, 'Cart page');
+            DiagnosticAddresssSelected(
+              newAddressAddedCartPage != '' ? 'New' : 'Existing',
+              'No',
+              pinCodeFromAddress,
+              'Cart page'
+            );
+            newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           }
         })
         .catch((e) => {

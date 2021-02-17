@@ -299,12 +299,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (newAddressAddedHomePage != '') {
       checkIsPinCodeServiceable(newAddressAddedHomePage, '', 'newAddress');
-    }
-  }, [newAddressAddedHomePage]);
-
-  useEffect(() => {
-    if (newAddressAddedHomePage != '') {
-      checkIsPinCodeServiceable(newAddressAddedHomePage, '', 'newAddress');
       setNewAddressAddedHomePage?.('');
     }
   }, [newAddressAddedHomePage]);
@@ -668,6 +662,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
             comingFrom == 'defaultAddress' &&
               DiagnosticAddresssSelected('Existing', 'Yes', pincode, 'Home page');
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected('New', 'Yes', pincode, 'Home page');
           } else {
             obj = {
               cityId: '0',
@@ -683,6 +679,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, false);
             comingFrom == 'defaultAddress' &&
               DiagnosticAddresssSelected('Existing', 'No', pincode, 'Home page');
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected('New', 'No', pincode, 'Home page');
           }
           getHomePageWidgets(obj?.cityId);
           setshowLocationpopup(false);
