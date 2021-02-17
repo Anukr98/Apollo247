@@ -991,9 +991,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
         ],
         [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
-        [MEDICINE_ORDER_STATUS.RETURN_ACCEPTED]: [
+        [MEDICINE_ORDER_STATUS.RETURN_PICKUP]: [
           '',
-          `Your order #${orderAutoId} has been successfully returned.`,
+          `Your order items have been successfully returned, we will be processing for a refund shortly.`,
+        ],
+        [MEDICINE_ORDER_STATUS.RETURN_REQUESTED]: [
+          '',
+          `Your return has been initiated, a return pick-up partner will be assigned soon`,
+        ],
+        [MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED]: [
+          '',
+          `We will re-attempt delivery later, please be reachable on phone`,
+        ],
+        [MEDICINE_ORDER_STATUS.RVP_ASSIGNED]: [
+          '',
+          `Our rider or courier partner will collect the item from you shortly, please be reachable on phone`,
         ],
       };
 
