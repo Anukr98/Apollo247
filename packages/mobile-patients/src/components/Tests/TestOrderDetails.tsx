@@ -271,9 +271,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
 
-  const showReportsGenerated =
-    sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
-    sequenceOfStatus.indexOf(DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED);
   const isReportGenerated = selectedTest?.currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
 
   const handleBack = () => {
@@ -475,7 +472,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderBottomSection = (order: any) => {
-    return <View>{showReportsGenerated ? renderButtons() : null}</View>;
+    return <View>{isReportGenerated ? renderButtons() : null}</View>;
   };
 
   const renderButtons = () => {

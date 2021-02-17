@@ -968,7 +968,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ? `Your order has been picked-up by our courier partner and is in-transit. Shipment AWB number is ${shipmentNumber}.`
             : '',
           () => {},
-          showTracking ? renderTrackOrder : null,
+          null,
+          // showTracking ? renderTrackOrder : null,
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
@@ -990,9 +991,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
         ],
         [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
-        [MEDICINE_ORDER_STATUS.RETURN_ACCEPTED]: [
+        [MEDICINE_ORDER_STATUS.RETURN_PICKUP]: [
           '',
-          `Your order #${orderAutoId} has been successfully returned.`,
+          `Your order items have been successfully returned, we will be processing for a refund shortly.`,
+        ],
+        [MEDICINE_ORDER_STATUS.RETURN_REQUESTED]: [
+          '',
+          `Your return has been initiated, a return pick-up partner will be assigned soon`,
+        ],
+        [MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED]: [
+          '',
+          `We will re-attempt delivery later, please be reachable on phone`,
+        ],
+        [MEDICINE_ORDER_STATUS.RVP_ASSIGNED]: [
+          '',
+          `Our rider or courier partner will collect the item from you shortly, please be reachable on phone`,
         ],
       };
 
@@ -1330,18 +1343,31 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
 
     const renderCourierTrackingCta = () => {
-      return (
-        <Button
-          style={styles.trackingOrderCta}
-          onPress={() => {
-            props.navigation.navigate(AppRoutes.CommonWebView, {
-              url: shipmentTrackingUrl,
-              isGoBack: true,
-            });
-          }}
-          title={'TRACK COURIER STATUS'}
-        />
-      );
+      const isDelhiveryOrder =
+        (shipmentTrackingProvider || '').toLowerCase().indexOf('delhivery') > -1;
+      if (!!shipmentTrackingUrl || isDelhiveryOrder) {
+        return (
+          <Button
+            style={styles.trackingOrderCta}
+            onPress={() => {
+              if (!!shipmentTrackingUrl) {
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: shipmentTrackingUrl,
+                  isGoBack: true,
+                });
+              } else if (isDelhiveryOrder) {
+                const shipmentNumber = order?.medicineOrderShipments?.[0]?.trackingNo;
+                const url = AppConfig.Configuration.MED_TRACK_SHIPMENT_URL;
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: url.replace('{{shipmentNumber}}', shipmentNumber),
+                  isGoBack: true,
+                });
+              }
+            }}
+            title={'TRACK COURIER STATUS'}
+          />
+        );
+      }
     };
 
     return (
@@ -1432,8 +1458,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             navigaitonProps={props.navigation}
           />
         )}
-        {orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY &&
-          !!shipmentTrackingUrl &&
+        {(orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
+          orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.SHIPPED) &&
           renderCourierTrackingCta()}
         {isDelivered ? (
           <View

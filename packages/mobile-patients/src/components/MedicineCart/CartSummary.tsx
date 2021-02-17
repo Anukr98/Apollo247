@@ -141,7 +141,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   useEffect(() => {
     availabilityTat(deliveryAddressId);
-  }, [cartItems]);
+  }, [cartItems, deliveryAddressId]);
 
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
@@ -160,7 +160,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
       setDefaultAddress(address);
-      availabilityTat(address.id);
     } else {
       props.navigation.goBack();
       setDeliveryAddressId && setDeliveryAddressId('');
@@ -284,7 +283,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           momentTatDate.diff(currentDate, 'h') / 24
         );
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) +
+          getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;

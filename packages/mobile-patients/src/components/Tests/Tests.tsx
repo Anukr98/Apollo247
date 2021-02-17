@@ -171,6 +171,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     removeCartItem,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
+    newAddressAddedHomePage,
+    setNewAddressAddedHomePage,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -294,6 +296,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //     checkIsPinCodeServiceable(diagnosticPincode);
   //   }
   // }, [diagnosticPincode]);
+
+  useEffect(() => {
+    if (newAddressAddedHomePage != '') {
+      checkIsPinCodeServiceable(newAddressAddedHomePage, '', 'newAddress');
+      setNewAddressAddedHomePage?.('');
+    }
+  }, [newAddressAddedHomePage]);
 
   /** added so that if phramacy code change, then this also changes. */
   useEffect(() => {
@@ -1041,6 +1050,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       children: !pincodeInput ? (
         <AccessLocation
+          source={AppRoutes.Tests}
           addresses={addressList}
           onPressSelectAddress={(address) => {
             setDefaultAddress(address);
@@ -1339,13 +1349,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
     const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
+    const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
       <View>
         {isPricesAvailable ? (
           <>
             <SectionHeader
               leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={styles.widgetHeading}
+              leftTextStyle={[
+                styles.widgetHeading,
+                {
+                  ...theme.viewStyles.text(
+                    'B',
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
+                    theme.colors.SHERPA_BLUE,
+                    1,
+                    20
+                  ),
+                },
+              ]}
               rightText={showViewAll ? 'VIEW ALL' : ''}
               rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
               onPressRightText={
@@ -1386,6 +1408,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
     const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
+    const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
       <View>
@@ -1393,7 +1416,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <>
             <SectionHeader
               leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={styles.widgetHeading}
+              leftTextStyle={[
+                styles.widgetHeading,
+                {
+                  ...theme.viewStyles.text(
+                    'B',
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
+                    theme.colors.SHERPA_BLUE,
+                    1,
+                    20
+                  ),
+                },
+              ]}
               rightText={showViewAll ? 'VIEW ALL' : ''}
               rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
               onPressRightText={
@@ -1478,10 +1512,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         onPress={() => {
           renderBookingStepsModal();
         }}
-        container={{
-          marginBottom: 24,
-          marginTop: 20,
-        }}
+        container={styles.stepsToBookContainer}
         title={string.diagnostics.stepsToBook}
         leftIcon={<WorkflowIcon />}
         rightIcon={<ArrowRightYellow style={{ resizeMode: 'contain' }} />}
@@ -1868,7 +1899,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   widgetHeading: {
-    ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
   },
   widgetView: {
@@ -1947,5 +1977,9 @@ const styles = StyleSheet.create({
     marginBottom: '4%',
     marginHorizontal: 20,
     ...theme.viewStyles.text('R', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1, 20),
+  },
+  stepsToBookContainer: {
+    marginBottom: 24,
+    marginTop: 10,
   },
 });

@@ -73,9 +73,14 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
         }}
       >
         {!unServiceable &&
-          (!isSplitCart ? (
+          (!!isNonCartOrder ? (
             <Text style={styles.delivery}>
-              {!!isNonCartOrder ? `Expected Delivery by ` : `Deliver by :`}
+              {`Expected Delivery by `}
+              {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            </Text>
+          ) : !isSplitCart ? (
+            <Text style={styles.delivery}>
+              {`Deliver by :`}
               {deliveryTime ? getDeliveryDate() : getGenericDate()}
             </Text>
           ) : (

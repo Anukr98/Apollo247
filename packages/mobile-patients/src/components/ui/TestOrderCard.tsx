@@ -99,7 +99,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
         return 0; //0
       } else if (CONFIRMED_STATUS.includes(status)) {
-        return 1; //2
+        return 1.5; //2
       } else if (COLLECTION_STATUS.includes(status)) {
         return 2; //4
       } else if (LAB_COLLECTION_STATUS.includes(status) || LAB_TESTING_STATUS.includes(status)) {
@@ -118,7 +118,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
         return 5;
       } else if (CONFIRMED_STATUS.includes(status)) {
-        return 5; //4
+        return 4.5; //4
       } else if (COLLECTION_STATUS.includes(status)) {
         return 4;
       } else if (LAB_COLLECTION_STATUS.includes(status) || LAB_TESTING_STATUS.includes(status)) {
@@ -238,7 +238,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
       case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
         return {
           textAlign: 'center',
-          marginLeft: 0,
+          marginLeft: -10,
         };
         break;
       //for last two, no need to show on ui so taking previous status.

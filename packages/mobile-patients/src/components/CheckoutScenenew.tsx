@@ -525,13 +525,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            // postwebEngageCheckoutCompletedEvent(
-            //   `${orderAutoId}`,
-            //   orderId,
-            //   // orderType == 'COD',
-            //   isCOD
-            // );
-            // firePurchaseEvent(orderId);
+            orders?.forEach((order) => {
+              postwebEngageCheckoutCompletedEvent(
+                `${order?.orderAutoId}`,
+                order?.id!,
+                // orderType == 'COD',
+                isCOD
+              );
+              firePurchaseEvent(order?.id!);
+            });
           } catch (error) {
             console.log(error);
           }
@@ -554,13 +556,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
   };
 
-  const redirectToPaymentGateway = async (
-    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
-    transactionId: number,
-    paymentMode: string,
-    bankCode: string,
-    orderInfo: saveMedicineOrderOMSVariables
-  ) => {
+  const firePaymentModeEvent = (paymentMode: string, orderId: string, orderAutoId: number) => {
     try {
       const paymentEventAttributes = {
         Payment_Mode: paymentMode,
@@ -573,6 +569,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
     } catch (error) {}
+  };
+
+  const redirectToPaymentGateway = async (
+    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
+    transactionId: number,
+    paymentMode: string,
+    bankCode: string,
+    orderInfo: saveMedicineOrderOMSVariables
+  ) => {
+    orders?.forEach((order) => {
+      firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
+    });
     const token = await firebaseAuth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {

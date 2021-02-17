@@ -785,7 +785,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     createHyperServiceObject();
+    logHomePageViewed();
   }, []);
+
+  //to be called only when the user lands via app launch
+  const logHomePageViewed = async () => {
+    const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
+    if (isAppOpened) {
+      postHomeWEGEvent(WebEngageEventName.HOME_VIEWED);
+    }
+  };
 
   useEffect(() => {
     if (currentPatient?.id) {
@@ -867,6 +876,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
     });
+
+    try {
+      AsyncStorage.removeItem('APP_OPENED');
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getAppOpenedKeyReadError', error);
+    }
+
     return () => {
       didBlur && didBlur.remove();
     };
@@ -1492,8 +1508,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         variables: query,
       });
 
-
-      console.log('csk subs plan',JSON.stringify(res))
+      console.log('csk subs plan', JSON.stringify(res));
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
         /**
@@ -2416,7 +2431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       circleSavings,
       'hc->',
       healthCredits,
-      circleSubscriptionId,
+      circleSubscriptionId
     );
 
     return (
@@ -2682,8 +2697,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postHomeWEGEvent(WebEngageEventName.VACCINATION_CHAT_WITH_US);
     try {
       const openUrl = AppConfig.Configuration.CHAT_WITH_US;
-      props.navigation.navigate(AppRoutes.CovidScan, {
-        covidUrl: openUrl,
+      props.navigation.navigate(AppRoutes.CommonWebView, {
+        url: openUrl,
       });
     } catch (e) {}
   };

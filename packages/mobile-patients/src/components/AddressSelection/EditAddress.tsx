@@ -161,7 +161,8 @@ export type AddressSource =
   | 'Upload Prescription'
   | 'Cart'
   | 'Diagnostics Cart'
-  | 'Medicine';
+  | 'Medicine'
+  | 'Tests';
 
 export interface AddAddressProps
   extends NavigationScreenProps<{
@@ -234,6 +235,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
     setAddresses: setTestAddresses,
+    setNewAddressAddedHomePage,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
@@ -432,6 +434,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });
           } else {
+            if (source == 'Tests') {
+              setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
+            }
             props.navigation.pop(2, { immediate: true });
           }
         } else {
