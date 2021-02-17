@@ -601,6 +601,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const onPurchasePlanThroughHC = async () => {
+  console.log('csk in purchase via hc')
     setLoading && setLoading(true);
     try {
       const res = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
@@ -627,6 +628,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         fetchPolicy: 'no-cache',
       });
       setLoading && setLoading(false);
+
+  console.log('csk in purchase via hc data',JSON.stringify(res))
       if (res?.data?.CreateUserSubscription?.success) {
         onPurchaseWithHCCallback!(res);
       } else {

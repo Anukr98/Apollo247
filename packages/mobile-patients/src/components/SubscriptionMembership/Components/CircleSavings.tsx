@@ -42,7 +42,6 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
   const renderCircleExpiryBanner = () => {
   const expiry=timeDiffDaysFromNow(circleSubscription?.endDate);
-  console.log('csk,csk sub',healthCredits,JSON.stringify(circleSubscription))
 
 
     return (
@@ -124,7 +123,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           defaultCirclePlan={{}}
           navigation={props.navigation}
           circlePaymentDone={planPurchased.current}
-          circlePlanValidity={planValidity.current}
+          circlePlanValidity={{endDate:planValidity.current}}
           source={'Consult'}
           from={strings.banner_context.MEMBERSHIP_DETAILS}
         />

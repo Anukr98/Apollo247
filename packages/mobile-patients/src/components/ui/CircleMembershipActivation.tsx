@@ -69,6 +69,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   const planActivated = useRef<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [planValidity, setPlanValidity] = useState<string>(circlePlanValidity || '');
+  console.log('csk date data',circlePlanValidity,planValidity)
   const { circleSubscriptionId } = useShoppingCart();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -156,7 +157,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         {moment(planValidity).isValid() ? (
           <Text style={styles.description}>
             Valid till:{' '}
-            {console.log('csk date date',moment(planValidity.endDate).format('DD MMMM YYYY'))}
+            {console.log('csk date date',planValidity,moment(planValidity.endDate).format('DD MMMM YYYY'))}
             <Text style={styles.mediumText}>{moment(planValidity.endDate).format('DD MMMM YYYY')}</Text>
           </Text>
         ) : null}
