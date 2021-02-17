@@ -628,6 +628,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       );
     };
 
+    const isDelhiveryOrEcomExpressProvider = ['Delhivery Express', 'Ecom Express'].includes(
+      shipmentTrackingProvider!
+    );
+
     return (
       <View>
         <View
@@ -650,7 +654,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           </View>
           {(!!shipmentTrackingProvider || !!shipmentTrackingNumber) && (
             <View style={styles.shipmentInfoContainer}>
-              {!!shipmentTrackingProvider && (
+              {!!shipmentTrackingProvider && isDelhiveryOrEcomExpressProvider && (
                 <View>
                   <Text style={theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5)}>
                     Courier
@@ -665,7 +669,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   <Text
                     style={{
                       ...theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5),
-                      textAlign: 'right',
+                      textAlign:
+                        !!shipmentTrackingProvider && isDelhiveryOrEcomExpressProvider
+                          ? 'right'
+                          : 'left',
                     }}
                   >
                     Tracking ID
