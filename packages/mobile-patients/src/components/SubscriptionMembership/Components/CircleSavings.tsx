@@ -16,7 +16,7 @@ import {timeDiffDaysFromNow} from '@aph/mobile-patients/src/helpers/helperFuncti
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps , StackActions,NavigationActions, } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import Carousel from 'react-native-snap-carousel';
 import { WebView } from 'react-native-webview';
@@ -117,7 +117,20 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
     const renderCircleMembershipActivated = () => (
         <CircleMembershipActivation
           visible={showCircleActivation}
-          closeModal={(planActivated) => {
+          closeModal={(planActivated) => {props.navigation.dispatch(
+                                                                                                          StackActions.reset({
+                                                                                                            index: 0,
+                                                                                                            key: null,
+                                                                                                            actions: [
+                                                                                                              NavigationActions.navigate({
+                                                                                                                routeName: AppRoutes.ConsultRoom,
+                                                                                                                params: {
+                                                                                                                  skipAutoQuestions: true,
+                                                                                                                },
+                                                                                                              }),
+                                                                                                            ],
+                                                                                                          })
+                                                                                                        );
             setShowCircleActivation(false);
           }}
           defaultCirclePlan={{}}
