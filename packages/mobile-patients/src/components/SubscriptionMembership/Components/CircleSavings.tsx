@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
@@ -8,6 +8,10 @@ import {
   EmergencyCall,
   ExpressDeliveryLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {timeDiffDaysFromNow} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
@@ -16,20 +20,33 @@ import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import Carousel from 'react-native-snap-carousel';
 import { WebView } from 'react-native-webview';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const screenWidth = Dimensions.get('window').width;
 
-export interface CircleSavingsProps extends NavigationScreenProps {}
+export interface CircleSavingsProps extends NavigationScreenProps {
+  isRenew: boolean;
+}
 
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
-  const { circleSubscription, totalCircleSavings } = useAppCommonData();
+  const { circleSubscription, totalCircleSavings, healthCredits } = useAppCommonData();
   const [slideIndex, setSlideIndex] = useState(0);
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const videoLinks = strings.Circle.video_links;
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+
+  const { currentPatient } = useAllCurrentPatients();
+  const planValidity = useRef<string>('');
+  const planPurchased = useRef<boolean | undefined>(false);
+
 
   const renderCircleExpiryBanner = () => {
   const expiry=timeDiffDaysFromNow(circleSubscription?.endDate);
+  console.log('csk,csk sub',healthCredits,JSON.stringify(circleSubscription))
+
+
     return (
-      <View style={[styles.expiryBanner, { alignItems: 'center' }]}>
+      <View style={[styles.expiryBanner, styles.expiryBannerAlignment]}>
         <CircleLogo style={styles.circleLogo} />
         <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
           Membership {expiry>0?"expires":"expired"} on{' '}
@@ -37,6 +54,17 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
           </Text>
         </Text>
+          { props.isRenew?
+          (<Button
+                               title={`UPGRADE`}
+                               style={{width:94,height:32}}
+                               onPress={()=>{
+                               setShowCirclePlans(true);
+                               console.log('circle upgrade on membership page pressed')}}
+                               disabled={false}
+                             />
+          ):null
+          }
       </View>
     );
   };
@@ -62,6 +90,45 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
       </View>
     );
   };
+
+  const renderCircleSubscriptionPlans = () => {
+      return (
+        <CircleMembershipPlans
+          navigation={props.navigation}
+          isModal={true}
+          closeModal={() => setShowCirclePlans(false)}
+          buyNow={true}
+          membershipPlans={circleSubscription?.planSummary}
+          source={'Consult'}
+          from={strings.banner_context.MEMBERSHIP_DETAILS}
+          healthCredits={healthCredits}
+          onPurchaseWithHCCallback={(res: any) => {
+            fireCirclePurchaseEvent(
+              currentPatient,
+              res?.data?.CreateUserSubscription?.response?.end_date
+            );
+            planPurchased.current = res?.data?.CreateUserSubscription?.response?.status==='PAYMENT_FAILED'?false:true;
+            planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+            console.log('csk data callback',planPurchased,planValidity,JSON.stringify(res))
+            setShowCircleActivation(true);
+          }}
+        />
+      );
+    };
+    const renderCircleMembershipActivated = () => (
+        <CircleMembershipActivation
+          visible={showCircleActivation}
+          closeModal={(planActivated) => {
+            setShowCircleActivation(false);
+          }}
+          defaultCirclePlan={{}}
+          navigation={props.navigation}
+          circlePaymentDone={planPurchased.current}
+          circlePlanValidity={planValidity.current || circleSubscription?.endDate}
+          source={'Consult'}
+          from={strings.banner_context.MEMBERSHIP_DETAILS}
+        />
+      );
 
   const renderSaveFromCircle = () => {
     return (
@@ -250,6 +317,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
       {totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed > 0
         ? renderCircleSavings()
         : renderViewCarousel()}
+       {showCircleActivation && renderCircleMembershipActivated()}
+       {showCirclePlans && renderCircleSubscriptionPlans()}
     </View>
   );
 };
@@ -266,6 +335,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingVertical: 13,
     paddingHorizontal: 15,
+  },
+  expiryBannerAlignment:{
+  alignItems: 'center',
+  justifyContent:'space-between',
   },
   savingsCard: {
     ...theme.viewStyles.cardViewStyle,

@@ -313,7 +313,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                     top: `${duration}`.length === 1 ? iconDimension / 2 - 3 : iconDimension / 2 + 3,
                     transform:
                       `${duration}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
-                    color: value?.defaultPack ? 'white' : theme.colors.APP_YELLOW,
+                    color: index===1 ? 'white' : theme.colors.APP_YELLOW,
                     fontSize: isPlanActive ? 16 : 14,
                   },
                 ]}

@@ -674,6 +674,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAxdcCode,
     circlePlanId,
     setCirclePlanId,
+    healthCredits,
+    setHealthCredits,
     setHdfcPlanId,
     setCircleStatus,
     circleStatus,
@@ -732,7 +734,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
-  const [healthCredits, setHealthCredits] = useState<number>(-1);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
@@ -1504,6 +1505,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: query,
       });
+
+
+      console.log('csk subs plan',JSON.stringify(res))
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
         /**
@@ -2404,14 +2408,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderCircle = () => {
-    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
-    const expired = circlePlanValidity
-      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
-      : '';
-    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
-    const darktheme = expiry > 0 ? false : true;
+
+    const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
+    const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
+    const renew=renewNow!=='' && renewNow==='yes'?true:false;
+    const darktheme= circleStatus === 'disabled'?true:false;
 
     const cardlist = dataBannerCards();
+
+    console.log(
+      'csk value',
+      isCircleMember,
+      circlePlanValidity,
+      circleStatus,
+      expiry,
+      expired,
+      renew,
+      'savings->',
+      circleSavings,
+      'hc->',
+      healthCredits,
+      circleSubscriptionId,
+    );
+
     return (
       <View style={styles.circleContainer}>
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
@@ -2440,6 +2459,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                isRenew:renew,
               });
             }}
             credits={healthCredits}
@@ -2452,12 +2472,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                isRenew: renew,
               });
             }}
             credits={healthCredits}
             savings={circleSavings}
           />
-        ) : expiry < 0 && circleSavings > 0 ? (
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -2467,7 +2488,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             credits={healthCredits}
             expired={expired}
           />
-        ) : expiry < 0 ? (
+        ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
