@@ -224,8 +224,8 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         responseMessage
         bankTxnId
         orderId
-        appointment{
-         id
+        appointment {
+          id
         }
       }
     }
@@ -2079,7 +2079,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
-        diagnosticOrdersStatus{
+        diagnosticOrdersStatus {
           id
           orderStatus
           itemId
@@ -2524,6 +2524,10 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           customReason
         }
         medicineOrderShipments {
+          driverDetails {
+            driverName
+            driverPhone
+          }
           id
           siteId
           siteName
@@ -3526,10 +3530,10 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
-        patientInfo{
-        firstName
-        lastName
-        gender
+        patientInfo {
+          firstName
+          lastName
+          gender
         }
         doctorInfo {
           id
@@ -4409,7 +4413,7 @@ export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
     $mobile_number: String!
     $banner_context: String!
     $user_state: UserState
-    $banner_display_type:[BannerDisplayType!]
+    $banner_display_type: [BannerDisplayType!]
   ) {
     GetAllGroupBannersOfUser(
       mobile_number: $mobile_number
