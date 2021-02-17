@@ -1040,7 +1040,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {renderTestNotes()}
                 {renderDiagnosis()}
                 {renderGenerealAdvice()}
-                {renderFollowUp()}
+                {/* We will use in next release */}
+                {/* {renderFollowUp()} */}
               </View>
             </View>
           </CollapseCard>
