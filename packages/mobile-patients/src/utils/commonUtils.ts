@@ -479,3 +479,7 @@ export const findAddrComponents = (
     (addrComponents?.find((item) => item?.types?.indexOf(proptoFind) > -1) || {})?.long_name || ''
   );
 };
+
+export const isPhysicalConsultation = (consultMode: string) => {
+  return consultMode === 'Visit Clinic' || consultMode === 'Meet In Person';
+};
