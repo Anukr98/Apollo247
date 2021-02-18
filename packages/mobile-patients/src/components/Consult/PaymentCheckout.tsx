@@ -659,7 +659,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!
+            g(data, 'makeAppointmentPayment', 'appointment', 'id')!,
+            displayID
           )
         );
         setLoading!(false);
@@ -720,7 +721,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       });
   };
 
-  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string, displayId: string) => {
     const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
@@ -729,6 +730,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: amountToPay,
       af_currency: 'INR',
       'consult id': id,
+      displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
     };

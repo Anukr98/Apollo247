@@ -11,7 +11,7 @@ import {
   Image,
   ImageBackground,
   TouchableOpacity,
-  Modal
+  Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { ProfileList } from '../ui/ProfileList';
@@ -24,11 +24,15 @@ import { CareMembershipAdded } from '@aph/mobile-patients/src/components/ui/Care
 import { ConsultPriceBreakup } from '@aph/mobile-patients/src/components/ui/ConsultPriceBreakup';
 import { ConsultDiscountCard } from '@aph/mobile-patients/src/components/ui/ConsultDiscountCard';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import { ArrowRight, CouponIcon, CircleLogo,
+import {
+  ArrowRight,
+  CouponIcon,
+  CircleLogo,
   DoctorPlaceholderImage,
   DropdownGreen,
   LinkedUhidIcon,
-  Location } from '@aph/mobile-patients/src/components/ui/Icons';
+  Location,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -212,8 +216,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
-
-
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Consult')
       .then((resp: any) => {
@@ -241,52 +243,54 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     }
   }
 
-        const renderPrice = () => {
-          return (
-          <View>
+  const renderPrice = () => {
+    return (
+      <View>
         <Text style={styles.priceBreakupTitle}>{string.common.totalCharges}</Text>
         <View style={styles.seperatorLine} />
-              <View style={styles.containerPay}>
-                <View style={styles.rowContainerPay}>
-                  <Text style={styles.regularTextPay}>{string.common.toPay}</Text>
-                  <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
-                    {string.common.Rs}
-                    {price}
-                  </Text>
-                </View>
-              </View>
+        <View style={styles.containerPay}>
+          <View style={styles.rowContainerPay}>
+            <Text style={styles.regularTextPay}>{string.common.toPay}</Text>
+            <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
+              {string.common.Rs}
+              {price}
+            </Text>
+          </View>
+        </View>
 
         <Text style={styles.priceBreakupTitle}>{string.common.oneTimePhysicalCharge}</Text>
-        </View>
-            );
-        };
-        const renderPatient = () => {
-          return (
-          <View>
-        <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-        <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
+      </View>
+    );
+  };
+  const renderPatient = () => {
+    return (
+      <View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
 
-        {/*
+          {/*
         (
         <TouchableOpacity onPress={()=>setShowProfilePopUp(true)}>
         <Text style={[styles.priceBreakupTitle,{color:'#FC9916'}]}>CHANGE PROFILE</Text>
         </TouchableOpacity>
         )
         */}
-
         </View>
         <View style={styles.seperatorLine} />
-        <Text style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap',fontSize:14 }]}>
-        {g(currentPatient, 'firstName')} {g(currentPatient, 'lastName')}
+        <Text
+          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
+        >
+          {g(currentPatient, 'firstName')} {g(currentPatient, 'lastName')}
         </Text>
-        <Text style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap',fontSize:14 }]}>
-        {Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true))} ,
-         {g(currentPatient, 'gender')}
+        <Text
+          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
+        >
+          {Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true))} ,
+          {g(currentPatient, 'gender')}
         </Text>
-        </View>
-            );
-        };
-
+      </View>
+    );
+  };
 
   const renderHeader = () => {
     return (
@@ -300,7 +304,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       />
     );
   };
-
 
   const renderDoctorProfile = () => {
     return (
@@ -322,214 +325,209 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const renderDoctorCard = () => {
     return (
       <View>
-            <View style={styles.rowContainerDoc}>
-              <View style={{ width: width - 140 }}>
-                <Text style={styles.doctorNameStyle}>{doctor?.displayName}</Text>
-                <Text style={styles.specializationStyle}>
-                  {doctor?.specialty?.name || ''} | {doctor?.experience} YR
-                  {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
-                </Text>
+        <View style={styles.rowContainerDoc}>
+          <View style={{ width: width - 140 }}>
+            <Text style={styles.doctorNameStyle}>{doctor?.displayName}</Text>
+            <Text style={styles.specializationStyle}>
+              {doctor?.specialty?.name || ''} | {doctor?.experience} YR
+              {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+            </Text>
 
             <Text style={styles.appointmentTimeStyle}>
               {dateFormatter(appointmentInput?.appointmentDateTime)}
             </Text>
-                <Text style={styles.regularText}>
-
-                </Text>
-              </View>
-              <View>
-                  <View>{renderDoctorProfile()}</View>
-
-              </View>
-            </View>
-
-              <View style={{ width:  width - 40 }}>
-        <Text style={styles.priceBreakupTitle}>LOCATION</Text>
-              <View style={styles.seperatorLine} />
-
-                <View style={styles.row}>
-
-                    <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14 }]}>
-                      {`${doctor?.doctorHospital?.[0].facility?.streetLine1}, ${
-                        doctor?.doctorHospital?.[0].facility?.streetLine2
-                          ? `${doctor?.doctorHospital?.[0].facility?.streetLine2}, `
-                          : ''
-                      }${doctor?.doctorHospital?.[0].facility?.city}`}
-                    </Text>
-                    {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>openMaps()}>
-                    <Text style={[styles.specializationStyle, styles.mapsStyle]}>
-                    https://www.google.com/maps/dir/
-                    </Text>
-                    </TouchableOpacity>)}
-                </View>
-              </View>
-
-
+            <Text style={styles.regularText}></Text>
           </View>
-    );
-  };
+          <View>
+            <View>{renderDoctorProfile()}</View>
+          </View>
+        </View>
 
-  const openMaps = () =>{
-  let query=`${doctor?.doctorHospital?.[0].facility?.streetLine1},
-              ${doctor?.doctorHospital?.[0].facility?.city}`;
-  let url=`google.navigation:q=${query}`
+        <View style={{ width: width - 40 }}>
+          <Text style={styles.priceBreakupTitle}>LOCATION</Text>
+          <View style={styles.seperatorLine} />
 
-  try {
-        Linking.canOpenURL(url).then((supported) => {
-          if (supported) {
-            Linking.openURL(url);
-          } else {
-            setBugFenderLog('FAILED_OPEN_URL', url);
-          }
-        });
-    } catch (e) {
-      setBugFenderLog('FAILED_OPEN_URL', url);
-    }
-
-  }
-
-  const moveSelectedToTop = () => {
-      if (currentPatient !== undefined) {
-        const patientLinkedProfiles = [
-          allCurrentPatients?.find((item: any) => item?.uhid === currentPatient.uhid),
-          ...allCurrentPatients.filter((item: any) => item?.uhid !== currentPatient.uhid),
-        ];
-        return patientLinkedProfiles;
-      }
-      return [];
-    };
-
-
-  const renderCTAs = () => (
-      <View style={styles.aphAlertCtaViewStyle}>
-        {moveSelectedToTop()
-          ?.slice(0, 5)
-          ?.map((item: any, index: any, array: any) =>
-            item.firstName !== '+ADD MEMBER' ? (
-              <TouchableOpacity
-                onPress={() => {
-                  onSelectedProfile(item);
-                }}
-                style={[styles.ctaWhiteButtonViewStyle]}
-              >
-                <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+          <View style={styles.row}>
+            <Text
+              style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap', fontSize: 14 }]}
+            >
+              {`${doctor?.doctorHospital?.[0].facility?.streetLine1}, ${
+                doctor?.doctorHospital?.[0].facility?.streetLine2
+                  ? `${doctor?.doctorHospital?.[0].facility?.streetLine2}, `
+                  : ''
+              }${doctor?.doctorHospital?.[0].facility?.city}`}
+            </Text>
+            {Platform.OS === 'ios' ? (
+              ''
+            ) : (
+              <TouchableOpacity onPress={() => openMaps()}>
+                <Text style={[styles.specializationStyle, styles.mapsStyle]}>
+                  https://www.google.com/maps/dir/
+                </Text>
               </TouchableOpacity>
-            ) : null
-          )}
-        <View style={[styles.textViewStyle]}>
-          <Text
-            onPress={() => {
-              if (allCurrentPatients.length > 6) {
-                setShowList(true);
-              } else {
-                setShowProfilePopUp(false);
-                props.navigation.navigate(AppRoutes.EditProfile, {
-                  isEdit: false,
-                  isPoptype: true,
-                  mobileNumber: currentPatient && currentPatient!.mobileNumber,
-                });
-              }
-            }}
-            style={[styles.ctaOrangeTextStyle]}
-          >
-            {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
-          </Text>
+            )}
+          </View>
         </View>
       </View>
     );
-    const onSelectedProfile = (item: any) => {
-      selectUser(item);
-      setShowProfilePopUp(false);
+  };
 
-    };
-    const onProfileChange = () => {
-      setShowList(false);
+  const openMaps = () => {
+    let query = `${doctor?.doctorHospital?.[0].facility?.streetLine1},
+              ${doctor?.doctorHospital?.[0].facility?.city}`;
+    let url = `google.navigation:q=${query}`;
 
-      setTimeout(() => {
-        setShowProfilePopUp(false);
-      }, 1000);
-    };
+    try {
+      Linking.canOpenURL(url).then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          setBugFenderLog('FAILED_OPEN_URL', url);
+        }
+      });
+    } catch (e) {
+      setBugFenderLog('FAILED_OPEN_URL', url);
+    }
+  };
 
-    const renderProfileDrop = () => {
-      return (
-        <ProfileList
-          showList={showList}
-          menuHidden={() => setShowList(false)}
-          onProfileChange={onProfileChange}
-          navigation={props.navigation}
-          saveUserChange={true}
-          listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
-          childView={
-            <View
-              style={{
-                flexDirection: 'row',
-                paddingRight: 8,
-                borderRightWidth: 0,
-                borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                backgroundColor: theme.colors.CLEAR,
+  const moveSelectedToTop = () => {
+    if (currentPatient !== undefined) {
+      const patientLinkedProfiles = [
+        allCurrentPatients?.find((item: any) => item?.uhid === currentPatient.uhid),
+        ...allCurrentPatients.filter((item: any) => item?.uhid !== currentPatient.uhid),
+      ];
+      return patientLinkedProfiles;
+    }
+    return [];
+  };
+
+  const renderCTAs = () => (
+    <View style={styles.aphAlertCtaViewStyle}>
+      {moveSelectedToTop()
+        ?.slice(0, 5)
+        ?.map((item: any, index: any, array: any) =>
+          item.firstName !== '+ADD MEMBER' ? (
+            <TouchableOpacity
+              onPress={() => {
+                onSelectedProfile(item);
               }}
+              style={[styles.ctaWhiteButtonViewStyle]}
             >
-              <Text style={styles.hiTextStyle}>{'Hi'}</Text>
-              <View style={styles.nameTextContainerStyle}>
-                <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.nameTextStyle} numberOfLines={1}>
-                    {(currentPatient && currentPatient!.firstName + ' ' + currentPatient!.lastName) ||
-                      ''}
-                  </Text>
-                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                    <LinkedUhidIcon
-                      style={{
-                        width: 22,
-                        height: 20,
-                        marginLeft: 5,
-                        marginTop: Platform.OS === 'ios' ? 26 : 30,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  ) : null}
-                  <View style={{ paddingTop: 28 }}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-                <View style={styles.seperatorStyle} />
-              </View>
-            </View>
-          }
-          // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-          unsetloaderDisplay={true}
-        />
-      );
-    };
-
-    const renderProfileListView = () => {
-      return (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={showProfilePopUp}
-          onRequestClose={() => {
-            setShowProfilePopUp(false);
-            handleBack();
+              <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+            </TouchableOpacity>
+          ) : null
+        )}
+      <View style={[styles.textViewStyle]}>
+        <Text
+          onPress={() => {
+            if (allCurrentPatients.length > 6) {
+              setShowList(true);
+            } else {
+              setShowProfilePopUp(false);
+              props.navigation.navigate(AppRoutes.EditProfile, {
+                isEdit: false,
+                isPoptype: true,
+                mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              });
+            }
           }}
-          onDismiss={() => {
-            setShowProfilePopUp(false);
-          }}
+          style={[styles.ctaOrangeTextStyle]}
         >
-          <View style={styles.mainView}>
-            <View style={styles.subViewPopup}>
-              {renderProfileDrop()}
-              <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
-              <Text style={styles.popDescriptionStyle}>
-                Prescription to be generated in the name of?
-              </Text>
-              {renderCTAs()}
+          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
+        </Text>
+      </View>
+    </View>
+  );
+  const onSelectedProfile = (item: any) => {
+    selectUser(item);
+    setShowProfilePopUp(false);
+  };
+  const onProfileChange = () => {
+    setShowList(false);
+
+    setTimeout(() => {
+      setShowProfilePopUp(false);
+    }, 1000);
+  };
+
+  const renderProfileDrop = () => {
+    return (
+      <ProfileList
+        showList={showList}
+        menuHidden={() => setShowList(false)}
+        onProfileChange={onProfileChange}
+        navigation={props.navigation}
+        saveUserChange={true}
+        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
+        childView={
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingRight: 8,
+              borderRightWidth: 0,
+              borderRightColor: 'rgba(2, 71, 91, 0.2)',
+              backgroundColor: theme.colors.CLEAR,
+            }}
+          >
+            <Text style={styles.hiTextStyle}>{'Hi'}</Text>
+            <View style={styles.nameTextContainerStyle}>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.nameTextStyle} numberOfLines={1}>
+                  {(currentPatient && currentPatient!.firstName + ' ' + currentPatient!.lastName) ||
+                    ''}
+                </Text>
+                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                  <LinkedUhidIcon
+                    style={{
+                      width: 22,
+                      height: 20,
+                      marginLeft: 5,
+                      marginTop: Platform.OS === 'ios' ? 26 : 30,
+                    }}
+                    resizeMode={'contain'}
+                  />
+                ) : null}
+                <View style={{ paddingTop: 28 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+              <View style={styles.seperatorStyle} />
             </View>
           </View>
-        </Modal>
-      );
-    };
+        }
+        // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+        unsetloaderDisplay={true}
+      />
+    );
+  };
 
-
+  const renderProfileListView = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showProfilePopUp}
+        onRequestClose={() => {
+          setShowProfilePopUp(false);
+          handleBack();
+        }}
+        onDismiss={() => {
+          setShowProfilePopUp(false);
+        }}
+      >
+        <View style={styles.mainView}>
+          <View style={styles.subViewPopup}>
+            {renderProfileDrop()}
+            <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
+            <Text style={styles.popDescriptionStyle}>
+              Prescription to be generated in the name of?
+            </Text>
+            {renderCTAs()}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   const renderPriceBreakup = () => {
     return (
@@ -571,10 +569,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       />
     );
   };
-
-
-
-
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -620,7 +614,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       .then((status) => {
         if (status) {
           onSubmitBookAppointment();
-
         } else {
           setshowOfflinePopup(true);
         }
@@ -629,7 +622,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
       });
   };
-
 
   const selectUser = (selectedUser: any) => {
     setGender(selectedUser?.gender);
@@ -640,71 +632,73 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const onSubmitBookAppointment = async () => {
-    CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, 'ConsultOverlay onSubmitBookAppointment clicked');
+    CommonLogEvent(
+      AppRoutes.PaymentCheckoutPhysical,
+      'ConsultOverlay onSubmitBookAppointment clicked'
+    );
 
     console.log('finalAppointmentInput', finalAppointmentInput);
 
-      setLoading!(true);
-      client
-        .mutate<bookAppointment>({
-          mutation: BOOK_APPOINTMENT,
-          variables: {
-            bookAppointment: finalAppointmentInput,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-        console.log("csk data-------",JSON.stringify(data))
-          const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-          if (consultedWithDoctorBefore) {
-            storeAppointmentId(g(apptmt, 'id')!);
+    setLoading!(true);
+    client
+      .mutate<bookAppointment>({
+        mutation: BOOK_APPOINTMENT,
+        variables: {
+          bookAppointment: finalAppointmentInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        console.log('csk data-------', JSON.stringify(data));
+        const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
+        if (consultedWithDoctorBefore) {
+          storeAppointmentId(g(apptmt, 'id')!);
+        }
+        // If amount is zero don't redirect to PG
+
+        try {
+          if (callSaveSearch !== 'true') {
+            saveSearchDoctor(client, doctor?.id || '', patientId);
+
+            saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
           }
-          // If amount is zero don't redirect to PG
-
-          try {
-            if (callSaveSearch !== 'true') {
-              saveSearchDoctor(client, doctor?.id || '', patientId);
-
-              saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
-            }
-          } catch (error) {}
-          makePayment(
-            g(apptmt, 'paymentOrderId')!,
-            Number(amountToPay),
-            g(apptmt, 'appointmentDateTime'),
-            g(apptmt, 'displayId')!
+        } catch (error) {}
+        makePayment(
+          g(apptmt, 'paymentOrderId')!,
+          Number(amountToPay),
+          g(apptmt, 'appointmentDateTime'),
+          g(apptmt, 'displayId')!
+        );
+      })
+      .catch((error) => {
+        CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
+        setLoading!(false);
+        let message = '';
+        try {
+          message = error?.message?.split(':')?.[1]?.trim();
+        } catch (error) {
+          CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
+        }
+        if (message == 'APPOINTMENT_EXIST_ERROR') {
+          renderErrorPopup(
+            `Oops ! The selected slot is unavailable. Please choose a different one`
           );
-        })
-        .catch((error) => {
-          CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-          setLoading!(false);
-          let message = '';
-          try {
-            message = error?.message?.split(':')?.[1]?.trim();
-          } catch (error) {
-            CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
-          }
-          if (message == 'APPOINTMENT_EXIST_ERROR') {
-            renderErrorPopup(
-              `Oops ! The selected slot is unavailable. Please choose a different one`
-            );
-          } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
-            renderErrorPopup(
-              `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
-            );
-          } else if (
-            message === 'OUT_OF_CONSULT_HOURS' ||
-            message === 'DOCTOR_SLOT_BLOCKED' ||
-            message === 'APPOINTMENT_BOOK_DATE_ERROR'
-          ) {
-            renderErrorPopup(
-              `Slot you are trying to book is no longer available. Please try a different slot.`
-            );
-          } else {
-            renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-          }
-        });
-
+        } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
+          renderErrorPopup(
+            `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+          );
+        } else if (
+          message === 'OUT_OF_CONSULT_HOURS' ||
+          message === 'DOCTOR_SLOT_BLOCKED' ||
+          message === 'APPOINTMENT_BOOK_DATE_ERROR'
+        ) {
+          renderErrorPopup(
+            `Slot you are trying to book is no longer available. Please try a different slot.`
+          );
+        } else {
+          renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+        }
+      });
   };
 
   const makePayment = (
@@ -741,11 +735,15 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!
+            g(data, 'makeAppointmentPayment', 'appointment', 'id')!,
+            displayID
           )
         );
         setLoading!(false);
-        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, g(data, 'makeAppointmentPayment', 'appointment','appointment', 'id'));
+        handleOrderSuccess(
+          `${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`,
+          g(data, 'makeAppointmentPayment', 'appointment', 'appointment', 'id')!
+        );
       })
       .catch((e) => {
         setLoading!(false);
@@ -754,7 +752,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
-  console.log("csk","handleOrderSuccess",appointmentId);
+    console.log('csk', 'handleOrderSuccess', appointmentId);
     setLoading && setLoading(true);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
@@ -765,7 +763,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-      console.log("csk","getAppointmentData-->",JSON.stringify(_data));
+        console.log('csk', 'getAppointmentData-->', JSON.stringify(_data));
         try {
           setLoading && setLoading(false);
           const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
@@ -781,7 +779,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                         routeName: AppRoutes.ConsultRoom,
                         params: {
                           isFreeConsult: true,
-                          isPhysicalConsultBooked:true,
+                          isPhysicalConsultBooked: true,
                           doctorName: doctorName,
                           appointmentData: appointmentData[0],
                           skipAutoQuestions: doctor?.skipAutoQuestions,
@@ -792,13 +790,12 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                 );
               }
             } catch (error) {
-
-            console.log("csk",error)
+              console.log('csk', error);
             }
           }
         } catch (error) {
           setLoading && setLoading(false);
-            console.log("csk",error)
+          console.log('csk', error);
           props.navigation.navigate('APPOINTMENTS');
         }
       })
@@ -809,7 +806,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       });
   };
 
-  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string, displayId: string) => {
     const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
@@ -818,6 +815,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_revenue: amountToPay,
       af_currency: 'INR',
       'consult id': id,
+      displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
     };
@@ -832,8 +830,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
-
-
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
       name: g(doctor, 'fullName')!,
@@ -993,11 +989,11 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         )}
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
-        <View style={styles.doctorCard}>
-          {renderDoctorCard()}
+          <View style={styles.doctorCard}>
+            {renderDoctorCard()}
 
-          {renderPatient()}
-          {renderPrice()}
+            {renderPatient()}
+            {renderPrice()}
           </View>
         </ScrollView>
         {renderBottomButton()}
@@ -1037,26 +1033,26 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   containerPay: {
-      margin: 20,
-      backgroundColor: 'red',
-      borderRadius: 10,
-      ...theme.viewStyles.card(10),
-      paddingVertical: 16,
-    },
-    rowContainerPay: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    regularTextPay: {
-      ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
-    },
-    seperatorLinePay: {
-      marginVertical: 12,
-      height: 0.5,
-      backgroundColor: theme.colors.LIGHT_BLUE,
-      opacity: 0.2,
-    },
+    margin: 20,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    ...theme.viewStyles.card(10),
+    paddingVertical: 16,
+  },
+  rowContainerPay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  regularTextPay: {
+    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
+  },
+  seperatorLinePay: {
+    marginVertical: 12,
+    height: 0.5,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.2,
+  },
   amountSavedText: {
     ...theme.fonts.IBMPlexSansRegular(16),
     color: theme.colors.SEARCH_UNDERLINE_COLOR,
@@ -1092,15 +1088,15 @@ const styles = StyleSheet.create({
     width: 40,
     height: 20,
   },
-     doctorCard: {
-       ...theme.viewStyles.cardViewStyle,
-       paddingHorizontal: 20,
-       backgroundColor:'#F7F8F5',
-       borderRadius: 0,
-       marginTop: 20,
-       paddingTop: 22,
-       paddingBottom: 14,
-     },
+  doctorCard: {
+    ...theme.viewStyles.cardViewStyle,
+    paddingHorizontal: 20,
+    backgroundColor: '#F7F8F5',
+    borderRadius: 0,
+    marginTop: 20,
+    paddingTop: 22,
+    paddingBottom: 14,
+  },
   careLogoText: {
     ...theme.viewStyles.text('SB', 7, theme.colors.WHITE),
   },
@@ -1108,44 +1104,45 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginHorizontal: 20,
   },
-      doctorFees: {
-        ...theme.viewStyles.text('M', 15, theme.colors.LIGHT_BLUE),
-      },
-      doctorProfile: {
-        height: 80,
-        borderRadius: 40,
-        width: 80,
-        alignSelf: 'center',
-      },
-      drImageBackground: {
-        height: 95,
-        width: 95,
-        justifyContent: 'center',
-      },
+  doctorFees: {
+    ...theme.viewStyles.text('M', 15, theme.colors.LIGHT_BLUE),
+  },
+  doctorProfile: {
+    height: 80,
+    borderRadius: 40,
+    width: 80,
+    alignSelf: 'center',
+  },
+  drImageBackground: {
+    height: 95,
+    width: 95,
+    justifyContent: 'center',
+  },
   rowContainerDoc: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },doctorNameStyle: {
-        textTransform: 'capitalize',
-        ...theme.fonts.IBMPlexSansMedium(23),
-        color: theme.colors.SEARCH_DOCTOR_NAME,
-        marginTop: 4,
-      },
-      specializationStyle: {
-        ...theme.fonts.IBMPlexSansMedium(12),
-        color: theme.colors.SKY_BLUE,
-        marginTop: 2,
-      },
-      regularText: {
-        ...theme.fonts.IBMPlexSansMedium(14),
-        color: theme.colors.LIGHT_BLUE,
-        marginTop: 18,
-      },
-      appointmentTimeStyle: {
-        ...theme.fonts.IBMPlexSansMedium(16),
-        color: theme.colors.SKY_BLUE,
-        marginTop: 10,
-      },
+  },
+  doctorNameStyle: {
+    textTransform: 'capitalize',
+    ...theme.fonts.IBMPlexSansMedium(23),
+    color: theme.colors.SEARCH_DOCTOR_NAME,
+    marginTop: 4,
+  },
+  specializationStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SKY_BLUE,
+    marginTop: 2,
+  },
+  regularText: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+    marginTop: 18,
+  },
+  appointmentTimeStyle: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SKY_BLUE,
+    marginTop: 10,
+  },
   showPopUp: {
     backgroundColor: 'rgba(0,0,0,0.01)',
     position: 'absolute',
@@ -1233,10 +1230,10 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(18),
   },
-  mapsStyle:{
-  margin: 6,
-  flexWrap: 'wrap',
-  fontSize:14,
-  color:'#FC9916'
+  mapsStyle: {
+    margin: 6,
+    flexWrap: 'wrap',
+    fontSize: 14,
+    color: '#FC9916',
   },
 });
