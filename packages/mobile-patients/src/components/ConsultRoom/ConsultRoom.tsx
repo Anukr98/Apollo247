@@ -714,6 +714,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circlePlanValidity,
     setCirclePaymentReference,
     pharmacyCircleAttributes,
+    setIsCircleExpired,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -1497,10 +1498,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
 
-          if (circleData?.status === 'active' || circleData?.status === 'disabled') {
+          if (circleData?.status === 'active') {
             setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
             setIsCircleSubscription && setIsCircleSubscription(true);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          }
+
+          if (circleData?.status === 'disabled') {
+            setIsCircleExpired && setIsCircleExpired(true);
           }
 
           const planValidity = {

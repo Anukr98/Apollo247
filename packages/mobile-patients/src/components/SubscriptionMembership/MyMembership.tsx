@@ -189,6 +189,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     setHdfcPlanName,
     setIsFreeDelivery,
     setIsCircleSubscription,
+    isCircleExpired,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -765,7 +766,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <View>
               <View>
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
-                {!!circleSubscriptionId ? renderMembershipCard(circleSubscription, false) : null}
+                {!!circleSubscriptionId || isCircleExpired
+                  ? renderMembershipCard(circleSubscription, false)
+                  : null}
                 {hdfcUserSubscriptions?._id
                   ? renderMembershipCard(hdfcUserSubscriptions, false)
                   : null}

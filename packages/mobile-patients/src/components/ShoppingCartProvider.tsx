@@ -209,6 +209,8 @@ export interface ShoppingCartContextProps {
   isProuctFreeCouponApplied: boolean;
   circleSubscriptionId: string;
   setCircleSubscriptionId: ((id: string) => void) | null;
+  isCircleExpired: boolean;
+  setIsCircleExpired: ((expired: boolean) => void) | null;
   circlePlanSelected: any;
   setCirclePlanSelected: ((plan: any) => void) | null;
   selectDefaultPlan: ((plan: any) => void) | null;
@@ -311,6 +313,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   isProuctFreeCouponApplied: false,
   circleSubscriptionId: '',
   setCircleSubscriptionId: null,
+  isCircleExpired: false,
+  setIsCircleExpired: null,
   circlePlanSelected: null,
   setCirclePlanSelected: null,
   selectDefaultPlan: null,
@@ -377,6 +381,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [circleSubscriptionId, setCircleSubscriptionId] = useState<
     ShoppingCartContextProps['circleSubscriptionId']
   >('');
+  const [isCircleExpired, setIsCircleExpired] = useState<
+    ShoppingCartContextProps['isCircleExpired']
+  >(false);
   const [circlePlanSelected, setCirclePlanSelected] = useState<
     ShoppingCartContextProps['circlePlanSelected']
   >(null);
@@ -1044,6 +1051,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         circleSubscriptionId,
         setCircleSubscriptionId,
         circlePlanSelected,
+        isCircleExpired,
+        setIsCircleExpired,
         setCirclePlanSelected,
         selectDefaultPlan,
         defaultCirclePlan,
