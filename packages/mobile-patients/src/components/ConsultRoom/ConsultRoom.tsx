@@ -2316,7 +2316,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const datatosend = datatoadd?.map((item) => ({
       imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
       title: item?.banner_template_info?.headerText1,
-      value: '',
+      value: item?.banner_template_info?.headerText2,
       action:{type:item?.cta_action?.type,cta_action:item?.cta_action?.meta?.action}
     }));
     return datatosend;
@@ -2374,9 +2374,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 {item?.title}
               </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) }}>
+              {item?.value && (<Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) }}>
                 {item?.value}
-              </Text>
+              </Text>)}
             </View>
 
             <View style={styles.circleCardsImages}>
