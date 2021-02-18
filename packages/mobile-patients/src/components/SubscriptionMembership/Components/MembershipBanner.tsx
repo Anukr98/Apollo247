@@ -34,7 +34,7 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
           <View>
             <CircleBannerExpired resizeMode="cover" style={styles.circleBannerStyle} />
             <View style={styles.circleExpiredSavings}>
-              {circleSavings == 0 && (
+              {circleSavings != 0 && (
                 <View style={{ flexDirection: 'row' }}>
                   <CircleLogoWhite style={styles.circleExpiredLogo} />
                   <Text
