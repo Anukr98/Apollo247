@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CallConnectIcon, CallRingIcon, GroupCallIcon } from '../ui/Icons';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { g } from '../../helpers/helperFunctions';
+import { g, sGngageEvent } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
 import { useUIElements } from '../UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -12,7 +12,15 @@ import {
   initiateCallForPartner,
   initiateCallForPartnerVariables,
 } from '../../graphql/types/initiateCallForPartner';
-import { INITIATE_CALL_FOR_PARTNER } from '../../graphql/profiles';
+import {
+  initiateDocOnCall,
+  initiateDocOnCallVariables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
+import {
+  INITIATE_CALL_FOR_PARTNER,
+  INITIATE_DOC_ON_CALL,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 const { width } = Dimensions.get('window');
 
@@ -89,11 +97,13 @@ export interface HdfcConnectPopupProps {
   benefitId?: string;
   successCallback?: () => void;
   userSubscriptionId?: string;
-  handleProceedToConnect?: () => void;
+  helplineNumber?: string;
+  isVaccineDocOnCall?: boolean;
+  postWEGEvent?: () => void;
 }
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
-  const { userSubscriptionId, handleProceedToConnect, benefitId, onClose } = props;
+  const { userSubscriptionId, helplineNumber, isVaccineDocOnCall, postWEGEvent } = props;
   const { currentPatient } = useAllCurrentPatients();
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const { showAphAlert } = useUIElements();
@@ -103,9 +113,8 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
   const client = useApolloClient();
 
   const fireExotelApi = () => {
-    if (!benefitId) {
-      onClose?.();
-      handleProceedToConnect?.();
+    if (isVaccineDocOnCall) {
+      initiateVaccinationDoctorOnCall();
       return;
     }
     setDisableButton(true);
@@ -140,6 +149,36 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
       });
   };
 
+  // Call an apollo doctor logic handler
+  const initiateVaccinationDoctorOnCall = () => {
+    postWEGEvent?.();
+    setLoading(true);
+    client
+      .query<initiateDocOnCall, initiateDocOnCallVariables>({
+        query: INITIATE_DOC_ON_CALL,
+        variables: {
+          mobileNumber,
+          callType: docOnCallType.COVID_VACCINATION_QUERY,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setShowConnectMessage(true);
+        setLoading(false);
+        setTimeout(() => {
+          props.onClose();
+        }, 2000);
+      })
+      .catch((error) => {
+        props.onClose();
+        setLoading(false);
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: 'We could not connect to the doctor now. Please try later.',
+        });
+      });
+  };
+
   const renderConnectSteps = () => {
     return (
       <View
@@ -150,7 +189,8 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
         <View style={styles.containerRow}>
           <View style={styles.stepsContainer}>
             <CallConnectIcon style={styles.centerIcons} />
-            <Text style={styles.stepsText}>{`Answer the call from 040-482-17258 to connect.`}</Text>
+            <Text style={styles.stepsText}>{`Answer the call from ${helplineNumber ||
+              '040-482-17258'} to connect.`}</Text>
           </View>
           <View style={styles.stepsContainer}>
             <CallRingIcon style={styles.callIcon} />
