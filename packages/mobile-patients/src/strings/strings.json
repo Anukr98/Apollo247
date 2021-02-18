@@ -451,7 +451,7 @@
     "collectionFromText": "Sample collection address",
     "orderCancelledSuccessText": "Your order has been cancelled successfully!",
     "orderRescheduleSuccessText": "Your order has been rescheduled for {{dateTime}}!",
-    "stepsToBook": "3 simple steps to get lab test done",
+    "stepsToBook": "3 simple steps to get a lab test done",
     "certificateText": "Certified safety and quality fullfiled by Apollo Diagnostics.",
     "stepsToBookHeading": "How it works",
     "bookOnline": "Book Online",

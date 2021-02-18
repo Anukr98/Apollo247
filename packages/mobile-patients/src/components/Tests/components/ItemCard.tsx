@@ -301,9 +301,6 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function onPressRemoveFromCart(item: any) {
-    if (!props.isServiceable) {
-      return;
-    }
     removeCartItem!(`${item?.itemId}`);
   }
 
@@ -355,13 +352,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text(
-              'B',
-              isSmallDevice ? 13 : 14,
-              props.isServiceable ? '#fc9916' : '#FED984',
-              1,
-              24
-            ),
+            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
           },
         ]}
         onPress={() =>
