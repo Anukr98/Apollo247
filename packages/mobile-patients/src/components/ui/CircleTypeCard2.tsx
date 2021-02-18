@@ -107,8 +107,8 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
              </View>
 
              <View style={styles.subPlanTwo}>
-             <Text style={{...theme.viewStyles.text('M', 12, '#02475B', 1, 16)}}>Your Plan {"\n"} Expires In:</Text>
-             <Text style={{...theme.viewStyles.text('M', 20, '#02475B', 1, 25)}}>{expiry} days</Text>
+             <Text style={{...theme.viewStyles.text('M', 12, '#02475B', 1, 16)}}>Your Plan {"\n"}Expires In:</Text>
+             <Text style={[{...theme.viewStyles.text('M', 20, '#02475B', 1, 25)},{alignSelf: 'flex-end'}]}>{expiry} days</Text>
              </View>
 
              <View style={styles.subPlanThree}>
