@@ -580,7 +580,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     transactionId: number,
     paymentMode: string,
     bankCode: string,
-    orderInfo: saveMedicineOrderOMSVariables
+    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables
   ) => {
     orders?.forEach((order) => {
       firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
@@ -835,7 +835,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 placeOrderV2(orders!, transactionId!, 'HCorder', false);
               } else {
                 console.log('Redirect To Payment Gateway');
-                redirectToPaymentGateway(orders!, transactionId!, paymentMode, bankCode, orderInfo)
+                redirectToPaymentGateway(
+                  orders!,
+                  transactionId!,
+                  paymentMode,
+                  bankCode,
+                  OrderInfoV2
+                )
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
                   })

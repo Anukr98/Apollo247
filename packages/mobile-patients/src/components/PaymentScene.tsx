@@ -83,6 +83,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     setCircleMembershipCharges,
     isCircleSubscription,
     circleSubscriptionId,
+    pharmacyCircleAttributes,
+    grandTotal,
+    cartTotalCashback,
   } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
   const burnHC = props.navigation.getParam('burnHC');
@@ -191,6 +194,27 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
   };
 
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
+    orderId: string,
+    orderAutoId: string
+  ) => {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      'customer id': currentPatient ? currentPatient.id : '',
+      'cart size': cartItems.length,
+      af_revenue: getFormattedAmount(grandTotal),
+      af_currency: 'INR',
+      'order id': orderId,
+      orderAutoId: orderAutoId,
+      'coupon applied': coupon ? true : false,
+      'Circle Cashback amount':
+        circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+      ...pharmacyCircleAttributes!,
+    };
+    return appsflyerEventAttributes;
+  };
+
   const fireOrderEvent = (isSuccess: boolean, orderId: string, orderAutoId: number) => {
     if (checkoutEventAttributes) {
       const paymentEventAttributes = {
@@ -202,7 +226,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
       postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
+      postAppsFlyerEvent(
+        AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
+        getPrepaidCheckoutCompletedAppsFlyerEventAttributes(orderId, `${orderAutoId}`)
+      );
       firePurchaseEvent(orderId);
       if (!!isSuccess) {
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
