@@ -359,7 +359,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ImageNative.getSize(
           item?.bannerImage,
           (width, height) => {
-            setImgHeight(height * (winWidth / width));
+            setImgHeight(height * (winWidth / width) + 20);
             setBannerLoading(false);
           },
           () => {
@@ -669,7 +669,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
           } else {
             obj = {
-              cityId: '0',
+              cityId: '9',
               stateId: '0',
               state: '',
               city: '',
@@ -768,10 +768,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const onSearchTest = async (_searchText: string) => {
     if (isValidSearch(_searchText)) {
-      if (!g(locationForDiagnostics, 'cityId')) {
-        renderLocationNotServingPopup();
-        return;
-      }
+      // if (!g(locationForDiagnostics, 'cityId')) {
+      //   renderLocationNotServingPopup();
+      //   return;
+      // }
       if (!(_searchText && _searchText.length > 2)) {
         setDiagnosticResults([]);
         return;
@@ -947,8 +947,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
       <View
-        pointerEvents={!isSeviceableObjectEmpty && serviceableObject?.city != '' ? 'auto' : 'none'}
-        // style={styles.searchViewShadow}
+      // pointerEvents={!isSeviceableObjectEmpty && serviceableObject?.city != '' ? 'auto' : 'none'}
+      // style={styles.searchViewShadow}
       >
         <SearchInput
           _isSearchFocused={isSearchFocused}
@@ -974,10 +974,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
           onChangeText={(value) => {
             if (isValidSearch(value)) {
-              if (!g(locationForDiagnostics, 'cityId')) {
-                renderLocationNotServingPopup();
-                return;
-              }
+              // if (!g(locationForDiagnostics, 'cityId')) {
+              //   renderLocationNotServingPopup();
+              //   return;
+              // }
               setSearchText(value);
               if (!(value && value.length > 2)) {
                 setDiagnosticResults([]);
@@ -1359,7 +1359,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
       <View>
@@ -1418,7 +1418,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
