@@ -2366,12 +2366,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       postPaymentInitiatedWebengage();
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
+          console.log({ data });
           // in case duplicate test, price mismatch, address mismatch, slot issue
           if (!data?.saveDiagnosticBookHCOrder?.status) {
             let message =
               data?.saveDiagnosticBookHCOrder?.errorMessageToDisplay ||
               string.diagnostics.bookingOrderFailedMessage;
-            renderAlert(message);
+            let itemIds = data?.saveDiagnosticBookHCOrder?.attributes?.itemids;
+            showAphAlert!({
+              title: string.common.uhOh,
+              description: message,
+              onPressOk: () => {
+                removeDuplicateCartItems(itemIds!, bookingOrderInfo?.items);
+              },
+            });
           } else {
             const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
             const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
@@ -2449,36 +2457,101 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     proceedForBooking();
   };
 
-  const checkDuplicateItems = () => {
+  function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
+    const getItemIds = itemIds?.split(',');
+    console.log({ getItemIds }); //can be used only when itdose starts returning all id
+    checkDuplicateItems(pricesOfEach);
+  }
+
+  const checkDuplicateItems = (pricesForItem: any) => {
+    console.log({ cartItems });
     const allInclusions = cartItems?.map((item) => item?.inclusions);
+
+    console.log({ allInclusions });
+
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
-    const duplicateItems = mergedInclusions?.filter((e: any, i: any, a: any) => a.indexOf(e) !== i);
+    console.log({ mergedInclusions });
+    const duplicateItems_1 = mergedInclusions?.filter(
+      (e: any, i: any, a: any) => a.indexOf(e) !== i
+    );
+    const duplicateItems = [...new Set(duplicateItems_1)];
+    console.log({ duplicateItems_1 });
+    console.log({ duplicateItems });
+    console.log({ pricesForItem });
+
+    //1. find the duplicate item id (duplicateItems)
+    //2. check if these duplicate items are part of the cart, if so then push in "newArr"
+    //   which can be used to remove all items at once.
+    //3. get remaining itemId's from duplicateArr & newArr , which still needs to be
+    //   taken care of, may be part of packages (duplicate-newArr)  => remainingDuplicateItems
+    //4. find the in the cartItems, the remaining duplicate one's (remainingDuplicateItems) => cartItemDuplicateItems
+    //5. now from pricesInItem, compare cartItemDuplicate , which is less needs to push in itemIdRemove
+
     if (duplicateItems?.length) {
-      setLoading!(true);
-      getDiagnosticsAvailability(Number(addressCityId), cartItems, duplicateItems, 'proceedToPay')
-        .then(({ data }) => {
-          const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-          const duplicateTests = diagnosticItems?.map((item) => item?.itemName).join(', ');
-          showAphAlert!({
-            title: string.common.uhOh,
-            description:
-              duplicateTests +
-              (diagnosticItems?.length == 1 ? ' is' : ' are') +
-              string.diagnostics.itemAlreadyExist,
-            onPressOk: () => {
-              setLoading!(false);
-              hideAphAlert!();
-            },
-          });
-        })
-        .catch((e) => {
-          CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-          setLoading!(false);
-          errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
-        });
-    } else {
-      proceedForBooking();
+      //search for duplicate items in cart.
+      let res = cartItems?.filter((item) => duplicateItems.includes(Number(item?.id))); //itemIdToRemove
+      let res1 = res.map((item) => Number(item.id)); //itemIdtoRemove
+
+      console.log({ res });
+      console.log(res1);
+
+      const remainingDuplicateItems = duplicateItems?.filter(function(el) {
+        return res1?.indexOf(el) < 0;
+      });
+
+      console.log({ remainingDuplicateItems });
+
+      let xx = [];
+      for (let i = 0; i < cartItems?.length; i++) {
+        for (let j = 0; j < remainingDuplicateItems?.length; j++) {
+          if (cartItems?.[i]?.inclusions?.includes(remainingDuplicateItems?.[j])) {
+            xx.push(cartItems?.[i]);
+          }
+        }
+      }
+      console.log({ xx });
+      let removeX = [...new Set(xx)];
+      console.log({ removeX });
+
+      let removeXItem = removeX?.map((item) => Number(item?.id));
+      let kk = pricesForItem?.filter(function(el) {
+        return removeXItem?.indexOf(el) < 0;
+      });
+      console.log({ kk });
+      let ss = kk?.sort((a, b) => a?.price - b?.price);
+      console.log({ ss });
     }
+
+    // console.log({ cartItemDuplicateItems });
+
+    // if (duplicateItems?.length) {
+    //   setLoading!(true);
+    //   getDiagnosticsAvailability(Number(addressCityId), cartItems, duplicateItems, 'proceedToPay')
+    //     .then(({ data }) => {
+    //       const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+    //       console.log({ diagnosticItems });
+    //       const duplicateTests = diagnosticItems?.map((item) => item?.itemName).join(', ');
+    //       showAphAlert!({
+    //         title: string.common.uhOh,
+    //         description:
+    //           duplicateTests +
+    //           (diagnosticItems?.length == 1 ? ' is' : ' are') +
+    //           string.diagnostics.itemAlreadyExist,
+    //         onPressOk: () => {
+    //           setLoading!(false);
+    //           hideAphAlert!();
+    //         },
+    //       });
+    //     })
+    //     .catch((e) => {
+    //       CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
+    //       setLoading!(false);
+    //       errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+    //     });
+    // }
+    // else {
+    //   proceedForBooking();
+    // }
   };
 
   const proceedForBooking = () => {
