@@ -2338,10 +2338,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const dataBannerCards = () => {
+  const dataBannerCards = (darktheme) => {
     const datatoadd = bannerData?.filter((item) => item?.banner_display_type === 'card');
+
     const datatosend = datatoadd?.map((item) => ({
-      imageUrl: { uri: item?.banner },
+      imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
       title: item?.banner_template_info?.headerText1,
       value: '',
     }));
@@ -2432,6 +2433,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         );
 
+          const getMobileURL = (url: string) => {
+            const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+            const txt = url.split(ext)[0];
+            const path = txt.split('/');
+            path.pop();
+            const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+            const mPath = path.join('/').concat('/d_'.concat(name).concat(ext));
+            return mPath;
+          };
+
+
   const renderCircle = () => {
 
     const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
@@ -2440,7 +2452,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     renew ? setIsRenew && setIsRenew(true): setIsRenew && setIsRenew(false);
     const darktheme= circleStatus === 'disabled'?true:false;
 
-    const cardlist = dataBannerCards();
+    const cardlist = dataBannerCards(darktheme);
 
     console.log(
       'csk value',
