@@ -506,18 +506,18 @@ const styles = StyleSheet.create({
     borderColor: '#FC9916',
     padding: 8,
     borderRadius: 12,
-    alignItems:'center',
+    alignItems: 'center',
   },
   circleCardsTexts: {
     flex: 0.6,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf:'center',
-    paddingTop:22,
+    alignSelf: 'center',
+    paddingTop: 22,
   },
   circleCardsImages: {
     flex: 0.4,
-    alignSelf:'center',
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -714,6 +714,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circlePlanValidity,
     setCirclePaymentReference,
     pharmacyCircleAttributes,
+    setIsCircleExpired,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -1501,6 +1502,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
             setIsCircleSubscription && setIsCircleSubscription(true);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          }
+
+          if (circleData?.status === 'disabled') {
+            setIsCircleExpired && setIsCircleExpired(true);
           }
 
           const planValidity = {
@@ -2337,8 +2342,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text
                 style={
                   darktheme
-                    ? [{ ...theme.viewStyles.text('M', 13, '#666666', 0.6, 17) },{alignSelf:'center',alignItems:'center'}]
-                    : [{ ...theme.viewStyles.text('M', 13, '#02475B', 1, 17) },{alignSelf:'center',alignItems:'center'}]
+                    ? [
+                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 17) },
+                        { alignSelf: 'center', alignItems: 'center' },
+                      ]
+                    : [
+                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 17) },
+                        { alignSelf: 'center', alignItems: 'center' },
+                      ]
                 }
               >
                 {item?.title}
@@ -2534,7 +2545,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
                 {' '}
-                You can too{ renew?" - Renew now!":"."}
+                You can too{renew ? ' - Renew now!' : '.'}
               </Text>
             </Text>
           ) : circleStatus === 'disabled' ? (

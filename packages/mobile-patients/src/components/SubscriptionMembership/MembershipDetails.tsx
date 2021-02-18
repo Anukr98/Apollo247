@@ -1,6 +1,6 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -10,7 +10,12 @@ import {
   Linking,
   BackHandler,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   DownOrange,
@@ -79,6 +84,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import AsyncStorage from '@react-native-community/async-storage';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -192,12 +200,16 @@ export interface MembershipDetailsProps extends NavigationScreenProps {
   isActive: boolean;
   source?: string;
   isRenew: boolean;
+  isExpired?: boolean;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
   const isCirclePlan = membershipType === Circle.planName;
   const source = props.navigation.getParam('source');
+  const isExpired = props.navigation.getParam('isExpired');
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
 
   const {
     hdfcUserSubscriptions,
@@ -208,6 +220,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     setHdfcUserSubscriptions,
     setCircleSubscription,
     setHdfcUpgradeUserSubscriptions,
+    healthCredits,
   } = useAppCommonData();
   const {
     setHdfcPlanName,
@@ -245,6 +258,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
   const client = useApolloClient();
+  const planValidity = useRef<string>('');
+  const planPurchased = useRef<boolean | undefined>(false);
 
   useEffect(() => {
     fetchCircleSavings();
@@ -985,7 +1000,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return areCouponsAvailable && <CouponsUnlocked coupons={coupons} />;
   };
 
-  const renderMembershipBanner = () => <MembershipBanner membershipType={membershipType} />;
+  const renderMembershipBanner = () => (
+    <MembershipBanner
+      membershipType={membershipType}
+      isExpired={isExpired}
+      onRenewClick={() => setShowCirclePlans(true)}
+    />
+  );
 
   const renderHdfcMembershipDetails = () => {
     return (
@@ -1061,7 +1082,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            handleCtaClick(type, action, message, availableCount, _id, null, attribute);
+            if (!isExpired) {
+              handleCtaClick(type, action, message, availableCount, _id, null, attribute);
+            }
           }}
           style={[styles.cardStyle, { marginVertical: 10 }]}
         >
@@ -1070,6 +1093,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             bodyText={description}
             icon={icon}
             isActivePlan={true}
+            isExpired={isExpired}
           />
         </TouchableOpacity>
       );
@@ -1080,14 +1104,20 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <ScrollView bounces={false}>
         {renderMembershipBanner()}
-        <CircleSavings navigation={props.navigation} isRenew={props.isRenew} />
+        <CircleSavings
+          navigation={props.navigation}
+          isRenew={props.isRenew}
+          isExpired={isExpired}
+        />
         <View
           style={{
             backgroundColor: '#FFFFFF',
             padding: 15,
           }}
         >
-          <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 18, 0.35)}>
+          <Text
+            style={theme.viewStyles.text('M', 14, isExpired ? '#979797' : '#02475B', 1, 18, 0.35)}
+          >
             AVAILABLE BENEFITS
           </Text>
           {renderCircleBenefits(circleSubscription?.benefits)}
@@ -1097,6 +1127,60 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       </ScrollView>
     );
   };
+
+  const renderCircleSubscriptionPlans = () => {
+    return (
+      <CircleMembershipPlans
+        navigation={props.navigation}
+        isModal={true}
+        closeModal={() => setShowCirclePlans(false)}
+        buyNow={true}
+        membershipPlans={circleSubscription?.planSummary}
+        source={'Consult'}
+        from={string.banner_context.MEMBERSHIP_DETAILS}
+        healthCredits={healthCredits}
+        onPurchaseWithHCCallback={(res: any) => {
+          fireCirclePurchaseEvent(
+            currentPatient,
+            res?.data?.CreateUserSubscription?.response?.end_date
+          );
+          planPurchased.current =
+            res?.data?.CreateUserSubscription?.response?.status === 'PAYMENT_FAILED' ? false : true;
+          planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+          setShowCircleActivation(true);
+        }}
+      />
+    );
+  };
+  const renderCircleMembershipActivated = () => (
+    <CircleMembershipActivation
+      visible={showCircleActivation}
+      closeModal={(planActivated) => {
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+                params: {
+                  skipAutoQuestions: true,
+                },
+              }),
+            ],
+          })
+        );
+        setShowCircleActivation(false);
+      }}
+      defaultCirclePlan={{}}
+      navigation={props.navigation}
+      circlePaymentDone={planPurchased.current}
+      circlePlanValidity={{ endDate: planValidity.current }}
+      source={'Consult'}
+      from={string.banner_context.MEMBERSHIP_DETAILS}
+    />
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaStyle}>
@@ -1146,6 +1230,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           navigation={props.navigation}
         />
       ) : null}
+      {showCircleActivation && renderCircleMembershipActivated()}
+      {showCirclePlans && renderCircleSubscriptionPlans()}
       {loading && <Spinner />}
     </View>
   );
