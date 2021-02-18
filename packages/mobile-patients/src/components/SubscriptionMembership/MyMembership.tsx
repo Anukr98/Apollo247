@@ -577,7 +577,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     const isCare = subscriptionName === Circle.planName;
     const buttonText = isCare
       ? isRenew
-      ?'UPGRADE'
+      ?'RENEW'
       :'GO TO HOMEPAGE'
       : isCanUpgradeToPlan
       ? 'HOW TO AVAIL'
