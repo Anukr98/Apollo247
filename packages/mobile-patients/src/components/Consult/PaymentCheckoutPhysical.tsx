@@ -1,40 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   SafeAreaView,
   StyleSheet,
   ScrollView,
   Text,
-  Alert,
   Linking,
   Dimensions,
   Image,
-  ImageBackground,
   TouchableOpacity,
   Modal,
+  Platform,
 } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
 import { ProfileList } from '../ui/ProfileList';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
-import { DoctorCheckoutCard } from '@aph/mobile-patients/src/components/ui/DoctorCheckoutCard';
-import { CareMembershipAdded } from '@aph/mobile-patients/src/components/ui/CareMembershipAdded';
 import { ConsultPriceBreakup } from '@aph/mobile-patients/src/components/ui/ConsultPriceBreakup';
-import { ConsultDiscountCard } from '@aph/mobile-patients/src/components/ui/ConsultDiscountCard';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import {
-  ArrowRight,
-  CouponIcon,
   CircleLogo,
   DoctorPlaceholderImage,
   DropdownGreen,
   LinkedUhidIcon,
-  Location,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   g,
   postWebEngageEvent,
@@ -51,21 +41,20 @@ import {
   DoctorType,
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  isPhysicalConsultation,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  validateConsultCoupon,
-  userSpecificCoupon,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import firebase from 'react-native-firebase';
 import {
   CommonBugFender,
   CommonLogEvent,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
@@ -96,7 +85,6 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import messaging from '@react-native-firebase/messaging';
 import {
   getAppointmentData,
@@ -119,13 +107,6 @@ interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
 }
 export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
-  const {
-    locationDetails,
-    hdfcPlanId,
-    circlePlanId,
-    hdfcStatus,
-    circleStatus,
-  } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -140,7 +121,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [showList, setShowList] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
@@ -162,14 +143,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
-    onlineConsultMRPPrice,
-    physicalConsultMRPPrice,
     isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-  const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
-  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
-    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
-  );
+  const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
     : physicalConsultDiscountedPrice;
@@ -216,33 +192,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
-  const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Consult')
-      .then((resp: any) => {
-        if (resp?.data?.errorCode == 0) {
-          let couponList = resp?.data?.response;
-          if (typeof couponList != null && couponList?.length) {
-            const coupon = couponList?.[0]?.coupon;
-            validateUserSpecificCoupon(coupon);
-          }
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('fetchingUserSpecificCoupon', error);
-      });
-  };
-
-  async function validateUserSpecificCoupon(coupon: string) {
-    try {
-      await validateCoupon(coupon, true);
-    } catch (error) {
-      setCoupon('');
-      setDoctorDiscountedFees(0);
-      setLoading!(false);
-      return;
-    }
-  }
-
   const renderPrice = () => {
     return (
       <View>
@@ -267,14 +216,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       <View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
-
-          {/*
-        (
-        <TouchableOpacity onPress={()=>setShowProfilePopUp(true)}>
-        <Text style={[styles.priceBreakupTitle,{color:'#FC9916'}]}>CHANGE PROFILE</Text>
-        </TouchableOpacity>
-        )
-        */}
         </View>
         <View style={styles.seperatorLine} />
         <Text
@@ -347,7 +288,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           <Text style={styles.priceBreakupTitle}>LOCATION</Text>
           <View style={styles.seperatorLine} />
 
-          <View style={styles.row}>
+          <View>
             <Text
               style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap', fontSize: 14 }]}
             >
@@ -357,9 +298,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   : ''
               }${doctor?.doctorHospital?.[0].facility?.city}`}
             </Text>
-            {Platform.OS === 'ios' ? (
-              ''
-            ) : (
+            {Platform.OS === 'android' && (
               <TouchableOpacity onPress={() => openMaps()}>
                 <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                   https://www.google.com/maps/dir/
@@ -509,7 +448,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         visible={showProfilePopUp}
         onRequestClose={() => {
           setShowProfilePopUp(false);
-          handleBack();
         }}
         onDismiss={() => {
           setShowProfilePopUp(false);
@@ -546,27 +484,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
         <Text style={styles.priceBreakupTitle}>{string.common.oneTimePhysicalCharge}</Text>
       </View>
-    );
-  };
-
-  const renderDiscountView = () => {
-    return (
-      <ConsultDiscountCard
-        style={{
-          marginBottom: notSubscriberUserForCareDoctor && amountToPay >= discountedPrice ? 0 : 20,
-        }}
-        coupon={coupon}
-        couponDiscountFees={couponDiscountFees}
-        doctor={doctor}
-        selectedTab={selectedTab}
-        circleSubscriptionId={circleSubscriptionId}
-        planSelected={circlePlanSelected}
-        onPressCard={() =>
-          setTimeout(() => {
-            scrollviewRef.current.scrollToEnd({ animated: true });
-          }, 300)
-        }
-      />
     );
   };
 
@@ -949,29 +866,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
-  };
-
-  const renderSaveWithCarePlanView = () => {
-    return (
-      <View
-        style={[
-          styles.saveWithCareView,
-          {
-            elevation: totalSavings > 0 ? 2 : 4,
-          },
-        ]}
-      >
-        <Text style={styles.smallText}>
-          You could have{' '}
-          <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
-            saved {string.common.Rs}
-            {discountedPrice}
-          </Text>{' '}
-          on this purchase with
-        </Text>
-        <CircleLogo style={styles.careLogo} />
-      </View>
-    );
   };
 
   return (
