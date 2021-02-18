@@ -179,7 +179,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
-  const fireOrderFailedEvent = () => {
+  const fireOrderFailedEvent = (orderId: string) => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
       OrderID: orderId,
       Price: totalAmount,
@@ -233,27 +233,25 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1 &&
       loading
     ) {
-      WebViewRef.stopLoading();
-      // handleOrderSuccess();
       navigationToPaymentStatus('PAYMENT_SUCCESS');
       orders?.forEach((order: any) => {
         fireOrderEvent(true, order?.id!, order?.orderAutoId);
       });
+      WebViewRef.stopLoading();
     } else if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1 &&
       loading
     ) {
-      WebViewRef.stopLoading();
-      fireOrderFailedEvent();
       if (!!circleMembershipCharges) {
         navigationToPaymentStatus('PAYMENT_FAILED');
       } else {
         navigationToPaymentStatus('PAYMENT_PENDING');
-        orders?.forEach((order: any) => {
-          fireOrderEvent(false, order?.id!, order?.orderAutoId);
-        });
       }
+      orders?.forEach((order: any) => {
+        fireOrderFailedEvent(order?.id!);
+      });
+      WebViewRef.stopLoading();
     }
   };
 
