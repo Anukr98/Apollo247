@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-    paddingTop: 22,
+    padding: 8,
   },
   circleCardsImages: {
     flex: 0.4,
@@ -2374,7 +2374,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 {item?.title}
               </Text>
-              {item?.value && (<Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) }}>
+              {item?.value && (<Text style={[{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },{
+              alignSelf:'flex-start'}]}>
                 {item?.value}
               </Text>)}
             </View>
