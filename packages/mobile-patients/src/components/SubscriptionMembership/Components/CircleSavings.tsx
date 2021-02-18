@@ -62,7 +62,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
         )}
         {isExpired || isRenew ? (
           <Button
-            title={isExpired ? `UPGRADE` : `RENEW NOW`}
+            title={`RENEW NOW`}
             style={{ width: 106, height: 32 }}
             onPress={() => {
               setShowCirclePlans(true);

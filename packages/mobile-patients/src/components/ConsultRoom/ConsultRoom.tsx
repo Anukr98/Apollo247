@@ -1511,6 +1511,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const planValidity = {
             startDate: circleData?.start_date,
             endDate: circleData?.end_date,
+            expiry: circleData?.expires_in
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
@@ -2457,7 +2458,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
             savings={circleSavings}
             credits={healthCredits}
-            expiry={expiry}
+            expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && renew ? (
           <CircleTypeCard2
@@ -2466,7 +2467,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               console.log('circle button2 pressed');
             }}
             credits={healthCredits}
-            expiry={expiry}
+            expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
           <CircleTypeCard3
