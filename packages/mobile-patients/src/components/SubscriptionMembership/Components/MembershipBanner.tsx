@@ -34,14 +34,14 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
           <View>
             <CircleBannerExpired resizeMode="cover" style={styles.circleBannerStyle} />
             <View style={styles.circleExpiredSavings}>
-              {circleSavings != 0 && (
-                <View style={{ flexDirection: 'row' }}>
-                  <CircleLogoWhite style={styles.circleExpiredLogo} />
-                  <Text
-                    style={styles.circleExpiredText}
-                  >{`has saved you ${string.common.Rs}${circleSavings} so far.`}</Text>
-                </View>
-              )}
+              <View style={{ flexDirection: 'row' }}>
+                <CircleLogoWhite style={styles.circleExpiredLogo} />
+                <Text style={styles.circleExpiredText}>
+                  {circleSavings > 0
+                    ? `has saved you ${string.common.Rs}${circleSavings} so far.`
+                    : `members save upto ${string.common.Rs}848`}
+                </Text>
+              </View>
               <Text style={theme.viewStyles.text('M', 15, '#02475B', 1, 25, 0.35)}>
                 Renew and continue to save more!
               </Text>
