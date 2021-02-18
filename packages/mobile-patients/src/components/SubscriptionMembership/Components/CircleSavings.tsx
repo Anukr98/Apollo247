@@ -16,7 +16,7 @@ import {timeDiffDaysFromNow} from '@aph/mobile-patients/src/helpers/helperFuncti
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps , StackActions,NavigationActions, } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import Carousel from 'react-native-snap-carousel';
 import { WebView } from 'react-native-webview';
@@ -42,7 +42,6 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
   const renderCircleExpiryBanner = () => {
   const expiry=timeDiffDaysFromNow(circleSubscription?.endDate);
-  console.log('csk,csk sub',healthCredits,JSON.stringify(circleSubscription))
 
 
     return (
@@ -56,7 +55,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
         </Text>
           { isRenew?
           (<Button
-                               title={`UPGRADE`}
+                               title={`RENEW`}
                                style={{width:94,height:32}}
                                onPress={()=>{
                                setShowCirclePlans(true);
@@ -118,13 +117,26 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
     const renderCircleMembershipActivated = () => (
         <CircleMembershipActivation
           visible={showCircleActivation}
-          closeModal={(planActivated) => {
+          closeModal={(planActivated) => {props.navigation.dispatch(
+                                                                                                          StackActions.reset({
+                                                                                                            index: 0,
+                                                                                                            key: null,
+                                                                                                            actions: [
+                                                                                                              NavigationActions.navigate({
+                                                                                                                routeName: AppRoutes.ConsultRoom,
+                                                                                                                params: {
+                                                                                                                  skipAutoQuestions: true,
+                                                                                                                },
+                                                                                                              }),
+                                                                                                            ],
+                                                                                                          })
+                                                                                                        );
             setShowCircleActivation(false);
           }}
           defaultCirclePlan={{}}
           navigation={props.navigation}
           circlePaymentDone={planPurchased.current}
-          circlePlanValidity={planValidity.current}
+          circlePlanValidity={{endDate:planValidity.current}}
           source={'Consult'}
           from={strings.banner_context.MEMBERSHIP_DETAILS}
         />

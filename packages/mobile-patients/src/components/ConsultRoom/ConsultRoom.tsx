@@ -68,6 +68,7 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -736,6 +737,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCircleActivationcr, setShowCircleActivationcr] = useState<boolean>(false);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
@@ -746,7 +748,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
-  //const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
+
+  const planValiditycr = useRef<string>('');
+  const planPurchasedcr = useRef<boolean | undefined>(false);
   const circlePlanStatus = props.navigation.getParam('circleStatus');
   const webengage = new WebEngage();
   const client = useApolloClient();
@@ -1508,7 +1512,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         variables: query,
       });
 
-      console.log('csk subs plan', JSON.stringify(res));
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
         /**
@@ -2400,18 +2403,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             currentPatient,
             res?.data?.CreateUserSubscription?.response?.end_date
           );
-          planPurchased.current = true;
-          planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+          planPurchasedcr.current = res?.data?.CreateUserSubscription?.response?.status==='PAYMENT_FAILED'?false:true;
+          planValiditycr.current = res?.data?.CreateUserSubscription?.response?.end_date;
 
-            getUserSubscriptionsByStatus();
-            getUserSubscriptionsWithBenefits();
-            circleActivatedRef.current = false;
-          setShowCircleActivation(true);
-          console.log('csk callback response',JSON.response(res))
+          console.log('csk callback response',JSON.stringify(res),planPurchasedcr,moment(planValiditycr.current).format('DD MMMM YYYY'));
+          setShowCircleActivationcr(true);
         }}
       />
     );
   };
+
+    const renderCircleActivation = () => (
+          <CircleMembershipActivation
+            visible={showCircleActivationcr}
+            closeModal={(planActivated) => {
+              setShowCircleActivationcr(false);
+            }}
+            defaultCirclePlan={{}}
+            navigation={props.navigation}
+            circlePaymentDone={planPurchasedcr.current}
+            circlePlanValidity={{endDate:planValiditycr.current}}
+            source={'Consult'}
+            from={string.banner_context.MEMBERSHIP_DETAILS}
+          />
+        );
 
   const renderCircle = () => {
 
@@ -2963,6 +2978,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {isCircleMember === 'yes' && renderCircle()}
               </View>
               {showCirclePlans && renderCircleSubscriptionPlans()}
+              {showCircleActivationcr && renderCircleActivation()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderCovidContainer()}</View>
