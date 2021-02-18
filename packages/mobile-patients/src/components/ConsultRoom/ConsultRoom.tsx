@@ -2567,10 +2567,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
                 {' '}
-                You can too - Renew now!
+                You can too{ renew?" - Renew now!":"."}
               </Text>
             </Text>
-          ) : expiry < 0 ? (
+          ) : circleStatus === 'disabled' ? (
             <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
               You’re missing out on benefits - Renew your membership now!!!{' '}
             </Text>
