@@ -2333,7 +2333,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           } else if (action.cta_action == "DIAGNOSTICS_LANDING") {
             props.navigation.navigate('TESTS');
           } else if (action.cta_action == "MEMBERSHIP_DETAIL_CIRCLE") {
-              props.navigation.navigate(AppRoutes.MembershipDetails, {
+              props.navigation.navigate('MembershipDetails', {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
               });
