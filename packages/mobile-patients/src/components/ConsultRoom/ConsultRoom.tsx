@@ -1401,6 +1401,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       startDate: plan?.start_date,
     };
 
+    if (plan?.subscriptionStatus === 'disabled') {
+      setIsCircleExpired && setIsCircleExpired(true);
+    }
+
     return circleSubscptionData;
   };
 
