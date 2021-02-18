@@ -232,6 +232,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState({});
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchResult, setSearchResults] = useState<boolean>(false);
+  const [isCurrentScreen, setCurrentScreen] = useState<string>('');
 
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
@@ -341,9 +342,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
+      setCurrentScreen(AppRoutes.Tests); //to avoid showing non-serviceable prompt on medicine page
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setCurrentScreen('');
     });
     return () => {
       didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
   });
 
@@ -671,8 +677,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setServiceableObject(obj);
             setLoadingContext!(false);
             setDiagnosticLocationServiceable!(false);
-            renderLocationNotServingPopUpForPincode(pincode);
+
+            isCurrentScreen == AppRoutes.Tests
+              ? renderLocationNotServingPopUpForPincode(pincode)
+              : null;
+
             setServiceabilityMsg(string.diagnostics.nonServiceablePinCodeMsg);
+
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, false);
           }
           getHomePageWidgets(obj?.cityId);
@@ -1015,8 +1026,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
-
       checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
+
       setLoadingContext!(false);
     } catch (error) {
       setLoadingContext!(false);
