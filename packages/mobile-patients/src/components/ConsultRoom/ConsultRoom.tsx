@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     flexDirection: 'row',
     height: 88,
-    width: width / 2.6,
+    width: width / 2.27,
     marginHorizontal: 3,
     marginBottom: 2,
     borderWidth: 1.2,
@@ -506,14 +506,18 @@ const styles = StyleSheet.create({
     borderColor: '#FC9916',
     padding: 8,
     borderRadius: 12,
+    alignItems:'center',
   },
   circleCardsTexts: {
     flex: 0.6,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
+    alignSelf:'center',
+    paddingTop:22,
   },
   circleCardsImages: {
     flex: 0.4,
+    alignSelf:'center',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2331,8 +2335,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text
                 style={
                   darktheme
-                    ? { ...theme.viewStyles.text('L', 12, '#666666', 0.6, 16) }
-                    : { ...theme.viewStyles.text('L', 12, '#02475B', 1, 16) }
+                    ? [{ ...theme.viewStyles.text('M', 13, '#666666', 0.6, 17) },{alignSelf:'center',alignItems:'center'}]
+                    : [{ ...theme.viewStyles.text('M', 13, '#02475B', 1, 17) },{alignSelf:'center',alignItems:'center'}]
                 }
               >
                 {item?.title}
@@ -2528,10 +2532,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
                 {' '}
-                You can too - Renew now!
+                You can too{ renew?" - Renew now!":"."}
               </Text>
             </Text>
-          ) : expiry < 0 ? (
+          ) : circleStatus === 'disabled' ? (
             <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
               You’re missing out on benefits - Renew your membership now!!!{' '}
             </Text>

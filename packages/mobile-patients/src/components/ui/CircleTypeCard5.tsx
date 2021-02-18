@@ -143,7 +143,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
 
              <View style={styles.subPlanFour}>
              <Button
-                       title={`RENEW`}
+                       title={`RENEW NOW`}
                        style={{width:94,height:32}}
                        onPress={onButtonPress}
                        disabled={false}
