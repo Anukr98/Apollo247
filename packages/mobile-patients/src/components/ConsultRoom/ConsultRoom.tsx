@@ -2317,9 +2317,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
       title: item?.banner_template_info?.headerText1,
       value: '',
+      action:{type:item?.cta_action?.type,cta_action:item?.cta_action?.meta?.action}
     }));
     return datatosend;
   };
+
+  const navigateCTAActions=(action)=>{
+   if (action?.type == 'REDIRECT') {
+          if (action.cta_action == "SPECIALITY_LISTING") {
+            props.navigation.navigate(AppRoutes.DoctorSearch);
+          } else if (action.cta_action == "PHARMACY_LANDING") {
+            props.navigation.navigate('MEDICINES');
+          } else if (action.cta_action == 'PHR') {
+            props.navigation.navigate('HEALTH RECORDS');
+          } else if (action.cta_action == "DIAGNOSTICS_LANDING") {
+            props.navigation.navigate('TESTS');
+          } else if (action.cta_action == "MEMBERSHIP_DETAIL_CIRCLE") {
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+              });
+            }
+
+        }
+  }
 
   const renderCircleCards = (item, darktheme) => {
     return (
@@ -2328,10 +2349,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             !darktheme
-              ? props.navigation.navigate(AppRoutes.MembershipDetails, {
-                  membershipType: 'CIRCLE PLAN',
-                  isActive: true,
-                })
+              ? navigateCTAActions(item?.action)
               : null;
           }}
         >
