@@ -58,10 +58,10 @@ const styles = StyleSheet.create({
   ...theme.viewStyles.text('M', 9, '#fff', 1, 11),backgroundColor:'#C5411E',
   width:'100%',
   alignSelf:'center',
-  left:-25,
+  left:-24,
   marginTop:-2,
-  paddingLeft:20,
-  paddingTop:3,
+  paddingLeft:16,
+  paddingTop:2,
   },
 
 });
@@ -119,8 +119,7 @@ export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
 
             <View style={styles.subPlanOne}>
             <Text style={styles.alertText}>
-            Awaiting{"\n"}
-            Upgrade
+            Expired
             </Text>
 
              <Image style={styles.circleLogo}
