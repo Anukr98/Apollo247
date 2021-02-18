@@ -732,7 +732,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             setShowCirclePlans(true);
           }}
         >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>UPGRADE</Text>
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
         </TouchableOpacity>
       </View>
     );
