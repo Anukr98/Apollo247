@@ -474,6 +474,11 @@ export enum PharmaDiscountApplicableOn {
   SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
+export enum PlanPurchaseType {
+  first_time = "first_time",
+  renew = "renew",
+}
+
 export enum PrescriptionType {
   CONSULT = "CONSULT",
   LATER = "LATER",
@@ -1246,6 +1251,8 @@ export interface MedicineOrderShipmentInput {
   items?: (MedicineCartOMSItem | null)[] | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  allocationProfileName?: string | null;
+  clusterId?: string | null;
 }
 
 export interface MedicinePaymentMqInput {
@@ -1624,6 +1631,7 @@ export interface ShopAddress {
 export interface SourceMetaData {
   source_identifier?: string | null;
   sub_plan_id?: string | null;
+  purchase_type?: PlanPurchaseType | null;
 }
 
 export interface UpdateAppointmentInput {

@@ -1770,3 +1770,11 @@ export const InfoIconRed: React.FC<IconProps> = (props) => (
 export const WhyBookUs: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.png')} />
 );
+
+export const ExpiredBanner: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/Expired_banner.png')} />
+);
+
+export const CircleBannerExpired: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/Renew_circle_banner.png')} />
+);

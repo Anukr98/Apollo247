@@ -341,13 +341,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (orderId: string) => {
+  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
+    orderId: string,
+    orderAutoId: string
+  ) => {
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       'customer id': currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
       'order id': orderId,
+      orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
@@ -371,7 +375,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
     const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
+      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`, orderAutoId),
     };
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
 
@@ -576,7 +580,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     transactionId: number,
     paymentMode: string,
     bankCode: string,
-    orderInfo: saveMedicineOrderOMSVariables
+    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables
   ) => {
     orders?.forEach((order) => {
       firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
@@ -831,7 +835,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 placeOrderV2(orders!, transactionId!, 'HCorder', false);
               } else {
                 console.log('Redirect To Payment Gateway');
-                redirectToPaymentGateway(orders!, transactionId!, paymentMode, bankCode, orderInfo)
+                redirectToPaymentGateway(
+                  orders!,
+                  transactionId!,
+                  paymentMode,
+                  bankCode,
+                  OrderInfoV2
+                )
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
                   })

@@ -52,15 +52,7 @@ import {
   VaccineTracker,
   ChatBot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  initiateDocOnCall,
-  initiateDocOnCallVariables,
-} from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
-import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  docOnCallType,
-  BannerDisplayType,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BannerDisplayType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -514,18 +506,18 @@ const styles = StyleSheet.create({
     borderColor: '#FC9916',
     padding: 8,
     borderRadius: 12,
-    alignItems:'center',
+    alignItems: 'center',
   },
   circleCardsTexts: {
     flex: 0.6,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf:'center',
-    paddingTop:22,
+    alignSelf: 'center',
+    paddingTop: 22,
   },
   circleCardsImages: {
     flex: 0.4,
-    alignSelf:'center',
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -722,6 +714,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circlePlanValidity,
     setCirclePaymentReference,
     pharmacyCircleAttributes,
+    setIsCircleExpired,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -748,7 +741,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
@@ -1114,31 +1106,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Circle Member': 'No',
     };
     postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
-  };
-
-  // Call an apollo doctor logic handler
-  const initiateCallDoctor = (mobileNumber: string) => {
-    setLoading?.(true);
-    client
-      .query<initiateDocOnCall, initiateDocOnCallVariables>({
-        query: INITIATE_DOC_ON_CALL,
-        variables: {
-          mobileNumber,
-          callType: docOnCallType.COVID_VACCINATION_QUERY,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        setLoading?.(false);
-        response?.data?.initiateDocOnCall?.success
-          ? Alert.alert('You will be connected to the doctor shortly')
-          : handleGraphQlError(response, 'Error while connecting to the Doctor, Please try again');
-      })
-      .catch((error) => {
-        setLoading?.(false);
-        console.log(error);
-        handleGraphQlError(error, 'Error while connecting to the Doctor, Please try again');
-      });
   };
 
   const postHomeFireBaseEvent = (
@@ -1535,6 +1502,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
             setIsCircleSubscription && setIsCircleSubscription(true);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          }
+
+          if (circleData?.status === 'disabled') {
+            setIsCircleExpired && setIsCircleExpired(true);
           }
 
           const planValidity = {
@@ -2372,8 +2343,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text
                 style={
                   darktheme
-                    ? [{ ...theme.viewStyles.text('M', 13, '#666666', 0.6, 17) },{alignSelf:'center',alignItems:'center'}]
-                    : [{ ...theme.viewStyles.text('M', 13, '#02475B', 1, 17) },{alignSelf:'center',alignItems:'center'}]
+                    ? [
+                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 17) },
+                        { alignSelf: 'center', alignItems: 'center' },
+                      ]
+                    : [
+                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 17) },
+                        { alignSelf: 'center', alignItems: 'center' },
+                      ]
                 }
               >
                 {item?.title}
@@ -2408,30 +2385,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             currentPatient,
             res?.data?.CreateUserSubscription?.response?.end_date
           );
-          planPurchasedcr.current = res?.data?.CreateUserSubscription?.response?.status==='PAYMENT_FAILED'?false:true;
+          planPurchasedcr.current =
+            res?.data?.CreateUserSubscription?.response?.status === 'PAYMENT_FAILED' ? false : true;
           planValiditycr.current = res?.data?.CreateUserSubscription?.response?.end_date;
 
-          console.log('csk callback response',JSON.stringify(res),planPurchasedcr,moment(planValiditycr.current).format('DD MMMM YYYY'));
           setShowCircleActivationcr(true);
         }}
       />
     );
   };
 
-    const renderCircleActivation = () => (
-          <CircleMembershipActivation
-            visible={showCircleActivationcr}
-            closeModal={(planActivated) => {
-              setShowCircleActivationcr(false);
-            }}
-            defaultCirclePlan={{}}
-            navigation={props.navigation}
-            circlePaymentDone={planPurchasedcr.current}
-            circlePlanValidity={{endDate:planValiditycr.current}}
-            source={'Consult'}
-            from={string.banner_context.MEMBERSHIP_DETAILS}
-          />
-        );
+  const renderCircleActivation = () => (
+    <CircleMembershipActivation
+      visible={showCircleActivationcr}
+      closeModal={(planActivated) => {
+        setShowCircleActivationcr(false);
+      }}
+      defaultCirclePlan={{}}
+      navigation={props.navigation}
+      circlePaymentDone={planPurchasedcr.current}
+      circlePlanValidity={{ endDate: planValiditycr.current }}
+      source={'Consult'}
+      from={string.banner_context.MEMBERSHIP_DETAILS}
+    />
+  );
 
           const getMobileURL = (url: string) => {
             const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
@@ -2445,12 +2422,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
 
   const renderCircle = () => {
-
-    const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
-    const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
-    const renew=renewNow!=='' && renewNow==='yes'?true:false;
-    renew ? setIsRenew && setIsRenew(true): setIsRenew && setIsRenew(false);
-    const darktheme= circleStatus === 'disabled'?true:false;
+    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
+    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
+    renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
+    const darktheme = circleStatus === 'disabled' ? true : false;
 
     const cardlist = dataBannerCards(darktheme);
 
@@ -2466,7 +2444,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       circleSavings,
       'hc->',
       healthCredits,
-      circleSubscriptionId,
+      circleSubscriptionId
     );
 
     return (
@@ -2579,7 +2557,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
                 {' '}
-                You can too{ renew?" - Renew now!":"."}
+                You can too{renew ? ' - Renew now!' : '.'}
               </Text>
             </Text>
           ) : circleStatus === 'disabled' ? (
@@ -2890,16 +2868,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const handleProceedToConnectCall = async () => {
-    postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED);
-    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    if (storedPhoneNumber) {
-      initiateCallDoctor(storedPhoneNumber);
-    } else {
-      Alert.alert('Please try again later');
-    }
-  };
-
   const renderTopIcons = () => {
     const onPressCart = () => {
       const route =
@@ -3051,8 +3019,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         onRequestClose={() => setShowHdfcConnectPopup(false)}
       >
         <HdfcConnectPopup
+          helplineNumber={'040-482-12515'}
           onClose={() => setShowHdfcConnectPopup(false)}
-          handleProceedToConnect={() => handleProceedToConnectCall()}
+          isVaccineDocOnCall={true}
+          postWEGEvent={() =>
+            postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED)
+          }
         />
       </Overlay>
     </View>

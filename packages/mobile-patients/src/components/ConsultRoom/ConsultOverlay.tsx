@@ -51,7 +51,10 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  isPhysicalConsultation,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import moment from 'moment';
 const { width, height } = Dimensions.get('window');
@@ -134,7 +137,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     props.doctor,

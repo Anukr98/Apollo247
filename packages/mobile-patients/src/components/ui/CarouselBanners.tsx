@@ -550,7 +550,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const showBanner = bannerData && bannerData.length ? true : false;
-  const datatoshow= bannerData?.filter(i=>i?.banner_display_type==='banner');
+  const datatoshow = bannerData?.filter((i) => i?.banner_display_type === 'banner');
   if (showBanner) {
     return (
       <View style={{ marginTop: 5, flex: 1 }}>

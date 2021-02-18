@@ -379,20 +379,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
       if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
-        breadcrumb.push({
-          title: 'Order Tests',
-          onPress: () => {
-            props.navigation.navigate('TESTS');
-          },
-        });
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
-        breadcrumb.push({
-          title: 'Order Tests',
-          onPress: () => {
-            props.navigation.navigate('TESTS');
-          },
-        });
         breadcrumb.push({
           title: movedFrom == AppRoutes.SearchTestScene ? 'Test Search' : 'Test Listing',
           onPress: () => {
@@ -420,7 +408,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       });
       setTestDetailsBreadCrumbs && setTestDetailsBreadCrumbs(breadcrumb);
     }
-  }, [movedFrom]);
+  }, [movedFrom, itemName]);
 
   useEffect(() => {
     DiagnosticDetailsViewed(
