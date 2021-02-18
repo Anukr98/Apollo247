@@ -6,6 +6,7 @@ import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/
 import {
   calculateCircleDoctorPricing,
   convertNumberToDecimal,
+  isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface ConsultPriceProps {
@@ -29,7 +30,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
     isOnlineConsult,
