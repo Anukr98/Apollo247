@@ -1660,8 +1660,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setBannerDataHome && setBannerDataHome(res);
       setBannerData && setBannerData(res);
     } else {
-      setBannerDataHome && setBannerDataHome(res);
-      setBannerData && setBannerData(res);
+      setBannerDataHome && setBannerDataHome([]);
+      setBannerData && setBannerData([]);
     }
   };
 
