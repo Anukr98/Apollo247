@@ -92,7 +92,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             style={theme.viewStyles.text('SB', 18, isExpired ? '#979797' : '#00B38E', 1, 28, 0.35)}
           >
             {strings.common.Rs}
-            {totalCircleSavings?.totalSavings.toFixed(2) || 0}
+            {Math.ceil(totalCircleSavings?.totalSavings) || 0}
           </Text>
         </Text>
         {renderSavingsCard()}
@@ -285,7 +285,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
               ]}
             >
               {strings.common.Rs}
-              {totalCircleSavings?.pharmaSavings.toFixed(2) || 0}
+              {Math.ceil(totalCircleSavings?.pharmaSavings) || 0}
             </Text>
           </View>
         </View>
@@ -309,7 +309,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
               ]}
             >
               {strings.common.Rs}
-              {totalCircleSavings?.consultSavings.toFixed(2) || 0}
+              {Math.ceil(totalCircleSavings?.consultSavings) || 0}
             </Text>
           </View>
         </View>
@@ -338,7 +338,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
               ]}
             >
               {strings.common.Rs}
-              {totalCircleSavings?.diagnosticsSavings.toFixed(2) || 0}
+              {Math.ceil(totalCircleSavings?.diagnosticsSavings) || 0}
             </Text>
           </View>
         </View>
@@ -386,7 +386,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
               ]}
             >
               {strings.common.Rs}
-              {totalCircleSavings?.deliverySavings.toFixed(2) || 0}
+              {Math.ceil(totalCircleSavings?.deliverySavings) || 0}
             </Text>
           </View>
         </View>
