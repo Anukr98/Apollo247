@@ -172,6 +172,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     clearCartInfo,
+    isCircleExpired,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -535,7 +536,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {!!(hdfcSubscriptionId || circleSubscriptionId) && (
+        {!!(hdfcSubscriptionId || circleSubscriptionId || isCircleExpired) && (
           <ListCard
             title={'My Memberships'}
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
