@@ -126,6 +126,7 @@ import {
   postWebEngageEvent,
   setWebEngageScreenNames,
   timeDiffDaysFromNow,
+  setCircleMembershipType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -184,6 +185,7 @@ import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTy
 import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
 import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const { Vitals } = NativeModules;
 
@@ -2413,13 +2415,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderCircleCards = (item, darktheme) => {
+  const renderCircleCards = (item, darktheme: boolean, renew: boolean) => {
+    /**
+     * darktheme -> expired case
+     * renew -> expiring in x days
+     */
     return (
       <View style={styles.circleCardsContainer}>
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
             !darktheme ? navigateCTAActions(item?.action) : null;
+            const membershipState = darktheme
+              ? 'Expired'
+              : renew
+              ? 'About to Expire'
+              : 'Not Expiring';
+            onClickCircleBenefits(membershipState, item?.action);
           }}
         >
           <View
@@ -2526,6 +2538,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return mPath;
   };
 
+  const onClickCircleBenefits = (
+    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring',
+    action: any
+  ) => {
+    postCircleWEGEvent(
+      currentPatient,
+      membershipState,
+      action,
+      circlePlanValidity,
+      circleSubscriptionId
+    );
+  };
+
   const renderCircle = () => {
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
     const expired = circlePlanValidity
@@ -2537,13 +2562,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const cardlist = dataBannerCards(darktheme);
 
+    {
+      /**
+       * CircleTypeCard1 && CircleTypeCard2 -> expiring in x days
+       * CircleTypeCard3 && CircleTypeCard4 -> active plans
+       * CircleTypeCard5 && CircleTypeCard6 -> expired plans
+       */
+    }
     return (
       <View style={styles.circleContainer}>
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button1 pressed');
+              onClickCircleBenefits('About to Expire', 'renew');
             }}
             savings={circleSavings}
             credits={healthCredits}
@@ -2553,7 +2585,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CircleTypeCard2
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button2 pressed');
+              onClickCircleBenefits('About to Expire', 'renew');
             }}
             credits={healthCredits}
             expiry={circlePlanValidity?.expiry}
@@ -2561,7 +2593,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
           <CircleTypeCard3
             onButtonPress={() => {
-              console.log('circle button pressed');
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
@@ -2573,7 +2605,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ) : expiry > 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
             onButtonPress={() => {
-              console.log('circle button pressed');
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
@@ -2586,7 +2618,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button5 pressed');
+              onClickCircleBenefits('Expired', 'renew');
             }}
             savings={circleSavings}
             credits={healthCredits}
@@ -2596,7 +2628,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button6 pressed');
+              onClickCircleBenefits('Expired', 'renew');
             }}
             savings={circleSavings}
             credits={healthCredits}
@@ -2623,7 +2655,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <FlatList
               horizontal={true}
               data={cardlist}
-              renderItem={({ item }) => renderCircleCards(item, darktheme)}
+              renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
               keyExtractor={(item, index) => index.toString() + 'circle'}
             />
 

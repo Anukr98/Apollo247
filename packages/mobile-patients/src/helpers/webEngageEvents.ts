@@ -370,6 +370,10 @@ export enum WebEngageEventName {
   VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
   VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
   VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
+  CIRCLE_BENIFIT_CLICKED = 'Circle Section Benefits Clicked',
+  CIRCLE_RENEW_NOW_CLICKED = 'Circle Section Renew Now Clicked',
+  CIRCLE_VIEW_BENEFITS_CLICKED = 'Circle Section View Benefits Clicked',
+  CIRCLE_MEMBERSHIP_RENEWED = 'Circle Membership Renewed',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -517,6 +521,40 @@ interface SymptomTrackerPatientInfo {
   'Date of Birth': Date | string;
   Email: string;
   Relation: string;
+}
+
+interface CircleRenewalAttributes {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  'Circle Member': 'Yes' | 'No';
+  'Circle Plan': string;
+  'Circle Start Date': Date | string;
+  'Circle End Date': Date | string;
+  Source: string;
+  Platform: string;
+  'Membership State': 'Expired' | 'About to Expire' | 'Not Expiring';
+}
+
+interface CircleRenewalSubscriptionAttributes {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  'Circle Member': 'Yes' | 'No';
+  'Circle Plan': string;
+  'Circle Start Date': Date | string;
+  'Circle End Date': Date | string;
+  Source: string;
+  Platform: string;
+  Type: 'Direct Payment' | 'Direct by HC';
 }
 
 interface SymptomTrackerCompleteInfo {
@@ -2285,4 +2323,8 @@ export interface WebEngageEvents {
     'Selected Symptoms': string;
   };
   [WebEngageEventName.SYMPTOM_TRACKER_FOR_MYSELF]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.CIRCLE_BENIFIT_CLICKED]: CircleRenewalAttributes;
+  [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
+  [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
+  [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
 }
