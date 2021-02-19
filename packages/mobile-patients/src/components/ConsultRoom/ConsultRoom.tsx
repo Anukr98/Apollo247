@@ -686,6 +686,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcUserSubscriptions,
     bannerDataHome,
     setBannerDataHome,
+    bannerData,
+    setBannerData,
     phrNotificationData,
     setCircleSubscription,
     hdfcUpgradeUserSubscriptions,
@@ -1284,6 +1286,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchCarePlans();
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
+    setBannerData && setBannerData([]);
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -1655,8 +1658,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcLoading(false);
     if (res) {
       setBannerDataHome && setBannerDataHome(res);
+      setBannerData && setBannerData(res);
     } else {
-      setBannerDataHome && setBannerDataHome([]);
+      setBannerDataHome && setBannerDataHome(res);
+      setBannerData && setBannerData(res);
     }
   };
 
@@ -2315,7 +2320,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderBannersCarousel = () => {
-    const showBanner = bannerDataHome && bannerDataHome.length ? true : false;
+    const showBanner = bannerData && bannerData.length ? true : false;
     if (showBanner) {
       return (
         <CarouselBanners
