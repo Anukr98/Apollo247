@@ -9,6 +9,7 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -158,8 +159,10 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  Keyboard,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
@@ -602,6 +605,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  viewWebStyles: {
+    position: 'absolute',
+    width: width,
+    height: height,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 20,
+  },
+  webViewCompo:{
+  flex: 1,
+  backgroundColor: '#666666',
+  width: width,
+  },
+  nestedWebView:{
+  flex: 1,
+  overflow: 'hidden',
+  backgroundColor: 'white',
+   },
 });
 
 type menuOptions = {
@@ -735,6 +758,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [circleSavings, setCircleSavings] = useState<number>(-1);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
   const [showCircleActivationcr, setShowCircleActivationcr] = useState<boolean>(false);
+  const [showWebView, setShowWebView] = useState<any>({action:false});
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
@@ -2316,7 +2340,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const dataBannerCards = (darktheme) => {
     const datatoadd = bannerDataHome?.filter((item) => item?.banner_display_type === 'card');
 
-    const datatosend = datatoadd?.map((item) => ({
+     let datatosend=[];
+     datatosend = datatoadd?.map((item) => ({
       imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
       title: item?.banner_template_info?.headerText1,
       value: item?.banner_template_info?.headerText2,
@@ -2331,8 +2356,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             props.navigation.navigate(AppRoutes.DoctorSearch);
           } else if (action.cta_action == "PHARMACY_LANDING") {
             props.navigation.navigate('MEDICINES');
-          } else if (action.cta_action == 'PHR') {
-            props.navigation.navigate('HEALTH RECORDS');
+          } else if (action.cta_action == "PHARMACY_LANDING") {
+                       props.navigation.navigate('MEDICINES');
+          } else if (action.cta_action == 'PRO-HEALTH') {
+            setShowWebView({action:true,url:'https://www.apollo247.com/apollo-pro-health'});
           } else if (action.cta_action == "DIAGNOSTICS_LANDING") {
             props.navigation.navigate('TESTS');
           } else if (action.cta_action == "MEMBERSHIP_DETAIL_CIRCLE") {
@@ -2344,6 +2371,45 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
         }
   }
+
+  const openWebView = (url) => {
+      Keyboard.dismiss();
+      return (
+        <View style={styles.viewWebStyles}>
+          <Header
+            title={'Circle Membership Benefits'}
+            leftIcon="close"
+            container={{
+              borderBottomWidth: 0,
+            }}
+            onPressLeftIcon={() => setShowWebView({action:false})}
+          />
+          <View
+            style={styles.nestedWebView}
+          >
+            <WebView
+              source={{
+                uri: url,
+              }}
+              style={styles.webViewCompo}
+              onLoadStart={() => {
+                console.log('onLoadStart');
+                setshowSpinner(true);
+              }}
+              onLoadEnd={() => {
+                console.log('onLoadEnd');
+                setshowSpinner(false);
+              }}
+              onLoad={() => {
+                console.log('onLoad');
+                setshowSpinner(false);
+              }}
+            />
+          </View>
+        </View>
+      );
+    };
+
 
   const renderCircleCards = (item, darktheme) => {
     return (
@@ -2544,7 +2610,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         ) : null}
 
-        {cardlist.length > 0 ? (
+        {cardlist && cardlist.length > 0 ? (
           <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
             {circleDataLoading && (
               <Spinner
@@ -3001,6 +3067,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+    {showWebView?.action && openWebView(showWebView?.url)}
       {renderBottomTabBar()}
       {showPopUp && (
         <>
