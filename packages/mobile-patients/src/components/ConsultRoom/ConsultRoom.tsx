@@ -2451,11 +2451,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   darktheme
                     ? [
                         { ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) },
-                        { alignSelf: 'center', alignItems: 'center' },
+                        { alignSelf: 'flex-start' },
                       ]
                     : [
                         { ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) },
-                        { alignSelf: 'center', alignItems: 'center' },
+                        { alignSelf: 'flex-start' },
                       ]
                 }
               >
@@ -2469,12 +2469,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           { ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },
                           {
                             alignSelf: 'flex-start',
+                            marginTop: 5,
                           },
                         ]
                       : [
                           { ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },
                           {
                             alignSelf: 'flex-start',
+                            marginTop: 5,
                           },
                         ]
                   }
