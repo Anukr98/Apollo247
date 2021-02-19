@@ -2363,11 +2363,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 style={
                   darktheme
                     ? [
-                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 16) },
+                        { ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                     : [
-                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 16) },
+                        { ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                 }
