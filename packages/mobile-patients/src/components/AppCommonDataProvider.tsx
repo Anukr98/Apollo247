@@ -157,6 +157,8 @@ export interface AppCommonDataContextProps {
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
   bannerData: bannerType[] | null;
   setBannerData: ((items: bannerType[]) => void) | null;
+  bannerDataHome: bannerType[] | null;
+  setBannerDataHome: ((items: bannerType[]) => void) | null;
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
   diagnosticLocation: LocationData | null;
@@ -248,6 +250,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCircleSubscription: null,
   bannerData: null,
   setBannerData: null,
+  bannerDataHome: null,
+  setBannerDataHome: null,
   locationDetails: null,
   pharmacyLocation: null,
   setLocationDetails: null,
@@ -347,6 +351,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   >(null);
 
   const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
+  const [bannerDataHome, _setBannerDataHome] = useState<AppCommonDataContextProps['bannerDataHome']>(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
@@ -452,6 +457,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setBannerData(bannerData);
   };
+  const setBannerDataHome: AppCommonDataContextProps['setBannerDataHome'] = (bannerData) => {
+    _setBannerDataHome(bannerData);
+  };
 
   const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
     pharmacyLocation
@@ -555,6 +563,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCircleSubscription,
         bannerData,
         setBannerData,
+        bannerDataHome,
+        setBannerDataHome,
         pharmacyLocation,
         setPharmacyLocation,
         diagnosticLocation,
