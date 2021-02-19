@@ -947,7 +947,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 {isWeightAvailable
                   ? patientTextView(
                       currentPatient?.patientMedicalHistory?.weight
-                        ? currentPatient?.patientMedicalHistory?.weight + ' Kgs'
+                        ? currentPatient?.patientMedicalHistory?.weight + ' kgs'
                         : '-'
                     )
                   : patientTextView('-')}

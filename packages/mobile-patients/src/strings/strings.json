@@ -18,6 +18,8 @@
     "upload_image_file_size_text": "File size max upto 2MB. File type jpeg, jpg & png",
     "add_comment_text": "Add Comments (Optional)",
     "return_order_comment_text": "Enter your comments here…",
+    "delete_report_text": "Delete Report",
+    "delete_report_confirm_text": "Are you sure you want to delete the selected record?",
     "upload": "UPLOAD",
     "submit_request": "SUBMIT REQUEST",
     "continue": "CONTINUE",
