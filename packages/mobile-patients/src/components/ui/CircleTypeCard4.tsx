@@ -17,6 +17,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { timeDiffFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   planContainer: {

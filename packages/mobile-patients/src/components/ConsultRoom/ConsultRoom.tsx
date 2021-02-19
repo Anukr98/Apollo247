@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-    paddingTop: 22,
+    padding: 8,
   },
   circleCardsImages: {
     flex: 0.4,
@@ -1515,6 +1515,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const planValidity = {
             startDate: circleData?.start_date,
             endDate: circleData?.end_date,
+            expiry: circleData?.expires_in
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
@@ -2313,15 +2314,37 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const dataBannerCards = () => {
+  const dataBannerCards = (darktheme) => {
     const datatoadd = bannerData?.filter((item) => item?.banner_display_type === 'card');
+
     const datatosend = datatoadd?.map((item) => ({
-      imageUrl: { uri: item?.banner },
+      imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
       title: item?.banner_template_info?.headerText1,
-      value: '',
+      value: item?.banner_template_info?.headerText2,
+      action:{type:item?.cta_action?.type,cta_action:item?.cta_action?.meta?.action}
     }));
     return datatosend;
   };
+
+  const navigateCTAActions=(action)=>{
+   if (action?.type == 'REDIRECT') {
+          if (action.cta_action == "SPECIALITY_LISTING") {
+            props.navigation.navigate(AppRoutes.DoctorSearch);
+          } else if (action.cta_action == "PHARMACY_LANDING") {
+            props.navigation.navigate('MEDICINES');
+          } else if (action.cta_action == 'PHR') {
+            props.navigation.navigate('HEALTH RECORDS');
+          } else if (action.cta_action == "DIAGNOSTICS_LANDING") {
+            props.navigation.navigate('TESTS');
+          } else if (action.cta_action == "MEMBERSHIP_DETAIL_CIRCLE") {
+              props.navigation.navigate('MembershipDetails', {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+              });
+            }
+
+        }
+  }
 
   const renderCircleCards = (item, darktheme) => {
     return (
@@ -2330,10 +2353,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             !darktheme
-              ? props.navigation.navigate(AppRoutes.MembershipDetails, {
-                  membershipType: 'CIRCLE PLAN',
-                  isActive: true,
-                })
+              ? navigateCTAActions(item?.action)
               : null;
           }}
         >
@@ -2347,20 +2367,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 style={
                   darktheme
                     ? [
-                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 17) },
+                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                     : [
-                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 17) },
+                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                 }
               >
                 {item?.title}
               </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) }}>
+              {item?.value && (<Text style={
+              darktheme
+              ?
+              [{ ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },{
+              alignSelf:'flex-start'}]
+              :
+              [{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },{
+              alignSelf:'flex-start'}]
+              }>
                 {item?.value}
-              </Text>
+              </Text>)}
             </View>
 
             <View style={styles.circleCardsImages}>
@@ -2413,6 +2441,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     />
   );
 
+          const getMobileURL = (url: string) => {
+            const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+            const txt = url.split(ext)[0];
+            const path = txt.split('/');
+            path.pop();
+            const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+            const mPath = path.join('/').concat('/d_'.concat(name).concat(ext));
+            return mPath;
+          };
+
+
   const renderCircle = () => {
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
     const expired = circlePlanValidity
@@ -2422,7 +2461,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
     const darktheme = circleStatus === 'disabled' ? true : false;
 
-    const cardlist = dataBannerCards();
+    const cardlist = dataBannerCards(darktheme);
 
     console.log(
       'csk value',
@@ -2449,7 +2488,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
             savings={circleSavings}
             credits={healthCredits}
-            expiry={expiry}
+            expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && renew ? (
           <CircleTypeCard2
@@ -2458,7 +2497,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               console.log('circle button2 pressed');
             }}
             credits={healthCredits}
-            expiry={expiry}
+            expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
           <CircleTypeCard3
