@@ -127,12 +127,14 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
         </View>
       </View>
 
-      <View style={styles.planContainer}>
+      {credits && (<View style={[styles.planContainer,{justifyContent:'flex-start',marginLeft:15}]}>
         <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
           Available Health Credits:
         </Text>
         <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}> {credits || 0}</Text>
       </View>
+      )}
+
     </View>
   );
 };
