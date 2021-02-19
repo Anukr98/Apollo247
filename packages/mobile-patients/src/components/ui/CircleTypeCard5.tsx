@@ -128,7 +128,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
             Previous{'\n'}Savings:
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>₹{savings}</Text>
-          {credits > 0 && (
+          {credits ? (
             <View style={[styles.planContainer, { width: width }]}>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
                 Available Health Credits:
@@ -138,7 +138,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
                 {credits || 0}
               </Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.subPlanThree}>
@@ -152,7 +152,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
           style={[
             styles.subPlanFour,
             {
-              marginTop: credits > 0 ? -20 : 0,
+              marginTop: credits ? -20 : 0,
             },
           ]}
         >

@@ -112,7 +112,7 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
                 {expiry} {expiry == '1' ? `day` : `days`}
               </Text>
             </Text>
-            {credits > 0 && (
+            {credits ? (
               <View style={[styles.planContainer, { justifyContent: 'flex-start' }]}>
                 <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
                   Available Health Credits:
@@ -122,7 +122,7 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
                   {credits || 0}
                 </Text>
               </View>
-            )}
+            ) : null}
           </View>
         </View>
 
