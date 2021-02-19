@@ -2352,17 +2352,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const navigateCTAActions=(action)=>{
    if (action?.type == 'REDIRECT') {
-          if (action.cta_action == "SPECIALITY_LISTING") {
+          if (action.cta_action == 'SPECIALITY_LISTING') {
             props.navigation.navigate(AppRoutes.DoctorSearch);
-          } else if (action.cta_action == "PHARMACY_LANDING") {
+          } else if (action.cta_action == 'PHARMACY_LANDING') {
             props.navigation.navigate('MEDICINES');
-          } else if (action.cta_action == "PHARMACY_LANDING") {
-                       props.navigation.navigate('MEDICINES');
           } else if (action.cta_action == 'PRO-HEALTH') {
             setShowWebView({action:true,url:'https://www.apollo247.com/apollo-pro-health'});
-          } else if (action.cta_action == "DIAGNOSTICS_LANDING") {
+          } else if (action.cta_action == 'PHR') {
+            props.navigation.navigate('HealthRecords');
+          } else if (action.cta_action == 'DIAGNOSTICS_LANDING') {
             props.navigation.navigate('TESTS');
-          } else if (action.cta_action == "MEMBERSHIP_DETAIL_CIRCLE") {
+          } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
               props.navigation.navigate('MembershipDetails', {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
