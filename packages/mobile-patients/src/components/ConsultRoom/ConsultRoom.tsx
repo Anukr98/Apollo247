@@ -2367,19 +2367,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 style={
                   darktheme
                     ? [
-                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 17) },
+                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                     : [
-                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 17) },
+                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                 }
               >
                 {item?.title}
               </Text>
-              {item?.value && (<Text style={[{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },{
-              alignSelf:'flex-start'}]}>
+              {item?.value && (<Text style={
+              darktheme
+              ?
+              [{ ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },{
+              alignSelf:'flex-start'}]
+              :
+              [{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },{
+              alignSelf:'flex-start'}]
+              }>
                 {item?.value}
               </Text>)}
             </View>
