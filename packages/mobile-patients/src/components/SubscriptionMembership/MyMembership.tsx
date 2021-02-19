@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FC9916',
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
+    padding: 10,
   },
   helpIconStyle: {
     resizeMode: 'contain',
@@ -725,16 +726,14 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const renderUpgradeButton = () => {
     return (
-      <View style={styles.membershipButtons}>
-        <TouchableOpacity
-          style={{ padding: 10 }}
-          onPress={() => {
-            setShowCirclePlans(true);
-          }}
-        >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={styles.membershipButtons}
+        onPress={() => {
+          setShowCirclePlans(true);
+        }}
+      >
+        <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
+      </TouchableOpacity>
     );
   };
 
