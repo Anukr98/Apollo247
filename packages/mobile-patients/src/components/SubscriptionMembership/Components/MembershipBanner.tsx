@@ -27,7 +27,7 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
   const circleStaticMonthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
 
   const renderCircleBanner = () => {
-    const circleSavings = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
+    const circleSavings = totalCircleSavings?.totalSavings;
     return (
       <View>
         {isExpired ? (
