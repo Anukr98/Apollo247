@@ -38,7 +38,7 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
                 <CircleLogoWhite style={styles.circleExpiredLogo} />
                 <Text style={styles.circleExpiredText}>
                   {circleSavings > 0
-                    ? `has saved you ${string.common.Rs}${circleSavings} so far.`
+                    ? `has saved you ${string.common.Rs}${Math.ceil(circleSavings)} so far.`
                     : `members save upto ${string.common.Rs}848`}
                 </Text>
               </View>

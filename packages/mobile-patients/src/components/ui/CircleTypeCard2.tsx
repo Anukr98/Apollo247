@@ -113,7 +113,7 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
               { alignSelf: 'flex-end' },
             ]}
           >
-            {expiry} days
+            {expiry} {expiry == '1' ? `day` : `days`}
           </Text>
         </View>
 
