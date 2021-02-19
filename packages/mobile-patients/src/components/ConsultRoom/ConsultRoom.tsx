@@ -661,8 +661,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
-    bannerData,
-    setBannerData,
+    bannerDataHome,
+    setBannerDataHome,
     phrNotificationData,
     setCircleSubscription,
     hdfcUpgradeUserSubscriptions,
@@ -1627,9 +1627,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     setHdfcLoading(false);
     if (res) {
-      setBannerData && setBannerData(res);
+      setBannerDataHome && setBannerDataHome(res);
     } else {
-      setBannerData && setBannerData([]);
+      setBannerDataHome && setBannerDataHome([]);
     }
   };
 
@@ -2288,7 +2288,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderBannersCarousel = () => {
-    const showBanner = bannerData && bannerData.length ? true : false;
+    const showBanner = bannerDataHome && bannerDataHome.length ? true : false;
     if (showBanner) {
       return (
         <CarouselBanners
@@ -2311,7 +2311,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const dataBannerCards = (darktheme) => {
-    const datatoadd = bannerData?.filter((item) => item?.banner_display_type === 'card');
+    const datatoadd = bannerDataHome?.filter((item) => item?.banner_display_type === 'card');
 
     const datatosend = datatoadd?.map((item) => ({
       imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
