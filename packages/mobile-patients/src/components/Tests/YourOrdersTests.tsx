@@ -717,8 +717,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             title: string.common.uhOh,
             description:
               error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0
-                ? string.diagnostics.sameSlotError
-                : string.diagnostics.reschduleCountExceed,
+                ? string.diagnostics.reschduleCountExceed
+                : string.diagnostics.sameSlotError,
           });
         } else {
           handleGraphQlError(error);
