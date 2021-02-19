@@ -745,6 +745,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       let shipmentCouponDiscount = 0;
       let shipmentProductDiscount = 0;
       let shipmentTotal = 0;
+      let shipmentCashback = 0;
       const items: (MedicineCartOMSItem | null)[] = cartItems
         ?.map((item) => {
           if (sku.includes(item?.id)) {
@@ -760,6 +761,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
               shipmentProductDiscount +
               formatNumber(item?.quantity * (item?.price - (item?.specialPrice || item?.price)));
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
+            shipmentCashback += item?.circleCashbackAmt;
             return {
               medicineSKU: item?.id,
               medicineName: item?.name,
@@ -797,6 +799,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['tatHours'] = order['tatDuration'];
       shipment['allocationProfileName'] = order['allocationProfileName'];
       shipment['clusterId'] = order['clusterId'];
+      shipment['totalCashBack'] =
+        isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
       shipmentsArray.push(shipment);
     });
     setShipments(shipmentsArray);

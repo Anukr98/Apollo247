@@ -661,8 +661,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
-    bannerData,
-    setBannerData,
+    bannerDataHome,
+    setBannerDataHome,
     phrNotificationData,
     setCircleSubscription,
     hdfcUpgradeUserSubscriptions,
@@ -1260,7 +1260,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchCarePlans();
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
-    setBannerData && setBannerData([]); // default banners to be empty
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -1631,9 +1630,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     setHdfcLoading(false);
     if (res) {
-      setBannerData && setBannerData(res);
+      setBannerDataHome && setBannerDataHome(res);
     } else {
-      setBannerData && setBannerData([]);
+      setBannerDataHome && setBannerDataHome([]);
     }
   };
 
@@ -2292,7 +2291,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderBannersCarousel = () => {
-    const showBanner = bannerData && bannerData.length ? true : false;
+    const showBanner = bannerDataHome && bannerDataHome.length ? true : false;
     if (showBanner) {
       return (
         <CarouselBanners
@@ -2315,7 +2314,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const dataBannerCards = (darktheme) => {
-    const datatoadd = bannerData?.filter((item) => item?.banner_display_type === 'card');
+    const datatoadd = bannerDataHome?.filter((item) => item?.banner_display_type === 'card');
 
     const datatosend = datatoadd?.map((item) => ({
       imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
@@ -2367,11 +2366,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 style={
                   darktheme
                     ? [
-                        { ...theme.viewStyles.text('M', 13, '#666666', 0.6, 16) },
+                        { ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                     : [
-                        { ...theme.viewStyles.text('M', 13, '#02475B', 1, 16) },
+                        { ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) },
                         { alignSelf: 'center', alignItems: 'center' },
                       ]
                 }

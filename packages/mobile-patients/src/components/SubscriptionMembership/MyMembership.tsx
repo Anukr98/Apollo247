@@ -725,16 +725,14 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const renderUpgradeButton = () => {
     return (
-      <View style={styles.membershipButtons}>
-        <TouchableOpacity
-          style={{ padding: 10 }}
-          onPress={() => {
-            setShowCirclePlans(true);
-          }}
-        >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={[styles.membershipButtons, { padding: 10 }]}
+        onPress={() => {
+          setShowCirclePlans(true);
+        }}
+      >
+        <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
+      </TouchableOpacity>
     );
   };
 
