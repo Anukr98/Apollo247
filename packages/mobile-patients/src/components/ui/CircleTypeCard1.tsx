@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
     width: 46,
     height: 29,
   },
-
 });
 
 export interface CircleTypeCard1Props extends NavigationScreenProps {
@@ -76,7 +75,6 @@ export const CircleTypeCard1: React.FC<CircleTypeCard1Props> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { showCircleSubscribed } = useShoppingCart();
-
 
   const renderCard = (
     headingImage: Element,
@@ -120,10 +118,6 @@ export const CircleTypeCard1: React.FC<CircleTypeCard1Props> = (props) => {
             {expiry} {expiry == '1' ? `day` : `days`}
           </Text>
         </View>
-             <View style={styles.subPlanThree}>
-             <Text style={{...theme.viewStyles.text('M', 12, '#02475B', 1, 16)}}>Plan Expires In:</Text>
-             <Text style={{...theme.viewStyles.text('M', 20, '#02475B', 1, 25)}}>{expiry} {expiry==1?'day':'days'}</Text>
-             </View>
 
         <View style={styles.subPlanFour}>
           <Button

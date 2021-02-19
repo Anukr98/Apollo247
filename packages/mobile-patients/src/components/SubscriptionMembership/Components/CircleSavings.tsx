@@ -46,19 +46,24 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
     return (
       <View style={[styles.expiryBanner, styles.expiryBannerAlignment]}>
-        <CircleLogo style={styles.circleLogo} />
         {isExpired ? (
-          <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
-            Membership has
-            <Text style={theme.viewStyles.text('B', 12, '#01475B')}>{` expired`}</Text>
-          </Text>
-        ) : (
-          <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
-            Membership {expiry > 0 ? 'expires' : 'expired'} on{' '}
-            <Text style={theme.viewStyles.text('M', 12, '#01475B')}>
-              {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+          <View style={{ flexDirection: 'row' }}>
+            <CircleLogo style={styles.circleLogo} />
+            <Text style={theme.viewStyles.text('R', 12, '#01475B', 1, 28)}>
+              Membership has
+              <Text style={theme.viewStyles.text('B', 12, '#01475B', 1, 28)}>{` expired`}</Text>
             </Text>
-          </Text>
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row' }}>
+            <CircleLogo style={styles.circleLogo} />
+            <Text style={theme.viewStyles.text('R', 12, '#01475B', 1, 28)}>
+              Membership {expiry > 0 ? 'expires' : 'expired'} on{' '}
+              <Text style={theme.viewStyles.text('M', 12, '#01475B', 1, 28)}>
+                {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+              </Text>
+            </Text>
+          </View>
         )}
         {isExpired || isRenew ? (
           <Button
