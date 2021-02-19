@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FC9916',
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
-    padding: 10,
   },
   helpIconStyle: {
     resizeMode: 'contain',
@@ -727,7 +726,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const renderUpgradeButton = () => {
     return (
       <TouchableOpacity
-        style={styles.membershipButtons}
+        style={[styles.membershipButtons, { padding: 10 }]}
         onPress={() => {
           setShowCirclePlans(true);
         }}
