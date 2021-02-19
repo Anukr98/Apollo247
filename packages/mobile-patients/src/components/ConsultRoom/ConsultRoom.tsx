@@ -526,6 +526,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    width: 34,
+    height: 34,
   },
   circleCardsImage: {
     alignSelf: 'center',
@@ -2358,7 +2360,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return datatosend;
   };
 
-  const navigateCTAActions = (action) => {
+  const navigateCTAActions = (action, url: string) => {
     if (action?.type == 'REDIRECT') {
       if (action.cta_action == 'SPECIALITY_LISTING') {
         props.navigation.navigate(AppRoutes.DoctorSearch);
@@ -2374,6 +2376,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate('MembershipDetails', {
           membershipType: 'CIRCLE PLAN',
           isActive: true,
+        });
+      } else if (action?.cta_action === string.Hdfc_values.ABSOLUTE_URL) {
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: url || action?.url,
         });
       }
     }
@@ -2425,7 +2431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            !darktheme ? navigateCTAActions(item?.action) : null;
+            !darktheme ? navigateCTAActions(item?.action, item?.url) : null;
             const membershipState = darktheme
               ? 'Expired'
               : renew
@@ -2477,10 +2483,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </Text>
               )}
             </View>
-
-            <View style={styles.circleCardsImages}>
-              <ImageBackground style={styles.circleCardsImage} source={item?.imageUrl} />
-            </View>
+            <Image source={item?.imageUrl} resizeMode="contain" style={styles.circleCardsImages} />
           </View>
         </TouchableOpacity>
       </View>
