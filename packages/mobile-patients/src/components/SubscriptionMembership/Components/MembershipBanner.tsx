@@ -38,7 +38,7 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
                 <CircleLogoWhite style={styles.circleExpiredLogo} />
                 <Text style={styles.circleExpiredText}>
                   {circleSavings > 0
-                    ? `has saved you ${string.common.Rs}${Math.ceil(circleSavings)} so far.`
+                    ? `has saved you ${string.common.Rs}${circleSavings.toFixed(2)} so far.`
                     : `members save upto ${string.common.Rs}848`}
                 </Text>
               </View>
@@ -125,9 +125,10 @@ const styles = StyleSheet.create({
     height: 50,
   },
   circleExpiredText: {
-    ...theme.viewStyles.text('M', 19, '#FFFFFF', 1, 20, 0.35),
+    ...theme.viewStyles.text('M', 18, '#FFFFFF', 1, 20, 0.35),
     top: 17,
     left: 6,
+    width: '78%',
   },
   renewButton: {
     backgroundColor: '#164884',
@@ -136,6 +137,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     alignItems: 'center',
     marginTop: 20,
+    right: 10,
   },
   renewText: {
     ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 15, 0.35),

@@ -1515,7 +1515,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const planValidity = {
             startDate: circleData?.start_date,
             endDate: circleData?.end_date,
-            expiry: circleData?.expires_in
+            expiry: circleData?.expires_in,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
@@ -2318,33 +2318,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const datatoadd = bannerData?.filter((item) => item?.banner_display_type === 'card');
 
     const datatosend = datatoadd?.map((item) => ({
-      imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
+      imageUrl: { uri: darktheme ? getMobileURL(item?.banner) : item?.banner },
       title: item?.banner_template_info?.headerText1,
       value: item?.banner_template_info?.headerText2,
-      action:{type:item?.cta_action?.type,cta_action:item?.cta_action?.meta?.action}
+      action: { type: item?.cta_action?.type, cta_action: item?.cta_action?.meta?.action },
     }));
     return datatosend;
   };
 
-  const navigateCTAActions=(action)=>{
-   if (action?.type == 'REDIRECT') {
-          if (action.cta_action == "SPECIALITY_LISTING") {
-            props.navigation.navigate(AppRoutes.DoctorSearch);
-          } else if (action.cta_action == "PHARMACY_LANDING") {
-            props.navigation.navigate('MEDICINES');
-          } else if (action.cta_action == 'PHR') {
-            props.navigation.navigate('HEALTH RECORDS');
-          } else if (action.cta_action == "DIAGNOSTICS_LANDING") {
-            props.navigation.navigate('TESTS');
-          } else if (action.cta_action == "MEMBERSHIP_DETAIL_CIRCLE") {
-              props.navigation.navigate('MembershipDetails', {
-                membershipType: 'CIRCLE PLAN',
-                isActive: true,
-              });
-            }
-
-        }
-  }
+  const navigateCTAActions = (action) => {
+    if (action?.type == 'REDIRECT') {
+      if (action.cta_action == 'SPECIALITY_LISTING') {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action.cta_action == 'PHARMACY_LANDING') {
+        props.navigation.navigate('MEDICINES');
+      } else if (action.cta_action == 'PHR') {
+        props.navigation.navigate('HEALTH RECORDS');
+      } else if (action.cta_action == 'DIAGNOSTICS_LANDING') {
+        props.navigation.navigate('TESTS');
+      } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
+        props.navigation.navigate('MembershipDetails', {
+          membershipType: 'CIRCLE PLAN',
+          isActive: true,
+        });
+      }
+    }
+  };
 
   const renderCircleCards = (item, darktheme) => {
     return (
@@ -2352,9 +2351,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            !darktheme
-              ? navigateCTAActions(item?.action)
-              : null;
+            !darktheme ? navigateCTAActions(item?.action) : null;
           }}
         >
           <View
@@ -2378,17 +2375,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 {item?.title}
               </Text>
-              {item?.value && (<Text style={
-              darktheme
-              ?
-              [{ ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },{
-              alignSelf:'flex-start'}]
-              :
-              [{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },{
-              alignSelf:'flex-start'}]
-              }>
-                {item?.value}
-              </Text>)}
+              {item?.value && (
+                <Text
+                  style={
+                    darktheme
+                      ? [
+                          { ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                          },
+                        ]
+                      : [
+                          { ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                          },
+                        ]
+                  }
+                >
+                  {item?.value}
+                </Text>
+              )}
             </View>
 
             <View style={styles.circleCardsImages}>
@@ -2441,16 +2448,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     />
   );
 
-          const getMobileURL = (url: string) => {
-            const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
-            const txt = url.split(ext)[0];
-            const path = txt.split('/');
-            path.pop();
-            const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
-            const mPath = path.join('/').concat('/d_'.concat(name).concat(ext));
-            return mPath;
-          };
-
+  const getMobileURL = (url: string) => {
+    const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+    const txt = url.split(ext)[0];
+    const path = txt.split('/');
+    path.pop();
+    const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+    const mPath = path.join('/').concat('/d_'.concat(name).concat(ext));
+    return mPath;
+  };
 
   const renderCircle = () => {
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
@@ -2462,21 +2468,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const darktheme = circleStatus === 'disabled' ? true : false;
 
     const cardlist = dataBannerCards(darktheme);
-
-    console.log(
-      'csk value',
-      isCircleMember,
-      circlePlanValidity,
-      circleStatus,
-      expiry,
-      expired,
-      renew,
-      'savings->',
-      circleSavings,
-      'hc->',
-      healthCredits,
-      circleSubscriptionId
-    );
 
     return (
       <View style={styles.circleContainer}>
@@ -2545,7 +2536,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         ) : null}
 
-        {cardlist.length > 0 ? (
+        {cardlist?.length > 0 ? (
           <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
             {circleDataLoading && (
               <Spinner
