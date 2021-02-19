@@ -2345,7 +2345,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       imageUrl: { uri: darktheme?getMobileURL(item?.banner):item?.banner },
       title: item?.banner_template_info?.headerText1,
       value: item?.banner_template_info?.headerText2,
-      action:{type:item?.cta_action?.type,cta_action:item?.cta_action?.meta?.action}
+      action: { type: item?.cta_action?.type, cta_action: item?.cta_action?.meta?.action },
     }));
     return datatosend;
   };
@@ -2417,9 +2417,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            !darktheme
-              ? navigateCTAActions(item?.action)
-              : null;
+            !darktheme ? navigateCTAActions(item?.action) : null;
           }}
         >
           <View
@@ -2443,17 +2441,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 {item?.title}
               </Text>
-              {item?.value && (<Text style={
-              darktheme
-              ?
-              [{ ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },{
-              alignSelf:'flex-start'}]
-              :
-              [{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },{
-              alignSelf:'flex-start'}]
-              }>
-                {item?.value}
-              </Text>)}
+              {item?.value && (
+                <Text
+                  style={
+                    darktheme
+                      ? [
+                          { ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                          },
+                        ]
+                      : [
+                          { ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                          },
+                        ]
+                  }
+                >
+                  {item?.value}
+                </Text>
+              )}
             </View>
 
             <View style={styles.circleCardsImages}>
@@ -2516,7 +2524,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             return mPath;
           };
 
-
   const renderCircle = () => {
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
     const expired = circlePlanValidity
@@ -2527,21 +2534,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const darktheme = circleStatus === 'disabled' ? true : false;
 
     const cardlist = dataBannerCards(darktheme);
-
-    console.log(
-      'csk value',
-      isCircleMember,
-      circlePlanValidity,
-      circleStatus,
-      expiry,
-      expired,
-      renew,
-      'savings->',
-      circleSavings,
-      'hc->',
-      healthCredits,
-      circleSubscriptionId
-    );
 
     return (
       <View style={styles.circleContainer}>
@@ -2610,7 +2602,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         ) : null}
 
-        {cardlist && cardlist.length > 0 ? (
+        {cardlist?.length > 0 ? (
           <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
             {circleDataLoading && (
               <Spinner
