@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     alignItems: 'center',
     marginTop: 20,
-    left: 50,
   },
   renewText: {
     ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 15, 0.35),
