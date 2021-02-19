@@ -902,10 +902,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const isCancelValid = order?.diagnosticOrdersStatus?.find((item) =>
       BLACK_LIST_CANCEL_STATUS_ARRAY.includes(item?.orderStatus!)
     );
-    const isCancelValidAtOrderLevel =
-      order?.diagnosticOrdersStatus?.length! == 0
-        ? BLACK_LIST_CANCEL_STATUS_ARRAY.includes(order?.orderStatus!)
-        : true;
+    const isCancelValidAtOrderLevel = BLACK_LIST_CANCEL_STATUS_ARRAY.includes(order?.orderStatus!);
+
     // const showCancel = isCancelValid == undefined && !isPastOrder ? true : false;
     const showCancel = isCancelValid == undefined && !isCancelValidAtOrderLevel ? true : false;
 
@@ -913,10 +911,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(item?.orderStatus)
     );
 
-    const isRescheduleValidAtOrderLevel =
-      order?.diagnosticOrdersStatus?.length! == 0
-        ? BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(order?.orderStatus)
-        : true;
+    const isRescheduleValidAtOrderLevel = BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(
+      order?.orderStatus!
+    );
 
     // const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
     const showReschedule =
