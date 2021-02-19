@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -18,32 +18,26 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { NavigationScreenProps } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { timeDiffFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginVertical: 5,
   },
 
   subPlanOne: {
     flex: 0.2,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   subPlanTwo: {
     flex: 0.3,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
   },
 
   subPlanThree: {
     flex: 0.5,
     alignItems: 'center',
-    justifyContent: 'center',
   },
 
   circleLogo: {
@@ -105,6 +99,17 @@ export const CircleTypeCard3: React.FC<CircleTypeCard3Props> = (props) => {
         <View style={styles.subPlanTwo}>
           <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) }}>Your Savings:</Text>
           <Text style={{ ...theme.viewStyles.text('M', 20, '#02475B', 1, 25) }}>₹{savings}</Text>
+          {credits > 0 && (
+            <View style={[styles.planContainer, { width: width }]}>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                Available Health Credits:
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
+                {' '}
+                {credits || 0}
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.subPlanThree}>
@@ -116,18 +121,6 @@ export const CircleTypeCard3: React.FC<CircleTypeCard3Props> = (props) => {
           />
         </View>
       </View>
-
-      {credits && (
-        <View style={[styles.planContainer, { justifyContent: 'flex-start', marginLeft: 15 }]}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-            Available Health Credits:
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-            {' '}
-            {credits || 0}
-          </Text>
-        </View>
-      )}
     </View>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -18,13 +18,12 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { NavigationScreenProps } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { timeDiffFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginVertical: 5,
   },
 
@@ -32,7 +31,6 @@ const styles = StyleSheet.create({
     flex: 0.2,
     overflow: 'hidden',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: 'transparent',
     padding: 5,
   },
@@ -46,7 +44,6 @@ const styles = StyleSheet.create({
   subPlanThree: {
     flex: 0.3,
     alignItems: 'flex-start',
-    justifyContent: 'center',
   },
 
   subPlanFour: {
@@ -131,6 +128,17 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
             Previous{'\n'}Savings:
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>₹{savings}</Text>
+          {credits > 0 && (
+            <View style={[styles.planContainer, { width: width }]}>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                Available Health Credits:
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
+                {' '}
+                {credits || 0}
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.subPlanThree}>
@@ -140,7 +148,14 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
           <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>{expired}</Text>
         </View>
 
-        <View style={styles.subPlanFour}>
+        <View
+          style={[
+            styles.subPlanFour,
+            {
+              marginTop: credits > 0 ? -20 : 0,
+            },
+          ]}
+        >
           <Button
             title={`RENEW NOW`}
             style={{ width: 106, height: 32 }}
@@ -149,18 +164,6 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
           />
         </View>
       </View>
-
-      {credits && (
-        <View style={[styles.planContainer, { justifyContent: 'flex-start', marginLeft: 15 }]}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-            Available Health Credits:
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-            {' '}
-            {credits || 0}
-          </Text>
-        </View>
-      )}
     </View>
   );
 };
