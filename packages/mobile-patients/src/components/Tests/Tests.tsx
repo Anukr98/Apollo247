@@ -232,6 +232,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState({});
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchResult, setSearchResults] = useState<boolean>(false);
+  const [isCurrentScreen, setCurrentScreen] = useState<string>('');
 
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
@@ -341,9 +342,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
+      setCurrentScreen(AppRoutes.Tests); //to avoid showing non-serviceable prompt on medicine page
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setCurrentScreen('');
     });
     return () => {
       didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
   });
 
@@ -353,7 +359,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ImageNative.getSize(
           item?.bannerImage,
           (width, height) => {
-            setImgHeight(height * (winWidth / width));
+            setImgHeight(height * (winWidth / width) + 20);
             setBannerLoading(false);
           },
           () => {
@@ -663,7 +669,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
           } else {
             obj = {
-              cityId: '0',
+              cityId: '9',
               stateId: '0',
               state: '',
               city: '',
@@ -671,8 +677,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setServiceableObject(obj);
             setLoadingContext!(false);
             setDiagnosticLocationServiceable!(false);
-            renderLocationNotServingPopUpForPincode(pincode);
+
+            isCurrentScreen == AppRoutes.Tests
+              ? renderLocationNotServingPopUpForPincode(pincode)
+              : null;
+
             setServiceabilityMsg(string.diagnostics.nonServiceablePinCodeMsg);
+
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, false);
           }
           getHomePageWidgets(obj?.cityId);
@@ -757,10 +768,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const onSearchTest = async (_searchText: string) => {
     if (isValidSearch(_searchText)) {
-      if (!g(locationForDiagnostics, 'cityId')) {
-        renderLocationNotServingPopup();
-        return;
-      }
+      // if (!g(locationForDiagnostics, 'cityId')) {
+      //   renderLocationNotServingPopup();
+      //   return;
+      // }
       if (!(_searchText && _searchText.length > 2)) {
         setDiagnosticResults([]);
         return;
@@ -936,8 +947,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
       <View
-        pointerEvents={!isSeviceableObjectEmpty && serviceableObject?.city != '' ? 'auto' : 'none'}
-        // style={styles.searchViewShadow}
+      // pointerEvents={!isSeviceableObjectEmpty && serviceableObject?.city != '' ? 'auto' : 'none'}
+      // style={styles.searchViewShadow}
       >
         <SearchInput
           _isSearchFocused={isSearchFocused}
@@ -963,10 +974,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
           onChangeText={(value) => {
             if (isValidSearch(value)) {
-              if (!g(locationForDiagnostics, 'cityId')) {
-                renderLocationNotServingPopup();
-                return;
-              }
+              // if (!g(locationForDiagnostics, 'cityId')) {
+              //   renderLocationNotServingPopup();
+              //   return;
+              // }
               setSearchText(value);
               if (!(value && value.length > 2)) {
                 setDiagnosticResults([]);
@@ -1015,8 +1026,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
-
       checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
+
       setLoadingContext!(false);
     } catch (error) {
       setLoadingContext!(false);
@@ -1348,14 +1359,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
       <View>
         {isPricesAvailable ? (
           <>
             <SectionHeader
               leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={styles.widgetHeading}
+              leftTextStyle={[
+                styles.widgetHeading,
+                {
+                  ...theme.viewStyles.text(
+                    'B',
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
+                    theme.colors.SHERPA_BLUE,
+                    1,
+                    20
+                  ),
+                },
+              ]}
               rightText={showViewAll ? 'VIEW ALL' : ''}
               rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
               onPressRightText={
@@ -1395,7 +1418,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 12;
+    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
       <View>
@@ -1403,7 +1427,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <>
             <SectionHeader
               leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={styles.widgetHeading}
+              leftTextStyle={[
+                styles.widgetHeading,
+                {
+                  ...theme.viewStyles.text(
+                    'B',
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
+                    theme.colors.SHERPA_BLUE,
+                    1,
+                    20
+                  ),
+                },
+              ]}
               rightText={showViewAll ? 'VIEW ALL' : ''}
               rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
               onPressRightText={
@@ -1875,7 +1910,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   widgetHeading: {
-    ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
   },
   widgetView: {

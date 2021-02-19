@@ -553,6 +553,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ? AppConfig.Configuration.CIRCLE_CONSULT_URL
         : from === string.banner_context.HOME
         ? AppConfig.Configuration.CIRCLE_LANDING_URL
+        : from === string.banner_context.MEMBERSHIP_DETAILS
+        ? AppConfig.Configuration.CIRCLE_LANDING_URL
         : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
         ? AppConfig.Configuration.CIRCLE_TEST_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
@@ -627,6 +629,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         fetchPolicy: 'no-cache',
       });
       setLoading && setLoading(false);
+
       if (res?.data?.CreateUserSubscription?.success) {
         onPurchaseWithHCCallback!(res);
       } else {

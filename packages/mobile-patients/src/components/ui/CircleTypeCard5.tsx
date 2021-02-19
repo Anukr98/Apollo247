@@ -63,10 +63,10 @@ const styles = StyleSheet.create({
   ...theme.viewStyles.text('M', 9, '#fff', 1, 11),backgroundColor:'#C5411E',
   width:'100%',
   alignSelf:'center',
-  left:-25,
+  left:-24,
   marginTop:-2,
-  paddingLeft:20,
-  paddingTop:3,
+  paddingLeft:16,
+  paddingTop:2,
   },
 
 });
@@ -124,8 +124,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
 
             <View style={styles.subPlanOne}>
             <Text style={styles.alertText}>
-            Awaiting{"\n"}
-            Upgrade
+            Expired
             </Text>
 
              <Image style={styles.circleLogo}
@@ -143,8 +142,8 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
 
              <View style={styles.subPlanFour}>
              <Button
-                       title={`UPGRADE`}
-                       style={{width:94,height:32}}
+                       title={`RENEW NOW`}
+                       style={{width:106,height:32}}
                        onPress={onButtonPress}
                        disabled={false}
                      />

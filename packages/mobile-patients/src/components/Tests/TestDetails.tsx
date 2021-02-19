@@ -379,20 +379,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
       if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
-        breadcrumb.push({
-          title: 'Order Tests',
-          onPress: () => {
-            props.navigation.navigate('TESTS');
-          },
-        });
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
-        breadcrumb.push({
-          title: 'Order Tests',
-          onPress: () => {
-            props.navigation.navigate('TESTS');
-          },
-        });
         breadcrumb.push({
           title: movedFrom == AppRoutes.SearchTestScene ? 'Test Search' : 'Test Listing',
           onPress: () => {
@@ -420,7 +408,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       });
       setTestDetailsBreadCrumbs && setTestDetailsBreadCrumbs(breadcrumb);
     }
-  }, [movedFrom]);
+  }, [movedFrom, itemName]);
 
   useEffect(() => {
     DiagnosticDetailsViewed(
@@ -1167,7 +1155,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   reportTimeText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 15),
     textAlign: 'left',
     letterSpacing: 0.25,
   },
@@ -1184,7 +1172,7 @@ const styles = StyleSheet.create({
   },
   infoIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
   preTestingText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, '#FF637B', 1, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, '#FF637B', 1, 15),
     textAlign: 'left',
     letterSpacing: 0.25,
     marginHorizontal: '4%',
@@ -1194,9 +1182,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     textTransform: 'capitalize',
   },
-  inclusionsView: { width: '100%', marginVertical: '5%' },
+  inclusionsView: { width: '100%', marginVertical: '4%' },
   testIncludedText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 18),
     textAlign: 'left',
     marginTop: '1%',
     letterSpacing: 0.25,
@@ -1220,7 +1208,7 @@ const styles = StyleSheet.create({
     marginBottom: '1.5%',
   },
   showLessText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
     letterSpacing: 0.25,
     marginBottom: '1.5%',
     marginTop: '2%',
