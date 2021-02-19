@@ -1260,7 +1260,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchCarePlans();
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
-    setBannerData && setBannerData([]); // default banners to be empty
   }, []);
 
   const checkCircleSelectedPlan = async () => {
