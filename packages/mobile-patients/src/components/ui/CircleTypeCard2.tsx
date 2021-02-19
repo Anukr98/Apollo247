@@ -23,7 +23,6 @@ const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 5,
   },
@@ -31,20 +30,17 @@ const styles = StyleSheet.create({
   subPlanOne: {
     flex: 0.2,
     alignItems: 'center',
-    justifyContent: 'center',
   },
 
   subPlanTwo: {
     flex: 0.4,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
   },
 
   subPlanThree: {
     flex: 0.4,
     alignItems: 'center',
-    justifyContent: 'center',
   },
 
   circleLogo: {
@@ -104,17 +100,30 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
         </View>
 
         <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) }}>
-            Your Plan {'\n'}Expires In:
-          </Text>
-          <Text
-            style={[
-              { ...theme.viewStyles.text('M', 20, '#02475B', 1, 25) },
-              { alignSelf: 'flex-end' },
-            ]}
-          >
-            {expiry} {expiry == '1' ? `day` : `days`}
-          </Text>
+          <View>
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) }}>
+              Your Plan {'\n'}Expires In:{'  '}
+              <Text
+                style={[
+                  { ...theme.viewStyles.text('M', 20, '#02475B', 1, 25) },
+                  { alignSelf: 'flex-end' },
+                ]}
+              >
+                {expiry} {expiry == '1' ? `day` : `days`}
+              </Text>
+            </Text>
+            {credits > 0 && (
+              <View style={[styles.planContainer, { justifyContent: 'flex-start' }]}>
+                <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                  Available Health Credits:
+                </Text>
+                <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
+                  {' '}
+                  {credits || 0}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
         <View style={styles.subPlanThree}>
@@ -126,18 +135,6 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
           />
         </View>
       </View>
-
-      {credits && (
-        <View style={[styles.planContainer, { justifyContent: 'flex-start', marginLeft: 15 }]}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-            Available Health Credits:
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-            {' '}
-            {credits || 0}
-          </Text>
-        </View>
-      )}
     </View>
   );
 };
