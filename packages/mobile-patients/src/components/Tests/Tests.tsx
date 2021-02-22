@@ -782,7 +782,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const res: any = await getDiagnosticsSearchResults(
           'diagnostic',
           _searchText,
-          parseInt(locationForDiagnostics?.cityId!, 10)
+          Number(serviceableObject?.cityId! || 9)
         );
         if (res?.data?.success) {
           const products = g(res, 'data', 'data') || [];
