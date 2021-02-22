@@ -3793,6 +3793,9 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
       displayId
       status
       errorMessageToDisplay
+      attributes{
+        itemids
+      }
     }
   }
 `;

@@ -419,7 +419,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id) => {
-    const newCartItems = cartItems.filter((item) => item.id !== id);
+    const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
     setAreaSelected!({});
