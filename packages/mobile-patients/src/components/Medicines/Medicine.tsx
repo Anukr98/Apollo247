@@ -1569,8 +1569,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setsearchSate('load');
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
-        const products = data.products || [];
-        setMedicineList(products);
+        let products = data.products || [];
+        const inStockProducts = products.filter((product) => !!isProductInStock(product));
+        const outOfStockProducts = products.filter((product) => !isProductInStock(product));
+        setMedicineList([...inStockProducts, ...outOfStockProducts]);
         setsearchSate('success');
         const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
           keyword: _searchText,
