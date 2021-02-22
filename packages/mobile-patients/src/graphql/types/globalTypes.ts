@@ -979,6 +979,10 @@ export interface DiagnosticBookHomeCollectionInput {
   attachmentData?: (Attachments | null)[] | null;
 }
 
+export interface DiagnosticInitiateOrderPayment {
+  orderId?: string | null;
+}
+
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;
@@ -1642,6 +1646,7 @@ export interface UpdateAppointmentInput {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
+  isUserJoining?: boolean | null;
 }
 
 export interface UpdatePatientAddressInput {
