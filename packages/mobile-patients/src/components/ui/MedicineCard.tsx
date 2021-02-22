@@ -4,6 +4,7 @@ import {
   CheckUnselectedIcon,
   CircleLogo,
   DropdownGreen,
+  InfoIconRed,
   MedicineIcon,
   MedicineRxIcon,
   PendingIcon,
@@ -27,6 +28,7 @@ import { Image } from 'react-native-elements';
 import {
   getMaxQtyForMedicineItem,
   isSmallDevice,
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { string } from '../../strings/string';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -35,156 +37,11 @@ import { fonts } from '../../theme/fonts';
 import { Spearator } from './BasicComponents';
 import { CircleHeading } from './CircleHeading';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+import { AppRoutes } from '../NavigatorContainer';
 const width = Dimensions.get('window').width;
 
-const styles = StyleSheet.create({
-  containerStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    backgroundColor: theme.colors.WHITE,
-    padding: 16,
-    paddingBottom: 0,
-  },
-  rowSpaceBetweenView: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    // alignItems: 'center',
-  },
-  flexStyle: {
-    flex: 1,
-  },
-  medicineTitle: {
-    flex: 1,
-    marginRight: 10,
-    color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 15 : 16),
-    lineHeight: 24,
-  },
-  separator: {
-    backgroundColor: theme.colors.LIGHT_BLUE,
-    height: 1,
-    opacity: 0.1,
-    marginBottom: 7,
-    marginTop: 7,
-  },
-  verticalSeparator: {
-    width: 1,
-    height: '100%',
-    backgroundColor: theme.colors.LIGHT_BLUE,
-    opacity: 0.2,
-  },
-  unitAndRupeeText: {
-    color: theme.colors.LIGHT_BLUE,
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    letterSpacing: 0.33,
-  },
-  takeRegularView: {
-    backgroundColor: '#f7f8f5',
-    borderRadius: 5,
-    padding: 8,
-    paddingLeft: 12,
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    flexDirection: 'row',
-  },
-  alreadySubscribedView: {
-    padding: 12,
-    flexDirection: 'column',
-  },
-  packOfTextStyle: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, '#02475b', 0.6, 20, 0.04),
-    marginBottom: 3,
-  },
-  unitDropdownContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  subscriptionTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.LIGHT_BLUE,
-  },
-  editAndSubscriptionViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  unitAndPriceView: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  personNameTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.LIGHT_BLUE,
-    marginRight: 4,
-  },
-  personSelectionView: {
-    alignSelf: 'flex-end',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  outOfStockStyle: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.INPUT_FAILURE_TEXT,
-    marginTop: 4,
-  },
-  priceTextCollapseStyle: {
-    ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
-    marginTop: 4,
-  },
-  searchSlashedPrice: {
-    ...theme.viewStyles.text('M', 12, '#02475B', 0.4, 20, 0.04),
-    marginTop: 4,
-    alignSelf: 'flex-end',
-    textDecorationLine: 'line-through',
-  },
-  rowEndView: { flexDirection: 'row', justifyContent: 'flex-end' },
-  circlePriceText: {
-    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 0.7, 20, 0.04),
-    marginTop: 4,
-    marginRight: 5,
-    alignSelf: 'flex-end',
-  },
-  verticalSeparator1: {
-    borderLeftWidth: 1,
-    borderLeftColor: '#02475b',
-    opacity: 0.3,
-    marginRight: 4,
-    marginTop: 4,
-  },
-  circleHeadingView: { flexDirection: 'row', alignSelf: 'flex-end', marginRight: 5 },
-  packageSlashedPrice: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, '#02475B', 0.5, 20, 0.04),
-    textDecorationLine: 'line-through',
-    textAlign: 'right',
-  },
-  rightView: { alignSelf: 'flex-end' },
-  percentageDiscountText: {
-    ...theme.fonts.IBMPlexSansMedium(width > 380 ? 11 : 9),
-    color: colors.APP_GREEN,
-    lineHeight: 16,
-    marginTop: isSmallDevice ? 2 : 0,
-    marginHorizontal: isSmallDevice ? 5 : 10,
-  },
-  circlePriceTextSub: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, '#02475B', 1, 20, 0.04),
-    marginLeft: 5,
-  },
-  rowRightView: {
-    alignSelf: 'flex-end',
-    flexDirection: 'row',
-  },
-});
-
 export interface MedicineCardProps {
+  testId?: string | number;
   isTest?: boolean;
   medicineName: string;
   personName?: string;
@@ -216,6 +73,8 @@ export interface MedicineCardProps {
   mrpToDisplay?: number | string;
   packageMrp?: number;
   isSpecialDiscount?: boolean;
+  showCartInclusions?: boolean;
+  duplicateArray?: any;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
@@ -244,6 +103,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     onEditPress,
     onAddSubscriptionPress,
     maxQty,
+    testId,
   } = props;
 
   const isSpecialPrice = specialPrice !== price && (!!specialPrice || specialPrice === 0);
@@ -833,6 +693,16 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
         }
       : {};
+
+  const inclusionItem =
+    props.duplicateArray?.length > 0 &&
+    props.duplicateArray?.map((item: any) =>
+      Number(item?.id) == Number(testId) ? nameFormater(item?.removalName, 'default') : ''
+    );
+  const filterInclusions =
+    props.duplicateArray?.length > 0 && inclusionItem?.filter((item: string) => item != '');
+  const inclusionItemToShow =
+    filterInclusions?.length > 0 && filterInclusions && filterInclusions?.join(', ');
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -852,7 +722,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
               {props.isComingFrom == 'testSearchResult'
                 ? renderSearchPriceView()
-                : props.isComingFrom == 'testCart'
+                : props.isComingFrom == AppRoutes.TestsCart
                 ? renderPriceView()
                 : renderUnitDropdownAndPrice()}
             </>
@@ -860,6 +730,178 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         </View>
       </View>
       <View style={{ height: 13 }} />
+      {props.isComingFrom == AppRoutes.TestsCart &&
+        props.showCartInclusions &&
+        !!inclusionItemToShow && (
+          <View style={styles.inclusionsView}>
+            <InfoIconRed style={styles.infoIconStyle} />
+            <Text style={styles.inclusionsText}>Includes {inclusionItemToShow}</Text>
+          </View>
+        )}
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  containerStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: theme.colors.WHITE,
+    padding: 16,
+    paddingBottom: 0,
+  },
+  rowSpaceBetweenView: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    // alignItems: 'center',
+  },
+  flexStyle: {
+    flex: 1,
+  },
+  medicineTitle: {
+    flex: 1,
+    marginRight: 10,
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 15 : 16),
+    lineHeight: 24,
+  },
+  separator: {
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    height: 1,
+    opacity: 0.1,
+    marginBottom: 7,
+    marginTop: 7,
+  },
+  verticalSeparator: {
+    width: 1,
+    height: '100%',
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.2,
+  },
+  unitAndRupeeText: {
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    letterSpacing: 0.33,
+  },
+  takeRegularView: {
+    backgroundColor: '#f7f8f5',
+    borderRadius: 5,
+    padding: 8,
+    paddingLeft: 12,
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    flexDirection: 'row',
+  },
+  alreadySubscribedView: {
+    padding: 12,
+    flexDirection: 'column',
+  },
+  packOfTextStyle: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, '#02475b', 0.6, 20, 0.04),
+    marginBottom: 3,
+  },
+  unitDropdownContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  subscriptionTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  editAndSubscriptionViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  unitAndPriceView: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  personNameTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    color: theme.colors.LIGHT_BLUE,
+    marginRight: 4,
+  },
+  personSelectionView: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  outOfStockStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    color: theme.colors.INPUT_FAILURE_TEXT,
+    marginTop: 4,
+  },
+  priceTextCollapseStyle: {
+    ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
+    marginTop: 4,
+  },
+  searchSlashedPrice: {
+    ...theme.viewStyles.text('M', 12, '#02475B', 0.4, 20, 0.04),
+    marginTop: 4,
+    alignSelf: 'flex-end',
+    textDecorationLine: 'line-through',
+  },
+  rowEndView: { flexDirection: 'row', justifyContent: 'flex-end' },
+  circlePriceText: {
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 0.7, 20, 0.04),
+    marginTop: 4,
+    marginRight: 5,
+    alignSelf: 'flex-end',
+  },
+  verticalSeparator1: {
+    borderLeftWidth: 1,
+    borderLeftColor: '#02475b',
+    opacity: 0.3,
+    marginRight: 4,
+    marginTop: 4,
+  },
+  circleHeadingView: { flexDirection: 'row', alignSelf: 'flex-end', marginRight: 5 },
+  packageSlashedPrice: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, '#02475B', 0.5, 20, 0.04),
+    textDecorationLine: 'line-through',
+    textAlign: 'right',
+  },
+  rightView: { alignSelf: 'flex-end' },
+  percentageDiscountText: {
+    ...theme.fonts.IBMPlexSansMedium(width > 380 ? 11 : 9),
+    color: colors.APP_GREEN,
+    lineHeight: 16,
+    marginTop: isSmallDevice ? 2 : 0,
+    marginHorizontal: isSmallDevice ? 5 : 10,
+  },
+  circlePriceTextSub: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, '#02475B', 1, 20, 0.04),
+    marginLeft: 5,
+  },
+  rowRightView: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+  },
+  inclusionsView: {
+    backgroundColor: '#FCFDDA',
+    flex: 1,
+    padding: 8,
+    flexDirection: 'row',
+    marginLeft: -16,
+    width: width - 40,
+  },
+  infoIconStyle: { resizeMode: 'contain', height: 16, width: 16 },
+  inclusionsText: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 16,
+    letterSpacing: 0.04,
+    color: theme.colors.SHERPA_BLUE,
+    opacity: 0.7,
+    marginHorizontal: '2%',
+  },
+});

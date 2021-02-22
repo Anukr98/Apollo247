@@ -14,6 +14,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   isSmallDevice,
+  nameFormater,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -284,7 +285,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
-  const currentPatientId = currentPatient && currentPatient!.id;
+  const currentPatientId = currentPatient && currentPatient?.id;
   const client = useApolloClient();
   const {
     locationForDiagnostics,
@@ -308,6 +309,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
   const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
+  const [showInclusions, setShowInclusions] = useState<boolean>(false);
+  const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
@@ -1053,10 +1056,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             : undefined;
           return (
             <MedicineCard
-              isComingFrom={'testCart'}
+              isComingFrom={AppRoutes.TestsCart}
               isCareSubscribed={isDiagnosticCircleSubscription}
               containerStyle={medicineCardContainerStyle}
-              key={test.id}
+              showCartInclusions={showInclusions}
+              key={test?.id}
+              testId={test?.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
                 fetchPackageDetails(
@@ -1120,6 +1125,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               onChangeSubscription={() => {}}
               onEditPress={() => {}}
               onAddSubscriptionPress={() => {}}
+              duplicateArray={duplicateNameArray}
             />
           );
         })}
@@ -2372,14 +2378,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             let message =
               data?.saveDiagnosticBookHCOrder?.errorMessageToDisplay ||
               string.diagnostics.bookingOrderFailedMessage;
+            //itemIds will only come in case of duplicate
             let itemIds = data?.saveDiagnosticBookHCOrder?.attributes?.itemids;
-            showAphAlert!({
-              title: string.common.uhOh,
-              description: message,
-              onPressOk: () => {
-                removeDuplicateCartItems(itemIds!, bookingOrderInfo?.items);
-              },
-            });
+            if (itemIds?.length! > 0) {
+              showAphAlert?.({
+                unDismissable: true,
+                title: string.common.uhOh,
+                description: message,
+                onPressOk: () => {
+                  removeDuplicateCartItems(itemIds!, bookingOrderInfo?.items);
+                },
+              });
+            } else {
+              renderAlert(message);
+            }
           } else {
             const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
             const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
@@ -2453,106 +2465,205 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
-    // checkDuplicateItems();
     proceedForBooking();
   };
 
   function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
+    //can be used only when itdose starts returning all id
     const getItemIds = itemIds?.split(',');
-    console.log({ getItemIds }); //can be used only when itdose starts returning all id
-    checkDuplicateItems(pricesOfEach);
+    checkDuplicateItems(pricesOfEach, getItemIds);
   }
 
-  const checkDuplicateItems = (pricesForItem: any) => {
-    console.log({ cartItems });
+  const checkDuplicateItems = (pricesForItem: any, getItemIds: any) => {
     const allInclusions = cartItems?.map((item) => item?.inclusions);
 
-    console.log({ allInclusions });
-
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
-    console.log({ mergedInclusions });
     const duplicateItems_1 = mergedInclusions?.filter(
       (e: any, i: any, a: any) => a.indexOf(e) !== i
     );
     const duplicateItems = [...new Set(duplicateItems_1)];
-    console.log({ duplicateItems_1 });
-    console.log({ duplicateItems });
-    console.log({ pricesForItem });
-
-    //1. find the duplicate item id (duplicateItems)
-    //2. check if these duplicate items are part of the cart, if so then push in "newArr"
-    //   which can be used to remove all items at once.
-    //3. get remaining itemId's from duplicateArr & newArr , which still needs to be
-    //   taken care of, may be part of packages (duplicate-newArr)  => remainingDuplicateItems
-    //4. find the in the cartItems, the remaining duplicate one's (remainingDuplicateItems) => cartItemDuplicateItems
-    //5. now from pricesInItem, compare cartItemDuplicate , which is less needs to push in itemIdRemove
+    //checked at the inclusion level.
 
     if (duplicateItems?.length) {
-      //search for duplicate items in cart.
-      let res = cartItems?.filter((item) => duplicateItems.includes(Number(item?.id))); //itemIdToRemove
-      let res1 = res.map((item) => Number(item.id)); //itemIdtoRemove
-
-      console.log({ res });
-      console.log(res1);
-
-      const remainingDuplicateItems = duplicateItems?.filter(function(el) {
-        return res1?.indexOf(el) < 0;
+      //search for duplicate items in cart. (single tests added)
+      let duplicateItemIds = cartItems?.filter((item) =>
+        duplicateItems?.includes(Number(item?.id))
+      ); //itemIdToRemove
+      let itemIdRemove = duplicateItemIds?.map((item) => Number(item?.id)); //itemIdtoRemove
+      //rest of the duplicate items which are not directly present in the cart
+      const remainingDuplicateItems = duplicateItems?.filter(function(item: any) {
+        return itemIdRemove?.indexOf(item) < 0;
       });
 
-      console.log({ remainingDuplicateItems });
+      //search for remaining duplicate items in cart's package inclusions
 
-      let xx = [];
-      for (let i = 0; i < cartItems?.length; i++) {
-        for (let j = 0; j < remainingDuplicateItems?.length; j++) {
-          if (cartItems?.[i]?.inclusions?.includes(remainingDuplicateItems?.[j])) {
-            xx.push(cartItems?.[i]);
+      let itemIdWithPackageInclusions = cartItems?.filter(({ inclusions }) =>
+        inclusions?.some((num) => remainingDuplicateItems?.includes(num))
+      );
+
+      //get only itemId
+      let packageInclusionItemId = itemIdWithPackageInclusions?.map((item) => Number(item?.id));
+
+      //for the remaining packageItems, extract the prices
+      let pricesForPackages = [] as any;
+
+      pricesForItem?.forEach((pricesItem: any) => {
+        packageInclusionItemId?.forEach((packageId: number) => {
+          if (Number(pricesItem?.itemId) == Number(packageId)) {
+            pricesForPackages.push(pricesItem);
           }
-        }
-      }
-      console.log({ xx });
-      let removeX = [...new Set(xx)];
-      console.log({ removeX });
-
-      let removeXItem = removeX?.map((item) => Number(item?.id));
-      let kk = pricesForItem?.filter(function(el) {
-        return removeXItem?.indexOf(el) < 0;
+        });
       });
-      console.log({ kk });
-      let ss = kk?.sort((a, b) => a?.price - b?.price);
-      console.log({ ss });
+
+      //sort with accordance with price
+
+      let sortedPricesForPackage = pricesForPackages?.sort((a: any, b: any) => b?.price - a?.price);
+      let remainingPackageDuplicateItems = sortedPricesForPackage?.slice(
+        1,
+        sortedPricesForPackage?.length
+      );
+      let remainingPackageDuplicateItemId = remainingPackageDuplicateItems?.map((item: any) =>
+        Number(item?.itemId)
+      );
+      console.log({ remainingPackageDuplicateItemId });
+      let finalRemovalId = [...itemIdRemove, remainingPackageDuplicateItemId]?.flat(1);
+
+      setLoading?.(true);
+      getDiagnosticsAvailability(Number(addressCityId), cartItems, finalRemovalId, 'proceedToPay')
+        .then(({ data }) => {
+          const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+          const formattedDuplicateTest = diagnosticItems?.map((item) =>
+            !!item?.itemName ? nameFormater(item?.itemName, 'default') : item?.itemName
+          );
+          const duplicateTests = formattedDuplicateTest?.join(', ');
+
+          //remaining itemId's
+          const updatedCartItems = cartItems?.filter(function(items: any) {
+            return finalRemovalId?.indexOf(Number(items?.id)) < 0;
+          });
+
+          //now on the updated cart item, find the duplicate items => higher price items
+          const higherPricesItems = updatedCartItems?.filter(({ inclusions }) =>
+            inclusions?.some((num) => finalRemovalId?.includes(num))
+          );
+          const formattedHigherPriceItemName = higherPricesItems?.map(
+            (item) => !!item?.name && nameFormater(item?.name, 'default')
+          );
+          const higherPricesName = formattedHigherPriceItemName?.join(', ');
+
+          //clear cart..
+          onChangeCartItems(updatedCartItems);
+
+          //show inclusions
+          let array = [] as any;
+          updatedCartItems?.forEach((item) =>
+            diagnosticItems?.forEach((dItem) => {
+              if (item?.inclusions?.includes(Number(dItem?.itemId))) {
+                array.push({
+                  id: item?.id,
+                  removalId: dItem?.itemId,
+                  removalName: dItem?.itemName,
+                });
+              }
+            })
+          );
+
+          setShowInclusions(true);
+          let arrayToSet = [...duplicateNameArray, array].flat(1);
+          setDuplicateNameArray(arrayToSet);
+
+          renderDuplicateMessage(duplicateTests, higherPricesName);
+        })
+        .catch((e) => {
+          console.log({ e });
+          //if api fails then also show the name... & remove..
+          CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
+          setLoading!(false);
+          errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+        });
     }
+    //no inclusion level duplicates are found...
+    else {
+      if (getItemIds?.length > 0) {
+        const newItems = getItemIds?.map((item: string) => Number(item));
 
-    // console.log({ cartItemDuplicateItems });
+        //get the prices for both the items,
+        const getDuplicateItems = pricesForItem
+          ?.filter((item: any) => newItems?.includes(item?.itemId))
+          .sort((a: any, b: any) => b?.price - a?.price);
 
-    // if (duplicateItems?.length) {
-    //   setLoading!(true);
-    //   getDiagnosticsAvailability(Number(addressCityId), cartItems, duplicateItems, 'proceedToPay')
-    //     .then(({ data }) => {
-    //       const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-    //       console.log({ diagnosticItems });
-    //       const duplicateTests = diagnosticItems?.map((item) => item?.itemName).join(', ');
-    //       showAphAlert!({
-    //         title: string.common.uhOh,
-    //         description:
-    //           duplicateTests +
-    //           (diagnosticItems?.length == 1 ? ' is' : ' are') +
-    //           string.diagnostics.itemAlreadyExist,
-    //         onPressOk: () => {
-    //           setLoading!(false);
-    //           hideAphAlert!();
-    //         },
-    //       });
-    //     })
-    //     .catch((e) => {
-    //       CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-    //       setLoading!(false);
-    //       errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
-    //     });
-    // }
-    // else {
-    //   proceedForBooking();
-    // }
+        console.log({ getDuplicateItems });
+
+        const itemsToRemove = getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
+        const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
+
+        const updatedCartItems = cartItems?.filter(function(items: any) {
+          return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
+        });
+
+        //assuming get two values.
+        let array = [] as any;
+        cartItems?.forEach((cItem) => {
+          itemIdToRemove?.forEach((idToRemove: any) => {
+            if (Number(cItem?.id) == itemIdToRemove) {
+              array.push({
+                id: getDuplicateItems?.[0]?.itemId,
+                removalId: idToRemove,
+                removalName: cItem?.name,
+              });
+            }
+          });
+        });
+
+        const highPricesItem = cartItems?.map((cItem) =>
+          Number(cItem?.id) == Number(getDuplicateItems?.[0]?.itemId)
+            ? !!cItem?.name && nameFormater(cItem?.name, 'default')
+            : ''
+        );
+        console.log({ highPricesItem });
+        const higherPricesName = highPricesItem?.filter((item: any) => item != '')?.join(', ');
+        const duplicateTests = array?.[0]?.removalName;
+        console.log({ higherPricesName });
+        let arrayToSet = [...duplicateNameArray, array].flat(1);
+        onChangeCartItems(updatedCartItems);
+        setShowInclusions(true);
+        setDuplicateNameArray(arrayToSet);
+
+        renderDuplicateMessage(duplicateTests, higherPricesName);
+      } else {
+        setLoading?.(false);
+        hideAphAlert?.();
+      }
+    }
   };
+
+  const renderDuplicateMessage = (duplicateTests: string, higherPricesName: string) => {
+    showAphAlert?.({
+      title: 'Your cart has been revised!',
+      description: `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
+      onPressOk: () => {
+        setLoading?.(false);
+        hideAphAlert?.();
+      },
+    });
+  };
+
+  function onChangeCartItems(updatedCartItems: any) {
+    setDiagnosticSlot?.(null);
+    setAreaSelected?.({});
+    setDiagnosticAreas?.([]);
+    setCartItems?.(updatedCartItems);
+    //refetch the areas
+    if (deliveryAddressId != '') {
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
+      );
+      fetchAreasForAddress(
+        addresses?.[selectedAddressIndex]?.id,
+        addresses?.[selectedAddressIndex]?.zipcode!
+      );
+    }
+  }
 
   const proceedForBooking = () => {
     const prescriptions = physicalPrescriptions;
