@@ -1569,7 +1569,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setsearchSate('load');
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
-        let products = data.products || [];
+        const products = data.products || [];
         const inStockProducts = products.filter((product) => !!isProductInStock(product));
         const outOfStockProducts = products.filter((product) => !isProductInStock(product));
         setMedicineList([...inStockProducts, ...outOfStockProducts]);
