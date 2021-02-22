@@ -102,6 +102,7 @@ export enum WebEngageEventName {
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
   HOME_VIEWED = 'Home page viewed',
   MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
+  SEARCH_SUGGESTIONS_CLICKED = 'Search suggestion clicked',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -2066,6 +2067,10 @@ export interface WebEngageEvents {
     'Search Suggestions': string;
     Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
     'Search Suggestion Clicked': string;
+    Doctors: string;
+    Symptoms: string;
+    Specialities: string;
+    Procedures: string;
   };
 
   [WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
@@ -2078,6 +2083,22 @@ export interface WebEngageEvents {
     'Customer ID': string;
     Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
     'Search suggestions in the particular bucket': string;
+  };
+
+  [WebEngageEventName.SEARCH_SUGGESTIONS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    Doctors: string;
+    Symptoms: string;
+    Specialities: string;
+    Procedures: string;
+    'Text typed by the user': string;
+    'Search Suggestion Clicked': string;
   };
 
   [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
