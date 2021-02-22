@@ -161,7 +161,8 @@ export type AddressSource =
   | 'Upload Prescription'
   | 'Cart'
   | 'Diagnostics Cart'
-  | 'Medicine';
+  | 'Medicine'
+  | 'Tests';
 
 export interface AddAddressProps
   extends NavigationScreenProps<{
@@ -234,6 +235,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
     setAddresses: setTestAddresses,
+    setNewAddressAddedHomePage,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
@@ -432,6 +434,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });
           } else {
+            if (source == 'Tests') {
+              setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
+            }
             props.navigation.pop(2, { immediate: true });
           }
         } else {
@@ -480,7 +485,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient) {
-      const _setUserName = addressData?.name! ? addressData?.name : currentPatient.firstName!;
+      const _setUserName = addressData?.name! ? addressData?.name : currentPatient?.firstName!;
       setuserName(_setUserName);
       setuserId(currentPatient.id);
       if (addressData?.mobileNumber) {
@@ -1227,14 +1232,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'height' : undefined}
           style={{ flex: 1 }}
           {...keyboardVerticalOffset}
         >
           <ScrollView bounces={false}>
             {renderAddressText()}
             {renderAddress()}
-            {renderUserName()}
+            {!!source && source == 'Diagnostics Cart' ? null : renderUserName()}
             {renderUserNumber()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>

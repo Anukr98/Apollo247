@@ -141,7 +141,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const billNumber = props.navigation.getParam('billNumber');
   const isCancelOrder = props.navigation.getParam('isCancelOrder');
   const isOrderHelp = props.navigation.getParam('isOrderHelp');
-  const queryCategory = props.navigation.getParam('queryCategory') || '';
+  const queryCategory = props.navigation.getParam('queryCategory') || string.pharmacy;
   const email = props.navigation.getParam('email') || '';
   const breadCrumb = props.navigation.getParam('breadCrumb') || [];
   const refetchOrders = props.navigation.getParam('refetchOrders');
@@ -152,6 +152,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
   const client = useApolloClient();
+  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -176,6 +177,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     addMultipleEPrescriptions,
     addresses,
     onHoldOptionOrder,
+    setEPrescriptions,
+    setPhysicalPrescriptions,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
@@ -196,6 +199,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
+  const shipmentInfo = g(order, 'medicineOrderShipments');
+  const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
+  const shipmentTrackingProvider = shipmentInfo?.[0]?.trackingProvider;
+  const shipmentTrackingUrl = shipmentInfo?.[0]?.trackingUrl;
   const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
     (item) => item!.isPrescriptionNeeded
   );
@@ -244,6 +251,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     : g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails', 'billNumber');
 
   const [showRateDeliveryBtn, setShowRateDeliveryBtn] = useState(false);
+  const orderDeliveryDate = order?.medicineOrdersStatus?.find(
+    (i) => i?.orderStatus === order?.currentStatus
+  )?.statusDate;
+
+  const hideWhtsappQueryOption = moment(new Date()).diff(moment(orderDeliveryDate), 'hours') > 48;
 
   useEffect(() => {
     if (isCancelOrder && !loading) {
@@ -616,6 +628,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       );
     };
 
+    const isDelhiveryOrEcomExpressProvider = ['Delhivery Express', 'Ecom Express'].includes(
+      shipmentTrackingProvider!
+    );
+
     return (
       <View>
         <View
@@ -636,6 +652,38 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >{`ORDER #${orderAutoId}`}</Text>
             {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
           </View>
+          {(!!shipmentTrackingProvider || !!shipmentTrackingNumber) && (
+            <View style={styles.shipmentInfoContainer}>
+              {!!shipmentTrackingProvider && isDelhiveryOrEcomExpressProvider && (
+                <View>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5)}>
+                    Courier
+                  </Text>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                    {shipmentTrackingProvider}
+                  </Text>
+                </View>
+              )}
+              {!!shipmentTrackingNumber && (
+                <View>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('SB', 13, '#01475b', 0.5, undefined, 0.5),
+                      textAlign:
+                        !!shipmentTrackingProvider && isDelhiveryOrEcomExpressProvider
+                          ? 'right'
+                          : 'left',
+                    }}
+                  >
+                    Tracking ID
+                  </Text>
+                  <Text style={theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5)}>
+                    {shipmentTrackingNumber}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
           <View style={{ flexDirection: 'row', marginTop: 12 }}>
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
               {string.OrderSummery.name}
@@ -844,8 +892,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
       orderCancelText?: string
     ) => {
-      const shipmentNumber = order?.medicineOrderShipments?.[0]?.trackingNo;
-      const shipmentProvider = order?.medicineOrderShipments?.[0]?.trackingProvider;
+      const shipment = order?.medicineOrderShipments?.[0];
+      const driverDetails = shipment?.driverDetails;
+      const shipmentNumber = shipment?.trackingNo;
+      const shipmentProvider = shipment?.trackingProvider;
+      const showDriverDetails =
+        shipmentProvider !== 'Delhivery Express' &&
+        driverDetails?.driverName &&
+        driverDetails?.driverPhone;
       const showTracking = !!shipmentNumber && shipmentProvider === 'Delhivery Express';
 
       const renderTrackOrder = (
@@ -863,10 +917,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         </Text>
       );
       const isCartItemsUpdated =
-        orderDetails.medicineOrderShipments!.length > 0 &&
-        !isEmptyObject(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
-        checkIsJSON(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
-        JSON.parse(orderDetails.medicineOrderShipments![0]?.itemDetails!);
+        orderDetails?.medicineOrderShipments?.length > 0 &&
+        !isEmptyObject(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
+        checkIsJSON(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
+        JSON.parse(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!);
       const orderStatusDescMapping = {
         [MEDICINE_ORDER_STATUS.ORDER_PLACED]:
           orderDetails?.prescriptionOptionSelected! == 'Call me for details'
@@ -927,8 +981,18 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ? `Your order has been picked-up by our courier partner and is in-transit. Shipment AWB number is ${shipmentNumber}.`
             : '',
           () => {},
-          showTracking ? renderTrackOrder : null,
+          null,
+          // showTracking ? renderTrackOrder : null,
         ],
+        [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
+          '',
+          showDriverDetails
+            ? `Your order will be delivered soon by our Delivery Associate: ${driverDetails?.driverName}, ${driverDetails?.driverPhone}`
+            : showTracking
+            ? `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`
+            : '',
+        ],
+
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
           `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
@@ -940,15 +1004,27 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             );
           },
         ],
-        [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
-          '',
-          `Your order has been picked up from our store!`,
-        ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',
           'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
         ],
         [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
+        [MEDICINE_ORDER_STATUS.RETURN_PICKUP]: [
+          '',
+          `Your order items have been successfully returned, we will be processing for a refund shortly.`,
+        ],
+        [MEDICINE_ORDER_STATUS.RETURN_REQUESTED]: [
+          '',
+          `Your return has been initiated, a return pick-up partner will be assigned soon`,
+        ],
+        [MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED]: [
+          '',
+          `We will re-attempt delivery later, please be reachable on phone`,
+        ],
+        [MEDICINE_ORDER_STATUS.RVP_ASSIGNED]: [
+          '',
+          `Our rider or courier partner will collect the item from you shortly, please be reachable on phone`,
+        ],
       };
 
       const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
@@ -1284,14 +1360,37 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     console.log({ reasonForOnHold });
     const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
 
+    const renderCourierTrackingCta = () => {
+      const isDelhiveryOrder =
+        (shipmentTrackingProvider || '').toLowerCase().indexOf('delhivery') > -1;
+      if (!!shipmentTrackingUrl || isDelhiveryOrder) {
+        return (
+          <Button
+            style={styles.trackingOrderCta}
+            onPress={() => {
+              if (!!shipmentTrackingUrl) {
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: shipmentTrackingUrl,
+                  isGoBack: true,
+                });
+              } else if (isDelhiveryOrder) {
+                const shipmentNumber = order?.medicineOrderShipments?.[0]?.trackingNo;
+                const url = AppConfig.Configuration.MED_TRACK_SHIPMENT_URL;
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: url.replace('{{shipmentNumber}}', shipmentNumber),
+                  isGoBack: true,
+                });
+              }
+            }}
+            title={'TRACK COURIER STATUS'}
+          />
+        );
+      }
+    };
+
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {!isNotTatBreach &&
-          order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
-          statusToConsiderTatBreach.includes(order?.currentStatus!)
-            ? renderInconvenienceView()
-            : null}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
@@ -1353,8 +1452,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   statusToShowNewItems.includes(orderDetails?.currentStatus!) &&
                   orderDetails.orderTat! &&
                   (orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
-                    ? orderDetails?.medicineOrderShipments!.length > 0
-                    : orderDetails.medicineOrderLineItems!.length > 0)
+                    ? orderDetails?.medicineOrderShipments?.length > 0
+                    : orderDetails?.medicineOrderLineItems?.length > 0)
                     ? true
                     : false
                 }
@@ -1377,6 +1476,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             navigaitonProps={props.navigation}
           />
         )}
+        {(orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
+          orderDetails?.currentStatus === MEDICINE_ORDER_STATUS.SHIPPED) &&
+          renderCourierTrackingCta()}
         {isDelivered ? (
           <View
             style={{
@@ -1457,6 +1559,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
+            setPhysicalPrescriptions && setPhysicalPrescriptions(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
@@ -1481,6 +1584,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
+          setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',
@@ -1496,15 +1600,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderInconvenienceView = () => {
+    const patientWhtsappQuery = `I have a query regarding my order. Status_${
+      orderDetails?.currentStatus
+    }, ID: ${billNumber || orderAutoId}`;
     return (
-      <View>
-        <View style={styles.cardStyle}>
-          <PendingIcon style={styles.pendingIconStyle} />
-          <Text style={styles.inconvenienceText}>
-            {string.OrderSummery.tatBreach_InconvenienceText}
-          </Text>
-        </View>
-        <ChatWithUs />
+      <View style={styles.chatView}>
+        <Text style={styles.queryText}>In case of any issues/queries:</Text>
+        <ChatWithUs text={patientWhtsappQuery} />
       </View>
     );
   };
@@ -1963,7 +2065,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const renderMoreMenu = () => {
     if (isOrderCancelNotAllowed(order!)) {
-      return <View style={{ width: 24 }} />;
+      return null;
     }
     return (
       <MaterialMenu
@@ -1984,8 +2086,25 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           }
         }}
       >
-        <More />
+        <More style={{ marginLeft: 10 }} />
       </MaterialMenu>
+    );
+  };
+
+  const renderHelpHeader = () => {
+    return (
+      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderRightComponent = () => {
+    return (
+      <View style={styles.headerViewStyle}>
+        {renderHelpHeader()}
+        {renderMoreMenu()}
+      </View>
     );
   };
 
@@ -2016,12 +2135,42 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     }
   };
 
+  const onPressHelp = () => {
+    const currentStatusDate = order?.medicineOrdersStatus?.find(
+      (i) => i?.orderStatus === order?.currentStatus
+    )?.statusDate;
+    const { category } = NeedHelp[0];
+    let breadCrudArray: BreadcrumbProps['links'] =
+      breadCrumb?.length > 1
+        ? [...breadCrumb, { title: string.help }]
+        : [
+            { title: string.needHelp },
+            { title: category },
+            { title: string.productDetail },
+            { title: string.help },
+          ];
+    props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+      isOrderRelatedIssue: true,
+      medicineOrderStatus: order?.currentStatus,
+      orderId: billNumber || orderAutoId,
+      queryCategory,
+      medicineOrderStatusDate: currentStatusDate,
+      email,
+      breadCrumb: breadCrudArray,
+      fromOrderFlow: true,
+    });
+  };
+
   const renderHelpButton = () => {
+    const currentStatusDate = order?.medicineOrdersStatus?.find(
+      (i) => i?.orderStatus === order?.currentStatus
+    )?.statusDate;
     const onPress = () => {
       props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         medicineOrderStatus: order?.currentStatus,
         orderId: billNumber || orderAutoId,
+        medicineOrderStatusDate: currentStatusDate,
         queryCategory,
         email,
         breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
@@ -2087,7 +2236,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={'ORDER DETAILS'}
             container={{ borderBottomWidth: 0 }}
-            rightComponent={renderMoreMenu()}
+            rightComponent={renderRightComponent()}
             onPressLeftIcon={() => {
               handleBack();
             }}
@@ -2155,13 +2304,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
+            {!hideWhtsappQueryOption && renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
                 ? renderOrderHistory()
                 : !loading && renderOrderSummary()}
             </ScrollView>
             {renderReOrderButton()}
-            {renderHelpButton()}
+            {/* {renderHelpButton()} */}
           </>
         )}
       </SafeAreaView>
@@ -2300,5 +2450,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+  },
+  shipmentInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  trackingOrderCta: {
+    width: '60%',
+    alignSelf: 'center',
+    alignContent: 'center',
+    marginBottom: 10,
+  },
+  helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
+  headerViewStyle: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  line: {
+    width: screenWidth,
+    height: 0.5,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.3,
+  },
+  chatView: {
+    marginVertical: 10,
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  queryText: {
+    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
+    paddingBottom: 10,
+    paddingTop: 4,
+    marginRight: 6,
+  },
+  chatBtnTxt: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
   },
 });

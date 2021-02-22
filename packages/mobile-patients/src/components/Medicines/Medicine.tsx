@@ -16,7 +16,6 @@ import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/component
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
@@ -251,8 +250,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     circleSubscription,
     setBannerData,
     bannerData,
+    pharmacyUserType,
   } = useAppCommonData();
-  const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
@@ -283,6 +282,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPinCode,
     setCirclePlanValidity,
     pharmacyCircleAttributes,
+    setEPrescriptions,
+    setPhysicalPrescriptions,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -790,25 +791,25 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           'recommendedProducts'
         ) || [];
       const formattedRecommendedProducts = _recommendedProducts
-        .filter((item) => (item!.status || '').toLowerCase() == 'enabled')
+        .filter((item) => (item?.status || '').toLowerCase() == 'enabled')
         .map(
           (item) =>
             ({
-              image: item!.productImage ? getImageUrl(item!.productImage) : null,
+              image: item?.productImage ? getImageUrl(item?.productImage) : null,
               is_in_stock: 1,
-              is_prescription_required: item!.isPrescriptionNeeded!,
-              name: item!.productName!,
-              price: Number(item!.productPrice!),
+              is_prescription_required: item?.isPrescriptionNeeded,
+              name: item?.productName,
+              price: Number(item?.productPrice),
               special_price:
-                item!.productSpecialPrice == item!.productPrice! ? '' : item!.productSpecialPrice,
-              sku: item!.productSku!,
+                item?.productSpecialPrice == item?.productPrice ? '' : item?.productSpecialPrice,
+              sku: item?.productSku,
               type_id:
-                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1
+                (item?.categoryName || '').toLowerCase().indexOf('pharma') > -1
                   ? 'PHARMA'
-                  : (item!.categoryName || '').toLowerCase().indexOf('pl') > -1
-                  ? 'PL'
-                  : 'FMCG',
-              mou: item!.mou!,
+                  : (item?.categoryName || '').toLowerCase().indexOf('fmcg') > -1
+                  ? 'FMCG'
+                  : 'PL',
+              mou: item?.mou,
               sell_online: 1,
             } as MedicineProduct)
         );
@@ -1046,6 +1047,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
+          setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',
@@ -1053,41 +1055,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         selectedEprescriptionIds={[]}
         isVisible={isSelectPrescriptionVisible}
-      />
-    );
-  };
-
-  const renderUploadPrescriprionPopup = () => {
-    return (
-      <UploadPrescriprionPopup
-        isVisible={ShowPopop}
-        disabledOption="NONE"
-        type="nonCartFlow"
-        heading={'Upload Prescription(s)'}
-        instructionHeading={'Instructions For Uploading Prescriptions'}
-        instructions={[
-          'Take clear picture of your entire prescription.',
-          'Doctor details & date of the prescription should be clearly visible.',
-          'Medicines will be dispensed as per prescription.',
-        ]}
-        optionTexts={{
-          camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE\nFROM GALLERY',
-          prescription: 'SELECT FROM\nE-PRESCRIPTION',
-        }}
-        onClickClose={() => setShowPopop(false)}
-        onResponse={(selectedType, response, type) => {
-          setShowPopop(false);
-          if (selectedType == 'CAMERA_AND_GALLERY') {
-            if (response.length == 0) return;
-            props.navigation.navigate(AppRoutes.UploadPrescription, {
-              phyPrescriptionsProp: response,
-              type,
-            });
-          } else {
-            setSelectPrescriptionVisible(true);
-          }
-        }}
       />
     );
   };
@@ -1181,9 +1148,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             onPress={() => {
               const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED] = {
                 Source: 'Home',
+                User_Type: pharmacyUserType,
               };
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
-              setShowPopop(true);
+              setEPrescriptions && setEPrescriptions([]);
+              setPhysicalPrescriptions && setPhysicalPrescriptions([]);
+              props.navigation.navigate(AppRoutes.UploadPrescriptionView);
             }}
             style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
             titleTextStyle={{
@@ -1606,6 +1576,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyword: _searchText,
           Source: 'Pharmacy Home',
           resultsdisplayed: products.length,
+          User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
       })
@@ -1905,7 +1876,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const isCategoriesType = g(data, section_key, '0', 'title');
           const filteredProducts = products
             ? products.filter((product: MedicineProduct) => isProductInStock(product))
-            : [];
+            : null;
 
           return filteredProducts
             ? renderHotSellers(
@@ -2210,7 +2181,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
-      {ShowPopop && renderUploadPrescriprionPopup()}
       {showCirclePopup && renderCircleMembershipPopup()}
     </View>
   );

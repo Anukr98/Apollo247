@@ -12,9 +12,11 @@ interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
   selectedPlan?: any;
   from?: string;
+  screenName?: string;
 }
 export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
   const action = props.navigation.getParam('action');
+  const screenName = props.navigation.getParam('screenName');
   const from = props?.navigation?.state?.params?.from;
   const selectedPlan = props.navigation.getParam('selectedPlan');
   useEffect(() => {
@@ -54,6 +56,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
       from={from}
       selectedPlan={selectedPlan}
       comingFrom={'circlePlanPurchase'}
+      screenName={screenName}
     />
   );
 

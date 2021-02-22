@@ -28,6 +28,15 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     paddingHorizontal: 16,
   },
+  titleContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  removeText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.REMOVE_RED),
+    marginTop: 1,
+  },
 });
 
 export interface ListCardProps {
@@ -40,21 +49,38 @@ export interface ListCardProps {
   leftTitle?: string;
   leftTitleStyle?: StyleProp<TextStyle>;
   children?: React.ReactNode;
+  showRemoveBtn?: boolean;
+  onRemoveCoupon?: TouchableOpacityProps['onPress'];
 }
 
 export const ListCard: React.FC<ListCardProps> = (props) => {
-  const { title, leftIcon, rightIcon, leftTitle, leftTitleStyle, titleStyle, children } = props;
+  const {
+    title,
+    leftIcon,
+    rightIcon,
+    leftTitle,
+    leftTitleStyle,
+    titleStyle,
+    children,
+    showRemoveBtn,
+    onRemoveCoupon,
+  } = props;
 
   return (
     <TouchableOpacity activeOpacity={1} onPress={props.onPress}>
       <View style={[styles.container, props.container]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {leftIcon}
-          <View style={{ flex: 1 }}>
+          <View style={styles.titleContainer}>
             <Text style={[styles.titleStyle, leftTitleStyle]}>
               {leftTitle}
               <Text style={[styles.titleStyle, titleStyle]}>{title}</Text>
             </Text>
+            {showRemoveBtn && (
+              <TouchableOpacity onPress={() => onRemoveCoupon()}>
+                <Text style={styles.removeText}>Remove</Text>
+              </TouchableOpacity>
+            )}
           </View>
           {rightIcon ? rightIcon : <ArrowRight />}
         </View>

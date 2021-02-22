@@ -113,7 +113,6 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
         autoCapitalize={props.autoCapitalize}
         autoFocus={props.autoFocus}
         selection={props.selection}
-        autoFocus={props.autoFocus}
         onSubmitEditing={props.onSubmitEditing}
       />
     );

@@ -187,7 +187,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     return eventAttributes;
   };
 
-  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string, displayId: number) => {
     const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
@@ -196,6 +196,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_revenue: price,
       af_currency: 'INR',
       'consult id': id,
+      displayId: `${displayId}`,
       'coupon applied': couponApplied,
       'Circle discount': circleDiscountedPrice,
     };
@@ -296,7 +297,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
               appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
-                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!,
+                g(data, 'data', 'bookAppointment', 'appointment', 'displayId')!
               ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
                 g(apptmt, 'appointmentDateTime'),

@@ -15,6 +15,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     grandTotal,
     circleMembershipCharges,
     isCircleSubscription,
+    packagingCharges,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const renderCartTotal = () => {
@@ -52,8 +53,9 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
         <View>
           <Text style={styles.text}>Delivery charges</Text>
           {(isCircleSubscription || !!circleMembershipCharges) &&
-            amountToPay < minValueForFreeDelivery &&
-            <Text style={styles.circleMessage}>(Free for Circle Members)</Text>}
+            amountToPay < minValueForFreeDelivery && (
+              <Text style={styles.circleMessage}>(Free for Circle Members)</Text>
+            )}
         </View>
         {deliveryCharges ? (
           <Text style={styles.text}>+₹{deliveryCharges.toFixed(2)}</Text>
@@ -67,6 +69,15 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
         )}
       </View>
     );
+  };
+
+  const renderPackagingCharges = () => {
+    return packagingCharges ? (
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={styles.text}>Packaging Charges</Text>
+        <Text style={styles.text}>+₹{packagingCharges.toFixed(2)}</Text>
+      </View>
+    ) : null;
   };
 
   const renderSeparator = () => {
@@ -96,6 +107,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
       {couponDiscount > 0 && renderCouponDiscount()}
       {!!circleMembershipCharges && renderCircleMembershipCharges()}
       {renderDeliveryCharges()}
+      {renderPackagingCharges()}
       {renderSeparator()}
       {renderToPay()}
     </View>

@@ -15,6 +15,7 @@ import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_JUSPAY_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW,
   SequenceForDiagnosticStatus,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -74,6 +75,534 @@ import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labRe
 
 const OTHER_REASON = string.Diagnostics_Feedback_Others;
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+
+/**
+ * this needs to be removed once hidestatus starts working
+ */
+const statusToBeShown = DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW;
+export interface TestOrderDetailsProps extends NavigationScreenProps {
+  orderId: string;
+  showOrderSummaryTab: boolean;
+  goToHomeOnBack: boolean;
+  comingFrom?: string;
+  selectedTest: any;
+  individualTestStatus: any;
+  selectedOrder: object;
+  refundStatusArr: any;
+}
+{
+}
+
+export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
+  const orderId = props.navigation.getParam('orderId');
+  const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
+  const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
+  const setOrders = props.navigation.getParam('setOrders');
+  const selectedTest = props.navigation.getParam('selectedTest');
+  const individualTestStatus = props.navigation.getParam('individualTestStatus');
+  const selectedOrder = props.navigation.getParam('selectedOrder');
+  const refundStatusArr = props.navigation.getParam('refundStatusArr');
+  const comingFrom = props.navigation.getParam('comingFrom');
+  const isPrepaid = selectedOrder?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const client = useApolloClient();
+  const [selectedTab, setSelectedTab] = useState<string>(
+    showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
+  );
+  const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(false);
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const { currentPatient } = useAllCurrentPatients();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { getPatientApiCall } = useAuth();
+  const [scrollYValue, setScrollYValue] = useState(0);
+  const [prismAuthToken, setPrismAuthToken] = useState('');
+  const [labResults, setLabResults] = useState<
+    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
+    | null
+    | undefined
+  >([]);
+
+  const scrollViewRef = React.useRef<ScrollView | null>(null);
+  const scrollToSlots = () => {
+    scrollViewRef.current &&
+      scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
+  };
+
+  const sequenceOfStatus = SequenceForDiagnosticStatus;
+
+  const fetchOrderDetails = () =>
+    client.query<getDiagnosticOrderDetails, getDiagnosticOrdersListVariables>({
+      query: GET_DIAGNOSTIC_ORDER_LIST,
+      variables: { patientId: currentPatient && currentPatient.id },
+      fetchPolicy: 'no-cache',
+    });
+
+  useEffect(() => {
+    if (!currentPatient) {
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
+  useEffect(() => {
+    if (currentPatient) {
+      updateRateDeliveryBtnVisibility();
+    }
+  }, []);
+
+  const { data, loading, refetch } = useQuery<
+    getDiagnosticOrderDetails,
+    getDiagnosticOrderDetailsVariables
+  >(GET_DIAGNOSTIC_ORDER_LIST_DETAILS, {
+    variables: { diagnosticOrderId: orderId },
+  });
+  const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
+
+  const orderDetails = ((!loading && order) ||
+    {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
+
+  var orderStatusList: any[] = [];
+  var refundArr: any[] = [];
+  const sizeOfIndividualTestStatus = _.size(individualTestStatus);
+
+  const createRefundObject = () => {
+    refundArr = [];
+    var refundObj = {};
+    if (refundStatusArr?.[0]?.status == REFUND_STATUSES?.SUCCESS) {
+      refundObj = {
+        orderStatus: REFUND_STATUSES.PENDING,
+        statusDate: refundStatusArr?.[0]?.created_at,
+      };
+      refundArr.push(refundObj, {
+        orderStatus: refundStatusArr?.[0]?.status,
+        statusDate: refundStatusArr?.[0]?.updated_at,
+      });
+    } else {
+      refundArr.push({
+        orderStatus: DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(refundStatusArr?.[0]?.status)
+          ? REFUND_STATUSES.PENDING
+          : refundStatusArr?.[0]?.status,
+        statusDate: refundStatusArr?.[0]?.created_at,
+      });
+    }
+
+    return refundArr;
+  };
+
+  if (comingFrom == AppRoutes.OrderedTestStatus) {
+    //find the item id based on selected key.
+    const getNullObject = Object.entries(individualTestStatus).find(
+      ([key, value]) => key == 'null'
+    );
+    const existingStatus = getNullObject?.[1] || ([] as any);
+
+    const getSelectedKeyObject = Object.entries(individualTestStatus).find(
+      ([key, value]) => String(key) === String(selectedTest?.itemId)
+    );
+    const selectedStatusArray = getSelectedKeyObject?.[1] || ([] as any);
+    var statusArray = [...existingStatus, ...selectedStatusArray];
+
+    orderStatusList[0] = statusArray;
+  } else {
+    orderStatusList[0] = !!individualTestStatus ? individualTestStatus : [];
+  }
+
+  const getAuthToken = async () => {
+    setLoading?.(true);
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+          fetchTestReportResult();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        setLoading!(false);
+      });
+  };
+
+  const fetchTestReportResult = useCallback(() => {
+    const getVisitId = selectedOrder?.visitNo;
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        setLabResults(labResultsData);
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
+        !!resultForVisitNo
+          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+              data: resultForVisitNo,
+              labResults: true,
+            })
+          : renderReportError(string.diagnostics.responseUnavailableForReport);
+      })
+      .catch((error) => {
+        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        console.log('Error occured fetchTestReportsResult', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading?.(false));
+  }, []);
+
+  if (refundStatusArr?.length > 0) {
+    const getObject = createRefundObject();
+
+    const isAlreadyPresent = orderStatusList?.[0]?.find(
+      (item: any) => item?.orderStatus == getObject?.[0]?.orderStatus
+    );
+    //avoid pushing duplicates to list
+    if (isAlreadyPresent != undefined) {
+    } else {
+      getObject?.map((item) => orderStatusList?.[0]?.push(item));
+    }
+  }
+
+  const isReportGenerated = selectedTest?.currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
+
+  const handleBack = () => {
+    if (!goToHomeOnBack) {
+      fetchOrderDetails()
+        .then((data: any) => {
+          const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          setOrders(_orders);
+        })
+        .catch((e: Error) => {
+          CommonBugFender('TestOrderDetails_fetchOrders', e);
+        });
+    }
+    props.navigation.goBack();
+    return false;
+  };
+
+  const updateRateDeliveryBtnVisibility = async () => {
+    setLoading?.(true);
+    try {
+      if (!showRateDiagnosticBtn) {
+        const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
+          query: GET_PATIENT_FEEDBACK,
+          variables: {
+            patientId: g(currentPatient, 'id') || '',
+            transactionId: `${selectedTest?.id}`,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
+        if (!feedback) {
+          setShowRateDiagnosticBtn(true);
+        }
+      }
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
+    }
+  };
+
+  const renderRefund = () => {
+    if (refundStatusArr?.length > 0) {
+      return <RefundCard refundArray={refundStatusArr} />;
+    }
+  };
+
+  const getFormattedDate = (time: string) => {
+    return moment(time).format('D MMM YYYY');
+  };
+
+  const getFormattedTime = (time: string) => {
+    return moment(time).format('hh:mm A');
+  };
+
+  const getFormattedDateTime = (time: string) => {
+    let finalDateTime =
+      moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
+    return finalDateTime;
+  };
+
+  const renderGraphicalStatus = (
+    order: any,
+    index: number,
+    isStatusDone: boolean,
+    isFailureCase: boolean,
+    isRefundCase: boolean,
+    array: any
+  ) => {
+    return (
+      <View style={styles.graphicalStatusViewStyle}>
+        {isStatusDone ? (
+          <OrderPlacedIcon style={styles.statusIconStyle} />
+        ) : (
+          <OrderTrackerSmallIcon style={[styles.statusIconSmallStyle]} />
+        )}
+        {/**
+         * change the length of the status whenever change the sequenceOfStatus (minus is total no of status in app config start index is 0)
+         */}
+
+        <View
+          style={[
+            styles.verticalProgressLine,
+            {
+              backgroundColor:
+                // index == sequenceOfStatus.length - (isNegativeCase ? 11 : isRefundCase ? 10 : 8) // 10 : 7 (last)
+                index == array?.length - 1
+                  ? 'transparent'
+                  : isStatusDone
+                  ? theme.colors.SKY_BLUE
+                  : 'rgba(0,135,186,0.3)',
+            },
+          ]}
+        />
+      </View>
+    );
+  };
+
+  const renderCustomDescriptionOrDateAndTime = (
+    data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList
+  ) => {
+    return (
+      <View style={styles.viewRowStyle}>
+        <Text style={styles.dateTimeStyle}>
+          {!!data?.statusDate
+            ? getFormattedDate(data?.statusDate)
+            : getFormattedDate(orderDetails?.createdDate)}
+        </Text>
+        <Text style={styles.dateTimeStyle}>
+          {!!data?.statusDate
+            ? getFormattedTime(data?.statusDate)
+            : getFormattedTime(orderDetails?.createdDate)}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderOrderTracking = () => {
+    const newList = orderStatusList?.[0]?.filter((item: any) =>
+      statusToBeShown?.includes(item?.orderStatus)
+    );
+    scrollToSlots();
+    return (
+      <View>
+        <View style={{ margin: 20 }}>
+          {newList?.map((order: any, index: number, array: any) => {
+            const isOrderFailedCase = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus);
+            const isRefundCase = refundStatusArr?.length > 0;
+            const compareStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(
+              selectedOrder?.orderStatus
+            )
+              ? sequenceOfStatus.indexOf(selectedOrder?.orderStatus) >=
+                sequenceOfStatus.indexOf(order?.orderStatus)
+              : sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
+                sequenceOfStatus.indexOf(order?.orderStatus);
+
+            const isStatusCompletedForPrepaid = true;
+            const isStatusDone = true;
+            return (
+              <View style={{ flexDirection: 'row' }}>
+                {renderGraphicalStatus(
+                  order,
+                  index,
+                  isStatusDone,
+                  isOrderFailedCase,
+                  isRefundCase,
+                  array
+                )}
+                <View style={{ marginBottom: 8, flex: 1 }}>
+                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
+                    <Text
+                      style={[
+                        styles.statusTextStyle,
+                        {
+                          color:
+                            DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                            order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                              ? theme.colors.INPUT_FAILURE_TEXT
+                              : theme.colors.SHERPA_BLUE,
+                        },
+                      ]}
+                    >
+                      {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
+                    </Text>
+                    {isStatusDone ? <View style={styles.lineSeparator} /> : null}
+                    {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+
+          {/**either reports generated :: rate your delivery will be shown or refund option would  bve shown */}
+        </View>
+        {renderBottomSection(order)}
+        {renderRefund()}
+        {isReportGenerated ? (
+          <View style={styles.statusLineSeperator}>
+            <Text style={styles.reportsGeneratedText}>
+              {`Your order no. #${
+                selectedTest.displayId
+              } is successfully picked up on ${isReportGenerated &&
+                selectedTest.statusDate &&
+                getFormattedDateTime(selectedTest.statusDate)}.`}
+            </Text>
+            <Text style={styles.thankYouText}>{'Thank You for choosing Apollo 24|7'}</Text>
+            {!!showRateDiagnosticBtn && (
+              <Button
+                style={styles.feedbackPop}
+                onPress={() => setShowFeedbackPopup(true)}
+                titleTextStyle={styles.rateDeliveryText}
+                title={'RATE YOUR DELIVERY EXPERIENCE'}
+              />
+            )}
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderBottomSection = (order: any) => {
+    return <View>{isReportGenerated ? renderButtons() : null}</View>;
+  };
+
+  const renderButtons = () => {
+    let buttonTitle = 'VIEW REPORT';
+
+    return (
+      <>
+        <Button
+          style={styles.buttonStyle}
+          onPress={() => onPressButton(buttonTitle)}
+          titleTextStyle={{
+            ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
+          }}
+          title={buttonTitle}
+          disabled={buttonTitle == 'VIEW REPORT' && !isReportGenerated}
+        />
+      </>
+    );
+  };
+
+  const onPressViewReport = () => {
+    const visitId = selectedOrder?.visitNo;
+    if (visitId) {
+      getAuthToken();
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
+  };
+
+  const renderReportError = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
+  };
+
+  const onPressButton = (buttonTitle: string) => {
+    onPressViewReport();
+  };
+
+  const postRatingGivenWebEngageEvent = (rating: string, reason: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Name': g(currentPatient, 'firstName'),
+      Rating: rating,
+      'Thing to Imporve selected': reason,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
+  };
+
+  const renderFeedbackPopup = () => {
+    return (
+      <>
+        <FeedbackPopup
+          containerStyle={{ paddingTop: 120 }}
+          title="We value your feedback! :)"
+          description="How was your overall experience -"
+          info={{
+            title: '',
+            description: '',
+            imageComponent: '',
+          }}
+          transactionId={orderId}
+          type={FEEDBACKTYPE.DIAGNOSTICS}
+          isVisible={showFeedbackPopup}
+          onComplete={(ratingStatus, ratingOption) => {
+            postRatingGivenWebEngageEvent(ratingStatus!, ratingOption);
+            setShowFeedbackPopup(false);
+            showAphAlert!({
+              title: 'Thanks :)',
+              description: 'Your feedback has been submitted. Thanks for your time.',
+            });
+            setShowRateDiagnosticBtn(false);
+            // updateRateDeliveryBtnVisibility();
+          }}
+        />
+      </>
+    );
+  };
+
+  const renderOrderSummary = () => {
+    return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
+  };
+
+  const renderError = () => {
+    if (orderStatusList?.[0]?.length == 0) {
+      return (
+        <Card
+          cardContainer={[styles.noDataCard]}
+          heading={string.common.uhOh}
+          description={string.diagnostics.unableToFetchStatus}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      );
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        <View style={styles.headerShadowContainer}>
+          <Header
+            leftIcon="backArrow"
+            title={`ORDER #${orderDetails.displayId || ''}`}
+            titleStyle={{ marginHorizontal: 10 }}
+            container={{ borderBottomWidth: 0 }}
+            onPressLeftIcon={() => {
+              handleBack();
+            }}
+          />
+        </View>
+        <TabsComponent
+          style={styles.tabsContainer}
+          onChange={(title) => {
+            setSelectedTab(title);
+          }}
+          data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
+          selectedTab={selectedTab}
+        />
+        <ScrollView bounces={false}>
+          {selectedTab == string.orders.trackOrder ? renderOrderTracking() : renderOrderSummary()}
+          {renderError()}
+        </ScrollView>
+      </SafeAreaView>
+      {renderFeedbackPopup()}
+      {loading && <Spinner style={{ zIndex: 200 }} />}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -188,622 +717,11 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansRegular(13),
     color: theme.colors.SHERPA_BLUE,
   },
+  noDataCard: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
 });
-
-export interface TestOrderDetailsProps extends NavigationScreenProps {
-  orderId: string;
-  showOrderSummaryTab: boolean;
-  goToHomeOnBack: boolean;
-  comingFrom?: string;
-  selectedTest: any;
-  individualTestStatus: any;
-  selectedOrder: object;
-  refundStatusArr: any;
-}
-{
-}
-
-export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
-  const orderId = props.navigation.getParam('orderId');
-  const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
-  const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
-  const setOrders = props.navigation.getParam('setOrders');
-  const selectedTest = props.navigation.getParam('selectedTest');
-  const individualTestStatus = props.navigation.getParam('individualTestStatus');
-  const selectedOrder = props.navigation.getParam('selectedOrder');
-  const refundStatusArr = props.navigation.getParam('refundStatusArr');
-  const isPrepaid = selectedOrder?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
-  const client = useApolloClient();
-  const [selectedTab, setSelectedTab] = useState<string>(
-    showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
-  );
-  const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(false);
-  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
-  const { currentPatient } = useAllCurrentPatients();
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
-  const { getPatientApiCall } = useAuth();
-  const [scrollYValue, setScrollYValue] = useState(0);
-  const [prismAuthToken, setPrismAuthToken] = useState('');
-  const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
-    | null
-    | undefined
-  >([]);
-
-  const scrollViewRef = React.useRef<ScrollView | null>(null);
-  const scrollToSlots = () => {
-    scrollViewRef.current &&
-      scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
-  };
-
-  const sequenceOfStatus = SequenceForDiagnosticStatus;
-
-  const refetchOrders =
-    props.navigation.getParam('refetch') ||
-    useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
-      variables: {
-        patientId: currentPatient && currentPatient.id,
-      },
-      fetchPolicy: 'cache-first',
-    }).refetch;
-
-  useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
-    if (currentPatient) {
-      updateRateDeliveryBtnVisibility();
-    }
-  }, []);
-
-  const { data, loading, refetch } = useQuery<
-    getDiagnosticOrderDetails,
-    getDiagnosticOrderDetailsVariables
-  >(GET_DIAGNOSTIC_ORDER_LIST_DETAILS, {
-    variables: { diagnosticOrderId: orderId },
-  });
-  const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
-
-  const orderDetails = ((!loading && order) ||
-    {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
-
-  var orderStatusList: any[] = [];
-  var refundArr: any[] = [];
-  const sizeOfIndividualTestStatus = _.size(individualTestStatus);
-
-  const createRefundObject = () => {
-    refundArr = [];
-    var refundObj = {};
-    if (refundStatusArr?.[0]?.status == REFUND_STATUSES?.SUCCESS) {
-      refundObj = {
-        orderStatus: REFUND_STATUSES.PENDING,
-        statusDate: refundStatusArr?.[0]?.created_at,
-      };
-      refundArr.push(refundObj, {
-        orderStatus: refundStatusArr?.[0]?.status,
-        statusDate: refundStatusArr?.[0]?.updated_at,
-      });
-    } else {
-      refundArr.push({
-        orderStatus: DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(refundStatusArr?.[0]?.status)
-          ? REFUND_STATUSES.PENDING
-          : refundStatusArr?.[0]?.status,
-        statusDate: refundStatusArr?.[0]?.created_at,
-      });
-    }
-
-    return refundArr;
-  };
-
-  Object.entries(individualTestStatus).filter((item: any) => {
-    if (item[0] == 'null') {
-      if (sizeOfIndividualTestStatus == 1) {
-        orderStatusList?.push(item[1]);
-      } else {
-        orderStatusList?.[0].push(item[1][0]);
-      }
-    } else if (item[0] == selectedTest?.itemId) {
-      orderStatusList.push(item[1]);
-    }
-  });
-
-  const getAuthToken = async () => {
-    setLoading!(true);
-    client
-      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
-        query: GET_PRISM_AUTH_TOKEN,
-        fetchPolicy: 'no-cache',
-        variables: {
-          uhid: currentPatient?.uhid || '',
-        },
-      })
-      .then(({ data }) => {
-        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
-        if (prism_auth_token) {
-          setPrismAuthToken(prism_auth_token);
-          fetchTestReportResult();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
-        setLoading!(false);
-      });
-  };
-
-  const fetchTestReportResult = useCallback(() => {
-    const getVisitId = selectedOrder?.visitNo;
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
-      .then((data: any) => {
-        const labResultsData = g(
-          data,
-          'getPatientPrismMedicalRecords_V2',
-          'labResults',
-          'response'
-        );
-        setLabResults(labResultsData);
-        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
-        !!resultForVisitNo
-          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-              data: resultForVisitNo,
-              labResults: true,
-            })
-          : renderReportError(string.diagnostics.unableToOpenReport);
-      })
-      .catch((error) => {
-        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsResult', { error });
-        currentPatient && handleGraphQlError(error);
-      })
-      .finally(() => setLoading!(false));
-  }, []);
-  if (refundStatusArr?.length > 0) {
-    const getObject = createRefundObject();
-    const isPresent = orderStatusList?.[0].find(
-      (item: any) => item?.orderStatus == getObject?.[0]?.orderStatus
-    );
-    if (!!isPresent && isPresent?.length > 0) {
-    } else {
-      getObject?.map((item) => orderStatusList?.[0]?.push(item));
-    }
-  }
-
-  const showReportsGenerated =
-    sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
-    sequenceOfStatus.indexOf(DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED);
-  const isReportGenerated = selectedTest?.currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
-
-  const handleBack = () => {
-    if (!goToHomeOnBack) {
-      refetchOrders()
-        .then((data: any) => {
-          const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-          setOrders(_orders);
-        })
-        .catch((e: Error) => {
-          CommonBugFender('TestOrderDetails_refetchOrders', e);
-        });
-    }
-    props.navigation.goBack();
-    return false;
-  };
-
-  const updateRateDeliveryBtnVisibility = async () => {
-    setLoading!(true);
-    try {
-      if (!showRateDiagnosticBtn) {
-        const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
-          query: GET_PATIENT_FEEDBACK,
-          variables: {
-            patientId: g(currentPatient, 'id') || '',
-            transactionId: `${selectedTest?.id}`,
-          },
-          fetchPolicy: 'no-cache',
-        });
-        const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
-        if (!feedback) {
-          setShowRateDiagnosticBtn(true);
-        }
-      }
-      setLoading!(false);
-    } catch (error) {
-      setLoading!(false);
-      CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
-    }
-  };
-
-  const renderRefund = () => {
-    if (refundStatusArr?.length > 0) {
-      return <RefundCard refundArray={refundStatusArr} />;
-    }
-  };
-
-  const getFormattedDate = (time: string) => {
-    return moment(time).format('D MMM YYYY');
-  };
-
-  const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm A');
-  };
-
-  const getFormattedDateTime = (time: string) => {
-    let finalDateTime =
-      moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
-    return finalDateTime;
-  };
-
-  const renderGraphicalStatus = (
-    order: any,
-    index: number,
-    isStatusDone: boolean,
-    isFailureCase: boolean,
-    isRefundCase: boolean,
-    array: any
-  ) => {
-    return (
-      <View style={styles.graphicalStatusViewStyle}>
-        {isStatusDone ? (
-          <OrderPlacedIcon style={styles.statusIconStyle} />
-        ) : (
-          <OrderTrackerSmallIcon style={[styles.statusIconSmallStyle]} />
-        )}
-        {/**
-         * change the length of the status whenever change the sequenceOfStatus (minus is total no of status in app config start index is 0)
-         */}
-
-        <View
-          style={[
-            styles.verticalProgressLine,
-            {
-              backgroundColor:
-                // index == sequenceOfStatus.length - (isNegativeCase ? 11 : isRefundCase ? 10 : 8) // 10 : 7 (last)
-                index == array?.length - 1
-                  ? 'transparent'
-                  : isStatusDone
-                  ? theme.colors.SKY_BLUE
-                  : 'rgba(0,135,186,0.3)',
-            },
-          ]}
-        />
-      </View>
-    );
-  };
-
-  const renderCustomDescriptionOrDateAndTime = (
-    data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList
-  ) => {
-    return (
-      <View style={styles.viewRowStyle}>
-        <Text style={styles.dateTimeStyle}>
-          {!!data?.statusDate
-            ? getFormattedDate(data?.statusDate)
-            : getFormattedDate(orderDetails?.createdDate)}
-        </Text>
-        <Text style={styles.dateTimeStyle}>
-          {!!data?.statusDate
-            ? getFormattedTime(data?.statusDate)
-            : getFormattedTime(orderDetails?.createdDate)}
-        </Text>
-      </View>
-    );
-  };
-
-  const renderOrderTracking = () => {
-    const currentStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(selectedOrder?.orderStatus)
-      ? //  && isPrepaid
-        selectedOrder?.orderStatus
-      : selectedTest?.currentStatus;
-
-    let statusList = [];
-    if (currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
-      if (isPrepaid) {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
-          },
-          {
-            orderStatus: REFUND_STATUSES.PENDING,
-          },
-          {
-            orderStatus: REFUND_STATUSES.SUCCESS,
-          },
-        ];
-      } else {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
-          },
-        ];
-      }
-    } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) {
-      if (isPrepaid) {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-          },
-          {
-            orderStatus: REFUND_STATUSES.PENDING,
-          },
-          {
-            orderStatus: REFUND_STATUSES.SUCCESS,
-          },
-        ];
-      } else {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-          },
-        ];
-      }
-    } else if (currentStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED) {
-      statusList = [
-        {
-          orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
-        },
-      ];
-    } else {
-      if (isPrepaid) {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
-          },
-        ];
-      } else {
-        statusList = [
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-          },
-          {
-            orderStatus: DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
-          },
-        ];
-      }
-    }
-
-    const newList = statusList?.map(
-      (obj) =>
-        orderStatusList?.[0]?.find(
-          (o: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList) =>
-            o?.orderStatus === obj?.orderStatus
-        ) || obj
-    );
-
-    scrollToSlots();
-    return (
-      <View>
-        <View style={{ margin: 20 }}>
-          {newList?.map((order, index, array) => {
-            const isOrderFailedCase = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus);
-            const isRefundCase = refundStatusArr?.length > 0;
-            const compareStatus = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(
-              selectedOrder?.orderStatus
-            )
-              ? sequenceOfStatus.indexOf(selectedOrder?.orderStatus) >=
-                sequenceOfStatus.indexOf(order?.orderStatus)
-              : sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
-                sequenceOfStatus.indexOf(order?.orderStatus);
-
-            const isStatusCompletedForPrepaid =
-              isPrepaid && DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(order?.orderStatus)
-                ? order?.statusDate
-                  ? true
-                  : false
-                : compareStatus;
-            const isStatusDone = DIAGNOSTIC_ORDER_FAILED_STATUS.includes(selectedOrder?.orderStatus)
-              ? isStatusCompletedForPrepaid
-              : compareStatus;
-
-            return (
-              <View style={{ flexDirection: 'row' }}>
-                {renderGraphicalStatus(
-                  order,
-                  index,
-                  isStatusDone,
-                  isOrderFailedCase,
-                  isRefundCase,
-                  array
-                )}
-                <View style={{ marginBottom: 8, flex: 1 }}>
-                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
-                    <Text
-                      style={[
-                        styles.statusTextStyle,
-                        {
-                          color: DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)
-                            ? theme.colors.INPUT_FAILURE_TEXT
-                            : theme.colors.SHERPA_BLUE,
-                        },
-                      ]}
-                    >
-                      {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
-                    </Text>
-                    {isStatusDone ? <View style={styles.lineSeparator} /> : null}
-                    {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
-                  </View>
-                </View>
-              </View>
-            );
-          })}
-
-          {/**either reports generated :: rate your delivery will be shown or refund option would  bve shown */}
-        </View>
-        {renderBottomSection(order)}
-        {renderRefund()}
-        {isReportGenerated ? (
-          <View style={styles.statusLineSeperator}>
-            <Text style={styles.reportsGeneratedText}>
-              {`Your order no. #${
-                selectedTest.displayId
-              } is successfully picked up on ${isReportGenerated &&
-                selectedTest.statusDate &&
-                getFormattedDateTime(selectedTest.statusDate)}.`}
-            </Text>
-            <Text style={styles.thankYouText}>{'Thank You for choosing Apollo 24|7'}</Text>
-            {!!showRateDiagnosticBtn && (
-              <Button
-                style={styles.feedbackPop}
-                onPress={() => setShowFeedbackPopup(true)}
-                titleTextStyle={styles.rateDeliveryText}
-                title={'RATE YOUR DELIVERY EXPERIENCE'}
-              />
-            )}
-          </View>
-        ) : null}
-      </View>
-    );
-  };
-
-  const renderBottomSection = (order: any) => {
-    return <View>{showReportsGenerated ? renderButtons() : null}</View>;
-  };
-
-  const renderButtons = () => {
-    let buttonTitle = 'VIEW REPORT';
-
-    return (
-      <>
-        <Button
-          style={styles.buttonStyle}
-          onPress={() => onPressButton(buttonTitle)}
-          titleTextStyle={{
-            ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
-          }}
-          title={buttonTitle}
-          disabled={buttonTitle == 'VIEW REPORT' && !isReportGenerated}
-        />
-      </>
-    );
-  };
-
-  const onPressViewReport = () => {
-    const visitId = selectedOrder?.visitNo;
-    if (visitId) {
-      getAuthToken();
-    } else {
-      props.navigation.navigate(AppRoutes.HealthRecordsHome);
-    }
-  };
-
-  const renderReportError = (message: string) => {
-    showAphAlert!({
-      title: string.common.uhOh,
-      description: message,
-    });
-  };
-
-  const onPressButton = (buttonTitle: string) => {
-    onPressViewReport();
-  };
-
-  const postRatingGivenWebEngageEvent = (rating: string, reason: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      Rating: rating,
-      'Thing to Imporve selected': reason,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
-  };
-
-  const renderFeedbackPopup = () => {
-    return (
-      <>
-        <FeedbackPopup
-          containerStyle={{ paddingTop: 120 }}
-          title="We value your feedback! :)"
-          description="How was your overall experience -"
-          info={{
-            title: '',
-            description: '',
-            imageComponent: '',
-          }}
-          transactionId={orderId}
-          type={FEEDBACKTYPE.DIAGNOSTICS}
-          isVisible={showFeedbackPopup}
-          onComplete={(ratingStatus, ratingOption) => {
-            postRatingGivenWebEngageEvent(ratingStatus!, ratingOption);
-            setShowFeedbackPopup(false);
-            showAphAlert!({
-              title: 'Thanks :)',
-              description: 'Your feedback has been submitted. Thanks for your time.',
-            });
-            setShowRateDiagnosticBtn(false);
-            // updateRateDeliveryBtnVisibility();
-          }}
-        />
-      </>
-    );
-  };
-
-  const renderOrderSummary = () => {
-    return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
-  };
-
-  return (
-    <View style={{ flex: 1 }}>
-      <SafeAreaView style={theme.viewStyles.container}>
-        <View style={styles.headerShadowContainer}>
-          <Header
-            leftIcon="backArrow"
-            title={`ORDER #${orderDetails.displayId || ''}`}
-            titleStyle={{ marginHorizontal: 10 }}
-            container={{ borderBottomWidth: 0 }}
-            onPressLeftIcon={() => {
-              handleBack();
-            }}
-          />
-        </View>
-        <TabsComponent
-          style={styles.tabsContainer}
-          onChange={(title) => {
-            setSelectedTab(title);
-          }}
-          data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
-          selectedTab={selectedTab}
-        />
-        <ScrollView bounces={false}>
-          {selectedTab == string.orders.trackOrder ? renderOrderTracking() : renderOrderSummary()}
-        </ScrollView>
-      </SafeAreaView>
-      {renderFeedbackPopup()}
-      {loading && <Spinner style={{ zIndex: 200 }} />}
-    </View>
-  );
-};

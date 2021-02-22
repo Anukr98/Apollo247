@@ -47,6 +47,7 @@ import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-imag
 import ImageResizer from 'react-native-image-resizer';
 import { ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -161,6 +162,7 @@ export interface UploadPrescriprionPopupProps {
     type?: 'Camera' | 'Gallery'
   ) => void;
   isProfileImage?: boolean;
+  uploadImage?: boolean;
   phrUpload?: boolean;
   openCamera?: boolean;
 }
@@ -169,6 +171,7 @@ const MAX_FILE_SIZE = 2000000; // 2MB
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const { pharmacyUserType } = useAppCommonData();
   let actionSheetRef: ActionSheet;
 
   const postUPrescriptionWEGEvent = (
@@ -182,6 +185,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         : 'Upload Flow';
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
+      User_Type: pharmacyUserType,
     };
     if (!!uploadSource) eventAttributes['Upload Source'] = uploadSource;
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
@@ -295,6 +299,10 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     } else {
       openGallery();
     }
+  };
+
+  const onClickGalleryImage = async () => {
+    openGallery();
   };
 
   const onBrowseClicked = async () => {
@@ -520,7 +528,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
             activeOpacity={1}
             style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
-            onPress={onClickGallery}
+            onPress={props.uploadImage ? onClickGalleryImage : onClickGallery}
           >
             <GalleryIcon />
             <Text style={styles.yelloTextStyle}>{props.optionTexts.gallery}</Text>

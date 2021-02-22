@@ -206,7 +206,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     ? props.navigation.state.params?.prescriptionSource
     : null;
   const [apiError, setApiError] = useState(false);
-  console.log('HealthRecordDetails', data, JSON.stringify(data));
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const client = useApolloClient();

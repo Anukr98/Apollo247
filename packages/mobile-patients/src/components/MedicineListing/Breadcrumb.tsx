@@ -16,7 +16,7 @@ export interface Props {
 export const Breadcrumb: React.FC<Props> = ({ containerStyle, links }) => {
   return (
     <View style={[styles.containerStyle, containerStyle]}>
-      {links.map(({ title, onPress }, index, array) => [
+      {links?.map(({ title, onPress }, index, array) => [
         <Text onPress={onPress} style={styles.textStyle}>
           {title}
         </Text>,

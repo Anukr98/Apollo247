@@ -1,6 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
-import { View, SafeAreaView, StyleSheet, ScrollView, AppState, AppStateStatus } from 'react-native';
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  AppState,
+  AppStateStatus,
+  Text,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -29,6 +37,7 @@ import {
   g,
   formatAddress,
   formatAddressToLocation,
+  getShipmentPrice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -59,6 +68,9 @@ import {
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import moment from 'moment';
+import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
+import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
+import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -77,8 +89,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     deliveryTime,
     setdeliveryTime,
     pharmacyCircleAttributes,
+    orders,
+    circleSubscriptionId,
+    isCircleSubscription,
+    setOrders,
   } = useShoppingCart();
-  const { setPharmacyLocation, setAxdcCode } = useAppCommonData();
+  const { setPharmacyLocation, setAxdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -95,6 +111,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   );
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
+  const [lastCartItems, setlastCartItems] = useState(
+    cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId
+  );
   const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
 
@@ -120,6 +139,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   }, [appState]);
 
+  useEffect(() => {
+    availabilityTat(deliveryAddressId);
+  }, [cartItems, deliveryAddressId]);
+
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
     unserviceableItems?.length && props.navigation.goBack();
@@ -137,8 +160,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
       setDefaultAddress(address);
-      availabilityTat(address.id);
     } else {
+      props.navigation.goBack();
       setDeliveryAddressId && setDeliveryAddressId('');
       setloading!(false);
       postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
@@ -169,8 +192,14 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }
 
   async function availabilityTat(id: string) {
+    const newCartItems =
+      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
+    if (newCartItems == lastCartItems) {
+      return;
+    }
     if (id && cartItems.length > 0) {
       setloading(true);
+      setlastCartItems(newCartItems);
       const skus = cartItems.map((item) => item.id);
       const selectedAddress: any = addresses.find((item) => item.id == id);
       try {
@@ -195,29 +224,22 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           lat: selectedAddress?.latitude!,
           lng: selectedAddress?.longitude!,
           items: serviceableItems,
+          userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
+          const response = res?.data?.response;
+          setOrders?.(response);
+          let inventoryData: any = [];
+          response?.forEach((order: any) => {
+            inventoryData = inventoryData.concat(order?.items);
+          });
           setloading!(false);
-          const tatResponse = res?.data?.response;
-          const tatTimeStamp = tatResponse?.tatU;
-          if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = tatResponse?.tat;
-            if (deliveryDate) {
-              const inventoryData = tatResponse?.items || [];
-              if (inventoryData && inventoryData.length) {
-                setStoreType(tatResponse?.storeType);
-                setShopId(tatResponse?.storeCode);
-                setStoreDistance(tatResponse?.distance);
-                setdeliveryTime?.(deliveryDate);
-                addressSelectedEvent(selectedAddress, deliveryDate);
-                updatePricesAfterTat(inventoryData, updatedCartItems);
-                if (unserviceableSkus.length) {
-                  props.navigation.goBack();
-                }
-              }
-            } else {
-              handleTatApiFailure(selectedAddress, {});
+          if (inventoryData?.length) {
+            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+            updatePricesAfterTat(inventoryData, updatedCartItems);
+            if (unserviceableSkus.length) {
+              props.navigation.goBack();
             }
           } else {
             handleTatApiFailure(selectedAddress, {});
@@ -249,8 +271,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   function addressSelectedEvent(
     address: savePatientAddress_savePatientAddress_patientAddress,
-    tatDate: string
+    tatDate: string,
+    orderInfo?: MedicineOrderShipmentInput[]
   ) {
+    const orderSelected = !!orderInfo ? orderInfo : orders;
+    let splitOrderDetails: any = {};
+    if (orderSelected?.length > 1) {
+      orderSelected?.forEach((order: any, index: number) => {
+        const momentTatDate = moment(order?.tat);
+        splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
+          momentTatDate.diff(currentDate, 'h') / 24
+        );
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items, cartItems) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+        splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
+      });
+    }
     const currentDate = moment()
       .hour(0)
       .minute(0)
@@ -266,7 +305,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       new Date(tatDate),
       Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
       pharmacyCircleAttributes!,
-      moment(tatDate).diff(moment(), 'h')
+      moment(tatDate).diff(moment(), 'h'),
+      pharmacyUserTypeAttribute!,
+      orderSelected?.length > 1,
+      splitOrderDetails
     );
   }
 
@@ -360,7 +402,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       tatType: storeType,
       shopId: shopId,
     });
-    postwebEngageProceedToPayEvent(shoppingCart, false, deliveryTime, pharmacyCircleAttributes!);
+    let splitOrderDetails: any = {};
+    if (orders?.length > 1) {
+      orders?.forEach((order: any, index: number) => {
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+      });
+    }
+    postwebEngageProceedToPayEvent(
+      shoppingCart,
+      false,
+      deliveryTime,
+      pharmacyCircleAttributes!,
+      pharmacyUserTypeAttribute!,
+      orders?.length > 1,
+      splitOrderDetails
+    );
   }
 
   const renderAlert = (message: string) => {
@@ -408,7 +468,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       <Header
         container={styles.header}
         leftIcon={'backArrow'}
-        title={'ORDER SUMMARY'}
+        title={'REVIEW ORDER'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
           props.navigation.goBack();
@@ -421,12 +481,24 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return <SelectedAddress orderType={'Delivery'} onPressChange={() => showAddressPopup()} />;
   };
 
+  const renderAmountSection = () => {
+    return (
+      <View>
+        <View style={styles.amountHeader}>
+          <Text style={styles.amountHeaderText}>ORDER SUMMARY</Text>
+        </View>
+        <AmountCard />
+      </View>
+    );
+  };
   const renderTatCard = () => {
-    return <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={deliveryTime} />;
+    return orders?.length > 1 ? null : (
+      <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={orders?.[0]?.tat} />
+    );
   };
 
   const renderCartItems = () => {
-    return <CartItemsList screen={'summary'} />;
+    return <Shipments setloading={setloading} />;
   };
 
   const renderuploadPrescriptionPopup = () => {
@@ -479,9 +551,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-          {renderHeader()}
           {renderAddress()}
+          {renderAmountSection()}
           {renderTatCard()}
           {renderCartItems()}
           {uploadPrescriptionRequired && renderPrescriptions()}
@@ -527,5 +600,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 13,
     marginVertical: 9,
+  },
+  amountHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+    borderBottomWidth: 0.5,
+    borderColor: 'rgba(2,71,91, 0.3)',
+    marginTop: 20,
+    marginBottom: 15,
+    marginHorizontal: 20,
+  },
+  amountHeaderText: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansBold(13),
   },
 });

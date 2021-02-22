@@ -20,6 +20,8 @@ import {
   SAVE_MEDICINE_ORDER_OMS,
   SAVE_MEDICINE_ORDER_PAYMENT,
   GET_ONEAPOLLO_USER,
+  SAVE_MEDICINE_ORDER_OMS_V2,
+  SAVE_MEDICINE_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   MedicineCartOMSItem,
@@ -28,11 +30,22 @@ import {
   BOOKINGSOURCE,
   DEVICE_TYPE,
   ONE_APOLLO_STORE_CODE,
+  PLAN_PURCHASE_DETAILS_PHARMA,
+  PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+import {
+  saveMedicineOrderV2,
+  saveMedicineOrderV2Variables,
+  saveMedicineOrderV2_saveMedicineOrderV2_orders,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
+import {
+  saveMedicineOrderPaymentMqV2,
+  saveMedicineOrderPaymentMqV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderPaymentMqV2';
 import {
   aphConsole,
   g,
@@ -87,6 +100,7 @@ import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import DeviceInfo from 'react-native-device-info';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -137,8 +151,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     defaultCirclePlan,
     circlePlanSelected,
     pharmacyCircleAttributes,
+    shipments,
+    orders,
     setIsFreeDelivery,
   } = useShoppingCart();
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -182,9 +199,21 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       variables: orderInfo,
     });
 
+  const saveOrderV2 = (orderInfo: saveMedicineOrderV2Variables) =>
+    client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS_V2,
+      variables: orderInfo,
+    });
+
   const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
     client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
       mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+      variables: paymentInfo,
+    });
+
+  const savePaymentV2 = (paymentInfo: saveMedicineOrderPaymentMqV2Variables) =>
+    client.mutate<saveMedicineOrderPaymentMqV2, saveMedicineOrderPaymentMqV2Variables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT_V2,
       variables: paymentInfo,
     });
 
@@ -293,7 +322,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         af_currency: 'INR',
         'Circle Cashback amount':
           circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+        'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+        'Prescription Option selected': uploadPrescriptionRequired
+          ? 'Prescription Upload'
+          : 'Not Applicable',
         ...pharmacyCircleAttributes!,
+        ...pharmacyUserTypeAttribute,
       };
       if (store) {
         eventAttributes['Store Id'] = store.storeid;
@@ -307,13 +341,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (orderId: string) => {
+  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
+    orderId: string,
+    orderAutoId: string
+  ) => {
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       'customer id': currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
       'order id': orderId,
+      orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
@@ -329,11 +367,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   ) => {
     const eventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isCOD),
+      'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+      'Prescription Option selected': uploadPrescriptionRequired
+        ? 'Prescription Upload'
+        : 'Not Applicable',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
     const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
+      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`, orderAutoId),
     };
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
 
@@ -435,13 +477,90 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
   };
 
-  const redirectToPaymentGateway = async (
-    orderId: string,
-    orderAutoId: number,
-    paymentMode: string,
-    bankCode: string,
-    orderInfo: saveMedicineOrderOMSVariables
+  const placeOrderV2 = (
+    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
+    transactionId: number,
+    orderType: string,
+    isCOD?: boolean
   ) => {
+    const paymentInfo: saveMedicineOrderPaymentMqV2Variables = {
+      medicinePaymentMqInput: {
+        transactionId: transactionId,
+        amountPaid: getFormattedAmount(grandTotal),
+        paymentType:
+          orderType == 'COD'
+            ? MEDICINE_ORDER_PAYMENT_TYPE.COD
+            : MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+    if (orderType == 'HCorder') {
+      paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
+      paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
+      paymentInfo.medicinePaymentMqInput['healthCredits'] = !!circleMembershipCharges
+        ? getFormattedAmount(grandTotal - circleMembershipCharges)
+        : getFormattedAmount(grandTotal);
+      if (circleMembershipCharges) {
+        paymentInfo.medicinePaymentMqInput['healthCreditsSub'] = circleMembershipCharges;
+      }
+    }
+    if (!circleSubscriptionId && !!circleMembershipCharges) {
+      paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
+      paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
+      paymentInfo.medicinePaymentMqInput['storeCode'] =
+        Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
+    }
+    console.log('paymentInfo >>>', paymentInfo);
+    savePaymentV2(paymentInfo)
+      .then(({ data }) => {
+        console.log('data >>>', data);
+        const { errorCode, errorMessage } = g(data, 'saveMedicineOrderPaymentMqV2') || {};
+        console.log({ data });
+        console.log({ errorCode, errorMessage });
+        setLoading && setLoading(false);
+        if (errorCode || errorMessage) {
+          // Order-failed
+          showAphAlert!({
+            title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+            description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+          });
+        } else {
+          // Order-Success, Show popup here & clear cart info
+          try {
+            orders?.forEach((order) => {
+              postwebEngageCheckoutCompletedEvent(
+                `${order?.orderAutoId}`,
+                order?.id!,
+                // orderType == 'COD',
+                isCOD
+              );
+              firePurchaseEvent(order?.id!);
+            });
+          } catch (error) {
+            console.log(error);
+          }
+          props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+            status: 'PAYMENT_PENDING',
+            price: getFormattedAmount(grandTotal),
+            transId: transactionId,
+            orders: orders,
+          });
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('CheckoutScene_savePayment', e);
+        setLoading && setLoading(false);
+        aphConsole.log({ e });
+        showAphAlert!({
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+        });
+      });
+  };
+
+  const firePaymentModeEvent = (paymentMode: string, orderId: string, orderAutoId: number) => {
     try {
       const paymentEventAttributes = {
         Payment_Mode: paymentMode,
@@ -454,17 +573,29 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
     } catch (error) {}
+  };
+
+  const redirectToPaymentGateway = async (
+    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
+    transactionId: number,
+    paymentMode: string,
+    bankCode: string,
+    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables
+  ) => {
+    orders?.forEach((order) => {
+      firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
+    });
     const token = await firebaseAuth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, false),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${transactionId}`, false),
     };
     const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
+      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${transactionId}`),
     };
     props.navigation.navigate(AppRoutes.PaymentScene, {
-      orderId,
-      orderAutoId,
+      orders,
+      transactionId,
       token,
       amount: getFormattedAmount(grandTotal - burnHC),
       burnHC: burnHC,
@@ -478,6 +609,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       orderInfo: orderInfo,
       planId: circlePlanId || '',
       subPlanId: circleSubPlanId || '',
+      isStorePickup,
     });
   };
 
@@ -578,7 +710,40 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       },
     };
 
-    console.log(JSON.stringify(orderInfo));
+    const planPurchaseDetails: PLAN_PURCHASE_DETAILS_PHARMA = {
+      TYPE: PLAN.CARE_PLAN,
+      PlanAmount: circleMembershipCharges || 0,
+      planId: Circle.CIRCLEPlan,
+      subPlanId: circleSubPlanId || '',
+    };
+    const OrderInfoV2: saveMedicineOrderV2Variables = {
+      medicineOrderInput: {
+        patientId: currentPatient?.id || '',
+        medicineDeliveryType: deliveryType!,
+        estimatedAmount,
+        bookingSource: BOOKINGSOURCE.MOBILE,
+        deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+        appVersion: DeviceInfo.getVersion(),
+        coupon: coupon ? coupon.coupon : '',
+        patientAddressId: deliveryAddressId,
+        prescriptionImageUrl: [
+          ...physicalPrescriptions.map((item) => item.uploadedUrl),
+          ...ePrescriptions.map((item) => item.uploadedUrl),
+        ].join(','),
+        prismPrescriptionFileId: [
+          ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
+          ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
+        ].join(','),
+        customerComment: '',
+        subscriptionDetails: circleSubscriptionId
+          ? { userSubscriptionId: circleSubscriptionId }
+          : null,
+        planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
+        healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
+        shipments: shipments,
+      },
+    };
+    console.log(JSON.stringify(OrderInfoV2));
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PAYMENT_INITIATED] = {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
@@ -587,61 +752,128 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 
-    saveOrder(orderInfo)
-      .then(({ data }) => {
-        const { orderId, orderAutoId, errorCode, errorMessage } =
-          g(data, 'saveMedicineOrderOMS')! || {};
-        console.log({ orderAutoId, orderId, errorCode, errorMessage });
+    isStorePickup
+      ? saveOrder(orderInfo)
+          .then(({ data }) => {
+            const { orderId, orderAutoId, errorCode, errorMessage } =
+              g(data, 'saveMedicineOrderOMS')! || {};
+            console.log({ orderAutoId, orderId, errorCode, errorMessage });
 
-        if (errorCode || errorMessage) {
-          // Order-failed
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Order failed, ${errorMessage}.`,
-          });
-          setLoading && setLoading(false);
-          return;
-        } else {
-          if (isCOD) {
-            console.log('isCashOnDelivery\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'COD', true);
-          } else if (hcOrder) {
-            console.log('HCorder\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'HCorder', false);
-          } else {
-            console.log('Redirect To Payment Gateway');
-            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode, orderInfo)
-              .catch((e) => {
-                CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
-              })
-              .finally(() => {
-                setLoading && setLoading(false);
+            if (errorCode || errorMessage) {
+              // Order-failed
+              showAphAlert!({
+                title: `Uh oh.. :(`,
+                description: `Order failed, ${errorMessage}.`,
               });
-          }
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('CheckoutScene_saveOrder', error);
-        setLoading && setLoading(false);
+              setLoading && setLoading(false);
+              return;
+            } else {
+              if (isCOD) {
+                console.log('isCashOnDelivery\t', { orderId, orderAutoId });
+                placeOrder(orderId, orderAutoId, 'COD', true);
+              } else if (hcOrder) {
+                console.log('HCorder\t', { orderId, orderAutoId });
+                placeOrder(orderId, orderAutoId, 'HCorder', false);
+              } else {
+                console.log('Redirect To Payment Gateway');
+                let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
+                orders[0] = {
+                  __typename: 'MedicineOrderIds',
+                  id: orderId,
+                  orderAutoId: orderAutoId,
+                };
+                redirectToPaymentGateway(orders, orderAutoId, paymentMode, bankCode, orderInfo)
+                  .catch((e) => {
+                    CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
+                  })
+                  .finally(() => {
+                    setLoading && setLoading(false);
+                  });
+              }
+            }
+          })
+          .catch((error) => {
+            CommonBugFender('CheckoutScene_saveOrder', error);
+            setLoading && setLoading(false);
 
-        const isPriceMismatch =
-          g(error, 'graphQLErrors', '0', 'message') == 'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
-        const isCouponError =
-          g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
+            const isPriceMismatch =
+              g(error, 'graphQLErrors', '0', 'message') ==
+              'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
+            const isCouponError =
+              g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
 
-        if (isPriceMismatch || isCouponError) {
-          props.navigation.goBack();
-        }
+            if (isPriceMismatch || isCouponError) {
+              props.navigation.goBack();
+            }
 
-        showAphAlert!({
-          title: string.common.uhOh,
-          description: isPriceMismatch
-            ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
-            : isCouponError
-            ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
-            : `Your order failed due to some temporary issue :( Please submit the order again.`,
-        });
-      });
+            showAphAlert!({
+              title: string.common.uhOh,
+              description: isPriceMismatch
+                ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
+                : isCouponError
+                ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+                : `Your order failed due to some temporary issue :( Please submit the order again.`,
+            });
+          })
+      : saveOrderV2(OrderInfoV2)
+          .then(({ data }) => {
+            console.log('data >>>>', data);
+            const { orders, transactionId, errorCode, errorMessage } =
+              data?.saveMedicineOrderV2 || {};
+            console.log(orders, transactionId, errorCode, errorMessage);
+            if (errorCode || errorMessage) {
+              showAphAlert!({
+                title: `Uh oh.. :(`,
+                description: `Order failed, ${errorMessage}.`,
+              });
+              setLoading?.(false);
+              return;
+            } else {
+              if (isCOD) {
+                placeOrderV2(orders!, transactionId!, 'COD', true);
+              } else if (hcOrder) {
+                placeOrderV2(orders!, transactionId!, 'HCorder', false);
+              } else {
+                console.log('Redirect To Payment Gateway');
+                redirectToPaymentGateway(
+                  orders!,
+                  transactionId!,
+                  paymentMode,
+                  bankCode,
+                  OrderInfoV2
+                )
+                  .catch((e) => {
+                    CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
+                  })
+                  .finally(() => {
+                    setLoading && setLoading(false);
+                  });
+              }
+            }
+          })
+          .catch((error) => {
+            CommonBugFender('CheckoutScene_saveOrder', error);
+            setLoading && setLoading(false);
+
+            const isPriceMismatch =
+              g(error, 'graphQLErrors', '0', 'message') ==
+              'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
+            const isCouponError =
+              g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
+
+            if (isPriceMismatch || isCouponError) {
+              props.navigation.goBack();
+            }
+
+            showAphAlert!({
+              title: string.common.uhOh,
+              description: isPriceMismatch
+                ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
+                : isCouponError
+                ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+                : `Your order failed due to some temporary issue :( Please submit the order again.`,
+            });
+          });
   };
 
   const firePurchaseEvent = (orderId: string) => {

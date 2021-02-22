@@ -30,6 +30,8 @@ const lightGray2 = '#cccccc';
 const lightYellow = '#fbe9be';
 const light_grey_blue = '#67919D';
 const careRed = '#F0533B';
+const light_blue = '#E7F2FF';
+const blue_color = '#337FC5';
 
 const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
@@ -100,6 +102,13 @@ const Common = {
   GRAY: '#6A6A6A',
   DISABLE_TEXT: '#BCBCBC',
   RED: '#C5411E',
+  LIGHTISH_GRAY: '#93B7C5',
+  LIGHT_ORANGE: '#FCB716',
+  CALL_BG_GRAY: '#E5E5E5',
+  CALL_LIGHT_GRAY: '#EAEAEA',
+  DISCOUNT_LIGHT_BLUE: light_blue,
+  DISCOUNT_BLUE_COLOR: blue_color,
+  REMOVE_RED: '#E31E24',
 };
 
 const Header = {

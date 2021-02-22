@@ -12,6 +12,7 @@ import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS } from "./globalTypes";
 export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus {
   __typename: "MedicineOrdersOMSStatus";
   id: string;
+  statusDate: any | null;
   orderStatus: MEDICINE_ORDER_STATUS | null;
   hideStatus: boolean | null;
   statusMessage: string | null;

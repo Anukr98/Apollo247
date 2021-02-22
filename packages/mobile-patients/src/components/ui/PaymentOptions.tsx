@@ -45,10 +45,11 @@ interface PaymentOptionsProps extends NavigationScreenProps {
   from?: string;
   selectedPlan?: any;
   comingFrom?: string;
+  screenName?: string;
 }
 export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const { from, selectedPlan, comingFrom } = props;
+  const { from, selectedPlan, comingFrom, screenName } = props;
   const { setLoading, showAphAlert } = useUIElements();
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
 
@@ -117,6 +118,7 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
       from: from,
       selectedPlan: selectedPlan,
       forCircle: true,
+      screenName: screenName,
     });
   };
 

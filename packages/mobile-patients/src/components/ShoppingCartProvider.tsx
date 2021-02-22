@@ -1,4 +1,8 @@
-import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_DELIVERY_TYPE,
+  MedicineOrderShipmentInput,
+  MedicineCartOMSItem,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -13,6 +17,7 @@ import {
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface ShoppingCartItem {
   id: string;
@@ -204,6 +209,8 @@ export interface ShoppingCartContextProps {
   isProuctFreeCouponApplied: boolean;
   circleSubscriptionId: string;
   setCircleSubscriptionId: ((id: string) => void) | null;
+  isCircleExpired: boolean;
+  setIsCircleExpired: ((expired: boolean) => void) | null;
   circlePlanSelected: any;
   setCirclePlanSelected: ((plan: any) => void) | null;
   selectDefaultPlan: ((plan: any) => void) | null;
@@ -223,6 +230,9 @@ export interface ShoppingCartContextProps {
   pharmacyCircleAttributes: PharmacyCircleEvent | null;
   pdpBreadCrumbs: BreadcrumbLink[];
   setPdpBreadCrumbs: ((items: BreadcrumbLink[]) => void) | null;
+  orders: any;
+  setOrders: ((orders: any[]) => void) | null;
+  shipments: (MedicineOrderShipmentInput | null)[];
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -303,6 +313,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   isProuctFreeCouponApplied: false,
   circleSubscriptionId: '',
   setCircleSubscriptionId: null,
+  isCircleExpired: false,
+  setIsCircleExpired: null,
   circlePlanSelected: null,
   setCirclePlanSelected: null,
   selectDefaultPlan: null,
@@ -324,6 +336,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   pharmacyCircleAttributes: null,
   pdpBreadCrumbs: [],
   setPdpBreadCrumbs: null,
+  orders: [],
+  setOrders: null,
+  shipments: [],
 });
 
 const AsyncStorageKeys = {
@@ -366,6 +381,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [circleSubscriptionId, setCircleSubscriptionId] = useState<
     ShoppingCartContextProps['circleSubscriptionId']
   >('');
+  const [isCircleExpired, setIsCircleExpired] = useState<
+    ShoppingCartContextProps['isCircleExpired']
+  >(false);
   const [circlePlanSelected, setCirclePlanSelected] = useState<
     ShoppingCartContextProps['circlePlanSelected']
   >(null);
@@ -431,6 +449,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >();
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
+  const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
+  const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
     AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
@@ -612,7 +632,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCircleSubscription
+    isFreeDelivery ||
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
+    isCircleSubscription ||
+    hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
@@ -620,11 +643,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
-  const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
+  const packagingCharges = isCircleSubscription
+    ? 0
+    : cartTotal > 0 &&
+      cartTotal - productDiscount - couponDiscount <
+        AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_PACKAGING
+    ? AppConfig.Configuration.PACKAGING_CHARGES
+    : 0;
 
   const grandTotal = parseFloat(
     (
       cartTotal +
+      packagingCharges +
       deliveryCharges -
       couponDiscount -
       productDiscount +
@@ -703,6 +733,78 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setdeliveryTime('');
   };
 
+  useEffect(() => {
+    updateShipments();
+  }, [orders, coupon, cartItems, deliveryCharges]);
+
+  function updateShipments() {
+    let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];
+    orders?.forEach((order: any) => {
+      let shipment: MedicineOrderShipmentInput | null = {};
+      const sku = order?.items?.map((item: any) => item?.sku);
+      let shipmentCouponDiscount = 0;
+      let shipmentProductDiscount = 0;
+      let shipmentTotal = 0;
+      let shipmentCashback = 0;
+      const items: (MedicineCartOMSItem | null)[] = cartItems
+        ?.map((item) => {
+          if (sku.includes(item?.id)) {
+            const discountedPrice = formatNumber(
+              (coupon && item?.couponPrice) || item?.specialPrice || item?.price
+            );
+            shipmentCouponDiscount =
+              shipmentCouponDiscount +
+              formatNumber(
+                item?.quantity * (item?.couponPrice ? item?.price - item?.couponPrice : 0)
+              );
+            shipmentProductDiscount =
+              shipmentProductDiscount +
+              formatNumber(item?.quantity * (item?.price - (item?.specialPrice || item?.price)));
+            shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
+            shipmentCashback += item?.circleCashbackAmt;
+            return {
+              medicineSKU: item?.id,
+              medicineName: item?.name,
+              quantity: item?.quantity,
+              mrp: formatNumber(item?.price),
+              price: discountedPrice,
+              specialPrice: Number(item?.specialPrice || item?.price),
+              itemValue: formatNumber(item?.price * item?.quantity), // (multiply MRP with quantity)
+              itemDiscount: formatNumber(
+                item?.price * item?.quantity - discountedPrice * item?.quantity
+              ), // (diff of (MRP - discountedPrice) * quantity)
+              isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
+              mou: Number(item?.mou),
+              isMedicine: item?.isMedicine ? '1' : '0',
+              couponFree: item?.isFreeCouponProduct ? 1 : 0,
+            } as MedicineCartOMSItem;
+          }
+        })
+        .filter((item) => item);
+      let shipmentDeliveryfee = orders?.length ? deliveryCharges / orders?.length : 0;
+      let estimatedAmount =
+        shipmentTotal + shipmentDeliveryfee - shipmentCouponDiscount - shipmentProductDiscount;
+      console.log('shipmentTotal >>>', shipmentTotal);
+      shipment['shopId'] = order['storeCode'];
+      shipment['tatType'] = order['storeType'];
+      shipment['estimatedAmount'] = estimatedAmount;
+      shipment['deliveryCharges'] = shipmentDeliveryfee;
+      shipment['orderTat'] = order['tat'];
+      shipment['couponDiscount'] = shipmentCouponDiscount;
+      shipment['productDiscount'] = shipmentProductDiscount;
+      shipment['packagingCharges'] = orders?.length ? packagingCharges / orders?.length : 0;
+      shipment['storeDistanceKm'] = order['distance'];
+      shipment['items'] = items;
+      shipment['tatCity'] = order['tatCity'];
+      shipment['tatHours'] = order['tatDuration'];
+      shipment['allocationProfileName'] = order['allocationProfileName'];
+      shipment['clusterId'] = order['clusterId'];
+      shipment['totalCashBack'] =
+        isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+      shipmentsArray.push(shipment);
+    });
+    setShipments(shipmentsArray);
+  }
   useEffect(() => {
     // update cart items from async storage the very first time app opened
     const updateCartItemsFromStorage = async () => {
@@ -953,6 +1055,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         circleSubscriptionId,
         setCircleSubscriptionId,
         circlePlanSelected,
+        isCircleExpired,
+        setIsCircleExpired,
         setCirclePlanSelected,
         selectDefaultPlan,
         defaultCirclePlan,
@@ -973,6 +1077,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
         pharmacyCircleAttributes,
         pdpBreadCrumbs,
         setPdpBreadCrumbs,
+        orders,
+        setOrders,
+        shipments,
       }}
     >
       {props.children}

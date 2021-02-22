@@ -206,6 +206,7 @@ export const BOOK_APPOINTMENT = gql`
         appointmentType
         patientId
         displayId
+        paymentOrderId
       }
     }
   }
@@ -223,7 +224,18 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         responseMessage
         bankTxnId
         orderId
+        appointment {
+          id
+        }
       }
+    }
+  }
+`;
+
+export const RETURN_PHARMA_ORDER = gql`
+  mutation returnPharmaOrder($returnPharmaOrderInput: ReturnPharmaOrderInput) {
+    returnPharmaOrder(returnPharmaOrderInput: $returnPharmaOrderInput) {
+      status
     }
   }
 `;
@@ -1909,6 +1921,20 @@ export const SAVE_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
+  mutation saveMedicineOrderV2($medicineOrderInput: SaveMedicineOrderV2Input!) {
+    saveMedicineOrderV2(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      transactionId
+      orders {
+        id
+        orderAutoId
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
     SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
@@ -1916,6 +1942,17 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
       errorMessage
       # orderId
       # orderAutoId
+    }
+  }
+`;
+
+export const SAVE_MEDICINE_ORDER_PAYMENT_V2 = gql`
+  mutation saveMedicineOrderPaymentMqV2($medicinePaymentMqInput: MedicinePaymentMqV2Input!) {
+    saveMedicineOrderPaymentMqV2(medicinePaymentMqInput: $medicinePaymentMqInput) {
+      errorCode
+      errorMessage
+      paymentOrderId
+      orderStatus
     }
   }
 `;
@@ -1935,7 +1972,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         orderTat
         medicineOrdersStatus {
           id
-          # statusDate
+          statusDate
           orderStatus
           hideStatus
           statusMessage
@@ -2042,6 +2079,17 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        diagnosticOrdersStatus {
+          id
+          orderStatus
+          itemId
+          itemName
+          packageId
+          packageName
+          hideStatus
+          statusMessage
+          statusDate
+        }
         diagnosticOrderLineItems {
           id
           itemId
@@ -2158,6 +2206,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         createdDate
         collectionCharges
         slotDateTimeInUTC
+        paymentType
         diagnosticOrderLineItems {
           id
           itemId
@@ -2251,6 +2300,25 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         packageCalculatedMrp
         testDescription
         inclusions
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
+export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
+  query findDiagnosticsWidgetsPricing($cityID: Int!, $itemIDs: [Int]!) {
+    findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics {
+        itemId
+        packageCalculatedMrp
         diagnosticPricing {
           mrp
           price
@@ -2456,6 +2524,10 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           customReason
         }
         medicineOrderShipments {
+          driverDetails {
+            driverName
+            driverPhone
+          }
           id
           siteId
           siteName
@@ -2464,6 +2536,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           updatedDate
           currentStatus
           itemDetails
+          trackingUrl
           medicineOrdersStatus {
             id
             orderStatus
@@ -3457,6 +3530,11 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        patientInfo {
+          firstName
+          lastName
+          gender
+        }
         doctorInfo {
           id
           salutation
@@ -3713,6 +3791,8 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
     saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
       orderId
       displayId
+      status
+      errorMessageToDisplay
     }
   }
 `;
@@ -3996,6 +4076,24 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       paymentStatus
       paymentDateTime
       orderDateTime
+      paymentMode
+      planPurchaseDetails {
+        planPurchased
+        totalCashBack
+        planValidity
+      }
+    }
+  }
+`;
+
+export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
+  query pharmaPaymentStatusV2($transactionId: Int!) {
+    pharmaPaymentStatusV2(transactionId: $transactionId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
       paymentMode
       planPurchaseDetails {
         planPurchased
@@ -4315,11 +4413,13 @@ export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
     $mobile_number: String!
     $banner_context: String!
     $user_state: UserState
+    $banner_display_type: [BannerDisplayType!]
   ) {
     GetAllGroupBannersOfUser(
       mobile_number: $mobile_number
       banner_context: $banner_context
       user_state: $user_state
+      banner_display_type: $banner_display_type
     ) {
       code
       success
@@ -4331,6 +4431,7 @@ export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
         banner_template_info
         cta_action
         meta
+        banner_display_type
       }
     }
   }
@@ -4560,6 +4661,31 @@ export const VERIFY_VPA = gql`
       vpa
       status
       customer_name
+    }
+  }
+`;
+
+export const GET_USER_PROFILE_TYPE = gql`
+  query getUserProfileType($mobileNumber: String!) {
+    getUserProfileType(mobileNumber: $mobileNumber) {
+      profile
+    }
+  }
+`;
+
+export const UPDATE_APPOINTMENT = gql`
+  mutation updateAppointment($appointmentInput: UpdateAppointmentInput) {
+    updateAppointment(appointmentInput: $appointmentInput) {
+      error
+      status
+    }
+  }
+`;
+
+export const INITIATE_DOC_ON_CALL = gql`
+  query initiateDocOnCall($mobileNumber: String, $callType: docOnCallType) {
+    initiateDocOnCall(mobileNumber: $mobileNumber, callType: $callType) {
+      success
     }
   }
 `;

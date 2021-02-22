@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 export const getDate = (date: string) => {
-  let formattedDate = format(date, 'DD MMM YYYY, h:mm A');
+  let formattedDate = format(date || new Date(), 'DD MMM YYYY, h:mm A');
   return formattedDate;
 };
 
@@ -51,4 +51,8 @@ export const dateFormatter = (dateTime: Date) => {
   } else {
     return `${format(dateTime, 'DD MMM YYYY, h:mm A')}`;
   }
+};
+export const dateFormatterDDMM = (dateTime: string,form: string) => {
+  let dateF = new Date(dateTime);
+    return `${format(dateF, form)}`;
 };

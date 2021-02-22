@@ -16,6 +16,7 @@ export interface ProceedBarProps {
   onPressChangeAddress?: () => void;
   screen?: string;
   onPressTatCard?: () => void;
+  onPressReviewOrder?: () => void;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -27,6 +28,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     ePrescriptions,
     addresses,
     cartItems,
+    orders,
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
@@ -37,11 +39,13 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     onPressChangeAddress,
     onPressTatCard,
     screen,
+    onPressReviewOrder,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const unServiceable = !!cartItems.find(
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
+  const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   function getTitle() {
     return !deliveryAddressId
@@ -50,6 +54,8 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         : string.addDeliveryAddress
       : isPrescriptionRequired()
       ? string.uploadPrescription
+      : isSplitCart && screen == 'MedicineCart'
+      ? string.reviewOrder
       : string.proceedToPay;
   }
 
@@ -60,6 +66,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
       return false;
     }
   }
+
   function onPressButton() {
     return !deliveryAddressId
       ? addresses?.length
@@ -67,8 +74,11 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         : onPressAddDeliveryAddress?.()
       : isPrescriptionRequired()
       ? onPressUploadPrescription?.()
+      : isSplitCart && screen == 'MedicineCart'
+      ? onPressReviewOrder?.()
       : onPressProceedtoPay?.();
   }
+
   const renderTotal = () => {
     return (
       <View>
@@ -111,7 +121,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     if (selectedAddress && deliveryTime != undefined) {
       return (
         <TatCard
-          deliveryTime={deliveryTime}
+          deliveryTime={orders?.[0]?.tat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
           onPressTatCard={onPressTatCard}

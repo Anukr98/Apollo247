@@ -23,8 +23,9 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
     onPressTatCard,
     isNonCartOrder,
   } = props;
-  const { cartItems } = useShoppingCart();
+  const { cartItems, orders } = useShoppingCart();
   const unServiceable = isNonCartOrder ? false : cartItems?.find((item) => item?.unserviceable);
+  const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   function getGenericDate() {
     const genericServiceableDate = moment()
@@ -55,6 +56,14 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       return <Text style={styles.dateTime}>{`${format(deliveryTime, 'D-MMM-YYYY')}`}</Text>;
     }
   }
+
+  const renderViewDelivery = () => {
+    return (
+      <View style={styles.viewDeliveryView}>
+        <Text style={styles.viewDelivery}>View delivery time</Text>
+      </View>
+    );
+  };
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -67,12 +76,20 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
           justifyContent: !unServiceable ? 'space-between' : 'flex-end',
         }}
       >
-        {!unServiceable && (
-          <Text style={styles.delivery}>
-            {!!isNonCartOrder ? `Expected Delivery by ` : `Deliver by :`}
-            {deliveryTime ? getDeliveryDate() : getGenericDate()}
-          </Text>
-        )}
+        {!unServiceable &&
+          (!!isNonCartOrder ? (
+            <Text style={styles.delivery}>
+              {`Expected Delivery by `}
+              {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            </Text>
+          ) : !isSplitCart ? (
+            <Text style={styles.delivery}>
+              {`Deliver by :`}
+              {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            </Text>
+          ) : (
+            renderViewDelivery()
+          ))}
         <TouchableOpacity
           style={{ flexDirection: 'row', alignItems: 'center' }}
           onPress={() => onPressChangeAddress()}
@@ -112,5 +129,17 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(14),
     lineHeight: 18,
     marginRight: 7,
+  },
+  viewDelivery: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 13,
+    color: '#D4D4D4',
+  },
+  viewDeliveryView: {
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+    borderWidth: 0.5,
+    borderColor: '#D4D4D4',
+    borderRadius: 5,
   },
 });

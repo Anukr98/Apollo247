@@ -20,7 +20,10 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import AsyncStorage from '@react-native-community/async-storage';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  isPhysicalConsultation,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -52,7 +55,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,

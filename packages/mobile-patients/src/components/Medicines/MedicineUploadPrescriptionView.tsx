@@ -14,6 +14,7 @@ import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Me
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -80,6 +81,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
+  const { pharmacyUserType } = useAppCommonData();
 
   const { showAphAlert } = useUIElements();
   const {
@@ -311,6 +313,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               // since this component being used in two places hence condition isTest
               const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED] = {
                 Source: 'Cart',
+                User_Type: pharmacyUserType,
               };
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
             }

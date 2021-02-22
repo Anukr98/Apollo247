@@ -9,12 +9,16 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { WebView } from 'react-native-webview';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
+import CovidButton from './Components/CovidStyles';
 import {
   ApolloHealthProIcon,
   CartIcon,
@@ -44,12 +48,20 @@ import {
   TestsCartIcon,
   TestsIcon,
   WhiteArrowRightIcon,
+  FaqsArticles,
+  PhoneDoctor,
+  VaccineTracker,
+  ChatBot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { BannerDisplayType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -65,12 +77,17 @@ import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   SAVE_VOIP_DEVICE_TOKEN,
   UPDATE_PATIENT_APP_VERSION,
+  GET_USER_PROFILE_TYPE,
+  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+  GET_ONEAPOLLO_USER,
+  GET_PLAN_DETAILS_BY_PLAN_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { getUserProfileType } from '@aph/mobile-patients/src/graphql/types/getUserProfileType';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
@@ -103,10 +120,13 @@ import {
   doRequestAndAccessLocationModified,
   g,
   getPhrNotificationAllCount,
+  handleGraphQlError,
   overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
   setWebEngageScreenNames,
+  timeDiffDaysFromNow,
+  setCircleMembershipType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -125,7 +145,9 @@ import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Dimensions,
+  Image,
   ImageBackground,
   Linking,
   NativeModules,
@@ -138,12 +160,14 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  Keyboard,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
@@ -152,6 +176,16 @@ import {
   preFetchSDK,
   createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+
+import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
+import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
+import { CircleTypeCard3 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard3';
+import { CircleTypeCard4 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard4';
+import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard5';
+import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
+import { Overlay } from 'react-native-elements';
+import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const { Vitals } = NativeModules;
 
@@ -227,6 +261,32 @@ const styles = StyleSheet.create({
     marginTop: 6,
     ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
   },
+  readArticleStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    height: 50,
+  },
+  covidContainer: {
+    marginHorizontal: 20,
+    ...theme.viewStyles.cardViewStyle,
+    marginBottom: 20,
+  },
+  covidTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginHorizontal: 10,
+  },
+  covidTitle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.GREEN),
+    marginLeft: 10,
+    width: width - 100,
+  },
+  covidIcon: {
+    width: 20,
+    height: 20,
+  },
   labelView: {
     position: 'absolute',
     top: -3,
@@ -280,7 +340,7 @@ const styles = StyleSheet.create({
   plainLine: {
     width: '100%',
     height: 1,
-    marginVertical: 16,
+    marginVertical: 20,
   },
   badgelabelView: {
     position: 'absolute',
@@ -319,6 +379,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     color: '#02475b',
+  },
+  bottomAlertTitle: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
   },
   profileIcon: {
     width: 38,
@@ -366,6 +432,203 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
     flex: 1,
+  },
+  covidSubContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  readArticleSubContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 3,
+    height: 80,
+    backgroundColor: 'red',
+    width: '100%',
+  },
+  goToConsultRoom: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
+  renderContent: {
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    height: 0.06 * height,
+    marginTop: 16,
+    borderRadius: 10,
+    flex: 1,
+  },
+  renderSubContent: {
+    flex: 0.17,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  congratulationsDescriptionPhysical: {
+    marginHorizontal: 10,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  circleContainer: {
+    backgroundColor: theme.colors.WHITE,
+    marginTop: 15,
+    marginBottom: 10,
+    padding: 6,
+    width: '100%',
+    alignSelf: 'center',
+    paddingTop: 15,
+  },
+
+  circleCardsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: 4,
+    marginVertical: 8,
+  },
+  circleCards: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 1, height: 2 },
+    elevation: 4,
+    flexDirection: 'row',
+    height: 88,
+    width: width / 2.27,
+    marginHorizontal: 3,
+    marginBottom: 2,
+    borderWidth: 1.2,
+    borderStyle: 'solid',
+    borderColor: '#FC9916',
+    padding: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  circleCardsTexts: {
+    flex: 0.6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    padding: 8,
+  },
+  circleCardsImages: {
+    flex: 0.4,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 34,
+    height: 34,
+  },
+  circleCardsImage: {
+    alignSelf: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  circleRowsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 5,
+    flex: 1,
+  },
+  circleButtonLeft: {
+    width: 25,
+    height: 25,
+    borderColor: '#f5f0f0',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    backgroundColor: '#fff',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0.2, height: 0.2 },
+    shadowOpacity: 0.3,
+    elevation: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    left: -4,
+    top: 33,
+  },
+  circleButtonRight: {
+    width: 25,
+    height: 25,
+    borderColor: '#f5f0f0',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    backgroundColor: '#fff',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0.2, height: 0.2 },
+    shadowOpacity: 0.3,
+    elevation: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    right: -3,
+    top: 33,
+  },
+  circleButtonImage: { width: 7, height: 12 },
+  covidBtn: {
+    height: 38,
+    width: width / 2 - 35,
+    marginLeft: 10,
+    marginTop: 10,
+  },
+  activeAppointmentsContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  covidIconStyle: {
+    marginLeft: 10,
+  },
+  covidBtnTitle: {
+    ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
+    marginLeft: 8,
+    width: width / 2 - 80,
+  },
+  overlayStyle: {
+    width: width,
+    height: 'auto',
+    padding: 0,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  viewWebStyles: {
+    position: 'absolute',
+    width: width,
+    height: height,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 20,
+  },
+  webViewCompo: {
+    flex: 1,
+    backgroundColor: '#666666',
+    width: width,
+  },
+  nestedWebView: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: 'white',
   },
 });
 
@@ -426,6 +689,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
+    bannerDataHome,
+    setBannerDataHome,
     bannerData,
     setBannerData,
     phrNotificationData,
@@ -434,15 +699,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcUpgradeUserSubscriptions,
     circleSubscription,
     setAxdcCode,
+    circlePlanId,
     setCirclePlanId,
+    healthCredits,
+    setHealthCredits,
+    isRenew,
+    setIsRenew,
     setHdfcPlanId,
     setCircleStatus,
+    circleStatus,
     setHdfcStatus,
     hdfcStatus,
+    setPharmacyUserType,
+    pharmacyUserTypeAttribute,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
+  const [membershipPlans, setMembershipPlans] = useState<any>([]);
+  const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -466,8 +741,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circleSubscriptionId,
     setHdfcSubscriptionId,
     setCirclePlanValidity,
+    circlePlanValidity,
     setCirclePaymentReference,
     pharmacyCircleAttributes,
+    setIsCircleExpired,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -475,6 +752,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
@@ -482,16 +760,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [serviceable, setserviceable] = useState<String>('');
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
+  const [renewNow, setRenewNow] = useState<String>('');
+  const [isCircleMember, setIsCircleMember] = useState<String>('');
+  const [circleSavings, setCircleSavings] = useState<number>(-1);
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCircleActivationcr, setShowCircleActivationcr] = useState<boolean>(false);
+  const [showWebView, setShowWebView] = useState<any>({ action: false });
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
-
+  const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
-  const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
+
+  const planValiditycr = useRef<string>('');
+  const planPurchasedcr = useRef<boolean | undefined>(false);
+  const circlePlanStatus = props.navigation.getParam('circleStatus');
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
@@ -529,7 +816,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     createHyperServiceObject();
+    logHomePageViewed();
   }, []);
+
+  //to be called only when the user lands via app launch
+  const logHomePageViewed = async () => {
+    const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
+    if (isAppOpened) {
+      postHomeWEGEvent(WebEngageEventName.HOME_VIEWED);
+    }
+  };
 
   useEffect(() => {
     if (currentPatient?.id) {
@@ -611,6 +907,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
     });
+
+    try {
+      AsyncStorage.removeItem('APP_OPENED');
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getAppOpenedKeyReadError', error);
+    }
+
     return () => {
       didBlur && didBlur.remove();
     };
@@ -695,40 +998,69 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const showFreeConsultOverlay = (params: any) => {
-    const { isJdQuestionsComplete, appointmentDateTime } = params?.appointmentData;
-    const { skipAutoQuestions } = params;
+    const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
+    const { skipAutoQuestions, isPhysicalConsultBooked } = params;
     const doctorName = params?.doctorName?.includes('Dr')
       ? params?.doctorName
       : `Dr ${params?.doctorName}`;
+    let physical = false;
     const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
     const appointmentTime = moment(appointmentDateTime).format('h:mm a');
+    let hospitalLocation = '';
     let description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please be in the consult room before the appointment time.`;
     if (!isJdQuestionsComplete && !skipAutoQuestions) {
       description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
+    }
+    if (isPhysicalConsultBooked) {
+      hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
+      description = ``;
+      physical = true;
     }
     showAphAlert!({
       unDismissable: false,
       title: 'Appointment Confirmation',
       description: description,
+      physical: physical,
+      physicalText: (
+        <Text style={styles.congratulationsDescriptionPhysical}>
+          Your appointment has been successfully booked with {doctorName} for{' '}
+          <Text style={{ color: '#02475B' }}>
+            {dateFormatter(appointmentDateTime)} at {hospitalLocation + '.\n\n'}
+          </Text>
+          Please note that you will need to pay{' '}
+          <Text style={{ color: '#02475B' }}>
+            ₹{doctorInfo.physicalConsultationFees} + One-time registration charges
+          </Text>{' '}
+          (For new users) at the hospital Reception.
+        </Text>
+      ),
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 60,
-              paddingRight: 25,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              hideAphAlert!();
-              props.navigation.navigate(AppRoutes.ChatRoom, {
-                data: params?.appointmentData,
-              });
-            }}
-          >
-            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
-          </TouchableOpacity>
+          {isPhysicalConsultBooked ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.bottomAlertTitle}
+              onPress={() => {
+                hideAphAlert!();
+                props.navigation.navigate('APPOINTMENTS');
+              }}
+            >
+              <Text style={theme.viewStyles.yellowTextStyle}>VIEW DETAILS</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.goToConsultRoom}
+              onPress={() => {
+                hideAphAlert!();
+                props.navigation.navigate(AppRoutes.ChatRoom, {
+                  data: params?.appointmentData,
+                });
+              }}
+            >
+              <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ),
     });
@@ -776,10 +1108,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
     if (eventName == WebEngageEventName.BUY_MEDICINES) {
-      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+      eventAttributes = {
+        ...eventAttributes,
+        ...pharmacyCircleAttributes,
+        ...pharmacyUserTypeAttribute,
+      };
     }
     if (eventName == WebEngageEventName.BOOK_DOCTOR_APPOINTMENT) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
+    if (eventName == WebEngageEventName.HDFC_HEALTHY_LIFE) {
+      const subscription_name = hdfcUserSubscriptions?.name;
+      const newAttributes = {
+        HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+        HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
+        Circle_Member: !!circleSubscriptionId ? 'Yes' : 'No',
+      };
+      eventAttributes = { ...eventAttributes, ...newAttributes };
     }
     postWebEngageEvent(eventName, eventAttributes);
   };
@@ -941,9 +1286,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
     setWebEngageScreenNames('Home Screen');
+    fetchCircleSavings();
+    fetchHealthCredits();
+    fetchCarePlans();
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
-    setBannerData && setBannerData([]); // default banners to be empty
+    setBannerData && setBannerData([]);
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -1084,6 +1432,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       startDate: plan?.start_date,
     };
 
+    if (plan?.subscriptionStatus === 'disabled') {
+      setIsCircleExpired && setIsCircleExpired(true);
+    }
+
     return circleSubscptionData;
   };
 
@@ -1154,16 +1506,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async () => {
+    setCircleDataLoading(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
-        status: ['active', 'deferred_inactive'],
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
         fetchPolicy: 'no-cache',
         variables: query,
       });
+
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
         /**
@@ -1171,26 +1525,39 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          * data?.HDFC ------> HDFC data
          * data?.APOLLO ----> Circle data
          */
-        if (data?.APOLLO?.[0]._id) {
-          const paymentRef = data?.APOLLO?.[0]?.payment_reference;
+        const circleData = data?.APOLLO?.[0];
+        if (circleData?._id) {
+          const paymentRef = circleData?.payment_reference;
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          setIsCircleMember && setIsCircleMember('yes');
+
+          if (circleData?.status === 'active') {
+            setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          }
+
+          if (circleData?.status === 'disabled') {
+            setIsCircleExpired && setIsCircleExpired(true);
+          }
+
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            expiry: circleData?.expires_in,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          setCirclePlanId && setCirclePlanId(data?.APOLLO?.[0].plan_id);
-          setCircleStatus && setCircleStatus(data?.APOLLO?.[0].status);
+          setRenewNow(circleData?.renewNow ? 'yes' : 'no');
+          setCirclePlanId && setCirclePlanId(circleData?.plan_id);
+          setCircleStatus && setCircleStatus(circleData?.status);
           paymentStoredVal &&
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
         } else {
           AsyncStorage.setItem('isCircleMember', 'no');
+          setIsCircleMember && setIsCircleMember('no');
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -1221,15 +1588,84 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (error) {
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
+    setCircleDataLoading(false);
+  };
+
+  const fetchCarePlans = async () => {
+    try {
+      const res = await client.query<GetPlanDetailsByPlanId>({
+        query: GET_PLAN_DETAILS_BY_PLAN_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
+        },
+      });
+      const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
+      if (membershipPlans) {
+        setMembershipPlans(membershipPlans);
+        const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
+        if (defaultPlan?.length > 0) {
+          setDefaultCirclePlan(defaultPlan[0]);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
+    }
+  };
+
+  const fetchCircleSavings = async () => {
+    try {
+      const res = await client.query({
+        query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+        variables: {
+          mobile_number: currentPatient?.mobileNumber,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
+      const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
+      const consultSavings = savings?.consult || 0;
+      const pharmaSavings = savings?.pharma || 0;
+      const diagnosticsSavings = savings?.diagnostics || 0;
+      const deliverySavings = savings?.delivery || 0;
+      const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      setCircleSavings && setCircleSavings(Math.ceil(totalSavings));
+    } catch (error) {
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+      console.log('error', error);
+    }
+  };
+  const fetchHealthCredits = async () => {
+    try {
+      const res = await client.query({
+        query: GET_ONEAPOLLO_USER,
+        variables: {
+          patientId: g(currentPatient, 'id'),
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const credits = res?.data?.getOneApolloUser?.availableHC;
+
+      setHealthCredits && setHealthCredits(credits);
+    } catch (error) {
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+      console.log('error', error);
+    }
   };
 
   const getUserBanners = async () => {
     setHdfcLoading(true);
-    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME);
+    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [
+      BannerDisplayType.banner,
+      BannerDisplayType.card,
+    ]);
+
     setHdfcLoading(false);
     if (res) {
+      setBannerDataHome && setBannerDataHome(res);
       setBannerData && setBannerData(res);
     } else {
+      setBannerDataHome && setBannerDataHome([]);
       setBannerData && setBannerData([]);
     }
   };
@@ -1255,6 +1691,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .catch((e) => {
         setHdfcLoading(false);
         CommonBugFender('ConsultRoom_GetCashbackDetailsOfPlanById', e);
+      });
+  };
+
+  const getUserProfileType = () => {
+    client
+      .query<getUserProfileType>({
+        query: GET_USER_PROFILE_TYPE,
+        variables: { mobileNumber: g(currentPatient, 'mobileNumber') },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const profileType = data?.data?.getUserProfileType?.profile;
+        if (!!profileType) {
+          setPharmacyUserType && setPharmacyUserType(profileType);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_getUserProfileType', e);
       });
   };
 
@@ -1464,6 +1918,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
 
     getProductCashbackDetails();
+    getUserProfileType();
   }, []);
 
   const initializeVoip = () => {
@@ -1774,15 +2229,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{
-            marginTop: 20,
-            marginBottom: 32,
-            shadowColor: '#4c808080',
-            shadowOffset: { width: 0, height: 5 },
-            shadowOpacity: 0.4,
-            shadowRadius: 5,
-            elevation: 5,
-          }}
+          container={styles.activeAppointmentsContainer}
           title={'Active Appointments'}
           leftIcon={renderListCount(currentAppointments)}
           onPress={() => {
@@ -1878,7 +2325,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderBannersCarousel = () => {
-    const showBanner = bannerData && bannerData.length ? true : false;
+    const showBanner = !!bannerData?.length;
     if (showBanner) {
       return (
         <CarouselBanners
@@ -1898,6 +2345,356 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       );
     }
+  };
+
+  const dataBannerCards = (darktheme) => {
+    const datatoadd = bannerDataHome?.filter((item) => item?.banner_display_type === 'card');
+
+    let datatosend = [];
+    datatosend = datatoadd?.map((item) => ({
+      imageUrl: { uri: darktheme ? getMobileURL(item?.banner) : item?.banner },
+      title: item?.banner_template_info?.headerText1,
+      value: item?.banner_template_info?.headerText2,
+      action: { type: item?.cta_action?.type, cta_action: item?.cta_action?.meta?.action },
+    }));
+    return datatosend;
+  };
+
+  const navigateCTAActions = (action, url: string) => {
+    if (action?.type == 'REDIRECT') {
+      if (action.cta_action == 'SPECIALITY_LISTING') {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action.cta_action == 'PHARMACY_LANDING') {
+        props.navigation.navigate('MEDICINES');
+      } else if (action.cta_action == 'PRO-HEALTH') {
+        setShowWebView({ action: true, url: 'https://www.apollo247.com/apollo-pro-health' });
+      } else if (action.cta_action == 'PHR') {
+        props.navigation.navigate('HealthRecords');
+      } else if (action.cta_action == 'DIAGNOSTICS_LANDING') {
+        props.navigation.navigate('TESTS');
+      } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
+        props.navigation.navigate('MembershipDetails', {
+          membershipType: 'CIRCLE PLAN',
+          isActive: true,
+        });
+      } else if (action?.cta_action === string.Hdfc_values.ABSOLUTE_URL) {
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: url || action?.url,
+        });
+      }
+    }
+  };
+
+  const openWebView = (url) => {
+    Keyboard.dismiss();
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          title={'Circle Membership Benefits'}
+          leftIcon="close"
+          container={{
+            borderBottomWidth: 0,
+          }}
+          onPressLeftIcon={() => setShowWebView({ action: false })}
+        />
+        <View style={styles.nestedWebView}>
+          <WebView
+            source={{
+              uri: url,
+            }}
+            style={styles.webViewCompo}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setshowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setshowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setshowSpinner(false);
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderCircleCards = (item, darktheme: boolean, renew: boolean) => {
+    /**
+     * darktheme -> expired case
+     * renew -> expiring in x days
+     */
+    return (
+      <View style={styles.circleCardsContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            !darktheme ? navigateCTAActions(item?.action, item?.url) : null;
+            const membershipState = darktheme
+              ? 'Expired'
+              : renew
+              ? 'About to Expire'
+              : 'Not Expiring';
+            onClickCircleBenefits(membershipState, item?.action);
+          }}
+        >
+          <View
+            style={
+              darktheme ? [styles.circleCards, { borderColor: '#666666' }] : styles.circleCards
+            }
+          >
+            <View style={styles.circleCardsTexts}>
+              <Text
+                style={
+                  darktheme
+                    ? [
+                        { ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) },
+                        { alignSelf: 'flex-start' },
+                      ]
+                    : [
+                        { ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) },
+                        { alignSelf: 'flex-start' },
+                      ]
+                }
+              >
+                {item?.title}
+              </Text>
+              {item?.value && (
+                <Text
+                  style={
+                    darktheme
+                      ? [
+                          { ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                            marginTop: 5,
+                          },
+                        ]
+                      : [
+                          { ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                            marginTop: 5,
+                          },
+                        ]
+                  }
+                >
+                  {item?.value}
+                </Text>
+              )}
+            </View>
+            <Image source={item?.imageUrl} resizeMode="contain" style={styles.circleCardsImages} />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderCircleSubscriptionPlans = () => {
+    return (
+      <CircleMembershipPlans
+        navigation={props.navigation}
+        isModal={true}
+        closeModal={() => setShowCirclePlans(false)}
+        buyNow={true}
+        membershipPlans={membershipPlans}
+        source={'Consult'}
+        from={string.banner_context.HOME}
+        healthCredits={healthCredits}
+        onPurchaseWithHCCallback={(res: any) => {
+          fireCirclePurchaseEvent(
+            currentPatient,
+            res?.data?.CreateUserSubscription?.response?.end_date
+          );
+          planPurchasedcr.current =
+            res?.data?.CreateUserSubscription?.response?.status === 'PAYMENT_FAILED' ? false : true;
+          planValiditycr.current = res?.data?.CreateUserSubscription?.response?.end_date;
+
+          setShowCircleActivationcr(true);
+        }}
+      />
+    );
+  };
+
+  const renderCircleActivation = () => (
+    <CircleMembershipActivation
+      visible={showCircleActivationcr}
+      closeModal={(planActivated) => {
+        setShowCircleActivationcr(false);
+      }}
+      defaultCirclePlan={{}}
+      navigation={props.navigation}
+      circlePaymentDone={planPurchasedcr.current}
+      circlePlanValidity={{ endDate: planValiditycr.current }}
+      source={'Consult'}
+      from={string.banner_context.MEMBERSHIP_DETAILS}
+    />
+  );
+
+  const getMobileURL = (url: string) => {
+    const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+    const txt = url.split(ext)[0];
+    const path = txt.split('/');
+    path.pop();
+    const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+    const mPath = path.join('/').concat('/d_'.concat(name).concat(ext));
+    return mPath;
+  };
+
+  const onClickCircleBenefits = (
+    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring',
+    action: any
+  ) => {
+    postCircleWEGEvent(
+      currentPatient,
+      membershipState,
+      action,
+      circlePlanValidity,
+      circleSubscriptionId
+    );
+  };
+
+  const renderCircle = () => {
+    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
+    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
+    renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
+    const darktheme = circleStatus === 'disabled' ? true : false;
+
+    const cardlist = dataBannerCards(darktheme);
+
+    {
+      /**
+       * CircleTypeCard1 && CircleTypeCard2 -> expiring in x days
+       * CircleTypeCard3 && CircleTypeCard4 -> active plans
+       * CircleTypeCard5 && CircleTypeCard6 -> expired plans
+       */
+    }
+    return (
+      <View style={styles.circleContainer}>
+        {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
+          <CircleTypeCard1
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('About to Expire', 'renew');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expiry={circlePlanValidity?.expiry}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && renew ? (
+          <CircleTypeCard2
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('About to Expire', 'renew');
+            }}
+            credits={healthCredits}
+            expiry={circlePlanValidity?.expiry}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
+          <CircleTypeCard3
+            onButtonPress={() => {
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+              });
+            }}
+            credits={healthCredits}
+            savings={circleSavings}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
+          <CircleTypeCard4
+            onButtonPress={() => {
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+              });
+            }}
+            credits={healthCredits}
+            savings={circleSavings}
+          />
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
+          <CircleTypeCard5
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('Expired', 'renew');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expired={expired}
+          />
+        ) : circleStatus === 'disabled' ? (
+          <CircleTypeCard6
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('Expired', 'renew');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expired={expired}
+          />
+        ) : null}
+
+        {cardlist?.length > 0 ? (
+          <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
+            {circleDataLoading && (
+              <Spinner
+                style={{ backgroundColor: 'transparent' }}
+                spinnerProps={{ size: 'small' }}
+              />
+            )}
+
+            <View style={styles.circleButtonLeft}>
+              <ImageBackground
+                style={styles.circleButtonImage}
+                source={require('../ui/icons/PathLeft.png')}
+              />
+            </View>
+
+            <FlatList
+              horizontal={true}
+              data={cardlist}
+              renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
+              keyExtractor={(item, index) => index.toString() + 'circle'}
+            />
+
+            <View style={styles.circleButtonRight}>
+              <ImageBackground
+                style={styles.circleButtonImage}
+                source={require('../ui/icons/PathRight.png')}
+              />
+            </View>
+          </View>
+        ) : null}
+
+        <View style={styles.circleRowsContainer}>
+          {expiry > 0 && circleSavings <= 0 ? (
+            <Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                Circle Member{' '}
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
+                saves ₹848 per month.
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                {' '}
+                You can too{renew ? ' - Renew now!' : '.'}
+              </Text>
+            </Text>
+          ) : circleStatus === 'disabled' ? (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+              You’re missing out on benefits - Renew your membership now!!!{' '}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    );
   };
 
   const renderCovidMainView = () => {
@@ -1955,8 +2752,65 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
           {renderContent(string.common.healthBlog, string.common.healthBlogDescription)}
-          {renderContent(string.common.covid19VaccineInfo, string.common.covidDescription)}
           {renderCovidHelpButtons()}
+        </View>
+      </View>
+    );
+  };
+  // Read Article Container Styling
+  const renderReadArticleContent = () => {
+    return (
+      <CovidButton
+        iconBase={LatestArticle}
+        title={string.common.readLatestArticles}
+        onPress={() => onPressReadArticles()}
+      />
+    );
+  };
+
+  // Covid Information Container styling
+  const renderCovidContainer = () => {
+    return (
+      <View style={styles.covidContainer}>
+        <View style={styles.covidTitleContainer}>
+          <CovidOrange style={styles.covidIcon} />
+          <Text style={styles.covidTitle}>For COVID-19 Vaccination related queries</Text>
+        </View>
+        <View style={styles.covidSubContainer}>
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={styles.covidBtn}
+            btnTitleStyle={styles.covidBtnTitle}
+            iconBase={FaqsArticles}
+            title={string.common.faqsArticles}
+            onPress={() => onPressFAQ()}
+          />
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
+            btnTitleStyle={styles.covidBtnTitle}
+            iconBase={PhoneDoctor}
+            title={string.common.callDoctor}
+            onPress={() => onPressCallDoctor()}
+          />
+        </View>
+        <View style={[styles.covidSubContainer, { marginBottom: 15 }]}>
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={styles.covidBtn}
+            btnTitleStyle={styles.covidBtnTitle}
+            iconBase={ChatBot}
+            title={string.common.chatWithUs}
+            onPress={() => onPressChatWithUS()}
+          />
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
+            iconBase={VaccineTracker}
+            btnTitleStyle={styles.covidBtnTitle}
+            title={string.common.covidVaccineTracker}
+            onPress={() => onPressVaccineTracker()}
+          />
         </View>
       </View>
     );
@@ -1969,10 +2823,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18), marginTop: 16 }}>
           {description}
         </Text>
-        {renderContentButton(title)}
-        {title === string.common.covid19VaccineInfo
-          ? renderContentButton(string.common.covidVaccineTracker)
-          : null}
+        {renderReadArticleContent()}
         {renderDashedLine()}
       </View>
     );
@@ -1980,6 +2831,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderDashedLine = () => {
     return <DashedLine style={styles.plainLine} />;
+  };
+
+  const onPressChatWithUS = () => {
+    postHomeWEGEvent(WebEngageEventName.VACCINATION_CHAT_WITH_US);
+    try {
+      const openUrl = AppConfig.Configuration.CHAT_WITH_US;
+      props.navigation.navigate(AppRoutes.CommonWebView, {
+        url: openUrl,
+      });
+    } catch (e) {}
+  };
+
+  const onPressCallDoctor = async () => {
+    postHomeWEGEvent(WebEngageEventName.VACCINATION_CALL_A_DOCTOR_CLICKED);
+    setShowHdfcConnectPopup(true);
   };
 
   const renderCovidHelpButtons = () => {
@@ -2023,75 +2889,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderContentButton = (title: string) => {
-    const btnTitle =
-      title === string.common.covidVaccineTracker
-        ? string.common.covidVaccineTracker
-        : title === string.common.healthBlog
-        ? string.common.readLatestArticles
-        : title === string.common.covid19VaccineInfo
-        ? string.common.learnAboutCovid
-        : '';
-    return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        style={{
-          shadowColor: '#4c808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.4,
-          shadowRadius: 5,
-          elevation: 5,
-          backgroundColor: '#fff',
-          flexDirection: 'row',
-          height: 0.06 * height,
-          marginTop: 16,
-          borderRadius: 10,
-          flex: 1,
-        }}
-        onPress={() => {
-          btnTitle === string.common.covidVaccineTracker
-            ? onPressVaccineTracker()
-            : btnTitle === string.common.readLatestArticles
-            ? onPressReadArticles()
-            : btnTitle === string.common.learnAboutCovid
-            ? onPressLearnAboutCovid()
-            : null;
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          {btnTitle === string.common.covidVaccineTracker ? (
-            <CovidRiskLevel style={{ width: 20, height: 20 }} />
-          ) : btnTitle === string.common.readLatestArticles ? (
-            <LatestArticle style={{ width: 20, height: 20 }} />
-          ) : btnTitle === string.common.learnAboutCovid ? (
-            <CovidOrange style={{ width: 20, height: 20 }} />
-          ) : null}
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
-            {btnTitle}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   const onPressReadArticles = () => {
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
@@ -2103,30 +2900,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressVaccineTracker = () => {
-    postHomeWEGEvent(WebEngageEventName.COVID_VACCINE_TRACKER);
+    postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
     try {
       const userMobNo = g(currentPatient, 'mobileNumber');
       const openUrl = `${AppConfig.Configuration.COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
-      console.log('openUrl', openUrl);
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });
     } catch (e) {}
   };
 
-  const onPressLearnAboutCovid = async () => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
-    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL.concat(
-      '&utm_token=',
-      currentDeviceToken,
-      '&utm_mobile_number=',
-      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
-    );
-
-    postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
+  const onPressFAQ = async () => {
+    postHomeWEGEvent(WebEngageEventName.FAQs_ARTICLES_CLICKED);
     props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: covidUrlWithPrm,
+      covidUrl: AppConfig.Configuration.COVID_UPDATES,
     });
   };
 
@@ -2198,53 +2985,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
       } catch (e) {}
     }
-  };
-
-  const renderCovidScanBanner = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={() => {
-          {
-            props.navigation.navigate(AppRoutes.CovidScan);
-          }
-        }}
-        style={{
-          height: 0.06 * height,
-          marginHorizontal: 20,
-          marginTop: 16,
-          borderRadius: 10,
-          flex: 1,
-          flexDirection: 'row',
-          backgroundColor: '#02475b',
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Scan style={{ height: 28, width: 21 }} />
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
-            {AppConfig.Configuration.HOME_SCREEN_COVIDSCAN_BANNER_TEXT}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -2345,26 +3085,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {isCircleMember === 'yes' && renderCircle()}
+              </View>
+              {showCirclePlans && renderCircleSubscriptionPlans()}
+              {showCircleActivationcr && renderCircleActivation()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderCovidContainer()}</View>
               {renderCovidMainView()}
-              {/* {renderCovidHeader()}
-              {renderCovidCardView()} 
-              {renderCovidScanBanner()}
-              {renderEmergencyCallBanner()}*/}
             </View>
           </View>
-          {/* <View style={{ backgroundColor: '#f0f1ec' }}>
-            <NeedHelpAssistant
-              containerStyle={{ marginTop: 16, marginBottom: 32 }}
-              navigation={props.navigation}
-              onNeedHelpPress={() => {
-                postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');
-              }}
-            />
-          </View> */}
         </ScrollView>
       </SafeAreaView>
+      {showWebView?.action && openWebView(showWebView?.url)}
       {renderBottomTabBar()}
       {showPopUp && (
         <>
@@ -2406,6 +3140,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       )}
       <NotificationListener navigation={props.navigation} />
+      <Overlay
+        isVisible={showHdfcConnectPopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
+        overlayStyle={styles.overlayStyle}
+        onRequestClose={() => setShowHdfcConnectPopup(false)}
+      >
+        <HdfcConnectPopup
+          helplineNumber={'040-482-12515'}
+          onClose={() => setShowHdfcConnectPopup(false)}
+          isVaccineDocOnCall={true}
+          postWEGEvent={() =>
+            postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED)
+          }
+        />
+      </Overlay>
     </View>
   );
 };

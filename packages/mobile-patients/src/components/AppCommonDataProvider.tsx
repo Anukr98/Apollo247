@@ -134,6 +134,12 @@ export interface TotalCircleSavings {
   callsUsed: number;
 }
 
+export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
+
+export interface PharmacyUserTypeEvent {
+  User_Type: PharmaUserStatus;
+}
+
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
@@ -151,6 +157,8 @@ export interface AppCommonDataContextProps {
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
   bannerData: bannerType[] | null;
   setBannerData: ((items: bannerType[]) => void) | null;
+  bannerDataHome: bannerType[] | null;
+  setBannerDataHome: ((items: bannerType[]) => void) | null;
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
   diagnosticLocation: LocationData | null;
@@ -168,8 +176,8 @@ export interface AppCommonDataContextProps {
   locationForDiagnostics: DiagnosticData | null;
   diagnosticServiceabilityData: DiagnosticData | null;
   setDiagnosticServiceabilityData: ((items: DiagnosticData) => void) | null;
-  isDiagnosticLocationServiceable?: string;
-  setDiagnosticLocationServiceable: ((value: string) => void) | null;
+  isDiagnosticLocationServiceable?: boolean;
+  setDiagnosticLocationServiceable: ((value: boolean) => void) | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
   generalPhysicians: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
@@ -214,12 +222,19 @@ export interface AppCommonDataContextProps {
   setAxdcCode: ((value: string) => void) | null;
   circlePlanId: string;
   setCirclePlanId: ((value: string) => void) | null;
+  healthCredits: number;
+  setHealthCredits: ((value: number) => void) | -1;
+  isRenew: boolean;
+  setIsRenew: ((value: boolean) => void) | false;
   hdfcPlanId: string;
   setHdfcPlanId: ((value: string) => void) | null;
   circleStatus: string;
   setCircleStatus: ((value: string) => void) | null;
   hdfcStatus: string;
   setHdfcStatus: ((value: string) => void) | null;
+  pharmacyUserType: PharmaUserStatus;
+  setPharmacyUserType: ((type: PharmaUserStatus) => void) | null;
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -235,6 +250,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCircleSubscription: null,
   bannerData: null,
   setBannerData: null,
+  bannerDataHome: null,
+  setBannerDataHome: null,
   locationDetails: null,
   pharmacyLocation: null,
   setLocationDetails: null,
@@ -252,7 +269,7 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   locationForDiagnostics: null,
   diagnosticServiceabilityData: null,
   setDiagnosticServiceabilityData: null,
-  isDiagnosticLocationServiceable: '',
+  isDiagnosticLocationServiceable: false,
   setDiagnosticLocationServiceable: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
@@ -290,12 +307,19 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setAxdcCode: null,
   circlePlanId: '',
   setCirclePlanId: null,
+  healthCredits: -1,
+  setHealthCredits: null,
+  isRenew: false,
+  setIsRenew: null,
   hdfcPlanId: '',
   setHdfcPlanId: null,
   circleStatus: '',
   setCircleStatus: null,
   hdfcStatus: '',
   setHdfcStatus: null,
+  pharmacyUserType: '',
+  setPharmacyUserType: null,
+  pharmacyUserTypeAttribute: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -327,6 +351,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   >(null);
 
   const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
+  const [bannerDataHome, _setBannerDataHome] = useState<AppCommonDataContextProps['bannerDataHome']>(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
@@ -352,7 +377,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['diagnosticServiceabilityData']
   >(null);
 
-  const [isDiagnosticLocationServiceable, _setDiagnosticLocationServiceable] = useState<
+  const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
     AppCommonDataContextProps['isDiagnosticLocationServiceable']
   >();
 
@@ -432,6 +457,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setBannerData(bannerData);
   };
+  const setBannerDataHome: AppCommonDataContextProps['setBannerDataHome'] = (bannerData) => {
+    _setBannerDataHome(bannerData);
+  };
 
   const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
     pharmacyLocation
@@ -451,23 +479,28 @@ export const AppCommonDataProvider: React.FC = (props) => {
     });
   };
 
-  const setDiagnosticLocationServiceable: AppCommonDataContextProps['setDiagnosticLocationServiceable'] = (
-    diagnosticLocation
-  ) => {
-    _setDiagnosticLocationServiceable(diagnosticLocation);
-    AsyncStorage.setItem(
-      'diagnosticPinCodeServiceability',
-      JSON.stringify(diagnosticLocation)
-    ).catch(() => {
-      console.log('Failed to save diagnostic pincode serviceablity in local storage.');
-    });
-  };
+  // const setDiagnosticLocationServiceable: AppCommonDataContextProps['setDiagnosticLocationServiceable'] = (
+  //   diagnosticLocation
+  // ) => {
+  //   // _setDiagnosticLocationServiceable(diagnosticLocation);
+  //   AsyncStorage.setItem(
+  //     'diagnosticPinCodeServiceability',
+  //     JSON.stringify(diagnosticLocation)
+  //   ).catch(() => {
+  //     console.log('Failed to save diagnostic pincode serviceablity in local storage.');
+  //   });
+  // };
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
+  const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>('');
+  const [isRenew, setIsRenew] = useState<AppCommonDataContextProps['isRenew']>('');
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
+  const [pharmacyUserType, setPharmacyUserType] = useState<
+    AppCommonDataContextProps['pharmacyUserType']
+  >('');
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
@@ -480,6 +513,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [allNotifications, setAllNotifications] = useState<any[]>([]);
   const [isSelected, setisSelected] = useState<any[]>([]);
   const [isUHID, setisUHID] = useState<string[]>([]);
+
+  const pharmacyUserTypeAttribute: PharmacyUserTypeEvent = {
+    User_Type: pharmacyUserType,
+  };
 
   useEffect(() => {
     // update location from async storage the very first time app opened
@@ -499,7 +536,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
-        _setDiagnosticLocationServiceable(JSON.parse(diagnosticPinCodeServiceability || 'null'));
+        // _setDiagnosticLocationServiceable(JSON.parse(diagnosticPinCodeServiceability || 'null'));
       } catch (error) {
         console.log('Failed to get location from local storage.');
       }
@@ -526,6 +563,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCircleSubscription,
         bannerData,
         setBannerData,
+        bannerDataHome,
+        setBannerDataHome,
         pharmacyLocation,
         setPharmacyLocation,
         diagnosticLocation,
@@ -577,12 +616,19 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setAxdcCode,
         circlePlanId,
         setCirclePlanId,
+        healthCredits,
+        setHealthCredits,
+        isRenew,
+        setIsRenew,
         hdfcPlanId,
         setHdfcPlanId,
         circleStatus,
         setCircleStatus,
         hdfcStatus,
         setHdfcStatus,
+        pharmacyUserType,
+        setPharmacyUserType,
+        pharmacyUserTypeAttribute,
       }}
     >
       {props.children}

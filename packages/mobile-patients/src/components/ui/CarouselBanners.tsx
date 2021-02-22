@@ -61,7 +61,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { bannerData, hdfcUserSubscriptions, circleSubscription } = useAppCommonData();
+  const { bannerData, hdfcUserSubscriptions, circleSubscription, hdfcStatus } = useAppCommonData();
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(
     circleActivated || false
   );
@@ -427,10 +427,17 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
           props.navigation.navigate('TESTS');
         } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
-          props.navigation.navigate(AppRoutes.MembershipDetails, {
-            membershipType: g(hdfcUserSubscriptions, 'name'),
-            isActive: g(hdfcUserSubscriptions, 'isActive'),
-          });
+          if (hdfcUserSubscriptions != null && hdfcStatus == 'active') {
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: g(hdfcUserSubscriptions, 'name'),
+              isActive: g(hdfcUserSubscriptions, 'isActive'),
+            });
+          } else {
+            const openUrl = AppConfig.Configuration.HDFC_HEALTHY_LIFE_URL;
+            props.navigation.navigate(AppRoutes.CovidScan, {
+              covidUrl: openUrl,
+            });
+          }
         } else if (action == hdfc_values.DIETECIAN_LANDING) {
           props.navigation.navigate('DoctorSearchListing', {
             specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
@@ -543,6 +550,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const showBanner = bannerData && bannerData.length ? true : false;
+  const datatoshow = bannerData?.filter((i) => i?.banner_display_type === 'banner');
   if (showBanner) {
     return (
       <View style={{ marginTop: 5, flex: 1 }}>
@@ -550,16 +558,16 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         {showCirclePlans && renderCircleSubscriptionPlans()}
         <Carousel
           onSnapToItem={setSlideIndex}
-          data={bannerData}
+          data={datatoshow}
           renderItem={renderHdfcSliderItem}
           sliderWidth={width}
           itemWidth={width}
           loop={true}
           autoplay={true}
         />
-        {bannerData && bannerData.length > 1 ? (
+        {datatoshow && datatoshow.length > 0 ? (
           <View style={styles.sliderDotsContainer}>
-            {bannerData?.map((_, index) =>
+            {datatoshow?.map((_, index) =>
               index == slideIndex ? renderDot(true) : renderDot(false)
             )}
           </View>

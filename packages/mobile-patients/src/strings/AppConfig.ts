@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -72,12 +72,13 @@ const appStaticVariables = {
   TAT_API_RESPONSE_DATE_FORMAT: 'DD-MMM-YYYY HH:mm',
   CASESHEET_PRESCRIPTION_DATE_FORMAT: 'DD MMM YYYY',
   CASESHEET_PRESCRIPTION_TIME_FORMAT: 'hh:mm A',
-  DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
+  DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 120, // slots visible after this period for current date (APP-7687)
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
+  DIAGNOSTIC_COVID_MAX_SLOT_TIME: '15:00',
+  DIAGNOSTIC_COVID_MIN_SLOT_TIME: '10:00',
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
-  PACKAGING_CHARGES: 0,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
   EXOTEL_CALL_API_URL:
@@ -92,6 +93,8 @@ const appStaticVariables = {
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
   MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
+  CHAT_WITH_US: 'https://www.apollo247.com/chat/chat-bot-vaccine.html',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
@@ -113,6 +116,9 @@ const appStaticVariables = {
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   EXPRESS_MAXIMUM_HOURS: 6,
+  PACKAGING_CHARGES: 0,
+  MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
+  COVID_UPDATES: 'https://www.apollo247.com/blog/coronavirus-updates',
 };
 
 const DEV_top_specialties = [
@@ -265,12 +271,36 @@ const Apollo247Config = {
   },
 };
 
+export const ReturnOrderSubReason = [
+  {
+    subReasonID: 1,
+    subReason: 'Damaged Items',
+  },
+  {
+    subReasonID: 2,
+    subReason: 'Wrong Items were delivered',
+  },
+  {
+    subReasonID: 3,
+    subReason: 'Wrong quantity received',
+  },
+  {
+    subReasonID: 4,
+    subReason: 'Items are near expiry date',
+  },
+  {
+    subReasonID: 5,
+    subReason: 'Other issues',
+  },
+];
+
 export const NeedHelp = [
   {
     category: 'Pharmacy',
     id: 'pharmacy',
-    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
+    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8],
     options: [
+      'I want to return my order',
       'I would like to cancel the order!',
       'I would like to know the Delivery status of my order.',
       'I need to know why my order was cancelled',
@@ -448,6 +478,8 @@ const PharmaApiConfig = {
     ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
     SPECIAL_OFFERS_CATEGORY_ID: '42372',
+    MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
+    DELIVERY_CHARGES: 50,
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -488,6 +520,8 @@ const PharmaApiConfig = {
     ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
     SPECIAL_OFFERS_CATEGORY_ID: '2255',
+    MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
+    DELIVERY_CHARGES: 50,
   },
 };
 
@@ -509,20 +543,19 @@ const ConfigurationDev = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -531,7 +564,7 @@ const ConfigurationDev = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
@@ -540,7 +573,9 @@ const ConfigurationDev = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
+  jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // QA
@@ -561,21 +596,20 @@ const ConfigurationQA = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -584,8 +618,8 @@ const ConfigurationQA = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
-  BLOG_URL: 'https://www.apollo247.com/blog',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://aph-staging-web-patients.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
@@ -593,7 +627,9 @@ const ConfigurationQA = {
   APOLLO_PRO_HEALTH_URL:
     'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
+  jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // QA2
@@ -614,21 +650,20 @@ const ConfigurationQA2 = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -637,7 +672,7 @@ const ConfigurationQA2 = {
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
@@ -646,7 +681,9 @@ const ConfigurationQA2 = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
+  jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // QA3
@@ -667,21 +704,20 @@ const ConfigurationQA3 = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -690,10 +726,12 @@ const ConfigurationQA3 = {
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
+  jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 
 // VAPT
@@ -714,21 +752,20 @@ const ConfigurationVAPT = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -737,7 +774,7 @@ const ConfigurationVAPT = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
@@ -746,7 +783,9 @@ const ConfigurationVAPT = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
+  jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
 };
 //Production
 const ConfigurationProd = {
@@ -766,8 +805,6 @@ const ConfigurationProd = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://base.apolloprism.com',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
@@ -781,6 +818,7 @@ const ConfigurationProd = {
   ...appStaticVariables,
   ...Apollo247Config.prod,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -798,7 +836,9 @@ const ConfigurationProd = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462],
 };
 
 //PERFORMANCE
@@ -819,21 +859,20 @@ const ConfigurationPERFORM = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -843,7 +882,7 @@ const ConfigurationPERFORM = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
@@ -852,7 +891,8 @@ const ConfigurationPERFORM = {
   APOLLO_PRO_HEALTH_URL:
     'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
+  jusPayenvironment: 'sandbox',
 };
 
 //DevelopmentReplica
@@ -873,21 +913,20 @@ const ConfigurationDevReplica = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   NEED_HELP: NeedHelp,
+  RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -897,7 +936,7 @@ const ConfigurationDevReplica = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
-  COVID_VACCINE_TRACKER_URL: 'https://aph-staging-web-patients.apollo247.com/covid-vaccine-tracker',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
@@ -906,7 +945,8 @@ const ConfigurationDevReplica = {
   APOLLO_PRO_HEALTH_URL:
     'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
-  jusPayenvironment: 'prod',
+  PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
+  jusPayenvironment: 'sandbox',
 };
 
 const Configuration =
@@ -1067,6 +1107,75 @@ export const DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS = [
   REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
 ];
 
+export const DIAGNOSTIC_COMPLETED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  REFUND_STATUSES.SUCCESS,
+];
+
+export const DIAGNOSTIC_CONFIRMED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+];
+
+export const DIAGNOSTIC_COLLECTION_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+];
+
+export const DIAGNOSTIC_LAB_COLLECTION_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+];
+
+export const DIAGNOSTIC_LAB_TESTING_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
+export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
+  'ORDER_CANCELLED_AFTER_REGISTRATION',
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  REFUND_STATUSES.PENDING,
+  REFUND_STATUSES.SUCCESS,
+];
+
+export const DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW = [
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  'SAMPLE_NOT_COLLECTED_IN_LAB',
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  'ORDER_CANCELLED_AFTER_REGISTRATION',
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+];
+
 export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
 
 export const TestsNewFeedbackData = {
@@ -1160,6 +1269,58 @@ export const CancelConsultation = {
     string.ReasonFor_Cancel_Consultation.otherReasons,
   ],
 };
+
+export const stepsToBookArray = [
+  {
+    heading: string.diagnostics.bookOnline,
+    subtext: string.diagnostics.bookOnlineSubText,
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_1.png'),
+  },
+  {
+    heading: string.diagnostics.hcSample,
+    subtext: string.diagnostics.hcSampleSubText,
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_2.png'),
+  },
+  {
+    heading: string.diagnostics.fastReport,
+    subtext: string.diagnostics.fastReportSubText,
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_3.png'),
+  },
+];
+
+export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  'ORDER_CANCELLED_AFTER_REGISTRATION',
+];
+
+export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  'ORDER_CANCELLED_AFTER_REGISTRATION',
+];
 
 type SpecialitiesType = {
   [key: string]: string[];
