@@ -532,33 +532,57 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     clickedItem?: string | null,
     inputString?: string,
     doctors?: any,
-    searchSpecialities?: any,
-    procedures?: any,
-    symptoms?: any
+    specialities?: any,
+    searchedProcedures?: any,
+    searchedSymptoms?: any
   ) => {
-    const doctorsList =
+    const doctorsSearchedList =
       doctors?.map((item: any) => {
         return item?.displayName;
-      }) || [];
-    const doctorBucket = doctorsList?.length > 0 ? 'Doctor, ' : '';
+      }) ||
+      doctorsList?.map((item: any) => {
+        return item?.displayName;
+      }) ||
+      [];
+    const doctorIds =
+      doctors?.map((item: any) => {
+        return item?.id;
+      }) ||
+      doctorsList?.map((item: any) => {
+        return item?.id;
+      }) ||
+      [];
+    const doctorBucket = doctorsSearchedList?.length > 0 ? 'Doctor, ' : '';
     const specialitiesList =
+      specialities?.map((item: any) => {
+        return item?.name;
+      }) ||
       searchSpecialities?.map((item: any) => {
         return item?.name;
-      }) || [];
+      }) ||
+      [];
     const specialityBucket = specialitiesList?.length > 0 ? 'Speciality, ' : '';
     const proceduresList =
+      searchedProcedures?.map((item: any) => {
+        return item?.name;
+      }) ||
       procedures?.map((item: any) => {
         return item?.name;
-      }) || [];
+      }) ||
+      [];
     const procedureBucket = proceduresList?.length > 0 ? 'Procedure, ' : '';
     const symptomsList =
+      searchedSymptoms?.map((item: any) => {
+        return item?.name;
+      }) ||
       symptoms?.map((item: any) => {
         return item?.name;
-      }) || [];
+      }) ||
+      [];
     const symptomBucket = symptomsList?.length > 0 ? 'Symptoms' : '';
     const searchSuggestions = [
       ...specialitiesList,
-      ...doctorsList,
+      ...doctorsSearchedList,
       ...proceduresList,
       ...symptomsList,
     ]?.join(', ');
@@ -582,8 +606,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Search Suggestions': searchSuggestions || savedSearchedSuggestions,
       Bucket: bucket || searchedBucket,
       'Search Suggestion Clicked': clickedItem || '',
+      Doctors: doctorIds?.join(', '),
+      Symptoms: symptomsList?.join(', '),
+      Specialities: specialitiesList?.join(', '),
+      Procedures: proceduresList?.join(', '),
     };
-    postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS, eventAttributes);
+    if (clickedItem) {
+      // search suggestions clicked event
+      postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS_CLICKED, eventAttributes);
+    } else {
+      // searched suggestions event
+      postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS, eventAttributes);
+    }
   };
 
   const postViewAllWebEngageEvent = (
