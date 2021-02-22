@@ -222,6 +222,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   }, []);
 
   useEffect(() => {
+    checkServicability(selectedAddress!, false);
     nonCartAvailabilityTat(selectedAddress?.zipcode);
   }, [selectedAddress]);
 
@@ -230,6 +231,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     const addressLength = addresses.length;
     if (!!addressLength && !!newAddressAdded) {
       const newAddress = addresses?.filter((value) => value?.id === newAddressAdded);
+      checkServicability(newAddress?.[0]?.zipcode, false);
       nonCartAvailabilityTat(newAddress?.[0]?.zipcode);
       setNewAddressAdded && setNewAddressAdded('');
     }
