@@ -101,6 +101,7 @@ export enum WebEngageEventName {
   RETURN_REQUEST_START = 'Return Request Start',
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
   HOME_VIEWED = 'Home page viewed',
+  MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
