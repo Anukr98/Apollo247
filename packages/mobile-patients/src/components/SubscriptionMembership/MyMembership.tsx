@@ -719,7 +719,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         </View>
         {!!planBenefits?.length &&
           renderCardBody(planBenefits, subscription?.name, isCanUpgradeToPlan, isCircleExpiredPlan)}
-        {isCircleExpiredPlan
+        {isCircleExpiredPlan || isRenew
           ? renderUpgradeButton()
           : renderBottomButtons(isactive, subscription?.name, isCanUpgradeToPlan)}
       </View>
