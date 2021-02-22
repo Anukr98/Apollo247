@@ -536,49 +536,24 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     searchedProcedures?: any,
     searchedSymptoms?: any
   ) => {
-    const doctorsSearchedList =
-      doctors?.map((item: any) => {
-        return item?.displayName;
-      }) ||
-      doctorsList?.map((item: any) => {
-        return item?.displayName;
-      }) ||
-      [];
-    const doctorIds =
-      doctors?.map((item: any) => {
-        return item?.id;
-      }) ||
-      doctorsList?.map((item: any) => {
-        return item?.id;
-      }) ||
-      [];
+    const doctorsSearchedList = (doctors || doctorsList || [])?.map((item: any) => {
+      return item?.displayName;
+    });
+    const doctorIds = (doctors || doctorsList || [])?.map((item: any) => {
+      return item?.id;
+    });
     const doctorBucket = doctorsSearchedList?.length > 0 ? 'Doctor, ' : '';
-    const specialitiesList =
-      specialities?.map((item: any) => {
-        return item?.name;
-      }) ||
-      searchSpecialities?.map((item: any) => {
-        return item?.name;
-      }) ||
-      [];
+    const specialitiesList = (specialities || searchSpecialities || [])?.map((item: any) => {
+      return item?.name;
+    });
     const specialityBucket = specialitiesList?.length > 0 ? 'Speciality, ' : '';
-    const proceduresList =
-      searchedProcedures?.map((item: any) => {
-        return item?.name;
-      }) ||
-      procedures?.map((item: any) => {
-        return item?.name;
-      }) ||
-      [];
+    const proceduresList = (searchedProcedures || procedures || [])?.map((item: any) => {
+      return item?.name;
+    });
     const procedureBucket = proceduresList?.length > 0 ? 'Procedure, ' : '';
-    const symptomsList =
-      searchedSymptoms?.map((item: any) => {
-        return item?.name;
-      }) ||
-      symptoms?.map((item: any) => {
-        return item?.name;
-      }) ||
-      [];
+    const symptomsList = (searchedSymptoms || symptoms || [])?.map((item: any) => {
+      return item?.name;
+    });
     const symptomBucket = symptomsList?.length > 0 ? 'Symptoms' : '';
     const searchSuggestions = [
       ...specialitiesList,
