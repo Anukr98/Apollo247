@@ -829,6 +829,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  //to be called only when the user moved away from homepage
+  const logHomePageMovedAway = async () => {
+    const isMovedAwayFromHome = await AsyncStorage.getItem('APP_OPENED');
+    if (isMovedAwayFromHome) {
+      postHomeWEGEvent(WebEngageEventName.MOVED_AWAY_FROM_HOME);
+      try {
+        AsyncStorage.removeItem('APP_OPENED');
+      } catch (error) {
+        CommonBugFender('ConsultRoom_logHomePageMovedAwayError', error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (currentPatient?.id) {
       saveDeviceNotificationToken(currentPatient.id);
@@ -908,13 +921,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
+      logHomePageMovedAway();
     });
-
-    try {
-      AsyncStorage.removeItem('APP_OPENED');
-    } catch (error) {
-      CommonBugFender('ConsultRoom_getAppOpenedKeyReadError', error);
-    }
 
     return () => {
       didBlur && didBlur.remove();
