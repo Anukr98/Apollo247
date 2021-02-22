@@ -924,7 +924,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                       currentPatient?.patientMedicalHistory?.height?.includes('’') ||
                         currentPatient?.patientMedicalHistory?.height?.includes("'")
                         ? currentPatient?.patientMedicalHistory?.height
-                        : currentPatient?.patientMedicalHistory?.height + ' cm'
+                        : currentPatient?.patientMedicalHistory?.height + ' cms'
                     )
                   : patientTextView('-')}
               </View>
