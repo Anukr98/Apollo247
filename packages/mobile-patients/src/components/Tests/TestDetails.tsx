@@ -29,7 +29,7 @@ import {
   filterHtmlContent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   SafeAreaView,
@@ -165,6 +165,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     pharmacyCircleAttributes,
     deliveryAddressId,
   } = useShoppingCart();
+
   const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
@@ -182,8 +183,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
-  console.log({ deliveryAddressId });
-  console.log({ diagnosticDeliveryAddressId });
 
   const itemName =
     testDetails?.ItemName ||
@@ -193,11 +192,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     '';
 
   const hdfc_values = string.Hdfc_values;
-  aphConsole.log('currentItemId : ' + itemId);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
+  const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -229,7 +228,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
-      console.log({ result });
       setCmsTestDetails(result);
       setLoadingContext?.(false);
 
@@ -375,9 +373,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     },
   };
 
+  const scrollToTop = () => {
+    scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+  };
+
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
+      scrollToTop();
+
       if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
@@ -609,7 +613,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderPriceView = () => {
-    console.log({ testInfo });
     //if coming from anywhere other than cart page
     //check other conidtions
     const slashedPrice =
@@ -1025,7 +1028,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         <>
           {renderHeader()}
           {renderBreadCrumb()}
-          <ScrollView bounces={false} keyboardDismissMode="on-drag" style={{ marginBottom: 60 }}>
+          <ScrollView
+            bounces={false}
+            keyboardDismissMode="on-drag"
+            style={{ marginBottom: 60 }}
+            ref={scrollViewRef}
+          >
             {!!testInfo && !!cmsTestDetails && renderItemCard()}
             {renderWhyBookUs()}
             {renderDescriptionCard()}
