@@ -118,7 +118,7 @@ const appStaticVariables = {
   EXPRESS_MAXIMUM_HOURS: 6,
   PACKAGING_CHARGES: 0,
   MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
-  COVID_UPDATES: 'https://www.apollo247.com/blog/coronavirus-updates',
+  COVID_UPDATES: 'https://www.apollo247.com/blog/vaccine-tracker',
 };
 
 const DEV_top_specialties = [
