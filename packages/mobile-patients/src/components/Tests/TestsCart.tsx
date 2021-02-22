@@ -2386,7 +2386,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
-          console.log({ data });
           // in case duplicate test, price mismatch, address mismatch, slot issue
           if (!data?.saveDiagnosticBookHCOrder?.status) {
             let message =
@@ -2539,7 +2538,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       let remainingPackageDuplicateItemId = remainingPackageDuplicateItems?.map((item: any) =>
         Number(item?.itemId)
       );
-      console.log({ remainingPackageDuplicateItemId });
       let finalRemovalId = [...itemIdRemove, remainingPackageDuplicateItemId]?.flat(1);
 
       setLoading?.(true);
@@ -2606,8 +2604,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ?.filter((item: any) => newItems?.includes(item?.itemId))
           .sort((a: any, b: any) => b?.price - a?.price);
 
-        console.log({ getDuplicateItems });
-
         const itemsToRemove = getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
         const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
 
@@ -2634,11 +2630,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ? !!cItem?.name && nameFormater(cItem?.name, 'default')
             : ''
         );
-        console.log({ highPricesItem });
         const higherPricesName = highPricesItem?.filter((item: any) => item != '')?.join(', ');
         const duplicateTests = array?.[0]?.removalName;
-        console.log({ higherPricesName });
-        let arrayToSet = [...duplicateNameArray, array].flat(1);
+
+        let arrayToSet = [...duplicateNameArray, array]?.flat(1);
         onChangeCartItems(updatedCartItems);
         setShowInclusions(true);
         setDuplicateNameArray(arrayToSet);

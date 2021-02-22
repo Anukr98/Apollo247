@@ -2,12 +2,10 @@ import {
   AddIcon,
   CheckedIcon,
   CheckUnselectedIcon,
-  CircleLogo,
   DropdownGreen,
   InfoIconRed,
   MedicineIcon,
   MedicineRxIcon,
-  PendingIcon,
   RemoveIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -30,14 +28,12 @@ import {
   isSmallDevice,
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { string } from '../../strings/string';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { colors } from '../../theme/colors';
-import { fonts } from '../../theme/fonts';
-import { Spearator } from './BasicComponents';
-import { CircleHeading } from './CircleHeading';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 const width = Dimensions.get('window').width;
 
 export interface MedicineCardProps {
