@@ -566,7 +566,13 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
-      statusString = 'Order Delivered';
+      statusString = 'Return In-Process';
+      break;
+    case MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED:
+      statusString = 'Delivery Attempted';
+      break;
+    case MEDICINE_ORDER_STATUS.RVP_ASSIGNED:
+      statusString = 'Pick-up Assigned';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
       statusString = 'Order Delivered';
@@ -2537,11 +2543,17 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
   return statusString;
 };
 
-export const getShipmentPrice = (shipmentItems: any) => {
+export const getShipmentPrice = (shipmentItems: any, cartItems: any) => {
   let total = 0;
   if (shipmentItems?.length) {
     shipmentItems?.forEach((order: any) => {
-      total += order?.mrp;
+      let sku = order?.sku;
+      cartItems?.map((item: any) => {
+        if (sku.includes(item?.id)) {
+          const price = item?.price * item?.quantity;
+          total = total + Number(Number(price).toFixed(2));
+        }
+      });
     });
   }
   return total;

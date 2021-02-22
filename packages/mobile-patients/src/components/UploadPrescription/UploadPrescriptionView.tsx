@@ -72,14 +72,15 @@ const styles = StyleSheet.create({
   },
   cameraClickIcon: {
     resizeMode: 'contain',
-    height: 80,
-    width: 80,
+    height: 65,
+    width: 65,
   },
   flexRow: {
     width,
     flexDirection: 'row',
     justifyContent: 'space-around',
     top: -40,
+    marginLeft: 10,
   },
   galleryIcon: {
     resizeMode: 'contain',

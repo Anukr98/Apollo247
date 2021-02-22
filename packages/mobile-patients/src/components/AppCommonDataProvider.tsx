@@ -157,6 +157,8 @@ export interface AppCommonDataContextProps {
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
   bannerData: bannerType[] | null;
   setBannerData: ((items: bannerType[]) => void) | null;
+  bannerDataHome: bannerType[] | null;
+  setBannerDataHome: ((items: bannerType[]) => void) | null;
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
   diagnosticLocation: LocationData | null;
@@ -222,6 +224,8 @@ export interface AppCommonDataContextProps {
   setCirclePlanId: ((value: string) => void) | null;
   healthCredits: number;
   setHealthCredits: ((value: number) => void) | -1;
+  isRenew: boolean;
+  setIsRenew: ((value: boolean) => void) | false;
   hdfcPlanId: string;
   setHdfcPlanId: ((value: string) => void) | null;
   circleStatus: string;
@@ -246,6 +250,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCircleSubscription: null,
   bannerData: null,
   setBannerData: null,
+  bannerDataHome: null,
+  setBannerDataHome: null,
   locationDetails: null,
   pharmacyLocation: null,
   setLocationDetails: null,
@@ -303,6 +309,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCirclePlanId: null,
   healthCredits: -1,
   setHealthCredits: null,
+  isRenew: false,
+  setIsRenew: null,
   hdfcPlanId: '',
   setHdfcPlanId: null,
   circleStatus: '',
@@ -343,6 +351,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   >(null);
 
   const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
+  const [bannerDataHome, _setBannerDataHome] = useState<AppCommonDataContextProps['bannerDataHome']>(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
@@ -448,6 +457,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setBannerData(bannerData);
   };
+  const setBannerDataHome: AppCommonDataContextProps['setBannerDataHome'] = (bannerData) => {
+    _setBannerDataHome(bannerData);
+  };
 
   const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
     pharmacyLocation
@@ -482,6 +494,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
   const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>('');
+  const [isRenew, setIsRenew] = useState<AppCommonDataContextProps['isRenew']>('');
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
@@ -550,6 +563,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCircleSubscription,
         bannerData,
         setBannerData,
+        bannerDataHome,
+        setBannerDataHome,
         pharmacyLocation,
         setPharmacyLocation,
         diagnosticLocation,
@@ -603,6 +618,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCirclePlanId,
         healthCredits,
         setHealthCredits,
+        isRenew,
+        setIsRenew,
         hdfcPlanId,
         setHdfcPlanId,
         circleStatus,

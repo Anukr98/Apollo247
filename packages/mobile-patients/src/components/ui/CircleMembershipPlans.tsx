@@ -48,6 +48,8 @@ import {
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -66,9 +68,12 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   from?: string;
   healthCredits?: number;
   onPurchaseWithHCCallback?: (res: any) => void;
+  screenName?: string;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
+  const { isRenew, circleSubscription } = useAppCommonData();
+
   const [membershipPlans, setMembershipPlans] = useState<any>(props.membershipPlans || []);
   const [spinning, setSpinning] = useState<boolean>(true);
   const {
@@ -85,6 +90,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     from,
     healthCredits,
     onPurchaseWithHCCallback,
+    screenName,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -313,7 +319,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                     top: `${duration}`.length === 1 ? iconDimension / 2 - 3 : iconDimension / 2 + 3,
                     transform:
                       `${duration}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
-                    color: index===1 ? 'white' : theme.colors.APP_YELLOW,
+                    color: index === 1 ? 'white' : theme.colors.APP_YELLOW,
                     fontSize: isPlanActive ? 16 : 14,
                   },
                 ]}
@@ -553,6 +559,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ? AppConfig.Configuration.CIRCLE_CONSULT_URL
         : from === string.banner_context.HOME
         ? AppConfig.Configuration.CIRCLE_LANDING_URL
+        : from === string.banner_context.MEMBERSHIP_DETAILS
+        ? AppConfig.Configuration.CIRCLE_LANDING_URL
         : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
         ? AppConfig.Configuration.CIRCLE_TEST_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
@@ -627,8 +635,25 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         fetchPolicy: 'no-cache',
       });
       setLoading && setLoading(false);
-      if (res?.data?.CreateUserSubscription?.success) {
+
+      const data = res?.data?.CreateUserSubscription;
+      if (data?.success) {
         onPurchaseWithHCCallback!(res);
+        if (isRenew || circleSubscription?.status?.toLowerCase() === 'disabled') {
+          const circlePlanValidity = {
+            startDate: data?.response?.start_date,
+            endDate: data?.response?.end_date,
+          };
+          postCircleWEGEvent(
+            currentPatient,
+            isRenew ? 'About to Expire' : 'Expired',
+            'renewed',
+            circlePlanValidity,
+            true,
+            screenName || 'Homepage',
+            'Direct by HC'
+          );
+        }
       } else {
         Alert.alert('Apollo', `${res?.data?.CreateUserSubscription?.message}`);
       }
@@ -681,6 +706,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               props.navigation.navigate(AppRoutes.CircleSubscription, {
                 from: from,
                 soruce: source,
+                screenName: screenName,
               });
             }
           } else {

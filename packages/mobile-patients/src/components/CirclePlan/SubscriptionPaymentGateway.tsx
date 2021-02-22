@@ -29,21 +29,26 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import moment from 'moment';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
   selectedPlan?: any;
   forCircle?: boolean;
   from?: string;
+  screenName?: string;
 }
 export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props) => {
   let WebViewRef: any;
   const { currentPatient } = useAllCurrentPatients();
+  const { isRenew, circleSubscription } = useAppCommonData();
   const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
   const from = props.navigation.getParam('from');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const selectedPlan = props.navigation.getParam('selectedPlan');
   const forCircle = props.navigation.getParam('forCircle');
+  const screenName = props.navigation.getParam('screenName');
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -145,6 +150,19 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       forCircle ? firePaymentDoneEvent() : null;
       fireCirclePurchaseEvent();
       navigatetoStatusScreen(redirectedUrl);
+      const circlePlanValidity = {
+        startDate: new Date(),
+        endDate: redirectedUrl?.split('end_date=')?.[1],
+      };
+      postCircleWEGEvent(
+        currentPatient,
+        isRenew ? 'About to Expire' : 'Expired',
+        'renewed',
+        circlePlanValidity,
+        true,
+        screenName || 'Homepage',
+        'Direct Payment'
+      );
     }
   };
 

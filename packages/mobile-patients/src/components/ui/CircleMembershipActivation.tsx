@@ -156,6 +156,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         {moment(planValidity).isValid() ? (
           <Text style={styles.description}>
             Valid till:{' '}
+            {console.log('csk date date',circlePlanValidity,planValidity,moment(planValidity.endDate).format('DD MMMM YYYY'))}
             <Text style={styles.mediumText}>{moment(planValidity.endDate).format('DD MMMM YYYY')}</Text>
           </Text>
         ) : null}

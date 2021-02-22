@@ -723,8 +723,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             title: string.common.uhOh,
             description:
               error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0
-                ? string.diagnostics.sameSlotError
-                : string.diagnostics.reschduleCountExceed,
+                ? string.diagnostics.reschduleCountExceed
+                : string.diagnostics.sameSlotError,
           });
         } else {
           handleGraphQlError(error);
@@ -908,14 +908,23 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const isCancelValid = order?.diagnosticOrdersStatus?.find((item) =>
       BLACK_LIST_CANCEL_STATUS_ARRAY.includes(item?.orderStatus!)
     );
+    const isCancelValidAtOrderLevel = BLACK_LIST_CANCEL_STATUS_ARRAY.includes(order?.orderStatus!);
 
-    const showCancel = isCancelValid == undefined && !isPastOrder ? true : false;
+    // const showCancel = isCancelValid == undefined && !isPastOrder ? true : false;
+    const showCancel = isCancelValid == undefined && !isCancelValidAtOrderLevel ? true : false;
 
     const isRescheduleValid = order?.diagnosticOrdersStatus?.find((item: any) =>
       BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(item?.orderStatus)
     );
 
-    const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
+    const isRescheduleValidAtOrderLevel = BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(
+      order?.orderStatus!
+    );
+
+    // const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
+    const showReschedule =
+      isRescheduleValid == undefined && !isRescheduleValidAtOrderLevel ? true : false;
+
     /**
      * as per previous check
      */
@@ -973,7 +982,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       />
     );
   };
-
   const renderOrders = () => {
     return (
       <FlatList

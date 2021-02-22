@@ -209,6 +209,8 @@ export interface ShoppingCartContextProps {
   isProuctFreeCouponApplied: boolean;
   circleSubscriptionId: string;
   setCircleSubscriptionId: ((id: string) => void) | null;
+  isCircleExpired: boolean;
+  setIsCircleExpired: ((expired: boolean) => void) | null;
   circlePlanSelected: any;
   setCirclePlanSelected: ((plan: any) => void) | null;
   selectDefaultPlan: ((plan: any) => void) | null;
@@ -311,6 +313,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   isProuctFreeCouponApplied: false,
   circleSubscriptionId: '',
   setCircleSubscriptionId: null,
+  isCircleExpired: false,
+  setIsCircleExpired: null,
   circlePlanSelected: null,
   setCirclePlanSelected: null,
   selectDefaultPlan: null,
@@ -377,6 +381,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [circleSubscriptionId, setCircleSubscriptionId] = useState<
     ShoppingCartContextProps['circleSubscriptionId']
   >('');
+  const [isCircleExpired, setIsCircleExpired] = useState<
+    ShoppingCartContextProps['isCircleExpired']
+  >(false);
   const [circlePlanSelected, setCirclePlanSelected] = useState<
     ShoppingCartContextProps['circlePlanSelected']
   >(null);
@@ -738,6 +745,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       let shipmentCouponDiscount = 0;
       let shipmentProductDiscount = 0;
       let shipmentTotal = 0;
+      let shipmentCashback = 0;
       const items: (MedicineCartOMSItem | null)[] = cartItems
         ?.map((item) => {
           if (sku.includes(item?.id)) {
@@ -753,6 +761,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
               shipmentProductDiscount +
               formatNumber(item?.quantity * (item?.price - (item?.specialPrice || item?.price)));
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
+            shipmentCashback += item?.circleCashbackAmt;
             return {
               medicineSKU: item?.id,
               medicineName: item?.name,
@@ -790,6 +799,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['tatHours'] = order['tatDuration'];
       shipment['allocationProfileName'] = order['allocationProfileName'];
       shipment['clusterId'] = order['clusterId'];
+      shipment['totalCashBack'] =
+        isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
       shipmentsArray.push(shipment);
     });
     setShipments(shipmentsArray);
@@ -1044,6 +1055,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         circleSubscriptionId,
         setCircleSubscriptionId,
         circlePlanSelected,
+        isCircleExpired,
+        setIsCircleExpired,
         setCirclePlanSelected,
         selectDefaultPlan,
         defaultCirclePlan,

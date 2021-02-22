@@ -14,6 +14,7 @@ import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import {
   calculateCircleDoctorPricing,
   convertNumberToDecimal,
+  isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
@@ -36,7 +37,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
     isOnlineConsult,

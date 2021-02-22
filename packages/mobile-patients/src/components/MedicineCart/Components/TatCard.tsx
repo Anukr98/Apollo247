@@ -58,7 +58,11 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
   }
 
   const renderViewDelivery = () => {
-    return <Text style={styles.viewDelivery}>View delivery time</Text>;
+    return (
+      <View style={styles.viewDeliveryView}>
+        <Text style={styles.viewDelivery}>View delivery time</Text>
+      </View>
+    );
   };
   return (
     <TouchableOpacity
@@ -73,9 +77,14 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
         }}
       >
         {!unServiceable &&
-          (!isSplitCart ? (
+          (!!isNonCartOrder ? (
             <Text style={styles.delivery}>
-              {!!isNonCartOrder ? `Expected Delivery by ` : `Deliver by :`}
+              {`Expected Delivery by `}
+              {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            </Text>
+          ) : !isSplitCart ? (
+            <Text style={styles.delivery}>
+              {`Deliver by :`}
               {deliveryTime ? getDeliveryDate() : getGenericDate()}
             </Text>
           ) : (
@@ -125,6 +134,8 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(10),
     lineHeight: 13,
     color: '#D4D4D4',
+  },
+  viewDeliveryView: {
     paddingHorizontal: 7,
     paddingVertical: 5,
     borderWidth: 0.5,

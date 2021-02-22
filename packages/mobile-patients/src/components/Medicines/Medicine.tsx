@@ -1876,7 +1876,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const isCategoriesType = g(data, section_key, '0', 'title');
           const filteredProducts = products
             ? products.filter((product: MedicineProduct) => isProductInStock(product))
-            : [];
+            : null;
 
           return filteredProducts
             ? renderHotSellers(

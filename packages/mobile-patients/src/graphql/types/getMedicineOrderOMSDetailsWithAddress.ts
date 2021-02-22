@@ -68,6 +68,12 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   customReason: string | null;
 }
 
+export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_driverDetails {
+  __typename: "DriverDetails";
+  driverName: string | null;
+  driverPhone: string | null;
+}
+
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_medicineOrdersStatus {
   __typename: "MedicineOrdersOMSStatus";
   id: string;
@@ -89,6 +95,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments {
   __typename: "MedicineOrderOMSShipment";
+  driverDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_driverDetails | null;
   id: string;
   siteId: string | null;
   siteName: string | null;

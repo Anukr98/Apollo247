@@ -9,6 +9,7 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -52,15 +53,7 @@ import {
   VaccineTracker,
   ChatBot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  initiateDocOnCall,
-  initiateDocOnCallVariables,
-} from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
-import { INITIATE_DOC_ON_CALL } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  docOnCallType,
-  BannerDisplayType,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BannerDisplayType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -68,6 +61,7 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -132,6 +126,7 @@ import {
   postWebEngageEvent,
   setWebEngageScreenNames,
   timeDiffDaysFromNow,
+  setCircleMembershipType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -165,8 +160,10 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  Keyboard,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
@@ -188,6 +185,7 @@ import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTy
 import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
 import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const { Vitals } = NativeModules;
 
@@ -490,6 +488,7 @@ const styles = StyleSheet.create({
     padding: 6,
     width: '100%',
     alignSelf: 'center',
+    paddingTop: 15,
   },
 
   circleCardsContainer: {
@@ -505,7 +504,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     flexDirection: 'row',
     height: 88,
-    width: width / 2.6,
+    width: width / 2.27,
     marginHorizontal: 3,
     marginBottom: 2,
     borderWidth: 1.2,
@@ -513,16 +512,22 @@ const styles = StyleSheet.create({
     borderColor: '#FC9916',
     padding: 8,
     borderRadius: 12,
+    alignItems: 'center',
   },
   circleCardsTexts: {
     flex: 0.6,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'center',
+    padding: 8,
   },
   circleCardsImages: {
     flex: 0.4,
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    width: 34,
+    height: 34,
   },
   circleCardsImage: {
     alignSelf: 'center',
@@ -605,6 +610,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  viewWebStyles: {
+    position: 'absolute',
+    width: width,
+    height: height,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 20,
+  },
+  webViewCompo: {
+    flex: 1,
+    backgroundColor: '#666666',
+    width: width,
+  },
+  nestedWebView: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: 'white',
+  },
 });
 
 type menuOptions = {
@@ -664,6 +689,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
+    bannerDataHome,
+    setBannerDataHome,
     bannerData,
     setBannerData,
     phrNotificationData,
@@ -676,6 +703,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCirclePlanId,
     healthCredits,
     setHealthCredits,
+    isRenew,
+    setIsRenew,
     setHdfcPlanId,
     setCircleStatus,
     circleStatus,
@@ -715,6 +744,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circlePlanValidity,
     setCirclePaymentReference,
     pharmacyCircleAttributes,
+    setIsCircleExpired,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -734,17 +764,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCircleActivationcr, setShowCircleActivationcr] = useState<boolean>(false);
+  const [showWebView, setShowWebView] = useState<any>({ action: false });
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
-  //const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
+
+  const planValiditycr = useRef<string>('');
+  const planPurchasedcr = useRef<boolean | undefined>(false);
   const circlePlanStatus = props.navigation.getParam('circleStatus');
   const webengage = new WebEngage();
   const client = useApolloClient();
@@ -787,12 +820,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   //to be called only when the user lands via app launch
-   const logHomePageViewed = async () => {
-     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
-     if (isAppOpened) {
-       postHomeWEGEvent(WebEngageEventName.HOME_VIEWED);
-     }
-   };
+  const logHomePageViewed = async () => {
+    const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
+    if (isAppOpened) {
+      postHomeWEGEvent(WebEngageEventName.HOME_VIEWED);
+    }
+  };
 
   useEffect(() => {
     if (currentPatient?.id) {
@@ -874,13 +907,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
     });
-    
+
     try {
       AsyncStorage.removeItem('APP_OPENED');
     } catch (error) {
       CommonBugFender('ConsultRoom_getAppOpenedKeyReadError', error);
     }
-    
+
     return () => {
       didBlur && didBlur.remove();
     };
@@ -1106,31 +1139,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
   };
 
-  // Call an apollo doctor logic handler
-  const initiateCallDoctor = (mobileNumber: string) => {
-    setLoading?.(true);
-    client
-      .query<initiateDocOnCall, initiateDocOnCallVariables>({
-        query: INITIATE_DOC_ON_CALL,
-        variables: {
-          mobileNumber,
-          callType: docOnCallType.COVID_VACCINATION_QUERY,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        setLoading?.(false);
-        response?.data?.initiateDocOnCall?.success
-          ? Alert.alert('You will be connected to the doctor shortly')
-          : handleGraphQlError(response, 'Error while connecting to the Doctor, Please try again');
-      })
-      .catch((error) => {
-        setLoading?.(false);
-        console.log(error);
-        handleGraphQlError(error, 'Error while connecting to the Doctor, Please try again');
-      });
-  };
-
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
     source?: PatientInfoWithSourceFirebase['Source']
@@ -1283,7 +1291,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchCarePlans();
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
-    setBannerData && setBannerData([]); // default banners to be empty
+    setBannerData && setBannerData([]);
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -1424,6 +1432,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       startDate: plan?.start_date,
     };
 
+    if (plan?.subscriptionStatus === 'disabled') {
+      setIsCircleExpired && setIsCircleExpired(true);
+    }
+
     return circleSubscptionData;
   };
 
@@ -1506,8 +1518,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         variables: query,
       });
 
-
-      console.log('csk subs plan',JSON.stringify(res))
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
         /**
@@ -1529,9 +1539,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           }
 
+          if (circleData?.status === 'disabled') {
+            setIsCircleExpired && setIsCircleExpired(true);
+          }
+
           const planValidity = {
             startDate: circleData?.start_date,
             endDate: circleData?.end_date,
+            expiry: circleData?.expires_in,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
@@ -1614,7 +1629,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const diagnosticsSavings = savings?.diagnostics || 0;
       const deliverySavings = savings?.delivery || 0;
       const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
-      setCircleSavings && setCircleSavings(totalSavings);
+      setCircleSavings && setCircleSavings(Math.ceil(totalSavings));
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
       console.log('error', error);
@@ -1647,8 +1662,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     setHdfcLoading(false);
     if (res) {
+      setBannerDataHome && setBannerDataHome(res);
       setBannerData && setBannerData(res);
     } else {
+      setBannerDataHome && setBannerDataHome([]);
       setBannerData && setBannerData([]);
     }
   };
@@ -2308,7 +2325,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderBannersCarousel = () => {
-    const showBanner = bannerData && bannerData.length ? true : false;
+    const showBanner = !!bannerData?.length;
     if (showBanner) {
       return (
         <CarouselBanners
@@ -2330,28 +2347,97 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const dataBannerCards = () => {
-    const datatoadd = bannerData?.filter((item) => item?.banner_display_type === 'card');
-    const datatosend = datatoadd?.map((item) => ({
-      imageUrl: { uri: item?.banner },
+  const dataBannerCards = (darktheme) => {
+    const datatoadd = bannerDataHome?.filter((item) => item?.banner_display_type === 'card');
+
+    let datatosend = [];
+    datatosend = datatoadd?.map((item) => ({
+      imageUrl: { uri: darktheme ? getMobileURL(item?.banner) : item?.banner },
       title: item?.banner_template_info?.headerText1,
-      value: '',
+      value: item?.banner_template_info?.headerText2,
+      action: { type: item?.cta_action?.type, cta_action: item?.cta_action?.meta?.action },
     }));
     return datatosend;
   };
 
-  const renderCircleCards = (item, darktheme) => {
+  const navigateCTAActions = (action, url: string) => {
+    if (action?.type == 'REDIRECT') {
+      if (action.cta_action == 'SPECIALITY_LISTING') {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action.cta_action == 'PHARMACY_LANDING') {
+        props.navigation.navigate('MEDICINES');
+      } else if (action.cta_action == 'PRO-HEALTH') {
+        setShowWebView({ action: true, url: 'https://www.apollo247.com/apollo-pro-health' });
+      } else if (action.cta_action == 'PHR') {
+        props.navigation.navigate('HealthRecords');
+      } else if (action.cta_action == 'DIAGNOSTICS_LANDING') {
+        props.navigation.navigate('TESTS');
+      } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
+        props.navigation.navigate('MembershipDetails', {
+          membershipType: 'CIRCLE PLAN',
+          isActive: true,
+        });
+      } else if (action?.cta_action === string.Hdfc_values.ABSOLUTE_URL) {
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: url || action?.url,
+        });
+      }
+    }
+  };
+
+  const openWebView = (url) => {
+    Keyboard.dismiss();
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          title={'Circle Membership Benefits'}
+          leftIcon="close"
+          container={{
+            borderBottomWidth: 0,
+          }}
+          onPressLeftIcon={() => setShowWebView({ action: false })}
+        />
+        <View style={styles.nestedWebView}>
+          <WebView
+            source={{
+              uri: url,
+            }}
+            style={styles.webViewCompo}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setshowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setshowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setshowSpinner(false);
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderCircleCards = (item, darktheme: boolean, renew: boolean) => {
+    /**
+     * darktheme -> expired case
+     * renew -> expiring in x days
+     */
     return (
       <View style={styles.circleCardsContainer}>
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            !darktheme
-              ? props.navigation.navigate(AppRoutes.MembershipDetails, {
-                  membershipType: 'CIRCLE PLAN',
-                  isActive: true,
-                })
-              : null;
+            !darktheme ? navigateCTAActions(item?.action, item?.url) : null;
+            const membershipState = darktheme
+              ? 'Expired'
+              : renew
+              ? 'About to Expire'
+              : 'Not Expiring';
+            onClickCircleBenefits(membershipState, item?.action);
           }}
         >
           <View
@@ -2363,20 +2449,43 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text
                 style={
                   darktheme
-                    ? { ...theme.viewStyles.text('L', 12, '#666666', 0.6, 16) }
-                    : { ...theme.viewStyles.text('L', 12, '#02475B', 1, 16) }
+                    ? [
+                        { ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) },
+                        { alignSelf: 'flex-start' },
+                      ]
+                    : [
+                        { ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) },
+                        { alignSelf: 'flex-start' },
+                      ]
                 }
               >
                 {item?.title}
               </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) }}>
-                {item?.value}
-              </Text>
+              {item?.value && (
+                <Text
+                  style={
+                    darktheme
+                      ? [
+                          { ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                            marginTop: 5,
+                          },
+                        ]
+                      : [
+                          { ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                            marginTop: 5,
+                          },
+                        ]
+                  }
+                >
+                  {item?.value}
+                </Text>
+              )}
             </View>
-
-            <View style={styles.circleCardsImages}>
-              <ImageBackground style={styles.circleCardsImage} source={item?.imageUrl} />
-            </View>
+            <Image source={item?.imageUrl} resizeMode="contain" style={styles.circleCardsImages} />
           </View>
         </TouchableOpacity>
       </View>
@@ -2399,67 +2508,100 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             currentPatient,
             res?.data?.CreateUserSubscription?.response?.end_date
           );
-          planPurchased.current = true;
-          planValidity.current = circlePlanValidity?.endDate;
-          setShowCircleActivation(true);
+          planPurchasedcr.current =
+            res?.data?.CreateUserSubscription?.response?.status === 'PAYMENT_FAILED' ? false : true;
+          planValiditycr.current = res?.data?.CreateUserSubscription?.response?.end_date;
+
+          setShowCircleActivationcr(true);
         }}
       />
     );
   };
 
-  const renderCircle = () => {
+  const renderCircleActivation = () => (
+    <CircleMembershipActivation
+      visible={showCircleActivationcr}
+      closeModal={(planActivated) => {
+        setShowCircleActivationcr(false);
+      }}
+      defaultCirclePlan={{}}
+      navigation={props.navigation}
+      circlePaymentDone={planPurchasedcr.current}
+      circlePlanValidity={{ endDate: planValiditycr.current }}
+      source={'Consult'}
+      from={string.banner_context.MEMBERSHIP_DETAILS}
+    />
+  );
 
-    const expiry=circlePlanValidity?timeDiffDaysFromNow(circlePlanValidity?.endDate):'';
-    const expired=circlePlanValidity?dateFormatterDDMM(circlePlanValidity?.endDate,'DD/MM'):'';
-    const renew=renewNow!=='' && renewNow==='yes'?true:false;
-    const darktheme= circleStatus === 'disabled'?true:false;
+  const getMobileURL = (url: string) => {
+    const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+    const txt = url.split(ext)[0];
+    const path = txt.split('/');
+    path.pop();
+    const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+    const mPath = path.join('/').concat('/d_'.concat(name).concat(ext));
+    return mPath;
+  };
 
-    const cardlist = dataBannerCards();
-
-    console.log(
-      'csk value',
-      isCircleMember,
+  const onClickCircleBenefits = (
+    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring',
+    action: any
+  ) => {
+    postCircleWEGEvent(
+      currentPatient,
+      membershipState,
+      action,
       circlePlanValidity,
-      circleStatus,
-      expiry,
-      expired,
-      renew,
-      'savings->',
-      circleSavings,
-      'hc->',
-      healthCredits,
-      circleSubscriptionId,
+      circleSubscriptionId
     );
+  };
 
+  const renderCircle = () => {
+    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
+    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
+    renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
+    const darktheme = circleStatus === 'disabled' ? true : false;
+
+    const cardlist = dataBannerCards(darktheme);
+
+    {
+      /**
+       * CircleTypeCard1 && CircleTypeCard2 -> expiring in x days
+       * CircleTypeCard3 && CircleTypeCard4 -> active plans
+       * CircleTypeCard5 && CircleTypeCard6 -> expired plans
+       */
+    }
     return (
       <View style={styles.circleContainer}>
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button1 pressed');
+              onClickCircleBenefits('About to Expire', 'renew');
             }}
             savings={circleSavings}
             credits={healthCredits}
-            expiry={expiry}
+            expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && renew ? (
           <CircleTypeCard2
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button2 pressed');
+              onClickCircleBenefits('About to Expire', 'renew');
             }}
             credits={healthCredits}
-            expiry={expiry}
+            expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
           <CircleTypeCard3
             onButtonPress={() => {
-              console.log('circle button pressed');
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
-                isRenew:renew,
               });
             }}
             credits={healthCredits}
@@ -2468,11 +2610,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ) : expiry > 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
             onButtonPress={() => {
-              console.log('circle button pressed');
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
-                isRenew: renew,
               });
             }}
             credits={healthCredits}
@@ -2482,7 +2623,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button5 pressed');
+              onClickCircleBenefits('Expired', 'renew');
             }}
             savings={circleSavings}
             credits={healthCredits}
@@ -2492,7 +2633,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
-              console.log('circle button6 pressed');
+              onClickCircleBenefits('Expired', 'renew');
             }}
             savings={circleSavings}
             credits={healthCredits}
@@ -2500,7 +2641,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         ) : null}
 
-        {cardlist.length > 0 ? (
+        {cardlist?.length > 0 ? (
           <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
             {circleDataLoading && (
               <Spinner
@@ -2519,7 +2660,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <FlatList
               horizontal={true}
               data={cardlist}
-              renderItem={({ item }) => renderCircleCards(item, darktheme)}
+              renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
               keyExtractor={(item, index) => index.toString() + 'circle'}
             />
 
@@ -2543,10 +2684,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
                 {' '}
-                You can too - Renew now!
+                You can too{renew ? ' - Renew now!' : '.'}
               </Text>
             </Text>
-          ) : expiry < 0 ? (
+          ) : circleStatus === 'disabled' ? (
             <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
               You’re missing out on benefits - Renew your membership now!!!{' '}
             </Text>
@@ -2696,8 +2837,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postHomeWEGEvent(WebEngageEventName.VACCINATION_CHAT_WITH_US);
     try {
       const openUrl = AppConfig.Configuration.CHAT_WITH_US;
-      props.navigation.navigate(AppRoutes.CovidScan, {
-        covidUrl: openUrl,
+      props.navigation.navigate(AppRoutes.CommonWebView, {
+        url: openUrl,
       });
     } catch (e) {}
   };
@@ -2854,16 +2995,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const handleProceedToConnectCall = async () => {
-    postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED);
-    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    if (storedPhoneNumber) {
-      initiateCallDoctor(storedPhoneNumber);
-    } else {
-      Alert.alert('Please try again later');
-    }
-  };
-
   const renderTopIcons = () => {
     const onPressCart = () => {
       const route =
@@ -2958,6 +3089,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {isCircleMember === 'yes' && renderCircle()}
               </View>
               {showCirclePlans && renderCircleSubscriptionPlans()}
+              {showCircleActivationcr && renderCircleActivation()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderCovidContainer()}</View>
@@ -2966,6 +3098,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+      {showWebView?.action && openWebView(showWebView?.url)}
       {renderBottomTabBar()}
       {showPopUp && (
         <>
@@ -3014,8 +3147,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         onRequestClose={() => setShowHdfcConnectPopup(false)}
       >
         <HdfcConnectPopup
+          helplineNumber={'040-482-12515'}
           onClose={() => setShowHdfcConnectPopup(false)}
-          handleProceedToConnect={() => handleProceedToConnectCall()}
+          isVaccineDocOnCall={true}
+          postWEGEvent={() =>
+            postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED)
+          }
         />
       </Overlay>
     </View>
