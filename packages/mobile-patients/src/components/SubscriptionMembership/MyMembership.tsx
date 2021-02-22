@@ -55,6 +55,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -190,6 +191,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     setIsFreeDelivery,
     setIsCircleSubscription,
     isCircleExpired,
+    circlePlanValidity,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -294,6 +296,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
           setShowCircleActivation(true);
         }}
+        screenName={'My Membership'}
       />
     );
   };
@@ -725,16 +728,22 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const renderUpgradeButton = () => {
     return (
-      <View style={styles.membershipButtons}>
-        <TouchableOpacity
-          style={{ padding: 10 }}
-          onPress={() => {
-            setShowCirclePlans(true);
-          }}
-        >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={[styles.membershipButtons, { padding: 10 }]}
+        onPress={() => {
+          setShowCirclePlans(true);
+          postCircleWEGEvent(
+            currentPatient,
+            'Expired',
+            'renew',
+            circlePlanValidity,
+            circleSubscriptionId,
+            'My Membership'
+          );
+        }}
+      >
+        <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
+      </TouchableOpacity>
     );
   };
 

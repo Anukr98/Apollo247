@@ -21,6 +21,8 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import Carousel from 'react-native-snap-carousel';
 import { WebView } from 'react-native-webview';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -32,6 +34,7 @@ export interface CircleSavingsProps extends NavigationScreenProps {
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const { isExpired } = props;
   const { circleSubscription, totalCircleSavings, healthCredits, isRenew } = useAppCommonData();
+  const { circleSubscriptionId, circlePlanValidity } = useShoppingCart();
   const [slideIndex, setSlideIndex] = useState(0);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const videoLinks = strings.Circle.video_links;
@@ -46,26 +49,43 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
     return (
       <View style={[styles.expiryBanner, styles.expiryBannerAlignment]}>
-        <CircleLogo style={styles.circleLogo} />
         {isExpired ? (
-          <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
-            Membership has
-            <Text style={theme.viewStyles.text('B', 12, '#01475B')}>{` expired`}</Text>
-          </Text>
-        ) : (
-          <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
-            Membership {expiry > 0 ? 'expires' : 'expired'} on{' '}
-            <Text style={theme.viewStyles.text('M', 12, '#01475B')}>
-              {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+          <View style={{ flexDirection: 'row' }}>
+            <CircleLogo style={styles.circleLogo} />
+            <Text style={theme.viewStyles.text('R', 12, '#01475B', 1, 28)}>
+              Membership has
+              <Text style={theme.viewStyles.text('B', 12, '#01475B', 1, 28)}>{` expired`}</Text>
             </Text>
-          </Text>
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row' }}>
+            <CircleLogo style={styles.circleLogo} />
+            <Text style={theme.viewStyles.text('R', 12, '#01475B', 1, 28)}>
+              Membership {expiry > 0 ? 'expires' : 'expired'} on{' '}
+              <Text style={theme.viewStyles.text('M', 12, '#01475B', 1, 28)}>
+                {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+              </Text>
+            </Text>
+          </View>
         )}
+        {/**
+         * isExpired -> has expired
+         * isRenew -> expiring in x days
+         */}
         {isExpired || isRenew ? (
           <Button
             title={`RENEW NOW`}
             style={{ width: 106, height: 32 }}
             onPress={() => {
               setShowCirclePlans(true);
+              postCircleWEGEvent(
+                currentPatient,
+                isExpired ? 'Expired' : 'About to Expire',
+                'renew',
+                circlePlanValidity,
+                circleSubscriptionId,
+                'Membership Details'
+              );
             }}
             disabled={false}
           />
@@ -121,6 +141,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
           setShowCircleActivation(true);
         }}
+        screenName={'Membership Details'}
       />
     );
   };

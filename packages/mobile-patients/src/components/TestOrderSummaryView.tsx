@@ -47,8 +47,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
       'Order id:': orderDetails?.id,
-      'Order Amount': grossCharges!,
+      'Order amount': grossCharges!,
       'Sample Collection Date': orderDetails?.diagnosticDate,
+      'Order status': orderDetails?.orderStatus,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
   }, []);

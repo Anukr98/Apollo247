@@ -87,6 +87,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -228,6 +229,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     setIsCircleSubscription,
     circleSubscriptionId,
     hdfcSubscriptionId,
+    circlePlanValidity,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -1004,7 +1006,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     <MembershipBanner
       membershipType={membershipType}
       isExpired={isExpired}
-      onRenewClick={() => setShowCirclePlans(true)}
+      onRenewClick={() => {
+        setShowCirclePlans(true);
+        postCircleWEGEvent(
+          currentPatient,
+          isExpired ? 'Expired' : 'About to Expire',
+          'renew',
+          circlePlanValidity,
+          circleSubscriptionId,
+          'Membership Details Circle Banner'
+        );
+      }}
     />
   );
 
@@ -1149,6 +1161,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
           setShowCircleActivation(true);
         }}
+        screenName={'Membership Details'}
       />
     );
   };

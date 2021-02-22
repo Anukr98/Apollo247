@@ -156,18 +156,24 @@ export enum WebEngageEventName {
   DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
+
+  DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = "Diagnostic address selected",
+  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = "Diagonstic cart item removed",
+  DIAGNOSITC_ITEM_ADD_ON_CARTPAGE = "Diagnostic cart item added",
+
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
-  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
-  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
+  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked', 
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
+  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
+  DIAGNOSITC_ORDER_RESCHEDULE = "Diagnostic order rescheduled",
+  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
 
   // Health Records
@@ -370,6 +376,10 @@ export enum WebEngageEventName {
   VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
   VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
   VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
+  CIRCLE_BENIFIT_CLICKED = 'Circle Section Benefits Clicked',
+  CIRCLE_RENEW_NOW_CLICKED = 'Circle Section Renew Now Clicked',
+  CIRCLE_VIEW_BENEFITS_CLICKED = 'Circle Section View Benefits Clicked',
+  CIRCLE_MEMBERSHIP_RENEWED = 'Circle Membership Renewed',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -517,6 +527,40 @@ interface SymptomTrackerPatientInfo {
   'Date of Birth': Date | string;
   Email: string;
   Relation: string;
+}
+
+interface CircleRenewalAttributes {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  'Circle Member': 'Yes' | 'No';
+  'Circle Plan': string;
+  'Circle Start Date': Date | string;
+  'Circle End Date': Date | string;
+  Source: string;
+  Platform: string;
+  'Membership State': 'Expired' | 'About to Expire' | 'Not Expiring';
+}
+
+interface CircleRenewalSubscriptionAttributes {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  'Circle Member': 'Yes' | 'No';
+  'Circle Plan': string;
+  'Circle Start Date': Date | string;
+  'Circle End Date': Date | string;
+  Source: string;
+  Platform: string;
+  Type: 'Direct Payment' | 'Direct by HC';
 }
 
 interface SymptomTrackerCompleteInfo {
@@ -1062,7 +1106,7 @@ export interface WebEngageEvents {
     'Items in cart': object[];
   };
   [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
-    'Order Amount': string | number;
+    'Order amount': string | number;
     'Order id:': string;
     'Order status'?: string;
     'Sample Collection Date': string; //Date
@@ -1125,7 +1169,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Patient Name': string;
     'Latest Order Status': string;
-    'Order ID': string;
+    'Order id': string;
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Patient UHID': string;
@@ -1138,7 +1182,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Patient Name': string;
     Rating: string | number;
-    'Thing to Imporve selected': string;
+    'Thing to Improve selected': string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
@@ -1148,11 +1192,11 @@ export interface WebEngageEvents {
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
+    'Order id': string | number;
     Pincode: string | number;
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
-    'Order Amount': number; // Optional
+    'Order amount': number; // Optional
     'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
     'Appointment Date'?: string;
@@ -1164,11 +1208,29 @@ export interface WebEngageEvents {
     Amount: number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
+    type?: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
   };
+  [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]:{
+    "Selection type": "New" | "Existing";
+    "Serviceability": "Yes"| "No";
+    "Pincode": string | number;
+    "Source" : "Home page" | "Cart page"
+  };
+  [WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]:{
+    "Item ID": string | number;
+    "Item name": string;
+    "Pincode": string | number;
+  };
+  [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]:{
+    "Reschedule": string;
+    "Slot Time": string;
+    "Slot Date": string;
+    "Order id": string;
+  }
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
@@ -2285,4 +2347,8 @@ export interface WebEngageEvents {
     'Selected Symptoms': string;
   };
   [WebEngageEventName.SYMPTOM_TRACKER_FOR_MYSELF]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.CIRCLE_BENIFIT_CLICKED]: CircleRenewalAttributes;
+  [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
+  [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
+  [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
 }
