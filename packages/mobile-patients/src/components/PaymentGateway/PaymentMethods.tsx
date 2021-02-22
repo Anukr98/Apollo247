@@ -34,6 +34,7 @@ import {
   CREATE_ORDER,
   PROCESS_DIAG_COD_ORDER,
   VERIFY_VPA,
+  INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '../NavigatorContainer';
@@ -56,6 +57,11 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
+import { DiagnosticPaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  initiateDiagonsticHCOrderPaymentVariables,
+  initiateDiagonsticHCOrderPayment,
+} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {}
@@ -77,7 +83,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const FailedStatuses = ['AUTHENTICATION_FAILED','PENDING_VBV', 'AUTHORIZATION_FAILED'];
+  const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -116,7 +122,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
           payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false);
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
-        } 
+        }
         break;
       default:
         console.log('Unknown Event', data);
@@ -168,6 +174,21 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const initiateOrderPayment = async () => {
+    // Api is called to update the order status from Quote to Payment Pending
+    const input: initiateDiagonsticHCOrderPaymentVariables = {
+      diagnosticInitiateOrderPaymentInput: { orderId: orderId },
+    };
+    const res = await client.mutate<
+      initiateDiagonsticHCOrderPayment,
+      initiateDiagonsticHCOrderPaymentVariables
+    >({
+      mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+      variables: input,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const processCODOrder = () => {
     const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
       orderID: orderId,
@@ -196,6 +217,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const getClientToken = async () => {
     setisTxnProcessing(true);
     try {
+      initiateOrderPayment();
       const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
       const { data } = response;
       const { createOrder } = data;
