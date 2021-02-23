@@ -81,6 +81,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressId,
     uploadPrescriptionRequired,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     setCartItems,
@@ -99,7 +100,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
-  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [storeType, setStoreType] = useState<string | undefined>(
     props.navigation.getParam('tatType') || ''
   );
@@ -501,38 +501,32 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return <Shipments setloading={setloading} />;
   };
 
-  const renderuploadPrescriptionPopup = () => {
+  const renderPrescriptions = () => {
     return (
-      <UploadPrescription
-        showPopUp={showPopUp}
-        onClickClose={() => setshowPopUp(false)}
-        navigation={props.navigation}
-        type={'cartOrMedicineFlow'}
+      <Prescriptions
+        onPressUploadMore={() => props.navigation.navigate(AppRoutes.MedicineCartPrescription)}
+        screen={'summary'}
       />
     );
   };
 
-  const renderPrescriptions = () => {
-    return <Prescriptions onPressUploadMore={() => setshowPopUp(true)} screen={'summary'} />;
-  };
-
-  function isPrescriptionRequired() {
-    if (uploadPrescriptionRequired) {
-      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
-    } else {
-      return false;
-    }
-  }
+  // function isPrescriptionRequired() {
+  //   if (uploadPrescriptionRequired) {
+  //     return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
 
   const renderButton = () => {
-    return isPrescriptionRequired() ? (
+    return !prescriptionType ? (
       <View style={styles.buttonContainer}>
         <Button
           disabled={false}
           title={'UPLOAD PRESCRIPTION'}
           onPress={() => {
             uploadPrescriptionClickedEvent(currentPatient?.id);
-            setshowPopUp(true);
+            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
           }}
           titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
           style={{ borderRadius: 10 }}
@@ -559,7 +553,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           {renderCartItems()}
           {uploadPrescriptionRequired && renderPrescriptions()}
         </ScrollView>
-        {renderuploadPrescriptionPopup()}
         {renderButton()}
         {loading && <Spinner />}
       </SafeAreaView>
