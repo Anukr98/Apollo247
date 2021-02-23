@@ -98,6 +98,7 @@ export interface AddAddressProps
     source: AddressSource;
     ComingFrom?: string;
     locationDetails?: any;
+    updateLatLng?: boolean;
   }> {}
 
 type addressOptions = {
@@ -118,6 +119,8 @@ const AddressOptions: addressOptions[] = [
 export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const isEdit = props.navigation.getParam('KeyName') === 'Update';
   const source = props.navigation.getParam('source');
+  const sourceScreenName = props.navigation.getParam('ComingFrom');
+  const updateLatLng = props.navigation.getParam('updateLatLng');
   const locationResponse = props.navigation.getParam('locationDetails');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -637,6 +640,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   ) => {
     const screenName = props.navigation.getParam('ComingFrom')!;
     if (screenName != '') {
+      if (sourceScreenName == AppRoutes.TestsCart) {
+        addressList?.latitude != null &&
+        addressList?.longitude != null &&
+        addressList?.latitude > 0 &&
+        addressList?.longitude > 0
+          ? setDiagnosticAddressId!(addressList?.id || '')
+          : null;
+      }
       setUpdatedAddressList(addressList, keyName);
       props.navigation.pop(2, { immediate: true }); //1
     } else {

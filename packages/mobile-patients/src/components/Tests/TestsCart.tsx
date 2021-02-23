@@ -552,11 +552,29 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [testCentresLoaded]);
 
-  const renderAlert = (message: string) => {
-    showAphAlert!({
-      title: string.common.uhOh,
-      description: message,
-    });
+  const renderAlert = (message: string, source?: string, address?: any) => {
+    if (!!source && !!address) {
+      showAphAlert?.({
+        unDismissable: true,
+        title: string.common.uhOh,
+        description: message,
+        onPressOk: () => {
+          hideAphAlert?.();
+          props.navigation.push(AppRoutes.AddAddressNew, {
+            KeyName: 'Update',
+            addressDetails: address,
+            ComingFrom: AppRoutes.TestsCart,
+            updateLatLng: true,
+            source: 'Diagnostics Cart' as AddressSource,
+          });
+        },
+      });
+    } else {
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: message,
+      });
+    }
   };
   const fetchAddresses = async () => {
     try {
@@ -1338,11 +1356,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
-                const tests = cartItems.filter(
+                const tests = cartItems?.filter(
                   (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
                 );
+                const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(item);
 
-                if (tests.length) {
+                if (tests?.length) {
                   showAphAlert!({
                     title: string.common.uhOh,
                     description: `${(currentPatient && currentPatient.firstName) ||
@@ -1353,11 +1372,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
                   });
                 } else {
-                  AddressSelectedEvent(item);
-                  setDeliveryAddressId?.(item.id);
-                  setDiagnosticAreas?.([]);
-                  setAreaSelected?.({});
-                  setDiagnosticSlot?.(null);
+                  if (isSelectedAddressWithNoLatLng) {
+                    //show the error
+                    renderAlert(
+                      string.diagnostics.updateAddressLatLngMessage,
+                      'updateLocation',
+                      item
+                    );
+                  } else {
+                    AddressSelectedEvent(item);
+                    setDeliveryAddressId?.(item.id);
+                    setDiagnosticAreas?.([]);
+                    setAreaSelected?.({});
+                    setDiagnosticSlot?.(null);
+                  }
+
                   // fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}
@@ -1393,12 +1422,27 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     selectedAddressId: deliveryAddressId,
                     isChanged: (val: boolean, id?: string, pincode?: string) => {
                       if (val && id) {
-                        setDeliveryAddressId && setDeliveryAddressId(id);
-                        setDiagnosticSlot && setDiagnosticSlot(null);
-                        setselectedTimeSlot(undefined);
+                        const selectedAddressIndex = addresses?.findIndex(
+                          (address) => address?.id == id
+                        );
+                        const selectedAddress = addresses?.[selectedAddressIndex];
+                        const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(
+                          selectedAddress
+                        );
+                        if (isSelectedAddressWithNoLatLng) {
+                          renderAlert(
+                            string.diagnostics.updateAddressLatLngMessage,
+                            'updateLocation',
+                            selectedAddress
+                          );
+                        } else {
+                          setDeliveryAddressId && setDeliveryAddressId(id);
+                          setDiagnosticSlot && setDiagnosticSlot(null);
+                          setselectedTimeSlot(undefined);
 
-                        setDiagnosticAreas?.([]);
-                        setAreaSelected?.({});
+                          setDiagnosticAreas?.([]);
+                          setAreaSelected?.({});
+                        }
 
                         // fetchAreasForAddress(id, pincode!);
                       }
@@ -1415,8 +1459,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  function isAddressLatLngInValid(address: any) {
+    let isInvalid =
+      address?.latitude == null ||
+      address?.longitude == null ||
+      address?.latitude == 0 ||
+      address?.longitude == 0;
+
+    return isInvalid;
+  }
+
   useEffect(() => {
-    if (pinCode.length !== 6) {
+    if (pinCode?.length !== 6) {
       setSlicedStoreList([]);
       setClinicId!('');
     }

@@ -103,17 +103,6 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const { setAddresses: setAdd } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
 
-  const getAddress = () => {
-    client.query<getPatientAddressList, getPatientAddressListVariables>({
-      query: GET_PATIENT_ADDRESS_LIST,
-
-      variables: {
-        patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      },
-      fetchPolicy: 'no-cache',
-    });
-  };
-
   useEffect(() => {
     getAddressList();
   }, []);
