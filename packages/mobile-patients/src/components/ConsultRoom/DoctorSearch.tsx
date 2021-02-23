@@ -56,7 +56,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -396,6 +396,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [symptoms, setSymptoms] = useState<ProceduresAndSymptomsResult[]>([]);
   const [savedSearchedSuggestions, setSearchSuggestions] = useState<string>('');
   const [searchedBucket, setSearchedBucket] = useState<string>('');
+  const clickedBucket = useRef<string>('');
 
   useEffect(() => {
     newUserPastSearch();
@@ -580,7 +581,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Text typed by the user': inputString || searchText,
       'Search Suggestions': searchSuggestions || savedSearchedSuggestions,
       Bucket: bucket || searchedBucket,
-      'Search Suggestion Clicked': clickedItem || '',
       Doctors: doctorIds?.join(', '),
       Symptoms: symptomsList?.join(', '),
       Specialities: specialitiesList?.join(', '),
@@ -588,6 +588,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     };
     if (clickedItem) {
       // search suggestions clicked event
+      eventAttributes['Bucket Clicked'] = clickedBucket.current;
+      eventAttributes['Search Suggestion Clicked'] = clickedItem || '';
       postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS_CLICKED, eventAttributes);
     } else {
       // searched suggestions event
@@ -1148,6 +1150,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               componentName="speciality"
               navigation={props.navigation}
               onPressCallback={(item: any) => {
+                clickedBucket.current = 'Speciality';
                 postSpecialityEvent(item?.name, item?.id);
                 postSearchedResultWebEngageEvent(item?.name);
                 onClickSearch(
@@ -1456,6 +1459,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             componentName="doctor"
             navigation={props.navigation}
             onPressCallback={(item: any, index: number) => {
+              clickedBucket.current = 'Doctor';
               const itemNo = index + 1;
               postDoctorClickWEGEvent({ ...item, itemNo }, 'Search');
               postSearchedResultWebEngageEvent(item?.displayName);
@@ -1502,6 +1506,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             componentName="procedures"
             navigation={props.navigation}
             onPressCallback={(item: any) => {
+              clickedBucket.current = 'Procedure';
               onPressProcedure(item);
             }}
           />
@@ -1542,6 +1547,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             navigation={props.navigation}
             postSymptomTrackEvent={postSymptomTrackEvent}
             onPressCallback={(item: any) => {
+              clickedBucket.current = 'Symptoms';
               onPressProcedure(item);
             }}
           />
