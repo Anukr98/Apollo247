@@ -18,6 +18,8 @@
     "upload_image_file_size_text": "File size max upto 2MB. File type jpeg, jpg & png",
     "add_comment_text": "Add Comments (Optional)",
     "return_order_comment_text": "Enter your comments here…",
+    "delete_report_text": "Delete Report",
+    "delete_report_confirm_text": "Are you sure you want to delete the selected record?",
     "upload": "UPLOAD",
     "submit_request": "SUBMIT REQUEST",
     "continue": "CONTINUE",
@@ -463,7 +465,8 @@
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
-    "updateAddressLatLngMessage": "Unable to locate address. Please update."
+    "updateAddressLatLngMessage": "Unable to locate address. Please update.",
+    "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes"
   },
   "orders": {
     "urOrders": "MY ORDERS",

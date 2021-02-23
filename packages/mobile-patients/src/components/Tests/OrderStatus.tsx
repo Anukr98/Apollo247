@@ -6,7 +6,11 @@ import {
   SafeAreaView,
   StackActions,
 } from 'react-navigation';
-import { CircleLogo, OrderPlacedCheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CircleLogo,
+  OrderPlacedCheckedIcon,
+  OrderProcessingIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -32,6 +36,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const pickupDate = moment(orderDetails?.diagnosticDate!).format('DD MMM');
   const pickupYear = moment(orderDetails?.diagnosticDate!).format('YYYY');
+  const paymentStatus = props.navigation.getParam('paymentStatus');
   const pickupTime = orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
@@ -105,10 +110,17 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderOrderPlacedMsg = () => {
-    return (
+    return paymentStatus == 'success' ? (
       <View style={styles.orderPlaced}>
         <OrderPlacedCheckedIcon style={styles.placedIcon} />
         <Text style={styles.orderPlacedText}>Your order has been placed successfully.</Text>
+      </View>
+    ) : (
+      <View style={styles.orderPlaced}>
+        <OrderProcessingIcon style={styles.placedIcon} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.orderPlacedText}>{string.diagnostics.processingOrder}</Text>
+        </View>
       </View>
     );
   };
