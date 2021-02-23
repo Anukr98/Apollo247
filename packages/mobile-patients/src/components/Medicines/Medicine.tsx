@@ -1650,7 +1650,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 setMedicineList([]);
                 return;
               }
-              const search = _.debounce(onSearchMedicine, 300);
+              const search = _.debounce(onSearchMedicine, 500);
               if (value.length >= 3) {
                 setsearchSate('load');
               } // this block is to fix no results errorMessage appearing while loading response
