@@ -120,7 +120,6 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       .then((data) => {
         if (data) {
           const addressList = data?.data?.getPatientAddressList?.addressList || [];
-          console.log({ addressList });
           if (addressList) {
             setaddressList(addressList);
             setshowSpinner(false);

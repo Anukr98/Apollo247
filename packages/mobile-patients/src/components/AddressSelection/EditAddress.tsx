@@ -152,7 +152,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
-  console.log({ props });
+
   const {
     addAddress,
     setDeliveryAddressId,
@@ -638,7 +638,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     addressList: savePatientAddress_savePatientAddress_patientAddress,
     keyName: string
   ) => {
-    console.log({ addressList });
     const screenName = props.navigation.getParam('ComingFrom')!;
     if (screenName != '') {
       if (sourceScreenName == AppRoutes.TestsCart) {

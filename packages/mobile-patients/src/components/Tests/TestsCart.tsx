@@ -1355,14 +1355,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               subtitleStyle={styles.subtitleStyle}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
-                console.log({ item });
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
                 const tests = cartItems?.filter(
                   (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
                 );
                 const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(item);
 
-                console.log({ isSelectedAddressWithNoLatLng });
                 if (tests?.length) {
                   showAphAlert!({
                     title: string.common.uhOh,
@@ -1428,11 +1426,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                           (address) => address?.id == id
                         );
                         const selectedAddress = addresses?.[selectedAddressIndex];
-                        console.log({ selectedAddress });
                         const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(
                           selectedAddress
                         );
-                        console.log({ isSelectedAddressWithNoLatLng });
                         if (isSelectedAddressWithNoLatLng) {
                           renderAlert(
                             string.diagnostics.updateAddressLatLngMessage,
