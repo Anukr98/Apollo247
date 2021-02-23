@@ -582,8 +582,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
-          latitude: 0,
-          longitude: 0,
+          latitude: latitude,
+          longitude: longitude,
           stateCode: finalStateCode,
           name: userName,
         };
@@ -642,8 +642,12 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     const screenName = props.navigation.getParam('ComingFrom')!;
     if (screenName != '') {
       if (sourceScreenName == AppRoutes.TestsCart) {
-        // setDiagnosticAddressId!(address.id || '');
-        console.log('yyy');
+        addressList?.latitude != null &&
+        addressList?.longitude != null &&
+        addressList?.latitude > 0 &&
+        addressList?.longitude > 0
+          ? setDiagnosticAddressId!(addressList?.id || '')
+          : null;
       }
       setUpdatedAddressList(addressList, keyName);
       props.navigation.pop(2, { immediate: true }); //1

@@ -565,6 +565,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             addressDetails: address,
             ComingFrom: AppRoutes.TestsCart,
             updateLatLng: true,
+            source: 'Diagnostics Cart' as AddressSource,
           });
         },
       });
