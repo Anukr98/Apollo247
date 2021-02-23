@@ -83,7 +83,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
+  const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -109,9 +109,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'process_result':
         var payload = data.payload || {};
         console.log('payload >>', JSON.stringify(payload));
-        if (payload?.error) {
-          handleError(payload?.errorMessage);
-        }
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
           console.log(payload?.payload?.paymentMethods);
           const banks = payload?.payload?.paymentMethods?.filter(
@@ -120,8 +117,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           setBanks(banks);
           setloading(false);
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
-          payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false);
+          payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
+          payload?.payload?.status == 'PENDING_VBV' && navigatetoOrderStatus(false, 'pending');
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
+        } else if (payload?.error) {
+          handleError(payload?.errorMessage);
         }
         break;
       default:
@@ -281,7 +281,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         const response = await processCODOrder();
         const { data } = response;
         data?.processDiagnosticHCOrder?.status
-          ? navigatetoOrderStatus(true)
+          ? navigatetoOrderStatus(true, 'success')
           : showTxnFailurePopUP();
       } else {
         showTxnFailurePopUP();
@@ -302,11 +302,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
-  const navigatetoOrderStatus = (isCOD: boolean) => {
+  const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
     props.navigation.navigate(AppRoutes.OrderStatus, {
       orderDetails: orderDetails,
       isCOD: isCOD,
       eventAttributes,
+      paymentStatus: paymentStatus,
     });
   };
 
