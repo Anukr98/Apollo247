@@ -2824,7 +2824,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
             btnTitleStyle={styles.covidBtnTitle}
             iconBase={PhoneDoctor}
-            title={string.common.callDoctor}
+            title={string.common.vaccinationQueries}
             onPress={() => onPressCallDoctor()}
           />
         </View>
