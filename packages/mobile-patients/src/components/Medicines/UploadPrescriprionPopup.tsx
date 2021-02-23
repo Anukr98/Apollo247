@@ -28,7 +28,16 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, {
+  forwardRef,
+  ForwardRefExoticComponent,
+  PropsWithoutRef,
+  RefAttributes,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import {
   Alert,
   Platform,
@@ -169,13 +178,30 @@ export interface UploadPrescriprionPopupProps {
   phrUpload?: boolean;
   openCamera?: boolean;
 }
+export interface UploadPrescriprionPopupRefProps {
+  onPressCamera: () => void;
+  onPressGallery: () => void;
+}
 
 const MAX_FILE_SIZE = 2000000; // 2MB
 
-export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
+export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
+  UploadPrescriprionPopupProps
+> &
+  RefAttributes<UploadPrescriprionPopupRefProps>> = forwardRef((props, ref) => {
+  useImperativeHandle(ref, () => ({
+    // To expose these functions to parent components through ref
+    onPressCamera() {
+      onClickTakePhoto();
+    },
+    onPressGallery() {
+      onClickGallery();
+    },
+  }));
+
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const { pharmacyUserType } = useAppCommonData();
-  let actionSheetRef: ActionSheet;
+  const actionSheetRef = useRef<ActionSheet>();
 
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
@@ -292,7 +318,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const onClickGallery = async () => {
     if (!props.isProfileImage) {
-      actionSheetRef.show();
+      actionSheetRef.current?.show();
     } else {
       openGallery();
     }
@@ -699,6 +725,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       </>
     </Overlay>
   ) : (
+    <>
     <Overlay
       onRequestClose={() => props.onClickClose()}
       isVisible={props.isVisible}
@@ -741,8 +768,10 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           </ScrollView>
         </SafeAreaView>
         {showSpinner && <Spinner />}
+      </View>
+    </Overlay>
         <ActionSheet
-          ref={(o: ActionSheet) => (actionSheetRef = o)}
+          ref={(o: ActionSheet) => (actionSheetRef.current = o)}
           title={''}
           options={options}
           cancelButtonIndex={2}
@@ -766,7 +795,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             }
           }}
         />
-      </View>
-    </Overlay>
+    </>
   );
-};
+});

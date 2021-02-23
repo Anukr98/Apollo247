@@ -120,6 +120,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressId,
     addMultipleCartItems,
+    uploadPrescriptionRequired,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     setPhysicalPrescriptions,
@@ -166,7 +168,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [storeType, setStoreType] = useState<string | undefined>('');
   const [storeDistance, setStoreDistance] = useState(0);
   const [shopId, setShopId] = useState<string | undefined>('');
-  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isfocused, setisfocused] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
@@ -611,7 +612,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     );
   }
   function NavigateToCartSummary() {
-    !hasUnserviceableproduct() && isfocused && props.navigation.navigate(AppRoutes.CartSummary);
+    if (hasUnserviceableproduct() || !isfocused) {
+      return;
+    } else if (uploadPrescriptionRequired && !prescriptionType) {
+      props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+    } else {
+      props.navigation.navigate(AppRoutes.CartSummary);
+    }
   }
 
   async function validatePharmaCoupon() {
@@ -1105,30 +1112,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const renderOneApollo = () => <OneApolloCard availableHC={availableHC} />;
 
-  const renderuploadPrescriptionPopup = () => {
-    return (
-      <UploadPrescription
-        showPopUp={showPopUp}
-        onClickClose={() => setshowPopUp(false)}
-        navigation={props.navigation}
-        type={'Cart'}
-        onUpload={() =>
-          !hasUnserviceableproduct() &&
-          props.navigation.navigate(AppRoutes.CartSummary, {
-            deliveryTime: deliveryTime,
-            storeDistance: storeDistance,
-            tatType: storeType,
-            shopId: shopId,
-          })
-        }
-      />
-    );
-  };
-
   const renderPrescriptions = () => {
     return (
       <Prescriptions
-        onPressUploadMore={() => setshowPopUp(true)}
+        onPressUploadMore={() => {
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }}
         style={{ marginTop: suggestedProducts?.length ? 0 : 20 }}
       />
     );
@@ -1161,7 +1150,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         }}
         onPressUploadPrescription={() => {
           uploadPrescriptionClickedEvent(currentPatient?.id);
-          setshowPopUp(true);
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
         }}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
@@ -1169,15 +1158,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
         onPressTatCard={() => {
-          /*
-          !hasUnserviceableproduct() &&
-          props.navigation.navigate(AppRoutes.CartSummary, {
-            deliveryTime: deliveryTime,
-            storeDistance: storeDistance,
-            tatType: storeType,
-            shopId: shopId,
-          })
-          */
+          if (hasUnserviceableproduct()) {
+            return;
+          } else if (uploadPrescriptionRequired && !prescriptionType) {
+            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+          } else {
+            props.navigation.navigate(AppRoutes.CartSummary, {
+              deliveryTime: deliveryTime,
+              storeDistance: storeDistance,
+              tatType: storeType,
+              shopId: shopId,
+            });
+          }
         }}
         screen={'MedicineCart'}
         onPressReviewOrder={onPressReviewOrder}
@@ -1248,7 +1240,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderPrescriptions()}
           {renderKerbSidePickup()}
         </ScrollView>
-        {renderuploadPrescriptionPopup()}
         {renderProceedBar()}
         {loading && <Spinner />}
       </SafeAreaView>
