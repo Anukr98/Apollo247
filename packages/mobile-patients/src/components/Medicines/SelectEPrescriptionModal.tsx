@@ -465,14 +465,14 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       <View>
         <Text style={styles.sectionHeadings}>Health Records</Text>
         <FlatList
-          data={combination?.slice(0, healthRecordIndex) || []}
+          data={combination || []}
           renderItem={renderHealthRecord}
           keyExtractor={(item) => item.id}
           numColumns={3}
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingHorizontal: 15 }}
         />
-        {healthRecordIndex < (combination?.length || 0) && (
+        {/* {healthRecordIndex < (combination?.length || 0) && (
           <TouchableOpacity
             style={styles.loadMoreButton}
             activeOpacity={0.4}
@@ -482,7 +482,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           >
             <Text style={styles.loadMoreText}>LOAD MORE</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
     );
   };
