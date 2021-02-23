@@ -11,7 +11,7 @@ import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 
 export interface Props {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  movedFrom?: 'registration' | 'deeplink' | 'home';
+  movedFrom?: 'registration' | 'deeplink' | 'home' | 'testDetails';
   headerText?: string;
 }
 
@@ -30,7 +30,20 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
   const paddingView = <View style={styles.paddingView} />;
 
   const renderHeaderCenterView = () => {
-    return <>{headerText ? <Text style={styles.titleTextStyle}>{headerText}</Text> : null}</>;
+    return (
+      <>
+        {headerText ? (
+          <Text
+            style={[
+              styles.titleTextStyle,
+              { textAlign: movedFrom == 'testDetails' ? 'center' : 'left' },
+            ]}
+          >
+            {headerText}
+          </Text>
+        ) : null}
+      </>
+    );
   };
 
   const renderHeaderRightView = () => {
@@ -86,7 +99,6 @@ const styles = StyleSheet.create({
   headerRightView: { justifyContent: 'flex-end', flexDirection: 'row' },
   paddingView: { width: 20, height: 0 },
   titleTextStyle: {
-    textAlign: 'left',
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(13),
     letterSpacing: 0.5,

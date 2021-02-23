@@ -29,7 +29,7 @@ import {
   filterHtmlContent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   SafeAreaView,
@@ -374,7 +374,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const scrollToTop = () => {
-    scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+    setTimeout(() => {
+      scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+    }, 0);
   };
 
   useEffect(() => {
@@ -874,6 +876,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <TestListingHeader
         navigation={props.navigation}
         headerText={nameFormater('TEST PACKAGE DETAIL', 'upper')}
+        movedFrom={'testDetails'}
       />
     );
   };
