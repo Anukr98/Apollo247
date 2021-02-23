@@ -830,7 +830,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const hasDrJoined = useRef<boolean>(false);
   hasDrJoined.current = doctorJoinedChat;
   const isConsultStarted = useRef<boolean>(false);
-
+  const makeUpdateAppointmentCall = useRef<boolean>(true);
   const isPaused = subscriberConnected.current
     ? !callerAudio && !callerVideo
       ? 'audio/video'
@@ -2018,7 +2018,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               if (token) {
                 PublishAudioVideo();
               } else {
-                APICallAgain();
+                makeUpdateAppointmentCall.current = true;
+                APICallAgain(true);
               }
             }
           }
@@ -2185,7 +2186,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-      eventsAfterConnectionDestroyed();
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
@@ -2462,6 +2462,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const eventsAfterConnectionDestroyed = () => {
+    APICallAgain(false);
+    makeUpdateAppointmentCall.current = false;
     setTimeout(() => {
       setIsCall(false);
       setIsAudioCall(false);
@@ -5533,11 +5535,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       changeVideoStyles();
       setDropdownVisible(false);
       setCallerVideo(true);
-      if (token) {
-        PublishAudioVideo();
-      } else {
-        APICallAgain();
-      }
+      makeUpdateAppointmentCall.current = true;
+      APICallAgain(true);
     });
   };
 
@@ -6129,10 +6128,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 2000);
   };
 
-  const APICallAgain = () => {
+  const APICallAgain = (isUserJoining?: boolean) => {
+    if (!makeUpdateAppointmentCall.current) {
+      return;
+    }
     const input = {
       appointmentId: appointmentData.id,
       requestRole: 'PATIENT',
+      isUserJoining,
     };
 
     console.log('input', input);
