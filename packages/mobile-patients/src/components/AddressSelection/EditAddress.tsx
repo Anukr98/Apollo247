@@ -98,6 +98,7 @@ export interface AddAddressProps
     source: AddressSource;
     ComingFrom?: string;
     locationDetails?: any;
+    updateLatLng?: boolean;
   }> {}
 
 type addressOptions = {
@@ -118,6 +119,8 @@ const AddressOptions: addressOptions[] = [
 export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const isEdit = props.navigation.getParam('KeyName') === 'Update';
   const source = props.navigation.getParam('source');
+  const sourceScreenName = props.navigation.getParam('ComingFrom');
+  const updateLatLng = props.navigation.getParam('updateLatLng');
   const locationResponse = props.navigation.getParam('locationDetails');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -149,7 +152,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
-
+  console.log({ props });
   const {
     addAddress,
     setDeliveryAddressId,
@@ -579,8 +582,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
-          latitude: latitude,
-          longitude: longitude,
+          latitude: 0,
+          longitude: 0,
           stateCode: finalStateCode,
           name: userName,
         };
@@ -635,8 +638,13 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     addressList: savePatientAddress_savePatientAddress_patientAddress,
     keyName: string
   ) => {
+    console.log({ addressList });
     const screenName = props.navigation.getParam('ComingFrom')!;
     if (screenName != '') {
+      if (sourceScreenName == AppRoutes.TestsCart) {
+        // setDiagnosticAddressId!(address.id || '');
+        console.log('yyy');
+      }
       setUpdatedAddressList(addressList, keyName);
       props.navigation.pop(2, { immediate: true }); //1
     } else {

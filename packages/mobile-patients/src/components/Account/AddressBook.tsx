@@ -103,17 +103,6 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const { setAddresses: setAdd } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
 
-  const getAddress = () => {
-    client.query<getPatientAddressList, getPatientAddressListVariables>({
-      query: GET_PATIENT_ADDRESS_LIST,
-
-      variables: {
-        patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      },
-      fetchPolicy: 'no-cache',
-    });
-  };
-
   useEffect(() => {
     getAddressList();
   }, []);
@@ -131,6 +120,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       .then((data) => {
         if (data) {
           const addressList = data?.data?.getPatientAddressList?.addressList || [];
+          console.log({ addressList });
           if (addressList) {
             setaddressList(addressList);
             setshowSpinner(false);
