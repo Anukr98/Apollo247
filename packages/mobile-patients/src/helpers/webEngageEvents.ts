@@ -2066,7 +2066,6 @@ export interface WebEngageEvents {
     'Text typed by the user': string;
     'Search Suggestions': string;
     Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
-    'Search Suggestion Clicked': string;
     Doctors: string;
     Symptoms: string;
     Specialities: string;
@@ -2099,6 +2098,7 @@ export interface WebEngageEvents {
     Procedures: string;
     'Text typed by the user': string;
     'Search Suggestion Clicked': string;
+    'Bucket Clicked': string;
   };
 
   [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
