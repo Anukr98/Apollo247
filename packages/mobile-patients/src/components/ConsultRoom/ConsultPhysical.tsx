@@ -26,6 +26,7 @@ import {
   doRequestAndAccessLocation,
   g,
   postWebEngageEvent,
+  checkPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
@@ -241,48 +242,28 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   };
 
   const fetchLocation = useCallback(() => {
-    if (!locationDetails) {
-      doRequestAndAccessLocation()
-        .then((response) => {
-          console.log('response', { response });
-          response && setLocationDetails!(response);
-          response && findDistance(`${response.latitude}, ${response.longitude}`);
-        })
-        .catch((e) => {
-          CommonBugFender('ConsultPhysical_fetchLocation', e);
-          showAphAlert!({
-            title: 'Uh oh! :(',
-            description: 'Unable to access location.',
-          });
-        });
-    } else {
-      findDistance(`${locationDetails.latitude}, ${locationDetails.longitude}`);
-    }
-
-    // AsyncStorage.getItem('location').then(async (item) => {
-    //   const location = item ? JSON.parse(item) : null;
-    //   console.log(location, 'location');
-
-    //   if (location && location.latlong) {
-    //     findDistance(`${location.latlong.lat}, ${location.latlong.lng}`);
-    //   } else {
-    //     await Permissions.request('location')
-    //       .then((response) => {
-    //         if (response === 'authorized') {
-    //           Geolocation.getCurrentPosition(
-    //             (position) => {
-    //               findDistance(position.coords.latitude + ',' + position.coords.longitude);
-    //             },
-    //             (error) => console.log(JSON.stringify(error)),
-    //             { enableHighAccuracy: false, timeout: 2000 }
-    //           );
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         console.log(error, 'error permission');
-    //       });
-    //   }
-    // });
+    checkPermissions(['location']).then((response: any) => {
+      const { location } = response;
+      if (String(location)?.toLowerCase() !== 'denied') {
+        // dont ask permission if user has denied earlier
+        if (!locationDetails) {
+          doRequestAndAccessLocation()
+            .then((response) => {
+              response && setLocationDetails!(response);
+              response && findDistance(`${response.latitude}, ${response.longitude}`);
+            })
+            .catch((e) => {
+              CommonBugFender('ConsultPhysical_fetchLocation', e);
+              showAphAlert!({
+                title: 'Uh oh! :(',
+                description: 'Unable to access location.',
+              });
+            });
+        } else {
+          findDistance(`${locationDetails.latitude}, ${locationDetails.longitude}`);
+        }
+      }
+    });
   }, [selectedClinic]);
 
   const requestLocationPermission = useCallback(async () => {
@@ -582,7 +563,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           marginBottom: 16,
         }}
       >
-{/*         {renderLocation()} */}
+        {/*         {renderLocation()} */}
         {renderTimings()}
       </View>
     </View>
