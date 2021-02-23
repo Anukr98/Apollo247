@@ -876,6 +876,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               pharmaOverview={
                 isPharma ? medicineDetails?.PharmaOverview?.[0]?.NewPharmaOverview : null
               }
+              directionsOfUse={medicineDetails?.direction_for_use_dosage}
             />
             {!!substitutes.length && (
               <SimilarProducts
