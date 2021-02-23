@@ -11,7 +11,7 @@ export const ProductManufacturer: React.FC<ProductManufacturerProps> = (props) =
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>Manufacurer/Marketer address</Text>
+      <Text style={styles.heading}>Manufacturer/Marketer address</Text>
       <Text style={styles.subHeading}>{address}</Text>
     </View>
   );
