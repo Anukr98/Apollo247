@@ -2462,8 +2462,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const eventsAfterConnectionDestroyed = () => {
-    APICallAgain(false);
-    makeUpdateAppointmentCall.current = false;
     setTimeout(() => {
       setIsCall(false);
       setIsAudioCall(false);
@@ -6038,7 +6036,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [callTimer]);
 
   const handleEndCall = () => {
+    APICallAgain(false);
     setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
@@ -6084,7 +6084,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndAudioCall = () => {
+    APICallAgain(false);
     setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
