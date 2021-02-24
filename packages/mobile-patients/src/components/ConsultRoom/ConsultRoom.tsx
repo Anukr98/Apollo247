@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   covidTitle: {
-    ...theme.viewStyles.text('M', 13, theme.colors.GREEN),
+    ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
     marginLeft: 10,
     width: width - 100,
   },
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   covidBtnTitle: {
-    ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
+    ...theme.viewStyles.text('SB', 11, theme.colors.APP_YELLOW),
     marginLeft: 8,
     width: width / 2 - 80,
   },
@@ -2809,7 +2809,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.covidContainer}>
         <View style={styles.covidTitleContainer}>
           <CovidOrange style={styles.covidIcon} />
-          <Text style={styles.covidTitle}>For COVID-19 Vaccination related queries</Text>
+          <Text style={styles.covidTitle}>
+            {covidVaccineCta?.mainTitle || 'For COVID-19 Vaccination related queries'}
+          </Text>
         </View>
         <View style={styles.covidSubContainer}>
           <CovidButton
