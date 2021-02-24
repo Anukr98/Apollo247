@@ -470,6 +470,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             price: getFormattedAmount(grandTotal),
             transId: orderAutoId,
             orders: orders,
+            isStorePickup: isStorePickup,
           });
         }
       })
