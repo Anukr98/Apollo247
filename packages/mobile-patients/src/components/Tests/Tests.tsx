@@ -1666,7 +1666,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         </Text>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
+          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
         >
           <Text style={styles.goToCartText}>GO TO CART</Text>
         </TouchableOpacity>
