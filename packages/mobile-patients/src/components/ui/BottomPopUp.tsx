@@ -9,7 +9,7 @@ import {
   TextStyle,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Mascot, CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -61,6 +61,8 @@ export interface ButtonProps {
   onPressBack?: () => void;
   removeTopIcon?: boolean;
   physical?: boolean;
+  showCloseIcon?: boolean;
+  onCloseIconPress?: () => void;
 }
 
 export const BottomPopUp: React.FC<ButtonProps> = (props) => {
@@ -71,14 +73,22 @@ export const BottomPopUp: React.FC<ButtonProps> = (props) => {
           {!!props.title && (
             <Text style={[styles.congratulationsTextStyle, props.titleStyle]}>{props.title}</Text>
           )}
-          {props.physical?
-           props.physicalText :
-           !!props.description && (
-                       <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
-                     )
-           }
+          {props.physical
+            ? props.physicalText
+            : !!props.description && (
+                <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
+              )}
           {props.children}
           {!props.removeTopIcon && <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />}
+
+          {props.showCloseIcon && (
+            <TouchableOpacity
+              style={{ position: 'absolute', top: -37, left: 10 }}
+              onPress={props.onCloseIconPress}
+            >
+              <CrossPopup style={{ width: 28, height: 28 }} />
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
       </TouchableOpacity>
     </View>

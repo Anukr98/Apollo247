@@ -111,6 +111,8 @@ type AphAlertParams = {
   removeTopIcon?: boolean;
   physical?: boolean;
   physicalText?: React.ReactNode;
+  showCloseIcon?: boolean;
+  onCloseIconPress?: () => void;
 };
 
 export const UIElementsProvider: React.FC = (props) => {
@@ -265,6 +267,8 @@ export const UIElementsProvider: React.FC = (props) => {
           physical={alertParams.physical}
           physicalText={alertParams.physicalText}
           removeTopIcon={alertParams.removeTopIcon}
+          showCloseIcon={alertParams.showCloseIcon}
+          onCloseIconPress={alertParams.onCloseIconPress}
         >
           {alertParams.children || (g(alertParams, 'CTAs', 'length') ? null : renderOkButton)}
           {renderCTAs()}

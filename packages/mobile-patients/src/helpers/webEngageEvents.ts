@@ -144,6 +144,8 @@ export enum WebEngageEventName {
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
   READ_ARTICLES = 'Read Articles',
   HDFC_HEALTHY_LIFE = 'Explore HDFC Tile Clicked on Homepage',
+  LOCATION_PERMISSION = 'Location permission',
+
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
   VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED = 'Vaccination Call a doctor - Proceed to connect',
@@ -162,19 +164,18 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
 
-  DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = "Diagnostic address selected",
-  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = "Diagonstic cart item removed",
-  DIAGNOSITC_ITEM_ADD_ON_CARTPAGE = "Diagnostic cart item added",
-
+  DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
+  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'Diagonstic cart item removed',
+  DIAGNOSITC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic cart item added',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked', 
+  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
-  DIAGNOSITC_ORDER_RESCHEDULE = "Diagnostic order rescheduled",
+  DIAGNOSITC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
 
@@ -1216,23 +1217,23 @@ export interface WebEngageEvents {
     position: number;
     itemId: number;
   };
-  [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]:{
-    "Selection type": "New" | "Existing";
-    "Serviceability": "Yes"| "No";
-    "Pincode": string | number;
-    "Source" : "Home page" | "Cart page"
+  [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
+    'Selection type': 'New' | 'Existing';
+    Serviceability: 'Yes' | 'No';
+    Pincode: string | number;
+    Source: 'Home page' | 'Cart page';
   };
-  [WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]:{
-    "Item ID": string | number;
-    "Item name": string;
-    "Pincode": string | number;
+  [WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]: {
+    'Item ID': string | number;
+    'Item name': string;
+    Pincode: string | number;
   };
-  [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]:{
-    "Reschedule": string;
-    "Slot Time": string;
-    "Slot Date": string;
-    "Order id": string;
-  }
+  [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]: {
+    Reschedule: string;
+    'Slot Time': string;
+    'Slot Date': string;
+    'Order id': string;
+  };
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
@@ -2046,6 +2047,9 @@ export interface WebEngageEvents {
     'Appointment ID': string;
     Type: string;
     'Patient Id': string;
+  };
+  [WebEngageEventName.LOCATION_PERMISSION]: {
+    'Location permission': string;
   };
   [WebEngageEventName.HOME_PAGE_VIEWED]: {
     source: 'deeplink' | 'app home';
