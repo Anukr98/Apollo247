@@ -745,7 +745,7 @@ export const getMedicineSearchSuggestionsApi = (
       Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
     cancelToken: new CancelToken((c) => {
-      cancelGetDeliveryTAT247 = c;
+      cancelGetMedicineSearchSuggestionsApi = c;
     }),
   });
 };
