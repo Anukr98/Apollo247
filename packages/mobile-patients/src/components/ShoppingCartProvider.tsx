@@ -461,19 +461,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
-    AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
-      showGenericAlert('Failed to save E-Prescriptions in local storage.');
-    });
   };
 
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
   ) => {
-    AsyncStorage.setItem(AsyncStorageKeys.physicalPrescriptions, JSON.stringify(items)).catch(
-      () => {
-        showGenericAlert('Failed to save Physical Prescriptions in local storage.');
-      }
-    );
     _setPhysicalPrescriptions(items);
   };
 
@@ -491,9 +483,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     const existingFilteredEPres = ePrescriptions.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredEPres\n', { existingFilteredEPres });
     const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
-    // console.log('updatedEPres\n', { updatedEPres });
     setEPrescriptions(updatedEPres);
   };
 
@@ -747,6 +737,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCouponProducts([]);
     setHdfcPlanName('');
     setdeliveryTime('');
+    setPrescriptionType(null);
   };
 
   useEffect(() => {
@@ -853,18 +844,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
       try {
         const cartItemsFromStorage = await AsyncStorage.multiGet([
           AsyncStorageKeys.cartItems,
-          AsyncStorageKeys.physicalPrescriptions,
-          AsyncStorageKeys.ePrescriptions,
           AsyncStorageKeys.onHoldOptionOrder,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
-        const physicalPrescriptions = cartItemsFromStorage[1][1];
-        const ePrescriptions = cartItemsFromStorage[2][1];
-        const showOnHoldOptions = cartItemsFromStorage[3][1];
+        const showOnHoldOptions = cartItemsFromStorage[1][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
-        _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
-        _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
         _setOnHoldOptionOrder(JSON.parse(showOnHoldOptions || 'null') || []);
       } catch (error) {
         CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
