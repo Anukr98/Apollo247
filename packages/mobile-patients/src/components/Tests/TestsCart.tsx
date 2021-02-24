@@ -3004,6 +3004,26 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       </View>
     );
   };
+
+  const renderPatientDetails = () => {
+    const patientDetailsText = `${currentPatient?.firstName || ''} ${currentPatient?.lastName ||
+      ''}, ${currentPatient?.gender || ''}, ${
+      currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
+    }`;
+    return (
+      <View style={styles.patientDetailsViewStyle}>
+        <View style={styles.patientNameViewStyle}>
+          <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
+          <Text style={[styles.patientNameTextStyle, styles.changeTextStyle]}>
+            {string.diagnostics.changeText}
+          </Text>
+        </View>
+        <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
+        <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
+      </View>
+    );
+  };
+
   const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   const isCovidItem = cartItemsWithId?.map((item) =>
@@ -3055,6 +3075,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         {renderHeader()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
+            {renderPatientDetails()}
             {renderItemsInCart()}
             {renderProfiles()}
             {/* <MedicineUploadPrescriptionView
@@ -3082,7 +3103,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     </View>
   );
 };
-
+const { text } = theme.viewStyles;
+const { SHERPA_BLUE, APP_YELLOW } = theme.colors;
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -3190,5 +3212,29 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 16,
     marginTop: 6,
+  },
+  patientDetailsViewStyle: {
+    flex: 1,
+    marginHorizontal: 20,
+  },
+  patientNameViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  patientNameTextStyle: {
+    ...text('B', 13, SHERPA_BLUE, 1, 20),
+  },
+  changeTextStyle: {
+    color: APP_YELLOW,
+  },
+  patientDetailsTextStyle: {
+    ...text('R', 12, SHERPA_BLUE, 1, 18),
+  },
+  testReportMsgStyle: {
+    ...text('R', 10, SHERPA_BLUE, 0.7, 14),
+    marginBottom: 24,
   },
 });
