@@ -561,8 +561,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const checkLocation = (docTabSelected: boolean = false) => {
     if (!locationDetails) {
       showAphAlert!({
-        unDismissable: true,
+        unDismissable: false,
         title: 'Hi! :)',
+        onPressOutside: () => {
+          setSortValue('availability');
+          fetchSpecialityFilterData(
+            filterMode,
+            FilterData,
+            latlng,
+            'availability',
+            undefined,
+            false,
+            doctorSearch
+          );
+        },
         description:
           'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
         children: (

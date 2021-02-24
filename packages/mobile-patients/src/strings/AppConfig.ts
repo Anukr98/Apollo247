@@ -118,7 +118,7 @@ const appStaticVariables = {
   EXPRESS_MAXIMUM_HOURS: 6,
   PACKAGING_CHARGES: 0,
   MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
-  COVID_UPDATES: 'https://www.apollo247.com/blog/coronavirus-updates',
+  COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
 };
 
 const DEV_top_specialties = [
@@ -575,7 +575,20 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA
@@ -629,7 +642,20 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA2
@@ -683,7 +709,20 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA3
@@ -731,7 +770,20 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // VAPT
@@ -785,7 +837,20 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 //Production
 const ConfigurationProd = {
@@ -838,7 +903,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462, 2388, 2419, 2411, 2410, 2539, 2614, 2462, 2613],
 };
 
 //PERFORMANCE
@@ -893,6 +958,20 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 //DevelopmentReplica
@@ -947,6 +1026,20 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 const Configuration =
