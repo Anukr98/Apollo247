@@ -185,7 +185,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen_App_opend_error', error);
     }
-
   }, []);
 
   useEffect(() => {
@@ -955,6 +954,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setNeedHelpToContactInMessage,
     setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
+    setCovidVaccineCta,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1060,6 +1060,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Need_Help_Return_Pharma_Order_Success_Message: {
       PROD: 'Need_Help_Return_Pharma_Order_Success_Message',
     },
+    Covid_Vaccine_Cta_Key: {
+      QA: 'Covid_Vaccine_CTA_QA',
+      PROD: 'Covid_Vaccine_CTA',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1105,6 +1109,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      const covidVaccineCta = getRemoteConfigValue('Covid_Vaccine_Cta_Key', (key) =>
+        JSON.parse(config.getString(key))
+      );
+      covidVaccineCta && setCovidVaccineCta!(covidVaccineCta);
 
       const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
         'Need_Help_Return_Pharma_Order_Success_Message',
