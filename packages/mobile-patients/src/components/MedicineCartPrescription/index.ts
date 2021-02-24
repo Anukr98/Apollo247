@@ -1,3 +1,4 @@
+import * as Helpers from '@aph/mobile-patients/src/components/MedicineCartPrescription/Helpers';
 import {
   MedicineCartPrescription,
   Props,
@@ -18,4 +19,5 @@ export {
   PrescriptionOptionProps,
   PrescriptionOptions,
   PrescriptionOptionsProps,
+  Helpers,
 };

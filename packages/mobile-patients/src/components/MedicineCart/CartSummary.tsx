@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   View,
@@ -27,10 +27,8 @@ import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemsList';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
 import {
@@ -509,14 +507,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       />
     );
   };
-
-  // function isPrescriptionRequired() {
-  //   if (uploadPrescriptionRequired) {
-  //     return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
 
   const renderButton = () => {
     return !prescriptionType ? (

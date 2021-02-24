@@ -728,6 +728,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         coupon: coupon ? coupon.coupon : '',
         patientAddressId: deliveryAddressId,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
