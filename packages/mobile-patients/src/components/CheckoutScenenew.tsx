@@ -459,10 +459,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } catch (error) {
             console.log(error);
           }
+          let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
+          orders[0] = {
+            __typename: 'MedicineOrderIds',
+            id: orderId,
+            orderAutoId: orderAutoId,
+          };
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
-            orderId: orderAutoId,
+            transId: orderAutoId,
+            orders: orders,
           });
         }
       })
