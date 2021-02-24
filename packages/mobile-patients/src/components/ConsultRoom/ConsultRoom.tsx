@@ -2814,11 +2814,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.covidSubContainer}>
           <CovidButton
             iconStyle={styles.covidIconStyle}
-            buttonStyle={styles.covidBtn}
+            iconUrl={covidVaccineCta?.iconPath}
+            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
+            iconBase={VaccineTracker}
             btnTitleStyle={styles.covidBtnTitle}
-            iconBase={FaqsArticles}
-            title={string.common.faqsArticles}
-            onPress={() => onPressFAQ()}
+            title={covidVaccineCta?.title || string.common.covidVaccineTracker}
+            onPress={() => onPressVaccineTracker()}
           />
           <CovidButton
             iconStyle={styles.covidIconStyle}
@@ -2840,12 +2841,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
           <CovidButton
             iconStyle={styles.covidIconStyle}
-            iconUrl={covidVaccineCta?.iconPath}
-            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
-            iconBase={VaccineTracker}
+            buttonStyle={styles.covidBtn}
             btnTitleStyle={styles.covidBtnTitle}
-            title={covidVaccineCta?.title || string.common.covidVaccineTracker}
-            onPress={() => onPressVaccineTracker()}
+            iconBase={FaqsArticles}
+            title={string.common.faqsArticles}
+            onPress={() => onPressFAQ()}
           />
         </View>
       </View>
