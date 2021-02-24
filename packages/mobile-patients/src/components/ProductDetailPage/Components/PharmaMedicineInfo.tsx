@@ -40,11 +40,11 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
 
   const renderUses = (uses: string) => {
     const medicine_use = filterHtmlContent(uses);
-    const medicineUse = medicine_use.replace(/\$name/gi, name.toLocaleLowerCase());
+    const medicineUse = medicine_use.replace(/\$name/gi, name);
     return (
       !!medicineUse.length && (
         <View>
-          <Text style={styles.subHeading}>{`Uses of ${name.toLocaleLowerCase()}`}</Text>
+          <Text style={styles.subHeading}>{`Uses of ${name}`}</Text>
           <HTML
             html={medicineUse}
             baseFontStyle={{
@@ -60,10 +60,10 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   const renderSideEffects = (medicineSideEffects: string) => {
     const sideEffectsHtml = filterHtmlContent(medicineSideEffects);
     const text = sideEffectsHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
-    const sideEffects = text.replace(/\$name/gi, name.toLocaleLowerCase());
+    const sideEffects = text.replace(/\$name/gi, name);
     return !!sideEffects ? (
       <View>
-        <Text style={styles.subHeading}>{`Side Effects of ${name.toLocaleLowerCase()}`}</Text>
+        <Text style={styles.subHeading}>{`Side Effects of ${name}`}</Text>
         <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{sideEffects}</Text>
       </View>
     ) : null;
@@ -79,7 +79,7 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
 
   const renderStorage = () => {
     const pharmaStorage = `${storagePlace} ${storage} ${coldChain}`;
-    const storageInfo = pharmaStorage.replace(/\$name/gi, name.toLocaleLowerCase());
+    const storageInfo = pharmaStorage.replace(/\$name/gi, name);
     const pharmaStorageInfo = storageInfo.replace(/u00ba/gi, strings.common.DegreeSymbol);
     return (
       <View>

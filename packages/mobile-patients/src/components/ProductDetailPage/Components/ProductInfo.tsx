@@ -23,6 +23,7 @@ export interface ProductInfoProps {
   expiryDate?: string | null;
   isPharma: boolean;
   pharmaOverview?: NewPharmaOverview | null;
+  directionsOfUse?: string | null;
 }
 
 export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
@@ -42,6 +43,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     isPharma,
     pharmaOverview,
     safety_information,
+    directionsOfUse,
   } = props;
 
   const renderDescription = () => {
@@ -68,11 +70,31 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     const text2 = keyBenefits?.replace(/u2022/, '');
     const keyBenefit = text2?.replace(/u2022/gi, '.').trim();
     return (
-      !!keyBenefit.legth && (
+      !!keyBenefit.length && (
         <View>
           <Text style={styles.subHeading}>Key Benefits</Text>
           <HTML
             html={keyBenefit}
+            baseFontStyle={{
+              ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
+            }}
+            imagesMaxWidth={Dimensions.get('window').width}
+          />
+        </View>
+      )
+    );
+  };
+
+  const renderFmcgUses = () => {
+    const use = filterHtmlContent(directionsOfUse);
+    const text2 = use?.replace(/u2022/, '');
+    const uses = text2?.replace(/u2022/gi, '.').trim();
+    return (
+      !!uses.length && (
+        <View>
+          <Text style={styles.subHeading}>Directions of Use</Text>
+          <HTML
+            html={uses}
             baseFontStyle={{
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
@@ -193,6 +215,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
       ) : (
         <>
           {!!key_benefits && renderKeyBenefits()}
+          {!!directionsOfUse && renderFmcgUses()}
           {!!storage && renderStorage()}
           {!!vegetarian && renderVegetarianIcon()}
           {!!key_ingredient && renderKeyIngredient()}
