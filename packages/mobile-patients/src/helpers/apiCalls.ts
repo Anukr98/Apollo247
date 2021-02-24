@@ -725,11 +725,14 @@ export const trackTagalysEvent = (
   });
 };
 
+let cancelGetMedicineSearchSuggestionsApi: Canceler | undefined;
 export const getMedicineSearchSuggestionsApi = (
   searchText: string,
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelGetMedicineSearchSuggestionsApi && cancelGetMedicineSearchSuggestionsApi();
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
@@ -741,6 +744,9 @@ export const getMedicineSearchSuggestionsApi = (
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
+    cancelToken: new CancelToken((c) => {
+      cancelGetDeliveryTAT247 = c;
+    }),
   });
 };
 
