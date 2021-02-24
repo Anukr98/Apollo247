@@ -714,6 +714,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcStatus,
     setPharmacyUserType,
     pharmacyUserTypeAttribute,
+    covidVaccineCta,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -2839,10 +2840,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
           <CovidButton
             iconStyle={styles.covidIconStyle}
+            iconUrl={covidVaccineCta?.iconPath}
             buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
             iconBase={VaccineTracker}
             btnTitleStyle={styles.covidBtnTitle}
-            title={string.common.covidVaccineTracker}
+            title={covidVaccineCta?.title || string.common.covidVaccineTracker}
             onPress={() => onPressVaccineTracker()}
           />
         </View>
@@ -2937,7 +2939,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
     try {
       const userMobNo = g(currentPatient, 'mobileNumber');
-      const openUrl = `${AppConfig.Configuration.COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
+      const openUrl = `${covidVaccineCta?.url ||
+        AppConfig.Configuration
+          .COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });
