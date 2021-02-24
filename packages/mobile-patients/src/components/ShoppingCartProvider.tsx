@@ -515,9 +515,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
       });
     }
     _setCartItems(cartItems);
-    // _setCartItems(
-    //   cartItems.map((item, index) => (index === 0 ? { ...item, prescriptionRequired: true } : item))
-    // );
     AsyncStorage.setItem(AsyncStorageKeys.cartItems, JSON.stringify(cartItems)).catch(() => {
       showGenericAlert('Failed to save cart items in local storage.');
     });

@@ -28,7 +28,6 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
 import {
@@ -468,14 +467,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       />
     );
   };
-
-  // function isPrescriptionRequired() {
-  //   if (uploadPrescriptionRequired) {
-  //     return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
 
   const renderButton = () => {
     return !prescriptionType ? (
