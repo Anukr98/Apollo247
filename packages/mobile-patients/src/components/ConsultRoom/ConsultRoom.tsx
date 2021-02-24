@@ -557,7 +557,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'absolute',
     left: -4,
-    top: 33,
+    top: 36,
+    zIndex: 1,
   },
   circleButtonRight: {
     width: 25,
@@ -575,7 +576,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'absolute',
     right: -3,
-    top: 33,
+    top: 36,
+    zIndex: 1,
   },
   circleButtonImage: { width: 7, height: 12 },
   covidBtn: {
@@ -827,6 +829,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  //to be called only when the user moved away from homepage
+  const logHomePageMovedAway = async () => {
+    const isMovedAwayFromHome = await AsyncStorage.getItem('APP_OPENED');
+    if (isMovedAwayFromHome) {
+      postHomeWEGEvent(WebEngageEventName.MOVED_AWAY_FROM_HOME);
+      try {
+        AsyncStorage.removeItem('APP_OPENED');
+      } catch (error) {
+        CommonBugFender('ConsultRoom_logHomePageMovedAwayError', error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (currentPatient?.id) {
       saveDeviceNotificationToken(currentPatient.id);
@@ -906,13 +921,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
+      logHomePageMovedAway();
     });
-
-    try {
-      AsyncStorage.removeItem('APP_OPENED');
-    } catch (error) {
-      CommonBugFender('ConsultRoom_getAppOpenedKeyReadError', error);
-    }
 
     return () => {
       didBlur && didBlur.remove();
@@ -2355,7 +2365,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       imageUrl: { uri: darktheme ? getMobileURL(item?.banner) : item?.banner },
       title: item?.banner_template_info?.headerText1,
       value: item?.banner_template_info?.headerText2,
-      action: { type: item?.cta_action?.type, cta_action: item?.cta_action?.meta?.action },
+      action: {
+        url: item?.cta_action?.url || item?.cta_action?.meta?.url,
+        type: item?.cta_action?.type,
+        cta_action: item?.cta_action?.meta?.action,
+      },
     }));
     return datatosend;
   };
@@ -2378,11 +2392,31 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           isActive: true,
         });
       } else if (action?.cta_action === string.Hdfc_values.ABSOLUTE_URL) {
-        props.navigation.navigate(AppRoutes.CommonWebView, {
-          url: url || action?.url,
-        });
+        openWebViewFromBanner(url || action?.url);
       }
+    } else if (action?.type == string.Hdfc_values.WEB_VIEW) {
+      openWebViewFromBanner(url || action?.url);
     }
+  };
+
+  const openWebViewFromBanner = async (url: string) => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    let updatedUrl: string = '';
+    if (url?.includes('apollo-pro-health')) {
+      updatedUrl = url?.concat(
+        '?utm_source=mobile_app',
+        '&utm_token=',
+        currentDeviceToken,
+        '&utm_mobile_number=',
+        currentPatient?.mobileNumber || ''
+      );
+    } else {
+      updatedUrl = url?.concat('?utm_source=mobile_app');
+    }
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: updatedUrl,
+    });
   };
 
   const openWebView = (url) => {
@@ -2790,7 +2824,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
             btnTitleStyle={styles.covidBtnTitle}
             iconBase={PhoneDoctor}
-            title={string.common.callDoctor}
+            title={string.common.vaccinationQueries}
             onPress={() => onPressCallDoctor()}
           />
         </View>

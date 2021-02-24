@@ -400,6 +400,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_VERIFICATION_SUCCESS] = {
       'Mobile Number': phoneNumberFromParams,
     };
+    AsyncStorage.setItem('APP_OPENED', 'true');
     postWebEngageEvent(WebEngageEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
   };
 
