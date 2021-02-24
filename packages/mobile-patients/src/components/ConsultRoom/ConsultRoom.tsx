@@ -2935,13 +2935,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {}
   };
 
-  const onPressVaccineTracker = () => {
+  const onPressVaccineTracker = async () => {
     postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
     try {
+      const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+      const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
       const userMobNo = g(currentPatient, 'mobileNumber');
       const openUrl = `${covidVaccineCta?.url ||
         AppConfig.Configuration
-          .COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
+          .COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${currentDeviceToken}`;
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });
