@@ -179,6 +179,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingTop: 12,
   },
+  consultModeCard: {
+    width: (width - 42) / 2,
+    alignSelf: 'center',
+  },
   onlineConsultLabel: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
     color: theme.colors.LIGHT_BLUE,
@@ -299,6 +303,13 @@ const styles = StyleSheet.create({
     marginRight: 11,
   },
   shareViewStyle: { paddingLeft: 5, flexDirection: 'row', alignItems: 'center' },
+  rectangularView: {
+    position: 'absolute',
+    width: (width - 42) / 2,
+    flex: 2,
+    left: -3,
+    top: -2,
+  },
 });
 type Appointments = {
   date: string;
@@ -373,6 +384,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     showCircleSubscribed,
   } = useShoppingCart();
 
+  const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
+  const isPhysical =
+    doctorDetails &&
+    doctorDetails?.availableModes?.filter(
+      (consultMode: ConsultMode) => consultMode === ConsultMode.PHYSICAL
+    );
+  const isBoth =
+    doctorDetails &&
+    doctorDetails?.availableModes?.filter(
+      (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
+    );
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
       ? showCircleSubscribed
@@ -878,7 +900,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <CTGrayChat style={styles.followUpChatImageStyle} />
                 <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
               </View>
-              <View style={styles.onlineConsultView}>
+              <View
+                style={[
+                  styles.onlineConsultView,
+                  isPayrollDoctor || (isBoth?.length === 0 && isPhysical?.length === 0)
+                    ? styles.consultModeCard
+                    : {},
+                ]}
+              >
                 <View
                   style={[
                     styles.consultViewStyles,
@@ -971,81 +1000,47 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </TouchableOpacity>
                 </View>
 
-                <View
-                  style={[
-                    styles.consultViewStyles,
-                    {
-                      marginLeft: 6,
-                      height: consultViewHeight,
-                    },
-                  ]}
-                >
-                  {!onlineSelected && (
-                    <RectangularIcon
-                      resizeMode={'stretch'}
-                      style={{
-                        position: 'absolute',
-                        width: (width - 42) / 2,
-                        height: rectangularIconHeight,
-                        flex: 2,
-                        left: -3,
-                        top: -2,
-                      }}
-                    />
-                  )}
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    style={{ height: consultViewHeight }}
-                    onPress={() => {
+                {!isPayrollDoctor && (isBoth?.length > 0 || isPhysical?.length > 0) ? (
+                  <View
+                    style={[
+                      styles.consultViewStyles,
                       {
-                        const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
-                          'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
-                          'Patient Name': `${g(currentPatient, 'firstName')} ${g(
-                            currentPatient,
-                            'lastName'
-                          )}`,
-                          'Patient UHID': g(currentPatient, 'uhid'),
-                          Relation: g(currentPatient, 'relation'),
-                          'Patient Age': Math.round(
-                            Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-                          ),
-                          'Patient Gender': g(currentPatient, 'gender'),
-                          'Customer ID': g(currentPatient, 'id'),
-                          'Doctor ID': g(doctorDetails, 'id')!,
-                          'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
-                          'Consultation Type': 'physical',
-                        };
-                        postWebEngageEvent(
-                          WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
-                          eventAttributes
-                        );
-                        doctorDetails.doctorType !== DoctorType.PAYROLL && setOnlineSelected(false);
-                      }
-                    }}
+                        marginLeft: 6,
+                        height: consultViewHeight,
+                      },
+                    ]}
                   >
-                    <View>
-                      {doctorDetails.doctorType !== DoctorType.PAYROLL && (
-                        <>
-                          <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
-                          {isCircleDoctor && physicalConsultMRPPrice > 0 ? (
-                            renderCareDoctorPricing(ConsultMode.PHYSICAL)
-                          ) : (
-                            <Text style={styles.onlineConsultAmount}>
-                              {string.common.Rs}
-                              {convertNumberToDecimal(doctorDetails?.physicalConsultationFees)}
-                            </Text>
-                          )}
-                          <AvailabilityCapsule
-                            titleTextStyle={{ paddingHorizontal: 7 }}
-                            styles={{ marginTop: -5 }}
-                            availableTime={physicalAvailableTime}
-                            availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
-                          />
-                        </>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                </View>
+                    {!onlineSelected && (
+                      <RectangularIcon
+                        resizeMode={'stretch'}
+                        style={[styles.rectangularView, { height: rectangularIconHeight }]}
+                      />
+                    )}
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={{ height: consultViewHeight }}
+                      onPress={() => onPressMeetInPersonCard()}
+                    >
+                      <View>
+                        <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
+                        {isCircleDoctor && physicalConsultMRPPrice > 0 ? (
+                          renderCareDoctorPricing(ConsultMode.PHYSICAL)
+                        ) : (
+                          <Text style={styles.onlineConsultAmount}>
+                            {string.common.Rs}
+                            {convertNumberToDecimal(doctorDetails?.physicalConsultationFees)}
+                          </Text>
+                        )}
+                        <AvailabilityCapsule
+                          titleTextStyle={{ paddingHorizontal: 7 }}
+                          styles={{ marginTop: -5 }}
+                          availableTime={physicalAvailableTime}
+                          availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
               </View>
             </View>
           )}
@@ -1059,6 +1054,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       );
     }
     return null;
+  };
+
+  const onPressMeetInPersonCard = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+      'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Consultation Type': 'physical',
+    };
+    postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
+    !isPayrollDoctor && setOnlineSelected(false);
   };
 
   const circlePlanWebEngage = (eventName: any) => {
