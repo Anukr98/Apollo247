@@ -585,23 +585,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orders?.forEach((order) => {
       firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
     });
-    const token = await firebaseAuth().currentUser!.getIdToken();
-    console.log({ token });
     const checkoutEventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${transactionId}`, false),
-    };
-    const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${transactionId}`),
     };
     props.navigation.navigate(AppRoutes.PaymentScene, {
       orders,
       transactionId,
-      token,
       amount: getFormattedAmount(grandTotal - burnHC),
       burnHC: burnHC,
       deliveryTime,
       checkoutEventAttributes,
-      appsflyerEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
