@@ -2817,7 +2817,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CovidButton
             iconStyle={styles.covidIconStyle}
             iconUrl={covidVaccineCta?.iconPath}
-            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
+            buttonStyle={styles.covidBtn}
             iconBase={VaccineTracker}
             btnTitleStyle={styles.covidBtnTitle}
             title={covidVaccineCta?.title || string.common.covidVaccineTracker}
@@ -2843,7 +2843,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
           <CovidButton
             iconStyle={styles.covidIconStyle}
-            buttonStyle={styles.covidBtn}
+            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
             btnTitleStyle={styles.covidBtnTitle}
             iconBase={FaqsArticles}
             title={string.common.faqsArticles}
