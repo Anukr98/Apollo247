@@ -368,8 +368,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               }}
               style={[styles.ctaWhiteButtonViewStyle]}
             >
-              <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
-              <Text style={{ ...theme.viewStyles.text('R', 10, '#fc9916', 1, 24) }}>
+              <Text style={styles.ctaOrangeTextStyle}>{item.firstName}</Text>
+              <Text style={styles.ctaOrangeText2Style}>
                 {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
               </Text>
               {console.log('csk pat', item)}
@@ -1124,6 +1124,11 @@ const styles = StyleSheet.create({
   ctaOrangeTextStyle: {
     textAlign: 'center',
     ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaOrangeText2Style: {
+    ...theme.viewStyles.text('R', 10, '#fc9916', 1, 24),
+    textAlign: 'center',
     marginHorizontal: 5,
   },
   hiTextStyle: {
