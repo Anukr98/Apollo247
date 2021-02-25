@@ -220,7 +220,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      isfocused && availabilityTat(false, true);
+      availabilityTat(false, true);
     }
   }, [deliveryAddressId]);
 
