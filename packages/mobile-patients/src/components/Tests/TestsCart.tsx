@@ -182,6 +182,7 @@ import {
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -315,6 +316,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
+  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
@@ -2885,7 +2887,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View style={styles.patientDetailsViewStyle}>
         <View style={styles.patientNameViewStyle}>
           <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
-          <Text style={[styles.patientNameTextStyle, styles.changeTextStyle]}>
+          <Text
+            style={[styles.patientNameTextStyle, styles.changeTextStyle]}
+            onPress={() => setShowPatientListOverlay(true)}
+          >
             {string.diagnostics.changeText}
           </Text>
         </View>
@@ -2900,6 +2905,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>{address_text}</Text>
       </View>
     );
+  };
+
+  const renderPatientListOverlay = () => {
+    return showPatientListOverlay ? (
+      <PatientListOverlay
+        doctorData={{}}
+        onPressGoBack={() => setShowPatientListOverlay(false)}
+        onPressSharePropfile={(data) => {}}
+      />
+    ) : null;
   };
 
   const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
@@ -2940,6 +2955,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       )}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
+        {renderPatientListOverlay()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderPatientDetails()}
