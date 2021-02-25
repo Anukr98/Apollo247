@@ -212,13 +212,14 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     );
   };
   const renderPatient = () => {
+    console.log('finalAppointmentInput', finalAppointmentInput);
     return (
-      <View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={styles.subViewPopup}>
+        <View style={{ paddingHorizontal: 18 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
         <View style={styles.seperatorLine} />
-        <Text
+        {/* <Text
           style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
         >
           {g(currentPatient, 'firstName')} {g(currentPatient, 'lastName')}
@@ -228,7 +229,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         >
           {Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true))} ,
           {g(currentPatient, 'gender')}
-        </Text>
+        </Text> */}
+        {renderProfileListView()}
       </View>
     );
   };
@@ -367,6 +369,10 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               style={[styles.ctaWhiteButtonViewStyle]}
             >
               <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+              <Text style={{ ...theme.viewStyles.text('R', 10, '#fc9916', 1, 24) }}>
+                {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+              </Text>
+              {console.log('csk pat', item)}
             </TouchableOpacity>
           ) : null
         )}
@@ -456,28 +462,12 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderProfileListView = () => {
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showProfilePopUp}
-        onRequestClose={() => {
-          setShowProfilePopUp(false);
-        }}
-        onDismiss={() => {
-          setShowProfilePopUp(false);
-        }}
-      >
-        <View style={styles.mainView}>
-          <View style={styles.subViewPopup}>
-            {renderProfileDrop()}
-            <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
-            <Text style={styles.popDescriptionStyle}>
-              Prescription to be generated in the name of?
-            </Text>
-            {renderCTAs()}
-          </View>
-        </View>
-      </Modal>
+      <View>
+        {/*renderProfileDrop()*/}
+        <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
+        <Text style={styles.popDescriptionStyle}>Prescription to be generated in the name of?</Text>
+        {renderCTAs()}
+      </View>
     );
   };
 
@@ -926,26 +916,26 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   priceBreakupTitle: {
-    ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE),
-    marginHorizontal: 6,
-    marginTop: 15,
+    ...theme.viewStyles.text('B', 13, theme.colors.SHERPA_BLUE),
+    marginHorizontal: 8,
+    marginVertical: 6,
   },
   seperatorLine: {
-    marginTop: 4,
+    marginTop: 2,
     height: 0.5,
     backgroundColor: theme.colors.LIGHT_BLUE,
-    opacity: 0.2,
-    marginHorizontal: 6,
+    opacity: 0.3,
+    marginHorizontal: 4,
   },
   couponStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   containerPay: {
-    margin: 20,
-    backgroundColor: 'red',
     borderRadius: 10,
     ...theme.viewStyles.card(10),
+    marginLeft: 1,
     paddingVertical: 16,
+    width: '98%',
   },
   rowContainerPay: {
     flexDirection: 'row',
@@ -1083,7 +1073,7 @@ const styles = StyleSheet.create({
   },
   subViewPopup: {
     backgroundColor: 'white',
-    width: '88%',
+    width: '98%',
     alignSelf: 'center',
     borderRadius: 10,
     shadowColor: '#808080',
@@ -1091,6 +1081,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 15,
+    marginVertical: 10,
   },
   congratulationsDescriptionStyle: {
     marginHorizontal: 24,
