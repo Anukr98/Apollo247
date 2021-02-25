@@ -1100,7 +1100,8 @@ const styles = StyleSheet.create({
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 20,
+    paddingHorizontal: 20,
+    marginVertical: 4,
   },
   ctaWhiteButtonViewStyle: {
     padding: 8,
