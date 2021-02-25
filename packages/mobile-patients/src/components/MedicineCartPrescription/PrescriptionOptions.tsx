@@ -11,7 +11,14 @@ import {
   PhysicalPrescription,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CameraIc,
+  GalleryIc,
+  RxIc,
+  RxPrescriptionCallIc,
+  RxPrescriptionIc,
+  RxPrescriptionLaterIc,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -51,7 +58,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
           onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, physicalPrescriptions)
         }
         checked={selectedOption === PrescriptionType.UPLOADED}
-        leftIcon={<FileBig />}
+        leftIcon={<RxPrescriptionIc resizeMode={'contain'} />}
       />
     );
   };
@@ -60,21 +67,21 @@ export const PrescriptionOptions: React.FC<Props> = ({
     const buttons = [
       {
         title: 'Camera',
-        icon: <FileBig />,
+        icon: <CameraIc />,
         onPress: () => {
           prescriptionPopupRef.current?.onPressCamera();
         },
       },
       {
         title: 'Gallery',
-        icon: <FileBig />,
+        icon: <GalleryIc />,
         onPress: () => {
           prescriptionPopupRef.current?.onPressGallery();
         },
       },
       {
         title: 'Select from\nMy Prescriptions',
-        icon: <FileBig />,
+        icon: <RxIc />,
         onPress: () => setMyPrescriptionsVisible(true),
       },
     ];
@@ -83,9 +90,9 @@ export const PrescriptionOptions: React.FC<Props> = ({
         <Text style={styles.lightWeightBlue}>{'What is a valid prescription?'}</Text>
         <Text style={styles.blueMediumText}>{'Add Photos / PDF using:'}</Text>
         <View style={styles.buttonWrapper}>
-          {buttons.map(({ title, onPress }) => (
+          {buttons.map(({ title, icon, onPress }) => (
             <TouchableOpacity onPress={onPress} style={styles.buttonContainer}>
-              <View style={styles.roundButton} />
+              {icon}
               <Text style={styles.buttonTitle}>{title}</Text>
             </TouchableOpacity>
           ))}
@@ -107,7 +114,9 @@ export const PrescriptionOptions: React.FC<Props> = ({
         }
         onPress={() => onSelectOption(PrescriptionType.LATER)}
         checked={selectedOption === PrescriptionType.LATER}
-        leftIcon={<FileBig />}
+        leftIcon={
+          <RxPrescriptionLaterIc resizeMode={'contain'} style={styles.rxPrescriptionLaterIc} />
+        }
       />
     );
   };
@@ -119,7 +128,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
         subtitle={renderNoPrescriptionDetails()}
         onPress={() => onSelectOption(PrescriptionType.CONSULT)}
         checked={selectedOption === PrescriptionType.CONSULT}
-        leftIcon={<FileBig />}
+        leftIcon={<RxPrescriptionCallIc resizeMode={'contain'} />}
       />
     );
   };
@@ -288,12 +297,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'center',
   },
-  roundButton: {
-    backgroundColor: '#01475B',
-    height: 45,
-    width: 45,
-    borderRadius: 22.5,
-  },
   buttonTitle: {
     ...text('M', 14, '#02475B'),
     textAlign: 'center',
@@ -308,6 +311,10 @@ const styles = StyleSheet.create({
     ...text('M', 14, '#01475B'),
     marginBottom: 8,
     marginTop: 18,
+  },
+  rxPrescriptionLaterIc: {
+    height: 20,
+    width: 20,
   },
   profileWrapper: { marginVertical: 10, flexDirection: 'row', flexWrap: 'wrap' },
   profileBtnContainer: { margin: 5, marginLeft: 0, marginRight: 10 },
