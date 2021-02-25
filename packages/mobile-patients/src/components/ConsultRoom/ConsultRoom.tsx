@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   covidTitle: {
-    ...theme.viewStyles.text('M', 13, theme.colors.GREEN),
+    ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
     marginLeft: 10,
     width: width - 100,
   },
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   covidBtnTitle: {
-    ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
+    ...theme.viewStyles.text('SB', 11, theme.colors.APP_YELLOW),
     marginLeft: 8,
     width: width / 2 - 80,
   },
@@ -714,6 +714,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcStatus,
     setPharmacyUserType,
     pharmacyUserTypeAttribute,
+    covidVaccineCta,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -2808,23 +2809,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.covidContainer}>
         <View style={styles.covidTitleContainer}>
           <CovidOrange style={styles.covidIcon} />
-          <Text style={styles.covidTitle}>For COVID-19 Vaccination related queries</Text>
+          <Text style={styles.covidTitle}>
+            {covidVaccineCta?.mainTitle || 'For COVID-19 Vaccination related queries'}
+          </Text>
         </View>
         <View style={styles.covidSubContainer}>
           <CovidButton
             iconStyle={styles.covidIconStyle}
+            iconUrl={covidVaccineCta?.iconPath}
             buttonStyle={styles.covidBtn}
+            iconBase={VaccineTracker}
             btnTitleStyle={styles.covidBtnTitle}
-            iconBase={FaqsArticles}
-            title={string.common.faqsArticles}
-            onPress={() => onPressFAQ()}
+            title={covidVaccineCta?.title || string.common.covidVaccineTracker}
+            onPress={() => onPressVaccineTracker()}
           />
           <CovidButton
             iconStyle={styles.covidIconStyle}
             buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
             btnTitleStyle={styles.covidBtnTitle}
             iconBase={PhoneDoctor}
-            title={string.common.callDoctor}
+            title={string.common.vaccinationQueries}
             onPress={() => onPressCallDoctor()}
           />
         </View>
@@ -2840,10 +2844,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CovidButton
             iconStyle={styles.covidIconStyle}
             buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
-            iconBase={VaccineTracker}
             btnTitleStyle={styles.covidBtnTitle}
-            title={string.common.covidVaccineTracker}
-            onPress={() => onPressVaccineTracker()}
+            iconBase={FaqsArticles}
+            title={string.common.faqsArticles}
+            onPress={() => onPressFAQ()}
           />
         </View>
       </View>
@@ -2933,11 +2937,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {}
   };
 
-  const onPressVaccineTracker = () => {
+  const onPressVaccineTracker = async () => {
     postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
     try {
+      const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+      const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
       const userMobNo = g(currentPatient, 'mobileNumber');
-      const openUrl = `${AppConfig.Configuration.COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
+      const openUrl = `${covidVaccineCta?.url ||
+        AppConfig.Configuration
+          .COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${currentDeviceToken}`;
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });

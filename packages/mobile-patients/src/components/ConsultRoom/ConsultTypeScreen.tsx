@@ -31,7 +31,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '../UIElementsProvider';
@@ -203,6 +203,7 @@ export interface ConsultTypeScreenProps extends NavigationScreenProps {
   ConsultType: ConsultMode;
   availNowText?: string;
   consultNowText?: string;
+  doctorType: DoctorType;
 }
 
 type stepsObject = {
@@ -218,6 +219,8 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   // const onlinePrice = props.navigation.getParam('onlinePrice');
   // const InpersonPrice = props.navigation.getParam('InpersonPrice');
   const ConsultType = props.navigation.getParam('ConsultType');
+  const doctorType = props.navigation.getParam('doctorType');
+  const isPayrollDoctor = doctorType === DoctorType.PAYROLL;
   const params = props.navigation.getParam('params');
   const { setLoading } = useUIElements();
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
@@ -574,7 +577,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         >
           {/* {hideCheckbox ? null : renderCheckbox()} */}
           {[ConsultMode.ONLINE, ConsultMode.BOTH].includes(ConsultType) ? renderOnlineCard() : null}
-          {[ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(ConsultType)
+          {!isPayrollDoctor && [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(ConsultType)
             ? renderInPersonCard()
             : null}
         </ScrollView>

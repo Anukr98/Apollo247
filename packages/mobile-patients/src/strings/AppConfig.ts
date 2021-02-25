@@ -575,7 +575,20 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA
@@ -629,7 +642,20 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA2
@@ -683,7 +709,20 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA3
@@ -731,7 +770,20 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // VAPT
@@ -785,7 +837,20 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 //Production
 const ConfigurationProd = {
@@ -893,7 +958,20 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 //DevelopmentReplica
@@ -948,7 +1026,20 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 const Configuration =
@@ -1304,6 +1395,7 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
 ];
 
@@ -1321,6 +1413,7 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
 ];
 

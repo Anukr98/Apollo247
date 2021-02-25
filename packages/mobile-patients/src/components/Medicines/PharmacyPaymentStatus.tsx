@@ -70,7 +70,10 @@ import {
   saveMedicineOrderOMSVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import moment from 'moment';
 import {
@@ -96,6 +99,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     circlePlanSelected,
     circleMembershipCharges,
     setCirclePlanSelected,
+    circleSubscriptionId,
+    grandTotal,
+    cartTotalCashback,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
@@ -105,7 +112,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
-  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const orders = props.navigation.getParam('orders');
   const price = props.navigation.getParam('price');
   const transId = props.navigation.getParam('transId');
@@ -243,7 +249,26 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       variables: paymentInfo,
     });
 
-  const handleOrderSuccess = (orderAutoId: string) => {
+  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
+    orderId: string,
+    orderAutoId: string
+  ) => {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      'customer id': currentPatient ? currentPatient.id : '',
+      'cart size': cartItems.length,
+      af_revenue: getFormattedAmount(grandTotal),
+      af_currency: 'INR',
+      'order id': orderId,
+      orderAutoId: orderAutoId,
+      'coupon applied': coupon ? true : false,
+      'Circle Cashback amount':
+        circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+      ...pharmacyCircleAttributes!,
+    };
+    return appsflyerEventAttributes;
+  };
+
+  const handleOrderSuccess = (orderAutoId: string, orderId: string) => {
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -251,7 +276,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    fireOrderSuccessEvent(orderAutoId);
+    fireOrderSuccessEvent(orderAutoId, orderId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
@@ -290,7 +315,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       } else {
         console.log('inside success');
         orders?.forEach((order) => {
-          handleOrderSuccess(`${order?.orderAutoId}`);
+          handleOrderSuccess(`${order?.orderAutoId}`, order?.id!);
         });
         clearCartInfo?.();
       }
@@ -337,16 +362,19 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     });
   };
 
-  const fireOrderSuccessEvent = (newOrderId: string) => {
+  const fireOrderSuccessEvent = (orderAutoId: string, orderId: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
       'Payment failed order id': transId,
-      'Payment Success Order Id': newOrderId,
+      'Payment Success Order Id': orderAutoId,
       status: true,
     };
     postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
-    firePurchaseEvent(newOrderId);
+    postAppsFlyerEvent(
+      AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
+      getPrepaidCheckoutCompletedAppsFlyerEventAttributes(orderAutoId, orderId)
+    );
+    firePurchaseEvent(orderAutoId);
   };
 
   const fireOrderFailedEvent = () => {
