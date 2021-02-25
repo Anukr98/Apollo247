@@ -273,10 +273,24 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               {doctor?.specialty?.name || ''} | {doctor?.experience} YR
               {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
             </Text>
-
-            <Text style={styles.appointmentTimeStyle}>
-              {dateFormatter(appointmentInput?.appointmentDateTime)}
-            </Text>
+            <View style={styles.doctorPointers}>
+              <Image
+                style={styles.doctorPointersImage}
+                source={require('@aph/mobile-patients/src/components/ui/icons/appointmentMarker.png')}
+                resizeMode={'contain'}
+              />
+              <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
+            </View>
+            <View style={styles.doctorPointers}>
+              <Image
+                style={styles.doctorPointersImage}
+                source={require('@aph/mobile-patients/src/components/ui/icons/calendarAppointment.png')}
+                resizeMode={'contain'}
+              />
+              <Text style={styles.appointmentTimeStyle}>
+                {dateFormatter(appointmentInput?.appointmentDateTime)}
+              </Text>
+            </View>
             <Text style={styles.regularText}></Text>
           </View>
           <View>
@@ -1007,6 +1021,16 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
   },
+  doctorPointers: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  doctorPointersImage: {
+    width: 14,
+    height: '100%',
+    marginRight: 4,
+  },
   drImageBackground: {
     height: 95,
     width: 95,
@@ -1034,8 +1058,9 @@ const styles = StyleSheet.create({
   },
   appointmentTimeStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SKY_BLUE,
-    marginTop: 10,
+    color: '#02475B',
+    marginTop: 1,
+    marginLeft: 4,
   },
   showPopUp: {
     backgroundColor: 'rgba(0,0,0,0.01)',

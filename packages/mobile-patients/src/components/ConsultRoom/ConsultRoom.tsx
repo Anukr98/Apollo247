@@ -2567,7 +2567,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const expired = circlePlanValidity
       ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
       : '';
-    console.log('csk circle val', expiry, expired, renew, circleStatus, 'list->', cardlist);
+    console.log(
+      'csk circle val',
+      expiry,
+      expired,
+      renew,
+      circleStatus,
+      'list->',
+      circleSubscriptionId
+    );
 
     {
       /**
