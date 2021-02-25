@@ -2558,14 +2558,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderCircle = () => {
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
-    const expired = circlePlanValidity
-      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
-      : '';
+
     const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
     renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
     const darktheme = circleStatus === 'disabled' ? true : false;
-
     const cardlist = dataBannerCards(darktheme);
+
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
+    console.log('csk circle val', expiry, expired, renew, circleStatus, 'list->', cardlist);
 
     {
       /**
