@@ -222,6 +222,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
         ref={(ref) => (prescriptionPopupRef.current = ref)}
         type={'cartOrMedicineFlow'}
         isVisible={false}
+        isActionSheetOutOfOverlay={true}
         heading={''}
         optionTexts={{}}
         onClickClose={() => {}}
