@@ -177,6 +177,7 @@ export interface UploadPrescriprionPopupProps {
   uploadImage?: boolean;
   phrUpload?: boolean;
   openCamera?: boolean;
+  isActionSheetOutOfOverlay?: boolean;
 }
 export interface UploadPrescriprionPopupRefProps {
   onPressCamera: () => void;
@@ -704,6 +705,36 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Cancel</Text>,
   ];
 
+  const renderActionSheet = () => {
+    return (
+      <ActionSheet
+        ref={(o: ActionSheet) => (actionSheetRef.current = o)}
+        title={''}
+        options={options}
+        cancelButtonIndex={2}
+        onPress={(index: number) => {
+          /* do something */
+          console.log('index', index);
+          if (index === 0) {
+            setTimeout(() => {
+              openGallery();
+            }, 100);
+          } else if (index === 1) {
+            setTimeout(() => {
+              if (Platform.OS === 'android') {
+                storagePermissions(() => {
+                  onBrowseClicked();
+                });
+              } else {
+                onBrowseClicked();
+              }
+            }, 100);
+          }
+        }}
+      />
+    );
+  };
+
   return props.phrUpload ? (
     <Overlay
       onRequestClose={() => props.onClickClose()}
@@ -726,75 +757,52 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     </Overlay>
   ) : (
     <>
-    <Overlay
-      onRequestClose={() => props.onClickClose()}
-      isVisible={props.isVisible}
-      windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-      containerStyle={{
-        marginBottom: 20,
-      }}
-      fullScreen
-      transparent
-      overlayStyle={{
-        padding: 0,
-        margin: 0,
-        width: '88.88%',
-        height: '88.88%',
-        borderRadius: 10,
-        borderBottomLeftRadius: 10,
-        borderBottomRightRadius: 10,
-        backgroundColor: 'transparent',
-        overflow: 'hidden',
-        elevation: 0,
-      }}
-    >
-      <View style={styles.overlayViewStyle1}>
-        <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
-          {renderCloseIcon()}
-          {renderHeader()}
-          <ScrollView
-            bounces={false}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-              borderBottomLeftRadius: 10,
-              borderBottomRightRadius: 10,
-            }}
-          >
+      <Overlay
+        onRequestClose={() => props.onClickClose()}
+        isVisible={props.isVisible}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        containerStyle={{
+          marginBottom: 20,
+        }}
+        fullScreen
+        transparent
+        overlayStyle={{
+          padding: 0,
+          margin: 0,
+          width: '88.88%',
+          height: '88.88%',
+          borderRadius: 10,
+          borderBottomLeftRadius: 10,
+          borderBottomRightRadius: 10,
+          backgroundColor: 'transparent',
+          overflow: 'hidden',
+          elevation: 0,
+        }}
+      >
+        <View style={styles.overlayViewStyle1}>
+          <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+            {renderCloseIcon()}
+            {renderHeader()}
+            <ScrollView
+              bounces={false}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+              }}
+            >
             {props.type == 'Upload Flow' && renderOrderSteps()}
-            {renderOptions()}
-            {renderInstructions()}
-            {!props.hideTAndCs && renderTermsAndCondns()}
-          </ScrollView>
-        </SafeAreaView>
-        {showSpinner && <Spinner />}
-      </View>
-    </Overlay>
-        <ActionSheet
-          ref={(o: ActionSheet) => (actionSheetRef.current = o)}
-          title={''}
-          options={options}
-          cancelButtonIndex={2}
-          onPress={(index: number) => {
-            /* do something */
-            console.log('index', index);
-            if (index === 0) {
-              setTimeout(() => {
-                openGallery();
-              }, 100);
-            } else if (index === 1) {
-              setTimeout(() => {
-                if (Platform.OS === 'android') {
-                  storagePermissions(() => {
-                    onBrowseClicked();
-                  });
-                } else {
-                  onBrowseClicked();
-                }
-              }, 100);
-            }
-          }}
-        />
+              {renderOptions()}
+              {renderInstructions()}
+              {!props.hideTAndCs && renderTermsAndCondns()}
+            </ScrollView>
+          </SafeAreaView>
+          {showSpinner && <Spinner />}
+          {!props.isActionSheetOutOfOverlay && renderActionSheet()}
+        </View>
+      </Overlay>
+      {!!props.isActionSheetOutOfOverlay && renderActionSheet()}
     </>
   );
 });
