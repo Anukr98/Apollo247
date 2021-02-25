@@ -238,12 +238,12 @@ export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
-    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+    [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
   );
-  const landmark = [address.landmark];
+  const landmark = [address?.landmark];
   // to handle state value getting twice
   const addrLine2 = removeConsecutiveComma(
-    [address.city, address.state]
+    [address?.city, address?.state]
       .filter((v) => v)
       .join(', ')
       .split(',')
@@ -251,8 +251,8 @@ export const formatAddressWithLandmark = (
       .filter((item, idx, array) => array.indexOf(item) === idx)
       .join(', ')
   );
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  if (address.landmark != '') {
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
+  if (address?.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
