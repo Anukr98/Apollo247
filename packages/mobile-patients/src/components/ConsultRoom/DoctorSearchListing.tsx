@@ -101,7 +101,6 @@ import {
   View,
   ViewStyle,
   Platform,
-  AsyncStorage,
   Share,
 } from 'react-native';
 import {
@@ -110,6 +109,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
