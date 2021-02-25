@@ -215,7 +215,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     console.log('finalAppointmentInput', finalAppointmentInput);
     return (
       <View style={styles.subViewPopup}>
-        <View style={{ paddingHorizontal: 18 }}>
+        <View style={{ paddingHorizontal: 16 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
         <View style={styles.seperatorLine} />
