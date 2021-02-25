@@ -2880,6 +2880,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ''}, ${currentPatient?.gender || ''}, ${
       currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
     }`;
+    const address_text = formatAddressWithLandmark(addresses?.[0]) || '';
     return (
       <View style={styles.patientDetailsViewStyle}>
         <View style={styles.patientNameViewStyle}>
@@ -2890,6 +2891,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
         <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
+        <View style={styles.patientNameViewStyle}>
+          <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
+          <Text style={[styles.patientNameTextStyle, styles.changeTextStyle]}>
+            {string.diagnostics.changeText}
+          </Text>
+        </View>
+        <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>{address_text}</Text>
       </View>
     );
   };
