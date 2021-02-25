@@ -3,7 +3,7 @@ import { CircleLogo, OfferIcon } from '@aph/mobile-patients/src/components/ui/Ic
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -49,7 +49,6 @@ export interface PackageCardProps {
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
-
   const actualItemsToShow =
     data?.diagnosticWidgetData?.length > 0 &&
     data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
@@ -385,7 +384,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         <Card
           cardContainer={styles.errorCardContainer}
           heading={string.common.uhOh}
-          description={'Something went wrong.'}
+          description={string.common.somethingWentWrong}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
         />
@@ -395,6 +394,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     }
   };
 
+  const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
@@ -402,11 +403,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
             bounces={false}
-            keyExtractor={(_, index) => `${index}`}
+            keyExtractor={keyExtractor}
             showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
+            maxToRenderPerBatch={3}
           />
         ) : (
           renderError()

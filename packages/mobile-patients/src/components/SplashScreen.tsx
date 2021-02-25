@@ -185,7 +185,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen_App_opend_error', error);
     }
-
   }, []);
 
   useEffect(() => {
@@ -341,7 +340,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         handleDeeplinkFormatTwo(event);
       } else {
         route = event.replace('apollopatients://', '');
-
         const data = route.split('?');
         setBugFenderLog('DEEP_LINK_DATA', data);
         route = data[0];
@@ -494,6 +492,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'CircleMembershipDetails':
             getData('CircleMembershipDetails');
+            break;
+
+          case 'TestListing':
+            getData('TestListing', data?.length === 2 ? linkId : undefined);
             break;
 
           default:
@@ -904,6 +906,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             isActive: true,
           });
         }
+        break;
+
+      case 'TestListing':
+        console.log('TestListing');
+        props.navigation.navigate(AppRoutes.TestListing, {
+          movedFrom: 'deeplink',
+          widgetName: id,
+        });
+        break;
+
       default:
         break;
     }

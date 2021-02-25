@@ -26,7 +26,6 @@
     "vaccinationQueries": "Vaccination Queries",
     "faqsArticles": "FAQs & Articles",
     "chatWithUs": "Chat with us",
-    "covidVaccineTracker": "Vaccine Tracker",
     "upload_more": "+ UPLOAD MORE",
     "date_placeholder_text": "DD MMM, YYYY",
     "select_text": "Select",
@@ -107,7 +106,8 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
-    "contactCustomerCare": "Something went wrong, please contact customer support"
+    "contactCustomerCare": "Something went wrong, please contact customer support",
+    "somethingWentWrong": "Something went wrong."
   },
   "components": {
     "medicineDetails": {

@@ -4,7 +4,7 @@ import {
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { GET_WIDGETS_PRICING_BY_ITEMID_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
@@ -17,7 +17,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -34,12 +33,14 @@ import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
+import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
-    comingFrom?: string;
-    data: any;
-    cityId: string | number;
+    movedFrom?: string;
+    data?: any;
+    cityId?: string | number;
+    widgetName?: string;
   }> {}
 
 export const TestListing: React.FC<TestListingProps> = (props) => {
@@ -53,8 +54,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
-  const movedFrom = props.navigation.getParam('comingFrom');
+  const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
+  const widgetName = props.navigation.getParam('widgetName');
   const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
   const client = useApolloClient();
@@ -62,13 +64,36 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const errorStates = !loading && widgetsData?.length == 0;
+
+  //handle deeplinks as well here.
   useEffect(() => {
-    if (!!dataFromHomePage) {
-      fetchWidgetsPrices(dataFromHomePage?.diagnosticWidgetData);
+    if (!!movedFrom) {
+      if (movedFrom === 'deeplink' && !!widgetName) {
+        fetchWidgets(widgetName!);
+      } else if (!!title) {
+        fetchWidgets(title);
+      } else {
+        renderErrorMessage();
+        setLoading?.(false);
+      }
     } else {
-      renderErrorMessage();
+      setLoading?.(false);
     }
-  }, []);
+  }, [movedFrom]);
+
+  const fetchWidgets = async (title: string) => {
+    const createTitle = title?.replace(/ /g, '-')?.toLowerCase();
+    const widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
+    const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
+    if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
+      const getWidgetsData = result?.data?.data;
+      fetchWidgetsPrices(getWidgetsData);
+    } else {
+      setWidgetsData([]);
+      setLoading?.(false);
+    }
+  };
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -84,7 +109,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     });
 
   const fetchWidgetsPrices = async (widgetsData: any) => {
-    const itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
+    const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
 
     const res = Promise.all(
       itemIds?.map((item: any) => fetchPricesForCityId(Number(cityId) || 9, item))
@@ -94,21 +119,22 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
     );
 
-    console.log({ response });
-    let newWidgetsData = [...widgetsData];
-    console.log({ newWidgetsData });
+    let newWidgetsData = widgetsData;
 
-    for (let i = 0; i < newWidgetsData?.length; i++) {
-      const findIndex = newWidgetsData?.findIndex(
-        (item: any) => Number(item?.itemId) == Number(response?.[i]?.[0]?.itemId)
+    for (let i = 0; i < newWidgetsData?.diagnosticWidgetData?.length; i++) {
+      const findIndex = newWidgetsData?.diagnosticWidgetData?.findIndex(
+        (item: any) => Number(item?.itemId) === Number(response?.[i]?.[0]?.itemId)
       );
       if (findIndex !== -1) {
-        (newWidgetsData[findIndex].packageCalculatedMrp = response?.[i]?.[0]?.packageCalculatedMrp),
-          (newWidgetsData[findIndex].diagnosticPricing = response?.[i]?.[0]?.diagnosticPricing);
+        (newWidgetsData.diagnosticWidgetData[findIndex].packageCalculatedMrp =
+          response?.[i]?.[0]?.packageCalculatedMrp),
+          (newWidgetsData.diagnosticWidgetData[findIndex].diagnosticPricing =
+            response?.[i]?.[0]?.diagnosticPricing);
       }
     }
+
     setWidgetsData(newWidgetsData);
-    setLoading!(false);
+    setLoading?.(false);
   };
 
   const homeBreadCrumb: TestBreadcrumbLink = {
@@ -125,7 +151,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
-      if (movedFrom == 'Home Page') {
+      if (movedFrom == AppRoutes.Tests) {
         breadcrumb.push({
           title: 'Order Tests',
           onPress: () => {
@@ -178,18 +204,17 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   };
 
   const renderErrorMessage = () => {
-    if (
-      !loading &&
-      (dataFromHomePage == null || dataFromHomePage == undefined || widgetsData?.length == 0)
-    )
+    if (errorStates)
       return (
-        <Card
-          cardContainer={[styles.noDataCard]}
-          heading={'Uh oh! :('}
-          description={'Something went wrong.'}
-          descriptionTextStyle={{ fontSize: 14 }}
-          headingTextStyle={{ fontSize: 14 }}
-        />
+        <View style={{ justifyContent: 'center' }}>
+          <Card
+            cardContainer={[styles.noDataCard]}
+            heading={string.common.uhOh}
+            description={string.common.somethingWentWrong}
+            descriptionTextStyle={{ fontSize: 14 }}
+            headingTextStyle={{ fontSize: 14 }}
+          />
+        </View>
       );
   };
 
@@ -205,19 +230,21 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   };
 
   const renderList = () => {
-    const actualItemsToShow = dataFromHomePage?.diagnosticWidgetData?.filter(
+    const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
       (item: any) => item?.diagnosticPricing
     );
-
     return (
-      <>
+      <View style={{ flex: 1 }}>
         <Text style={styles.headingText}>
-          {dataFromHomePage?.diagnosticWidgetTitle}{' '}
-          <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>{' '}
+          {widgetsData?.diagnosticWidgetTitle}{' '}
+          {actualItemsToShow?.length > 0 && (
+            <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>
+          )}
         </Text>
-        {dataFromHomePage?.diagnosticWidgetType == 'Package' ? (
+
+        {widgetsData?.diagnosticWidgetType == 'Package' ? (
           <PackageCard
-            data={dataFromHomePage}
+            data={widgetsData}
             isCircleSubscribed={isDiagnosticCircleSubscription}
             isServiceable={isDiagnosticLocationServiceable}
             isVertical={true}
@@ -228,7 +255,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
           />
         ) : (
           <ItemCard
-            data={dataFromHomePage}
+            data={widgetsData}
             isCircleSubscribed={isDiagnosticCircleSubscription}
             isServiceable={isDiagnosticLocationServiceable}
             isVertical={true}
@@ -238,7 +265,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             sourceScreen={AppRoutes.TestListing}
           />
         )}
-      </>
+      </View>
     );
   };
 
@@ -246,18 +273,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderHeader()}
-        {renderBreadCrumb()}
-        <View style={{ flex: 1 }}>
-          <ScrollView
-            removeClippedSubviews={true}
-            bounces={false}
-            style={{ flex: 1 }}
-            keyboardShouldPersistTaps="always"
-            showsVerticalScrollIndicator={false}
-          >
-            {renderList()}
-          </ScrollView>
-        </View>
+        {!errorStates ? renderBreadCrumb() : null}
+        <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>
       </SafeAreaView>
       {loading && <Spinner />}
     </View>
@@ -269,6 +286,7 @@ const styles = StyleSheet.create({
     marginTop: '3%',
     marginLeft: 20,
     ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 21, 0),
+    marginBottom: '3%',
   },
   itemCountText: {
     marginTop: '3%',

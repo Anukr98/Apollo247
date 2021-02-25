@@ -3,7 +3,7 @@ import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -382,6 +382,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     }
   };
 
+  const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
@@ -389,12 +391,13 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
             bounces={false}
-            keyExtractor={(_, index) => `${index}`}
+            keyExtractor={keyExtractor}
             showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
-            initialNumToRender={12}
+            maxToRenderPerBatch={3}
           />
         ) : (
           renderError()
