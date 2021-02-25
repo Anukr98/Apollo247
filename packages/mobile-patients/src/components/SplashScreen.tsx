@@ -359,63 +359,77 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log(linkId, 'linkId');
 
         switch (route) {
+          case 'consult':
           case 'Consult':
             console.log('Consult');
             getData('Consult', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicine':
           case 'Medicine':
             console.log('Medicine');
             getData('Medicine', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'uploadprescription':
           case 'UploadPrescription':
             getData('UploadPrescription', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicinerecommendedsection':
           case 'MedicineRecommendedSection':
             getData('MedicineRecommendedSection');
             break;
 
+          case 'test':
           case 'Test':
             console.log('Test');
             getData('Test');
             break;
 
+          case 'speciality':
           case 'Speciality':
             console.log('Speciality handleopen');
             if (data.length === 2) getData('Speciality', linkId);
+            else getData('DoctorSearch');
             break;
 
+          case 'doctor':
           case 'Doctor':
             console.log('Doctor handleopen');
             if (data.length === 2) getData('Doctor', linkId);
             break;
 
+          case 'doctorsearch':
           case 'DoctorSearch':
             console.log('DoctorSearch handleopen');
             getData('DoctorSearch');
             break;
 
+          case 'medicinesearch':
           case 'MedicineSearch':
             console.log('MedicineSearch handleopen');
             getData('MedicineSearch', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicinedetail':
           case 'MedicineDetail':
             console.log('MedicineDetail handleopen');
             getData('MedicineDetail', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicinecart':
           case 'MedicineCart':
             console.log('MedicineCart handleopen');
             getData('MedicineCart', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'chatroom':
           case 'ChatRoom':
             if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
             break;
 
+          case 'doctorcall':
           case 'DoctorCall':
             if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
               const params = linkId.split('+');
@@ -425,6 +439,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
             break;
 
+          case 'doctorcallrejected':
           case 'DoctorCallRejected':
             {
               setLoading!(true);
@@ -451,10 +466,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
             break;
 
+          case 'order':
           case 'Order':
             if (data.length === 2) getData('Order', linkId);
             break;
 
+          case 'myorders':
           case 'MyOrders':
             getData('MyOrders');
             break;
@@ -465,34 +482,47 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               getData('webview', url);
             }
             break;
+
+          case 'finddoctors':
           case 'FindDoctors':
             if (data.length === 2) getData('FindDoctors', linkId);
             break;
 
+          case 'healthrecordshome':
           case 'HealthRecordsHome':
             console.log('HealthRecordsHome handleopen');
             getData('HealthRecordsHome');
             break;
 
+          case 'manageprofile':
           case 'ManageProfile':
             console.log('ManageProfile handleopen');
             getData('ManageProfile');
             break;
 
+          case 'oneapollomembership':
           case 'OneApolloMembership':
             getData('OneApolloMembership');
             break;
 
+          case 'testdetails':
           case 'TestDetails':
             getData('TestDetails', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'consultdetails':
           case 'ConsultDetails':
             getData('ConsultDetails', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'circlemembershipdetails':
           case 'CircleMembershipDetails':
             getData('CircleMembershipDetails');
+            break;
+
+          case 'symptomtracker':
+          case 'SymptomTracker':
+            getData('SymptomTracker');
             break;
 
           default:
