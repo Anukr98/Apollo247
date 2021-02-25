@@ -102,15 +102,21 @@ export const PrescriptionOptions: React.FC<Props> = ({
   };
 
   const renderSharePrescriptionLater = () => {
+    const orderNow =
+      'Order now and share your prescription later via WhatsApp with our Pharmacist.';
+    const note = 'Note: ';
+    const orderHold = 'Order will be on hold until the Prescription is shared.';
     return (
       <PrescriptionOption
         title={'Share Prescription later'}
         subtitle={
-          <Text style={styles.lightWeightBlue}>
-            {
-              'Order now and share your prescription later via Whatsapp with our Pharmacist.\nNote: Order will be on hold until the Prescription is shared.'
-            }
-          </Text>
+          <View>
+            <Text style={styles.lightWeightBlue}>{orderNow}</Text>
+            <Text>
+              <Text style={styles.boldBlue}>{note}</Text>
+              <Text style={styles.lightWeightBlue}>{orderHold}</Text>
+            </Text>
+          </View>
         }
         onPress={() => onSelectOption(PrescriptionType.LATER)}
         checked={selectedOption === PrescriptionType.LATER}
@@ -265,6 +271,9 @@ const { text, card } = theme.viewStyles;
 const styles = StyleSheet.create({
   divider: {
     marginHorizontal: 16,
+  },
+  boldBlue: {
+    ...text('SB', 13, '#02475B'),
   },
   lightWeightBlue: {
     ...text('R', 13, '#02475B'),
