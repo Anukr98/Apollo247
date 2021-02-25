@@ -40,6 +40,7 @@ import {
   BookAppointmentInput,
   DoctorType,
   PLAN,
+  PAYMENT_METHODS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -637,6 +638,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
             responseMessage: 'Physical Mobile Api Call',
             bankTxnId: '',
             orderId: id,
+            paymentMode: PAYMENT_METHODS.COD,
           },
         },
         fetchPolicy: 'no-cache',
