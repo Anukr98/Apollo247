@@ -903,7 +903,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462, 2388, 2419, 2411, 2410, 2539, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [],
 };
 
 //PERFORMANCE
