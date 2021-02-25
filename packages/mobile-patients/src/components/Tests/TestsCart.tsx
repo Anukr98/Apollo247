@@ -2543,6 +2543,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function checkDuplicateItems_Level1() {
+    console.log('level1');
     const allInclusions = cartItems?.map((item) => item?.inclusions);
     const getPricesForItem = createItemPrice();
 
@@ -2551,24 +2552,33 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       (e: any, i: any, a: any) => a.indexOf(e) !== i
     );
     const duplicateItems = [...new Set(duplicateItems_1)];
+    console.log({ duplicateItems });
     if (duplicateItems?.length) {
       //search for duplicate items in cart. (single tests added)
       let duplicateItemIds = cartItems?.filter((item) =>
         duplicateItems?.includes(Number(item?.id))
       );
+
+      console.log({ duplicateItemIds });
       let itemIdRemove = duplicateItemIds?.map((item) => Number(item?.id));
+      console.log({ itemIdRemove });
+
       //rest of the duplicate items which are not directly present in the cart
       const remainingDuplicateItems = duplicateItems?.filter(function(item: any) {
         return itemIdRemove?.indexOf(item) < 0;
       });
+
+      console.log({ remainingDuplicateItems });
       //search for remaining duplicate items in cart's package inclusions
 
       let itemIdWithPackageInclusions = cartItems?.filter(({ inclusions }) =>
         inclusions?.some((num) => remainingDuplicateItems?.includes(num))
       );
+      console.log({ itemIdWithPackageInclusions });
       //get only itemId
       let packageInclusionItemId = itemIdWithPackageInclusions?.map((item) => Number(item?.id));
 
+      console.log({ packageInclusionItemId });
       //for the remaining packageItems, extract the prices
       let pricesForPackages = [] as any;
 
@@ -2580,6 +2590,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         });
       });
 
+      console.log({ pricesForPackages });
       //sort with accordance with price
 
       let sortedPricesForPackage = pricesForPackages?.sort((a: any, b: any) => b?.price - a?.price);
@@ -2587,17 +2598,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         1,
         sortedPricesForPackage?.length
       );
+      console.log({ sortedPricesForPackage });
+      console.log({ remainingPackageDuplicateItems });
       let remainingPackageDuplicateItemId = remainingPackageDuplicateItems?.map((item: any) =>
         Number(item?.itemId)
       );
+      console.log({ remainingPackageDuplicateItemId });
       let finalRemovalId = [...itemIdRemove, remainingPackageDuplicateItemId]?.flat(1);
+
+      console.log({ finalRemovalId });
       setLoading?.(true);
       getDiagnosticsAvailability(Number(addressCityId), cartItems, finalRemovalId, 'proceedToPay')
         .then(({ data }) => {
           const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+          console.log({ diagnosticItems });
           const formattedDuplicateTest = diagnosticItems?.map((item) =>
             !!item?.itemName ? nameFormater(item?.itemName, 'default') : item?.itemName
           );
+          console.log({ formattedDuplicateTest });
           const duplicateTests = formattedDuplicateTest?.join(', ');
 
           //remaining itemId's
@@ -2605,11 +2623,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             return finalRemovalId?.indexOf(Number(items?.id)) < 0;
           });
 
+          console.log({ updatedCartItems });
           //now on the updated cart item, find the duplicate items => higher price items
           const higherPricesItems = updatedCartItems?.filter(({ inclusions }) =>
             inclusions?.some((num) => finalRemovalId?.includes(num))
           );
-          const formattedHigherPriceItemName = higherPricesItems?.map(
+          console.log({ higherPricesItems });
+
+          //there can be case, that they are found in the inclusion level.
+          const finalhigherPricesItem =
+            higherPricesItems?.length == 0 ? updatedCartItems : higherPricesItems;
+
+          console.log({ finalhigherPricesItem });
+          const formattedHigherPriceItemName = finalhigherPricesItem?.map(
             (item) => !!item?.name && nameFormater(item?.name, 'default')
           );
           const higherPricesName = formattedHigherPriceItemName?.join(', ');
@@ -2625,6 +2651,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 array.push({
                   id: item?.id,
                   removalId: dItem?.itemId,
+                  removalName: dItem?.itemName,
+                });
+              }
+              //only at parameter level
+              else if (higherPricesItems?.length == 0) {
+                array.push({
+                  id: item?.id,
+                  removalId: dItem?.id,
                   removalName: dItem?.itemName,
                 });
               }
@@ -2657,6 +2691,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }
 
   const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any) => {
+    console.log('level2');
     const allInclusions = cartItems?.map((item) => item?.inclusions);
 
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
@@ -2686,7 +2721,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       let array = [] as any;
       cartItems?.forEach((cItem) => {
         itemIdToRemove?.forEach((idToRemove: any) => {
-          if (Number(cItem?.id) == itemIdToRemove) {
+          if (Number(cItem?.id) == idToRemove) {
             array.push({
               id: getDuplicateItems?.[0]?.itemId,
               removalId: idToRemove,
