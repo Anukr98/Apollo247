@@ -1648,7 +1648,6 @@ export interface UpdateAppointmentInput {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
-  isUserJoining?: boolean | null;
 }
 
 export interface UpdatePatientAddressInput {

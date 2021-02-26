@@ -65,6 +65,7 @@ import {
   SAVE_DIAGNOSTIC_ORDER,
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
+  GET_DIAGNOSTIC_NEAREST_AREA,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -182,6 +183,7 @@ import {
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import { getNearestArea, getNearestAreaVariables } from '../../graphql/types/getNearestArea';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -315,6 +317,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
+  const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
@@ -403,6 +406,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     if (deliveryAddressId != '') {
+      console.log('yeee');
       getPinCodeServiceability();
     }
   }, [deliveryAddressId]);
@@ -659,6 +663,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const diagnosticItems =
                   g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
                 updatePricesInCart(diagnosticItems, selectedAddressIndex);
+                //show the area box
+                console.log(serviceableData?.areaSelectionEnabled);
+                if (serviceableData?.areaSelectionEnabled) {
+                  setShowAreaSelection(true); //reversed for devlopment
+                }
+                //don't show the area and hit the nearestPCC api.
+                else {
+                  setShowAreaSelection(false); //reversed for devlopment
+                  getAreas();
+                }
               })
               .catch((e) => {
                 CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
@@ -704,6 +718,52 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setDeliveryAddressId?.('');
           console.log('getDiagnosticsPincode serviceability Error\n', { e });
         });
+    }
+  };
+
+  console.log({ deliveryAddressId });
+
+  const getNearestPCCLocation = async () => {
+    const input: getNearestAreaVariables = {
+      patientAddressId: selectedAddr?.id!,
+    };
+    const res = await client.mutate<getNearestArea, getNearestAreaVariables>({
+      mutation: GET_DIAGNOSTIC_NEAREST_AREA,
+      variables: input,
+      fetchPolicy: 'no-cache',
+    });
+    return res;
+  };
+
+  const getAreas = async () => {
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    try {
+      const response = await getNearestPCCLocation();
+      console.log({ response });
+      const { data } = response;
+      const getAreaObject = g(data, 'getNearestArea', 'area');
+      let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
+      setAreaSelected?.(obj);
+      checkSlotSelection(obj);
+      setWebEngageEventForAreaSelection(obj);
+    } catch (e) {
+      console.log({ e });
+      CommonBugFender('TestsCart_', e);
+      setDeliveryAddressId && setDeliveryAddressId('');
+      setDiagnosticAreas?.([]);
+      setAreaSelected?.({});
+      setselectedTimeSlot(undefined);
+      setLoading?.(false);
+      setWebEngageEventForAddressNonServiceable(addresses?.[selectedAddressIndex]?.zipcode!);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: string.diagnostics.areaNotAvailableMessage,
+      });
+
+      //if goes in the catch then show the area selection.
+      setShowAreaSelection(true);
     }
   };
 
@@ -982,11 +1042,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
    */
 
   const fetchAreasForAddress = (id: string, pincode: string) => {
+    console.log({ showAreaSelection });
+    setLoading?.(true);
+
     //wrt to address
-    if (cartItems?.length == 0) {
+    if (cartItems?.length == 0 || !showAreaSelection) {
+      setLoading?.(false);
       return;
     }
-    setLoading?.(true);
     client
       .query<getAreas, getAreasVariables>({
         context: {
@@ -1000,6 +1063,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
       })
       .then(({ data }) => {
+        console.log('area wali api called');
         setLoading?.(false);
         const getDiagnosticAreas = g(data, 'getAreas', 'areas') || [];
         if (data?.getAreas?.status) {
@@ -1700,6 +1764,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               itemTextStyle={styles.menuItemTextStyle}
               bottomPadding={styles.menuBottomPadding}
               onPress={(item) => {
+                console.log({ item });
                 setAreaSelected!(item);
                 checkSlotSelection(item);
                 setWebEngageEventForAreaSelection(item);
@@ -1814,7 +1879,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           />
           {selectedTab === tabs[0].title ? renderHomeDelivery() : renderStorePickup()}
         </View>
-        {renderAreaSelectionCard()}
+        {showAreaSelection ? renderAreaSelectionCard() : null}
         {renderTimingCard()}
       </View>
     );

@@ -13,6 +13,7 @@ export interface getPincodeServiceability_getPincodeServiceability {
   cityName: string | null;
   stateID: number | null;
   stateName: string | null;
+  areaSelectionEnabled: boolean | null;
 }
 
 export interface getPincodeServiceability {
