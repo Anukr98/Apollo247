@@ -3135,7 +3135,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         </>
       )}
-      {showSpinner && <Spinner />}
+      {showSpinner && (
+        <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+      )}
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {

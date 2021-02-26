@@ -86,6 +86,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import messaging from '@react-native-firebase/messaging';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
@@ -108,6 +109,7 @@ interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
 export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
   const selectedTab = props.navigation.getParam('selectedTab');
@@ -213,6 +215,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
   const renderPatient = () => {
     console.log('finalAppointmentInput', finalAppointmentInput);
+
+    console.log('patient change', currentPatient?.id);
     return (
       <View style={styles.subViewPopup}>
         <View style={{ paddingHorizontal: 16 }}>
@@ -230,6 +234,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           {Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true))} ,
           {g(currentPatient, 'gender')}
         </Text> */}
+
         {renderProfileListView()}
       </View>
     );
@@ -366,10 +371,28 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               onPress={() => {
                 onSelectedProfile(item);
               }}
-              style={[styles.ctaWhiteButtonViewStyle]}
+              style={
+                currentPatient?.id === item.id
+                  ? styles.ctaSelectButtonViewStyle
+                  : styles.ctaWhiteButtonViewStyle
+              }
             >
-              <Text style={styles.ctaOrangeTextStyle}>{item.firstName}</Text>
-              <Text style={styles.ctaOrangeText2Style}>
+              <Text
+                style={
+                  currentPatient?.id === item.id
+                    ? styles.ctaSelectTextStyle
+                    : styles.ctaOrangeTextStyle
+                }
+              >
+                {item.firstName}
+              </Text>
+              <Text
+                style={
+                  currentPatient?.id === item.id
+                    ? styles.ctaSelectText2Style
+                    : styles.ctaOrangeText2Style
+                }
+              >
                 {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
               </Text>
               {console.log('csk pat', item)}
@@ -398,6 +421,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     </View>
   );
   const onSelectedProfile = (item: any) => {
+    setshowSpinner(true);
     selectUser(item);
     setShowProfilePopUp(false);
   };
@@ -464,6 +488,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     return (
       <View>
         {/*renderProfileDrop()*/}
+
+        {showSpinner && <Spinner />}
         <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
         <Text style={styles.popDescriptionStyle}>Prescription to be generated in the name of?</Text>
         {renderCTAs()}
@@ -550,6 +576,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
     AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
     AsyncStorage.setItem('isNewProfile', 'yes');
+    moveSelectedToTop();
+    setshowSpinner(false);
   };
 
   const onSubmitBookAppointment = async () => {
@@ -889,7 +917,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         <ScrollView ref={scrollviewRef}>
           <View style={styles.doctorCard}>
             {renderDoctorCard()}
-
             {renderPatient()}
             {renderPrice()}
           </View>
@@ -1104,16 +1131,38 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   ctaWhiteButtonViewStyle: {
-    padding: 8,
+    padding: 2,
     borderRadius: 10,
     backgroundColor: theme.colors.WHITE,
     marginRight: 15,
-    marginVertical: 5,
+    marginVertical: 2,
     shadowColor: '#4c808080',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 3,
+  },
+  ctaSelectButtonViewStyle: {
+    padding: 2,
+    borderRadius: 10,
+    backgroundColor: '#fc9916',
+    marginRight: 15,
+    marginVertical: 2,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  ctaSelectTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaSelectText2Style: {
+    ...theme.viewStyles.text('R', 10, '#ffffff', 1, 24),
+    textAlign: 'center',
+    marginHorizontal: 5,
   },
   textViewStyle: {
     padding: 8,
