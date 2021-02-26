@@ -819,14 +819,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     createHyperServiceObject();
-    logHomePageViewed();
   }, []);
 
   //to be called only when the user lands via app launch
-  const logHomePageViewed = async () => {
+  const logHomePageViewed = async (attributes: any) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
     if (isAppOpened) {
-      postHomeWEGEvent(WebEngageEventName.HOME_VIEWED);
+      postHomeWEGEvent(WebEngageEventName.HOME_VIEWED, undefined, attributes);
     }
   };
 
@@ -1088,7 +1087,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const postHomeWEGEvent = (
     eventName: WebEngageEventName,
-    source?: PatientInfoWithSource['Source']
+    source?: PatientInfoWithSource['Source'],
+    attributes?: any
   ) => {
     let eventAttributes: PatientInfo = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1136,6 +1136,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         Circle_Member: !!circleSubscriptionId ? 'Yes' : 'No',
       };
       eventAttributes = { ...eventAttributes, ...newAttributes };
+    }
+    if (eventName == WebEngageEventName.HOME_VIEWED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
     }
     postWebEngageEvent(eventName, eventAttributes);
   };
@@ -1300,7 +1303,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchCircleSavings();
     fetchHealthCredits();
     fetchCarePlans();
-    getUserSubscriptionsByStatus();
+    getUserSubscriptionsByStatus(true);
     checkCircleSelectedPlan();
     setBannerData && setBannerData([]);
   }, []);
@@ -1516,7 +1519,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const getUserSubscriptionsByStatus = async () => {
+  const getUserSubscriptionsByStatus = async (onAppLoad?: boolean) => {
     setCircleDataLoading(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
@@ -1544,11 +1547,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
 
+          let WEGAttributes = {};
           if (circleData?.status === 'active') {
+            const circleMembershipType = setCircleMembershipType(
+              circleData?.start_date!,
+              circleData?.end_date!
+            );
+            WEGAttributes = {
+              'Circle Member': 'Yes',
+              'Circle Plan type': circleMembershipType,
+            };
+
             setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
             setIsCircleSubscription && setIsCircleSubscription(true);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          } else {
+            WEGAttributes = {
+              'Circle Member': 'No',
+              'Circle Plan type': '',
+            };
           }
+          onAppLoad && logHomePageViewed(WEGAttributes);
 
           if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
@@ -1577,6 +1596,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setCirclePlanId && setCirclePlanId('');
           fireFirstTimeLanded();
           setCircleStatus && setCircleStatus('');
+          const WEGAttributes = {
+            'Circle Member': 'No',
+            'Circle Plan type': '',
+          };
+          onAppLoad && logHomePageViewed(WEGAttributes);
         }
 
         if (data?.HDFC?.[0]._id) {
@@ -1598,6 +1622,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
+      const WEGAttributes = {
+        'Circle Member': 'No',
+        'Circle Plan type': '',
+      };
+      onAppLoad && logHomePageViewed(WEGAttributes);
     }
     setCircleDataLoading(false);
   };

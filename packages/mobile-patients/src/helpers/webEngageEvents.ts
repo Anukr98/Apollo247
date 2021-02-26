@@ -2349,4 +2349,15 @@ export interface WebEngageEvents {
   [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
+  [WebEngageEventName.HOME_VIEWED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Member': 'Yes' | 'No';
+    'Circle Plan type': string;
+  };
 }
