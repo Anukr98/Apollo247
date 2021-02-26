@@ -909,7 +909,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'TestListing':
-        setLoading?.(true);
         console.log('TestListing');
         props.navigation.navigate(AppRoutes.TestListing, {
           movedFrom: 'deeplink',
