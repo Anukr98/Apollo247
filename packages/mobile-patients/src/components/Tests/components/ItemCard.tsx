@@ -372,7 +372,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         <Card
           cardContainer={styles.errorCardContainer}
           heading={string.common.uhOh}
-          description={'Something went wrong.'}
+          description={string.common.somethingWentWrong}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
         />
@@ -386,7 +386,16 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
 
   return (
     <>
-      <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
+      <View
+        style={
+          props.isVertical
+            ? {
+                alignSelf: actualItemsToShow?.length > 1 ? 'center' : 'flex-start',
+                marginLeft: '1.5%',
+              }
+            : {}
+        }
+      >
         {actualItemsToShow?.length > 0 ? (
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}

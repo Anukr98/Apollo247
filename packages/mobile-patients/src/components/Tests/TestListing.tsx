@@ -234,38 +234,41 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       (item: any) => item?.diagnosticPricing
     );
     return (
-      <View style={{ flex: 1 }}>
-        <Text style={styles.headingText}>
-          {widgetsData?.diagnosticWidgetTitle}{' '}
-          {actualItemsToShow?.length > 0 && (
-            <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>
-          )}
-        </Text>
-
-        {widgetsData?.diagnosticWidgetType == 'Package' ? (
-          <PackageCard
-            data={widgetsData}
-            isCircleSubscribed={isDiagnosticCircleSubscription}
-            isServiceable={isDiagnosticLocationServiceable}
-            isVertical={true}
-            columns={1}
-            navigation={props.navigation}
-            source={'Listing'}
-            sourceScreen={AppRoutes.TestListing}
-          />
-        ) : (
-          <ItemCard
-            data={widgetsData}
-            isCircleSubscribed={isDiagnosticCircleSubscription}
-            isServiceable={isDiagnosticLocationServiceable}
-            isVertical={true}
-            columns={2}
-            navigation={props.navigation}
-            source={'Listing'}
-            sourceScreen={AppRoutes.TestListing}
-          />
-        )}
-      </View>
+      <>
+        {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headingText}>
+              {widgetsData?.diagnosticWidgetTitle}{' '}
+              {actualItemsToShow?.length > 0 && (
+                <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>
+              )}
+            </Text>
+            {widgetsData?.diagnosticWidgetType == 'Package' ? (
+              <PackageCard
+                data={widgetsData}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isDiagnosticLocationServiceable}
+                isVertical={true}
+                columns={1}
+                navigation={props.navigation}
+                source={'Listing'}
+                sourceScreen={AppRoutes.TestListing}
+              />
+            ) : (
+              <ItemCard
+                data={widgetsData}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isDiagnosticLocationServiceable}
+                isVertical={true}
+                columns={2}
+                navigation={props.navigation}
+                source={'Listing'}
+                sourceScreen={AppRoutes.TestListing}
+              />
+            )}
+          </View>
+        ) : null}
+      </>
     );
   };
 
