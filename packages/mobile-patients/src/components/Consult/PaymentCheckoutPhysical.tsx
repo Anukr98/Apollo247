@@ -215,7 +215,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
   const renderPatient = () => {
     console.log('finalAppointmentInput', finalAppointmentInput);
-
     console.log('patient change', currentPatient?.id);
     return (
       <View style={styles.subViewPopup}>
@@ -223,18 +222,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
         <View style={styles.seperatorLine} />
-        {/* <Text
-          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
-        >
-          {g(currentPatient, 'firstName')} {g(currentPatient, 'lastName')}
-        </Text>
-        <Text
-          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
-        >
-          {Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true))} ,
-          {g(currentPatient, 'gender')}
-        </Text> */}
-
         {renderProfileListView()}
       </View>
     );
