@@ -688,6 +688,7 @@ export interface WebEngageEvents {
     Gender: string;
     Email: string;
     'Referral Code'?: string;
+    'Mobile Number': string;
   };
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
   [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
