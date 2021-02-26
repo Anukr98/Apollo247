@@ -489,7 +489,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       <View>
         {/*renderProfileDrop()*/}
 
-        {showSpinner && <Spinner />}
+        {showSpinner && (
+          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+        )}
         <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
         <Text style={styles.popDescriptionStyle}>Prescription to be generated in the name of?</Text>
         {renderCTAs()}
