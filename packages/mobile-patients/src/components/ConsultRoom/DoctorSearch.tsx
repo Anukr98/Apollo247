@@ -1748,7 +1748,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             </>
           )
         ) : null}
-        {showProfilePopUp && renderProfileListView()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

@@ -369,6 +369,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           item.firstName !== '+ADD MEMBER' ? (
             <TouchableOpacity
               onPress={() => {
+                setLoading && setLoading(true);
                 onSelectedProfile(item);
               }}
               style={
@@ -424,6 +425,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     setshowSpinner(true);
     selectUser(item);
     setShowProfilePopUp(false);
+    setLoading && setLoading(false);
   };
   const onProfileChange = () => {
     setShowList(false);
@@ -580,6 +582,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     AsyncStorage.setItem('isNewProfile', 'yes');
     moveSelectedToTop();
     setshowSpinner(false);
+    finalAppointmentInput['patientId'] = selectedUser?.id;
   };
 
   const onSubmitBookAppointment = async () => {
