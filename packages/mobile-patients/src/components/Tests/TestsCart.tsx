@@ -12,6 +12,7 @@ import {
   postFirebaseEvent,
   isSmallDevice,
   nameFormater,
+  getAge,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -65,6 +66,7 @@ import {
   CREATE_INTERNAL_ORDER,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+  EDIT_PROFILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -96,8 +98,7 @@ import {
   getPlaceInfoByPincode,
   searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { differenceInYears, parse } from 'date-fns';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -179,6 +180,12 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
+import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
+import {
+  editProfile,
+  editProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/editProfile';
+import AsyncStorage from '@react-native-community/async-storage';
 const { width: screenWidth } = Dimensions.get('window');
 
 type clinicHoursData = {
@@ -282,7 +289,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [isMinor, setIsMinor] = useState<boolean>(false);
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const currentPatientId = currentPatient && currentPatient?.id;
   const client = useApolloClient();
@@ -291,7 +298,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
+    setDoctorJoinedChat,
   } = useAppCommonData();
+
+  const shopCart = useShoppingCart();
+  const diagCart = useDiagnosticsCart();
+  const { getPatientApiCall } = useAuth();
 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
@@ -313,6 +325,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
+  const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
@@ -363,12 +377,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
-  };
-
-  const getAge = (dob: string) => {
-    const now = new Date();
-    let age = parse(dob);
-    return differenceInYears(now, age);
   };
 
   const checkPatientAge = () => {
@@ -3012,7 +3020,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ''}, ${currentPatient?.gender || ''}, ${
       currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
     }`;
-    const address_text = formatAddressWithLandmark(addresses?.[0]) || '';
+    const address_text = addresses ? formatAddressWithLandmark(addresses?.[0]) || '' : '';
     return (
       <View style={styles.patientDetailsViewStyle}>
         <View style={styles.patientNameViewStyle}>
@@ -3037,12 +3045,81 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const setAddressList = (key: string) => {
+    shopCart?.setDeliveryAddressId?.('');
+    diagCart?.setDeliveryAddressId?.('');
+    shopCart?.setAddresses?.([]);
+    diagCart?.setAddresses?.([]);
+    setDoctorJoinedChat?.(false);
+  };
+
   const renderPatientListOverlay = () => {
     return showPatientListOverlay ? (
       <PatientListOverlay
-        doctorData={{}}
-        onPressGoBack={() => setShowPatientListOverlay(false)}
-        onPressSharePropfile={(data) => {}}
+        onPressClose={() => setShowPatientListOverlay(false)}
+        onPressDone={(_selectedPatient: any) => {
+          setShowPatientListOverlay(false);
+          if (currentPatient?.id === _selectedPatient?.id) {
+            return;
+          } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
+            setSelectedPatient(_selectedPatient);
+            setShowPatientDetailsOverlay(true);
+            return;
+          }
+          setCurrentPatientId?.(_selectedPatient?.id);
+          AsyncStorage.setItem('selectUserId', _selectedPatient?.id);
+          AsyncStorage.setItem('selectUserUHId', _selectedPatient?.uhid);
+          setAddressList(_selectedPatient?.id);
+        }}
+        onPressAddNewProfile={() => {
+          setShowPatientListOverlay(false);
+          props.navigation.navigate(AppRoutes.EditProfile, {
+            isEdit: false,
+            isPoptype: true,
+            mobileNumber: currentPatient?.mobileNumber,
+          });
+        }}
+      />
+    ) : null;
+  };
+
+  const renderPatientDetailsOverlay = () => {
+    return showPatientDetailsOverlay ? (
+      <PatientDetailsOverlay
+        selectedPatient={selectedPatient}
+        onPressClose={() => setShowPatientDetailsOverlay(false)}
+        onPressDone={(_date, _gender, _selectedPatient) => {
+          setShowPatientDetailsOverlay(false);
+          setLoading?.(true);
+          client
+            .mutate<editProfile, editProfileVariables>({
+              mutation: EDIT_PROFILE,
+              variables: {
+                editProfileInput: {
+                  id: _selectedPatient?.id,
+                  photoUrl: _selectedPatient?.photoUrl,
+                  firstName: _selectedPatient?.firstName?.trim(),
+                  lastName: _selectedPatient?.lastName?.trim(),
+                  relation: _selectedPatient?.relation,
+                  gender: _gender,
+                  dateOfBirth: moment(_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                  emailAddress: _selectedPatient?.emailAddress?.trim(),
+                },
+              },
+            })
+            .then((data) => {
+              setLoading?.(false);
+              getPatientApiCall();
+            })
+            .catch((e) => {
+              setLoading?.(false);
+              showAphAlert!({
+                title: 'Network Error!',
+                description: 'Please try again later.',
+              });
+              CommonBugFender('EditProfile_updateUserProfile', e);
+            });
+        }}
       />
     ) : null;
   };
@@ -3097,6 +3174,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         {renderPatientListOverlay()}
+        {renderPatientDetailsOverlay()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderPatientDetails()}

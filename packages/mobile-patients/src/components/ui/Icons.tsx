@@ -1775,6 +1775,11 @@ export const WorkflowIcon: React.FC<IconProps> = (props) => (
 export const ArrowRightYellow: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right_yellow.png')} />
 );
+
+export const CalenderBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_blue_calender.png')} />
+);
+
 export const SpecialDiscountImage: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/specialCoupon_badge.png')} />
 );
