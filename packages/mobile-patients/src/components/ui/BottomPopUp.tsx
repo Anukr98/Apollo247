@@ -69,6 +69,13 @@ export const BottomPopUp: React.FC<ButtonProps> = (props) => {
   return (
     <View style={[styles.showPopUp, props.style]}>
       <TouchableOpacity activeOpacity={1} style={styles.container} onPress={props.onPressBack}>
+        {props.showCloseIcon && (
+          <View style={{ top: 150, left: 10 }}>
+            <TouchableOpacity style={{ width: 40, height: 40 }} onPress={props.onCloseIconPress}>
+              <CrossPopup style={{ width: 28, height: 28 }} />
+            </TouchableOpacity>
+          </View>
+        )}
         <TouchableOpacity activeOpacity={1} style={styles.subViewPopup} onPress={() => {}}>
           {!!props.title && (
             <Text style={[styles.congratulationsTextStyle, props.titleStyle]}>{props.title}</Text>
@@ -80,15 +87,6 @@ export const BottomPopUp: React.FC<ButtonProps> = (props) => {
               )}
           {props.children}
           {!props.removeTopIcon && <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />}
-
-          {props.showCloseIcon && (
-            <TouchableOpacity
-              style={{ position: 'absolute', top: -37, left: 10 }}
-              onPress={props.onCloseIconPress}
-            >
-              <CrossPopup style={{ width: 28, height: 28 }} />
-            </TouchableOpacity>
-          )}
         </TouchableOpacity>
       </TouchableOpacity>
     </View>

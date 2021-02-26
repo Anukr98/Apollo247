@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SelectEPrescriptionModalProps extends NavigationScreenProps {
+export interface SelectEPrescriptionModalProps {
   onSubmit: (prescriptions: EPrescription[]) => void;
   isVisible: boolean;
   selectedEprescriptionIds?: EPrescription['id'][];

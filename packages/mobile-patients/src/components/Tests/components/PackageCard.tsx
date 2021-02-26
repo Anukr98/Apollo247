@@ -197,7 +197,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
+              { marginHorizontal: isSmallDevice ? '1%' : '2%', alignSelf: 'center' },
               [styles.nonCirclePriceText]
             )}
           </View>
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     textAlign: 'right',
-    right: 16,
+    right: 0,
     position: 'absolute',
   },
   offerIconStyle: {

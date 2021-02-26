@@ -322,6 +322,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
   const cartItemsWithId = cartItems?.map((item) => parseInt(item?.id!));
+  var pricesForItemArray;
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -2407,24 +2408,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         // paymentType: isCashOnDelivery
         //   ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
         //   : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
-        items: cartItems.map(
-          (item) =>
-            ({
-              itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
-              price:
-                isDiagnosticCircleSubscription && item.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-                  ? (item.circleSpecialPrice as number)
-                  : item.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-                  ? item.discountSpecialPrice
-                  : (item.specialPrice as number) || item.price,
-              quantity: 1,
-              groupPlan: isDiagnosticCircleSubscription
-                ? item.groupPlan!
-                : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-                ? item?.groupPlan
-                : DIAGNOSTIC_GROUP_PLAN.ALL,
-            } as DiagnosticLineItem)
-        ),
+        items: createItemPrice(),
         slotId: employeeSlotId?.toString() || '0',
         areaId: (areaSelected || ({} as any)).key!,
         collectionCharges: hcCharges,
@@ -2530,40 +2514,57 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const onPressProceedToPay = () => {
-    postwebEngageProceedToPayEvent();
-    proceedForBooking();
-  };
-
-  function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
-    //can be used only when itdose starts returning all id
-    const getItemIds = itemIds?.split(',');
-    checkDuplicateItems(pricesOfEach, getItemIds);
+  function createItemPrice() {
+    pricesForItemArray = cartItems?.map(
+      (item) =>
+        ({
+          itemId: Number(item?.id),
+          price:
+            isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+              ? Number(item?.circleSpecialPrice)
+              : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+              ? Number(item?.discountSpecialPrice)
+              : Number(item?.specialPrice) || Number(item?.price),
+          quantity: 1,
+          groupPlan: isDiagnosticCircleSubscription
+            ? item?.groupPlan!
+            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+            ? item?.groupPlan
+            : DIAGNOSTIC_GROUP_PLAN.ALL,
+        } as DiagnosticLineItem)
+    );
+    return pricesForItemArray;
   }
 
-  const checkDuplicateItems = (pricesForItem: any, getItemIds: any) => {
+  const onPressProceedToPay = () => {
+    postwebEngageProceedToPayEvent();
+    // proceedForBooking();
+    checkDuplicateItems_Level1();
+  };
+
+  function checkDuplicateItems_Level1() {
     const allInclusions = cartItems?.map((item) => item?.inclusions);
+    const getPricesForItem = createItemPrice();
 
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
     const duplicateItems_1 = mergedInclusions?.filter(
       (e: any, i: any, a: any) => a.indexOf(e) !== i
     );
     const duplicateItems = [...new Set(duplicateItems_1)];
-    //checked at the inclusion level.
-
     if (duplicateItems?.length) {
       //search for duplicate items in cart. (single tests added)
       let duplicateItemIds = cartItems?.filter((item) =>
         duplicateItems?.includes(Number(item?.id))
-      ); //itemIdToRemove
-      let itemIdRemove = duplicateItemIds?.map((item) => Number(item?.id)); //itemIdtoRemove
+      );
+
+      let itemIdRemove = duplicateItemIds?.map((item) => Number(item?.id));
+
       //rest of the duplicate items which are not directly present in the cart
       const remainingDuplicateItems = duplicateItems?.filter(function(item: any) {
         return itemIdRemove?.indexOf(item) < 0;
       });
 
       //search for remaining duplicate items in cart's package inclusions
-
       let itemIdWithPackageInclusions = cartItems?.filter(({ inclusions }) =>
         inclusions?.some((num) => remainingDuplicateItems?.includes(num))
       );
@@ -2574,7 +2575,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       //for the remaining packageItems, extract the prices
       let pricesForPackages = [] as any;
 
-      pricesForItem?.forEach((pricesItem: any) => {
+      getPricesForItem?.forEach((pricesItem: any) => {
         packageInclusionItemId?.forEach((packageId: number) => {
           if (Number(pricesItem?.itemId) == Number(packageId)) {
             pricesForPackages.push(pricesItem);
@@ -2583,7 +2584,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       });
 
       //sort with accordance with price
-
       let sortedPricesForPackage = pricesForPackages?.sort((a: any, b: any) => b?.price - a?.price);
       let remainingPackageDuplicateItems = sortedPricesForPackage?.slice(
         1,
@@ -2612,33 +2612,41 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const higherPricesItems = updatedCartItems?.filter(({ inclusions }) =>
             inclusions?.some((num) => finalRemovalId?.includes(num))
           );
-          const formattedHigherPriceItemName = higherPricesItems?.map(
-            (item) => !!item?.name && nameFormater(item?.name, 'default')
-          );
-          const higherPricesName = formattedHigherPriceItemName?.join(', ');
 
-          //clear cart..
-          onChangeCartItems(updatedCartItems);
+          //if not found at inclusion level, then show whatever is coming from api.
+          if (higherPricesItems?.length == 0) {
+            setLoading?.(false);
+            proceedForBooking();
+          } else {
+            //there can be case, that they are found in the inclusion level.
+            const formattedHigherPriceItemName = higherPricesItems?.map(
+              (item) => !!item?.name && nameFormater(item?.name, 'default')
+            );
+            const higherPricesName = formattedHigherPriceItemName?.join(', ');
 
-          //show inclusions
-          let array = [] as any;
-          updatedCartItems?.forEach((item) =>
-            diagnosticItems?.forEach((dItem) => {
-              if (item?.inclusions?.includes(Number(dItem?.itemId))) {
-                array.push({
-                  id: item?.id,
-                  removalId: dItem?.itemId,
-                  removalName: dItem?.itemName,
-                });
-              }
-            })
-          );
+            //clear cart
+            onChangeCartItems(updatedCartItems);
 
-          setShowInclusions(true);
-          let arrayToSet = [...duplicateNameArray, array].flat(1);
-          setDuplicateNameArray(arrayToSet);
+            //show inclusions
+            let array = [] as any;
+            updatedCartItems?.forEach((item) =>
+              diagnosticItems?.forEach((dItem) => {
+                if (item?.inclusions?.includes(Number(dItem?.itemId))) {
+                  array.push({
+                    id: item?.id,
+                    removalId: dItem?.itemId,
+                    removalName: dItem?.itemName,
+                  });
+                }
+              })
+            );
 
-          renderDuplicateMessage(duplicateTests, higherPricesName);
+            setShowInclusions(true);
+            let arrayToSet = [...duplicateNameArray, array].flat(1);
+            setDuplicateNameArray(arrayToSet);
+
+            renderDuplicateMessage(duplicateTests, higherPricesName);
+          }
         })
         .catch((e) => {
           console.log({ e });
@@ -2647,56 +2655,67 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading!(false);
           errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
         });
+    } else {
+      proceedForBooking();
     }
+  }
+
+  function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
+    //can be used only when itdose starts returning all id
+    const getItemIds = itemIds?.split(',');
+    const getPricesArray = createItemPrice();
+    checkDuplicateItems_Level2(getPricesArray, getItemIds);
+  }
+
+  const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any) => {
     //no inclusion level duplicates are found...
-    else {
-      if (getItemIds?.length > 0) {
-        const newItems = getItemIds?.map((item: string) => Number(item));
+    if (getItemIds?.length > 0) {
+      const newItems = getItemIds?.map((item: string) => Number(item));
 
-        //get the prices for both the items,
-        const getDuplicateItems = pricesForItem
-          ?.filter((item: any) => newItems?.includes(item?.itemId))
-          .sort((a: any, b: any) => b?.price - a?.price);
+      //get the prices for both the items,
+      const getDuplicateItems = pricesForItem
+        ?.filter((item: any) => newItems?.includes(item?.itemId))
+        .sort((a: any, b: any) => b?.price - a?.price);
 
-        const itemsToRemove = getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
-        const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
+      const itemsToRemove = getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
+      const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
 
-        const updatedCartItems = cartItems?.filter(function(items: any) {
-          return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
+      const updatedCartItems = cartItems?.filter(function(items: any) {
+        return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
+      });
+
+      //assuming get two values.
+      let array = [] as any;
+      cartItems?.forEach((cItem) => {
+        itemIdToRemove?.forEach((idToRemove: any) => {
+          if (Number(cItem?.id) == idToRemove) {
+            array.push({
+              id: getDuplicateItems?.[0]?.itemId,
+              removalId: idToRemove,
+              removalName: cItem?.name,
+            });
+          }
         });
+      });
 
-        //assuming get two values.
-        let array = [] as any;
-        cartItems?.forEach((cItem) => {
-          itemIdToRemove?.forEach((idToRemove: any) => {
-            if (Number(cItem?.id) == itemIdToRemove) {
-              array.push({
-                id: getDuplicateItems?.[0]?.itemId,
-                removalId: idToRemove,
-                removalName: cItem?.name,
-              });
-            }
-          });
-        });
+      const highPricesItem = cartItems?.map((cItem) =>
+        Number(cItem?.id) == Number(getDuplicateItems?.[0]?.itemId)
+          ? !!cItem?.name && nameFormater(cItem?.name, 'default')
+          : ''
+      );
+      const higherPricesName = highPricesItem?.filter((item: any) => item != '')?.join(', ');
+      const duplicateTests = array?.[0]?.removalName;
 
-        const highPricesItem = cartItems?.map((cItem) =>
-          Number(cItem?.id) == Number(getDuplicateItems?.[0]?.itemId)
-            ? !!cItem?.name && nameFormater(cItem?.name, 'default')
-            : ''
-        );
-        const higherPricesName = highPricesItem?.filter((item: any) => item != '')?.join(', ');
-        const duplicateTests = array?.[0]?.removalName;
+      let arrayToSet = [...duplicateNameArray, array]?.flat(1);
+      onChangeCartItems(updatedCartItems);
+      setShowInclusions(true);
+      setDuplicateNameArray(arrayToSet);
 
-        let arrayToSet = [...duplicateNameArray, array]?.flat(1);
-        onChangeCartItems(updatedCartItems);
-        setShowInclusions(true);
-        setDuplicateNameArray(arrayToSet);
-
-        renderDuplicateMessage(duplicateTests, higherPricesName);
-      } else {
-        setLoading?.(false);
-        hideAphAlert?.();
-      }
+      renderDuplicateMessage(duplicateTests, higherPricesName);
+    } else {
+      setLoading?.(false);
+      hideAphAlert?.();
+      proceedForBooking();
     }
   };
 

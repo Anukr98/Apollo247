@@ -191,7 +191,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
+              { marginHorizontal: isSmallDevice ? '1.5%' : '2.5%', alignSelf: 'center' },
               [styles.nonCirclePriceText]
             )}
           </View>
