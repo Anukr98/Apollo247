@@ -97,6 +97,7 @@ import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from 
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
@@ -247,6 +248,12 @@ export const formatAddressWithLandmark = (
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
+};
+
+export const getAge = (dob: string) => {
+  const now = new Date();
+  let age = parse(dob);
+  return differenceInYears(now, age);
 };
 
 export const formatAddressBookAddress = (
