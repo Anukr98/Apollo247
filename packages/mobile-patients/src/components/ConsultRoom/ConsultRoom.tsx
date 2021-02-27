@@ -2976,7 +2976,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         AppConfig.Configuration
           .COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${currentDeviceToken}`;
       props.navigation.navigate(AppRoutes.CovidScan, {
-        covidUrl: openUrl,
+        covidUrl: covidVaccineCta?.isDeepLink ? covidVaccineCta?.url : openUrl,
       });
     } catch (e) {}
   };
