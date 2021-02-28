@@ -2969,6 +2969,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const onPressVaccineTracker = async () => {
     postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
     try {
+      if (covidVaccineCta?.url?.includes('apollopatients://')) {
+        if (covidVaccineCta?.url?.includes('apollopatients://Speciality')) {
+          const id = covidVaccineCta?.url?.split?.('Speciality?');
+          if (id?.[1]) {
+            const filtersData = handleEncodedURI(id?.[1]) || '';
+            props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+              specialityId: filtersData?.[0] || '',
+              typeOfConsult: filtersData?.[1] || '',
+              doctorType: filtersData?.[2] || '',
+            });
+          } else {
+            props.navigation.navigate(AppRoutes.DoctorSearch);
+          }
+        }
+        return;
+      }
       const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
       const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
       const userMobNo = g(currentPatient, 'mobileNumber');
@@ -2976,9 +2992,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         AppConfig.Configuration
           .COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${currentDeviceToken}`;
       props.navigation.navigate(AppRoutes.CovidScan, {
-        covidUrl: covidVaccineCta?.isDeepLink ? covidVaccineCta?.url : openUrl,
+        covidUrl: openUrl,
       });
     } catch (e) {}
+  };
+
+  const handleEncodedURI = (encodedString: string) => {
+    const decodedString = decodeURIComponent(encodedString);
+    const splittedString = decodedString.split('+');
+    if (splittedString.length > 1) {
+      return splittedString;
+    } else {
+      return encodedString.split('%20');
+    }
   };
 
   const onPressFAQ = async () => {
