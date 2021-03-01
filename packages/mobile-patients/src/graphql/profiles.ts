@@ -1868,8 +1868,18 @@ export const SAVE_DEVICE_TOKEN = gql`
 `;
 
 export const UPDATE_PATIENT_APP_VERSION = gql`
-  mutation UpdatePatientAppVersion($patientId: String!, $appVersion: String!, $osType: DEVICETYPE) {
-    updatePatientAppVersion(patientId: $patientId, appVersion: $appVersion, osType: $osType) {
+  mutation UpdatePatientAppVersion(
+    $patientId: String!
+    $appVersion: String!
+    $osType: DEVICETYPE
+    $appsflyerId: String
+  ) {
+    updatePatientAppVersion(
+      patientId: $patientId
+      appVersion: $appVersion
+      osType: $osType
+      appsflyerId: $appsflyerId
+    ) {
       status
     }
   }

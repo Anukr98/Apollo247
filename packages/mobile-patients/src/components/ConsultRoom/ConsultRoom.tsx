@@ -76,7 +76,6 @@ import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   SAVE_VOIP_DEVICE_TOKEN,
-  UPDATE_PATIENT_APP_VERSION,
   GET_USER_PROFILE_TYPE,
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
@@ -94,11 +93,7 @@ import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
-import { DEVICETYPE, Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  UpdatePatientAppVersion,
-  UpdatePatientAppVersionVariables,
-} from '@aph/mobile-patients/src/graphql/types/UpdatePatientAppVersion';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   GenerateTokenforCM,
   notifcationsApi,
@@ -120,7 +115,6 @@ import {
   doRequestAndAccessLocationModified,
   g,
   getPhrNotificationAllCount,
-  handleGraphQlError,
   overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
@@ -162,7 +156,6 @@ import {
   ViewStyle,
   Keyboard,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
@@ -796,26 +789,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (error) {}
   };
 
-  const notifyAppVersion = async (patientId: string) => {
-    try {
-      const key = `${patientId}-appVersion`;
-      const savedAppVersion = await AsyncStorage.getItem(key);
-      const appVersion = DeviceInfo.getVersion();
-      if (savedAppVersion !== appVersion) {
-        await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
-          mutation: UPDATE_PATIENT_APP_VERSION,
-          variables: {
-            appVersion,
-            patientId,
-            osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
-          },
-          fetchPolicy: 'no-cache',
-        });
-        await AsyncStorage.setItem(key, appVersion);
-      }
-    } catch (error) {}
-  };
-
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     createHyperServiceObject();
@@ -845,7 +818,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     if (currentPatient?.id) {
       saveDeviceNotificationToken(currentPatient.id);
-      notifyAppVersion(currentPatient.id);
     }
   }, [currentPatient]);
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
