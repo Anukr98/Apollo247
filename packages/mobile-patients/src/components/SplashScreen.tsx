@@ -403,7 +403,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'doctor':
           case 'Doctor':
-            console.log('Doctor handleopen', route, data, event);
+            console.log('Doctor handleopen');
             if (data.length === 2)
               getData('Doctor', linkId, undefined, undefined, attributes?.media_source);
             break;
