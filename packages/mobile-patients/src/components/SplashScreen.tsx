@@ -346,10 +346,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         route = data[0];
 
         let linkId = '';
-
+        let attributes = {
+          media_source: 'not set',
+        };
         try {
-          if (data.length >= 2) {
-            linkId = data[1].split('&');
+          if (data?.length >= 2) {
+            linkId = data[1]?.split('&');
+            const params = data[1]?.split('&');
+            const utmParams = params?.map((item: any) => item.split('='));
+            utmParams?.forEach(
+              (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
+            );
             if (linkId.length > 0) {
               linkId = linkId[0];
               setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
@@ -396,8 +403,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'doctor':
           case 'Doctor':
-            console.log('Doctor handleopen');
-            if (data.length === 2) getData('Doctor', linkId);
+            console.log('Doctor handleopen', route, data, event);
+            if (data.length === 2)
+              getData('Doctor', linkId, undefined, undefined, attributes?.media_source);
             break;
 
           case 'doctorsearch':
@@ -634,7 +642,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }
   }
-  const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
+  const getData = (
+    routeName: string,
+    id?: string,
+    timeout?: boolean,
+    isCall?: boolean,
+    mediaSource?: string
+  ) => {
     async function fetchData() {
       // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
@@ -684,7 +698,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (mePatient.firstName !== '') {
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
-                pushTheView(routeName, id ? id : undefined, isCall, isCircleMember === 'yes');
+                pushTheView(
+                  routeName,
+                  id ? id : undefined,
+                  isCall,
+                  isCircleMember === 'yes',
+                  mediaSource
+                );
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
@@ -754,7 +774,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
-  const pushTheView = (routeName: String, id?: any, isCall?: boolean, isCircleMember?: boolean) => {
+  const pushTheView = (
+    routeName: string,
+    id?: any,
+    isCall?: boolean,
+    isCircleMember?: boolean,
+    mediaSource?: string
+  ) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -831,6 +857,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
           fromDeeplink: true,
+          mediaSource: mediaSource,
         });
         break;
 

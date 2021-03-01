@@ -364,6 +364,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const fromDeeplink = props.navigation.getParam('fromDeeplink');
+  const mediaSource = props.navigation.getParam('mediaSource');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [doctorShareData, setDoctorShareData] = useState<any>();
@@ -641,6 +642,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Media Source': mediaSource,
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
   };
