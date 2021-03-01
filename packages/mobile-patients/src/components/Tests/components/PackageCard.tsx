@@ -3,7 +3,7 @@ import { CircleLogo, OfferIcon } from '@aph/mobile-patients/src/components/ui/Ic
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -49,7 +49,6 @@ export interface PackageCardProps {
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
-
   const actualItemsToShow =
     data?.diagnosticWidgetData?.length > 0 &&
     data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
@@ -198,7 +197,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
+              { marginHorizontal: isSmallDevice ? '1%' : '2%', alignSelf: 'center' },
               [styles.nonCirclePriceText]
             )}
           </View>
@@ -314,9 +313,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function onPressRemoveFromCart(item: any) {
-    if (!props.isServiceable) {
-      return;
-    }
     removeCartItem!(`${item?.itemId}`);
   }
 
@@ -325,10 +321,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
-    if (sourceScreen == AppRoutes.TestDetails) {
-      return;
-    }
-
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!; //more than price (black)
     const circlePrice = pricesForItem?.circlePrice!;
@@ -372,13 +364,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text(
-              'B',
-              isSmallDevice ? 13 : 14,
-              props.isServiceable ? '#fc9916' : '#FED984',
-              1,
-              24
-            ),
+            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
           },
         ]}
         onPress={() =>
@@ -398,7 +384,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         <Card
           cardContainer={styles.errorCardContainer}
           heading={string.common.uhOh}
-          description={'Something went wrong.'}
+          description={string.common.somethingWentWrong}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
         />
@@ -408,6 +394,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     }
   };
 
+  const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
@@ -415,11 +403,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
             bounces={false}
-            keyExtractor={(_, index) => `${index}`}
+            keyExtractor={keyExtractor}
             showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
+            maxToRenderPerBatch={3}
           />
         ) : (
           renderError()
@@ -510,7 +500,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     textAlign: 'right',
-    right: 16,
+    right: 0,
     position: 'absolute',
   },
   offerIconStyle: {

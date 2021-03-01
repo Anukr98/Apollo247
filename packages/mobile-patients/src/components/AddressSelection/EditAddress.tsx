@@ -82,86 +82,13 @@ const setCharLen = width < 380 ? 25 : 30; //smaller devices like se, nexus 5
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
-const styles = StyleSheet.create({
-  buttonViewStyle: {
-    width: '30%',
-    backgroundColor: 'white',
-  },
-  selectedButtonViewStyle: {
-    backgroundColor: theme.colors.APP_GREEN,
-  },
-  buttonTitleStyle: {
-    color: theme.colors.APP_GREEN,
-  },
-  selectedButtonTitleStyle: {
-    color: theme.colors.WHITE,
-  },
-  userDetailsOuterView: {
-    ...theme.viewStyles.cardViewStyle,
-    margin: 20,
-    padding: 16,
-  },
-  viewRowStyle: { flexDirection: 'row' },
-  userSave: {
-    flex: 0.2,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  userSaveText: {
-    ...theme.viewStyles.yellowTextStyle,
-    ...fonts.IBMPlexSansBold(15),
-    textAlign: 'right',
-  },
-  addressHeadingText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: theme.colors.SHERPA_BLUE,
-  },
-  dropDownContainer: {
-    position: 'absolute',
-    top: 10,
-    zIndex: 1,
-    width: '100%',
-  },
-  addressFieldsText: {
-    marginTop: 5,
-    marginBottom: 10,
-  },
-  pincodeView: {
-    justifyContent: 'space-between',
-    flex: 0.45,
-    marginRight: '12%',
-  },
-  addressLabel: {
-    color: '#02475b',
-    ...fonts.IBMPlexSansMedium(14),
-    opacity: 0.7,
-  },
-  textInputContainerStyle: {
-    flex: 1,
-    top: Platform.OS == 'ios' ? -6 : -11,
-  },
-  textInputName: {
-    borderBottomWidth: 1,
-    paddingBottom: 0,
-    color: theme.colors.SHERPA_BLUE,
-    opacity: Platform.OS == 'ios' ? 0.6 : 0.5,
-    ...theme.fonts.IBMPlexSansMedium(14.75),
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  nameText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    flex: 0.95,
-    marginBottom: Platform.OS == 'android' ? '9%' : '7%',
-  },
-});
-
 export type AddressSource =
   | 'My Account'
   | 'Upload Prescription'
   | 'Cart'
   | 'Diagnostics Cart'
-  | 'Medicine';
+  | 'Medicine'
+  | 'Tests';
 
 export interface AddAddressProps
   extends NavigationScreenProps<{
@@ -171,6 +98,7 @@ export interface AddAddressProps
     source: AddressSource;
     ComingFrom?: string;
     locationDetails?: any;
+    updateLatLng?: boolean;
   }> {}
 
 type addressOptions = {
@@ -191,6 +119,8 @@ const AddressOptions: addressOptions[] = [
 export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const isEdit = props.navigation.getParam('KeyName') === 'Update';
   const source = props.navigation.getParam('source');
+  const sourceScreenName = props.navigation.getParam('ComingFrom');
+  const updateLatLng = props.navigation.getParam('updateLatLng');
   const locationResponse = props.navigation.getParam('locationDetails');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -234,6 +164,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
     setAddresses: setTestAddresses,
+    setNewAddressAddedHomePage,
+    setNewAddressAddedCartPage,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
@@ -432,16 +364,23 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });
           } else {
+            if (source == 'Tests') {
+              setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
+              setNewAddressAddedCartPage?.('');
+            } else if (source == 'Diagnostics Cart') {
+              setNewAddressAddedCartPage?.(String(address?.zipcode!) || '');
+              setNewAddressAddedHomePage?.('');
+            }
             props.navigation.pop(2, { immediate: true });
           }
         } else {
           setcity(isAddressServiceable?.city || '');
-          setDeliveryAddressId!('');
-          setNewAddressAdded!('');
-          setDiagnosticAddressId!(address.id || '');
+          setDeliveryAddressId?.('');
+          setNewAddressAdded?.('');
+          setDiagnosticAddressId?.(address?.id || '');
 
           showAphAlert!({
-            title: 'Uh oh.. :(',
+            title: string.common.uhOh,
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
             onPressOk: () => {
               onAlertError(isComingFrom);
@@ -701,6 +640,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   ) => {
     const screenName = props.navigation.getParam('ComingFrom')!;
     if (screenName != '') {
+      if (sourceScreenName == AppRoutes.TestsCart) {
+        addressList?.latitude != null &&
+        addressList?.longitude != null &&
+        addressList?.latitude > 0 &&
+        addressList?.longitude > 0
+          ? setDiagnosticAddressId!(addressList?.id || '')
+          : null;
+      }
       setUpdatedAddressList(addressList, keyName);
       props.navigation.pop(2, { immediate: true }); //1
     } else {
@@ -1227,7 +1174,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'height' : undefined}
           style={{ flex: 1 }}
           {...keyboardVerticalOffset}
         >
@@ -1265,3 +1212,77 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  buttonViewStyle: {
+    width: '30%',
+    backgroundColor: 'white',
+  },
+  selectedButtonViewStyle: {
+    backgroundColor: theme.colors.APP_GREEN,
+  },
+  buttonTitleStyle: {
+    color: theme.colors.APP_GREEN,
+  },
+  selectedButtonTitleStyle: {
+    color: theme.colors.WHITE,
+  },
+  userDetailsOuterView: {
+    ...theme.viewStyles.cardViewStyle,
+    margin: 20,
+    padding: 16,
+  },
+  viewRowStyle: { flexDirection: 'row' },
+  userSave: {
+    flex: 0.2,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  userSaveText: {
+    ...theme.viewStyles.yellowTextStyle,
+    ...fonts.IBMPlexSansBold(15),
+    textAlign: 'right',
+  },
+  addressHeadingText: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    color: theme.colors.SHERPA_BLUE,
+  },
+  dropDownContainer: {
+    position: 'absolute',
+    top: 10,
+    zIndex: 1,
+    width: '100%',
+  },
+  addressFieldsText: {
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  pincodeView: {
+    justifyContent: 'space-between',
+    flex: 0.45,
+    marginRight: '12%',
+  },
+  addressLabel: {
+    color: '#02475b',
+    ...fonts.IBMPlexSansMedium(14),
+    opacity: 0.7,
+  },
+  textInputContainerStyle: {
+    flex: 1,
+    top: Platform.OS == 'ios' ? -6 : -11,
+  },
+  textInputName: {
+    borderBottomWidth: 1,
+    paddingBottom: 0,
+    color: theme.colors.SHERPA_BLUE,
+    opacity: Platform.OS == 'ios' ? 0.6 : 0.5,
+    ...theme.fonts.IBMPlexSansMedium(14.75),
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  nameText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    flex: 0.95,
+    marginBottom: Platform.OS == 'android' ? '9%' : '7%',
+  },
+});

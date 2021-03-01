@@ -2,22 +2,16 @@ import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consu
 import { ReschedulePopUp } from '@aph/mobile-patients/src/components/Consult/ReschedulePopUp';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
-import {
-  DoctorPlaceholderImage,
-  Location,
-  More,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { DoctorPlaceholderImage, More } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
   CommonLogEvent,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -72,7 +66,9 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,Linking,
+  View,
+  Linking,
+  Platform,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
@@ -150,26 +146,26 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   containerPay: {
-      margin: 20,
-      backgroundColor: 'red',
-      borderRadius: 10,
-      ...theme.viewStyles.card(10),
-      paddingVertical: 16,
-    },
-    rowContainerPay: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    regularTextPay: {
-      ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
-    },
-    seperatorLinePay: {
-      marginVertical: 12,
-      height: 0.5,
-      backgroundColor: theme.colors.LIGHT_BLUE,
-      opacity: 0.2,
-    },
+    margin: 20,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    ...theme.viewStyles.card(10),
+    paddingVertical: 16,
+  },
+  rowContainerPay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  regularTextPay: {
+    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
+  },
+  seperatorLinePay: {
+    marginVertical: 12,
+    height: 0.5,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.2,
+  },
   amountSavedText: {
     ...theme.fonts.IBMPlexSansRegular(16),
     color: theme.colors.SEARCH_UNDERLINE_COLOR,
@@ -205,21 +201,21 @@ const styles = StyleSheet.create({
     width: 40,
     height: 20,
   },
-     doctorCard: {
-       ...theme.viewStyles.cardViewStyle,
-       paddingHorizontal: 20,
-       backgroundColor:'#F7F8F5',
-       borderRadius: 0,
-       marginTop: 20,
-       paddingTop: 22,
-       paddingBottom: 14,
-     },
-     sucessPopupView:{
-     flexDirection: 'row',
-                                     marginHorizontal: 20,
-                                     alignItems: 'flex-end',
-                                     justifyContent: 'flex-end',
-                                   },
+  doctorCard: {
+    ...theme.viewStyles.cardViewStyle,
+    paddingHorizontal: 20,
+    backgroundColor: '#F7F8F5',
+    borderRadius: 0,
+    marginTop: 20,
+    paddingTop: 22,
+    paddingBottom: 14,
+  },
+  sucessPopupView: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
   careLogoText: {
     ...theme.viewStyles.text('SB', 7, theme.colors.WHITE),
   },
@@ -227,44 +223,45 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginHorizontal: 20,
   },
-      doctorFees: {
-        ...theme.viewStyles.text('M', 15, theme.colors.LIGHT_BLUE),
-      },
-      doctorProfile: {
-        height: 80,
-        borderRadius: 40,
-        width: 80,
-        alignSelf: 'center',
-      },
-      drImageBackground: {
-        height: 95,
-        width: 95,
-        justifyContent: 'center',
-      },
+  doctorFees: {
+    ...theme.viewStyles.text('M', 15, theme.colors.LIGHT_BLUE),
+  },
+  doctorProfile: {
+    height: 80,
+    borderRadius: 40,
+    width: 80,
+    alignSelf: 'center',
+  },
+  drImageBackground: {
+    height: 95,
+    width: 95,
+    justifyContent: 'center',
+  },
   rowContainerDoc: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },doctorNameStyle: {
-        textTransform: 'capitalize',
-        ...theme.fonts.IBMPlexSansMedium(23),
-        color: theme.colors.SEARCH_DOCTOR_NAME,
-        marginTop: 4,
-      },
-      specializationStyle: {
-        ...theme.fonts.IBMPlexSansMedium(12),
-        color: theme.colors.SKY_BLUE,
-        marginTop: 2,
-      },
-      regularText: {
-        ...theme.fonts.IBMPlexSansMedium(14),
-        color: theme.colors.LIGHT_BLUE,
-        marginTop: 18,
-      },
-      appointmentTimeStyle: {
-        ...theme.fonts.IBMPlexSansMedium(16),
-        color: theme.colors.SKY_BLUE,
-        marginTop: 10,
-      },
+  },
+  doctorNameStyle: {
+    textTransform: 'capitalize',
+    ...theme.fonts.IBMPlexSansMedium(23),
+    color: theme.colors.SEARCH_DOCTOR_NAME,
+    marginTop: 4,
+  },
+  specializationStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SKY_BLUE,
+    marginTop: 2,
+  },
+  regularText: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+    marginTop: 18,
+  },
+  appointmentTimeStyle: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SKY_BLUE,
+    marginTop: 10,
+  },
   showPopUp: {
     backgroundColor: 'rgba(0,0,0,0.01)',
     position: 'absolute',
@@ -302,11 +299,11 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
-  mapsStyle:{
-  margin: 6,
-  flexWrap: 'wrap',
-  fontSize:14,
-  color:'#FC9916'
+  mapsStyle: {
+    margin: 6,
+    flexWrap: 'wrap',
+    fontSize: 14,
+    color: '#FC9916',
   },
   popDescriptionStyle: {
     marginHorizontal: 24,
@@ -337,29 +334,26 @@ const styles = StyleSheet.create({
     marginRight: 15,
     marginVertical: 5,
   },
-  cancelView:{
-  position: 'absolute',
-  height: height,
-  width: width,
-  flex: 1,
-  left: 0,
-  right: 0,
-  bottom: 0,
+  cancelView: {
+    position: 'absolute',
+    height: height,
+    width: width,
+    flex: 1,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
-  cancelSubView:{margin: 0,
-                  height: height,
-                  width: width,
-                  backgroundColor: 'transparent',},
-  cancelSubView2:{
-  backgroundColor: 'white',
-  width: 100,
-  height: 45,
-  marginLeft: width - 120,
-  marginTop: 40,
-  borderRadius: 10,
-  alignItems: 'center',
-  justifyContent: 'center',
-  ...theme.viewStyles.shadowStyle,
+  cancelSubView: { margin: 0, height: height, width: width, backgroundColor: 'transparent' },
+  cancelSubView2: {
+    backgroundColor: 'white',
+    width: 100,
+    height: 45,
+    marginLeft: width - 120,
+    marginTop: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.viewStyles.shadowStyle,
   },
   ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
   ctaOrangeTextStyle: {
@@ -409,10 +403,9 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
-  const { currentPatient,allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [appointmentTime, setAppointmentTime] = useState<string>('');
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
-  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [belowThree, setBelowThree] = useState<boolean>(false);
@@ -594,129 +587,130 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       console.log(error, 'error');
     }
   };
-    const renderPrice = () => {
-            return (
-            <View>
-          <Text style={styles.priceBreakupTitle}>{string.common.totalCharges}</Text>
-          <View style={styles.seperatorLine} />
-                <View style={styles.containerPay}>
-                  <View style={styles.rowContainerPay}>
-                    <Text style={styles.regularTextPay}>{string.common.toPay}</Text>
-                    <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
-                      {string.common.Rs}
-                    {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}
-                    </Text>
-                  </View>
-                </View>
-
-          <Text style={[styles.priceBreakupTitle,{marginBottom:10}]}>{string.common.oneTimePhysicalCharge}</Text>
+  const renderPrice = () => {
+    return (
+      <View>
+        <Text style={styles.priceBreakupTitle}>{string.common.totalCharges}</Text>
+        <View style={styles.seperatorLine} />
+        <View style={styles.containerPay}>
+          <View style={styles.rowContainerPay}>
+            <Text style={styles.regularTextPay}>{string.common.toPay}</Text>
+            <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
+              {string.common.Rs}
+              {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}
+            </Text>
           </View>
-              );
-          };
+        </View>
 
-           const renderPatient = () => {
-           const patientc=allCurrentPatients?.filter((it)=>it.id===data?.patientId);
-           console.log("csk this p",patientc)
-                    return (
-                    <View>
-                  <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                  <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
-                  </View>
-                  <View style={styles.seperatorLine} />
-                  <Text style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap',fontSize:14 }]}>
-                  {g(patientc[0], 'firstName')} {g(patientc[0], 'lastName')}
-                  </Text>
-                  <Text style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap',fontSize:14 }]}>
-                  {Math.round(moment().diff(g(patientc[0], 'dateOfBirth') || 0, 'years', true))} ,
-                   {g(patientc[0], 'gender')}
-                  </Text>
-                  </View>
-                      );
-                  };
+        <Text style={[styles.priceBreakupTitle, { marginBottom: 10 }]}>
+          {string.common.oneTimePhysicalCharge}
+        </Text>
+      </View>
+    );
+  };
 
-                  const renderDoctorProfile = () => {
-                      return (
-                        <View >
-                          {data?.doctorInfo?.thumbnailUrl ? (
-                            <Image
-                              style={styles.doctorProfile}
-                              source={{
-                                uri: data.doctorInfo.thumbnailUrl!,
-                              }}
-                              resizeMode={'contain'}
-                            />
-                          ) : (
-                            <DoctorPlaceholderImage />
-                          )}
-                        </View>
-                      );
-                    };
-                    const renderDoctorCard = () => {
-                      return (
-                        <View>
-                              <View style={styles.rowContainerDoc}>
-                                <View style={{ width: width - 140 }}>
-                                  <Text style={styles.doctorNameStyle}>{data?.doctorInfo?.displayName}</Text>
-                                  <Text style={styles.specializationStyle}>
-                                    {data?.doctorInfo?.qualification || ''} | {data?.doctorInfo?.experience} YR
-                                    {Number(data?.doctorInfo?.experience) != 1 ? 'S Exp.' : ' Exp.'}
-                                  </Text>
+  const renderPatient = () => {
+    const patientc = allCurrentPatients?.filter((it) => it?.id === data?.patientId);
+    return (
+      <View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
+        </View>
+        <View style={styles.seperatorLine} />
+        <Text
+          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
+        >
+          {g(patientc[0], 'firstName')} {g(patientc[0], 'lastName')}
+        </Text>
+        <Text
+          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
+        >
+          {Math.round(moment().diff(g(patientc[0], 'dateOfBirth') || 0, 'years', true))} ,
+          {g(patientc[0], 'gender')}
+        </Text>
+      </View>
+    );
+  };
 
-                              <Text style={styles.appointmentTimeStyle}>
-                                {appointmentTime}
-                              </Text>
-                                  <Text style={styles.regularText}>
+  const renderDoctorProfile = () => {
+    return (
+      <View>
+        {data?.doctorInfo?.thumbnailUrl ? (
+          <Image
+            style={styles.doctorProfile}
+            source={{
+              uri: data.doctorInfo.thumbnailUrl!,
+            }}
+            resizeMode={'contain'}
+          />
+        ) : (
+          <DoctorPlaceholderImage />
+        )}
+      </View>
+    );
+  };
+  const renderDoctorCard = () => {
+    return (
+      <View>
+        <View style={styles.rowContainerDoc}>
+          <View style={{ width: width - 140 }}>
+            <Text style={styles.doctorNameStyle}>{data?.doctorInfo?.displayName}</Text>
+            <Text style={styles.specializationStyle}>
+              {data?.doctorInfo?.qualification || ''} | {data?.doctorInfo?.experience} YR
+              {Number(data?.doctorInfo?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+            </Text>
 
-                                  </Text>
-                                </View>
-                                <View>
-                                    <View>{renderDoctorProfile()}</View>
+            <Text style={styles.appointmentTimeStyle}>{appointmentTime}</Text>
+            <Text style={styles.regularText}></Text>
+          </View>
+          <View>
+            <View>{renderDoctorProfile()}</View>
+          </View>
+        </View>
 
-                                </View>
-                              </View>
+        <View style={{ width: width - 40 }}>
+          <Text style={styles.priceBreakupTitle}>LOCATION</Text>
+          <View style={styles.seperatorLine} />
 
-                                <View style={{ width:  width - 40 }}>
-                          <Text style={styles.priceBreakupTitle}>LOCATION</Text>
-                                <View style={styles.seperatorLine} />
+          <View>
+            <Text
+              style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap', fontSize: 14 }]}
+            >
+              {data.doctorInfo?.doctorHospital?.[0]?.facility
+                ? `${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name}, ${data?.doctorInfo?.doctorHospital?.[0]?.facility?.streetLine1}`
+                : ''}
+              {'\n' + data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
+            </Text>
+            {Platform.OS === 'android' && (
+              <TouchableOpacity onPress={() => openMaps()}>
+                <Text style={[styles.specializationStyle, styles.mapsStyle]}>
+                  https://www.google.com/maps/dir/
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  };
 
-                                  <View style={styles.row}>
-
-                                      <Text style={[styles.specializationStyle, { margin: 6, flexWrap: 'wrap',fontSize:14 }]}>
-                                        {data.doctorInfo?.doctorHospital?.[0]?.facility
-                                                             ? `${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name}, ${data?.doctorInfo?.doctorHospital?.[0]?.facility?.streetLine1}`
-                                                             : ''
-                                        }{"\n"+data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
-                                      </Text>
-                                      {Platform.OS ==='ios'?'':(<TouchableOpacity onPress={()=>openMaps()}>
-                                      <Text style={[styles.specializationStyle, styles.mapsStyle]}>
-                                      https://www.google.com/maps/dir/
-                                      </Text>
-                                      </TouchableOpacity>)}
-                                  </View>
-                                </View>
-
-
-                            </View>
-                      );
-                    };
-
-                    const openMaps = () =>{
-                    let query=`${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name},
+  const openMaps = () => {
+    let query = `${data?.doctorInfo?.doctorHospital?.[0]?.facility?.name},
                                 ${data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}`;
-                    let url=`google.navigation:q=${query}`
+    let url = `google.navigation:q=${query}`;
 
-                    try {
-                            Linking.canOpenURL(url).then((supported) => {
-                              if (supported) {
-                                Linking.openURL(url);
-                              } else {
-                                setBugFenderLog('FAILED_OPEN_URL', url);
-                              }
-                            });
-                        } catch (e) {
-                          setBugFenderLog('FAILED_OPEN_URL', url);
-                        }
-                    }
+    try {
+      Linking.canOpenURL(url).then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          setBugFenderLog('FAILED_OPEN_URL', url);
+        }
+      });
+    } catch (e) {
+      setBugFenderLog('FAILED_OPEN_URL', url);
+    }
+  };
   const rescheduleAPI = (availability: any) => {
     console.log('availability', availability);
 
@@ -902,7 +896,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     });
   };
 
-
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const showCancel =
@@ -934,7 +927,8 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           />
           <View
             style={{
-              backgroundColor: theme.colors.CARD_BG,padding: 20,
+              backgroundColor: theme.colors.CARD_BG,
+              padding: 20,
               ...theme.viewStyles.shadowStyle,
             }}
           >
@@ -944,47 +938,39 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
               }}
             >
               <View style={{ flex: 1 }}>
-
                 <Text
                   style={{
                     ...theme.fonts.IBMPlexSansMedium(12),
                     color: theme.colors.SEARCH_EDUCATION_COLOR,
                     paddingBottom: 4,
-                  }}>
+                  }}
+                >
                   #{data.displayId}
                 </Text>
                 {renderDoctorCard()}
                 {renderPatient()}
                 {renderPrice()}
-
               </View>
-
             </View>
           </View>
-
-
         </SafeAreaView>
 
-
         {cancelAppointment && (
-          <View style={[styles.cancelView,{top: statusBarHeight()}]}>
+          <View style={[styles.cancelView, { top: statusBarHeight() }]}>
             <TouchableOpacity
               onPress={() => {
                 CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
                 setCancelAppointment(false);
               }}
             >
-
-          <View style={styles.cancelSubView}>
+              <View style={styles.cancelSubView}>
                 <TouchableOpacity
                   onPress={() => {
                     setShowCancelPopup(true);
                     setCancelAppointment(false);
                   }}
                 >
-
-                  <View
-                    style={styles.cancelSubView2}>
+                  <View style={styles.cancelSubView2}>
                     <Text
                       style={{
                         backgroundColor: 'white',
@@ -1047,35 +1033,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             </View>
           </BottomPopUp>
         )}
-        {/* {sucesspopup && (
-          <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient?.firstName) || ''} :)`}
-            description={'Appointment sucessfully cancelled'}
-          >
-            <View
-              style={styles.sucessPopupView}
-            >
-              <View style={{ height: 60 }}>
-                <TouchableOpacity
-                  style={styles.gotItStyles}
-                  onPress={() => {
-                    setShowCancelPopup(false);
-                    setSucessPopup(false);
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                      })
-                    );
-                  }}
-                >
-                  <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </BottomPopUp>
-        )} */}
+
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{

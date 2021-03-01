@@ -58,6 +58,11 @@ export enum BOOKING_SOURCE {
   WEB = "WEB",
 }
 
+export enum BannerDisplayType {
+  banner = "banner",
+  card = "card",
+}
+
 export enum BloodGroups {
   ABNegative = "ABNegative",
   ABPositive = "ABPositive",
@@ -135,6 +140,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
+  PARTIAL_ORDER_COMPLETED = "PARTIAL_ORDER_COMPLETED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
@@ -145,8 +151,10 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
   SAMPLE_COLLECTED_IN_LAB = "SAMPLE_COLLECTED_IN_LAB",
+  SAMPLE_NOT_COLLECTED_IN_LAB = "SAMPLE_NOT_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
   SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_SUBMITTED = "SAMPLE_SUBMITTED",
   SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
@@ -466,6 +474,11 @@ export enum PaymentStatus {
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
+export enum PlanPurchaseType {
+  first_time = "first_time",
+  renew = "renew",
 }
 
 export enum PrescriptionType {
@@ -968,6 +981,10 @@ export interface DiagnosticBookHomeCollectionInput {
   attachmentData?: (Attachments | null)[] | null;
 }
 
+export interface DiagnosticInitiateOrderPayment {
+  orderId?: string | null;
+}
+
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;
@@ -1197,6 +1214,8 @@ export interface MedicineCartOMSInput {
   totalCashBack?: number | null;
   savedDeliveryCharge?: number | null;
   prescriptionType?: PrescriptionType | null;
+  tatCity?: string | null;
+  tatHours?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1236,6 +1255,10 @@ export interface MedicineOrderShipmentInput {
   totalCashBack?: number | null;
   storeDistanceKm?: number | null;
   items?: (MedicineCartOMSItem | null)[] | null;
+  tatCity?: string | null;
+  tatHours?: string | null;
+  allocationProfileName?: string | null;
+  clusterId?: string | null;
 }
 
 export interface MedicinePaymentMqInput {
@@ -1439,6 +1462,7 @@ export interface PaymentReference {
   BANKNAME?: string | null;
   backend_activation?: boolean | null;
   done_by?: string | null;
+  sub_plan_id?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1577,8 +1601,8 @@ export interface SaveMedicineOrderV2Input {
   subscriptionDetails?: SUBSCRIPTION_DETAILS_PHARMA | null;
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
   healthCreditUsed?: number | null;
-  isConsultRequired?: boolean | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
+  prescriptionType?: PrescriptionType | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1612,6 +1636,8 @@ export interface ShopAddress {
 
 export interface SourceMetaData {
   source_identifier?: string | null;
+  sub_plan_id?: string | null;
+  purchase_type?: PlanPurchaseType | null;
 }
 
 export interface UpdateAppointmentInput {
@@ -1622,6 +1648,7 @@ export interface UpdateAppointmentInput {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
+  isUserJoining?: boolean | null;
 }
 
 export interface UpdatePatientAddressInput {

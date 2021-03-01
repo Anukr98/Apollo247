@@ -122,6 +122,7 @@ export interface CMSTestInclusions {
   inclusionName: string;
 }
 export interface CMSTestDetails {
+  TestObservation: any;
   diagnosticItemName: string;
   diagnosticFAQs: any;
   diagnosticItemImageUrl: string;
@@ -165,6 +166,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     pharmacyCircleAttributes,
     deliveryAddressId,
   } = useShoppingCart();
+
   const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
@@ -182,8 +184,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
-  console.log({ deliveryAddressId });
-  console.log({ diagnosticDeliveryAddressId });
 
   const itemName =
     testDetails?.ItemName ||
@@ -193,11 +193,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     '';
 
   const hdfc_values = string.Hdfc_values;
-  aphConsole.log('currentItemId : ' + itemId);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
+  const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -222,14 +222,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     } else {
       setErrorState(true);
     }
-  }, []);
+  }, [itemId]);
 
   const fetchTestDetails_CMS = async (itemId: string | number) => {
     setLoadingContext?.(true);
     const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
-      console.log({ result });
       setCmsTestDetails(result);
       setLoadingContext?.(false);
 
@@ -375,24 +374,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     },
   };
 
+  const scrollToTop = () => {
+    setTimeout(() => {
+      scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+    }, 0);
+  };
+
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
-      if (movedFrom == AppRoutes.Tests) {
-        breadcrumb.push({
-          title: 'Order Tests',
-          onPress: () => {
-            props.navigation.navigate('TESTS');
-          },
-        });
+      scrollToTop();
+
+      if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
-        breadcrumb.push({
-          title: 'Order Tests',
-          onPress: () => {
-            props.navigation.navigate('TESTS');
-          },
-        });
         breadcrumb.push({
           title: movedFrom == AppRoutes.SearchTestScene ? 'Test Search' : 'Test Listing',
           onPress: () => {
@@ -420,7 +415,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       });
       setTestDetailsBreadCrumbs && setTestDetailsBreadCrumbs(breadcrumb);
     }
-  }, [movedFrom]);
+  }, [movedFrom, itemName]);
 
   useEffect(() => {
     DiagnosticDetailsViewed(
@@ -621,7 +616,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderPriceView = () => {
-    console.log({ testInfo });
     //if coming from anywhere other than cart page
     //check other conidtions
     const slashedPrice =
@@ -833,32 +827,33 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             !moreInclusions &&
             inclusions?.map((item: any, index: number) =>
               index < 4 ? (
-                <View style={styles.rowStyle}>
-                  <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                  <Text style={styles.inclusionsItemText}>
-                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                    {index == 3 && inclusions?.length - 4 > 0 && (
-                      <Text
-                        onPress={() => setMoreInclusions(!moreInclusions)}
-                        style={styles.moreText}
-                      >
-                        {'   '}
-                        {!moreInclusions && `+${inclusions?.length - 4} MORE`}
-                      </Text>
-                    )}
-                  </Text>
-                </View>
+                <>
+                  <View style={styles.rowStyle}>
+                    <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                    <Text style={styles.inclusionsItemText}>
+                      {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
+                      {index == 3 &&
+                        inclusions?.length - 4 > 0 &&
+                        item?.TestObservation?.length == 0 &&
+                        renderShowMore(inclusions, item?.inclusionName)}
+                    </Text>
+                  </View>
+                  {renderParamterData(item, inclusions, index, true)}
+                </>
               ) : null
             )}
           {isInclusionPrsent &&
             moreInclusions &&
             inclusions?.map((item: any, index: number) => (
-              <View style={styles.rowStyle}>
-                <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                <Text style={styles.inclusionsItemText}>
-                  {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                </Text>
-              </View>
+              <>
+                <View style={styles.rowStyle}>
+                  <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                  <Text style={styles.inclusionsItemText}>
+                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
+                  </Text>
+                </View>
+                {renderParamterData(item, inclusions, index, false)}
+              </>
             ))}
           {isInclusionPrsent && moreInclusions && (
             <Text onPress={() => setMoreInclusions(!moreInclusions)} style={styles.showLessText}>
@@ -866,6 +861,56 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             </Text>
           )}
         </View>
+      </>
+    );
+  };
+
+  const renderShowMore = (inclusions: any, name: string) => {
+    return (
+      <Text
+        onPress={() => setMoreInclusions(!moreInclusions)}
+        style={[
+          styles.moreText,
+          {
+            ...theme.viewStyles.text(
+              'SB',
+              isSmallDevice ? (name?.length > 25 ? 10 : 12) : name?.length > 25 ? 11 : 13,
+              theme.colors.APP_YELLOW,
+              1,
+              15
+            ),
+          },
+        ]}
+      >
+        {'   '}
+        {!moreInclusions && `+${inclusions?.length - 4} MORE`}
+      </Text>
+    );
+  };
+
+  const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
+    return (
+      <>
+        {item?.TestObservation?.length > 0 ? (
+          item?.TestObservation?.map((para: any, pIndex: number, array: any) => (
+            <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
+              <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
+              <Text style={styles.parameterText}>
+                {!!para?.observationName ? nameFormater(para?.observationName!, 'title') : ''}{' '}
+                {index == 3 &&
+                  inclusions?.length - 4 > 0 &&
+                  array?.length - 1 == pIndex &&
+                  renderShowMore(inclusions, para?.observationName)}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <>
+            {index == 3 && inclusions?.length - 4 > 0 && !moreInclusions
+              ? renderShowMore(inclusions, 'test')
+              : null}
+          </>
+        )}
       </>
     );
   };
@@ -883,6 +928,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <TestListingHeader
         navigation={props.navigation}
         headerText={nameFormater('TEST PACKAGE DETAIL', 'upper')}
+        movedFrom={'testDetails'}
       />
     );
   };
@@ -1037,7 +1083,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         <>
           {renderHeader()}
           {renderBreadCrumb()}
-          <ScrollView bounces={false} keyboardDismissMode="on-drag" style={{ marginBottom: 60 }}>
+          <ScrollView
+            bounces={false}
+            keyboardDismissMode="on-drag"
+            style={{ marginBottom: 60 }}
+            ref={scrollViewRef}
+          >
             {!!testInfo && !!cmsTestDetails && renderItemCard()}
             {renderWhyBookUs()}
             {renderDescriptionCard()}
@@ -1167,7 +1218,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   reportTimeText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 15),
     textAlign: 'left',
     letterSpacing: 0.25,
   },
@@ -1184,7 +1235,7 @@ const styles = StyleSheet.create({
   },
   infoIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
   preTestingText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, '#FF637B', 1, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, '#FF637B', 1, 15),
     textAlign: 'left',
     letterSpacing: 0.25,
     marginHorizontal: '4%',
@@ -1194,9 +1245,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     textTransform: 'capitalize',
   },
-  inclusionsView: { width: '100%', marginVertical: '5%' },
+  inclusionsView: { width: '100%', marginVertical: '4%' },
   testIncludedText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 18),
     textAlign: 'left',
     marginTop: '1%',
     letterSpacing: 0.25,
@@ -1214,13 +1265,19 @@ const styles = StyleSheet.create({
     marginBottom: '1.5%',
     marginHorizontal: '3%',
   },
+  parameterText: {
+    ...theme.viewStyles.text('R', isSmallDevice ? 10.5 : 11, '#007C9D', 1, 15),
+    letterSpacing: 0,
+    marginBottom: '1.5%',
+    marginHorizontal: '3%',
+  },
   moreText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
     letterSpacing: 0.25,
     marginBottom: '1.5%',
   },
   showLessText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 13),
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
     letterSpacing: 0.25,
     marginBottom: '1.5%',
     marginTop: '2%',

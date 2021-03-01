@@ -464,7 +464,7 @@ export const isFloat = (n: number) => {
 };
 
 export const convertNumberToDecimal = (n: number | null | string) => {
-  return n ? (isFloat(Number(n)) ? Number(n)?.toFixed(2) : n) : '';
+  return n === 0 ? n : n ? (isFloat(Number(n)) ? Number(n)?.toFixed(2) : n) : '';
 };
 
 export const findAddrComponents = (
@@ -478,4 +478,8 @@ export const findAddrComponents = (
   return (
     (addrComponents?.find((item) => item?.types?.indexOf(proptoFind) > -1) || {})?.long_name || ''
   );
+};
+
+export const isPhysicalConsultation = (consultMode: string) => {
+  return consultMode === 'Visit Clinic' || consultMode === 'Meet In Person';
 };

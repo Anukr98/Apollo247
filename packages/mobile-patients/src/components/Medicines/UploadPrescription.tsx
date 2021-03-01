@@ -91,6 +91,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -142,6 +143,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
   const isComingFromReUpload = props.navigation.getParam('isReUpload') || false;
+  const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const orderId = props.navigation.getParam('orderAutoId');
   const source = props.navigation.getParam('source') || '';
   const { currentPatient } = useAllCurrentPatients();
@@ -220,6 +222,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   }, []);
 
   useEffect(() => {
+    checkServicability(selectedAddress!, false);
     nonCartAvailabilityTat(selectedAddress?.zipcode);
   }, [selectedAddress]);
 
@@ -228,6 +231,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     const addressLength = addresses.length;
     if (!!addressLength && !!newAddressAdded) {
       const newAddress = addresses?.filter((value) => value?.id === newAddressAdded);
+      checkServicability(newAddress?.[0]?.zipcode, false);
       nonCartAvailabilityTat(newAddress?.[0]?.zipcode);
       setNewAddressAdded && setNewAddressAdded('');
     }
@@ -1063,6 +1067,55 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     );
   };
 
+  const renderReUploadSubmitPrescription = () => {
+    return (
+      <Button
+        disabled={disableSubmitButton()}
+        title={'SUBMIT PRESCRIPTION'}
+        onPress={() => reUploadPrescription()}
+        titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
+        style={{ marginBottom: 10, width: '90%', alignSelf: 'center' }}
+      />
+    );
+  };
+
+  const reUploadPrescription = async () => {
+    try {
+      const phyPrescription = isPhysicalPresciptionProps
+        ? PhysicalPrescriptionsProps
+        : physicalPrescriptions;
+      const e_Prescription = isEPresciptionProps ? EPrescriptionsProps : ePrescriptions;
+      // Physical Prescription Upload
+      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(phyPrescription);
+
+      const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
+        ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
+        : [];
+
+      const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
+      const phyPresPrismIds = phyPrescription
+        .map((item) => item.prismPrescriptionFileId)
+        .filter((i) => i);
+
+      const ePresUrls = e_Prescription.map((item) => item.uploadedUrl).filter((i) => i);
+      const ePresPrismIds = e_Prescription
+        .map((item) => item.prismPrescriptionFileId)
+        .filter((i) => i);
+      const reUploadPrescriptionInput: ReUploadPrescriptionVariables = {
+        prescriptionInput: {
+          orderId: parseInt(orderId!),
+          fileUrl: [...phyPresUrls, ...ePresUrls].join(','),
+          prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+        },
+      };
+      submitReuploadPrescription(reUploadPrescriptionInput);
+    } catch (error) {
+      setLoading!(false);
+      CommonBugFender('UploadPrescription_onPressSubmit_try', error);
+      renderErrorAlert('Error occurred while uploading physical prescription(s).');
+    }
+  };
+
   async function nonCartAvailabilityTat(pincode: string) {
     try {
       const response = await nonCartTatApi247(pincode);
@@ -1089,7 +1142,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     >
       <SafeAreaView style={{ flex: 1 }}>
         <Header
-          title={'SUBMIT PRESCRIPTION'}
+          title={isComingFromReUpload ? 'RE-UPLOAD PRESCRIPTION' : 'SUBMIT PRESCRIPTION'}
           leftIcon="backArrow"
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
           onPressLeftIcon={() => {
@@ -1116,10 +1169,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               textAlign: 'right',
             }}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.UploadPrescriptionView, {
-                phyPrescriptionUploaded: PhysicalPrescriptionsProps,
-                ePresscriptionUploaded: EPrescriptionsProps,
-              });
+              if (isComingFromReUpload) {
+                setShowPopop(true);
+              } else {
+                props.navigation.navigate(AppRoutes.UploadPrescriptionView, {
+                  phyPrescriptionUploaded: PhysicalPrescriptionsProps,
+                  ePresscriptionUploaded: EPrescriptionsProps,
+                });
+              }
             }}
           >
             ADD MORE PRESCRIPTIONS
@@ -1128,8 +1185,43 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           {showMedicineDescription && renderExpectCall()}
         </ScrollView>
       </SafeAreaView>
-      {renderProceedBar()}
+      {isComingFromReUpload ? renderReUploadSubmitPrescription() : renderProceedBar()}
       {renderPrescriptionModal()}
+      <UploadPrescriprionPopup
+        isVisible={ShowPopop}
+        type={isComingFromReUpload ? undefined : 'nonCartFlow'}
+        heading={isComingFromReUpload ? 'Re-Upload Prescription(s)' : 'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
+        instructions={[
+          isComingFromReUpload
+            ? 'Take clear picture of your complete prescription. (edge to edge)'
+            : 'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          isComingFromReUpload
+            ? 'Ensure a valid prescription, for acute illnesses such as Virals, infections etc a recent prescription is required. For Chronic illnesses such as Blood pressure & diabetes, upto 1 year old prescriptions are acceptable'
+            : 'Medicines will be dispensed as per prescription.',
+        ]}
+        optionTexts={{
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+          prescription: 'SELECT FROM\nE-PRESCRIPTION',
+        }}
+        onClickClose={() => setShowPopop(false)}
+        onResponse={(selectedType, response, type) => {
+          setShowPopop(false);
+          if (selectedType == 'CAMERA_AND_GALLERY') {
+            if (type !== undefined) {
+              if (type === 'Camera')
+                setNumberOfPrescriptionClicked(numberOfPrescriptionClicked + 1);
+              if (type === 'Gallery')
+                setNumberOfPrescriptionUploaded(numberOfPrescriptionUploaded + 1);
+            }
+            setPhysicalPrescriptionsProps([...PhysicalPrescriptionsProps, ...response]);
+          } else {
+            setSelectPrescriptionVisible(true);
+          }
+        }}
+      />
     </View>
   );
 };

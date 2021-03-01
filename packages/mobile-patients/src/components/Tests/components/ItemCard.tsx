@@ -3,7 +3,7 @@ import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -191,7 +191,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '3%' : '6%', alignSelf: 'center' },
+              { marginHorizontal: isSmallDevice ? '1.5%' : '2.5%', alignSelf: 'center' },
               [styles.nonCirclePriceText]
             )}
           </View>
@@ -301,9 +301,6 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function onPressRemoveFromCart(item: any) {
-    if (!props.isServiceable) {
-      return;
-    }
     removeCartItem!(`${item?.itemId}`);
   }
 
@@ -312,10 +309,6 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
-    if (sourceScreen == AppRoutes.TestDetails) {
-      return;
-    }
-
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!; //more than price (black)
     const circlePrice = pricesForItem?.circlePrice!;
@@ -359,13 +352,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text(
-              'B',
-              isSmallDevice ? 13 : 14,
-              props.isServiceable ? '#fc9916' : '#FED984',
-              1,
-              24
-            ),
+            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
           },
         ]}
         onPress={() =>
@@ -385,7 +372,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         <Card
           cardContainer={styles.errorCardContainer}
           heading={string.common.uhOh}
-          description={'Something went wrong.'}
+          description={string.common.somethingWentWrong}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
         />
@@ -395,19 +382,31 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     }
   };
 
+  const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
   return (
     <>
-      <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
+      <View
+        style={
+          props.isVertical
+            ? {
+                alignSelf: actualItemsToShow?.length > 1 ? 'center' : 'flex-start',
+                marginLeft: '1.5%',
+              }
+            : {}
+        }
+      >
         {actualItemsToShow?.length > 0 ? (
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
             bounces={false}
-            keyExtractor={(_, index) => `${index}`}
+            keyExtractor={keyExtractor}
             showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
-            initialNumToRender={12}
+            maxToRenderPerBatch={3}
           />
         ) : (
           renderError()

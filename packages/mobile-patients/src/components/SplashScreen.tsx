@@ -179,6 +179,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen_PrefetchAPIReuqest_catch', error);
     }
+
+    try {
+      AsyncStorage.setItem('APP_OPENED', 'true');
+    } catch (error) {
+      CommonBugFender('SplashScreen_App_opend_error', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -334,7 +340,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         handleDeeplinkFormatTwo(event);
       } else {
         route = event.replace('apollopatients://', '');
-
         const data = route.split('?');
         setBugFenderLog('DEEP_LINK_DATA', data);
         route = data[0];
@@ -487,6 +492,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'CircleMembershipDetails':
             getData('CircleMembershipDetails');
+            break;
+
+          case 'TestListing':
+            getData('TestListing', data?.length === 2 ? linkId : undefined);
             break;
 
           default:
@@ -897,6 +906,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             isActive: true,
           });
         }
+        break;
+
+      case 'testlisting':
+      case 'TestListing':
+        console.log('TestListing');
+        props.navigation.navigate(AppRoutes.TestListing, {
+          movedFrom: 'deeplink',
+          widgetName: id,
+        });
+        break;
+
       default:
         break;
     }
@@ -1020,6 +1040,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Pharmacy_Delivery_Charges: {
       PROD: 'Pharmacy_Delivery_Charges',
     },
+    Min_Value_For_Pharmacy_Free_Packaging: {
+      PROD: 'Min_Value_For_Pharmacy_Free_Packaging',
+    },
+    Pharmacy_Packaging_Charges: {
+      PROD: 'Pharmacy_Packaging_Charges',
+    },
     top6_specailties: {
       QA: 'QA_top_specialties',
       DEV: 'DEV_top_specialties',
@@ -1112,7 +1138,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getNumber(key)
       );
 
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Packaging',
+        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
+        (key) => config.getNumber(key)
+      );
+
       setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
+
+      setAppConfig('Pharmacy_Packaging_Charges', 'PACKAGING_CHARGES', (key) =>
+        config.getNumber(key)
+      );
 
       setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
 

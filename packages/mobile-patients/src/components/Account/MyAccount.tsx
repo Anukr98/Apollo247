@@ -68,6 +68,7 @@ import {
   StackActions,
 } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 
 const { width } = Dimensions.get('window');
 
@@ -172,6 +173,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     clearCartInfo,
+    isCircleExpired,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -295,6 +297,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
       AsyncStorage.removeItem('isCircleMember');
+      AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
@@ -535,7 +538,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {!!(hdfcSubscriptionId || circleSubscriptionId) && (
+        {!!(hdfcSubscriptionId || circleSubscriptionId || isCircleExpired) && (
           <ListCard
             title={'My Memberships'}
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}

@@ -76,6 +76,11 @@ import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labRe
 const OTHER_REASON = string.Diagnostics_Feedback_Others;
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import {
+  DiagnosticFeedbackSubmitted,
+  DiagnosticTrackOrderViewed,
+  DiagnosticViewReportClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 
 /**
  * this needs to be removed once hidestatus starts working
@@ -149,6 +154,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
+      let latestStatus = newList?.[newList?.length - 1]?.orderStatus;
+      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId);
+    }
+  }, [selectedTab]);
+
   const { data, loading, refetch } = useQuery<
     getDiagnosticOrderDetails,
     getDiagnosticOrderDetailsVariables
@@ -162,6 +174,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   var orderStatusList: any[] = [];
   var refundArr: any[] = [];
+  var newList: any[] = [];
   const sizeOfIndividualTestStatus = _.size(individualTestStatus);
 
   const createRefundObject = () => {
@@ -248,7 +261,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               data: resultForVisitNo,
               labResults: true,
             })
-          : renderReportError(string.diagnostics.unableToOpenReport);
+          : renderReportError(string.diagnostics.responseUnavailableForReport);
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
@@ -271,9 +284,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
 
-  const showReportsGenerated =
-    sequenceOfStatus.indexOf(selectedTest?.currentStatus) >=
-    sequenceOfStatus.indexOf(DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED);
   const isReportGenerated = selectedTest?.currentStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
 
   const handleBack = () => {
@@ -292,7 +302,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const updateRateDeliveryBtnVisibility = async () => {
-    setLoading!(true);
+    setLoading?.(true);
     try {
       if (!showRateDiagnosticBtn) {
         const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
@@ -392,7 +402,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    const newList = orderStatusList?.[0]?.filter((item: any) =>
+    newList = orderStatusList?.[0]?.filter((item: any) =>
       statusToBeShown?.includes(item?.orderStatus)
     );
     scrollToSlots();
@@ -412,7 +422,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
             const isStatusCompletedForPrepaid = true;
             const isStatusDone = true;
-
             return (
               <View style={{ flexDirection: 'row' }}>
                 {renderGraphicalStatus(
@@ -429,16 +438,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                       style={[
                         styles.statusTextStyle,
                         {
-                          color: DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)
-                            ? theme.colors.INPUT_FAILURE_TEXT
-                            : theme.colors.SHERPA_BLUE,
+                          color:
+                            DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                            order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                              ? theme.colors.INPUT_FAILURE_TEXT
+                              : theme.colors.SHERPA_BLUE,
                         },
                       ]}
                     >
-                      {nameFormater(
-                        getTestOrderStatusText(order?.orderStatus, AppRoutes.TestOrderDetails),
-                        'title'
-                      )}
+                      {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
                     </Text>
                     {isStatusDone ? <View style={styles.lineSeparator} /> : null}
                     {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
@@ -477,7 +485,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderBottomSection = (order: any) => {
-    return <View>{showReportsGenerated ? renderButtons() : null}</View>;
+    return <View>{isReportGenerated ? renderButtons() : null}</View>;
   };
 
   const renderButtons = () => {
@@ -515,18 +523,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const onPressButton = (buttonTitle: string) => {
+    DiagnosticViewReportClicked();
     onPressViewReport();
   };
 
-  const postRatingGivenWebEngageEvent = (rating: string, reason: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      Rating: rating,
-      'Thing to Imporve selected': reason,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
-  };
+  function postRatingGivenWebEngageEvent(rating: string, reason: string) {
+    DiagnosticFeedbackSubmitted(currentPatient, rating, reason);
+  }
 
   const renderFeedbackPopup = () => {
     return (

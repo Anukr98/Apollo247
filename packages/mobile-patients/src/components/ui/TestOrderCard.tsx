@@ -36,11 +36,15 @@ import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   AppConfig,
   DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW,
+  DIAGNOSTIC_COMPLETED_STATUS,
+  DIAGNOSTIC_CONFIRMED_STATUS,
+  DIAGNOSTIC_COLLECTION_STATUS,
+  DIAGNOSTIC_LAB_COLLECTION_STATUS,
+  DIAGNOSTIC_LAB_TESTING_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 const width = Dimensions.get('window').width;
 
 type OrderStatusType = DIAGNOSTIC_ORDER_STATUS | REFUND_STATUSES;
-
 export interface TestOrderCardProps {
   key?: string;
   orderId: string;
@@ -71,6 +75,17 @@ export interface TestOrderCardProps {
 
 const statusToBeShown = DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW;
 
+const COMPLETED_STATUS = DIAGNOSTIC_COMPLETED_STATUS;
+
+const CONFIRMED_STATUS = (DIAGNOSTIC_CONFIRMED_STATUS as any) as OrderStatusType;
+
+const COLLECTION_STATUS = (DIAGNOSTIC_COLLECTION_STATUS as any) as OrderStatusType;
+
+const LAB_COLLECTION_STATUS = (DIAGNOSTIC_LAB_COLLECTION_STATUS as any) as OrderStatusType;
+
+//no need to show in ui.
+const LAB_TESTING_STATUS = (DIAGNOSTIC_LAB_TESTING_STATUS as any) as OrderStatusType;
+
 export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const [showDisclaimer, setShowDisclaimer] = useState<boolean>(false);
@@ -79,32 +94,19 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     (props.showRefund && DIAGNOSTIC_JUSPAY_REFUND_STATUS.includes(props.refundStatus!));
 
   const getProgressWidth = (status: OrderStatusType, progresDirection: 'left' | 'right') => {
+    //reports_generated & sample_rejected_in_lab are complete status (not added here)
     if (progresDirection == 'left') {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
         return 0; //0
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
-        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN
-      ) {
-        return 2;
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
-        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
-      ) {
-        return 3; //4
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB ||
-        status == 'SAMPLE_NOT_COLLECTED_IN_LAB'
-      ) {
-        return 4;
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
-      ) {
-        return 4;
+      } else if (CONFIRMED_STATUS.includes(status)) {
+        return 1.5; //2
+      } else if (COLLECTION_STATUS.includes(status)) {
+        return 2; //4
+      } else if (LAB_COLLECTION_STATUS.includes(status) || LAB_TESTING_STATUS.includes(status)) {
+        return 3;
       } else if (
         status == REFUND_STATUSES.PENDING ||
-        DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(status)
+        ((DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS as any) as OrderStatusType).includes(status)
       ) {
         return 2;
       } else if (status == REFUND_STATUSES.SUCCESS) {
@@ -114,30 +116,16 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
       }
     } else {
       if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
-        return 5; //3
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
-        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN
-      ) {
-        return 5; //4
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
-        status == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
-      ) {
+        return 5;
+      } else if (CONFIRMED_STATUS.includes(status)) {
+        return 4.5; //4
+      } else if (COLLECTION_STATUS.includes(status)) {
         return 4;
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB ||
-        status == 'SAMPLE_NOT_COLLECTED_IN_LAB'
-      ) {
-        return 2;
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
-      ) {
+      } else if (LAB_COLLECTION_STATUS.includes(status) || LAB_TESTING_STATUS.includes(status)) {
         return 2;
       } else if (
         status == REFUND_STATUSES.PENDING ||
-        DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(status)
+        ((DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS as any) as OrderStatusType).includes(status)
       ) {
         return 2;
       } else if (status == REFUND_STATUSES.SUCCESS) {
@@ -149,6 +137,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   };
 
   const renderGraphicalStatus = () => {
+    const isFinalStatus = COMPLETED_STATUS.includes(props.status!);
     // if (props.status == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED) {
     //   //Change once we get all the status list from API
     //   return <View style={styles.progressLineDone} />;
@@ -161,19 +150,21 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           <View style={styles.progressLineContainer}>
             <View
               style={[
-                styles.progressLineBefore,
+                isFinalStatus ? styles.progressLineDone : styles.progressLineBefore,
                 { flex: getProgressWidth(statusToCheck!, 'left') },
               ]}
             />
             <OrderPlacedIcon style={styles.statusIconStyle} />
             <View
               style={[
-                styles.progressLineAfter,
+                isFinalStatus ? styles.progressLineDone : styles.progressLineAfter,
                 {
                   flex: getProgressWidth(statusToCheck!, 'right'),
                   backgroundColor:
                     statusToCheck == REFUND_STATUSES.PENDING ||
-                    DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS.includes(statusToCheck)
+                    ((DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS as any) as OrderStatusType).includes(
+                      statusToCheck
+                    )
                       ? '#EF3A47'
                       : '#00b38e',
                 },
@@ -186,12 +177,11 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(12),
                 lineHeight: 24,
                 color: theme.colors.SHERPA_BLUE,
-                textTransform: 'capitalize',
               },
               getTextAlign(statusToCheck),
             ]}
           >
-            {getTestOrderStatusText(statusTextToShow!, 'TestOrderCard')}
+            {nameFormater(getTestOrderStatusText(statusTextToShow!), 'default')}
           </Text>
         </View>
       );
@@ -248,29 +238,26 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
       case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
         return {
           textAlign: 'center',
-          marginLeft: 0,
+          marginLeft: -10,
         };
         break;
+      //for last two, no need to show on ui so taking previous status.
       case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
-      case 'SAMPLE_NOT_COLLECTED_IN_LAB':
+      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
+      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
+      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
         return {
           textAlign: 'center',
           marginLeft: '10%',
         };
         break;
-      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
-      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB:
-        return {
-          textAlign: 'center',
-          marginLeft: '20%',
-        };
       case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
+      case DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB:
         return {
           textAlign: 'right',
           marginLeft: 0,
         };
         break;
-
       case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
         return {
           textAlign: 'right',
@@ -438,7 +425,9 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
               </View>
             ) : (
               <>
-                {DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.status!) ? (
+                {((DIAGNOSTIC_ORDER_FAILED_STATUS as any) as OrderStatusType).includes(
+                  props.status!
+                ) ? (
                   <View
                     style={{
                       flex: props.isComingFrom == 'individualTest' ? 1 : 0.4,

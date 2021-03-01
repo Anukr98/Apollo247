@@ -1,14 +1,21 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  StackActions,
+  NavigationActions,
+  ScrollView,
+} from 'react-navigation';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   EllipseBulletPoint,
   LockIcon,
   HdfcBankLogo,
   CircleLogo,
+  ExpiredBanner,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   useAppCommonData,
@@ -32,6 +39,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -45,6 +54,8 @@ import {
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -150,6 +161,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
   },
+  expiredBanner: {
+    position: 'absolute',
+    resizeMode: 'contain',
+    width: 70,
+    height: 67,
+  },
 });
 
 export interface MyMembershipProps extends NavigationScreenProps {
@@ -165,12 +182,16 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     setHdfcUpgradeUserSubscriptions,
     setHdfcUserSubscriptions,
     setCircleSubscription,
+    isRenew,
+    healthCredits,
   } = useAppCommonData();
   const {
     circleSubscriptionId,
     setHdfcPlanName,
     setIsFreeDelivery,
     setIsCircleSubscription,
+    isCircleExpired,
+    circlePlanValidity,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -187,6 +208,10 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const subscription_name = showHdfcSubscriptions ? hdfcUserSubscriptions?.name : '';
   const client = useApolloClient();
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
+  const planValidity = useRef<string>('');
+  const planPurchased = useRef<boolean | undefined>(false);
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -249,6 +274,60 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     }
     return false;
   };
+
+  const renderCircleSubscriptionPlans = () => {
+    return (
+      <CircleMembershipPlans
+        navigation={props.navigation}
+        isModal={true}
+        closeModal={() => setShowCirclePlans(false)}
+        buyNow={true}
+        membershipPlans={circleSubscription?.planSummary}
+        source={'Consult'}
+        from={strings.banner_context.MEMBERSHIP_DETAILS}
+        healthCredits={healthCredits}
+        onPurchaseWithHCCallback={(res: any) => {
+          fireCirclePurchaseEvent(
+            currentPatient,
+            res?.data?.CreateUserSubscription?.response?.end_date
+          );
+          planPurchased.current =
+            res?.data?.CreateUserSubscription?.response?.status === 'PAYMENT_FAILED' ? false : true;
+          planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
+          setShowCircleActivation(true);
+        }}
+        screenName={'My Membership'}
+      />
+    );
+  };
+  const renderCircleMembershipActivated = () => (
+    <CircleMembershipActivation
+      visible={showCircleActivation}
+      closeModal={(planActivated) => {
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+                params: {
+                  skipAutoQuestions: true,
+                },
+              }),
+            ],
+          })
+        );
+        setShowCircleActivation(false);
+      }}
+      defaultCirclePlan={{}}
+      navigation={props.navigation}
+      circlePaymentDone={planPurchased.current}
+      circlePlanValidity={{ endDate: planValidity.current }}
+      source={'Consult'}
+      from={strings.banner_context.MEMBERSHIP_DETAILS}
+    />
+  );
 
   const getUserSubscriptionsWithBenefits = () => {
     setshowSpinner(true);
@@ -448,11 +527,15 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     }
   };
 
-  const getEllipseBulletPoint = (text: string, index: number) => {
+  const getEllipseBulletPoint = (text: string, index: number, isExpired: boolean) => {
     return (
       <View style={[styles.ellipseBulletContainer, index === 2 ? { width: '75%' } : {}]}>
         <EllipseBulletPoint style={styles.ellipseBullet} />
-        <Text style={theme.viewStyles.text('B', 13, '#007C9D', 1, 20, 0.35)}>{text}</Text>
+        <Text
+          style={theme.viewStyles.text('B', 13, isExpired ? '#979797' : '#007C9D', 1, 20, 0.35)}
+        >
+          {text}
+        </Text>
       </View>
     );
   };
@@ -460,21 +543,28 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const renderCardBody = (
     benefits: PlanBenefits[],
     subscriptionName: string,
-    isCanUpgradeToPlan: boolean
+    isCanUpgradeToPlan: boolean,
+    isExpired: boolean
   ) => {
     return (
       <View style={styles.subTextContainer}>
-        <Text style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), { marginBottom: 5 }]}>
+        <Text
+          style={[
+            theme.viewStyles.text('R', 12, isExpired ? '#979797' : '#000000', 1, 20, 0.35),
+            { marginBottom: 5 },
+          ]}
+        >
           {isCanUpgradeToPlan ? `Key Benefits you get...` : `Benefits Available`}
         </Text>
         {benefits.slice(0, 3).map((value, index) => {
-          return getEllipseBulletPoint(value.headerContent, index);
+          return getEllipseBulletPoint(value.headerContent, index, isExpired);
         })}
         <Text
           onPress={() => {
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: subscriptionName,
               isActive: isActive,
+              isExpired: isExpired,
             });
           }}
           style={styles.viewMoreText}
@@ -512,7 +602,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   ) => {
     const isCare = subscriptionName === Circle.planName;
     const buttonText = isCare
-      ? 'GO TO HOMEPAGE'
+      ? isRenew
+        ? 'RENEW NOW'
+        : 'GO TO HOMEPAGE'
       : isCanUpgradeToPlan
       ? 'HOW TO AVAIL'
       : isActive
@@ -561,6 +653,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               postWebEngageEvent(WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED, eventAttributes);
               setUpgradeTransactionValue(transactionValue);
               setShowAvailPopup(true);
+            } else if (isRenew) {
+              setShowCirclePlans(true);
+              console.log('upgrade in my membership clicked!', showCirclePlans);
             } else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
               if (isActive && !isCare) {
@@ -583,8 +678,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     const planBenefits = subscription?.benefits;
     const isCare = subscription?.name === Circle.planName;
     const isactive = isCare ? true : subscription?.isActive;
+    const isCircleExpiredPlan =
+      isCare && subscription?.subscriptionStatus === Circle.EXPIRED_STATUS;
     return (
       <View style={styles.cardStyle}>
+        {isCircleExpiredPlan && <ExpiredBanner style={styles.expiredBanner} />}
         <View style={styles.healthyLifeContainer}>
           {!isCare && (
             <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
@@ -598,7 +696,21 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           )}
         </View>
         <View style={styles.membershipCardContainer}>
-          <Text style={styles.planName}>{subscription?.name}</Text>
+          <Text
+            style={[
+              styles.planName,
+              theme.viewStyles.text(
+                'B',
+                14,
+                isCircleExpiredPlan ? '#979797' : '#02475B',
+                1,
+                20,
+                0.35
+              ),
+            ]}
+          >
+            {subscription?.name}
+          </Text>
           {!isCare && (isCanUpgradeToPlan || !isActive) ? (
             <LockIcon style={styles.lockIcon} />
           ) : (
@@ -606,9 +718,32 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           )}
         </View>
         {!!planBenefits?.length &&
-          renderCardBody(planBenefits, subscription?.name, isCanUpgradeToPlan)}
-        {renderBottomButtons(isactive, subscription?.name, isCanUpgradeToPlan)}
+          renderCardBody(planBenefits, subscription?.name, isCanUpgradeToPlan, isCircleExpiredPlan)}
+        {isCircleExpiredPlan || isRenew
+          ? renderUpgradeButton()
+          : renderBottomButtons(isactive, subscription?.name, isCanUpgradeToPlan)}
       </View>
+    );
+  };
+
+  const renderUpgradeButton = () => {
+    return (
+      <TouchableOpacity
+        style={[styles.membershipButtons, { padding: 10 }]}
+        onPress={() => {
+          setShowCirclePlans(true);
+          postCircleWEGEvent(
+            currentPatient,
+            'Expired',
+            'renew',
+            circlePlanValidity,
+            circleSubscriptionId,
+            'My Membership'
+          );
+        }}
+      >
+        <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>RENEW NOW</Text>
+      </TouchableOpacity>
     );
   };
 
@@ -632,12 +767,17 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           container={styles.headerContainer}
           onPressLeftIcon={() => handleBack()}
         />
+
+        {showCircleActivation && renderCircleMembershipActivated()}
+        {showCirclePlans && renderCircleSubscriptionPlans()}
         {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
           <ScrollView bounces={false}>
             <View>
               <View>
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
-                {!!circleSubscriptionId ? renderMembershipCard(circleSubscription, false) : null}
+                {!!circleSubscriptionId || isCircleExpired
+                  ? renderMembershipCard(circleSubscription, false)
+                  : null}
                 {hdfcUserSubscriptions?._id
                   ? renderMembershipCard(hdfcUserSubscriptions, false)
                   : null}

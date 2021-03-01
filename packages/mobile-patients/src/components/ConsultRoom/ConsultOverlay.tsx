@@ -51,7 +51,10 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  isPhysicalConsultation,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import moment from 'moment';
 const { width, height } = Dimensions.get('window');
@@ -67,11 +70,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
   },
-  noteContainer:{
+  noteContainer: {
     margin: 12,
     padding: 2,
-    justifyContent:'center',
-    alignItems:'center'
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
@@ -134,7 +137,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     props.doctor,
@@ -238,42 +241,41 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : null,
     };
 
-    tabs[0].title === selectedTab?
-    props.navigation.navigate(AppRoutes.PaymentCheckout, {
-      doctor: props.doctor,
-      tabs: tabs,
-      selectedTab: selectedTab,
-      price: actualPrice,
-      appointmentInput: appointmentInput,
-      couponApplied: coupon == '' ? false : true,
-      consultedWithDoctorBefore: props.consultedWithDoctorBefore,
-      patientId: props.patientId,
-      callSaveSearch: props.callSaveSearch,
-      availableInMin: availableInMin,
-      nextAvailableSlot: nextAvailableSlot,
-      selectedTimeSlot: selectedTimeSlot,
-      followUp: props.FollowUp,
-      whatsAppUpdate: whatsAppUpdate,
-      isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
-    }) :
-
-    props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, {
-      doctor: props.doctor,
-      tabs: tabs,
-      selectedTab: selectedTab,
-      price: actualPrice,
-      appointmentInput: appointmentInput,
-      couponApplied: coupon == '' ? false : true,
-      consultedWithDoctorBefore: props.consultedWithDoctorBefore,
-      patientId: props.patientId,
-      callSaveSearch: props.callSaveSearch,
-      availableInMin: availableInMin,
-      nextAvailableSlot: nextAvailableSlot,
-      selectedTimeSlot: selectedTimeSlot,
-      followUp: props.FollowUp,
-      whatsAppUpdate: whatsAppUpdate,
-      isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
-    });
+    tabs[0].title === selectedTab
+      ? props.navigation.navigate(AppRoutes.PaymentCheckout, {
+          doctor: props.doctor,
+          tabs: tabs,
+          selectedTab: selectedTab,
+          price: actualPrice,
+          appointmentInput: appointmentInput,
+          couponApplied: coupon == '' ? false : true,
+          consultedWithDoctorBefore: props.consultedWithDoctorBefore,
+          patientId: props.patientId,
+          callSaveSearch: props.callSaveSearch,
+          availableInMin: availableInMin,
+          nextAvailableSlot: nextAvailableSlot,
+          selectedTimeSlot: selectedTimeSlot,
+          followUp: props.FollowUp,
+          whatsAppUpdate: whatsAppUpdate,
+          isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
+        })
+      : props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, {
+          doctor: props.doctor,
+          tabs: tabs,
+          selectedTab: selectedTab,
+          price: actualPrice,
+          appointmentInput: appointmentInput,
+          couponApplied: coupon == '' ? false : true,
+          consultedWithDoctorBefore: props.consultedWithDoctorBefore,
+          patientId: props.patientId,
+          callSaveSearch: props.callSaveSearch,
+          availableInMin: availableInMin,
+          nextAvailableSlot: nextAvailableSlot,
+          selectedTimeSlot: selectedTimeSlot,
+          followUp: props.FollowUp,
+          whatsAppUpdate: whatsAppUpdate,
+          isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
+        });
   };
 
   const renderBottomButton = () => {
@@ -287,7 +289,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={"PROCEED"}
+          title={'PROCEED'}
           disabled={
             disablePay
               ? true
@@ -323,7 +325,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             { textAlign: 'justify' },
           ]}
         >
-          {string.common.DisclaimerText}
+          {selectedTab === tabs[0].title
+            ? string.common.DisclaimerText
+            : string.common.agreePhysicalConsultTC}
         </Text>
       </View>
     );

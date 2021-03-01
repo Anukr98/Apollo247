@@ -1570,7 +1570,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
-        setMedicineList(products);
+        const inStockProducts = products.filter((product) => !!isProductInStock(product));
+        const outOfStockProducts = products.filter((product) => !isProductInStock(product));
+        setMedicineList([...inStockProducts, ...outOfStockProducts]);
         setsearchSate('success');
         const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
           keyword: _searchText,
@@ -1648,7 +1650,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 setMedicineList([]);
                 return;
               }
-              const search = _.debounce(onSearchMedicine, 300);
+              const search = _.debounce(onSearchMedicine, 500);
               if (value.length >= 3) {
                 setsearchSate('load');
               } // this block is to fix no results errorMessage appearing while loading response
@@ -1876,7 +1878,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const isCategoriesType = g(data, section_key, '0', 'title');
           const filteredProducts = products
             ? products.filter((product: MedicineProduct) => isProductInStock(product))
-            : [];
+            : null;
 
           return filteredProducts
             ? renderHotSellers(

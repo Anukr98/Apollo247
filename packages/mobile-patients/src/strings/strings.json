@@ -18,12 +18,14 @@
     "upload_image_file_size_text": "File size max upto 2MB. File type jpeg, jpg & png",
     "add_comment_text": "Add Comments (Optional)",
     "return_order_comment_text": "Enter your comments here…",
+    "delete_report_text": "Delete Report",
+    "delete_report_confirm_text": "Are you sure you want to delete the selected record?",
     "upload": "UPLOAD",
     "submit_request": "SUBMIT REQUEST",
     "continue": "CONTINUE",
-    "callDoctor": "Call an Apollo Doctor",
+    "vaccinationQueries": "Vaccination Queries",
     "faqsArticles": "FAQs & Articles",
-    "covidVaccineTracker": "Vaccine Tracker",
+    "chatWithUs": "Chat with us",
     "upload_more": "+ UPLOAD MORE",
     "date_placeholder_text": "DD MMM, YYYY",
     "select_text": "Select",
@@ -52,6 +54,7 @@
     "gotoConsultRoomJuniorDrText": "Connect with Junior Doctor before final consult",
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
+    "agreePhysicalConsultTC": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same.",
     "covidContactText": "Contact our Coronavirus Helpline",
     "oneTimePhysicalCharge": "One-time Hospital Registration Charges might be \napplicable for new users.",
     "covidScanBannerText": "Take the Coronavirus Risk Scan",
@@ -79,7 +82,7 @@
     "readLatestArticles": "Read the latest articles",
     "covidDescription": "The latest Coronavirus information to keep you safe and healthy.",
     "learnAboutCovid": "Learn about COVID-19 Vaccines",
-    "covidVaccineTracker": "COVID-19 Vaccine Tracker",
+    "covidVaccineTracker": "Vaccine Tracker",
     "getCovidVaccineUpdates": "Get updates and know which is the first vaccine to come out.",
     "knowMore": "KNOW MORE",
     "covid19VaccineInfo": "COVID-19 AND VACCINE INFORMATION",
@@ -103,7 +106,8 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
-    "contactCustomerCare": "Something went wrong, please contact customer support"
+    "contactCustomerCare": "Something went wrong, please contact customer support",
+    "somethingWentWrong": "Something went wrong."
   },
   "components": {
     "medicineDetails": {
@@ -158,6 +162,7 @@
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
   "uploadPrescription": "UPLOAD PRESCRIPTION",
   "proceedToPay": "PROCEED TO PAY",
+  "reviewOrder": "REVIEW ORDER",
   "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
@@ -180,8 +185,8 @@
       "question": "How to consult in person?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
-      "point3": "Make payment",
-      "point4": "Visit the doctor at Hospital/Clinic",
+      "point3": "Visit the doctor at Hospital/Clinic",
+      "point4": "Make payment",
       "point5": "Receive prescriptions instantly",
       "point6": "Follow Up via text - valid for 7 days"
     },
@@ -416,10 +421,8 @@
     "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
     "specialDiscountText": "TESTS247 coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
+    "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
     "disclaimerText": [
-      {
-        "text": "Cancellation and Rescheduling should be done 2 hours before sample collection"
-      },
       {
         "text": "Rescheduling can be done upto 3 times only"
       }
@@ -450,7 +453,7 @@
     "collectionFromText": "Sample collection address",
     "orderCancelledSuccessText": "Your order has been cancelled successfully!",
     "orderRescheduleSuccessText": "Your order has been rescheduled for {{dateTime}}!",
-    "stepsToBook": "3 simple steps to get lab test done",
+    "stepsToBook": "3 simple steps to get a lab test done",
     "certificateText": "Certified safety and quality fullfiled by Apollo Diagnostics.",
     "stepsToBookHeading": "How it works",
     "bookOnline": "Book Online",
@@ -460,8 +463,10 @@
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
-    "unableToFetchStatus":"Something went wrong. We are unable to fetch status",
-    "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date."
+    "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
+    "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
+    "updateAddressLatLngMessage": "Unable to locate address. Please update.",
+    "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -885,12 +890,14 @@
       "https://www.youtube.com/embed/c0egNatC16I",
       "https://www.youtube.com/embed/rsFlGsOBMuM",
       "https://www.youtube.com/embed/0-TlHa7rLxo"
-    ]
+    ],
+    "EXPIRED_STATUS": "disabled"
   },
   "banner_context": {
     "HOME": "HOME",
     "PHARMACY_HOME": "PHARMACY_HOME",
-    "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME"
+    "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME",
+    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS"
   },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",

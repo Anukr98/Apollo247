@@ -128,6 +128,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -341,13 +342,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (orderId: string) => {
+  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
+    orderId: string,
+    orderAutoId: string
+  ) => {
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       'customer id': currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
       'order id': orderId,
+      orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
@@ -371,7 +376,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
     const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
+      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`, orderAutoId),
     };
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
 
@@ -525,13 +530,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            // postwebEngageCheckoutCompletedEvent(
-            //   `${orderAutoId}`,
-            //   orderId,
-            //   // orderType == 'COD',
-            //   isCOD
-            // );
-            // firePurchaseEvent(orderId);
+            orders?.forEach((order) => {
+              postwebEngageCheckoutCompletedEvent(
+                `${order?.orderAutoId}`,
+                order?.id!,
+                // orderType == 'COD',
+                isCOD
+              );
+              firePurchaseEvent(order?.id!);
+            });
           } catch (error) {
             console.log(error);
           }
@@ -554,13 +561,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
   };
 
-  const redirectToPaymentGateway = async (
-    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
-    transactionId: number,
-    paymentMode: string,
-    bankCode: string,
-    orderInfo: saveMedicineOrderOMSVariables
-  ) => {
+  const firePaymentModeEvent = (paymentMode: string, orderId: string, orderAutoId: number) => {
     try {
       const paymentEventAttributes = {
         Payment_Mode: paymentMode,
@@ -573,6 +574,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
     } catch (error) {}
+  };
+
+  const redirectToPaymentGateway = async (
+    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
+    transactionId: number,
+    paymentMode: string,
+    bankCode: string,
+    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables
+  ) => {
+    orders?.forEach((order) => {
+      firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
+    });
     const token = await firebaseAuth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
@@ -641,6 +654,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         devliveryCharges: deliveryCharges,
         packagingCharges: packagingCharges,
         estimatedAmount,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -656,7 +670,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             : '',
         items: cartItems.map((item) => {
           const discountedPrice = getFormattedAmount(
-            (coupon && item.couponPrice) || item.specialPrice || item.price
+            coupon && item.couponPrice == 0
+              ? 0
+              : (coupon && item.couponPrice) || item.specialPrice || item.price
           ); // since couponPrice & specialPrice can be undefined
           return {
             medicineSKU: item.id,
@@ -712,6 +728,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         coupon: coupon ? coupon.coupon : '',
         patientAddressId: deliveryAddressId,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -821,7 +838,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 placeOrderV2(orders!, transactionId!, 'HCorder', false);
               } else {
                 console.log('Redirect To Payment Gateway');
-                redirectToPaymentGateway(orders!, transactionId!, paymentMode, bankCode, orderInfo)
+                redirectToPaymentGateway(
+                  orders!,
+                  transactionId!,
+                  paymentMode,
+                  bankCode,
+                  OrderInfoV2
+                )
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
                   })

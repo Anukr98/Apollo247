@@ -827,22 +827,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const subscriberConnected = useRef<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const [callDuration, setCallDuration] = useState<number>(0);
-
-  const isPaused = !callerAudio
-    ? !callerVideo && isCall
+  const hasDrJoined = useRef<boolean>(false);
+  hasDrJoined.current = doctorJoinedChat;
+  const isConsultStarted = useRef<boolean>(false);
+  const makeUpdateAppointmentCall = useRef<boolean>(true);
+  const isPaused = subscriberConnected.current
+    ? !callerAudio && !callerVideo
       ? 'audio/video'
-      : 'audio'
-    : !callerVideo && isCall
-    ? 'video'
+      : !callerVideo
+      ? 'video'
+      : !callerAudio
+      ? 'audio'
+      : ''
     : '';
 
-  const isDoctorVideoPaused = isPaused == 'audio/video' || isPaused == 'video';
   const doctorProfileUrl = appointmentData?.doctorInfo?.photoUrl;
-  const showDoctorProfile =
-    !subscriberConnected.current ||
-    isDoctorVideoPaused ||
-    (isAudioCall && callerAudio) ||
-    (isAudioCall && !callerVideo);
+  const showDoctorProfile = !subscriberConnected.current || !callerVideo;
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -1333,6 +1333,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoined(true);
         setDoctorJoinedChat && setDoctorJoinedChat(true);
         setTextChange(true);
+        isConsultStarted.current = true;
         setTimeout(() => {
           setDoctorJoined(false);
         }, 10000);
@@ -2017,7 +2018,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               if (token) {
                 PublishAudioVideo();
               } else {
-                APICallAgain();
+                makeUpdateAppointmentCall.current = true;
+                APICallAgain(true);
               }
             }
           }
@@ -2184,7 +2186,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-      eventsAfterConnectionDestroyed();
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
@@ -2825,7 +2826,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const doctorWillConnectShortlyAutomatedText = () => {
     setTimeout(() => {
-      if (doctorJoinedChat || status.current === STATUS.COMPLETED) {
+      if (
+        hasDrJoined.current ||
+        status.current === STATUS.COMPLETED ||
+        status.current === STATUS.IN_PROGRESS ||
+        isConsultStarted.current
+      ) {
         return;
       }
       const automatedText = [
@@ -2851,7 +2857,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const rescheduleOrCancelAppointmentAutomatedText = () => {
     setTimeout(() => {
-      if (doctorJoinedChat || status.current === STATUS.COMPLETED) {
+      if (
+        hasDrJoined.current ||
+        status.current === STATUS.COMPLETED ||
+        status.current === STATUS.IN_PROGRESS ||
+        isConsultStarted.current
+      ) {
         return;
       }
       const automatedText = [
@@ -5522,11 +5533,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       changeVideoStyles();
       setDropdownVisible(false);
       setCallerVideo(true);
-      if (token) {
-        PublishAudioVideo();
-      } else {
-        APICallAgain();
-      }
+      makeUpdateAppointmentCall.current = true;
+      APICallAgain(true);
     });
   };
 
@@ -6028,7 +6036,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [callTimer]);
 
   const handleEndCall = () => {
+    APICallAgain(false);
     setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
@@ -6074,7 +6084,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndAudioCall = () => {
+    APICallAgain(false);
     setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
@@ -6118,10 +6130,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 2000);
   };
 
-  const APICallAgain = () => {
+  const APICallAgain = (isUserJoining?: boolean) => {
+    if (!makeUpdateAppointmentCall.current) {
+      return;
+    }
     const input = {
       appointmentId: appointmentData.id,
       requestRole: 'PATIENT',
+      isUserJoining,
     };
 
     console.log('input', input);
@@ -6164,6 +6180,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     AsyncStorage.setItem('callDisconnected', 'false');
     if (isAudio.current && !patientJoinedCall.current) {
       setShowVideo(false);
+      setCallerVideo(false);
       setIsAudioCall(true);
     } else {
       setShowVideo(true);

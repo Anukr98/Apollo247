@@ -39,6 +39,7 @@ import {
 import {
   calculateCircleDoctorPricing,
   convertNumberToDecimal,
+  isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -128,7 +129,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const isPhysicalConsult = selectedTab === 'Visit Clinic';
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const { currentPatient } = useAllCurrentPatients();
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
@@ -347,8 +348,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             onApplyCoupon: onApplyCoupon,
           });
         }}
+        showRemoveBtn={coupon ? true : false}
+        onRemoveCoupon={() => removeCoupon()}
       />
     );
+  };
+
+  const removeCoupon = () => {
+    setCoupon('');
+    setCouponDiscountFees(0);
+    setDoctorDiscountedFees(0);
   };
 
   const renderCouponSavingsView = () => {
@@ -651,7 +660,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!
+            g(data, 'makeAppointmentPayment', 'appointment', 'id')!,
+            displayID
           )
         );
         setLoading!(false);
@@ -712,7 +722,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       });
   };
 
-  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string, displayId: string) => {
     const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
@@ -721,6 +731,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: amountToPay,
       af_currency: 'INR',
       'consult id': id,
+      displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
     };

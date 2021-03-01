@@ -224,8 +224,8 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         responseMessage
         bankTxnId
         orderId
-        appointment{
-         id
+        appointment {
+          id
         }
       }
     }
@@ -2079,7 +2079,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
-        diagnosticOrdersStatus{
+        diagnosticOrdersStatus {
           id
           orderStatus
           itemId
@@ -2475,6 +2475,10 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         tatType
         shopId
         totalCashBack
+        consultInfo {
+          doctorName
+          appointmentDateTime
+        }
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -2524,6 +2528,10 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           customReason
         }
         medicineOrderShipments {
+          driverDetails {
+            driverName
+            driverPhone
+          }
           id
           siteId
           siteName
@@ -3526,10 +3534,10 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
-        patientInfo{
-        firstName
-        lastName
-        gender
+        patientInfo {
+          firstName
+          lastName
+          gender
         }
         doctorInfo {
           id
@@ -3787,6 +3795,11 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
     saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
       orderId
       displayId
+      status
+      errorMessageToDisplay
+      attributes{
+        itemids
+      }
     }
   }
 `;
@@ -4407,11 +4420,13 @@ export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
     $mobile_number: String!
     $banner_context: String!
     $user_state: UserState
+    $banner_display_type: [BannerDisplayType!]
   ) {
     GetAllGroupBannersOfUser(
       mobile_number: $mobile_number
       banner_context: $banner_context
       user_state: $user_state
+      banner_display_type: $banner_display_type
     ) {
       code
       success
@@ -4423,6 +4438,7 @@ export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
         banner_template_info
         cta_action
         meta
+        banner_display_type
       }
     }
   }
@@ -4677,6 +4693,18 @@ export const INITIATE_DOC_ON_CALL = gql`
   query initiateDocOnCall($mobileNumber: String, $callType: docOnCallType) {
     initiateDocOnCall(mobileNumber: $mobileNumber, callType: $callType) {
       success
+    }
+  }
+`;
+
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
+  mutation initiateDiagonsticHCOrderPayment(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPayment!
+  ) {
+    initiateDiagonsticHCOrderPayment(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
     }
   }
 `;

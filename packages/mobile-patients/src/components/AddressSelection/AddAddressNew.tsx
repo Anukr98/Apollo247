@@ -86,6 +86,7 @@ export interface MapProps
     addOnly?: boolean;
     source?: string;
     ComingFrom?: string;
+    updateLatLng?: boolean;
   }> {}
 
 export interface locationResponseProps {
@@ -104,6 +105,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const addressDetails = props.navigation.getParam('addressDetails');
   const addOnly = props.navigation.getParam('addOnly');
   const source = props.navigation.getParam('source');
+  const ComingFrom = props.navigation.getParam('ComingFrom');
+  const updateLatLng = props.navigation.getParam('updateLatLng');
 
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [latitude, setLatitude] = useState<number>(
@@ -242,7 +245,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         setAddressString(getAddress);
         // createLocationResponse(addressDetails);
       } else {
-        fetchLatLongFromGoogleApi(getAddress, addressDetails);
+        let newAddressDetails = JSON.parse(JSON.stringify(addressDetails));
+        fetchLatLongFromGoogleApi(getAddress, newAddressDetails);
       }
     } else {
       setLoadingContext!(true);
@@ -438,9 +442,12 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       setLatitude(region?.latitude);
       setLongitude(region?.longitude);
       //on map drag, hit the google api to get the address from lat-long
-      fetchAdressFromLatLongGoogleApi(region?.latitude, region?.longitude);
+      fetchAdressFromLatLongGoogleApi(
+        region?.latitude + latitudeDelta,
+        region?.longitude + longitudeDelta
+      );
 
-      console.log(region.latitude, region.longitude);
+      console.log(region.latitude + latitudeDelta, region.longitude + longitudeDelta);
     }
 
     if (!isMapDragging && Platform.OS == 'android') {
@@ -457,8 +464,10 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const goBackCallback = (selectedAddress: any, comingFrom?: string) => {
     isConfirmButtonDisabled && setConfirmButtonDisabled(false);
     isMapDisabled && setMapDisabled(false);
-
-    fetchAdressFromLatLongGoogleApi(selectedAddress?.latitude, selectedAddress?.longitude);
+    fetchAdressFromLatLongGoogleApi(
+      selectedAddress?.latitude + latitudeDelta,
+      selectedAddress?.longitude + longitudeDelta
+    );
     setRegion({
       latitude: selectedAddress?.latitude,
       longitude: selectedAddress?.longitude,
@@ -482,6 +491,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       addOnly: addOnly,
       source: source,
       DataAddress: addressDetails,
+      updateLatLng: updateLatLng,
+      ComingFrom: ComingFrom,
     });
   };
 

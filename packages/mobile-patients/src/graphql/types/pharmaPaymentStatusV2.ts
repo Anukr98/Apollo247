@@ -21,7 +21,6 @@ export interface pharmaPaymentStatusV2_pharmaPaymentStatusV2 {
   amountPaid: number | null;
   paymentStatus: string;
   paymentDateTime: any | null;
-  orderDateTime: any;
   paymentMode: string | null;
   planPurchaseDetails: pharmaPaymentStatusV2_pharmaPaymentStatusV2_planPurchaseDetails | null;
 }

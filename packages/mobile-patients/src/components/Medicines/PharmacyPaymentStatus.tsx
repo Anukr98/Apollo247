@@ -16,6 +16,8 @@ import {
   SAVE_MEDICINE_ORDER_PAYMENT,
   SAVE_MEDICINE_ORDER_OMS,
   GET_PHARMA_TRANSACTION_STATUS_V2,
+  SAVE_MEDICINE_ORDER_OMS_V2,
+  SAVE_MEDICINE_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -71,6 +73,15 @@ import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/ty
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import moment from 'moment';
+import {
+  saveMedicineOrderV2,
+  saveMedicineOrderV2Variables,
+  saveMedicineOrderV2_saveMedicineOrderV2_orders,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
+import {
+  saveMedicineOrderPaymentMqV2,
+  saveMedicineOrderPaymentMqV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderPaymentMqV2';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -148,7 +159,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
-        // fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
       .catch((error) => {
         setLoading(false);
@@ -220,15 +231,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
-  const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
-    client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
-      mutation: SAVE_MEDICINE_ORDER_OMS,
+  const saveOrderV2 = (orderInfo: saveMedicineOrderV2Variables) =>
+    client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS_V2,
       variables: orderInfo,
     });
 
-  const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
-    client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
-      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+  const savePaymentV2 = (paymentInfo: saveMedicineOrderPaymentMqV2Variables) =>
+    client.mutate<saveMedicineOrderPaymentMqV2, saveMedicineOrderPaymentMqV2Variables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT_V2,
       variables: paymentInfo,
     });
 
@@ -240,7 +251,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    // fireOrderSuccessEvent(orderAutoId);
+    fireOrderSuccessEvent(orderAutoId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
@@ -256,10 +267,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     });
   };
 
-  const placeOrder = async (orderAutoId: number) => {
-    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+  const placeOrder = async (
+    orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
+    transactionId: number
+  ) => {
+    const paymentInfo: saveMedicineOrderPaymentMqV2Variables = {
       medicinePaymentMqInput: {
-        orderAutoId: orderAutoId,
+        transactionId: transactionId,
         amountPaid: getFormattedAmount(price),
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
         paymentStatus: 'success',
@@ -268,14 +282,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       },
     };
     try {
-      const response = await savePayment(paymentInfo);
+      const response = await savePaymentV2(paymentInfo);
       const { data } = response;
-      const { errorCode, errorMessage } = data?.SaveMedicineOrderPaymentMq || {};
+      const { errorCode, errorMessage } = data?.saveMedicineOrderPaymentMqV2 || {};
       if (errorCode || errorMessage) {
         errorPopUp();
       } else {
         console.log('inside success');
-        handleOrderSuccess(`${orderAutoId}`);
+        orders?.forEach((order) => {
+          handleOrderSuccess(`${order?.orderAutoId}`);
+        });
         clearCartInfo?.();
       }
     } catch (error) {
@@ -287,15 +303,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const initiateOrder = async () => {
     setcodOrderProcessing(true);
     try {
-      const response = await saveOrder(orderInfo);
+      const response = await saveOrderV2(orderInfo);
       const { data } = response;
-      const { orderId, orderAutoId, errorCode, errorMessage } = data?.saveMedicineOrderOMS || {};
+      const { orders, transactionId, errorCode, errorMessage } = data?.saveMedicineOrderV2 || {};
       if (errorCode || errorMessage) {
         errorPopUp();
         setcodOrderProcessing(false);
         return;
       } else {
-        placeOrder(orderAutoId!);
+        placeOrder(orders!, transactionId!);
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_saveOrder', error);
@@ -305,7 +321,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const errorPopUp = () => {
-    // fireOrderFailedEvent();
+    fireOrderFailedEvent();
     showAphAlert!({
       title: `Hi ${currentPatient?.firstName || ''}!`,
       description: `Your order failed due to some temporary issue :( Please submit the order again.`,
@@ -323,25 +339,25 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   const fireOrderSuccessEvent = (newOrderId: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
-      'Payment failed order id': orderId,
+      'Payment failed order id': transId,
       'Payment Success Order Id': newOrderId,
       status: true,
     };
     postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
-    firePurchaseEvent();
+    firePurchaseEvent(newOrderId);
   };
 
   const fireOrderFailedEvent = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
-      'Payment failed order id': orderId,
+      'Payment failed order id': transId,
       status: false,
     };
     postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
   };
 
-  const firePurchaseEvent = () => {
+  const firePurchaseEvent = (orderId: string) => {
     let items: any = [];
     cartItems.forEach((item, index) => {
       let itemObj: any = {};
@@ -380,7 +396,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           quantity: 1, // "1" or actual quantity
         },
       ],
-      transaction_id: orderId,
+      transaction_id: transId,
       value: Number(circlePlanSelected?.currentSellingPrice),
       LOB: 'Circle',
     };

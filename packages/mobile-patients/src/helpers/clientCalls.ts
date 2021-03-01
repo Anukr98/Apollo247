@@ -80,6 +80,7 @@ import {
   DEVICETYPE,
   MedicalRecordType,
   UserState,
+  BannerDisplayType
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -803,7 +804,8 @@ export const getParticipantsLiveStatus = (
 export const getUserBannersList = (
   client: ApolloClient<object>,
   currentPatient: any,
-  banner_context: string
+  banner_context: string,
+  banner_display_type:any[]=[BannerDisplayType.banner]
 ) => {
   return new Promise((res, rej) => {
     const mobile_number = g(currentPatient, 'mobileNumber');
@@ -815,6 +817,7 @@ export const getUserBannersList = (
             mobile_number,
             banner_context: banner_context,
             user_state: UserState.LOGGED_IN,
+            banner_display_type:banner_display_type
           },
           fetchPolicy: 'no-cache',
         })

@@ -52,3 +52,7 @@ export const dateFormatter = (dateTime: Date) => {
     return `${format(dateTime, 'DD MMM YYYY, h:mm A')}`;
   }
 };
+export const dateFormatterDDMM = (dateTime: string,form: string) => {
+  let dateF = new Date(dateTime);
+    return `${format(dateF, form)}`;
+};

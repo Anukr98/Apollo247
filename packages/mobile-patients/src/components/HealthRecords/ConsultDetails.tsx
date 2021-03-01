@@ -880,7 +880,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <>
         {renderHeadingView(
-          'Genaral Advice',
+          'General Advice',
           <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
         )}
         {caseSheetDetails?.otherInstructions !== null ? (
@@ -1040,7 +1040,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {renderTestNotes()}
                 {renderDiagnosis()}
                 {renderGenerealAdvice()}
-                {renderFollowUp()}
+                {/* We will use in next release */}
+                {/* {renderFollowUp()} */}
               </View>
             </View>
           </CollapseCard>

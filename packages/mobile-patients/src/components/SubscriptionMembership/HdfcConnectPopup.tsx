@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CallConnectIcon, CallRingIcon, GroupCallIcon } from '../ui/Icons';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { g } from '../../helpers/helperFunctions';
+import { g, sGngageEvent } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
 import { useUIElements } from '../UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -12,8 +12,17 @@ import {
   initiateCallForPartner,
   initiateCallForPartnerVariables,
 } from '../../graphql/types/initiateCallForPartner';
-import { INITIATE_CALL_FOR_PARTNER } from '../../graphql/profiles';
+import {
+  initiateDocOnCall,
+  initiateDocOnCallVariables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDocOnCall';
+import {
+  INITIATE_CALL_FOR_PARTNER,
+  INITIATE_DOC_ON_CALL,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { docOnCallType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   blurView: {
@@ -28,7 +37,7 @@ const styles = StyleSheet.create({
     top: Dimensions.get('window').height * 0.1,
   },
   popupView: {
-    width: '90%',
+    width: width - 40,
     height: 'auto',
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -47,11 +56,11 @@ const styles = StyleSheet.create({
   callIcon: {
     resizeMode: 'contain',
     width: 40,
+    alignSelf: 'center',
   },
   stepsContainer: {
     flexDirection: 'column',
     width: '50%',
-    alignItems: 'center',
   },
   lastStepContainer: {
     flexDirection: 'column',
@@ -63,7 +72,7 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   cancelButton: {
     marginTop: 20,
@@ -78,17 +87,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
+  centerIcons: {
+    alignSelf: 'center',
+  },
 });
 
 export interface HdfcConnectPopupProps {
   onClose: () => void;
-  benefitId: string;
-  successCallback: () => void;
-  userSubscriptionId: string;
+  benefitId?: string;
+  successCallback?: () => void;
+  userSubscriptionId?: string;
+  helplineNumber?: string;
+  isVaccineDocOnCall?: boolean;
+  postWEGEvent?: () => void;
 }
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
-  const { userSubscriptionId } = props;
+  const { userSubscriptionId, helplineNumber, isVaccineDocOnCall, postWEGEvent } = props;
   const { currentPatient } = useAllCurrentPatients();
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const { showAphAlert } = useUIElements();
@@ -98,6 +113,10 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
   const client = useApolloClient();
 
   const fireExotelApi = () => {
+    if (isVaccineDocOnCall) {
+      initiateVaccinationDoctorOnCall();
+      return;
+    }
     setDisableButton(true);
     setLoading(true);
     client
@@ -130,6 +149,36 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
       });
   };
 
+  // Call an apollo doctor logic handler
+  const initiateVaccinationDoctorOnCall = () => {
+    postWEGEvent?.();
+    setLoading(true);
+    client
+      .query<initiateDocOnCall, initiateDocOnCallVariables>({
+        query: INITIATE_DOC_ON_CALL,
+        variables: {
+          mobileNumber,
+          callType: docOnCallType.COVID_VACCINATION_QUERY,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setShowConnectMessage(true);
+        setLoading(false);
+        setTimeout(() => {
+          props.onClose();
+        }, 2000);
+      })
+      .catch((error) => {
+        props.onClose();
+        setLoading(false);
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: 'We could not connect to the doctor now. Please try later.',
+        });
+      });
+  };
+
   const renderConnectSteps = () => {
     return (
       <View
@@ -139,23 +188,23 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
       >
         <View style={styles.containerRow}>
           <View style={styles.stepsContainer}>
-            <CallConnectIcon />
-            <Text style={styles.stepsText}>{`Answer the call from 040-482-17258 to connect.`}</Text>
+            <CallConnectIcon style={styles.centerIcons} />
+            <Text style={styles.stepsText}>{`Answer the call from ${helplineNumber ||
+              '040-482-17258'} to connect.`}</Text>
           </View>
           <View style={styles.stepsContainer}>
             <CallRingIcon style={styles.callIcon} />
             <Text style={styles.stepsText}>The same call will connect to the Doctor.</Text>
           </View>
         </View>
-        <View style={[styles.containerRow, { marginTop: 8 }]}>
+        <View style={[styles.containerRow, { marginTop: 8, alignItems: 'flex-end' }]}>
           <View style={styles.stepsContainer}>
             <GroupCallIcon style={styles.callIcon} />
             <Text style={styles.stepsText}>Wait for the Doctor to connect over the call.</Text>
           </View>
           <View style={styles.lastStepContainer}>
-            <Text style={styles.noteText}>*Note :</Text>
-            <Text style={theme.viewStyles.text('M', 12, '#01475B', 1, 20, 0.35)}>
-              Your personal phone number will not be shared.
+            <Text style={styles.stepsText}>
+              *Note: Your personal phone number will not be shared.
             </Text>
           </View>
         </View>
@@ -200,7 +249,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
     <View style={styles.blurView}>
       {loading && <Spinner />}
       <View style={styles.popupContainerView}>
-        <View style={{ width: '5.72%' }} />
+        <View />
         <View style={styles.popupView}>
           <Text style={theme.viewStyles.text('SB', 18, '#01475B')}>Connect to the Doctor</Text>
           <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 20, 0.35)}>

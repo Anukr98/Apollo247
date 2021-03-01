@@ -39,6 +39,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '../../graphql/types/getPatientPrismMedicalRecords_V2';
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
+import { DiagnosticViewReportClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface TestStatusObject {
   id: string;
@@ -75,6 +76,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     | undefined
   >([]);
   const [refundStatusArr, setRefundStatusArr] = useState<any>(getRefundArray);
+
+  const statusNotToShowOnUi = [
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  ];
 
   const client = useApolloClient();
 
@@ -127,7 +133,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
               data: resultForVisitNo,
               labResults: true,
             })
-          : renderReportError(string.diagnostics.unableToOpenReport);
+          : renderReportError(string.diagnostics.responseUnavailableForReport);
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
@@ -151,6 +157,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         let sortedSelectedObj: any;
         var lengthOfObject = data?.[key]?.length - 1;
         sortedSelectedObj = key != null && data?.[key]?.[lengthOfObject];
+        var previousStatus = key != null && data?.[key]?.[lengthOfObject - 1];
         const getUTCDateTime = orderSelected?.slotDateTimeInUTC;
         const dt = moment(
           getUTCDateTime != null ? getUTCDateTime : orderSelected?.diagnosticDate!
@@ -168,7 +175,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           showDateTime: dt,
           itemId: key,
           currentStatus:
-            refundStatusArr?.length > 0 ? refundStatusArr?.status : sortedSelectedObj?.orderStatus,
+            refundStatusArr?.length > 0
+              ? refundStatusArr?.status
+              : statusNotToShowOnUi.includes(sortedSelectedObj?.orderStatus) && !!previousStatus
+              ? previousStatus?.orderStatus
+              : sortedSelectedObj?.orderStatus,
           packageId: sortedSelectedObj?.packageId,
           itemName: sortedSelectedObj?.itemName,
           packageName: sortedSelectedObj?.packageName,
@@ -248,7 +259,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           });
         }}
         status={currentStatus}
-        statusText={getTestOrderStatusText(currentStatus, AppRoutes.OrderedTestStatus)}
+        statusText={getTestOrderStatusText(currentStatus)}
         style={[
           { marginHorizontal: 20 },
           index < individualTestData.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
@@ -272,6 +283,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   function _navigateToPHR() {
     const visitId = orderSelected?.visitNo;
+    DiagnosticViewReportClicked();
+
     if (visitId) {
       getAuthToken();
     } else {

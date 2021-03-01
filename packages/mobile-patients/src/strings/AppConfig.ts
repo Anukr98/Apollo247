@@ -79,7 +79,6 @@ const appStaticVariables = {
   DIAGNOSTIC_COVID_MIN_SLOT_TIME: '10:00',
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
-  PACKAGING_CHARGES: 0,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
   EXOTEL_CALL_API_URL:
@@ -95,7 +94,7 @@ const appStaticVariables = {
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
   MED_TRACK_SHIPMENT_URL: 'https://www.delhivery.com/track/#package/{{shipmentNumber}}',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
-  CHAT_WITH_US: 'https://www.apollo247.com/chat/chat-bot.html',
+  CHAT_WITH_US: 'https://www.apollo247.com/chat/chat-bot-vaccine.html',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
@@ -117,6 +116,9 @@ const appStaticVariables = {
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   EXPRESS_MAXIMUM_HOURS: 6,
+  PACKAGING_CHARGES: 0,
+  MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
+  COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
 };
 
 const DEV_top_specialties = [
@@ -476,6 +478,8 @@ const PharmaApiConfig = {
     ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
     SPECIAL_OFFERS_CATEGORY_ID: '42372',
+    MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
+    DELIVERY_CHARGES: 50,
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -516,6 +520,8 @@ const PharmaApiConfig = {
     ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
     SPECIAL_OFFERS_CATEGORY_ID: '2255',
+    MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
+    DELIVERY_CHARGES: 50,
   },
 };
 
@@ -537,14 +543,12 @@ const ConfigurationDev = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
@@ -571,7 +575,20 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA
@@ -592,15 +609,13 @@ const ConfigurationQA = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
@@ -627,7 +642,20 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA2
@@ -648,15 +676,13 @@ const ConfigurationQA2 = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
@@ -683,7 +709,20 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // QA3
@@ -704,15 +743,13 @@ const ConfigurationQA3 = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
@@ -733,7 +770,20 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 // VAPT
@@ -754,15 +804,13 @@ const ConfigurationVAPT = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
@@ -789,7 +837,20 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2596, 2598, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 //Production
 const ConfigurationProd = {
@@ -809,8 +870,6 @@ const ConfigurationProd = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://base.apolloprism.com',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
@@ -844,7 +903,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462, 2388, 2419, 2411, 2410, 2539, 2614, 2462, 2613],
 };
 
 //PERFORMANCE
@@ -865,15 +924,13 @@ const ConfigurationPERFORM = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
   ...PharmaApiConfig.dev,
@@ -901,6 +958,20 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 //DevelopmentReplica
@@ -921,15 +992,13 @@ const ConfigurationDevReplica = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PHR_BASE_URL: 'https://ora.phrdemo.com/data',
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
   ...PharmaApiConfig.dev,
@@ -957,6 +1026,20 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [
+    2596,
+    2598,
+    2462,
+    2388,
+    2419,
+    2411,
+    2410,
+    2539,
+    2446,
+    2614,
+    2462,
+    2613,
+  ],
 };
 
 const Configuration =
@@ -1117,6 +1200,31 @@ export const DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS = [
   REFUND_STATUSES.REFUND_REQUEST_NOT_SENT,
 ];
 
+export const DIAGNOSTIC_COMPLETED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  REFUND_STATUSES.SUCCESS,
+];
+
+export const DIAGNOSTIC_CONFIRMED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+];
+
+export const DIAGNOSTIC_COLLECTION_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+];
+
+export const DIAGNOSTIC_LAB_COLLECTION_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+];
+
+export const DIAGNOSTIC_LAB_TESTING_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
 export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
@@ -1130,11 +1238,14 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-  'SAMPLE_NOT_COLLECTED_IN_LAB',
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
   REFUND_STATUSES.PENDING,
@@ -1271,34 +1382,40 @@ export const stepsToBookArray = [
 ];
 
 export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
-
-// SAMPLE_NOT_COLLECTED_IN_LAB
-// ORDER_CANCELLED_AFTER_REGISTRATION
-// CUSTOMER_NOT_AVAILABLE
 
 type SpecialitiesType = {
   [key: string]: string[];

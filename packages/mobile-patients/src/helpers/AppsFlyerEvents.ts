@@ -287,6 +287,7 @@ export interface AppsFlyerEvents {
     af_revenue: number;
     af_currency: string;
     'order id': string;
+    orderAutoId: string;
     'coupon applied': boolean;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
@@ -448,6 +449,7 @@ export interface AppsFlyerEvents {
     af_revenue: number;
     af_currency: string;
     'consult id': string;
+    displayId: string;
     'coupon applied': boolean;
     'Circle discount': number;
   };
