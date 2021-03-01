@@ -908,6 +908,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
         break;
 
+      case 'testlisting':
       case 'TestListing':
         console.log('TestListing');
         props.navigation.navigate(AppRoutes.TestListing, {

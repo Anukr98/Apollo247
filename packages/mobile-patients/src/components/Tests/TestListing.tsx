@@ -69,7 +69,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   //handle deeplinks as well here.
   useEffect(() => {
     setLoading?.(true);
-
     if (!!movedFrom) {
       if (movedFrom === 'deeplink' && !!widgetName) {
         fetchWidgets(widgetName!);
@@ -192,7 +191,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         });
       }
       breadcrumb.push({
-        title: title,
+        title:
+          movedFrom === 'deeplink' && !!widgetName
+            ? nameFormater(widgetName?.replace(/-/g, ' '), 'title')
+            : nameFormater(title, 'title'),
         onPress: () => {},
       });
       setTestListingBreadCrumbs && setTestListingBreadCrumbs(breadcrumb);
