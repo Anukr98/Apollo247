@@ -819,7 +819,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     createHyperServiceObject();
-    initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
+    initiateSDK(currentPatient?.id, currentPatient?.id);
     logHomePageViewed();
   }, []);
 

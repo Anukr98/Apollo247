@@ -88,11 +88,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const upiApps = [
-    {
-      bank: 'Google Pay',
-      method: 'GOOGLEPAY',
-      source: require('@aph/mobile-patients/src/components/ui/icons/GPay.png'),
-    },
+    // {
+    //   bank: 'Google Pay',
+    //   method: 'GOOGLEPAY',
+    //   source: require('@aph/mobile-patients/src/components/ui/icons/GPay.png'),
+    // },
     {
       bank: 'Phone Pe',
       method: 'PHONEPE',
