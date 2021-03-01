@@ -23,6 +23,9 @@ import {
   DoctorPlaceholderImage,
   DropdownGreen,
   LinkedUhidIcon,
+  OnlineAppointmentMarkerIcon,
+  AppointmentCalendarIcon,
+  PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -86,6 +89,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import messaging from '@react-native-firebase/messaging';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
@@ -108,6 +112,7 @@ interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
 export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
   const selectedTab = props.navigation.getParam('selectedTab');
@@ -212,23 +217,15 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     );
   };
   const renderPatient = () => {
+    console.log('finalAppointmentInput', finalAppointmentInput);
+    console.log('patient change', currentPatient?.id);
     return (
-      <View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={styles.subViewPopup}>
+        <View style={{ paddingHorizontal: 16 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
         <View style={styles.seperatorLine} />
-        <Text
-          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
-        >
-          {g(currentPatient, 'firstName')} {g(currentPatient, 'lastName')}
-        </Text>
-        <Text
-          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
-        >
-          {Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true))} ,
-          {g(currentPatient, 'gender')}
-        </Text>
+        {renderProfileListView()}
       </View>
     );
   };
@@ -273,10 +270,16 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               {doctor?.specialty?.name || ''} | {doctor?.experience} YR
               {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
             </Text>
-
-            <Text style={styles.appointmentTimeStyle}>
-              {dateFormatter(appointmentInput?.appointmentDateTime)}
-            </Text>
+            <View style={styles.doctorPointers}>
+              <PhysicalAppointmentMarkerIcon style={styles.doctorPointersImage} />
+              <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
+            </View>
+            <View style={styles.doctorPointers}>
+              <AppointmentCalendarIcon style={styles.doctorPointersImage} />
+              <Text style={styles.appointmentTimeStyle}>
+                {dateFormatter(appointmentInput?.appointmentDateTime)}
+              </Text>
+            </View>
             <Text style={styles.regularText}></Text>
           </View>
           <View>
@@ -348,11 +351,34 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           item.firstName !== '+ADD MEMBER' ? (
             <TouchableOpacity
               onPress={() => {
+                setLoading && setLoading(true);
                 onSelectedProfile(item);
               }}
-              style={[styles.ctaWhiteButtonViewStyle]}
+              style={
+                currentPatient?.id === item.id
+                  ? styles.ctaSelectButtonViewStyle
+                  : styles.ctaWhiteButtonViewStyle
+              }
             >
-              <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+              <Text
+                style={
+                  currentPatient?.id === item.id
+                    ? styles.ctaSelectTextStyle
+                    : styles.ctaOrangeTextStyle
+                }
+              >
+                {item.firstName}
+              </Text>
+              <Text
+                style={
+                  currentPatient?.id === item.id
+                    ? styles.ctaSelectText2Style
+                    : styles.ctaOrangeText2Style
+                }
+              >
+                {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+              </Text>
+              {console.log('csk pat', item)}
             </TouchableOpacity>
           ) : null
         )}
@@ -378,8 +404,10 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     </View>
   );
   const onSelectedProfile = (item: any) => {
+    setshowSpinner(true);
     selectUser(item);
     setShowProfilePopUp(false);
+    setLoading && setLoading(false);
   };
   const onProfileChange = () => {
     setShowList(false);
@@ -442,28 +470,16 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderProfileListView = () => {
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showProfilePopUp}
-        onRequestClose={() => {
-          setShowProfilePopUp(false);
-        }}
-        onDismiss={() => {
-          setShowProfilePopUp(false);
-        }}
-      >
-        <View style={styles.mainView}>
-          <View style={styles.subViewPopup}>
-            {renderProfileDrop()}
-            <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
-            <Text style={styles.popDescriptionStyle}>
-              Prescription to be generated in the name of?
-            </Text>
-            {renderCTAs()}
-          </View>
-        </View>
-      </Modal>
+      <View>
+        {/*renderProfileDrop()*/}
+
+        {showSpinner && (
+          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+        )}
+        <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
+        <Text style={styles.popDescriptionStyle}>Prescription to be generated in the name of?</Text>
+        {renderCTAs()}
+      </View>
     );
   };
 
@@ -546,6 +562,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
     AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
     AsyncStorage.setItem('isNewProfile', 'yes');
+    moveSelectedToTop();
+    setshowSpinner(false);
+    finalAppointmentInput['patientId'] = selectedUser?.id;
   };
 
   const onSubmitBookAppointment = async () => {
@@ -885,7 +904,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         <ScrollView ref={scrollviewRef}>
           <View style={styles.doctorCard}>
             {renderDoctorCard()}
-
             {renderPatient()}
             {renderPrice()}
           </View>
@@ -912,26 +930,26 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   priceBreakupTitle: {
-    ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE),
-    marginHorizontal: 6,
-    marginTop: 15,
+    ...theme.viewStyles.text('B', 13, theme.colors.SHERPA_BLUE),
+    marginHorizontal: 8,
+    marginVertical: 6,
   },
   seperatorLine: {
-    marginTop: 4,
+    marginTop: 2,
     height: 0.5,
     backgroundColor: theme.colors.LIGHT_BLUE,
-    opacity: 0.2,
-    marginHorizontal: 6,
+    opacity: 0.3,
+    marginHorizontal: 4,
   },
   couponStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   containerPay: {
-    margin: 20,
-    backgroundColor: 'red',
     borderRadius: 10,
     ...theme.viewStyles.card(10),
+    marginLeft: 1,
     paddingVertical: 16,
+    width: '98%',
   },
   rowContainerPay: {
     flexDirection: 'row',
@@ -1007,6 +1025,16 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
   },
+  doctorPointers: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  doctorPointersImage: {
+    width: 14,
+    height: '100%',
+    marginRight: 4,
+  },
   drImageBackground: {
     height: 95,
     width: 95,
@@ -1034,8 +1062,8 @@ const styles = StyleSheet.create({
   },
   appointmentTimeStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SKY_BLUE,
-    marginTop: 10,
+    color: '#02475B',
+    marginLeft: 4,
   },
   showPopUp: {
     backgroundColor: 'rgba(0,0,0,0.01)',
@@ -1058,7 +1086,7 @@ const styles = StyleSheet.create({
   },
   subViewPopup: {
     backgroundColor: 'white',
-    width: '88%',
+    width: '98%',
     alignSelf: 'center',
     borderRadius: 10,
     shadowColor: '#808080',
@@ -1066,6 +1094,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 15,
+    marginVertical: 10,
   },
   congratulationsDescriptionStyle: {
     marginHorizontal: 24,
@@ -1084,19 +1113,42 @@ const styles = StyleSheet.create({
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 20,
+    paddingHorizontal: 20,
+    marginVertical: 4,
   },
   ctaWhiteButtonViewStyle: {
-    padding: 8,
+    padding: 2,
     borderRadius: 10,
     backgroundColor: theme.colors.WHITE,
     marginRight: 15,
-    marginVertical: 5,
+    marginVertical: 2,
     shadowColor: '#4c808080',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 3,
+  },
+  ctaSelectButtonViewStyle: {
+    padding: 2,
+    borderRadius: 10,
+    backgroundColor: '#fc9916',
+    marginRight: 15,
+    marginVertical: 2,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  ctaSelectTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaSelectText2Style: {
+    ...theme.viewStyles.text('R', 10, '#ffffff', 1, 24),
+    textAlign: 'center',
+    marginHorizontal: 5,
   },
   textViewStyle: {
     padding: 8,
@@ -1107,6 +1159,11 @@ const styles = StyleSheet.create({
   ctaOrangeTextStyle: {
     textAlign: 'center',
     ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaOrangeText2Style: {
+    ...theme.viewStyles.text('R', 10, '#fc9916', 1, 24),
+    textAlign: 'center',
     marginHorizontal: 5,
   },
   hiTextStyle: {
