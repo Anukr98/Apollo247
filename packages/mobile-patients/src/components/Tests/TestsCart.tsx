@@ -183,7 +183,10 @@ import {
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import { getNearestArea, getNearestAreaVariables } from '../../graphql/types/getNearestArea';
+import {
+  getNearestArea,
+  getNearestAreaVariables,
+} from '@aph/mobile-patients/src/graphql/types/getNearestArea';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -406,7 +409,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     if (deliveryAddressId != '') {
-      console.log('yeee');
       getPinCodeServiceability();
     }
   }, [deliveryAddressId]);
@@ -1766,7 +1768,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               itemTextStyle={styles.menuItemTextStyle}
               bottomPadding={styles.menuBottomPadding}
               onPress={(item) => {
-                console.log({ item });
                 setAreaSelected!(item);
                 checkSlotSelection(item);
                 setWebEngageEventForAreaSelection(item);
