@@ -445,8 +445,10 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                   } else {
                     selectedData.push(name);
                   }
+
                   dataCopy[id] = {
                     ...dataCopy[id],
+                    label: menuItems[id].name,
                     selectedOptions: selectedData,
                   };
                   setData(dataCopy);
