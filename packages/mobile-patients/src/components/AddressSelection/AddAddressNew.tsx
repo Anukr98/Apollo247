@@ -464,7 +464,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const goBackCallback = (selectedAddress: any, comingFrom?: string) => {
     isConfirmButtonDisabled && setConfirmButtonDisabled(false);
     isMapDisabled && setMapDisabled(false);
-
     fetchAdressFromLatLongGoogleApi(
       selectedAddress?.latitude + latitudeDelta,
       selectedAddress?.longitude + longitudeDelta

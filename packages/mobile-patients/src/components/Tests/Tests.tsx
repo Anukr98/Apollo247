@@ -1201,15 +1201,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
-      if (item?.redirectUrl) {
-        const data = item?.redirectUrl.split('=')[1];
+      if (item?.redirectUrl && item?.redirectUrl != '') {
+        const data = item?.redirectUrl?.split('=')?.[1];
         const extractData = data?.replace('apollopatients://', '');
-        const getNavigationDetails = extractData.split('?');
-        const route = getNavigationDetails[0];
+        const getNavigationDetails = extractData?.split('?');
+        const route = getNavigationDetails?.[0];
         let itemId = '';
         try {
-          if (getNavigationDetails.length >= 2) {
-            itemId = getNavigationDetails[1].split('&');
+          if (getNavigationDetails?.length >= 2) {
+            itemId = getNavigationDetails?.[1]?.split('&');
             if (itemId.length > 0) {
               itemId = itemId[0];
             }
@@ -1392,7 +1392,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 showViewAll
                   ? () => {
                       props.navigation.navigate(AppRoutes.TestListing, {
-                        comingFrom: 'Home Page',
+                        movedFrom: AppRoutes.Tests,
                         data: data,
                         cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                       });
@@ -1452,7 +1452,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 showViewAll
                   ? () => {
                       props.navigation.navigate(AppRoutes.TestListing, {
-                        comingFrom: 'Home Page',
+                        movedFrom: AppRoutes.Tests,
                         data: data,
                         cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                       });
