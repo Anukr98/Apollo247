@@ -620,10 +620,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      fetchAreasForAddress(
-        addresses?.[selectedAddressIndex]?.id,
-        addresses?.[selectedAddressIndex]?.zipcode!
-      );
+      showAreaSelection
+        ? fetchAreasForAddress(
+            addresses?.[selectedAddressIndex]?.id,
+            addresses?.[selectedAddressIndex]?.zipcode!,
+            showAreaSelection
+          )
+        : getAreas();
       DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
     } else {
       DiagnosticRemoveFromCartClicked(
@@ -662,17 +665,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               .then(({ data }) => {
                 const diagnosticItems =
                   g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-                updatePricesInCart(diagnosticItems, selectedAddressIndex);
-                //show the area box
-                console.log(serviceableData?.areaSelectionEnabled);
                 if (serviceableData?.areaSelectionEnabled) {
-                  setShowAreaSelection(true); //reversed for devlopment
+                  setShowAreaSelection(true);
                 }
                 //don't show the area and hit the nearestPCC api.
                 else {
-                  setShowAreaSelection(false); //reversed for devlopment
-                  getAreas();
+                  setShowAreaSelection(false);
                 }
+                updatePricesInCart(
+                  diagnosticItems,
+                  selectedAddressIndex,
+                  serviceableData?.areaSelectionEnabled!
+                );
               })
               .catch((e) => {
                 CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
@@ -721,8 +725,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  console.log({ deliveryAddressId });
-
   const getNearestPCCLocation = async () => {
     const input: getNearestAreaVariables = {
       patientAddressId: selectedAddr?.id!,
@@ -741,7 +743,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
     try {
       const response = await getNearestPCCLocation();
-      console.log({ response });
       const { data } = response;
       const getAreaObject = g(data, 'getNearestArea', 'area');
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
@@ -767,12 +768,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const updatePricesInCart = (results: any, selectedAddressIndex: any) => {
+  const updatePricesInCart = (results: any, selectedAddressIndex: any, shouldShowArea: boolean) => {
     const disabledCartItems = cartItems?.filter(
       (cartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
-            `${d!.itemId}` == cartItem.id
+            `${d?.itemId}` == cartItem?.id
         )
     );
     let isItemDisable = false,
@@ -802,12 +803,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
           const planToConsider = pricesForItem?.planToConsider;
 
-          const discount = pricesForItem?.discount;
-          const circleDiscount = pricesForItem?.circleDiscount;
-          const specialDiscount = pricesForItem?.specialDiscount;
-
-          const mrpToDisplay = pricesForItem?.mrpToDisplay;
-
           const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
           const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
 
@@ -830,14 +825,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               title: string.common.uhOh,
               description: string.diagnostics.pricesChangedMessage,
               onPressOk: () => {
-                hideAphAlert!();
-                fetchAreasForAddress(
-                  addresses?.[selectedAddressIndex]?.id,
-                  addresses?.[selectedAddressIndex]?.zipcode!
-                );
+                hideAphAlert?.();
+                shouldShowArea
+                  ? fetchAreasForAddress(
+                      addresses?.[selectedAddressIndex]?.id,
+                      addresses?.[selectedAddressIndex]?.zipcode!,
+                      shouldShowArea
+                    )
+                  : getAreas();
               },
             });
-            updateCartItem!({
+            updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
                 : String(cartItem?.id),
@@ -863,21 +861,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         }
         //if items not available
-        if (disabledCartItems.length) {
+        if (disabledCartItems?.length) {
           isItemDisable = true;
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
-          setLoading!(false);
+          setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
 
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.pricesChangedMessage,
             onPressOk: () => {
-              hideAphAlert!();
-              fetchAreasForAddress(
-                addresses?.[selectedAddressIndex]?.id,
-                addresses?.[selectedAddressIndex]?.zipcode!
-              );
+              hideAphAlert?.();
+              shouldShowArea
+                ? fetchAreasForAddress(
+                    addresses?.[selectedAddressIndex]?.id,
+                    addresses?.[selectedAddressIndex]?.zipcode!,
+                    shouldShowArea
+                  )
+                : getAreas();
             },
           });
         }
@@ -885,10 +886,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       if (!isItemDisable && !isPriceChange) {
         isPriceChange = false;
         isItemDisable = false;
-        fetchAreasForAddress(
-          addresses?.[selectedAddressIndex]?.id,
-          addresses?.[selectedAddressIndex]?.zipcode!
-        );
+        shouldShowArea
+          ? fetchAreasForAddress(
+              addresses?.[selectedAddressIndex]?.id,
+              addresses?.[selectedAddressIndex]?.zipcode!,
+              shouldShowArea
+            )
+          : getAreas();
       }
     }
   };
@@ -1041,12 +1045,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
    * fetching the areas
    */
 
-  const fetchAreasForAddress = (id: string, pincode: string) => {
-    console.log({ showAreaSelection });
+  const fetchAreasForAddress = (id: string, pincode: string, shouldCallApi?: boolean) => {
     setLoading?.(true);
 
     //wrt to address
-    if (cartItems?.length == 0 || !showAreaSelection) {
+    if (cartItems?.length == 0 || !shouldCallApi) {
       setLoading?.(false);
       return;
     }
@@ -1063,7 +1066,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        console.log('area wali api called');
         setLoading?.(false);
         const getDiagnosticAreas = g(data, 'getAreas', 'areas') || [];
         if (data?.getAreas?.status) {
@@ -1413,12 +1415,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         {addresses?.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
-              key={item.id}
+              key={item?.id}
               title={formatAddressWithLandmark(item)}
               showMultiLine={true}
               subtitle={formatNameNumber(item)}
               subtitleStyle={styles.subtitleStyle}
-              isSelected={deliveryAddressId == item.id}
+              isSelected={deliveryAddressId == item?.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
                 const tests = cartItems?.filter(
@@ -1447,12 +1449,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   } else {
                     AddressSelectedEvent(item);
                     setDeliveryAddressId?.(item.id);
-                    setDiagnosticAreas?.([]);
-                    setAreaSelected?.({});
-                    setDiagnosticSlot?.(null);
+                    // add a check if same delivery id is there then do nothing.
+                    if (deliveryAddressId !== item?.id) {
+                      setDiagnosticAreas?.([]);
+                      setAreaSelected?.({});
+                      setDiagnosticSlot?.(null);
+                    }
                   }
-
-                  // fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}
               containerStyle={{ marginTop: 16 }}
@@ -1502,14 +1505,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                           );
                         } else {
                           setDeliveryAddressId && setDeliveryAddressId(id);
-                          setDiagnosticSlot && setDiagnosticSlot(null);
-                          setselectedTimeSlot(undefined);
-
-                          setDiagnosticAreas?.([]);
-                          setAreaSelected?.({});
+                          if (deliveryAddressId !== id) {
+                            setDiagnosticAreas?.([]);
+                            setAreaSelected?.({});
+                            setDiagnosticSlot?.(null);
+                            setselectedTimeSlot(undefined);
+                          }
                         }
-
-                        // fetchAreasForAddress(id, pincode!);
                       }
                     },
                   });
@@ -2805,10 +2807,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      fetchAreasForAddress(
-        addresses?.[selectedAddressIndex]?.id,
-        addresses?.[selectedAddressIndex]?.zipcode!
-      );
+      showAreaSelection
+        ? fetchAreasForAddress(
+            addresses?.[selectedAddressIndex]?.id,
+            addresses?.[selectedAddressIndex]?.zipcode!,
+            showAreaSelection
+          )
+        : getAreas();
     }
   }
 
