@@ -377,7 +377,7 @@
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": ["Hindi", "English", "Telugu", "Punjabi" ,"Bengali" ,"Marathi" ,"Urdu","Gujarati","Tamil","Kannada","Oriya","Persian"]
       }
     ]
   },
