@@ -555,6 +555,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       if (cartItem.length) {
         const storePrice = Number(object.mou) * cartItem[0].mrp;
         if (object.price != storePrice && cartItem[0].mrp != 0) {
+          showAphAlert!({
+            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''}`,
+            description: `Important message for items in your Cart:\n\nWe have updated your cart with the latest prices. Please check before you place the order.`,
+          });
           PricemismatchEvent(object, g(currentPatient, 'mobileNumber'), storePrice);
           object.specialPrice &&
             (object.specialPrice =
