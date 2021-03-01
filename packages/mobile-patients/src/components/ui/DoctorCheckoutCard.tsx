@@ -5,6 +5,9 @@ import {
   DoctorPlaceholderImage,
   Location,
   CircleLogo,
+  OnlineAppointmentMarkerIcon,
+  AppointmentCalendarIcon,
+  PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 const { width } = Dimensions.get('window');
@@ -133,11 +136,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
           </Text>
           <View style={styles.doctorPointers}>
-            <Image
-              style={styles.doctorPointersImage}
-              source={require('@aph/mobile-patients/src/components/ui/icons/onlinemarker.png')}
-              resizeMode={'contain'}
-            />
+            <OnlineAppointmentMarkerIcon style={styles.doctorPointersImage} />
             <Text style={styles.appointmentTimeStyle}>Online Consultation</Text>
           </View>
         </View>
@@ -174,11 +173,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
       )}
 
       <View style={styles.doctorPointers}>
-        <Image
-          style={styles.doctorPointersImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/calendarAppointment.png')}
-          resizeMode={'contain'}
-        />
+        <AppointmentCalendarIcon style={styles.doctorPointersImage} />
         <Text style={styles.appointmentTimeStyle}>
           {dateFormatter(appointmentInput?.appointmentDateTime)}
         </Text>
@@ -235,7 +230,6 @@ const styles = StyleSheet.create({
   appointmentTimeStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#02475B',
-    marginTop: 1,
   },
   seperatorLine: {
     marginTop: 14,

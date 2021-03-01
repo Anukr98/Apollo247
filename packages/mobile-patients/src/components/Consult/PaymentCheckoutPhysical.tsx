@@ -23,6 +23,9 @@ import {
   DoctorPlaceholderImage,
   DropdownGreen,
   LinkedUhidIcon,
+  OnlineAppointmentMarkerIcon,
+  AppointmentCalendarIcon,
+  PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -268,19 +271,11 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
             </Text>
             <View style={styles.doctorPointers}>
-              <Image
-                style={styles.doctorPointersImage}
-                source={require('@aph/mobile-patients/src/components/ui/icons/appointmentMarker.png')}
-                resizeMode={'contain'}
-              />
+              <PhysicalAppointmentMarkerIcon style={styles.doctorPointersImage} />
               <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
             </View>
             <View style={styles.doctorPointers}>
-              <Image
-                style={styles.doctorPointersImage}
-                source={require('@aph/mobile-patients/src/components/ui/icons/calendarAppointment.png')}
-                resizeMode={'contain'}
-              />
+              <AppointmentCalendarIcon style={styles.doctorPointersImage} />
               <Text style={styles.appointmentTimeStyle}>
                 {dateFormatter(appointmentInput?.appointmentDateTime)}
               </Text>
@@ -1068,7 +1063,6 @@ const styles = StyleSheet.create({
   appointmentTimeStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#02475B',
-    marginTop: 1,
     marginLeft: 4,
   },
   showPopUp: {
