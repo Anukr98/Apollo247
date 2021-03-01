@@ -38,6 +38,7 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   movedFrom: ProductPageViewedSource;
   productPageViewedEventProps?: ProductPageViewedEventProps;
   sectionName?: string;
+  onAddedSuccessfully?: () => void;
 }
 
 export const ProductList: React.FC<Props> = ({
@@ -81,6 +82,7 @@ export const ProductList: React.FC<Props> = ({
   };
 
   const onPressAddToCart = (item: MedicineProduct) => {
+    const { onAddedSuccessfully } = restOfProps;
     addPharmaItemToCart(
       formatToCartItem(item),
       pharmacyPincode!,
@@ -96,7 +98,8 @@ export const ProductList: React.FC<Props> = ({
         section: productPageViewedEventProps?.SectionName,
       },
       () => {},
-      pharmacyCircleAttributes!
+      pharmacyCircleAttributes!,
+      onAddedSuccessfully ? onAddedSuccessfully : () => {}
     );
   };
 
