@@ -912,18 +912,12 @@ const notifyAppVersion = async (
       osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
       appsflyerId,
     };
-    console.log('currentPatient', currentPatient);
-    console.log('variables', variables);
-    console.log('appsflyerSaved', appsflyerSaved, appsflyerSaved !== appsflyerId, appsflyerId);
-    console.log('savedAppVersion', savedAppVersion, appVersion);
     if (savedAppVersion !== appVersion || appsflyerSaved !== appsflyerId) {
-      console.log('apicalled');
       const res = await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
         mutation: UPDATE_PATIENT_APP_VERSION,
         variables,
         fetchPolicy: 'no-cache',
       });
-      console.log('resresres', res);
       await AsyncStorage.setItem(key, appVersion);
       await AsyncStorage.setItem(appsflyerIdKey, appsflyerId!);
     }
