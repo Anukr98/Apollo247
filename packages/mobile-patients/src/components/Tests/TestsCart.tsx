@@ -754,19 +754,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     } catch (e) {
       console.log({ e });
       CommonBugFender('TestsCart_', e);
-      setDeliveryAddressId && setDeliveryAddressId('');
-      setDiagnosticAreas?.([]);
-      setAreaSelected?.({});
+
       setselectedTimeSlot(undefined);
       setLoading?.(false);
       setWebEngageEventForAddressNonServiceable(addresses?.[selectedAddressIndex]?.zipcode!);
-      showAphAlert!({
-        title: string.common.uhOh,
-        description: string.diagnostics.areaNotAvailableMessage,
-      });
 
       //if goes in the catch then show the area selection.
       setShowAreaSelection(true);
+      fetchAreasForAddress(
+        addresses?.[selectedAddressIndex]?.id,
+        addresses?.[selectedAddressIndex]?.zipcode!,
+        true
+      );
     }
   };
 
