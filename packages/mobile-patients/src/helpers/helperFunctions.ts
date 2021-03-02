@@ -2440,11 +2440,14 @@ export const filterHtmlContent = (content: string = '') => {
   return content
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
+    .replace(/&gt;rnt/g, '>')
     .replace(/&gt;rn/g, '>')
     .replace(/&gt;r/g, '>')
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
-    .replace(/\.t/g, '.');
+    .replace(/\.t/g, '.')
+    .replace(/.rn/gi, '. ')
+    .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
   const { dc_availability, is_in_contract } = product;
