@@ -74,6 +74,9 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
             if (option === PrescriptionType.UPLOADED) {
               setEPrescriptions?.(ePres || []);
               setPhysicalPrescriptions?.(physPres || []);
+            } else {
+              setEPrescriptions?.([]);
+              setPhysicalPrescriptions?.([]);
             }
           }}
         />
@@ -82,8 +85,8 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const onPressContinue = async () => {
-    setLoading?.(true);
     try {
+      setLoading?.(true);
       if (prescriptionType === PrescriptionType.UPLOADED) {
         const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
           client,
@@ -95,14 +98,15 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
         setEPrescriptions!([]);
         setPhysicalPrescriptions!([]);
       }
+      navigation.navigate(AppRoutes.CartSummary);
+      setLoading?.(false);
     } catch (error) {
+      setLoading?.(false);
       showAphAlert?.({
         title: 'Uh oh.. :(',
         description: 'Error occurred while uploading prescriptions.',
       });
     }
-    setLoading?.(false);
-    navigation.navigate(AppRoutes.CartSummary);
   };
 
   const renderContinueButton = () => {
@@ -111,13 +115,12 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
         physicalPrescriptions.length === 0 &&
         ePrescriptions.length === 0
       : true;
+    const title = [PrescriptionType.CONSULT, PrescriptionType.LATER].includes(prescriptionType!)
+      ? 'CONTINUE WITHOUT PRESCRIPTION'
+      : 'CONTINUE WITH PRESCRIPTION';
     return (
       <View style={styles.buttonView}>
-        <Button
-          onPress={onPressContinue}
-          title={'CONTINUE WITH PRESCRIPTION'}
-          disabled={isDisabled}
-        />
+        <Button onPress={onPressContinue} title={title} disabled={isDisabled} />
       </View>
     );
   };

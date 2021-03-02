@@ -451,7 +451,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
   const renderTatCard = () => {
     return orders?.length > 1 ? null : (
-      <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={orders?.[0]?.tat} />
+      <TatCardwithoutAddress style={{ marginTop: 10 }} deliveryDate={orders?.[0]?.tat} />
     );
   };
 
@@ -463,7 +463,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return (
       <Prescriptions
         onPressUploadMore={() => props.navigation.navigate(AppRoutes.MedicineCartPrescription)}
-        screen={'summary'}
+        showSelectedOption
       />
     );
   };
@@ -499,9 +499,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
+          {uploadPrescriptionRequired && renderPrescriptions()}
           {renderTatCard()}
           {renderCartItems()}
-          {uploadPrescriptionRequired && renderPrescriptions()}
         </ScrollView>
         {renderButton()}
         {loading && <Spinner />}
