@@ -757,9 +757,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
               formatNumber(
                 item?.quantity * (item?.couponPrice ? item?.price - item?.couponPrice : 0)
               );
-            shipmentProductDiscount =
-              shipmentProductDiscount +
-              formatNumber(item?.quantity * (item?.price - (item?.specialPrice || item?.price)));
+            shipmentProductDiscount = shipmentProductDiscount + getShipmentProductDiscount(item);
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
             shipmentCashback += item?.circleCashbackAmt;
             return {
@@ -805,6 +803,19 @@ export const ShoppingCartProvider: React.FC = (props) => {
     });
     setShipments(shipmentsArray);
   }
+
+  const getShipmentProductDiscount = (item: ShoppingCartItem) => {
+    let discount = 0;
+    let quantity = item.quantity;
+    if (!!item.isFreeCouponProduct) {
+      quantity = 1; // one free product
+      discount = item.price * quantity;
+    } else if (item.price != item.specialPrice) {
+      discount = (item?.price - (item?.specialPrice || item?.price)) * quantity;
+    }
+    return discount;
+  };
+
   useEffect(() => {
     // update cart items from async storage the very first time app opened
     const updateCartItemsFromStorage = async () => {
