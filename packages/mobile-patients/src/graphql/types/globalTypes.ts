@@ -140,6 +140,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
+  PARTIAL_ORDER_COMPLETED = "PARTIAL_ORDER_COMPLETED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
@@ -153,6 +154,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   SAMPLE_NOT_COLLECTED_IN_LAB = "SAMPLE_NOT_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
   SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_SUBMITTED = "SAMPLE_SUBMITTED",
   SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
@@ -1321,7 +1323,7 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  patient_id?: any | null;
+  patient_id: any;
 }
 
 export interface OrderInput {
@@ -1678,6 +1680,7 @@ export interface UpdatePatientInput {
   deviceCode?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
+  appsflyerId?: string | null;
 }
 
 export interface UploadDocumentInput {
