@@ -40,7 +40,6 @@
 		97B123D924E53C1600B9D379 /* callkitAppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 97B123D724E53C1600B9D379 /* callkitAppIcon.png */; };
 		97D79A1C24924D410029DE31 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 97D79A1A24924D410029DE31 /* main.jsbundle */; };
 		97EA49A623D5B006001B575B /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97EA49A523D5B006001B575B /* HealthKit.framework */; };
-		97EEE82D249A5F9F003A4ECF /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 97EEE82C249A5F9F003A4ECF /* assets */; };
 		97FA066823E55F4A006A4294 /* ApolloVitalsFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */; };
 		97FA066923E55F4A006A4294 /* ApolloVitalsFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		97FFBDE523E4887B00E55E34 /* NSDate+Comparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FFBDD523E4887A00E55E34 /* NSDate+Comparison.swift */; };
@@ -240,7 +239,6 @@
 		97B123D724E53C1600B9D379 /* callkitAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = callkitAppIcon.png; sourceTree = "<group>"; };
 		97D79A1A24924D410029DE31 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		97EA49A523D5B006001B575B /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
-		97EEE82C249A5F9F003A4ECF /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ApolloVitalsFramework.framework; sourceTree = "<group>"; };
 		97FFBDD523E4887A00E55E34 /* NSDate+Comparison.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSDate+Comparison.swift"; sourceTree = "<group>"; };
 		97FFBDD623E4887A00E55E34 /* ExclusionDate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExclusionDate.swift; sourceTree = "<group>"; };
@@ -494,7 +492,6 @@
 				BB8190BA24F8C26C00AD66C6 /* AirGoogleMaps */,
 				BBA1CF5024F4D21400C77819 /* Google-Maps-iOS-Utils */,
 				97B123D724E53C1600B9D379 /* callkitAppIcon.png */,
-				97EEE82C249A5F9F003A4ECF /* assets */,
 				97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */,
 				6717258823016EF10088EE92 /* OTInstall.swift */,
 				977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */,
@@ -1015,7 +1012,6 @@
 				978D136323D1EE0B002841C4 /* OpenSans-ExtraBold.ttf in Resources */,
 				F1B3D79622B8D37200521684 /* IBMPlexSans-Italic.ttf in Resources */,
 				978D136623D1EE0B002841C4 /* Comfortaa_Regular.ttf in Resources */,
-				97EEE82D249A5F9F003A4ECF /* assets in Resources */,
 				492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */,
 				97A7C9D4249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */,
 				978D136823D1EE0B002841C4 /* OpenSans-Bold.ttf in Resources */,
