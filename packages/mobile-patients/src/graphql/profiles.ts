@@ -4411,6 +4411,7 @@ export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
       cityName
       stateID
       stateName
+      areaSelectionEnabled
     }
   }
 `;
@@ -4705,6 +4706,17 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
       diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
     ) {
       status
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
+  query getNearestArea($patientAddressId: String!) {
+    getNearestArea(patientAddressId: $patientAddressId) {
+      area{
+        id
+        area
+      }
     }
   }
 `;
