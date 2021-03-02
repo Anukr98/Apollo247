@@ -210,7 +210,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     );
 
     return (
-      <>
+      <View>
         <Text style={styles.headingText}>
           {dataFromHomePage?.diagnosticWidgetTitle}{' '}
           <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>{' '}
@@ -238,7 +238,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             sourceScreen={AppRoutes.TestListing}
           />
         )}
-      </>
+      </View>
     );
   };
 

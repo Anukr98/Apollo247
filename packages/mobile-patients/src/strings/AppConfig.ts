@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -903,7 +903,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462, 2388, 2419, 2411, 2410, 2539, 2614, 2462, 2613],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [],
 };
 
 //PERFORMANCE
@@ -1395,6 +1395,7 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
 ];
 
@@ -1412,6 +1413,7 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
 ];
 

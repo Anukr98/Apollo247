@@ -688,6 +688,7 @@ export interface WebEngageEvents {
     Gender: string;
     Email: string;
     'Referral Code'?: string;
+    'Mobile Number': string;
   };
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
   [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
@@ -2054,6 +2055,7 @@ export interface WebEngageEvents {
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor ID': string;
+    'Media Source': string;
   };
   [WebEngageEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
@@ -2349,4 +2351,15 @@ export interface WebEngageEvents {
   [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
+  [WebEngageEventName.HOME_VIEWED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Member': 'Yes' | 'No';
+    'Circle Plan type': string;
+  };
 }
