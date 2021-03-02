@@ -807,6 +807,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cmsTestDetails?.diagnosticInclusionName?.length > 0;
     const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
 
+    const getMandatoryParamter = cmsTestDetails?.diagnosticInclusionName?.map((inclusion: any) =>
+      inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+    );
+    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
+      (prevVal: any, curr: any) => prevVal + curr?.length,
+      0
+    );
+
     return (
       <>
         <View style={{ width: '75%' }}>
@@ -820,7 +828,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         <View style={styles.inclusionsView}>
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>
-              Tests included : {cmsTestDetails?.diagnosticInclusionName?.length}
+              Total tests included :{' '}
+              {getMandatoryParameterCount || cmsTestDetails?.diagnosticInclusionName?.length}
             </Text>
           ) : null}
           {isInclusionPrsent &&
@@ -889,10 +898,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
+    const getMandatoryParameters =
+      item?.TestObservation?.length > 0 &&
+      item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
     return (
       <>
-        {item?.TestObservation?.length > 0 ? (
-          item?.TestObservation?.map((para: any, pIndex: number, array: any) => (
+        {!!getMandatoryParameters && getMandatoryParameters?.length > 0 ? (
+          getMandatoryParameters.map((para: any, pIndex: number, array: any) => (
             <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
               <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
               <Text style={styles.parameterText}>
