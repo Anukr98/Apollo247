@@ -2055,6 +2055,7 @@ export interface WebEngageEvents {
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor ID': string;
+    'Media Source': string;
   };
   [WebEngageEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
