@@ -41,14 +41,15 @@ import {
   Text,
   TextInput,
   View,
+  ScrollView,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
 
 const { height, width } = Dimensions.get('window');
 
@@ -120,6 +121,25 @@ const styles = StyleSheet.create({
     color: theme.colors.PURPLE,
     ...fonts.IBMPlexSansBold(10),
     textDecorationLine: 'underline',
+  },
+  leftSeperatorLine: {
+    width: '40%',
+    height: 0.5,
+    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+  },
+  rightSeperatorLine: {
+    width: '43%',
+    height: 0.5,
+    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+  },
+  authContainer: {
+    marginTop: 25,
+    marginHorizontal: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });
 
@@ -323,6 +343,21 @@ export const Login: React.FC<LoginProps> = (props) => {
     });
   };
 
+  const renderTruecallerButton = () => {
+    return (
+      <View style={styles.authContainer}>
+        <View style={styles.row}>
+          <View style={styles.leftSeperatorLine} />
+          <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR) }}>
+            Or
+          </Text>
+          <View style={styles.rightSeperatorLine} />
+        </View>
+        <AuthButton />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -398,7 +433,10 @@ export const Login: React.FC<LoginProps> = (props) => {
             </HyperLink>
           </View>
         </LoginCard>
-        <LandingDataView showRemoteBanner={true} />
+        <ScrollView>
+          {renderTruecallerButton()}
+          <LandingDataView showRemoteBanner={true} />
+        </ScrollView>
         {onClickOpen && openWebView()}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}

@@ -1778,3 +1778,7 @@ export const ExpiredBanner: React.FC<IconProps> = (props) => (
 export const CircleBannerExpired: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/Renew_circle_banner.png')} />
 );
+
+export const Truecaller: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/truecaller.png')} resizeMode="contain" />
+);

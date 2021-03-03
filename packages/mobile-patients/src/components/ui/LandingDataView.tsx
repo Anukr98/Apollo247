@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View, Image, Text, Dimensions, FlatList } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -40,7 +39,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   bannerUrl: {
-    marginTop: 10,
+    marginTop: 3,
     width: '100%',
     marginBottom: 20,
   },
@@ -76,7 +75,7 @@ export const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
             style={[
               styles.bannerUrl,
               {
-                height: bigScreenDevice ? 155 : 142,
+                height: bigScreenDevice ? 164 : 148,
               },
             ]}
             resizeMode="stretch"
