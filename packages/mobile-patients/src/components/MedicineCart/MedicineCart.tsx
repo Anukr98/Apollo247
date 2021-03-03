@@ -317,6 +317,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         (data.getPatientAddressList
           .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       setAddresses!(addressList);
+      const deliveryAddress = addressList.find(({ defaultAddress }) => defaultAddress === true);
+      if (deliveryAddress && !deliveryAddressId) {
+        setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
+      }
+      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
     } catch (error) {
       console.log(error);
       renderAlert(`Something went wrong, unable to fetch addresses.`);
