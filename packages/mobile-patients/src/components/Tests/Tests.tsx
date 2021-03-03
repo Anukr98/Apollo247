@@ -115,6 +115,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { CertifiedCard } from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
 import {
+  DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
   DiagnosticHomePageSearchItem,
@@ -243,7 +244,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
-  const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
+  const diagnosticPincode =
+    g(diagnosticLocation, 'pincode') ||
+    g(pharmacyLocation, 'pincode') ||
+    g(locationDetails, 'pincode');
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
   const isSeviceableObjectEmpty =
@@ -292,11 +296,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   /**
    * if any change in the location and pincode is changed
    */
-  // useEffect(() => {
-  //   if (diagnosticPincode) {
-  //     checkIsPinCodeServiceable(diagnosticPincode);
-  //   }
-  // }, [diagnosticPincode]);
 
   useEffect(() => {
     if (newAddressAddedHomePage != '') {
@@ -667,6 +666,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticLocationServiceable!(true);
             setServiceabilityMsg('');
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected('Existing', 'Yes', pincode, 'Home page');
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected('New', 'Yes', pincode, 'Home page');
           } else {
             obj = {
               cityId: '9',
@@ -685,6 +688,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setServiceabilityMsg(string.diagnostics.nonServiceablePinCodeMsg);
 
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, false);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected('Existing', 'No', pincode, 'Home page');
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected('New', 'No', pincode, 'Home page');
           }
           getHomePageWidgets(obj?.cityId);
           setshowLocationpopup(false);
@@ -1194,15 +1201,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
-      if (item?.redirectUrl) {
-        const data = item?.redirectUrl.split('=')[1];
+      if (item?.redirectUrl && item?.redirectUrl != '') {
+        const data = item?.redirectUrl?.split('=')?.[1];
         const extractData = data?.replace('apollopatients://', '');
-        const getNavigationDetails = extractData.split('?');
-        const route = getNavigationDetails[0];
+        const getNavigationDetails = extractData?.split('?');
+        const route = getNavigationDetails?.[0];
         let itemId = '';
         try {
-          if (getNavigationDetails.length >= 2) {
-            itemId = getNavigationDetails[1].split('&');
+          if (getNavigationDetails?.length >= 2) {
+            itemId = getNavigationDetails?.[1]?.split('&');
             if (itemId.length > 0) {
               itemId = itemId[0];
             }
@@ -1385,7 +1392,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 showViewAll
                   ? () => {
                       props.navigation.navigate(AppRoutes.TestListing, {
-                        comingFrom: 'Home Page',
+                        movedFrom: AppRoutes.Tests,
                         data: data,
                         cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                       });
@@ -1445,7 +1452,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 showViewAll
                   ? () => {
                       props.navigation.navigate(AppRoutes.TestListing, {
-                        comingFrom: 'Home Page',
+                        movedFrom: AppRoutes.Tests,
                         data: data,
                         cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                       });
