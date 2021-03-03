@@ -32,7 +32,8 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   } = props;
 
   const [showAllContent, setShowAllContent] = useState<boolean>(false);
-  const pharmaUses = pharmaOverview?.Uses;
+  const pharmaUses = pharmaOverview?.HowToTake;
+  const usesOfProduct = pharmaOverview?.Uses;
   const pharmaBenefits = pharmaOverview?.MedicinalBenefits;
   const pharmaSideEffects = pharmaOverview?.SideEffects;
   const storagePlace = pharmaOverview?.StoragePlace;
@@ -68,6 +69,12 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
         {!!pharma_benefits.length && renderHtmlContent(`Medicinal Benefits`, pharma_benefits)}
       </View>
     );
+  };
+
+  const renderUsesOfProduct = () => {
+    const medicine_uses = filterHtmlContent(usesOfProduct);
+    let medicineUses = medicine_uses.replace(/\$name/gi, name);
+    return !!medicineUses.length && renderHtmlContent(`Uses of ${name}`, medicineUses);
   };
 
   const renderSideEffects = (medicineSideEffects: string) => {
@@ -148,6 +155,7 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
       {!!aboutProduct && renderAbout()}
       {showAllContent && (
         <>
+          {!!usesOfProduct && renderUsesOfProduct()}
           {(!!pharmaUses || !!pharmaBenefits) && renderUses()}
           {renderVegetarianIcon()}
           {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
