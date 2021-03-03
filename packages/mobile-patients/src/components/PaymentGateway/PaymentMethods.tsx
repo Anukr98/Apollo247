@@ -77,7 +77,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
+  const FailedStatuses = ['AUTHENTICATION_FAILED','PENDING_VBV', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -116,7 +116,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
           payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false);
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
-        }
+        } 
         break;
       default:
         console.log('Unknown Event', data);
