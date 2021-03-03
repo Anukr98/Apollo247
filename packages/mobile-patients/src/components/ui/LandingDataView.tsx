@@ -45,12 +45,9 @@ const styles = StyleSheet.create({
   },
 });
 
-interface LandingDataViewProps {
-  showRemoteBanner?: boolean;
-}
+interface LandingDataViewProps {}
 
-export const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
-  const { showRemoteBanner } = props;
+const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
   const { loginSection } = useAppCommonData();
   const bigScreenDevice = height >= 812 || width >= 812;
 
@@ -69,18 +66,16 @@ export const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
   const renderHeaderComponent = () => {
     return (
       <View>
-        {showRemoteBanner && (
-          <Image
-            source={{ uri: loginSection?.bannerUrl }}
-            style={[
-              styles.bannerUrl,
-              {
-                height: bigScreenDevice ? 164 : 148,
-              },
-            ]}
-            resizeMode="stretch"
-          />
-        )}
+        <Image
+          source={{ uri: loginSection?.bannerUrl }}
+          style={[
+            styles.bannerUrl,
+            {
+              height: bigScreenDevice ? 164 : 148,
+            },
+          ]}
+          resizeMode="stretch"
+        />
         <Text style={styles.topText}>{loginSection?.mainTitle}</Text>
       </View>
     );
@@ -96,3 +91,5 @@ export const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
     />
   );
 };
+
+export default React.memo(LandingDataView);

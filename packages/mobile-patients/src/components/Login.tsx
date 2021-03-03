@@ -2,7 +2,7 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
-import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
+import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -42,6 +42,7 @@ import {
   TextInput,
   View,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import HyperLink from 'react-native-hyperlink';
@@ -50,6 +51,11 @@ import { NavigationEventSubscription, NavigationScreenProps } from 'react-naviga
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
+let TRUECALLER: any;
+
+if (Platform.OS === 'android') {
+  TRUECALLER = require('react-native-truecaller-sdk').default;
+}
 
 const { height, width } = Dimensions.get('window');
 
@@ -164,14 +170,51 @@ export const Login: React.FC<LoginProps> = (props) => {
   const { signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [appSign, setAppSign] = useState<string>('');
+  const isAndroid = Platform.OS === 'android';
 
-  const { setLoading } = useUIElements();
+  const { setLoading, showAphAlert } = useUIElements();
   const webengage = new WebEngage();
 
   useEffect(() => {
+    if (isAndroid && !!TRUECALLER) {
+      TRUECALLER.initializeClient();
+
+      TRUECALLER.on('profileSuccessReponse', (profile: any) => {
+        console.log('Truecaller profile data: ', profile);
+        // add other logic here related to login/sign-up as per your use-case.
+      });
+
+      TRUECALLER.on('profileErrorReponse', (error: any) => {
+        if (error && error.errorCode) {
+          switch (error.errorCode) {
+            case 1: {
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description: string.truecaller.networkProblem,
+              });
+              break;
+            }
+            case 4:
+            case 10: {
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description: string.truecaller.userNotVerified,
+              });
+              break;
+            }
+            case 11: {
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+              });
+              break;
+            }
+          }
+        }
+      });
+    }
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -182,7 +225,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     try {
       fireBaseFCM();
       setLoading && setLoading(false);
-      if (Platform.OS === 'android') {
+      if (isAndroid) {
         AppSignature.getAppSignature().then((sign: string[]) => {
           setAppSign(sign[0] || '');
         });
@@ -353,9 +396,23 @@ export const Login: React.FC<LoginProps> = (props) => {
           </Text>
           <View style={styles.rightSeperatorLine} />
         </View>
-        <AuthButton />
+        <AuthButton onPress={loginWithTruecaller} />
       </View>
     );
+  };
+
+  const loginWithTruecaller = () => {
+    TRUECALLER.isUsable((result: boolean) => {
+      if (result) {
+        // Authenticate via truecaller flow can be used
+        TRUECALLER.requestTrueProfile();
+      } else {
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+        });
+      }
+    });
   };
 
   return (
@@ -410,7 +467,8 @@ export const Login: React.FC<LoginProps> = (props) => {
               : string.login.wrong_number}
           </Text>
 
-          <View
+          <TouchableOpacity
+            onPress={() => openWebView()}
             style={{
               marginHorizontal: 16,
             }}
@@ -420,7 +478,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               linkText={(url) =>
                 url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
               }
-              onPress={(url, text) => setonClickOpen(true)}
+              onPress={(url, text) => openWebView()}
             >
               <Text
                 style={{
@@ -431,13 +489,12 @@ export const Login: React.FC<LoginProps> = (props) => {
                 By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
               </Text>
             </HyperLink>
-          </View>
+          </TouchableOpacity>
         </LoginCard>
         <ScrollView>
-          {renderTruecallerButton()}
-          <LandingDataView showRemoteBanner={true} />
+          {isAndroid && renderTruecallerButton()}
+          <LandingDataView />
         </ScrollView>
-        {onClickOpen && openWebView()}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

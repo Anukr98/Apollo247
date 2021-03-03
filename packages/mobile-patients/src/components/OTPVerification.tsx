@@ -7,9 +7,8 @@ import {
   ArrowDisabled,
   ArrowYellow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
+import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
@@ -37,8 +36,6 @@ import {
   Dimensions,
   EmitterSubscription,
   Keyboard,
-  ImageBackground,
-  ScrollView,
   Platform,
   SafeAreaView,
   StyleSheet,
@@ -184,7 +181,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isresent, setIsresent] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
-  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
@@ -205,7 +201,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const { setPhrNotificationData } = useAppCommonData();
 
   const handleBack = async () => {
-    setonClickOpen(false);
     setOpenFillerView(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     return true;
@@ -778,7 +773,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const renderHyperLink = () => {
     return (
-      <View
+      <TouchableOpacity
+        onPress={() => openWebView()}
         style={{
           marginTop: 12,
           marginHorizontal: 16,
@@ -789,7 +785,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           linkText={(url) =>
             url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
           }
-          onPress={(url, text) => setonClickOpen(true)}
+          onPress={(url, text) => openWebView()}
         >
           <Text
             style={{
@@ -800,7 +796,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
           </Text>
         </Hyperlink>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -842,26 +838,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </Text>
         </View>
       </View>
-    );
-  };
-
-  const banner_image = require('@aph/mobile-patients/src/images/onboard/onboard_banner.png');
-  const banner = () => {
-    return (
-      <ImageBackground
-        source={banner_image}
-        style={{ height: 105, marginTop: 20, marginHorizontal: 10 }}
-      >
-        <View style={{ padding: 16 }}>
-          <Text style={styles.bannerTitle}>Specially for you :)</Text>
-          <Text style={styles.bannerDescription}>
-            Use coupon code ‘<Text style={styles.bannerWelcome}>CARE247</Text>
-            {'’ for\n'}
-            <Text style={styles.bannerBoldText}>{string.common.Rs} 149 off</Text> on your 1st doctor
-            {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% off</Text> on medicines
-          </Text>
-        </View>
-      </ImageBackground>
     );
   };
 
@@ -1017,11 +993,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {renderHyperLink()}
           </LoginCard>
         )}
-        <ScrollView bounces={false}>
-          {banner()}
-          <LandingDataView />
-        </ScrollView>
-        {onClickOpen && openWebView()}
+        <LandingDataView />
         {openFillerView && fillerView()}
       </SafeAreaView>
       {showSpinner && <Spinner />}

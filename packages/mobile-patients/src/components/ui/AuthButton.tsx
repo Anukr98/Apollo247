@@ -1,14 +1,21 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, StyleProp, ViewStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Truecaller } from '@aph/mobile-patients/src/components/ui/Icons';
 
-interface AuthButtonProps {}
+interface AuthButtonProps {
+  onPress: () => void;
+  style?: StyleProp<ViewStyle>;
+  btnTitleStyle?: StyleProp<ViewStyle>;
+  icon?: any;
+}
+
 export const AuthButton: React.FC<AuthButtonProps> = (props) => {
+  const { onPress, style, btnTitleStyle, icon } = props;
   return (
-    <TouchableOpacity style={styles.button}>
-      <Truecaller />
-      <Text style={styles.btnText}>One Tap Login with Truecaller</Text>
+    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
+      {icon ? icon : <Truecaller />}
+      <Text style={[styles.btnText, btnTitleStyle]}>One Tap Login with Truecaller</Text>
     </TouchableOpacity>
   );
 };
