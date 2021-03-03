@@ -3803,7 +3803,7 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
       displayId
       status
       errorMessageToDisplay
-      attributes{
+      attributes {
         itemids
       }
     }
@@ -4707,7 +4707,7 @@ export const INITIATE_DOC_ON_CALL = gql`
 export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
   query getNearestArea($patientAddressId: String!) {
     getNearestArea(patientAddressId: $patientAddressId) {
-      area{
+      area {
         id
         area
       }

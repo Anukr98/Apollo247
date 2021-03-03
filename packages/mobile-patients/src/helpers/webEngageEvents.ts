@@ -144,6 +144,8 @@ export enum WebEngageEventName {
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
   READ_ARTICLES = 'Read Articles',
   HDFC_HEALTHY_LIFE = 'Explore HDFC Tile Clicked on Homepage',
+  LOCATION_PERMISSION = 'Location permission',
+
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
   VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED = 'Vaccination Call a doctor - Proceed to connect',
@@ -2046,6 +2048,9 @@ export interface WebEngageEvents {
     'Appointment ID': string;
     Type: string;
     'Patient Id': string;
+  };
+  [WebEngageEventName.LOCATION_PERMISSION]: {
+    'Location permission': string;
   };
   [WebEngageEventName.HOME_PAGE_VIEWED]: {
     source: 'deeplink' | 'app home';
