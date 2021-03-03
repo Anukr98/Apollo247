@@ -401,7 +401,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       <HealthRecordCard
         item={item}
         index={index}
-        editDeleteData={editDeleteData()}
+        editDeleteData={editDeleteData(MedicalRecordType.MEDICALBILL)}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
@@ -410,6 +410,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         dateText={dateText}
         selfUpload={selfUpload}
         sourceName={soureName || ''}
+        deleteRecordText={'bill'}
       />
     );
   };
@@ -450,7 +451,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={`ADD DATA`}
+          title={string.common.addBillText}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {

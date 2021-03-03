@@ -23,6 +23,7 @@ import {
   Gender,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -137,6 +138,12 @@ export interface TestSlotWithArea {
 export enum EDIT_DELETE_TYPE {
   EDIT = 'Edit Details',
   DELETE = 'Delete Data',
+  DELETE_PRESCRIPTION = 'Delete Prescription',
+  DELETE_TEST_REPORT = 'Delete Test Report',
+  DELETE_DISCHARGE_SUMMARY = 'Delete Discharge Summary',
+  DELETE_HEALTH_CONDITION = 'Delete Health Condition',
+  DELETE_BILL = 'Delete Bill',
+  DELETE_INSURANCE = 'Delete Insurance',
 }
 
 type EditDeleteArray = {
@@ -344,9 +351,66 @@ const sortByDays = (
   return dataArray;
 };
 
-export const editDeleteData = () => {
-  return ConsultRxEditDeleteArray.map((i) => {
-    return { key: i.key, value: i.title };
+export const editDeleteData = (recordType: MedicalRecordType) => {
+  let editDeleteArray: EditDeleteArray[] = [];
+  switch (recordType) {
+    case MedicalRecordType.PRESCRIPTION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_PRESCRIPTION,
+          title: EDIT_DELETE_TYPE.DELETE_PRESCRIPTION,
+        },
+      ];
+      break;
+    case MedicalRecordType.TEST_REPORT:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_TEST_REPORT,
+          title: EDIT_DELETE_TYPE.DELETE_TEST_REPORT,
+        },
+      ];
+      break;
+    case MedicalRecordType.HOSPITALIZATION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_DISCHARGE_SUMMARY,
+          title: EDIT_DELETE_TYPE.DELETE_DISCHARGE_SUMMARY,
+        },
+      ];
+      break;
+    case MedicalRecordType.ALLERGY:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+          title: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+        },
+      ];
+      break;
+    case MedicalRecordType.MEDICALBILL:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_BILL,
+          title: EDIT_DELETE_TYPE.DELETE_BILL,
+        },
+      ];
+      break;
+    case MedicalRecordType.MEDICALINSURANCE:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_INSURANCE,
+          title: EDIT_DELETE_TYPE.DELETE_INSURANCE,
+        },
+      ];
+      break;
+  }
+  return editDeleteArray?.map((i) => {
+    return { key: i?.key, value: i?.title };
   });
 };
 
