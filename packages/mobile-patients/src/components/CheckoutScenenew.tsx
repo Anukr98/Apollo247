@@ -219,10 +219,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     });
 
   useEffect(() => {
-    !!circleMembershipCharges ? setIsFreeDelivery?.(true) : setIsFreeDelivery?.(false);
-  }, [circleMembershipCharges]);
-
-  useEffect(() => {
     fetchHealthCredits();
     fetchPaymentOptions()
       .then((res: any) => {
