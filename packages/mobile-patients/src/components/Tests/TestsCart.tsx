@@ -2495,10 +2495,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 slotBookedArray.some((item) => message?.includes(item)) ||
                 message.includes('slot has been booked')
               ) {
-                // setDisplaySchedule(true);
-                checkSlotSelection(areaSelected, '', 'errorState');
+                showAphAlert?.({
+                  title: string.common.uhOh,
+                  description: message,
+                  onPressOutside: () => {
+                    checkSlotSelection(areaSelected, '', 'errorState');
+                    hideAphAlert?.();
+                  },
+                  onPressOk: () => {
+                    checkSlotSelection(areaSelected, '', 'errorState');
+                    hideAphAlert?.();
+                  },
+                });
+              } else {
+                renderAlert(message);
               }
-              renderAlert(message);
             }
           } else {
             const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
