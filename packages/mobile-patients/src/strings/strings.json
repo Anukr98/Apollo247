@@ -195,7 +195,7 @@
   },
   "login": {
     "hello": "hello!",
-    "please_enter_no": "Please enter your number to get access to an entire hospital on your phone!",
+    "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
     "otp_sent_to": "An OTP will be sent to this number",
     "wrong_number": "This seems like a wrong number",
     "numberPrefix": "+91",

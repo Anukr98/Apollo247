@@ -1,7 +1,6 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
@@ -47,9 +46,9 @@ import messaging from '@react-native-firebase/messaging';
 import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
-import { WebView } from 'react-native-webview';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const { height, width } = Dimensions.get('window');
 
@@ -77,7 +76,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '82%',
+    width: width - 135,
     paddingBottom: 0,
   },
   inputView: {
@@ -85,7 +84,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '82%',
+    width: width - 135,
     paddingBottom: 0,
   },
   bottomDescription: {
@@ -116,6 +115,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     elevation: 20,
+  },
+  hyperlink: {
+    color: theme.colors.PURPLE,
+    ...fonts.IBMPlexSansBold(10),
+    textDecorationLine: 'underline',
   },
 });
 
@@ -313,47 +317,10 @@ export const Login: React.FC<LoginProps> = (props) => {
   const openWebView = () => {
     CommonLogEvent(AppRoutes.Login, 'Terms  Conditions clicked');
     Keyboard.dismiss();
-    return (
-      <View style={styles.viewWebStyles}>
-        <Header
-          title={'Terms & Conditions'}
-          leftIcon="close"
-          container={{
-            borderBottomWidth: 0,
-          }}
-          onPressLeftIcon={() => setonClickOpen(false)}
-        />
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
-        >
-          <WebView
-            source={{
-              uri: 'https://www.apollo247.com/terms',
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'white',
-            }}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setShowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setShowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setShowSpinner(false);
-            }}
-          />
-        </View>
-      </View>
-    );
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+      isGoBack: true,
+    });
   };
 
   return (
@@ -365,7 +332,6 @@ export const Login: React.FC<LoginProps> = (props) => {
         <View style={{ height: 16 }} />
         <LoginCard
           cardContainer={{ marginTop: 0, paddingBottom: 12 }}
-          heading={string.login.hello_login}
           description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
@@ -415,12 +381,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             }}
           >
             <HyperLink
-              linkStyle={{
-                color: '#02475b',
-                ...fonts.IBMPlexSansBold(10),
-                lineHeight: 16,
-                letterSpacing: 0.4,
-              }}
+              linkStyle={styles.hyperlink}
               linkText={(url) =>
                 url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
               }
@@ -430,8 +391,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                 style={{
                   color: '#02475b',
                   ...fonts.IBMPlexSansMedium(10),
-                  lineHeight: 16,
-                  letterSpacing: 0,
                 }}
               >
                 By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
@@ -439,9 +398,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             </HyperLink>
           </View>
         </LoginCard>
-        <ScrollView bounces={false}>
-          <LandingDataView />
-        </ScrollView>
+        <LandingDataView showRemoteBanner={true} />
         {onClickOpen && openWebView()}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}

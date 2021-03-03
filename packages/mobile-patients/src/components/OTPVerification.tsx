@@ -1,7 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   BackArrow,
   Loader,
@@ -27,7 +26,7 @@ import {
   setFirebaseUserId,
   setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -50,16 +49,12 @@ import {
   AppStateStatus,
   TextInput,
 } from 'react-native';
-// import { WebView } from 'react-native-webview';
 import firebaseAuth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import Hyperlink from 'react-native-hyperlink';
-// import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { BottomPopUp } from './ui/BottomPopUp';
-import moment from 'moment';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
-import { WebView } from 'react-native-webview';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -79,8 +74,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { saveTokenDevice } from '../helpers/clientCalls';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const { height, width } = Dimensions.get('window');
 
@@ -110,14 +105,12 @@ const styles = StyleSheet.create({
   },
   codeInputStyle: {
     borderBottomWidth: 2,
-    width: '80%',
+    width: width - 135,
     margin: 0,
     height: 48,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.LIGHT_BLUE,
-    // letterSpacing: 28, // 26
-    // paddingLeft: 12, // 25
   },
   viewAbsoluteStyles: {
     position: 'absolute',
@@ -159,6 +152,11 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
     lineHeight: 15,
   },
+  hyperlink: {
+    color: theme.colors.PURPLE,
+    ...fonts.IBMPlexSansBold(10),
+    textDecorationLine: 'underline',
+  },
 });
 
 let timer = 120;
@@ -198,12 +196,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     getPatientByPrism,
     getFirebaseToken,
     getPatientApiCall,
-    setMobileAPICalled,
-    setAllPatients,
   } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
-  const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
 
   const client = useApolloClient();
@@ -230,23 +225,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
-
-  // const startInterval = useCallback(
-  //   (timer: number) => {
-  //     const intervalId = setInterval(() => {
-  //       timer = timer - 1;
-  //       setRemainingTime(timer);
-  //       if (timer == 0) {
-  //         console.log('descriptionTextStyle remainingTime', remainingTime);
-  //         setRemainingTime(0);
-  //         setInvalidOtpCount(0);
-  //         setIsValidOTP(true);
-  //         clearInterval(intervalId);
-  //       }
-  //     }, 1000);
-  //   },
-  //   [remainingTime]
-  // );
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -312,9 +290,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [_removeFromStore, props.navigation.state.params]);
 
   useEffect(() => {
-    // const { otpString } = props.navigation.state.params!;
-    // setOtp(otpString);
-    // console.log('OTPVerification otpString', otpString);
     getTimerData();
   }, [props.navigation, getTimerData]);
 
@@ -355,10 +330,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       await AsyncStorage.setItem('timeOutData', JSON.stringify(timeOutData));
     } catch (error) {
       CommonBugFender('OTPVerification__storeTimerData_try', error);
-      // setBugFenderLog('OTPVerification__storeTimerData_try', error);
-
       console.log(error, 'error');
-      // Error saving data
     }
   };
 
@@ -374,13 +346,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         ],
       })
     );
-    // props.navigation.replace(AppRoutes.ConsultRoom);
   };
 
   useEffect(() => {
     if (signInError && otp.length === 6) {
-      // Alert.alert('Apollo', 'Something went wrong. Please try again.');
-      // props.navigation.replace(AppRoutes.Login);
     }
   }, [signInError, props.navigation, otp.length]);
 
@@ -567,9 +536,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           const mePatient = allPatients
             ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
             : null;
-          // setMobileAPICalled && setMobileAPICalled(true);
-          // setAllPatients(allPatients);
-
           moveScreenForward(mePatient);
         })
         .catch(async (error) => {
@@ -579,9 +545,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       const mePatient = profileData
         ? profileData.find((patient: any) => patient.relation === Relation.ME) || profileData[0]
         : null;
-      // setAllPatients(profileData);
-      // setMobileAPICalled && setMobileAPICalled(false);
-
       moveScreenForward(mePatient);
     }
   };
@@ -702,7 +665,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     return () => {
       subscriptionId && subscriptionId.remove();
-      // backHandler && backHandler.remove();
     };
   }, [subscriptionId]);
 
@@ -807,48 +769,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const openWebView = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
-    return (
-      <View style={styles.viewAbsoluteStyles}>
-        <Header
-          title={'Terms & Conditions'}
-          leftIcon="close"
-          container={{
-            borderBottomWidth: 0,
-          }}
-          onPressLeftIcon={() => setonClickOpen(false)}
-        />
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
-        >
-          <WebView
-            source={{
-              uri: 'https://www.apollo247.com/terms',
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'white',
-            }}
-            // useWebKit={true}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setshowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setshowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setshowSpinner(false);
-            }}
-          />
-        </View>
-      </View>
-    );
+    Keyboard.dismiss();
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+      isGoBack: true,
+    });
   };
 
   const renderHyperLink = () => {
@@ -860,12 +785,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         }}
       >
         <Hyperlink
-          linkStyle={{
-            color: '#02475b',
-            ...fonts.IBMPlexSansBold(10),
-            lineHeight: 16,
-            letterSpacing: 0,
-          }}
+          linkStyle={styles.hyperlink}
           linkText={(url) =>
             url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
           }
@@ -875,8 +795,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             style={{
               color: '#02475b',
               ...fonts.IBMPlexSansMedium(10),
-              lineHeight: 16,
-              letterSpacing: 0,
             }}
           >
             By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
@@ -947,17 +865,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
-  // const renderTime = () => {
-  //   console.log(remainingTime, 'remainingTime', timer, 'timer');
-
-  //   const minutes = Math.floor(timer / 60);
-  //   const seconds = timer - minutes * 60;
-
-  //   return `${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-  //     seconds.toString().length < 2 ? '0' + seconds : seconds
-  //   }`;
-  // };
-  // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   const { phoneNumber } = props.navigation.state.params!;
   const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
@@ -1016,18 +923,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 editable={false}
                 textContentType={'oneTimeCode'}
               />
-              {/* <OTPTextView
-                handleTextChange={(otp: string) => setOtp(otp)}
-                inputCount={6}
-                keyboardType="numeric"
-                value={otp}
-                textInputStyle={styles.codeInputStyle}
-                tintColor={'rgba(0, 179, 142, 0.4)'}
-                containerStyle={{
-                  flex: 1,
-                }}
-                editable={false}
-              /> */}
             </View>
 
             <Text style={[styles.errorText]}>
@@ -1061,14 +956,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               )
             }
             onClickButton={() => onClickOk()}
-            buttonStyle={{
-              position: 'absolute',
-              top: Platform.OS === 'ios' ? 156 : 164,
-              right: -3,
-              height: 64,
-              width: 64,
-              zIndex: 20,
-            }}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
             descriptionTextStyle={{
               paddingBottom: Platform.OS === 'ios' ? 0 : 1,
@@ -1090,21 +977,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 textContentType={'oneTimeCode'}
                 maxLength={6}
               />
-              {/* <OTPTextView
-                handleTextChange={isOtpValid}
-                inputCount={6}
-                keyboardType="numeric"
-                value={otp}
-                textInputStyle={styles.codeInputStyle}
-                tintColor={
-                  otp.length != 6 && invalidOtpCount >= 1
-                    ? theme.colors.INPUT_BORDER_FAILURE
-                    : theme.colors.INPUT_BORDER_SUCCESS
-                }
-                containerStyle={{
-                  flex: 1,
-                }}
-              /> */}
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
@@ -1146,10 +1018,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </LoginCard>
         )}
         <ScrollView bounces={false}>
-          {/* <View> */}
           {banner()}
           <LandingDataView />
-          {/* </View> */}
         </ScrollView>
         {onClickOpen && openWebView()}
         {openFillerView && fillerView()}
