@@ -12,7 +12,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   PermissionsAndroid,
   Platform,
@@ -24,7 +24,11 @@ import {
   BackHandler,
   View,
 } from 'react-native';
-import { GET_LAB_RESULT_PDF } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+  GET_LAB_RESULT_PDF,
+  GET_PRISM_AUTH_TOKEN,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -51,9 +55,20 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import _ from 'lodash';
-import { getPatientPrismSingleMedicalRecordApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getPatientPrismMedicalRecordsApi,
+  getPatientPrismSingleMedicalRecordApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
+import {
+  getDiagnosticOrderDetailsByDisplayID,
+  getDiagnosticOrderDetailsByDisplayIDVariables,
+} from '../../graphql/types/getDiagnosticOrderDetailsByDisplayID';
+import {
+  getPrismAuthToken,
+  getPrismAuthTokenVariables,
+} from '../../graphql/types/getPrismAuthToken';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -210,9 +225,112 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const { setLoading } = useUIElements();
   const client = useApolloClient();
 
+  //for deeplink
+  const movedFrom = props.navigation.getParam('movedFrom');
+  const displayId = props.navigation.getParam('id');
+
+  console.log({ movedFrom });
+  console.log({ displayId });
+
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
+
+  useEffect(() => {
+    if (!!movedFrom && !!displayId && movedFrom == 'deeplink') {
+      //1. order detail api
+      fetchDiagnosticOrderDetails(displayId);
+      //2. findVisit no
+      //3. get auth token
+      //4. hit v2 api.
+    }
+  }, []);
+
+  const getOrderDetails = async (displayId: string) => {
+    const res = await client.query<
+      getDiagnosticOrderDetailsByDisplayID,
+      getDiagnosticOrderDetailsByDisplayIDVariables
+    >({
+      query: GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+      variables: {
+        displayId: Number(displayId),
+      },
+      fetchPolicy: 'no-cache',
+    });
+    return res;
+  };
+
+  const fetchDiagnosticOrderDetails = async (displayId: string) => {
+    setLoading?.(true);
+    try {
+      const res = await getOrderDetails(displayId);
+      const { data } = res;
+      const getData = g(data, 'getDiagnosticOrderDetailsByDisplayID', 'ordersList');
+      const visitId = getData?.visitNo;
+      if (!!visitId) {
+        getAuthToken(visitId);
+      } else {
+        //show some error....
+      }
+    } catch (error) {
+      CommonBugFender('RecordDetails_fetchDiagnosticOrderDetails_try', error);
+      console.log('error', error);
+      setLoading?.(false);
+    }
+  };
+
+  const getAuthToken = async (visitId: string) => {
+    setLoading!(true);
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          fetchTestReportResult(visitId, prism_auth_token);
+        } else {
+          //show error
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        setLoading?.(false);
+      });
+  };
+
+  const fetchTestReportResult = useCallback((visitId: string, authToken: string) => {
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        // setLabResults(labResultsData);
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
+        !!resultForVisitNo &&
+          props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+            data: resultForVisitNo,
+            labResults: true,
+          });
+        //else case show error
+      })
+      .catch((error) => {
+        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        console.log('Error occured fetchTestReportsResult', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading?.(false));
+  }, []);
+
   const requestReadSmsPermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
@@ -240,6 +358,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   useEffect(() => {
     // calling this api only for search records
     if (healthrecordId) {
+      console.log('p1');
       setLoading && setLoading(true);
       getPatientPrismSingleMedicalRecordApi(
         client,
@@ -408,6 +527,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const downloadPDFTestReport = () => {
+    console.log('po2');
     if (currentPatient?.id) {
       setLoading && setLoading(true);
       if (Platform.OS === 'android') {
