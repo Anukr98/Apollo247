@@ -358,19 +358,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fetchFilter();
   }, []);
   useEffect(() => {
-    AsyncStorage.getItem(SKIP_LOCATION_PROMPT)
-      .then((skipLocationPrompt) => {
-        if (skipLocationPrompt == 'true') {
-          fetchDoctorListByAvailability();
-        } else {
-          checkLocation();
-        }
-      })
-      .catch((error) => {
-        checkLocation();
-        CommonBugFender('DocSearchListing_check_skip_location_prompt', error);
-      });
-
+    fetchDoctorListByAvailability();
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
@@ -1441,7 +1429,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 false,
                 doctorSearch
               );
-            // !locationDetails && checkLocation();
           }}
         >
           <View
