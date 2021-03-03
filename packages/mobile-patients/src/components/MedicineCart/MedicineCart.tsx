@@ -556,15 +556,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     let Items: ShoppingCartItem[] = [];
     updatedCartItems.forEach((item) => {
       let object = item;
-      let cartItem = inventoryData.filter((cartItem) => cartItem.sku == item.id);
-      if (cartItem.length) {
-        const storePrice = Number(object.mou) * cartItem[0].mrp;
-        if (object.price != storePrice && cartItem[0].mrp != 0) {
+      let cartItem = inventoryData?.filter((cartItem) => cartItem?.sku == item?.id);
+      if (cartItem?.length) {
+        const storePrice = Number(object?.mou) * cartItem?.[0]?.mrp;
+        if (object?.price != storePrice && cartItem?.[0]?.mrp != 0) {
+          showAphAlert!({
+            title: `Hi, ${currentPatient?.firstName || ''}`,
+            description: `Important message for items in your Cart:\n\nSome items' prices have been updated based on the updated MRP from Manufacturer. Please check before you place the order.`,
+          });
           PricemismatchEvent(object, g(currentPatient, 'mobileNumber'), storePrice);
-          object.specialPrice &&
-            (object.specialPrice =
-              Number(object.mou) * cartItem[0].mrp * (object.specialPrice / object.price));
-          object.price = Number(object.mou) * cartItem[0].mrp;
+          object?.specialPrice &&
+            (object?.specialPrice =
+              Number(object?.mou) * cartItem?.[0].mrp * (object?.specialPrice / object?.price));
+          object?.price = Number(object?.mou) * cartItem?.[0]?.mrp;
         }
       }
       Items.push(object);
