@@ -732,8 +732,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const input: getNearestAreaVariables = {
       patientAddressId: selectedAddr?.id!,
     };
-    const res = await client.mutate<getNearestArea, getNearestAreaVariables>({
-      mutation: GET_DIAGNOSTIC_NEAREST_AREA,
+    const res = await client.query<getNearestArea, getNearestAreaVariables>({
+      query: GET_DIAGNOSTIC_NEAREST_AREA,
       variables: input,
       fetchPolicy: 'no-cache',
     });
