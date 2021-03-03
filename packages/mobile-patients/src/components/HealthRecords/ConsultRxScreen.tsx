@@ -934,7 +934,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       <HealthRecordCard
         item={item?.data}
         index={index}
-        editDeleteData={editDeleteData()}
+        editDeleteData={editDeleteData(MedicalRecordType.PRESCRIPTION)}
         showUpdateDeleteOption={item?.data?.patientId ? false : showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
@@ -949,6 +949,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         onOrderTestAndMedicinePress={(selectedItem) =>
           onOrderTestMedPress(selectedItem, caseSheetDetails)
         }
+        deleteRecordText={'prescription'}
       />
     );
   };
@@ -1056,7 +1057,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={`ADD DATA`}
+          title={string.common.addPrescriptionText}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {

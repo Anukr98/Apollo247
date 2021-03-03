@@ -65,6 +65,7 @@ export interface HealthRecordCardProps {
   healthCondtionCardTopView?: React.ReactElement;
   hideUpdateDeleteOption?: boolean;
   familyMember?: string;
+  deleteRecordText: string;
 }
 
 export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
@@ -88,6 +89,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     showUpdateDeleteOption,
     hideUpdateDeleteOption,
     familyMember,
+    deleteRecordText,
   } = props;
   const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false);
 
@@ -99,6 +101,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
           onDeletePress && onDeletePress(item);
         }}
         onPressClose={() => setShowDeletePopup(false)}
+        deleteRecordText={deleteRecordText}
       />
     ) : null;
   };
@@ -118,7 +121,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
             <MaterialMenu
               options={editDeleteData}
               menuContainerStyle={[styles.menuContainerStyle, { marginTop: 25 }]}
-              itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
+              itemContainer={{ height: 44.8, marginHorizontal: 12, width: 400 / 2 }}
               itemTextStyle={styles.itemTextStyle}
               showItemDifferentColor={true}
               lastContainerStyle={{ borderBottomWidth: 0 }}

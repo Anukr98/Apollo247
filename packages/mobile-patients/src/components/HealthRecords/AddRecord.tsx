@@ -2176,7 +2176,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           >
             <Text style={[styles.plusTextStyle, id !== 1 && { color: '#FFFFFF' }]}>{'+'}</Text>
             <Text style={[styles.addMoreTextStyle, id !== 1 && { color: '#FFFFFF' }]}>
-              {'ADD PAGE'}
+              {'UPLOAD FILE'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -3874,10 +3874,37 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const uploadButtonTitle = () => {
+    switch (recordType) {
+      case MedicalRecordType.PRESCRIPTION:
+        return string.common.uploadPrescriptionText;
+      case MedicalRecordType.TEST_REPORT:
+        return string.common.uploadTestReportText;
+      case MedicalRecordType.HOSPITALIZATION:
+        return string.common.uploadDischargeSummaryText;
+      case MedicalRecordType.MEDICALCONDITION:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.ALLERGY:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.MEDICATION:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.FAMILY_HISTORY:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.MEDICALBILL:
+        return string.common.uploadBillText;
+      case MedicalRecordType.MEDICALINSURANCE:
+        return string.common.uploadInsuranceText;
+      default:
+        return 'UPLOAD DATA';
+    }
+  };
+
   const renderBottomButton = () => {
     return (
       <Button
-        title="UPLOAD DATA"
+        title={uploadButtonTitle()}
         style={{ width: '70%', alignSelf: 'center', marginBottom: 20 }}
         onPress={onSavePress}
       />
@@ -4102,12 +4129,39 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const headerTitle = () => {
+    switch (recordType) {
+      case MedicalRecordType.PRESCRIPTION:
+        return string.common.addPrescriptionText;
+      case MedicalRecordType.TEST_REPORT:
+        return string.common.addTestReportText;
+      case MedicalRecordType.HOSPITALIZATION:
+        return string.common.addDischargeSummaryText;
+      case MedicalRecordType.MEDICALCONDITION:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.ALLERGY:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.MEDICATION:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.FAMILY_HISTORY:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.MEDICALBILL:
+        return string.common.addBillText;
+      case MedicalRecordType.MEDICALINSURANCE:
+        return string.common.addInsuranceText;
+      default:
+        return 'ADD DATA';
+    }
+  };
+
   return (
     <View style={{ ...theme.viewStyles.container }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header
           container={styles.headerContainerStyle}
-          title="ADD DATA"
+          title={headerTitle()}
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
         />
