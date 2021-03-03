@@ -36,6 +36,7 @@ import {
   CircleLogo,
   CouponIcon,
   DropdownGreen,
+  InfoIconRed,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
@@ -1347,6 +1348,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           });
         } else {
           setDeliveryAddressId && setDeliveryAddressId('');
+          setDiagnosticAreas?.([]);
+          setAreaSelected?.({});
+          setselectedTimeSlot(undefined);
           showAphAlert!({
             title: string.common.uhOh,
             description: string.diagnostics.bookingOrderFailedMessage,
@@ -1693,8 +1697,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   : 'No slot selected'}
               </Text>
             </View>
+            {renderPhelboTimeView()}
           </>
         ) : null}
+
         <Text
           style={[
             styles.yellowTextStyle,
@@ -1706,6 +1712,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         >
           {showTime ? 'PICK ANOTHER SLOT' : 'SELECT SLOT'}
         </Text>
+      </View>
+    );
+  };
+
+  const renderPhelboTimeView = () => {
+    return (
+      <View style={styles.phelboTextView}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.phleboText}>{string.diagnostics.cartPhelboTxt}</Text>
       </View>
     );
   };
@@ -3109,4 +3124,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.3,
   },
+  phelboTextView: {
+    backgroundColor: '#FCFDDA',
+    flex: 1,
+    padding: 8,
+    flexDirection: 'row',
+    marginVertical: '2%',
+  },
+  phleboText: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 18,
+    letterSpacing: 0.1,
+    color: theme.colors.SHERPA_BLUE,
+    opacity: 0.7,
+    marginHorizontal: '2%',
+  },
+  infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
 });
