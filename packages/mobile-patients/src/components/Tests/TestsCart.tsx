@@ -5,10 +5,7 @@ import {
   formatNameNumber,
   g,
   TestSlot,
-  formatTestSlotWithBuffer,
-  getUniqueTestSlots,
-  getTestSlotDetailsByTime,
-  isValidTestSlotWithArea,
+  formatTestSlot,
   isEmptyObject,
   getDiscountPercentage,
   postAppsFlyerEvent,
@@ -18,6 +15,7 @@ import {
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  DiagnosticArea,
   DiagnosticsCartItem,
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -66,6 +64,7 @@ import {
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
   GET_DIAGNOSTIC_NEAREST_AREA,
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -134,10 +133,6 @@ import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { getAreas, getAreasVariables } from '@aph/mobile-patients/src/graphql/types/getAreas';
 import {
-  getDiagnosticSlotsWithAreaID,
-  getDiagnosticSlotsWithAreaIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
-import {
   findDiagnosticsByItemIDsAndCityID,
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
@@ -187,6 +182,10 @@ import {
   getNearestArea,
   getNearestAreaVariables,
 } from '@aph/mobile-patients/src/graphql/types/getNearestArea';
+import {
+  getDiagnosticSlotsCustomized,
+  getDiagnosticSlotsCustomizedVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -329,6 +328,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const cartItemsWithId = cartItems?.map((item) => parseInt(item?.id!));
   var pricesForItemArray;
+  var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -1243,70 +1243,57 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const checkSlotSelection = (item: areaObject, changedDate?: Date) => {
-    let dateToCheck = !!changedDate ? changedDate : date;
+  const checkSlotSelection = (
+    item: areaObject | DiagnosticArea | any,
+    changedDate?: Date,
+    comingFrom?: string
+  ) => {
+    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
 
-    const checkCovidItem = cartItems?.map((item) =>
-      AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item?.id))
-    );
-    const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
-    const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
-
     client
-      .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
-        query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
+        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
         context: {
           sourceHeaders,
         },
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: parseInt((item as any).key!),
+          areaID: Number((item as any).key!),
+          itemIds: cartItemsWithId,
         },
       })
       .then(({ data }) => {
-        const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
+        const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
-        const covidItem_Slot_StartTime = moment(
-          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
-          'HH:mm'
-        );
-        const diagnosticSlotsToShow = isContainOnlyCovidItem
-          ? diagnosticSlots?.filter((item) =>
-              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
-            )
-          : diagnosticSlots;
+        const diagnosticSlotsToShow = diagnosticSlots;
 
         const slotsArray: TestSlot[] = [];
         diagnosticSlotsToShow?.forEach((item) => {
-          if (isValidTestSlotWithArea(item!, dateToCheck, isContainOnlyCovidItem)) {
-            slotsArray.push({
-              employeeCode: 'apollo_employee_code',
-              employeeName: 'apollo_employee_name',
-              slotInfo: {
-                endTime: item?.Timeslot!,
-                status: 'empty',
-                startTime: item?.Timeslot!,
-                slot: item?.TimeslotID,
-              },
-              date: dateToCheck,
-              diagnosticBranchCode: 'apollo_route',
-            } as TestSlot);
-          }
+          slotsArray.push({
+            employeeCode: 'apollo_employee_code',
+            employeeName: 'apollo_employee_name',
+            slotInfo: {
+              endTime: item?.Timeslot!,
+              status: 'empty',
+              startTime: item?.Timeslot!,
+              slot: item?.TimeslotID,
+            },
+            date: dateToCheck,
+            diagnosticBranchCode: 'apollo_route',
+          } as TestSlot);
         });
-
-        const uniqueSlots = getUniqueTestSlots(slotsArray);
 
         console.log('ARRAY OF SLOTS', { slotsArray });
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
-        if (isSameDate && uniqueSlots?.length == 0) {
+        if (isSameDate && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
@@ -1316,13 +1303,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         } else {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
-          const slotDetails = getTestSlotDetailsByTime(
-            slotsArray,
-            uniqueSlots?.[0]?.startTime!,
-            uniqueSlots?.[0]?.endTime!
-          );
+          const slotDetails = slotsArray?.[0];
           console.log({ slotDetails });
-          uniqueSlots?.length && setselectedTimeSlot(slotDetails);
+          slotsArray?.length && setselectedTimeSlot(slotDetails);
 
           setDiagnosticSlot!({
             slotStartTime: slotDetails?.slotInfo?.startTime!,
@@ -1336,7 +1319,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading?.(false);
         }
 
-        // setDisplaySchedule(true); //show slot popup
+        comingFrom == 'errorState' ? setDisplaySchedule(true) : null; //show slot popup
 
         setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id);
         setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
@@ -1706,7 +1689,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.dateTextStyle}>Time</Text>
               <Text style={styles.dateTextStyle}>
                 {selectedTimeSlot
-                  ? `${formatTestSlotWithBuffer(selectedTimeSlot.slotInfo.startTime!)}`
+                  ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)}`
                   : 'No slot selected'}
               </Text>
             </View>
@@ -2508,6 +2491,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 },
               });
             } else {
+              if (
+                slotBookedArray.some((item) => message?.includes(item)) ||
+                message.includes('slot has been booked')
+              ) {
+                // setDisplaySchedule(true);
+                checkSlotSelection(areaSelected, '', 'errorState');
+              }
               renderAlert(message);
             }
           } else {

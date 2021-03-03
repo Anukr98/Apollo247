@@ -4714,3 +4714,13 @@ export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
     }
   }
 `;
+
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
+    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
+      slots{
+        Timeslot
+        TimeslotID
+        }
+      }
+    }`
