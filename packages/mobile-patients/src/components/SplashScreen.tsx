@@ -533,6 +533,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('SymptomTracker');
             break;
 
+          case 'testlisting':
+          case 'TestListing':
+            getData('TestListing', data?.length === 2 ? linkId : undefined);
+            break;
+
           default:
             getData('ConsultRoom', undefined, true);
             // webengage event
@@ -960,6 +965,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             isActive: true,
           });
         }
+        break;
+      case 'TestListing':
+        props.navigation.navigate(AppRoutes.TestListing, {
+          movedFrom: 'deeplink',
+          widgetName: id,
+        });
+        break;
       default:
         break;
     }

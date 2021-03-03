@@ -37,8 +37,9 @@ import {
   getPrismAuthToken,
   getPrismAuthTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '../../graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
+import { DiagnosticViewReportClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface TestStatusObject {
   id: string;
@@ -282,6 +283,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   function _navigateToPHR() {
     const visitId = orderSelected?.visitNo;
+    DiagnosticViewReportClicked();
     if (visitId) {
       getAuthToken();
     } else {

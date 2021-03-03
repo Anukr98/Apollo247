@@ -154,6 +154,8 @@ export interface DiagnosticsCartContextProps {
 
   newAddressAddedHomePage: string;
   setNewAddressAddedHomePage: ((value: string) => void) | null;
+  newAddressAddedCartPage: string;
+  setNewAddressAddedCartPage: ((value: string) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -237,6 +239,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   newAddressAddedHomePage: '',
   setNewAddressAddedHomePage: null,
+  newAddressAddedCartPage: '',
+  setNewAddressAddedCartPage: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -289,6 +293,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [newAddressAddedHomePage, setNewAddressAddedHomePage] = useState<
     DiagnosticsCartContextProps['newAddressAddedHomePage']
+  >('');
+
+  const [newAddressAddedCartPage, setNewAddressAddedCartPage] = useState<
+    DiagnosticsCartContextProps['newAddressAddedCartPage']
   >('');
 
   const [diagnosticClinic, _setDiagnosticClinic] = useState<
@@ -411,7 +419,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id) => {
-    const newCartItems = cartItems.filter((item) => item.id !== id);
+    const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
     setAreaSelected!({});
@@ -562,6 +570,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setAreaSelected({});
     setDiagnosticAreas([]);
     setNewAddressAddedHomePage('');
+    setNewAddressAddedHomePage('');
   };
 
   useEffect(() => {
@@ -696,6 +705,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
         newAddressAddedHomePage,
         setNewAddressAddedHomePage,
+        newAddressAddedCartPage,
+        setNewAddressAddedCartPage,
       }}
     >
       {props.children}

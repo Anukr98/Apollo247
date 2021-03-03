@@ -11,8 +11,8 @@ import { PAYMENT_METHODS_JUSPAY } from "./globalTypes";
 
 export interface getPaymentMethods_getPaymentMethods_featured_banks {
   __typename: "PaymentMethod";
-  bank: string;
-  method: string;
+  bank: string | null;
+  method: string | null;
   image_url: string | null;
 }
 
@@ -23,5 +23,5 @@ export interface getPaymentMethods_getPaymentMethods {
 }
 
 export interface getPaymentMethods {
-  getPaymentMethods: (getPaymentMethods_getPaymentMethods | null)[];
+  getPaymentMethods: (getPaymentMethods_getPaymentMethods | null)[] | null;
 }
