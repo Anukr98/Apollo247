@@ -574,7 +574,8 @@ const styles = StyleSheet.create({
   },
   circleButtonImage: { width: 7, height: 12 },
   covidBtn: {
-    height: 38,
+    minHeight: 40,
+    height: 'auto',
     width: width / 2 - 35,
     marginLeft: 10,
     marginTop: 10,
