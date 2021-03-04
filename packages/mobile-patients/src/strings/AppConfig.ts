@@ -84,6 +84,36 @@ const loginSection = {
   ],
 };
 
+const covidVaccineSection = {
+  mainTitle: 'For COVID-19 Vaccination related queries',
+  data: [
+    {
+      title: 'Vaccine Related Link',
+      url: 'https://www.apollo247.com/specialties/vaccine-related-consult',
+      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
+      reverse: true,
+    },
+    {
+      title: 'Vaccine Queries',
+      url: 'https://www.apollo247.com/specialties/vaccine-related-consult',
+      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
+      reverse: false,
+    },
+    {
+      title: 'Chat With Us',
+      url: 'https://www.apollo247.com/chat/chat-bot-vaccine.html',
+      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
+      reverse: false,
+    },
+    {
+      title: 'FAQs & Articles',
+      url: 'https://www.apollo247.com/blog/covid19-vaccines',
+      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
+      reverse: false,
+    },
+  ],
+};
+
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
@@ -143,6 +173,7 @@ const appStaticVariables = {
   COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
+  COVID_VACCINE_SECTION: covidVaccineSection,
 };
 
 const DEV_top_specialties = [
@@ -1423,7 +1454,7 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED'
+  'SAMPLE_REJECTED',
 ];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
@@ -1444,7 +1475,7 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED'
+  'SAMPLE_REJECTED',
 ];
 
 type SpecialitiesType = {
