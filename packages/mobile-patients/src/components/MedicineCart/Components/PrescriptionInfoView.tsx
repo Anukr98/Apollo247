@@ -1,8 +1,7 @@
 import { Apollo247Icon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 export interface Props {
   title: string;
