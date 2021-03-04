@@ -62,6 +62,28 @@ const testApiCredentialsProd = {
   InterfaceClient: 'MCKINSEY',
 };
 
+const loginSection = {
+  bannerUrl: 'https://newassets.apollo247.com/images/banners/FirstTransactionOffer.png',
+  mainTitle: 'Why choose Apollo 247?',
+  data: [
+    {
+      title: 'Express Medicine Delivery',
+      description: '5 lakh happy customers every day',
+      iconUrl: 'https://newassets.apollo247.com/images/onboarding_doorstep.png',
+    },
+    {
+      title: 'Consult with Apollo Doctors',
+      description: '7000+ doctors available online in 15 min',
+      iconUrl: 'https://newassets.apollo247.com/images/onboarding_anytime.png',
+    },
+    {
+      title: 'Up to 60% off on Medical Checkup',
+      description: 'Diagnostic tests starting at 199',
+      iconUrl: 'https://newassets.apollo247.com/images/onboarding_healthrecord.png',
+    },
+  ],
+};
+
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
@@ -119,6 +141,8 @@ const appStaticVariables = {
   PACKAGING_CHARGES: 0,
   MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
   COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
+  APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
+  LOGIN_SECTION: loginSection,
 };
 
 const DEV_top_specialties = [

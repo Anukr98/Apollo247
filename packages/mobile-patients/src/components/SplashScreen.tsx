@@ -1024,6 +1024,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
     setCovidVaccineCta,
+    setLoginSection,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1133,6 +1134,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Covid_Vaccine_CTA_QA',
       PROD: 'Covid_Vaccine_CTA',
     },
+    Login_Section_Key: {
+      QA: 'Login_Section_QA',
+      PROD: 'Login_Section',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1183,6 +1188,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         JSON.parse(config.getString(key))
       );
       covidVaccineCta && setCovidVaccineCta!(covidVaccineCta);
+
+      const loginSection = getRemoteConfigValue(
+        'Login_Section_Key',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
+      );
+      loginSection && setLoginSection!(loginSection);
 
       const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
         'Need_Help_Return_Pharma_Order_Success_Message',
