@@ -83,6 +83,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   discount: number;
   valid: boolean;
   reason: String;
+  freeDelivery: boolean;
   products: [];
 }
 
