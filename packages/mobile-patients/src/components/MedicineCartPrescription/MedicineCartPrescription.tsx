@@ -11,7 +11,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
@@ -20,6 +20,8 @@ import { NavigationScreenProps } from 'react-navigation';
 export interface Props extends NavigationScreenProps {}
 
 export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
+  const scrollViewRef = useRef<ScrollView | null>(null);
+
   const {
     cartItems,
     prescriptionType,
@@ -72,6 +74,11 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
           selectedOption={prescriptionType || PrescriptionType.UPLOADED}
           onSelectOption={(option, ePres, physPres) => {
             setPrescriptionType(option);
+            if (option === PrescriptionType.CONSULT) {
+              setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd?.();
+              }, 100);
+            }
             if (option === PrescriptionType.UPLOADED) {
               setEPrescriptions?.(ePres || []);
               setPhysicalPrescriptions?.(physPres || []);
@@ -130,7 +137,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
-      <ScrollView>
+      <ScrollView ref={(ref) => (scrollViewRef.current = ref)}>
         {renderItemsNeedPrescription()}
         {renderOptions()}
       </ScrollView>
