@@ -51,11 +51,11 @@ import { NavigationEventSubscription, NavigationScreenProps } from 'react-naviga
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
-let TRUECALLER: any;
+// let TRUECALLER: any;
 
-if (Platform.OS === 'android') {
-  TRUECALLER = require('react-native-truecaller-sdk').default;
-}
+// if (Platform.OS === 'android') {
+//   TRUECALLER = require('react-native-truecaller-sdk').default;
+// }
 
 const { height, width } = Dimensions.get('window');
 
@@ -178,8 +178,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   const webengage = new WebEngage();
 
   useEffect(() => {
-    isAndroid && initializeTruecaller();
-    isAndroid && truecallerEventListeners();
+    // isAndroid && initializeTruecaller();
+    // isAndroid && truecallerEventListeners();
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -200,52 +200,52 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   }, []);
 
-  const initializeTruecaller = () => {
-    TRUECALLER.initializeClient(
-      'CONSENT_MODE_POPUP',
-      'SDK_CONSENT_TITLE_LOG_IN',
-      'FOOTER_TYPE_SKIP'
-    );
-  };
+  // const initializeTruecaller = () => {
+  //   TRUECALLER.initializeClient(
+  //     'CONSENT_MODE_POPUP',
+  //     'SDK_CONSENT_TITLE_LOG_IN',
+  //     'FOOTER_TYPE_SKIP'
+  //   );
+  // };
 
-  const truecallerEventListeners = () => {
-    // For handling the success event
-    TRUECALLER.on('profileSuccessReponse', (profile: any) => {
-      setLoading?.(false);
-      // add other logic here related to login/sign-up as per your use-case.
-    });
+  // const truecallerEventListeners = () => {
+  //   // For handling the success event
+  //   TRUECALLER.on('profileSuccessReponse', (profile: any) => {
+  //     setLoading?.(false);
+  //     // add other logic here related to login/sign-up as per your use-case.
+  //   });
 
-    // For handling the reject event
-    TRUECALLER.on('profileErrorReponse', (error: any) => {
-      setLoading?.(false);
-      if (error && error.errorCode) {
-        switch (error.errorCode) {
-          case 1: {
-            showAphAlert!({
-              title: 'Uh oh.. :(',
-              description: string.truecaller.networkProblem,
-            });
-            break;
-          }
-          case 4:
-          case 10: {
-            showAphAlert!({
-              title: 'Uh oh.. :(',
-              description: string.truecaller.userNotVerified,
-            });
-            break;
-          }
-          case 11: {
-            showAphAlert!({
-              title: 'Uh oh.. :(',
-              description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-            });
-            break;
-          }
-        }
-      }
-    });
-  };
+  //   // For handling the reject event
+  //   TRUECALLER.on('profileErrorReponse', (error: any) => {
+  //     setLoading?.(false);
+  //     if (error && error.errorCode) {
+  //       switch (error.errorCode) {
+  //         case 1: {
+  //           showAphAlert!({
+  //             title: 'Uh oh.. :(',
+  //             description: string.truecaller.networkProblem,
+  //           });
+  //           break;
+  //         }
+  //         case 4:
+  //         case 10: {
+  //           showAphAlert!({
+  //             title: 'Uh oh.. :(',
+  //             description: string.truecaller.userNotVerified,
+  //           });
+  //           break;
+  //         }
+  //         case 11: {
+  //           showAphAlert!({
+  //             title: 'Uh oh.. :(',
+  //             description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+  //           });
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   });
+  // };
 
   const fireBaseFCM = async () => {
     try {
@@ -398,36 +398,36 @@ export const Login: React.FC<LoginProps> = (props) => {
     });
   };
 
-  const renderTruecallerButton = () => {
-    return (
-      <View style={styles.authContainer}>
-        <View style={styles.row}>
-          <View style={styles.leftSeperatorLine} />
-          <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR) }}>
-            Or
-          </Text>
-          <View style={styles.rightSeperatorLine} />
-        </View>
-        <AuthButton onPress={loginWithTruecaller} />
-      </View>
-    );
-  };
+  // const renderTruecallerButton = () => {
+  //   return (
+  //     <View style={styles.authContainer}>
+  //       <View style={styles.row}>
+  //         <View style={styles.leftSeperatorLine} />
+  //         <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR) }}>
+  //           Or
+  //         </Text>
+  //         <View style={styles.rightSeperatorLine} />
+  //       </View>
+  //       <AuthButton onPress={loginWithTruecaller} />
+  //     </View>
+  //   );
+  // };
 
-  const loginWithTruecaller = () => {
-    setLoading?.(true);
-    TRUECALLER.isUsable((result: boolean) => {
-      if (result) {
-        // Authenticate via truecaller flow can be used
-        TRUECALLER.requestTrueProfile();
-      } else {
-        setLoading?.(false);
-        showAphAlert!({
-          title: 'Uh oh.. :(',
-          description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-        });
-      }
-    });
-  };
+  // const loginWithTruecaller = () => {
+  //   setLoading?.(true);
+  //   TRUECALLER.isUsable((result: boolean) => {
+  //     if (result) {
+  //       // Authenticate via truecaller flow can be used
+  //       TRUECALLER.requestTrueProfile();
+  //     } else {
+  //       setLoading?.(false);
+  //       showAphAlert!({
+  //         title: 'Uh oh.. :(',
+  //         description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+  //       });
+  //     }
+  //   });
+  // };
 
   return (
     <View style={{ flex: 1 }}>
