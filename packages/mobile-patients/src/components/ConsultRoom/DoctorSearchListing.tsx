@@ -1130,6 +1130,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
       doctorId: doctorData?.id,
       doctorName: doctorData?.displayName,
+      doctorType: doctorData?.doctorType,
       specialtyId: props.navigation.getParam('specialityId') || '',
       specialtyName: props.navigation.getParam('specialityName') || '',
       zone: states || locationDetails?.state || '',

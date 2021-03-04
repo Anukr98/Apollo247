@@ -460,6 +460,7 @@ export interface UserInfo {
 export interface DOHInfo {
   doctorId: string,
   doctorName: string,
+  doctorType:string,
   specialtyId: string,
   specialtyName: string,
   zone:string,
