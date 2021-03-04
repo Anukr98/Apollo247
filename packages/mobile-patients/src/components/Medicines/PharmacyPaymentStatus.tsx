@@ -760,7 +760,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             You{' '}
             <Text style={theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {totalCashBack}{' '}
+              {totalCashBack?.toFixed(2)}{' '}
             </Text>
             on your purchase
           </Text>
