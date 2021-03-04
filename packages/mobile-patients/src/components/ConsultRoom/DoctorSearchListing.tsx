@@ -422,7 +422,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         console.log('platinum doc data', JSON.stringify(data));
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
-          postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Viewed);
+          postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
         } else {
           setPlatinumDoctor(null);
         }
@@ -1122,12 +1122,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
-  const postPlatinumDoctorWEGEvents = (doctorData: any, eventName: WebEngageEventName) => {
+  const postPlatinumDoctorWEGEvents = (
+    doctorData: any,
+    eventName: WebEngageEventName,
+    states: any
+  ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
       doctorId: doctorData?.id,
-      doctorName: g(doctorData, 'displayName')!,
+      doctorName: doctorData?.displayName,
       specialtyId: props.navigation.getParam('specialityId') || '',
       specialtyName: props.navigation.getParam('specialityName') || '',
+      zone: states || locationDetails?.state || '',
       userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       userPhoneNumber: currentPatient?.mobileNumber,
     };

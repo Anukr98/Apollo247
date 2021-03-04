@@ -462,6 +462,7 @@ export interface DOHInfo {
   doctorName: string,
   specialtyId: string,
   specialtyName: string,
+  zone:string,
   userName: string,
   userPhoneNumber: string,
 }
