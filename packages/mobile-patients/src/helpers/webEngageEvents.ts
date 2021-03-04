@@ -151,6 +151,7 @@ export enum WebEngageEventName {
   VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED = 'Vaccination Call a doctor - Proceed to connect',
   VACCINATION_CHAT_WITH_US = 'Vaccination Chat with us',
   VACCINATION_TRACKER_ON_HOME_PAGE = 'Vaccine tracker on home page',
+  COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -1995,7 +1996,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED]: {
-    'Option selected': 'Prescription Now' | 'Prescription Later' | 'Doctor Consult'| 'NA';
+    'Option selected': 'Prescription Now' | 'Prescription Later' | 'Doctor Consult' | 'NA';
   };
   [WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;
@@ -2394,5 +2395,15 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Circle Member': 'Yes' | 'No';
     'Circle Plan type': string;
+  };
+  [WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'CTA Clicked': string;
   };
 }

@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   covidContainer: {
     marginHorizontal: 20,
     ...theme.viewStyles.cardViewStyle,
-    marginBottom: 20,
+    marginVertical: 20,
   },
   covidTitleContainer: {
     flexDirection: 'row',
@@ -1110,6 +1110,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventAttributes = { ...eventAttributes, ...newAttributes };
     }
     if (eventName == WebEngageEventName.HOME_VIEWED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
+    if (eventName == WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED) {
       eventAttributes = { ...eventAttributes, ...attributes };
     }
     postWebEngageEvent(eventName, eventAttributes);
@@ -2804,53 +2807,51 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderRemoteConfigItems = (item: any, index: number) => {
+    return (
+      <View
+        key={index}
+        style={{ marginBottom: index === covidVaccineCta?.data?.length - 1 ? 15 : 0 }}
+      >
+        <CovidButton
+          iconStyle={styles.covidIconStyle}
+          iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
+          buttonStyle={[
+            styles.covidBtn,
+            {
+              backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
+            },
+          ]}
+          iconBase={VaccineTracker}
+          btnTitleStyle={[
+            styles.covidBtnTitle,
+            {
+              color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
+            },
+          ]}
+          title={item?.title}
+          onPress={() => {
+            item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
+          }}
+        />
+      </View>
+    );
+  };
+
   // Covid Information Container styling
   const renderCovidContainer = () => {
     return (
       <View style={styles.covidContainer}>
         <View style={styles.covidTitleContainer}>
           <CovidOrange style={styles.covidIcon} />
-          <Text style={styles.covidTitle}>
-            {covidVaccineCta?.mainTitle || 'For COVID-19 Vaccination related queries'}
-          </Text>
+          <Text style={styles.covidTitle}>{covidVaccineCta?.mainTitle}</Text>
         </View>
-        <View style={styles.covidSubContainer}>
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            iconUrl={covidVaccineCta?.iconPath}
-            buttonStyle={styles.covidBtn}
-            iconBase={VaccineTracker}
-            btnTitleStyle={styles.covidBtnTitle}
-            title={covidVaccineCta?.title || string.common.covidVaccineTracker}
-            onPress={() => onPressVaccineTracker()}
-          />
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
-            btnTitleStyle={styles.covidBtnTitle}
-            iconBase={PhoneDoctor}
-            title={string.common.vaccinationQueries}
-            onPress={() => onPressCallDoctor()}
-          />
-        </View>
-        <View style={[styles.covidSubContainer, { marginBottom: 15 }]}>
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            buttonStyle={styles.covidBtn}
-            btnTitleStyle={styles.covidBtnTitle}
-            iconBase={ChatBot}
-            title={string.common.chatWithUs}
-            onPress={() => onPressChatWithUS()}
-          />
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
-            btnTitleStyle={styles.covidBtnTitle}
-            iconBase={FaqsArticles}
-            title={string.common.faqsArticles}
-            onPress={() => onPressFAQ()}
-          />
-        </View>
+        <FlatList
+          data={covidVaccineCta?.data}
+          numColumns={2}
+          keyExtractor={(_, index: Number) => `${index}`}
+          renderItem={({ item, index }) => renderRemoteConfigItems(item, index)}
+        />
       </View>
     );
   };
@@ -2872,18 +2873,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <DashedLine style={styles.plainLine} />;
   };
 
-  const onPressChatWithUS = () => {
-    postHomeWEGEvent(WebEngageEventName.VACCINATION_CHAT_WITH_US);
-    try {
-      const openUrl = AppConfig.Configuration.CHAT_WITH_US;
-      props.navigation.navigate(AppRoutes.CommonWebView, {
-        url: openUrl,
-      });
-    } catch (e) {}
-  };
-
-  const onPressCallDoctor = async () => {
-    postHomeWEGEvent(WebEngageEventName.VACCINATION_CALL_A_DOCTOR_CLICKED);
+  const onPressCallDoctor = async (item: any) => {
+    const attibutes = {
+      'CTA Clicked': item?.title,
+    };
+    postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
     setShowHdfcConnectPopup(true);
   };
 
@@ -2938,12 +2932,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {}
   };
 
-  const onPressVaccineTracker = async () => {
-    postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
+  const handleCovidCTA = async (item: any) => {
+    const attibutes = {
+      'CTA Clicked': item?.title,
+    };
+    postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
     try {
-      if (covidVaccineCta?.url?.includes('apollopatients://')) {
-        if (covidVaccineCta?.url?.includes('apollopatients://Speciality')) {
-          const id = covidVaccineCta?.url?.split?.('Speciality?');
+      if (item?.url?.includes('apollopatients://')) {
+        // handling speciality deeplink only on this phase
+        if (item?.url?.includes('apollopatients://Speciality')) {
+          const id = item?.url?.split?.('Speciality?');
           if (id?.[1]) {
             const filtersData = handleEncodedURI(id?.[1]) || '';
             props.navigation.navigate(AppRoutes.DoctorSearchListing, {
@@ -2960,11 +2958,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
       const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
       const userMobNo = g(currentPatient, 'mobileNumber');
-      const openUrl = `${covidVaccineCta?.url ||
-        AppConfig.Configuration
-          .COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${currentDeviceToken}`;
-      props.navigation.navigate(AppRoutes.CovidScan, {
-        covidUrl: openUrl,
+      const openUrl = `${item?.url}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${currentDeviceToken}`;
+      props.navigation.navigate(AppRoutes.CommonWebView, {
+        url: openUrl,
       });
     } catch (e) {}
   };
@@ -2977,13 +2973,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       return encodedString.split('%20');
     }
-  };
-
-  const onPressFAQ = async () => {
-    postHomeWEGEvent(WebEngageEventName.FAQs_ARTICLES_CLICKED);
-    props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_UPDATES,
-    });
   };
 
   const onPressHealthPro = async () => {
@@ -3159,9 +3148,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </View>
               {showCirclePlans && renderCircleSubscriptionPlans()}
               {showCircleActivationcr && renderCircleActivation()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {covidVaccineCta?.data?.length > 0 && renderCovidContainer()}
+              </View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderCovidContainer()}</View>
               {renderCovidMainView()}
             </View>
           </View>

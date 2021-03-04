@@ -1178,14 +1178,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
       await remoteConfig().fetchAndActivate();
       const config = remoteConfig();
-
       const needHelpToContactInMessage = getRemoteConfigValue('Need_Help_To_Contact_In', (key) =>
         config.getString(key)
       );
       needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
-      const covidVaccineCta = getRemoteConfigValue('Covid_Vaccine_Cta_Key', (key) =>
-        JSON.parse(config.getString(key))
+      const covidVaccineCta = getRemoteConfigValue(
+        'Covid_Vaccine_Cta_Key',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
       );
       covidVaccineCta && setCovidVaccineCta!(covidVaccineCta);
 
