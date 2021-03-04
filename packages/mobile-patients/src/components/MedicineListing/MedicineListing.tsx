@@ -30,6 +30,7 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { isProductInStock } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 
 export type SortByOption = {
   id: string;
@@ -78,6 +79,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [filterBy, setFilterBy] = useState<SelectedFilters>(filterByNavProp);
   const [filterOptions, setFilterOptions] = useState<Filter[]>([]);
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
+  const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
@@ -317,9 +319,17 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           SectionName: categoryId ? 'Category Tree' : '',
         }}
         view={showListView ? 'list' : 'grid'}
+        onAddedSuccessfully={() => {
+          setShowAddedToCart(true);
+          setTimeout(() => {
+            setShowAddedToCart(false);
+          }, 7000);
+        }}
       />
     );
   };
+
+  const renderAddedToCart = () => <AddedToCartToast navigation={navigation} />;
 
   const renderSortByOverlay = () => {
     return (
@@ -405,6 +415,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       {renderLoadingMore()}
       {renderSortByOverlay()}
       {renderFilterByOverlay()}
+      {showAddedToCart && renderAddedToCart()}
     </SafeAreaView>
   );
 };
