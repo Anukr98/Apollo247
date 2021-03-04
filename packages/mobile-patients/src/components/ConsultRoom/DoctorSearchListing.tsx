@@ -407,9 +407,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
-        console.log('data', data);
+        console.log('platinum doc data', JSON.stringify(data));
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
+          postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
         } else {
           setPlatinumDoctor(null);
         }
@@ -1109,6 +1110,32 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
+  const postPlatinumDoctorWEGEvents = (
+    doctorData: any,
+    eventName: WebEngageEventName,
+    states: any
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
+      doctorId: doctorData?.id,
+      doctorName: doctorData?.displayName,
+      doctorType: doctorData?.doctorType,
+      specialtyId: props.navigation.getParam('specialityId') || '',
+      specialtyName: props.navigation.getParam('specialityName') || '',
+      zone: states || locationDetails?.state || '',
+      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      userPhoneNumber: currentPatient?.mobileNumber,
+    };
+
+    console.log(
+      'csk post event',
+      JSON.stringify(eventAttributes),
+      '------',
+      JSON.stringify(doctorData)
+    );
+
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
   const postDoctorClickWEGEvent = (
     doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
@@ -1589,6 +1616,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
     const doctorOfHourText =
       platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
+
     return (
       <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
@@ -1609,6 +1637,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
           onPress={() => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
+            postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,

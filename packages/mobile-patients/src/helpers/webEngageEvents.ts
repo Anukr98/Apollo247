@@ -33,6 +33,11 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
+  //doh
+  DOH_Viewed='DOH Viewed',
+  DOH_Clicked='DOH Clicked',
+
+
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
@@ -452,6 +457,16 @@ export interface UserInfo {
   'Mobile Number': string;
   'Customer ID': string;
 }
+export interface DOHInfo {
+  doctorId: string,
+  doctorName: string,
+  doctorType:string,
+  specialtyId: string,
+  specialtyName: string,
+  zone:string,
+  userName: string,
+  userPhoneNumber: string,
+}
 
 export interface CircleUserInfo extends UserInfo {
   'Circle Member'?: 'Yes' | 'No';
@@ -699,6 +714,12 @@ export interface WebEngageEvents {
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
   [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
   [WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM]: UserInfo;
+
+  // DOH Events \\
+  [WebEngageEventName.DOH_Viewed]:DOHInfo,
+  [WebEngageEventName.DOH_Clicked]:DOHInfo,
+
+
   // ********** Home Screen Events ********** \\
 
   [WebEngageEventName.BUY_MEDICINES]: {
