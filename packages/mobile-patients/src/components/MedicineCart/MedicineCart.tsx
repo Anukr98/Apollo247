@@ -458,15 +458,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           setloading!(false);
           if (inventoryData?.length) {
             addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            addressChange && NavigateToCartSummary();
             updatePricesAfterTat(inventoryData, updatedCartItems);
           } else {
-            addressChange && NavigateToCartSummary();
             handleTatApiFailure(selectedAddress, {});
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
-          addressChange && NavigateToCartSummary();
         }
       } catch (error) {
         handleTatApiFailure(selectedAddress, error);
@@ -609,15 +606,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return !!cartItems.find(
       ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
     );
-  }
-  function NavigateToCartSummary() {
-    if (hasUnserviceableproduct() || !isfocused) {
-      return;
-    } else if (uploadPrescriptionRequired && !prescriptionType) {
-      props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-    } else {
-      props.navigation.navigate(AppRoutes.CartSummary);
-    }
   }
 
   async function validatePharmaCoupon() {

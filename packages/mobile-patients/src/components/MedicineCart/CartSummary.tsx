@@ -499,9 +499,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
-          {uploadPrescriptionRequired && renderPrescriptions()}
           {renderTatCard()}
           {renderCartItems()}
+          {uploadPrescriptionRequired && renderPrescriptions()}
         </ScrollView>
         {renderButton()}
         {loading && <Spinner />}
