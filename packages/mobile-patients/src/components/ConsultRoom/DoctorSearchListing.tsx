@@ -419,9 +419,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
-        console.log('data', data);
+        console.log('platinum doc data', JSON.stringify(data));
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
+          postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Viewed);
         } else {
           setPlatinumDoctor(null);
         }
@@ -1121,6 +1122,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
+  const postPlatinumDoctorWEGEvents = (doctorData: any, eventName: WebEngageEventName) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
+      doctorId: doctorData?.id,
+      doctorName: g(doctorData, 'displayName')!,
+      specialtyId: props.navigation.getParam('specialityId') || '',
+      specialtyName: props.navigation.getParam('specialityName') || '',
+      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      userPhoneNumber: currentPatient?.mobileNumber,
+    };
+
+    console.log(
+      'csk post event',
+      JSON.stringify(eventAttributes),
+      '------',
+      JSON.stringify(doctorData)
+    );
+
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
   const postDoctorClickWEGEvent = (
     doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
@@ -1602,6 +1623,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
     const doctorOfHourText =
       platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
+
     return (
       <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
