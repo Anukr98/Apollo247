@@ -659,10 +659,10 @@ export const getStoreInventoryApi = (
 export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/v2/serviceable?pincode=${pincode}`;
+  const url = `${config.SERVICEABLE_CONFIG[0]}/${pincode}`;
   return Axios.get(url, {
     headers: {
-      Authorization: config.UATTAT_CONFIG[1],
+      Authorization: config.SERVICEABLE_CONFIG[1],
     },
   });
 };
@@ -675,10 +675,10 @@ export const availabilityApi247 = (
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
   const CancelToken = Axios.CancelToken;
   cancelAvailabilityApi247 && cancelAvailabilityApi247();
-  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
+  const url = `${config.AVAILABILITY_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
   return Axios.get(url, {
     headers: {
-      Authorization: config.UATTAT_CONFIG[1],
+      Authorization: config.AVAILABILITY_CONFIG[1],
     },
     cancelToken: new CancelToken((c) => {
       cancelAvailabilityApi247 = c;

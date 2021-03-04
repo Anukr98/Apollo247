@@ -271,6 +271,17 @@ const Apollo247Config = {
   },
 };
 
+const ServiceabiltyAvailabilityConfig = {
+  dev: {
+    SERVICEABLE_CONFIG: ['https://serviceabilty.apollo247.com/pincode', tatTokenProd],
+    AVAILABILITY_CONFIG: ['https://uatavail.apollo247.com', tatTokenDev],
+  },
+  prod: {
+    SERVICEABLE_CONFIG: ['https://serviceabilty.apollo247.com/pincode', tatTokenProd],
+    AVAILABILITY_CONFIG: ['https://avail.apollo247.com', tatTokenProd],
+  },
+};
+
 export const ReturnOrderSubReason = [
   {
     subReasonID: 1,
@@ -554,6 +565,7 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -621,6 +633,7 @@ const ConfigurationQA = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -688,6 +701,7 @@ const ConfigurationQA2 = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -755,6 +769,7 @@ const ConfigurationQA3 = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -816,6 +831,7 @@ const ConfigurationVAPT = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -882,6 +898,7 @@ const ConfigurationProd = {
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   ...Apollo247Config.prod,
+  ...ServiceabiltyAvailabilityConfig.prod,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -936,6 +953,7 @@ const ConfigurationPERFORM = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -1004,6 +1022,7 @@ const ConfigurationDevReplica = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
+  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
