@@ -52,7 +52,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         ? string.selectDeliveryAddress
         : string.addDeliveryAddress
       : isPrescriptionRequired()
-      ? string.continue
+      ? string.proceed
       : isSplitCart && screen == 'MedicineCart'
       ? string.reviewOrder
       : string.proceedToPay;
