@@ -506,6 +506,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </TouchableOpacity>
         </LoginCard>
         <ScrollView>
+          {/** Truecaller integration will come in next phase */}
           {/* {isAndroid && renderTruecallerButton()} */}
           <LandingDataView />
         </ScrollView>
