@@ -30,7 +30,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  GET_BANK_OPTIONS,
+  GET_PAYMENT_METHODS,
   CREATE_ORDER,
   PROCESS_DIAG_COD_ORDER,
   VERIFY_VPA,
@@ -62,6 +62,8 @@ import {
   initiateDiagonsticHCOrderPaymentVariables,
   initiateDiagonsticHCOrderPayment,
 } from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
+import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {}
@@ -148,7 +150,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const fetchTopBanks = async () => {
     const response = await client.query({
-      query: GET_BANK_OPTIONS,
+      query: GET_PAYMENT_METHODS,
+      variables: { is_mobile: true },
       fetchPolicy: 'no-cache',
     });
     const { data } = response;
@@ -156,7 +159,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     console.log('getPaymentMethods >>', getPaymentMethods);
     setPaymentMethods(getPaymentMethods);
     const types = getPaymentMethods.find((item: any) => item?.name == 'CARD');
-    setCardTypes(types?.featured_banks);
+    setCardTypes(types?.payment_methods);
     setloading(false);
   };
 
@@ -250,12 +253,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
     const sdkPresent =
-      app?.method == 'PHONEPE'
+      app?.payment_method_code == 'PHONEPE'
         ? 'ANDROID_PHONEPE'
-        : app?.method == 'GOOGLEPAY'
+        : app?.payment_method_code == 'GOOGLEPAY'
         ? 'ANDROID_GOOGLEPAY'
         : '';
-    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app?.method, sdkPresent);
+    InitiateUPIIntentTxn(
+      currentPatient?.id,
+      token,
+      paymentId,
+      app?.payment_method_code,
+      sdkPresent
+    );
   }
 
   async function onPressVPAPay(VPA: string) {
@@ -303,7 +312,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const OtherBanks = () => {
     const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
-    const methods = topBanks?.featured_banks?.map((item: any) => item?.method) || [];
+    console.log('topBanks >>>>', topBanks);
+    const methods = topBanks?.payment_methods?.map((item: any) => item?.payment_method_code) || [];
     const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
@@ -345,17 +355,25 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const showPaymentOptions = () => {
     return !!paymentMethods?.length
       ? paymentMethods.map((item: any) => {
+          const minVersion = item?.minimum_supported_version;
           switch (item?.name) {
             case 'COD':
-              return renderPayByCash();
+              return paymentModeVersionCheck(minVersion) && renderPayByCash();
             case 'CARD':
-              return renderCards();
+              return paymentModeVersionCheck(minVersion) && renderCards();
             case 'WALLET':
-              return renderWallets(item?.featured_banks || []);
+              return (
+                paymentModeVersionCheck(minVersion) && renderWallets(item?.payment_methods || [])
+              );
             case 'UPI':
-              return renderUPIPayments(item?.featured_banks || []);
+              return (
+                paymentModeVersionCheck(minVersion) &&
+                renderUPIPayments(item?.payment_methods || [])
+              );
             case 'NB':
-              return renderNetBanking(item?.featured_banks || []);
+              return (
+                paymentModeVersionCheck(minVersion) && renderNetBanking(item?.payment_methods || [])
+              );
           }
         })
       : renderPayByCash();

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image } from 'react
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-
+import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 export interface UPIPaymentsProps {
   upiApps: any;
   onPressUPIApp: (app: any) => void;
@@ -30,7 +30,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
             style={styles.image}
           />
         </TouchableOpacity>
-        <Text style={styles.App}>{item?.item?.bank}</Text>
+        <Text style={styles.App}>{item?.item?.payment_method_name}</Text>
       </View>
     );
   };
@@ -39,7 +39,15 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     return upiApps?.length ? (
       <View>
         <Text style={styles.UPIHeader}>Select your UPI App</Text>
-        <FlatList style={{ marginTop: 12 }} data={upiApps} renderItem={(item) => upiApp(item)} />
+        <FlatList
+          style={{ marginTop: 12 }}
+          data={upiApps}
+          renderItem={(item: any) => {
+            return paymentModeVersionCheck(item?.item?.minimum_supported_version)
+              ? upiApp(item)
+              : null;
+          }}
+        />
         <Text style={styles.or}>OR</Text>
       </View>
     ) : null;

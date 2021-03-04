@@ -3797,7 +3797,7 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
       displayId
       status
       errorMessageToDisplay
-      attributes{
+      attributes {
         itemids
       }
     }
@@ -4608,6 +4608,21 @@ export const GET_BANK_OPTIONS = gql`
   }
 `;
 
+export const GET_PAYMENT_METHODS = gql`
+  query getPaymentMethods($is_mobile: Boolean) {
+    getPaymentMethods(is_mobile: $is_mobile) {
+      name
+      minimum_supported_version
+      payment_methods {
+        image_url
+        payment_method_name
+        payment_method_code
+        minimum_supported_version
+      }
+    }
+  }
+`;
+
 export const CREATE_ORDER = gql`
   mutation createOrder($order_input: OrderInput) {
     createOrder(order_input: $order_input) {
@@ -4713,7 +4728,7 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
 export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
   query getNearestArea($patientAddressId: String!) {
     getNearestArea(patientAddressId: $patientAddressId) {
-      area{
+      area {
         id
         area
       }
