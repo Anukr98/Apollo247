@@ -667,7 +667,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 >
                   {string.circleDoctors.circleSavings.replace(
                     '{amount}',
-                    `${circleDoctorDiscountedPrice}`
+                    `${convertNumberToDecimal(circleDoctorDiscountedPrice)}`
                   )}
                 </Text>
               ) : null}
