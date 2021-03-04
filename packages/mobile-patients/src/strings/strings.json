@@ -936,8 +936,8 @@
     { "title": "Privacy Policy", "url": "https://www.apollo247.com/privacy?isMobile=true" }
   ],
   "truecaller": {
-    "networkProblem": "There is a problem with network connection",
-    "userNotVerified": "User is not verified on truecaller",
-    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in"
+    "networkProblem": "There is a problem with network connection.",
+    "userNotVerified": "User is not verified on truecaller.",
+    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in."
   }
 }

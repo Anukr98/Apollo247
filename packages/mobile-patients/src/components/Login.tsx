@@ -178,43 +178,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   const webengage = new WebEngage();
 
   useEffect(() => {
-    if (isAndroid && !!TRUECALLER) {
-      TRUECALLER.initializeClient();
-
-      TRUECALLER.on('profileSuccessReponse', (profile: any) => {
-        console.log('Truecaller profile data: ', profile);
-        // add other logic here related to login/sign-up as per your use-case.
-      });
-
-      TRUECALLER.on('profileErrorReponse', (error: any) => {
-        if (error && error.errorCode) {
-          switch (error.errorCode) {
-            case 1: {
-              showAphAlert!({
-                title: 'Uh oh.. :(',
-                description: string.truecaller.networkProblem,
-              });
-              break;
-            }
-            case 4:
-            case 10: {
-              showAphAlert!({
-                title: 'Uh oh.. :(',
-                description: string.truecaller.userNotVerified,
-              });
-              break;
-            }
-            case 11: {
-              showAphAlert!({
-                title: 'Uh oh.. :(',
-                description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-              });
-              break;
-            }
-          }
-        }
-      });
-    }
+    isAndroid && initializeTruecaller();
+    isAndroid && truecallerEventListeners();
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -234,6 +199,53 @@ export const Login: React.FC<LoginProps> = (props) => {
       CommonBugFender('Login_useEffect_try', error);
     }
   }, []);
+
+  const initializeTruecaller = () => {
+    TRUECALLER.initializeClient(
+      'CONSENT_MODE_POPUP',
+      'SDK_CONSENT_TITLE_LOG_IN',
+      'FOOTER_TYPE_SKIP'
+    );
+  };
+
+  const truecallerEventListeners = () => {
+    // For handling the success event
+    TRUECALLER.on('profileSuccessReponse', (profile: any) => {
+      setLoading?.(false);
+      // add other logic here related to login/sign-up as per your use-case.
+    });
+
+    // For handling the reject event
+    TRUECALLER.on('profileErrorReponse', (error: any) => {
+      setLoading?.(false);
+      if (error && error.errorCode) {
+        switch (error.errorCode) {
+          case 1: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.networkProblem,
+            });
+            break;
+          }
+          case 4:
+          case 10: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.userNotVerified,
+            });
+            break;
+          }
+          case 11: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+            });
+            break;
+          }
+        }
+      }
+    });
+  };
 
   const fireBaseFCM = async () => {
     try {
@@ -402,11 +414,13 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const loginWithTruecaller = () => {
+    setLoading?.(true);
     TRUECALLER.isUsable((result: boolean) => {
       if (result) {
         // Authenticate via truecaller flow can be used
         TRUECALLER.requestTrueProfile();
       } else {
+        setLoading?.(false);
         showAphAlert!({
           title: 'Uh oh.. :(',
           description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
@@ -492,7 +506,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </TouchableOpacity>
         </LoginCard>
         <ScrollView>
-          {isAndroid && renderTruecallerButton()}
+          {/* {isAndroid && renderTruecallerButton()} */}
           <LandingDataView />
         </ScrollView>
       </SafeAreaView>
