@@ -1644,6 +1644,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
           onPress={() => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
+            postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
