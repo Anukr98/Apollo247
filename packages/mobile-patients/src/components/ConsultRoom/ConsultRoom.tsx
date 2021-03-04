@@ -1112,6 +1112,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (eventName == WebEngageEventName.HOME_VIEWED) {
       eventAttributes = { ...eventAttributes, ...attributes };
     }
+    if (eventName == WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
     postWebEngageEvent(eventName, eventAttributes);
   };
 
@@ -2828,7 +2831,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ]}
           title={item?.title}
           onPress={() => {
-            item?.docOnCall ? onPressCallDoctor() : handleCovidCTA(item);
+            item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
           }}
         />
       </View>
@@ -2849,43 +2852,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           keyExtractor={(_, index: Number) => `${index}`}
           renderItem={({ item, index }) => renderRemoteConfigItems(item, index)}
         />
-        {/* <View style={styles.covidSubContainer}>
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            iconUrl={covidVaccineCta?.iconPath}
-            buttonStyle={styles.covidBtn}
-            iconBase={VaccineTracker}
-            btnTitleStyle={styles.covidBtnTitle}
-            title={covidVaccineCta?.title}
-            onPress={() => onPressVaccineTracker()}
-          />
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
-            btnTitleStyle={styles.covidBtnTitle}
-            iconBase={PhoneDoctor}
-            title={string.common.vaccinationQueries}
-            onPress={() => onPressCallDoctor()}
-          />
-        </View>
-        <View style={[styles.covidSubContainer, { marginBottom: 15 }]}>
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            buttonStyle={styles.covidBtn}
-            btnTitleStyle={styles.covidBtnTitle}
-            iconBase={ChatBot}
-            title={string.common.chatWithUs}
-            onPress={() => onPressChatWithUS()}
-          />
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            buttonStyle={[styles.covidBtn, { marginRight: 10 }]}
-            btnTitleStyle={styles.covidBtnTitle}
-            iconBase={FaqsArticles}
-            title={string.common.faqsArticles}
-            onPress={() => onPressFAQ()}
-          />
-        </View> */}
       </View>
     );
   };
@@ -2907,18 +2873,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <DashedLine style={styles.plainLine} />;
   };
 
-  const onPressChatWithUS = () => {
-    postHomeWEGEvent(WebEngageEventName.VACCINATION_CHAT_WITH_US);
-    try {
-      const openUrl = AppConfig.Configuration.CHAT_WITH_US;
-      props.navigation.navigate(AppRoutes.CommonWebView, {
-        url: openUrl,
-      });
-    } catch (e) {}
-  };
-
-  const onPressCallDoctor = async () => {
-    postHomeWEGEvent(WebEngageEventName.VACCINATION_CALL_A_DOCTOR_CLICKED);
+  const onPressCallDoctor = async (item: any) => {
+    const attibutes = {
+      'CTA Clicked': item?.title,
+    };
+    postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
     setShowHdfcConnectPopup(true);
   };
 
@@ -2974,7 +2933,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const handleCovidCTA = async (item: any) => {
-    // postHomeWEGEvent(WebEngageEventName.VACCINATION_TRACKER_ON_HOME_PAGE);
+    const attibutes = {
+      'CTA Clicked': item?.title,
+    };
+    postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
     try {
       if (item?.url?.includes('apollopatients://')) {
         // handling speciality deeplink only on this phase
@@ -3011,13 +2973,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       return encodedString.split('%20');
     }
-  };
-
-  const onPressFAQ = async () => {
-    postHomeWEGEvent(WebEngageEventName.FAQs_ARTICLES_CLICKED);
-    props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_UPDATES,
-    });
   };
 
   const onPressHealthPro = async () => {
