@@ -259,6 +259,7 @@ export enum WebEngageEventName {
   CONSULT_FEEDBACK_GIVEN = 'Consult feedback Given',
   DOWNLOAD_PRESCRIPTION = 'Download Prescription',
   VIEW_PRESCRIPTION_IN_CONSULT_DETAILS = 'View Prescription in Consult Details',
+  CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED = 'Cart Prescription Option Selected & Proceed Clicked',
   ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'PHR Order Meds Prescription Detail - app',
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail - app',
   CONSULT_CARD_CLICKED = 'Consult Card Clicked',
@@ -1993,6 +1994,9 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED]: {
+    'Option selected': 'Prescription Now' | 'Prescription Later' | 'Doctor Consult'| 'NA';
+  };
   [WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;
     'Speciality Name': string;
@@ -2072,6 +2076,7 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
+    Pincode?: string;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

@@ -2139,7 +2139,8 @@ export const addPharmaItemToCart = (
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
   onComplete?: () => void,
-  pharmacyCircleAttributes?: PharmacyCircleEvent
+  pharmacyCircleAttributes?: PharmacyCircleEvent,
+  onAddedSuccessfully?: () => void
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2228,6 +2229,7 @@ export const addPharmaItemToCart = (
           Response_Qty: qty,
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+        onAddedSuccessfully?.();
       } catch (error) {}
     })
     .catch(() => {

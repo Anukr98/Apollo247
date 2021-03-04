@@ -216,7 +216,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         if (productDetails) {
           setMedicineDetails(productDetails || {});
           setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
-          postProductPageViewedEvent(productDetails);
+          postProductPageViewedEvent(productDetails, zipcode || pincode);
           trackTagalysViewEvent(productDetails);
           savePastSearch(client, {
             typeId: productDetails?.sku,
@@ -350,7 +350,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const postProductPageViewedEvent = ({ sku, name, is_in_stock }: MedicineProductDetails) => {
+  const postProductPageViewedEvent = (
+    { sku, name, is_in_stock }: MedicineProductDetails,
+    pincode?: string
+  ) => {
     if (movedFrom) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
@@ -360,6 +363,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...productPageViewedEventProps,
         ...pharmacyCircleAttributes,
         ...pharmacyUserTypeAttribute,
+        Pincode: pincode,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -992,8 +996,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 const styles = StyleSheet.create({
   badgelabelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
