@@ -185,6 +185,7 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
+import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
 import {
   editProfile,
   editProfileVariables,
@@ -2994,6 +2995,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) : null;
   };
 
+  const renderTestProceedBar = () => {
+    return (
+      <TestProceedBar
+        onPressAddDeliveryAddress={() => {}}
+        onPressProceedtoPay={() => {}}
+        onPressSelectDeliveryAddress={() => {}}
+      />
+    );
+  };
+
   const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   return (
@@ -3059,6 +3070,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
+        {renderTestProceedBar()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
     </View>
