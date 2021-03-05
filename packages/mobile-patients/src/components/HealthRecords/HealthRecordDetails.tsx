@@ -64,11 +64,11 @@ import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRe
 import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
-} from '../../graphql/types/getDiagnosticOrderDetailsByDisplayID';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
 import {
   getPrismAuthToken,
   getPrismAuthTokenVariables,
-} from '../../graphql/types/getPrismAuthToken';
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -260,22 +260,21 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       const { data } = res;
       const getData = g(data, 'getDiagnosticOrderDetailsByDisplayID', 'ordersList');
       const visitId = getData?.visitNo;
-      //block already if current patient id does not match
       if (currentPatient?.id === getData?.patientId) {
         if (!!visitId) {
           getAuthToken(visitId);
         } else {
           setLoading?.(false);
-          renderError(string.diagnostics.unableToFetchReport);
+          renderError(string.diagnostics.unableToFetchReport, true);
         }
       } else {
         setLoading?.(false);
-        renderError(string.diagnostics.incorrectUserReport);
+        renderError(string.diagnostics.incorrectUserReport, false);
       }
     } catch (error) {
       CommonBugFender('RecordDetails_fetchDiagnosticOrderDetails_try', error);
       setLoading?.(false);
-      renderError(string.diagnostics.unableToFetchReport);
+      renderError(string.diagnostics.unableToFetchReport, true);
     }
   };
 
@@ -295,7 +294,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           fetchTestReportResult(visitId, prism_auth_token);
         } else {
           setLoading?.(false);
-          renderError(string.diagnostics.unableToFetchReport);
+          renderError(string.diagnostics.unableToFetchReport, true);
         }
       })
       .catch((e) => {
@@ -303,7 +302,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
         setLoading?.(false);
-        renderError(string.diagnostics.unableToFetchReport);
+        renderError(string.diagnostics.unableToFetchReport, true);
       });
   };
 
@@ -321,7 +320,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           setData(resultForVisitNo);
         } else {
           setLoading?.(false);
-          renderError(string.diagnostics.responseUnavailableForReport);
+          renderError(string.diagnostics.responseUnavailableForReport, false);
         }
       })
       .catch((error) => {
@@ -359,7 +358,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   useEffect(() => {
     // calling this api only for search records
     if (healthrecordId) {
-      console.log('p1');
       setLoading && setLoading(true);
       getPatientPrismSingleMedicalRecordApi(
         client,
@@ -528,7 +526,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const downloadPDFTestReport = () => {
-    console.log('po2');
     if (currentPatient?.id) {
       setLoading && setLoading(true);
       if (Platform.OS === 'android') {
@@ -784,14 +781,16 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     );
   };
 
-  const renderError = (message: string) => {
+  const renderError = (message: string, redirectToOrders: boolean) => {
     showAphAlert?.({
       unDismissable: true,
       title: string.common.uhOh,
       description: message,
       onPressOk: () => {
         hideAphAlert?.();
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        redirectToOrders
+          ? props.navigation.navigate(AppRoutes.YourOrdersTest)
+          : props.navigation.navigate(AppRoutes.ConsultRoom);
       },
     });
   };
