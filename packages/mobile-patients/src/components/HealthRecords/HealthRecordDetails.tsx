@@ -33,7 +33,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Image } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -222,15 +222,12 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : null;
   const [apiError, setApiError] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
-  const { setLoading } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
   //for deeplink
   const movedFrom = props.navigation.getParam('movedFrom');
   const displayId = props.navigation.getParam('id');
-
-  console.log({ movedFrom });
-  console.log({ displayId });
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -238,11 +235,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
 
   useEffect(() => {
     if (!!movedFrom && !!displayId && movedFrom == 'deeplink') {
-      //1. order detail api
       fetchDiagnosticOrderDetails(displayId);
-      //2. findVisit no
-      //3. get auth token
-      //4. hit v2 api.
     }
   }, []);
 
@@ -267,20 +260,27 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       const { data } = res;
       const getData = g(data, 'getDiagnosticOrderDetailsByDisplayID', 'ordersList');
       const visitId = getData?.visitNo;
-      if (!!visitId) {
-        getAuthToken(visitId);
+      //block already if current patient id does not match
+      if (currentPatient?.id === getData?.patientId) {
+        if (!!visitId) {
+          getAuthToken(visitId);
+        } else {
+          setLoading?.(false);
+          renderError(string.diagnostics.unableToFetchReport);
+        }
       } else {
-        //show some error....
+        setLoading?.(false);
+        renderError(string.diagnostics.incorrectUserReport);
       }
     } catch (error) {
       CommonBugFender('RecordDetails_fetchDiagnosticOrderDetails_try', error);
-      console.log('error', error);
       setLoading?.(false);
+      renderError(string.diagnostics.unableToFetchReport);
     }
   };
 
   const getAuthToken = async (visitId: string) => {
-    setLoading!(true);
+    setLoading?.(true);
     client
       .query<getPrismAuthToken, getPrismAuthTokenVariables>({
         query: GET_PRISM_AUTH_TOKEN,
@@ -294,7 +294,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         if (prism_auth_token) {
           fetchTestReportResult(visitId, prism_auth_token);
         } else {
-          //show error
+          setLoading?.(false);
+          renderError(string.diagnostics.unableToFetchReport);
         }
       })
       .catch((e) => {
@@ -302,6 +303,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
         setLoading?.(false);
+        renderError(string.diagnostics.unableToFetchReport);
       });
   };
 
@@ -314,14 +316,13 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           'labResults',
           'response'
         );
-        // setLabResults(labResultsData);
-        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
-        !!resultForVisitNo &&
-          props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-            data: resultForVisitNo,
-            labResults: true,
-          });
-        //else case show error
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
+        if (!!resultForVisitNo) {
+          setData(resultForVisitNo);
+        } else {
+          setLoading?.(false);
+          renderError(string.diagnostics.responseUnavailableForReport);
+        }
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
@@ -783,6 +784,18 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     );
   };
 
+  const renderError = (message: string) => {
+    showAphAlert?.({
+      unDismissable: true,
+      title: string.common.uhOh,
+      description: message,
+      onPressOk: () => {
+        hideAphAlert?.();
+        props.navigation.navigate(AppRoutes.ConsultRoom);
+      },
+    });
+  };
+
   const renderImage = () => {
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
@@ -1134,8 +1147,22 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const onGoBack = () => {
-    props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
-    props.navigation.goBack();
+    if (movedFrom == 'deeplink') {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
+    } else {
+      props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
+      props.navigation.goBack();
+    }
   };
 
   if (data) {
