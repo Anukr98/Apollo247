@@ -1,5 +1,4 @@
 import {
-  Events,
   Helpers,
   PrescriptionOptions,
 } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
@@ -101,7 +100,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
       }
       navigation.navigate(AppRoutes.CartSummary);
       setLoading?.(false);
-      postEvent(prescriptionType);
     } catch (error) {
       setLoading?.(false);
       showAphAlert?.({
@@ -137,19 +135,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
       {renderContinueButton()}
     </SafeAreaView>
   );
-};
-
-const postEvent = (prescriptionType: PrescriptionType | null) => {
-  Events.cartPrescriptionOptionSelectedProceedClicked({
-    'Option selected':
-      prescriptionType === PrescriptionType.UPLOADED
-        ? 'Prescription Now'
-        : prescriptionType === PrescriptionType.CONSULT
-        ? 'Doctor Consult'
-        : prescriptionType === PrescriptionType.LATER
-        ? 'Prescription Later'
-        : 'NA',
-  });
 };
 
 const { text, card, container } = theme.viewStyles;

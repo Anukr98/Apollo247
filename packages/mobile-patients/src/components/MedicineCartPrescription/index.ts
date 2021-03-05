@@ -1,4 +1,3 @@
-import * as Events from '@aph/mobile-patients/src/components/MedicineCartPrescription/Events';
 import * as Helpers from '@aph/mobile-patients/src/components/MedicineCartPrescription/Helpers';
 import {
   MedicineCartPrescription,
@@ -21,5 +20,4 @@ export {
   PrescriptionOptions,
   PrescriptionOptionsProps,
   Helpers,
-  Events,
 };

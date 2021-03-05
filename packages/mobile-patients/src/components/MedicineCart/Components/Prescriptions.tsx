@@ -7,7 +7,6 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import {
@@ -37,7 +36,6 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     prescriptionType,
   } = useShoppingCart();
   const { onPressUploadMore, style, hideHeader, showSelectedOption, isPlainStyle } = props;
-  const { currentPatient } = useAllCurrentPatients();
 
   const renderHeader = () => {
     return (
@@ -128,7 +126,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
-      : `Doctor Consult Option Selected for ${currentPatient?.firstName}`;
+      : 'Doctor Consult Selected  ';
     const description = isPrescriptionLater
       ? 'You have to share prescription later for order to be verified successfully.'
       : 'An Apollo doctor will call you soon as they are available!';
