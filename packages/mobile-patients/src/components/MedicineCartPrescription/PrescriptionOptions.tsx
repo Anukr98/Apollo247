@@ -5,22 +5,17 @@ import {
   UploadPrescriprionPopup,
   UploadPrescriprionPopupRefProps,
 } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   EPrescription,
   PhysicalPrescription,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import AsyncStorage from '@react-native-community/async-storage';
 import React, { useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Button, ButtonProps, Divider } from 'react-native-elements';
-import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { Divider } from 'react-native-elements';
 
 export interface Props {
   selectedOption: PrescriptionType | null;
@@ -29,18 +24,12 @@ export interface Props {
     ePres?: EPrescription[],
     physPres?: PhysicalPrescription[]
   ) => void;
-  navigation: NavigationScreenProp<NavigationRoute<object>, object>;
 }
 
-export const PrescriptionOptions: React.FC<Props> = ({
-  selectedOption,
-  onSelectOption,
-  navigation,
-}) => {
+export const PrescriptionOptions: React.FC<Props> = ({ selectedOption, onSelectOption }) => {
   const [myPrescriptionsVisible, setMyPrescriptionsVisible] = useState<boolean>(false);
   const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const prescriptionPopupRef = useRef<UploadPrescriprionPopupRefProps | null>(null);
-  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
 
   const renderHavePrescription = () => {
     return (
@@ -126,61 +115,16 @@ export const PrescriptionOptions: React.FC<Props> = ({
 
   const renderNoPrescriptionDetails = () => {
     return (
-      <>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={styles.lightWeightBlueConsultation}>
-            {
-              'Get a consultation by our expert doctor within the next 30 minutes\n(Working hours: 8am to 8pm)'
-            }
-          </Text>
-          <View style={styles.amountAndFreeText}>
-            <Text style={styles.lightWeightBlueLineThrough}>{'₹399'}</Text>
-            <Text style={styles.mediumGreen}>{' FREE '}</Text>
-          </View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={styles.lightWeightBlueConsultation}>
+          {
+            'Get a consultation by our expert doctor within the next 30 minutes\n(Working hours: 8am to 8pm)'
+          }
+        </Text>
+        <View style={styles.amountAndFreeText}>
+          <Text style={styles.lightWeightBlueLineThrough}>{'₹399'}</Text>
+          <Text style={styles.mediumGreen}>{' FREE '}</Text>
         </View>
-        {selectedOption === PrescriptionType.CONSULT && [
-          <Text style={styles.consultationFor}>{'This consultation is for:'}</Text>,
-          <Divider />,
-          renderProfiles(),
-        ]}
-      </>
-    );
-  };
-
-  const renderProfiles = () => {
-    const allPatients =
-      (allCurrentPatients as GetCurrentPatients_getCurrentPatients_patients[]) || [];
-    const profiles: ButtonProps[] = allPatients.map((patient) => {
-      const isAddNewMember = patient?.firstName?.toLowerCase() === '+add member';
-      const isSelectedProfile = patient?.id === currentPatient?.id;
-      const onPress = () => {
-        if (isAddNewMember) {
-          navigation.navigate(AppRoutes.EditProfile, {
-            isEdit: false,
-            mobileNumber: currentPatient?.mobileNumber,
-          });
-        } else {
-          setCurrentPatientId(patient?.id);
-          AsyncStorage.setItem('selectUserId', patient?.id);
-          AsyncStorage.setItem('selectUserUHId', patient?.uhid!);
-          AsyncStorage.setItem('isNewProfile', 'yes');
-        }
-      };
-      return {
-        onPress,
-        title: isAddNewMember ? '+Add Member' : patient?.firstName!,
-        containerStyle: styles.profileBtnContainer,
-        buttonStyle: isSelectedProfile ? styles.profileBtnSelected : styles.profileBtn,
-        titleStyle: isSelectedProfile ? styles.profileBtnTitleSelected : styles.profileBtnTitle,
-        type: isAddNewMember ? 'outline' : 'clear',
-      };
-    });
-
-    return (
-      <View style={styles.profileWrapper}>
-        {profiles.map((props) => (
-          <Button {...props} />
-        ))}
       </View>
     );
   };
@@ -237,18 +181,16 @@ export const PrescriptionOptions: React.FC<Props> = ({
     );
   };
 
-  return (
-    <>
-      {renderHavePrescription()}
-      {renderAddedPrescriptions()}
-      {renderDivider()}
-      {renderSharePrescriptionLater()}
-      {renderDivider()}
-      {renderNoPrescription()}
-      {renderMyPrescriptionModal()}
-      {renderPrescriptionPopup()}
-    </>
-  );
+  return [
+    renderHavePrescription(),
+    renderAddedPrescriptions(),
+    renderDivider(),
+    renderSharePrescriptionLater(),
+    renderDivider(),
+    renderNoPrescription(),
+    renderMyPrescriptionModal(),
+    renderPrescriptionPopup(),
+  ];
 };
 
 const { text, card } = theme.viewStyles;
@@ -303,15 +245,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     zIndex: 2,
   },
-  consultationFor: {
-    ...text('M', 14, '#01475B'),
-    marginBottom: 8,
-    marginTop: 18,
-  },
-  profileWrapper: { marginVertical: 10, flexDirection: 'row', flexWrap: 'wrap' },
-  profileBtnContainer: { margin: 5, marginLeft: 0, marginRight: 10 },
-  profileBtn: { ...card(8, 0, 5, '#FFF'), borderColor: '#01475B' },
-  profileBtnTitle: { ...text('M', 14, '#01475B') },
-  profileBtnSelected: { ...card(8, 0, 5, '#01475B'), borderColor: '#01475B' },
-  profileBtnTitleSelected: { ...text('M', 14, '#FFF') },
 });

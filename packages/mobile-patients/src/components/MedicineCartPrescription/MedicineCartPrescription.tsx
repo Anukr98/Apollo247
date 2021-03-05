@@ -67,7 +67,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     return (
       <View style={[styles.prescriptionOptions]}>
         <PrescriptionOptions
-          navigation={navigation}
           selectedOption={prescriptionType || PrescriptionType.UPLOADED}
           onSelectOption={(option, ePres, physPres) => {
             setPrescriptionType(option);
