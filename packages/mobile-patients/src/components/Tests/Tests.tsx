@@ -421,36 +421,51 @@ export const Tests: React.FC<TestsProps> = (props) => {
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
     //restriction less than 12.
-    const res = Promise.all(
-      !!itemIds &&
-        itemIds?.length > 0 &&
-        itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
-        )
-    );
+    try {
+      const res = Promise.all(
+        !!itemIds &&
+          itemIds?.length > 0 &&
+          itemIds?.map((item: any) =>
+            fetchPricesForCityId(
+              Number(cityId!) || 9,
+              item?.length > 12 ? item?.slice(0, 12) : item
+            )
+          )
+      );
 
-    const response = (await res)?.map((item: any) =>
-      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-    );
-    let newWidgetsData = [...filterWidgets];
+      const response = (await res)?.map((item: any) =>
+        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+      );
+      console.log({ response });
+      let newWidgetsData = [...filterWidgets];
 
-    for (let i = 0; i < filterWidgets?.length; i++) {
-      for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
-        const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
-          (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-        );
-        if (findIndex !== -1) {
-          (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-            response?.[i]?.[j]?.packageCalculatedMrp),
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-              response?.[i]?.[j]?.diagnosticPricing);
+      for (let i = 0; i < filterWidgets?.length; i++) {
+        for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+          const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
+            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
+          );
+          if (findIndex !== -1) {
+            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
+              response?.[i]?.[j]?.packageCalculatedMrp),
+              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
+                response?.[i]?.[j]?.diagnosticPricing);
+          }
         }
       }
+      newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
+      setWidgetsData(newWidgetsData);
+      setSectionLoading(false);
+      setLoading?.(false);
+    } catch (error) {
+      console.log('errorInFetchPricing api__', error);
+      setSectionLoading(false);
+      setReloadWidget(true);
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.common.tryAgainLater,
+      });
     }
-    newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
-    setWidgetsData(newWidgetsData);
-    setSectionLoading(false);
-    setLoading?.(false);
   };
 
   const renderCarouselBanners = () => {
@@ -1639,6 +1654,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function refetchWidgets() {
     setWidgetsData([]);
+    setLoading?.(true);
     getHomePageWidgets(serviceableObject?.cityId);
   }
 
