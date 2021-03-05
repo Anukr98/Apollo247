@@ -761,14 +761,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
                 ? 0
                 : (coupon && item.couponPrice) || item.specialPrice || item.price
             );
-            shipmentCouponDiscount =
-              shipmentCouponDiscount +
-              formatNumber(
-                item?.quantity *
-                  (item?.couponPrice || item?.couponPrice == 0
-                    ? item?.price - item?.couponPrice
-                    : 0)
-              );
+            shipmentCouponDiscount = shipmentCouponDiscount + getShipmentCouponDiscount(item);
             shipmentProductDiscount = shipmentProductDiscount + getShipmentProductDiscount(item);
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
             shipmentCashback += item?.circleCashbackAmt;
@@ -830,6 +823,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
     } else if (item.price != item.specialPrice) {
       discount = (item?.price - (item?.specialPrice || item?.price)) * quantity;
     }
+    return discount;
+  };
+
+  const getShipmentCouponDiscount = (item: ShoppingCartItem) => {
+    let discount = 0;
+    discount = !!item.isFreeCouponProduct
+      ? 0
+      : formatNumber(
+          item?.quantity *
+            (item?.couponPrice || item?.couponPrice == 0 ? item?.price - item?.couponPrice : 0)
+        );
     return discount;
   };
 
