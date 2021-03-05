@@ -2,7 +2,6 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MedicineOrderShipmentInput,
   MedicineCartOMSItem,
-  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -148,8 +147,6 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
-  prescriptionType: PrescriptionType | null;
-  setPrescriptionType: (type: PrescriptionType | null) => void;
   isFreeDelivery: boolean;
   setIsFreeDelivery: ((value: boolean) => void) | null;
   circleCashback: CircleCashbackData | null;
@@ -257,8 +254,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
-  prescriptionType: null,
-  setPrescriptionType: () => {},
+
   couponProducts: [],
   setCouponProducts: null,
 
@@ -363,9 +359,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
-  const [prescriptionType, setPrescriptionType] = useState<
-    ShoppingCartContextProps['prescriptionType']
-  >(null);
   const [productDiscount, setProductDiscount] = useState<
     ShoppingCartContextProps['productDiscount']
   >(0);
@@ -515,9 +508,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
       });
     }
     _setCartItems(cartItems);
-    // _setCartItems(
-    //   cartItems.map((item, index) => (index === 0 ? { ...item, prescriptionRequired: true } : item))
-    // );
     AsyncStorage.setItem(AsyncStorageKeys.cartItems, JSON.stringify(cartItems)).catch(() => {
       showGenericAlert('Failed to save cart items in local storage.');
     });
@@ -1032,8 +1022,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         deliveryCharges,
         packagingCharges,
         uploadPrescriptionRequired,
-        prescriptionType,
-        setPrescriptionType,
 
         couponProducts,
         setCouponProducts,
