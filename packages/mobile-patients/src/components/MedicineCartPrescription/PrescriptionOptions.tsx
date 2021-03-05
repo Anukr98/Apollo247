@@ -23,7 +23,6 @@ import {
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import React, { useRef, useState } from 'react';
@@ -50,12 +49,11 @@ export const PrescriptionOptions: React.FC<Props> = ({
   const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const prescriptionPopupRef = useRef<UploadPrescriprionPopupRefProps | null>(null);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
-  const cartPrescriptionOptions = AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS;
 
-  const renderHavePrescription = (title: string) => {
+  const renderHavePrescription = () => {
     return (
       <PrescriptionOption
-        title={title}
+        title={'I have a Prescription'}
         subtitle={renderHavePrescriptionDetails()}
         onPress={() =>
           onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, physicalPrescriptions)
@@ -104,14 +102,14 @@ export const PrescriptionOptions: React.FC<Props> = ({
     );
   };
 
-  const renderSharePrescriptionLater = (title: string) => {
+  const renderSharePrescriptionLater = () => {
     const orderNow =
       'Order now and share your prescription later via WhatsApp with our Pharmacist.';
     const note = 'Note: ';
     const orderHold = 'Order will be on hold until the Prescription is shared.';
     return (
       <PrescriptionOption
-        title={title}
+        title={'Share Prescription later'}
         subtitle={
           <View>
             <Text style={styles.lightWeightBlue}>{orderNow}</Text>
@@ -130,10 +128,10 @@ export const PrescriptionOptions: React.FC<Props> = ({
     );
   };
 
-  const renderNoPrescription = (title: string) => {
+  const renderNoPrescription = () => {
     return (
       <PrescriptionOption
-        title={title}
+        title={'I don’t have a Prescription'}
         subtitle={renderNoPrescriptionDetails()}
         onPress={() => onSelectOption(PrescriptionType.CONSULT)}
         checked={selectedOption === PrescriptionType.CONSULT}
@@ -264,25 +262,14 @@ export const PrescriptionOptions: React.FC<Props> = ({
     );
   };
 
-  const renderCartPrescriptionOptions = () => {
-    return cartPrescriptionOptions
-      .filter(({ visible }) => visible)
-      .map(({ id, title }, index, array) => {
-        const options =
-          id === 'havePrescription'
-            ? [renderHavePrescription(title), renderAddedPrescriptions()]
-            : id === 'sharePrescriptionLater'
-            ? [renderSharePrescriptionLater(title)]
-            : id === 'noPrescriptionDoConsult'
-            ? [renderNoPrescription(title)]
-            : null;
-        return [options, index > 0 && index < array.length && renderDivider()];
-      });
-  };
-
   return (
     <>
-      {renderCartPrescriptionOptions()}
+      {renderHavePrescription()}
+      {renderAddedPrescriptions()}
+      {renderDivider()}
+      {renderSharePrescriptionLater()}
+      {renderDivider()}
+      {renderNoPrescription()}
       {renderMyPrescriptionModal()}
       {renderPrescriptionPopup()}
     </>
