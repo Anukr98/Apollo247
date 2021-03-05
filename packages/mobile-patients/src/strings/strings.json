@@ -172,7 +172,7 @@
   "removeUnavailableItems": "REMOVE UNAVAILABLE ITEMS",
   "selectDeliveryAddress": "SELECT DELIVERY ADDRESS",
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
-  "proceed": "PROCEED",
+  "continue": "CONTINUE",
   "proceedToPay": "PROCEED TO PAY",
   "reviewOrder": "REVIEW ORDER",
   "placeOrder": "PLACE ORDER",
