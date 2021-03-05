@@ -150,6 +150,7 @@ const appStaticVariables = {
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
+  PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   CIRCLE_PLAN_ID: 'CIRCLEPlan',
   CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,
@@ -173,23 +174,6 @@ const appStaticVariables = {
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
-  CART_PRESCRIPTION_OPTIONS: [
-    {
-      id: 'havePrescription',
-      title: 'I have a Prescription',
-      visible: true,
-    },
-    {
-      id: 'sharePrescriptionLater',
-      title: 'Share Prescription later',
-      visible: true,
-    },
-    {
-      id: 'noPrescriptionDoConsult',
-      title: 'I don’t have a Prescription',
-      visible: true,
-    },
-  ],
 };
 
 const DEV_top_specialties = [
@@ -1489,7 +1473,7 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED',
+  'SAMPLE_REJECTED'
 ];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
@@ -1510,7 +1494,7 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED',
+  'SAMPLE_REJECTED'
 ];
 
 type SpecialitiesType = {

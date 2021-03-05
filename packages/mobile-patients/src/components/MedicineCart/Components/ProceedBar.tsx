@@ -24,7 +24,8 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     grandTotal,
     deliveryAddressId,
     uploadPrescriptionRequired,
-    prescriptionType,
+    physicalPrescriptions,
+    ePrescriptions,
     addresses,
     cartItems,
     orders,
@@ -52,7 +53,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         ? string.selectDeliveryAddress
         : string.addDeliveryAddress
       : isPrescriptionRequired()
-      ? string.proceed
+      ? string.uploadPrescription
       : isSplitCart && screen == 'MedicineCart'
       ? string.reviewOrder
       : string.proceedToPay;
@@ -60,7 +61,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
 
   function isPrescriptionRequired() {
     if (uploadPrescriptionRequired) {
-      return screen === 'MedicineCart' ? true : !prescriptionType;
+      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
     } else {
       return false;
     }
