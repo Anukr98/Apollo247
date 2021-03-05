@@ -759,8 +759,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
         ?.map((item) => {
           if (sku.includes(item?.id)) {
             const discountedPrice = formatNumber(
-              (coupon && item?.couponPrice) || item?.specialPrice || item?.price
+              coupon && item.couponPrice == 0
+                ? 0
+                : (coupon && item.couponPrice) || item.specialPrice || item.price
             );
+
             shipmentCouponDiscount = shipmentCouponDiscount + getShipmentCouponDiscount(item);
             shipmentProductDiscount = shipmentProductDiscount + getShipmentProductDiscount(item);
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
