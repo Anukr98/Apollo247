@@ -1025,6 +1025,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setSavePatientDetails,
     setCovidVaccineCta,
     setLoginSection,
+    setCovidVaccineCtaV2,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1138,6 +1139,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Login_Section_QA',
       PROD: 'Login_Section',
     },
+    Covid_Vaccine_Cta_Key_V2: {
+      QA: 'Covid_Vaccine_CTA_V2_QA',
+      PROD: 'Covid_Vaccine_CTA_V2',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1188,6 +1193,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
       );
       covidVaccineCta && setCovidVaccineCta!(covidVaccineCta);
+
+      const covidVaccineCtaV2 = getRemoteConfigValue(
+        'Covid_Vaccine_Cta_Key_V2',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
+      );
+      covidVaccineCtaV2 && setCovidVaccineCtaV2!(covidVaccineCtaV2);
 
       const loginSection = getRemoteConfigValue(
         'Login_Section_Key',

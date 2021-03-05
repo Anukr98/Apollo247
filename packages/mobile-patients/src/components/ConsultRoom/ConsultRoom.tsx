@@ -708,7 +708,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcStatus,
     setPharmacyUserType,
     pharmacyUserTypeAttribute,
-    covidVaccineCta,
+    covidVaccineCtaV2,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -2812,7 +2812,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         key={index}
-        style={{ marginBottom: index === covidVaccineCta?.data?.length - 1 ? 15 : 0 }}
+        style={{ marginBottom: index === covidVaccineCtaV2?.data?.length - 1 ? 15 : 0 }}
       >
         <CovidButton
           iconStyle={styles.covidIconStyle}
@@ -2845,10 +2845,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.covidContainer}>
         <View style={styles.covidTitleContainer}>
           <CovidOrange style={styles.covidIcon} />
-          <Text style={styles.covidTitle}>{covidVaccineCta?.mainTitle}</Text>
+          <Text style={styles.covidTitle}>{covidVaccineCtaV2?.mainTitle}</Text>
         </View>
         <FlatList
-          data={covidVaccineCta?.data}
+          data={covidVaccineCtaV2?.data}
           numColumns={2}
           keyExtractor={(_, index: Number) => `${index}`}
           renderItem={({ item, index }) => renderRemoteConfigItems(item, index)}
@@ -3150,7 +3150,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {showCirclePlans && renderCircleSubscriptionPlans()}
               {showCircleActivationcr && renderCircleActivation()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
-                {covidVaccineCta?.data?.length > 0 && renderCovidContainer()}
+                {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
               </View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>

@@ -196,6 +196,8 @@ export interface AppCommonDataContextProps {
   setNeedHelpReturnPharmaOrderSuccessMessage: ((value: string) => void) | null;
   covidVaccineCta: any;
   setCovidVaccineCta: ((value: any) => void) | null;
+  covidVaccineCtaV2: any;
+  setCovidVaccineCtaV2: ((value: any) => void) | null;
   loginSection: any;
   setLoginSection: ((value: any) => void) | null;
   phrSession: string;
@@ -291,6 +293,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setNeedHelpReturnPharmaOrderSuccessMessage: null,
   covidVaccineCta: null,
   setCovidVaccineCta: null,
+  covidVaccineCtaV2: null,
+  setCovidVaccineCtaV2: null,
   loginSection: null,
   setLoginSection: null,
   phrSession: '',
@@ -431,6 +435,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [covidVaccineCta, setCovidVaccineCta] = useState<
     AppCommonDataContextProps['covidVaccineCta']
+  >(null);
+
+  const [covidVaccineCtaV2, setCovidVaccineCtaV2] = useState<
+    AppCommonDataContextProps['covidVaccineCtaV2']
   >(null);
 
   const [loginSection, setLoginSection] = useState<AppCommonDataContextProps['loginSection']>(null);
@@ -614,6 +622,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setNeedHelpReturnPharmaOrderSuccessMessage,
         covidVaccineCta,
         setCovidVaccineCta,
+        covidVaccineCtaV2,
+        setCovidVaccineCtaV2,
         loginSection,
         setLoginSection,
         phrSession,
