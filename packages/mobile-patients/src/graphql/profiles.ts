@@ -4735,3 +4735,29 @@ export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
+query getDiagnosticOrderDetailsByDisplayID($displayId: Int!) {
+  getDiagnosticOrderDetailsByDisplayID(displayId: $displayId) {
+    ordersList{
+      patientId
+      patientAddressId
+      orderStatus
+      totalPrice
+      createdDate
+      slotDateTimeInUTC
+      visitNo
+      isRescheduled
+      preBookingId
+      id
+      diagnosticOrdersStatus{
+        orderStatus
+      }
+    }
+  }
+}
+`;
+
+
+
+

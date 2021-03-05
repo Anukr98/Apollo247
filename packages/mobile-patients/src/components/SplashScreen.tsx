@@ -494,8 +494,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('CircleMembershipDetails');
             break;
 
+          case 'testlisting':
           case 'TestListing':
             getData('TestListing', data?.length === 2 ? linkId : undefined);
+            break;
+
+          case 'testreport':
+          case 'TestReport':
+            console.log('here..');
+            getData('TestReport', data?.length === 2 ? linkId : undefined);
             break;
 
           default:
@@ -908,7 +915,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
         break;
 
-      case 'testlisting':
       case 'TestListing':
         console.log('TestListing');
         props.navigation.navigate(AppRoutes.TestListing, {
@@ -916,6 +922,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           widgetName: id,
         });
         break;
+
+      case 'TestReport':
+        console.log('TestReport');
+        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          movedFrom: 'deeplink',
+          id: id,
+        });
 
       default:
         break;

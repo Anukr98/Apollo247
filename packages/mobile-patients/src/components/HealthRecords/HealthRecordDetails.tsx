@@ -12,7 +12,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   PermissionsAndroid,
   Platform,
@@ -24,12 +24,16 @@ import {
   BackHandler,
   View,
 } from 'react-native';
-import { GET_LAB_RESULT_PDF } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+  GET_LAB_RESULT_PDF,
+  GET_PRISM_AUTH_TOKEN,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Image } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -51,9 +55,20 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import _ from 'lodash';
-import { getPatientPrismSingleMedicalRecordApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getPatientPrismMedicalRecordsApi,
+  getPatientPrismSingleMedicalRecordApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
+import {
+  getDiagnosticOrderDetailsByDisplayID,
+  getDiagnosticOrderDetailsByDisplayIDVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
+import {
+  getPrismAuthToken,
+  getPrismAuthTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -207,12 +222,115 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : null;
   const [apiError, setApiError] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
-  const { setLoading } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
+
+  //for deeplink
+  const movedFrom = props.navigation.getParam('movedFrom');
+  const displayId = props.navigation.getParam('id');
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
+
+  useEffect(() => {
+    if (!!movedFrom && !!displayId && movedFrom == 'deeplink') {
+      fetchDiagnosticOrderDetails(displayId);
+    }
+  }, []);
+
+  const getOrderDetails = async (displayId: string) => {
+    const res = await client.query<
+      getDiagnosticOrderDetailsByDisplayID,
+      getDiagnosticOrderDetailsByDisplayIDVariables
+    >({
+      query: GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+      variables: {
+        displayId: Number(displayId),
+      },
+      fetchPolicy: 'no-cache',
+    });
+    return res;
+  };
+
+  const fetchDiagnosticOrderDetails = async (displayId: string) => {
+    setLoading?.(true);
+    try {
+      const res = await getOrderDetails(displayId);
+      const { data } = res;
+      const getData = g(data, 'getDiagnosticOrderDetailsByDisplayID', 'ordersList');
+      const visitId = getData?.visitNo;
+      if (currentPatient?.id === getData?.patientId) {
+        if (!!visitId) {
+          getAuthToken(visitId);
+        } else {
+          setLoading?.(false);
+          renderError(string.diagnostics.unableToFetchReport, true);
+        }
+      } else {
+        setLoading?.(false);
+        renderError(string.diagnostics.incorrectUserReport, false);
+      }
+    } catch (error) {
+      CommonBugFender('RecordDetails_fetchDiagnosticOrderDetails_try', error);
+      setLoading?.(false);
+      renderError(string.diagnostics.unableToFetchReport, true);
+    }
+  };
+
+  const getAuthToken = async (visitId: string) => {
+    setLoading?.(true);
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          fetchTestReportResult(visitId, prism_auth_token);
+        } else {
+          setLoading?.(false);
+          renderError(string.diagnostics.unableToFetchReport, true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        setLoading?.(false);
+        renderError(string.diagnostics.unableToFetchReport, true);
+      });
+  };
+
+  const fetchTestReportResult = useCallback((visitId: string, authToken: string) => {
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
+        if (!!resultForVisitNo) {
+          setData(resultForVisitNo);
+        } else {
+          setLoading?.(false);
+          renderError(string.diagnostics.responseUnavailableForReport, false);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        console.log('Error occured fetchTestReportsResult', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading?.(false));
+  }, []);
+
   const requestReadSmsPermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
@@ -663,6 +781,20 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     );
   };
 
+  const renderError = (message: string, redirectToOrders: boolean) => {
+    showAphAlert?.({
+      unDismissable: true,
+      title: string.common.uhOh,
+      description: message,
+      onPressOk: () => {
+        hideAphAlert?.();
+        redirectToOrders
+          ? props.navigation.navigate(AppRoutes.YourOrdersTest)
+          : props.navigation.navigate(AppRoutes.ConsultRoom);
+      },
+    });
+  };
+
   const renderImage = () => {
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
@@ -1014,8 +1146,22 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const onGoBack = () => {
-    props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
-    props.navigation.goBack();
+    if (movedFrom == 'deeplink') {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
+    } else {
+      props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
+      props.navigation.goBack();
+    }
   };
 
   if (data) {
