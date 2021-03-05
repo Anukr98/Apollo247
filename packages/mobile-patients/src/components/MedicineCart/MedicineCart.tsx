@@ -1153,7 +1153,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressTatCard={() => {
           if (hasUnserviceableproduct()) {
             return;
-          } else if (uploadPrescriptionRequired && !prescriptionType) {
+          } else if (uploadPrescriptionRequired) {
             props.navigation.navigate(AppRoutes.MedicineCartPrescription);
           } else {
             props.navigation.navigate(AppRoutes.CartSummary, {
