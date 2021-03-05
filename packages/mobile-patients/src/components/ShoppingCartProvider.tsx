@@ -649,16 +649,24 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ? AppConfig.Configuration.PACKAGING_CHARGES
     : 0;
 
-  const grandTotal = parseFloat(
-    (
-      cartTotal +
-      packagingCharges +
-      deliveryCharges -
-      couponDiscount -
-      productDiscount +
-      (!!circleMembershipCharges ? circleMembershipCharges : 0)
-    ).toFixed(2)
-  );
+  const getGrandTotalFromShipments = () => {
+    let total = 0;
+    shipments.forEach((item: any) => (total = total + item.estimatedAmount));
+    return total;
+  };
+
+  const grandTotal = shipments?.length
+    ? getGrandTotalFromShipments()
+    : parseFloat(
+        (
+          cartTotal +
+          packagingCharges +
+          deliveryCharges -
+          couponDiscount -
+          productDiscount +
+          (!!circleMembershipCharges ? circleMembershipCharges : 0)
+        ).toFixed(2)
+      );
 
   const uploadPrescriptionRequired =
     cartItems.findIndex((item) => item.prescriptionRequired) != -1 ||
@@ -734,7 +742,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     updateShipments();
-  }, [orders, coupon, cartItems, deliveryCharges]);
+  }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
 
   function updateShipments() {
     let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];
@@ -779,8 +787,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         })
         .filter((item) => item);
       let shipmentDeliveryfee = orders?.length ? deliveryCharges / orders?.length : 0;
+      let shipmentPackagingfee = orders?.length ? packagingCharges / orders?.length : 0;
       let estimatedAmount =
-        shipmentTotal + shipmentDeliveryfee - shipmentCouponDiscount - shipmentProductDiscount;
+        shipmentTotal +
+        shipmentDeliveryfee +
+        shipmentPackagingfee -
+        shipmentCouponDiscount -
+        shipmentProductDiscount;
       console.log('shipmentTotal >>>', shipmentTotal);
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
@@ -789,7 +802,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['orderTat'] = order['tat'];
       shipment['couponDiscount'] = shipmentCouponDiscount;
       shipment['productDiscount'] = shipmentProductDiscount;
-      shipment['packagingCharges'] = orders?.length ? packagingCharges / orders?.length : 0;
+      shipment['packagingCharges'] = shipmentPackagingfee;
       shipment['storeDistanceKm'] = order['distance'];
       shipment['items'] = items;
       shipment['tatCity'] = order['tatCity'];
