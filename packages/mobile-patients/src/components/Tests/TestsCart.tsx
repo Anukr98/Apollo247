@@ -629,12 +629,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             showAreaSelection
           )
         : getAreas();
-      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
+      DiagnosticRemoveFromCartClicked(
+        id,
+        name,
+        addresses?.[selectedAddressIndex]?.zipcode!,
+        'Customer'
+      );
     } else {
       DiagnosticRemoveFromCartClicked(
         id,
         name,
-        diagnosticLocation?.pincode! || locationDetails?.pincode!
+        diagnosticLocation?.pincode! || locationDetails?.pincode!,
+        'Customer'
       );
     }
   };
@@ -2703,7 +2709,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const higherPricesName = formattedHigherPriceItemName?.join(', ');
 
           //clear cart
-          onChangeCartItems(updatedCartItems);
+          onChangeCartItems(updatedCartItems, duplicateTests, finalRemovalId);
 
           //show inclusions
           let array = [] as any;
@@ -2775,7 +2781,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const duplicateTests = array?.[0]?.removalName;
 
       let arrayToSet = [...duplicateNameArray, array]?.flat(1);
-      onChangeCartItems(updatedCartItems);
+      onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove);
       setShowInclusions(true);
       setDuplicateNameArray(arrayToSet);
 
@@ -2798,7 +2804,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
-  function onChangeCartItems(updatedCartItems: any) {
+  function onChangeCartItems(updatedCartItems: any, removedTest: string, removedTestItemId: any) {
     setDiagnosticSlot?.(null);
     setAreaSelected?.({});
     setDiagnosticAreas?.([]);
@@ -2815,6 +2821,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             showAreaSelection
           )
         : getAreas();
+      DiagnosticRemoveFromCartClicked(
+        removedTestItemId,
+        removedTest,
+        addresses?.[selectedAddressIndex]?.zipcode!,
+        'Automated'
+      );
     }
   }
 
