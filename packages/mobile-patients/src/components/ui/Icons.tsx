@@ -314,6 +314,10 @@ export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_white_arrow_right.png')} />
 );
 
+export const WhiteChevronRightIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_chevron_right.png')} />
+);
+
 export const ArrowRight: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
 );
