@@ -757,17 +757,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
         ?.map((item) => {
           if (sku.includes(item?.id)) {
             const discountedPrice = formatNumber(
-              coupon && item.couponPrice == 0
-                ? 0
-                : (coupon && item.couponPrice) || item.specialPrice || item.price
+              (coupon && item?.couponPrice) || item?.specialPrice || item?.price
             );
             shipmentCouponDiscount =
               shipmentCouponDiscount +
               formatNumber(
-                item?.quantity *
-                  (item?.couponPrice || item?.couponPrice == 0
-                    ? item?.price - item?.couponPrice
-                    : 0)
+                item?.quantity * (item?.couponPrice ? item?.price - item?.couponPrice : 0)
               );
             shipmentProductDiscount = shipmentProductDiscount + getShipmentProductDiscount(item);
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
