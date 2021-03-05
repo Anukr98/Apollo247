@@ -1138,6 +1138,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Login_Section_QA',
       PROD: 'Login_Section',
     },
+    Cart_Prescription_Options: {
+      QA: 'QA_Cart_Prescription_Options',
+      PROD: 'Cart_Prescription_Options',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1240,6 +1244,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Need_Help',
         'NEED_HELP',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.NEED_HELP
+      );
+
+      setAppConfig(
+        'Cart_Prescription_Options',
+        'CART_PRESCRIPTION_OPTIONS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS
       );
 
       setAppConfig(
