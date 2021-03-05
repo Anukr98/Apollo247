@@ -495,7 +495,7 @@ export const RxPrescriptionCallIc: React.FC<IconProps> = (props) => (
   <IconBase size="sm" source={require('./icons/rx_prescription_call_ic.png')} {...props} />
 );
 export const RxPrescriptionIc: React.FC<IconProps> = (props) => (
-<IconBase size="sm" source={require('./icons/rx_prescription_ic.png')} {...props} />
+  <IconBase size="sm" source={require('./icons/rx_prescription_ic.png')} {...props} />
 );
 export const RxPrescriptionLaterIc: React.FC<IconProps> = (props) => (
   <IconBase size="sm" source={require('./icons/rx_prescription_later_ic.png')} {...props} />
@@ -1825,4 +1825,8 @@ export const ExpiredBanner: React.FC<IconProps> = (props) => (
 
 export const CircleBannerExpired: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/Renew_circle_banner.png')} />
+);
+
+export const LowNetworkIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/lowNetworkIcon.png')} />
 );

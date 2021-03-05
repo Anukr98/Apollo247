@@ -135,6 +135,7 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
+import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -214,7 +215,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems.length + shopCartItems.length;
+  const cartItemsCount = cartItems?.length + shopCartItems?.length;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -229,6 +230,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const [widgetsData, setWidgetsData] = useState([] as any);
+  const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
   const [searchQuery, setSearchQuery] = useState({});
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
@@ -392,7 +394,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchWidgetsPrices(sortWidgets, cityId);
     } else {
       setWidgetsData([]);
-      setLoading!(false);
+      setLoading?.(false);
+      setReloadWidget(true);
     }
   };
 
@@ -444,9 +447,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       }
     }
+    newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
     setWidgetsData(newWidgetsData);
     setSectionLoading(false);
-    setLoading!(false);
+    setLoading?.(false);
   };
 
   const renderCarouselBanners = () => {
@@ -775,10 +779,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const onSearchTest = async (_searchText: string) => {
     if (isValidSearch(_searchText)) {
-      // if (!g(locationForDiagnostics, 'cityId')) {
-      //   renderLocationNotServingPopup();
-      //   return;
-      // }
       if (!(_searchText && _searchText.length > 2)) {
         setDiagnosticResults([]);
         return;
@@ -981,10 +981,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
           onChangeText={(value) => {
             if (isValidSearch(value)) {
-              // if (!g(locationForDiagnostics, 'cityId')) {
-              //   renderLocationNotServingPopup();
-              //   return;
-              // }
               setSearchText(value);
               if (!(value && value.length > 2)) {
                 setDiagnosticResults([]);
@@ -1509,20 +1505,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderWhyBookUsSlider = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {};
     return (
-      <TouchableOpacity activeOpacity={1} onPress={handleOnPress} key={index.toString()}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={handleOnPress}
+        key={index.toString()}
+        style={{
+          height: 200,
+        }}
+      >
         <ImageNative
           key={index.toString()}
-          resizeMode="contain"
-          style={{ width: '100%', height: imgHeight }}
+          resizeMode={'contain'}
+          style={styles.whyBookUsImage}
           source={item?.image}
         />
       </TouchableOpacity>
     );
   };
-
-  function showBookingModal() {
-    !showbookingStepsModal && setShowBookingStepsModal(true);
-  }
 
   const renderStepsToBook = () => {
     return (
@@ -1638,6 +1637,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  function refetchWidgets() {
+    setWidgetsData([]);
+    getHomePageWidgets(serviceableObject?.cityId);
+  }
+
+  const renderLowNetwork = () => {
+    return (
+      <LowNetworkCard
+        heading1={string.common.couldNotLoadText}
+        heading2={string.common.lowNetworkText}
+        buttonTitle={'RETRY'}
+        onPress={refetchWidgets}
+      />
+    );
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1649,6 +1664,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
+        {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {/* {uploadPrescriptionCTA()} */}
         {renderBanner()}
         {renderYourOrders()}
@@ -1674,24 +1690,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderLocationNotServingPopup = () => {
-    showAphAlert!({
-      title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: string.diagnostics.nonServiceableMsg.replace(
-        '{{city_name}}',
-        g(locationDetails, 'displayName')!
-      ),
-      onPressOk: () => {
-        hideAphAlert!();
-        setshowLocationpopup(true);
-      },
-    });
-  };
-
   const renderLocationNotServingPopUpForPincode = (pincode: string) => {
-    showAphAlert!({
+    showAphAlert?.({
       unDismissable: true,
-      title: 'We’re sorry!',
+      title: string.medicine_cart.tatUnServiceableAlertTitle,
       description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
         '{{pincode}}',
         pincode
@@ -1704,7 +1706,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       searchSate != 'load' && searchText.length > 2 && diagnosticResults?.length == 0;
 
     return (
-      (!!diagnosticResults.length || searchSate == 'load' || isNoResultsFound) && (
+      (!!diagnosticResults?.length || searchSate == 'load' || isNoResultsFound) && (
         <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}
@@ -2000,4 +2002,5 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 10,
   },
+  whyBookUsImage: { width: '100%', height: 200 },
 });
