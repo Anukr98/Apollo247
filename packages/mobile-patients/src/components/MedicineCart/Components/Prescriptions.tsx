@@ -1,29 +1,26 @@
-import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
-import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/MedicineCart/Components/PrescriptionInfoView';
+import React, { useState } from 'react';
 import {
-  EPrescription,
-  PhysicalPrescription,
-  useShoppingCart,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
-import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
-import {
-  ScrollView,
-  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
+  StyleProp,
   ViewStyle,
 } from 'react-native';
-
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import {
+  useShoppingCart,
+  PhysicalPrescription,
+  EPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
 export interface PrescriptionsProps {
   onPressUploadMore?: () => void;
   hideHeader?: boolean;
-  showSelectedOption?: boolean;
   isPlainStyle?: boolean;
+  screen?: string;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -33,9 +30,8 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     ePrescriptions,
     removeEPrescription,
     removePhysicalPrescription,
-    prescriptionType,
   } = useShoppingCart();
-  const { onPressUploadMore, style, hideHeader, showSelectedOption, isPlainStyle } = props;
+  const { onPressUploadMore, screen, style, hideHeader, isPlainStyle } = props;
 
   const renderHeader = () => {
     return (
@@ -52,6 +48,15 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         <Text style={[styles.labelTextStyle, mediumFont && styles.mediumFontStyle]}>{label}</Text>
       </View>
     );
+  };
+  const renderPrescriptionMessage = () => {
+    return screen == 'summary' ? (
+      <View style={styles.prescriptionMsgCard}>
+        <Text style={styles.prescriptionMsg}>
+          Items in your cart marked with 'Rx' need prescriptions
+        </Text>
+      </View>
+    ) : null;
   };
 
   const PhysicalPrescription = (item: PhysicalPrescription, i: number, arrayLength: number) => {
@@ -122,30 +127,6 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     );
   };
 
-  const renderPrescriptionInfo = () => {
-    const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
-    const title = isPrescriptionLater
-      ? 'Share Prescription Later Selected'
-      : 'Doctor Consult Selected  ';
-    const description = isPrescriptionLater
-      ? 'You have to share prescription later for order to be verified successfully.'
-      : 'An Apollo doctor will call you soon as they are available!';
-    const note = isPrescriptionLater
-      ? 'Delivery TAT will be on hold till the prescription is submitted.'
-      : 'Delivery TAT will be on hold till the consult is completed.';
-
-    return prescriptionType && showSelectedOption ? (
-      <PrescriptionInfoView
-        onPressUpload={() => {
-          onPressUploadMore?.();
-        }}
-        title={title}
-        description={description}
-        note={note}
-      />
-    ) : null;
-  };
-
   function showPresritionCard() {
     return physicalPrescriptions.length > 0 || ePrescriptions.length > 0;
   }
@@ -160,7 +141,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
       </View>
     </View>
   ) : (
-    renderPrescriptionInfo()
+    <View>{renderPrescriptionMessage()}</View>
   );
 };
 
@@ -180,6 +161,21 @@ const styles = StyleSheet.create({
   HeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
+  },
+  prescriptionMsgCard: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 13,
+    borderRadius: 5,
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    backgroundColor: '#F7F8F5',
+  },
+  prescriptionMsg: {
+    marginLeft: 13,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 24,
+    color: '#02475B',
+    marginVertical: 6,
   },
   card: {
     ...theme.viewStyles.cardViewStyle,
