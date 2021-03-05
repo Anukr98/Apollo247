@@ -152,6 +152,8 @@ export enum WebEngageEventName {
   VACCINATION_CHAT_WITH_US = 'Vaccination Chat with us',
   VACCINATION_TRACKER_ON_HOME_PAGE = 'Vaccine tracker on home page',
   COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
+  USER_LOCATION_CONSULT = 'User Location consult',
+  USER_CHANGED_LOCATION = 'Change location',
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -678,6 +680,20 @@ export interface consultCallEndData {
   Platform: 'App';
 }
 
+interface consultLocation {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  'User location': string;
+  Screen: string;
+  Platform: string;
+  'Doctor details': any;
+  Type: 'Auto Detect' | 'Manual entry';
+}
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -2402,4 +2418,6 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'CTA Clicked': string;
   };
+  [WebEngageEventName.USER_LOCATION_CONSULT]: consultLocation;
+  [WebEngageEventName.USER_CHANGED_LOCATION]: consultLocation;
 }
