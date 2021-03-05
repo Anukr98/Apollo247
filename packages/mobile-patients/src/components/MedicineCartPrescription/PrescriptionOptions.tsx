@@ -28,7 +28,7 @@ export interface Props {
 
 export const PrescriptionOptions: React.FC<Props> = ({ selectedOption, onSelectOption }) => {
   const [myPrescriptionsVisible, setMyPrescriptionsVisible] = useState<boolean>(false);
-  const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
+  const { prescriptionType, ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const prescriptionPopupRef = useRef<UploadPrescriprionPopupRefProps | null>(null);
 
   const renderHavePrescription = () => {
@@ -133,7 +133,7 @@ export const PrescriptionOptions: React.FC<Props> = ({ selectedOption, onSelectO
     return <Divider style={styles.divider} />;
   };
 
-  const renderMyPrescriptionModal = () => {
+  const renderMyPrescriptions = () => {
     return myPrescriptionsVisible ? (
       <SelectEPrescriptionModal
         onSubmit={(selectedEPres) => {
@@ -150,9 +150,9 @@ export const PrescriptionOptions: React.FC<Props> = ({ selectedOption, onSelectO
     ) : null;
   };
 
-  const renderAddedPrescriptions = () => {
+  const renderPrescriptions = () => {
     return (
-      selectedOption === PrescriptionType.UPLOADED && (
+      prescriptionType === PrescriptionType.UPLOADED && (
         <View style={styles.prescriptionView}>
           <Prescriptions hideHeader isPlainStyle />
         </View>
@@ -183,12 +183,12 @@ export const PrescriptionOptions: React.FC<Props> = ({ selectedOption, onSelectO
 
   return [
     renderHavePrescription(),
-    renderAddedPrescriptions(),
+    renderPrescriptions(),
     renderDivider(),
     renderSharePrescriptionLater(),
     renderDivider(),
     renderNoPrescription(),
-    renderMyPrescriptionModal(),
+    renderMyPrescriptions(),
     renderPrescriptionPopup(),
   ];
 };

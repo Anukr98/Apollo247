@@ -1,17 +1,11 @@
-import {
-  Helpers,
-  PrescriptionOptions,
-} from '@aph/mobile-patients/src/components/MedicineCartPrescription';
+import { PrescriptionOptions } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -28,9 +22,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     setPhysicalPrescriptions,
     setEPrescriptions,
   } = useShoppingCart();
-  const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
-  const { setLoading, showAphAlert } = useUIElements();
 
   const renderHeader = () => {
     return (
@@ -80,30 +71,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const onPressContinue = async () => {
-    setLoading?.(true);
-    try {
-      if (prescriptionType === PrescriptionType.UPLOADED) {
-        const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
-          client,
-          currentPatient?.id,
-          physicalPrescriptions
-        );
-        setPhysicalPrescriptions!(updatedPrescriptions);
-      } else {
-        setEPrescriptions!([]);
-        setPhysicalPrescriptions!([]);
-      }
-    } catch (error) {
-      showAphAlert?.({
-        title: 'Uh oh.. :(',
-        description: 'Error occurred while uploading prescriptions.',
-      });
-    }
-    setLoading?.(false);
-    navigation.navigate(AppRoutes.CartSummary);
-  };
-
   const renderContinueButton = () => {
     const isDisabled = prescriptionType
       ? prescriptionType === PrescriptionType.UPLOADED &&
@@ -113,7 +80,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     return (
       <View style={styles.buttonView}>
         <Button
-          onPress={onPressContinue}
+          onPress={() => navigation.navigate(AppRoutes.CartSummary)}
           title={'CONTINUE WITH PRESCRIPTION'}
           disabled={isDisabled}
         />
