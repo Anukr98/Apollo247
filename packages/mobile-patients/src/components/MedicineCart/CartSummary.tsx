@@ -68,10 +68,7 @@ import {
 import moment from 'moment';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
 import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
-import {
-  MedicineOrderShipmentInput,
-  PrescriptionType,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -505,10 +502,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const renderPrescriptions = () => {
     return (
       <Prescriptions
-        onPressUploadMore={() => {
-          shoppingCart.setPrescriptionType(null);
-          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-        }}
+        onPressUploadMore={() => props.navigation.navigate(AppRoutes.MedicineCartPrescription)}
         showSelectedOption
       />
     );
@@ -545,14 +539,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
-          {uploadPrescriptionRequired &&
-            prescriptionType !== PrescriptionType.UPLOADED &&
-            renderPrescriptions()}
           {renderTatCard()}
           {renderCartItems()}
-          {uploadPrescriptionRequired &&
-            prescriptionType === PrescriptionType.UPLOADED &&
-            renderPrescriptions()}
+          {uploadPrescriptionRequired && renderPrescriptions()}
         </ScrollView>
         {renderButton()}
         {loading && <Spinner />}
