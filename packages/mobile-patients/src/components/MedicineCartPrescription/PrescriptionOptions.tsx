@@ -13,7 +13,6 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   CameraIc,
-  FreeShippingIcon,
   GalleryIc,
   RxIc,
   RxPrescriptionCallIc,
@@ -158,14 +157,6 @@ export const PrescriptionOptions: React.FC<Props> = ({
           <Text style={styles.consultationFor}>{'This consultation is for:'}</Text>,
           <Divider />,
           renderProfiles(),
-          <View style={styles.consultAttentionView}>
-            <FreeShippingIcon style={styles.freeShippingIcon} />
-            <Text style={styles.lightWeightBlue}>
-              {
-                'Please make sure the consult is for the right person else consult can get cancelled.'
-              }
-            </Text>
-          </View>,
         ]}
       </>
     );
@@ -340,6 +331,4 @@ const styles = StyleSheet.create({
   profileBtnTitle: { ...text('M', 14, '#01475B') },
   profileBtnSelected: { ...card(8, 0, 5, '#01475B'), borderColor: '#01475B' },
   profileBtnTitleSelected: { ...text('M', 14, '#FFF') },
-  consultAttentionView: { flexDirection: 'row' },
-  freeShippingIcon: { width: 15, height: 15, marginTop: 3, marginRight: 3, marginLeft: -3 },
 });
