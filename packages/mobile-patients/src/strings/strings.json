@@ -41,6 +41,7 @@
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "addPrescriptionText": "ADD PRESCRIPTION",
     "addTestReportText": "ADD TEST REPORT",
+    "doctorConsultPHRText": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room",
     "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
     "addHealthConditionText": "ADD HEALTH CONDITIONS",
     "addBillText": "ADD BILL",
