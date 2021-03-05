@@ -1151,6 +1151,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Covid_Vaccine_CTA_QA',
       PROD: 'Covid_Vaccine_CTA',
     },
+    Cart_Prescription_Options: {
+      QA: 'QA_Cart_Prescription_Options',
+      PROD: 'Cart_Prescription_Options',
+    },
     Login_Section_Key: {
       QA: 'Login_Section_QA',
       PROD: 'Login_Section',
@@ -1284,6 +1288,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'CART_UPDATE_PRICE_CONFIG',
         (key) =>
           JSON.parse(config.getString(key)) || AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG
+      );
+
+      setAppConfig(
+        'Cart_Prescription_Options',
+        'CART_PRESCRIPTION_OPTIONS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS
       );
 
       setAppConfig(

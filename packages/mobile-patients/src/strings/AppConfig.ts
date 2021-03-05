@@ -185,6 +185,23 @@ const appStaticVariables = {
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
+  CART_PRESCRIPTION_OPTIONS: [
+    {
+      id: 'havePrescription',
+      title: 'I have a Prescription',
+      visible: true,
+    },
+    {
+      id: 'sharePrescriptionLater',
+      title: 'Share Prescription later',
+      visible: true,
+    },
+    {
+      id: 'noPrescriptionDoConsult',
+      title: 'I don’t have a Prescription',
+      visible: true,
+    },
+  ],
   FollowUp_Chat_Limit: 4,
   Covid_Items : QA_covid_items,
   Covid_Max_Slot_Days : covidMaxSlotDays,
