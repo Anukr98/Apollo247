@@ -482,6 +482,25 @@ export const PreviousPrescriptionIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" source={require('./icons/previous_prescription_icon.png')} {...props} />
 );
 
+export const CameraIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/camera_ic.png')} {...props} />
+);
+export const GalleryIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/gallery_ic.png')} {...props} />
+);
+export const RxIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/rx_ic.png')} {...props} />
+);
+export const RxPrescriptionCallIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_call_ic.png')} {...props} />
+);
+export const RxPrescriptionIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_ic.png')} {...props} />
+);
+export const RxPrescriptionLaterIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_later_ic.png')} {...props} />
+);
+
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ChatCall.png')} />
 );
@@ -1808,6 +1827,9 @@ export const CircleBannerExpired: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/Renew_circle_banner.png')} />
 );
 
+export const LowNetworkIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/lowNetworkIcon.png')} />
+);
 export const Truecaller: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/truecaller.png')} resizeMode="contain" />
 );

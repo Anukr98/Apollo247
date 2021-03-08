@@ -86,6 +86,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import HTML from 'react-native-render-html';
+import _ from 'lodash';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -374,17 +375,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     },
   };
 
-  const scrollToTop = () => {
-    setTimeout(() => {
-      scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
-    }, 0);
-  };
-
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
-      scrollToTop();
-
       if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
@@ -512,13 +505,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
     const showGender =
       (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
-      (!!testInfo && `FOR ${gender?.[testInfo?.Gender]}`) ||
+      (!_.isEmpty(testInfo) && `FOR ${gender?.[testInfo?.Gender]}`) ||
       'Both';
     const showDescription =
       (!!cmsTestDetails &&
         cmsTestDetails?.diagnosticOverview?.length > 0 &&
         cmsTestDetails?.diagnosticOverview?.[0]?.value) ||
-      (!!testInfo && testInfo?.testDescription);
+      (!_.isEmpty(testInfo) && testInfo?.testDescription);
     return (
       <>
         {sampleType || showAge || showGender || showDescription ? (
@@ -651,7 +644,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {renderSeparator()}
         <View style={{ marginTop: '2%' }}>
           {renderSlashedView(slashedPrice, priceToShow)}
-          {!!testInfo && renderMainPriceView(priceToShow)}
+          {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow)}
         </View>
       </View>
     );
@@ -1101,7 +1094,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             style={{ marginBottom: 60 }}
             ref={scrollViewRef}
           >
-            {!!testInfo && !!cmsTestDetails && renderItemCard()}
+            {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
             {renderWhyBookUs()}
             {renderDescriptionCard()}
             {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0

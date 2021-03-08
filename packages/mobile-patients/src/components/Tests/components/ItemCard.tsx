@@ -319,26 +319,50 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const widgetTitle = data?.diagnosticWidgetTitle;
 
     postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
-    navigation.navigate(AppRoutes.TestDetails, {
-      itemId: item?.itemId,
-      comingFrom: sourceScreen,
-      testDetails: {
-        Rate: price,
-        specialPrice: specialPrice! || price,
-        circleRate: circlePrice,
-        circleSpecialPrice: circleSpecialPrice,
-        discountPrice: discountPrice,
-        discountSpecialPrice: discountSpecialPrice,
-        ItemID: `${item?.itemId}`,
-        ItemName: item?.itemTitle!,
-        collectionType: TEST_COLLECTION_TYPE.HC,
-        packageMrp: packageCalculatedMrp,
-        mrpToDisplay: mrpToDisplay,
-        source: source,
-        type: data?.diagnosticWidgetType,
-        inclusions: [Number(item?.itemId)],
-      } as TestPackageForDetails,
-    });
+
+    if (sourceScreen == AppRoutes.TestDetails) {
+      navigation.replace(AppRoutes.TestDetails, {
+        itemId: item?.itemId,
+        comingFrom: sourceScreen,
+        testDetails: ({
+          Rate: price,
+          specialPrice: specialPrice! || price,
+          circleRate: circlePrice,
+          circleSpecialPrice: circleSpecialPrice,
+          discountPrice: discountPrice,
+          discountSpecialPrice: discountSpecialPrice,
+          ItemID: `${item?.itemId}`,
+          ItemName: item?.itemTitle!,
+          collectionType: TEST_COLLECTION_TYPE.HC,
+          packageMrp: packageCalculatedMrp,
+          mrpToDisplay: mrpToDisplay,
+          source: source,
+          type: data?.diagnosticWidgetType,
+          inclusions: [Number(item?.itemId)],
+        } as unknown) as TestPackageForDetails,
+      });
+    } else {
+      navigation.navigate(AppRoutes.TestDetails, {
+        itemId: item?.itemId,
+        comingFrom: sourceScreen,
+        testDetails: {
+          Rate: price,
+          specialPrice: specialPrice! || price,
+          circleRate: circlePrice,
+          circleSpecialPrice: circleSpecialPrice,
+          discountPrice: discountPrice,
+          discountSpecialPrice: discountSpecialPrice,
+          ItemID: `${item?.itemId}`,
+          ItemName: item?.itemTitle!,
+          collectionType: TEST_COLLECTION_TYPE.HC,
+          packageMrp: packageCalculatedMrp,
+          mrpToDisplay: mrpToDisplay,
+          source: source,
+          type: data?.diagnosticWidgetType,
+          inclusions: [Number(item?.itemId)],
+        } as TestPackageForDetails,
+      });
+    }
   }
 
   const renderAddToCart = (

@@ -49,7 +49,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
-  doRequestAndAccessLocation,
   doRequestAndAccessLocationModified,
   g,
   isValidSearch,
@@ -88,7 +87,6 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import _ from 'lodash';
@@ -135,6 +133,7 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
+import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -214,7 +213,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems.length + shopCartItems.length;
+  const cartItemsCount = cartItems?.length + shopCartItems?.length;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -229,6 +228,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const [widgetsData, setWidgetsData] = useState([] as any);
+  const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
   const [searchQuery, setSearchQuery] = useState({});
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
@@ -250,8 +250,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     g(locationDetails, 'pincode');
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
-  const isSeviceableObjectEmpty =
-    Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
+  Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
 
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
@@ -392,7 +391,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchWidgetsPrices(sortWidgets, cityId);
     } else {
       setWidgetsData([]);
-      setLoading!(false);
+      setLoading?.(false);
+      setReloadWidget(true);
     }
   };
 
@@ -418,35 +418,50 @@ export const Tests: React.FC<TestsProps> = (props) => {
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
     //restriction less than 12.
-    const res = Promise.all(
-      !!itemIds &&
-        itemIds?.length > 0 &&
-        itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
-        )
-    );
+    try {
+      const res = Promise.all(
+        !!itemIds &&
+          itemIds?.length > 0 &&
+          itemIds?.map((item: any) =>
+            fetchPricesForCityId(
+              Number(cityId!) || 9,
+              item?.length > 12 ? item?.slice(0, 12) : item
+            )
+          )
+      );
 
-    const response = (await res)?.map((item: any) =>
-      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-    );
-    let newWidgetsData = [...filterWidgets];
+      const response = (await res)?.map((item: any) =>
+        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+      );
+      let newWidgetsData = [...filterWidgets];
 
-    for (let i = 0; i < filterWidgets?.length; i++) {
-      for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
-        const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
-          (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-        );
-        if (findIndex !== -1) {
-          (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-            response?.[i]?.[j]?.packageCalculatedMrp),
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-              response?.[i]?.[j]?.diagnosticPricing);
+      for (let i = 0; i < filterWidgets?.length; i++) {
+        for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+          const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
+            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
+          );
+          if (findIndex !== -1) {
+            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
+              response?.[i]?.[j]?.packageCalculatedMrp),
+              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
+                response?.[i]?.[j]?.diagnosticPricing);
+          }
         }
       }
+      newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
+      setWidgetsData(newWidgetsData);
+      setSectionLoading(false);
+      setLoading?.(false);
+    } catch (error) {
+      console.log('errorInFetchPricing api__', error);
+      setSectionLoading(false);
+      setReloadWidget(true);
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.common.tryAgainLater,
+      });
     }
-    setWidgetsData(newWidgetsData);
-    setSectionLoading(false);
-    setLoading!(false);
   };
 
   const renderCarouselBanners = () => {
@@ -512,9 +527,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
-          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
-          setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
-          return;
+          //if location is not undefined in either of the three, then don't change address
+          if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+            checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
+            setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+            return;
+          }
         }
       }
       setLoadingContext!(true);
@@ -527,9 +545,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setAddresses!(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
-        setDeliveryAddressId!(deliveryAddress?.id);
-        checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
-        setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+        if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
+          setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+          setDeliveryAddressId?.(deliveryAddress?.id);
+        } else {
+          let location = diagnosticLocation || pharmacyLocation || locationDetails;
+          checkIsPinCodeServiceable(location?.pincode!, undefined, 'fetchAddressElse');
+        }
       } else {
         checkLocation(addressList);
       }
@@ -775,10 +798,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const onSearchTest = async (_searchText: string) => {
     if (isValidSearch(_searchText)) {
-      // if (!g(locationForDiagnostics, 'cityId')) {
-      //   renderLocationNotServingPopup();
-      //   return;
-      // }
       if (!(_searchText && _searchText.length > 2)) {
         setDiagnosticResults([]);
         return;
@@ -953,10 +972,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
-      <View
-      // pointerEvents={!isSeviceableObjectEmpty && serviceableObject?.city != '' ? 'auto' : 'none'}
-      // style={styles.searchViewShadow}
-      >
+      <View>
         <SearchInput
           _isSearchFocused={isSearchFocused}
           autoFocus={
@@ -981,10 +997,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
           onChangeText={(value) => {
             if (isValidSearch(value)) {
-              // if (!g(locationForDiagnostics, 'cityId')) {
-              //   renderLocationNotServingPopup();
-              //   return;
-              // }
               setSearchText(value);
               if (!(value && value.length > 2)) {
                 setDiagnosticResults([]);
@@ -1015,8 +1027,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   async function setDefaultAddress(address: Address) {
     try {
-      setLoadingContext!(true);
-      hideAphAlert!();
+      setLoadingContext?.(true);
+      hideAphAlert?.();
       const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
         query: SET_DEFAULT_ADDRESS,
         variables: { patientAddressId: address?.id },
@@ -1034,7 +1046,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
       checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
-
       setLoadingContext!(false);
     } catch (error) {
       setLoadingContext!(false);
@@ -1509,20 +1520,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderWhyBookUsSlider = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {};
     return (
-      <TouchableOpacity activeOpacity={1} onPress={handleOnPress} key={index.toString()}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={handleOnPress}
+        key={index.toString()}
+        style={{
+          height: 200,
+        }}
+      >
         <ImageNative
           key={index.toString()}
-          resizeMode="contain"
-          style={{ width: '100%', height: imgHeight }}
+          resizeMode={'contain'}
+          style={styles.whyBookUsImage}
           source={item?.image}
         />
       </TouchableOpacity>
     );
   };
-
-  function showBookingModal() {
-    !showbookingStepsModal && setShowBookingStepsModal(true);
-  }
 
   const renderStepsToBook = () => {
     return (
@@ -1638,6 +1652,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  function refetchWidgets() {
+    setWidgetsData([]);
+    setLoading?.(true);
+    getHomePageWidgets(serviceableObject?.cityId);
+  }
+
+  const renderLowNetwork = () => {
+    return (
+      <LowNetworkCard
+        heading1={string.common.couldNotLoadText}
+        heading2={string.common.lowNetworkText}
+        buttonTitle={'RETRY'}
+        onPress={refetchWidgets}
+      />
+    );
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1649,6 +1680,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
+        {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {/* {uploadPrescriptionCTA()} */}
         {renderBanner()}
         {renderYourOrders()}
@@ -1674,24 +1706,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderLocationNotServingPopup = () => {
-    showAphAlert!({
-      title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: string.diagnostics.nonServiceableMsg.replace(
-        '{{city_name}}',
-        g(locationDetails, 'displayName')!
-      ),
-      onPressOk: () => {
-        hideAphAlert!();
-        setshowLocationpopup(true);
-      },
-    });
-  };
-
   const renderLocationNotServingPopUpForPincode = (pincode: string) => {
-    showAphAlert!({
+    showAphAlert?.({
       unDismissable: true,
-      title: 'We’re sorry!',
+      title: string.medicine_cart.tatUnServiceableAlertTitle,
       description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
         '{{pincode}}',
         pincode
@@ -1704,7 +1722,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       searchSate != 'load' && searchText.length > 2 && diagnosticResults?.length == 0;
 
     return (
-      (!!diagnosticResults.length || searchSate == 'load' || isNoResultsFound) && (
+      (!!diagnosticResults?.length || searchSate == 'load' || isNoResultsFound) && (
         <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}
@@ -2000,4 +2018,5 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 10,
   },
+  whyBookUsImage: { width: '100%', height: 200 },
 });
