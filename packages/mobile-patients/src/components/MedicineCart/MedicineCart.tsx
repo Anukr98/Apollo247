@@ -144,7 +144,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setNewAddressAdded,
     orders,
     setOrders,
-    shipments,
+    productDiscount,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -629,7 +629,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
       coupon: coupon,
       pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({

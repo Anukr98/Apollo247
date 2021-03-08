@@ -85,6 +85,7 @@ import {
   saveMedicineOrderPaymentMqV2,
   saveMedicineOrderPaymentMqV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderPaymentMqV2';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -754,13 +755,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 14),
               marginTop: 3,
               left: -5,
+              width: '92%',
             }}
           >
             {' '}
             You{' '}
             <Text style={theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {totalCashBack?.toFixed(2)}{' '}
+              {convertNumberToDecimal(totalCashBack)}{' '}
             </Text>
             on your purchase
           </Text>
