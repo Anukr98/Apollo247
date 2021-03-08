@@ -173,6 +173,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setIsDiagnosticCircleSubscription,
     newAddressAddedHomePage,
     setNewAddressAddedHomePage,
+    deliveryAddressId,
+    setDeliveryAddressId,
+    setAddresses: setTestAddress,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -184,8 +187,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setCirclePlanValidity,
     addresses,
     setAddresses,
-    deliveryAddressId,
-    setDeliveryAddressId,
   } = useShoppingCart();
 
   const {
@@ -543,12 +544,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
       const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
       setAddresses!(addressList);
+      setTestAddress?.(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
+        setDeliveryAddressId?.(deliveryAddress?.id);
         if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
-          setDeliveryAddressId?.(deliveryAddress?.id);
         } else {
           let location = diagnosticLocation || pharmacyLocation || locationDetails;
           checkIsPinCodeServiceable(location?.pincode!, undefined, 'fetchAddressElse');
@@ -590,7 +592,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
             (response.city = setCity), (response.state = setState);
             setDiagnosticLocation!(response);
-            setDeliveryAddressId!('');
             !locationDetails && setLocationDetails!(response);
             setLoadingContext!(false);
           } else {
@@ -1041,6 +1042,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
       }));
       setAddresses!(updatedAddresses);
+      setTestAddress?.(updatedAddresses);
       patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
