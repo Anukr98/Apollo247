@@ -49,7 +49,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
-  doRequestAndAccessLocation,
   doRequestAndAccessLocationModified,
   g,
   isValidSearch,
@@ -88,7 +87,6 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import _ from 'lodash';
@@ -252,8 +250,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     g(locationDetails, 'pincode');
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
-  const isSeviceableObjectEmpty =
-    Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
+  Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
 
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
@@ -436,7 +433,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const response = (await res)?.map((item: any) =>
         g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
       );
-      console.log({ response });
       let newWidgetsData = [...filterWidgets];
 
       for (let i = 0; i < filterWidgets?.length; i++) {
@@ -531,9 +527,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
-          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
-          setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
-          return;
+          //if location is not undefined in either of the three, then don't change address
+          if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+            checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
+            setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+            return;
+          }
         }
       }
       setLoadingContext!(true);
@@ -546,9 +545,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setAddresses!(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
-        setDeliveryAddressId!(deliveryAddress?.id);
-        checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
-        setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+        if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
+          setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+          setDeliveryAddressId?.(deliveryAddress?.id);
+        } else {
+          let location = diagnosticLocation || pharmacyLocation || locationDetails;
+          checkIsPinCodeServiceable(location?.pincode!, undefined, 'fetchAddressElse');
+        }
       } else {
         checkLocation(addressList);
       }
@@ -968,10 +972,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
-      <View
-      // pointerEvents={!isSeviceableObjectEmpty && serviceableObject?.city != '' ? 'auto' : 'none'}
-      // style={styles.searchViewShadow}
-      >
+      <View>
         <SearchInput
           _isSearchFocused={isSearchFocused}
           autoFocus={
@@ -1026,8 +1027,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   async function setDefaultAddress(address: Address) {
     try {
-      setLoadingContext!(true);
-      hideAphAlert!();
+      setLoadingContext?.(true);
+      hideAphAlert?.();
       const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
         query: SET_DEFAULT_ADDRESS,
         variables: { patientAddressId: address?.id },
@@ -1045,7 +1046,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
       checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
-
       setLoadingContext!(false);
     } catch (error) {
       setLoadingContext!(false);

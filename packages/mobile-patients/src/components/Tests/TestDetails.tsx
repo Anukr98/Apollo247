@@ -375,17 +375,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     },
   };
 
-  const scrollToTop = () => {
-    setTimeout(() => {
-      scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
-    }, 0);
-  };
-
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
-      scrollToTop();
-
       if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
