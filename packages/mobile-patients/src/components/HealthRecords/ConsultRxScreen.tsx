@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   searchFilterViewStyle: {
     marginHorizontal: 20,
     marginVertical: 22,
-    marginBottom: 10,
+    marginBottom: 3,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -171,6 +171,13 @@ const styles = StyleSheet.create({
   searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
   phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
   searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
+  doctorConsultPHRTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SKY_BLUE, 1, 14),
+    marginLeft: 20,
+    marginBottom: 10,
+    marginRight: 32,
+    marginTop: 2,
+  },
 });
 
 export enum FILTER_TYPE {
@@ -934,7 +941,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       <HealthRecordCard
         item={item?.data}
         index={index}
-        editDeleteData={editDeleteData()}
+        editDeleteData={editDeleteData(MedicalRecordType.PRESCRIPTION)}
         showUpdateDeleteOption={item?.data?.patientId ? false : showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
@@ -949,6 +956,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         onOrderTestAndMedicinePress={(selectedItem) =>
           onOrderTestMedPress(selectedItem, caseSheetDetails)
         }
+        deleteRecordText={'prescription'}
       />
     );
   };
@@ -1056,7 +1064,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={`ADD DATA`}
+          title={string.common.addPrescriptionText}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
@@ -1095,6 +1103,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             ? renderSearchBar()
             : renderSearchAndFilterView()
           : null}
+        <Text style={styles.doctorConsultPHRTextStyle}>{string.common.doctorConsultPHRText}</Text>
         {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderConsultMainView()}
       </SafeAreaView>
     </View>

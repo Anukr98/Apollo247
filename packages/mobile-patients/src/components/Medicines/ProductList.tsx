@@ -66,12 +66,21 @@ export const ProductList: React.FC<Props> = ({
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string) => {
-    navigation.push(AppRoutes.ProductDetailPage, {
-      sku,
-      movedFrom,
-      sectionName,
-      productPageViewedEventProps,
-    });
+    if (movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS) {
+      navigation.replace(AppRoutes.ProductDetailPage, {
+        sku,
+        movedFrom,
+        sectionName,
+        productPageViewedEventProps,
+      });
+    } else {
+      navigation.push(AppRoutes.ProductDetailPage, {
+        sku,
+        movedFrom,
+        sectionName,
+        productPageViewedEventProps,
+      });
+    }
   };
 
   const onPressNotify = (name: string) => {
