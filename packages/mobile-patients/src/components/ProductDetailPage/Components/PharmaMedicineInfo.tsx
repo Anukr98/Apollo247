@@ -33,40 +33,54 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
 
   const [showAllContent, setShowAllContent] = useState<boolean>(false);
   const pharmaUses = pharmaOverview?.HowToTake;
+  const usesOfProduct = pharmaOverview?.Uses;
+  const pharmaBenefits = pharmaOverview?.MedicinalBenefits;
   const pharmaSideEffects = pharmaOverview?.SideEffects;
   const storagePlace = pharmaOverview?.StoragePlace;
   const storage = pharmaOverview?.Storage;
   const coldChain = pharmaOverview?.ColdChain;
+  const aboutProduct = pharmaOverview?.AboutProduct;
 
-  const renderUses = (uses: string) => {
-    const medicine_use = filterHtmlContent(uses);
-    const medicineUse = medicine_use.replace(/\$name/gi, name);
+  const renderHtmlContent = (title: string, content: string) => (
+    <View>
+      <Text style={styles.subHeading}>{title}</Text>
+      <HTML
+        html={content}
+        baseFontStyle={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
+        imagesMaxWidth={Dimensions.get('window').width}
+      />
+    </View>
+  );
+
+  const renderAbout = () => {
+    const medicine_about = filterHtmlContent(aboutProduct);
+    let medicineAbout = medicine_about.replace(/\$name/gi, name);
+    return !!medicineAbout.length && renderHtmlContent(`About ${name}`, medicineAbout);
+  };
+
+  const renderUses = () => {
+    const medicine_use = filterHtmlContent(pharmaUses);
+    let medicineUse = medicine_use.replace(/\$name/gi, name);
+    let pharma_benefits = filterHtmlContent(pharmaBenefits);
+    pharma_benefits = pharma_benefits.replace(/\$name/gi, name);
     return (
-      !!medicineUse.length && (
-        <View>
-          <Text style={styles.subHeading}>{`Uses of ${name}`}</Text>
-          <HTML
-            html={medicineUse}
-            baseFontStyle={{
-              ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
-            }}
-            imagesMaxWidth={Dimensions.get('window').width}
-          />
-        </View>
-      )
+      <View>
+        {!!medicineUse.length && renderHtmlContent(`Directions of Use`, medicineUse)}
+        {!!pharma_benefits.length && renderHtmlContent(`Medicinal Benefits`, pharma_benefits)}
+      </View>
     );
+  };
+
+  const renderUsesOfProduct = () => {
+    const medicine_uses = filterHtmlContent(usesOfProduct);
+    let medicineUses = medicine_uses.replace(/\$name/gi, name);
+    return !!medicineUses.length && renderHtmlContent(`Uses of ${name}`, medicineUses);
   };
 
   const renderSideEffects = (medicineSideEffects: string) => {
     const sideEffectsHtml = filterHtmlContent(medicineSideEffects);
-    const text = sideEffectsHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
-    const sideEffects = text.replace(/\$name/gi, name);
-    return !!sideEffects ? (
-      <View>
-        <Text style={styles.subHeading}>{`Side Effects of ${name}`}</Text>
-        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{sideEffects}</Text>
-      </View>
-    ) : null;
+    const sideEffects = sideEffectsHtml.replace(/\$name/gi, name);
+    return !!sideEffects ? renderHtmlContent(`Side Effects of ${name}`, sideEffects) : null;
   };
 
   const renderVegetarianIcon = () => {
@@ -138,10 +152,11 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
 
   return (
     <View style={styles.cardStyle}>
-      {!!pharmaUses && renderUses(pharmaUses)}
+      {!!aboutProduct && renderAbout()}
       {showAllContent && (
         <>
-          {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
+          {!!usesOfProduct && renderUsesOfProduct()}
+          {(!!pharmaUses || !!pharmaBenefits) && renderUses()}
           {renderVegetarianIcon()}
           {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
           {!!key_ingredient && renderKeyIngredient()}
@@ -149,6 +164,7 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
           {!!flavour_fragrance && renderFlavour()}
           {!!colour && renderColor()}
           {!!variant && renderVariant()}
+          {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
           {!!pharmaOverview && renderPrecautionsAndWarnings()}
         </>
       )}

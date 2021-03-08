@@ -109,6 +109,8 @@ const Common = {
   DISCOUNT_LIGHT_BLUE: light_blue,
   DISCOUNT_BLUE_COLOR: blue_color,
   REMOVE_RED: '#E31E24',
+  PURPLE: '#393487',
+  TRUECALLER_THEME: '#3780F6',
 };
 
 const Header = {

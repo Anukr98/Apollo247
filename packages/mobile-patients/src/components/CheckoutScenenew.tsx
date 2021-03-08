@@ -128,7 +128,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
-    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -217,10 +216,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       mutation: SAVE_MEDICINE_ORDER_PAYMENT_V2,
       variables: paymentInfo,
     });
-
-  useEffect(() => {
-    !!circleMembershipCharges ? setIsFreeDelivery?.(true) : setIsFreeDelivery?.(false);
-  }, [circleMembershipCharges]);
 
   useEffect(() => {
     fetchHealthCredits();
@@ -460,10 +455,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } catch (error) {
             console.log(error);
           }
+          let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
+          orders[0] = {
+            __typename: 'MedicineOrderIds',
+            id: orderId,
+            orderAutoId: orderAutoId,
+          };
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
-            orderId: orderAutoId,
+            transId: orderAutoId,
+            orders: orders,
+            isStorePickup: isStorePickup,
           });
         }
       })
@@ -586,23 +589,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orders?.forEach((order) => {
       firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
     });
-    const token = await firebaseAuth().currentUser!.getIdToken();
-    console.log({ token });
     const checkoutEventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${transactionId}`, false),
-    };
-    const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${transactionId}`),
     };
     props.navigation.navigate(AppRoutes.PaymentScene, {
       orders,
       transactionId,
-      token,
       amount: getFormattedAmount(grandTotal - burnHC),
       burnHC: burnHC,
       deliveryTime,
       checkoutEventAttributes,
-      appsflyerEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
@@ -654,7 +650,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         devliveryCharges: deliveryCharges,
         packagingCharges: packagingCharges,
         estimatedAmount,
-        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -728,7 +723,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         coupon: coupon ? coupon.coupon : '',
         patientAddressId: deliveryAddressId,
-        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),

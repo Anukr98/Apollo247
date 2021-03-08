@@ -742,7 +742,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       <HealthRecordCard
         item={filterApplied === FILTER_TYPE.PARAMETER_NAME ? item : item?.data}
         index={index}
-        editDeleteData={editDeleteData()}
+        editDeleteData={editDeleteData(MedicalRecordType.TEST_REPORT)}
         showUpdateDeleteOption={showEditDeleteOption}
         hideUpdateDeleteOption={hideEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
@@ -753,6 +753,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         dateText={dateText}
         selfUpload={selfUpload}
         sourceName={soureName || ''}
+        deleteRecordText={'test results'}
       />
     );
   };
@@ -852,7 +853,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={`ADD DATA`}
+          title={string.common.addTestReportText}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
