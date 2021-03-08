@@ -65,6 +65,7 @@ import {
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
   GET_DIAGNOSTIC_NEAREST_AREA,
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
