@@ -305,6 +305,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         params: params,
         availNowText: ctaBannerText?.AVAILABLE_NOW || '',
         consultNowText: ctaBannerText?.CONSULT_NOW || '',
+        doctorType: rowData?.doctorType,
       });
     } else {
       props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -666,7 +667,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 >
                   {string.circleDoctors.circleSavings.replace(
                     '{amount}',
-                    `${circleDoctorDiscountedPrice}`
+                    `${convertNumberToDecimal(circleDoctorDiscountedPrice)}`
                   )}
                 </Text>
               ) : null}

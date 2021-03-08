@@ -121,7 +121,6 @@ import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
-import { MedicineCartPrescription } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
 import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
 import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
@@ -242,7 +241,6 @@ export enum AppRoutes {
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
   MedicineCart = 'MedicineCart',
-  MedicineCartPrescription = 'MedicineCartPrescription',
   CartSummary = 'CartSummary',
   StorePickup = 'StorePickup',
   PickUpCartSummary = 'PickUpCartSummary',
@@ -252,7 +250,7 @@ export enum AppRoutes {
   SearchAppointmentScreen = 'SearchAppointmentScreen',
   AppointmentFilterScene = 'AppointmentFilterScene',
   PaymentCheckout = 'PaymentCheckout',
-  PaymentCheckoutPhysical = 'PaymentCheckoutPhysical',
+  PaymentCheckoutPhysical='PaymentCheckoutPhysical',
   CircleSubscription = 'CircleSubscription',
   SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
@@ -610,9 +608,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineCart]: {
     screen: MedicineCart,
-  },
-  [AppRoutes.MedicineCartPrescription]: {
-    screen: MedicineCartPrescription,
   },
   [AppRoutes.CartSummary]: {
     screen: CartSummary,

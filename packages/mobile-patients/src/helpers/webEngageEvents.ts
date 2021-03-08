@@ -34,9 +34,8 @@ export enum ProductPageViewedSource {
 
 export enum WebEngageEventName {
   //doh
-  DOH_Viewed='DOH Viewed',
-  DOH_Clicked='DOH Clicked',
-
+  DOH_Viewed = 'DOH Viewed',
+  DOH_Clicked = 'DOH Clicked',
 
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -156,6 +155,9 @@ export enum WebEngageEventName {
   VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED = 'Vaccination Call a doctor - Proceed to connect',
   VACCINATION_CHAT_WITH_US = 'Vaccination Chat with us',
   VACCINATION_TRACKER_ON_HOME_PAGE = 'Vaccine tracker on home page',
+  COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
+  USER_LOCATION_CONSULT = 'User Location consult',
+  USER_CHANGED_LOCATION = 'Change location',
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -458,14 +460,14 @@ export interface UserInfo {
   'Customer ID': string;
 }
 export interface DOHInfo {
-  doctorId: string,
-  doctorName: string,
-  doctorType:string,
-  specialtyId: string,
-  specialtyName: string,
-  zone:string,
-  userName: string,
-  userPhoneNumber: string,
+  doctorId: string;
+  doctorName: string;
+  doctorType: string;
+  specialtyId: string;
+  specialtyName: string;
+  zone: string;
+  userName: string;
+  userPhoneNumber: string;
 }
 
 export interface CircleUserInfo extends UserInfo {
@@ -692,6 +694,20 @@ export interface consultCallEndData {
   Platform: 'App';
 }
 
+interface consultLocation {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  'User location': string;
+  Screen: string;
+  Platform: string;
+  'Doctor details': any;
+  Type: 'Auto Detect' | 'Manual entry';
+}
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -710,15 +726,15 @@ export interface WebEngageEvents {
     Gender: string;
     Email: string;
     'Referral Code'?: string;
+    'Mobile Number': string;
   };
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
   [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
   [WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM]: UserInfo;
 
   // DOH Events \\
-  [WebEngageEventName.DOH_Viewed]:DOHInfo,
-  [WebEngageEventName.DOH_Clicked]:DOHInfo,
-
+  [WebEngageEventName.DOH_Viewed]: DOHInfo;
+  [WebEngageEventName.DOH_Clicked]: DOHInfo;
 
   // ********** Home Screen Events ********** \\
 
@@ -1248,7 +1264,7 @@ export interface WebEngageEvents {
     'Item ID': string | number;
     'Item name': string;
     Pincode: string | number;
-    'Mode': 'Customer' | 'Automated'
+    Mode: 'Customer' | 'Automated';
   };
   [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]: {
     Reschedule: string;
@@ -2093,6 +2109,7 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
+    Pincode?: string;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2104,6 +2121,7 @@ export interface WebEngageEvents {
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor ID': string;
+    'Media Source': string;
   };
   [WebEngageEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
@@ -2399,4 +2417,27 @@ export interface WebEngageEvents {
   [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
+  [WebEngageEventName.HOME_VIEWED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Member': 'Yes' | 'No';
+    'Circle Plan type': string;
+  };
+  [WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'CTA Clicked': string;
+  };
+  [WebEngageEventName.USER_LOCATION_CONSULT]: consultLocation;
+  [WebEngageEventName.USER_CHANGED_LOCATION]: consultLocation;
 }

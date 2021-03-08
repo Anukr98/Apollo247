@@ -477,7 +477,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Customer First Name': firstName.trim(),
         'Customer Last Name': lastName.trim(),
-        'Date of Birth': Moment(date, 'DD/MM/YYYY').toDate(),
+        'Date of Birth': currentPatient?.dateOfBirth || Moment(date, 'DD/MM/YYYY').toDate(),
         Gender:
           gender === 'Female'
             ? Gender['FEMALE']
@@ -485,6 +485,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             ? Gender['MALE']
             : Gender['OTHER'],
         Email: email.trim(),
+        'Mobile Number': currentPatient?.mobileNumber,
       };
       if (referral) {
         // only send if referral has a value
