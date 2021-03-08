@@ -743,7 +743,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
-    updateShipments();
+    orders?.length ? updateShipments() : setDefaultShipment();
   }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
 
   function updateShipments() {
@@ -798,11 +798,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
       console.log('shipmentTotal >>>', shipmentTotal);
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
-      shipment['estimatedAmount'] = estimatedAmount;
+      shipment['estimatedAmount'] = formatNumber(estimatedAmount);
       shipment['deliveryCharges'] = shipmentDeliveryfee;
       shipment['orderTat'] = order['tat'];
-      shipment['couponDiscount'] = shipmentCouponDiscount;
-      shipment['productDiscount'] = shipmentProductDiscount;
+      shipment['couponDiscount'] = formatNumber(shipmentCouponDiscount);
+      shipment['productDiscount'] = formatNumber(shipmentProductDiscount);
       shipment['packagingCharges'] = shipmentPackagingfee;
       shipment['storeDistanceKm'] = order['distance'];
       shipment['items'] = items;
@@ -815,6 +815,67 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipmentsArray.push(shipment);
     });
     setShipments(shipmentsArray);
+  }
+
+  function setDefaultShipment() {
+    let shipment: MedicineOrderShipmentInput | null = {};
+    let shipmentCouponDiscount = 0;
+    let shipmentProductDiscount = 0;
+    let shipmentTotal = 0;
+    let shipmentCashback = 0;
+    const items: (MedicineCartOMSItem | null)[] = cartItems
+      ?.map((item) => {
+        const discountedPrice = formatNumber(
+          coupon && item.couponPrice == 0
+            ? 0
+            : (coupon && item.couponPrice) || item.specialPrice || item.price
+        );
+
+        shipmentCouponDiscount = shipmentCouponDiscount + getShipmentCouponDiscount(item);
+        shipmentProductDiscount = shipmentProductDiscount + getShipmentProductDiscount(item);
+        shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
+        shipmentCashback += item?.circleCashbackAmt;
+        return {
+          medicineSKU: item?.id,
+          medicineName: item?.name,
+          quantity: item?.quantity,
+          mrp: formatNumber(item?.price),
+          price: discountedPrice,
+          specialPrice: Number(item?.specialPrice || item?.price),
+          itemValue: formatNumber(item?.price * item?.quantity), // (multiply MRP with quantity)
+          itemDiscount: formatNumber(
+            item?.price * item?.quantity - discountedPrice * item?.quantity
+          ), // (diff of (MRP - discountedPrice) * quantity)
+          isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
+          mou: Number(item?.mou),
+          isMedicine: item?.isMedicine ? '1' : '0',
+          couponFree: item?.isFreeCouponProduct ? 1 : 0,
+        } as MedicineCartOMSItem;
+      })
+      .filter((item) => item);
+    let estimatedAmount =
+      shipmentTotal +
+      deliveryCharges +
+      packagingCharges -
+      shipmentCouponDiscount -
+      shipmentProductDiscount;
+    shipment['estimatedAmount'] = formatNumber(estimatedAmount);
+    shipment['deliveryCharges'] = deliveryCharges;
+    shipment['couponDiscount'] = formatNumber(shipmentCouponDiscount);
+    shipment['productDiscount'] = formatNumber(shipmentProductDiscount);
+    shipment['packagingCharges'] = packagingCharges;
+    shipment['items'] = items;
+    shipment['orderTat'] = null;
+    shipment['shopId'] = null;
+    shipment['tatType'] = null;
+    shipment['storeDistanceKm'] = 0;
+    shipment['tatCity'] = null;
+    shipment['tatHours'] = null;
+    shipment['allocationProfileName'] = null;
+    shipment['clusterId'] = null;
+    shipment['totalCashBack'] =
+      isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+    setShipments([shipment]);
   }
 
   const getShipmentProductDiscount = (item: ShoppingCartItem) => {

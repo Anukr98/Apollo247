@@ -438,21 +438,14 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            addressChange && NavigateToCartSummary();
-            updatePricesAfterTat(inventoryData, updatedCartItems);
-          } else {
-            addressChange && NavigateToCartSummary();
-            handleTatApiFailure(selectedAddress, {});
-          }
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+          addressChange && NavigateToCartSummary();
+          updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
           addressChange && NavigateToCartSummary();
         }
-      } catch (error) {
-        handleTatApiFailure(selectedAddress, error);
-      }
+      } catch (error) {}
     } else if (!deliveryAddressId) {
       setlastCartItems(newCartItems);
       validatePharmaCoupon();
