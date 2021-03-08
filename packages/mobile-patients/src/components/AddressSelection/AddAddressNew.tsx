@@ -446,8 +446,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         region?.latitude + latitudeDelta,
         region?.longitude + longitudeDelta
       );
-
-      console.log(region.latitude + latitudeDelta, region.longitude + longitudeDelta);
     }
 
     if (!isMapDragging && Platform.OS == 'android') {
@@ -464,8 +462,10 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const goBackCallback = (selectedAddress: any, comingFrom?: string) => {
     isConfirmButtonDisabled && setConfirmButtonDisabled(false);
     isMapDisabled && setMapDisabled(false);
-
-    fetchAdressFromLatLongGoogleApi(selectedAddress?.latitude, selectedAddress?.longitude);
+    fetchAdressFromLatLongGoogleApi(
+      selectedAddress?.latitude + latitudeDelta,
+      selectedAddress?.longitude + longitudeDelta
+    );
     setRegion({
       latitude: selectedAddress?.latitude,
       longitude: selectedAddress?.longitude,

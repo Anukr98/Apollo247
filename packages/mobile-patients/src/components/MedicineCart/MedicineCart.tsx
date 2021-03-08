@@ -220,7 +220,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      isfocused && availabilityTat(false, true);
+      availabilityTat(false, true);
     }
   }, [deliveryAddressId]);
 
@@ -235,9 +235,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [newAddressAdded]);
 
   useEffect(() => {
-    if (isfocused) {
-      availabilityTat(false);
-    }
+    availabilityTat(false);
     // remove circle subscription applied(for non member) if cart items are empty
     if (cartItems.length < 1 && !circleSubscriptionId) {
       setIsCircleSubscription && setIsCircleSubscription(false);
@@ -277,10 +275,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [coupon]);
 
   useEffect(() => {
-    !!circleMembershipCharges && isCircleSubscription
+    (!!circleMembershipCharges && isCircleSubscription) || coupon?.freeDelivery
       ? setIsFreeDelivery?.(true)
       : setIsFreeDelivery?.(false);
-  }, [circleMembershipCharges, isCircleSubscription]);
+  }, [circleMembershipCharges, isCircleSubscription, coupon]);
 
   useEffect(() => {
     onFinishUpload();
@@ -317,6 +315,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         (data.getPatientAddressList
           .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       setAddresses!(addressList);
+      const deliveryAddress = addressList.find(({ defaultAddress }) => defaultAddress === true);
+      if (deliveryAddress && !deliveryAddressId) {
+        setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
+      }
+      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
     } catch (error) {
       console.log(error);
       renderAlert(`Something went wrong, unable to fetch addresses.`);
@@ -551,15 +554,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     let Items: ShoppingCartItem[] = [];
     updatedCartItems.forEach((item) => {
       let object = item;
-      let cartItem = inventoryData.filter((cartItem) => cartItem.sku == item.id);
-      if (cartItem.length) {
-        const storePrice = Number(object.mou) * cartItem[0].mrp;
-        if (object.price != storePrice && cartItem[0].mrp != 0) {
+      let cartItem = inventoryData?.filter((cartItem) => cartItem?.sku == item?.id);
+      if (cartItem?.length) {
+        const storePrice = Number(object?.mou) * cartItem?.[0]?.mrp;
+        if (object?.price != storePrice && cartItem?.[0]?.mrp != 0) {
+          showAphAlert!({
+            title: `Hi, ${currentPatient?.firstName || ''}`,
+            description: `Important message for items in your Cart:\n\nSome items' prices have been updated based on the updated MRP from Manufacturer. Please check before you place the order.`,
+          });
           PricemismatchEvent(object, g(currentPatient, 'mobileNumber'), storePrice);
-          object.specialPrice &&
-            (object.specialPrice =
-              Number(object.mou) * cartItem[0].mrp * (object.specialPrice / object.price));
-          object.price = Number(object.mou) * cartItem[0].mrp;
+          object?.specialPrice &&
+            (object?.specialPrice =
+              Number(object?.mou) * cartItem?.[0].mrp * (object?.specialPrice / object?.price));
+          object?.price = Number(object?.mou) * cartItem?.[0]?.mrp;
         }
       }
       Items.push(object);

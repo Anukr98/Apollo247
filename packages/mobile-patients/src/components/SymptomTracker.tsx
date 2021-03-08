@@ -91,6 +91,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [restartVisible, setRestartVisible] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const flatlistRef = useRef<any>(null);
+  const isLoadDataOneTime = useRef<boolean>(true);
   const symptomData = props.navigation.getParam('symptomData');
   const patientInfoAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
@@ -107,15 +108,19 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     return function cleanup() {
       insertMessage = [];
     };
-  }, []);
+  }, [currentPatient]);
 
   const loadData = async () => {
     const symptomTrackerStarted = await AsyncStorage.getItem('symptomTrackerStarted');
     if (symptomTrackerStarted) {
       if (currentPatient) {
         setSelectedPatient(currentPatient);
+        if (isLoadDataOneTime.current) {
+          // This has been done to avoid duplicate calls on change patient
+          initializeChat(currentPatient);
+        }
+        isLoadDataOneTime.current = false;
       }
-      initializeChat(currentPatient);
     } else {
       setShowHowItWorks(true);
       AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));

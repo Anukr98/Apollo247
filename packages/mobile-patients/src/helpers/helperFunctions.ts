@@ -23,6 +23,7 @@ import {
   Gender,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -99,6 +100,9 @@ import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCal
 import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
+import isLessThan from 'semver/functions/lt';
+import coerce from 'semver/functions/coerce';
+
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -138,6 +142,12 @@ export interface TestSlotWithArea {
 export enum EDIT_DELETE_TYPE {
   EDIT = 'Edit Details',
   DELETE = 'Delete Data',
+  DELETE_PRESCRIPTION = 'Delete Prescription',
+  DELETE_TEST_REPORT = 'Delete Test Report',
+  DELETE_DISCHARGE_SUMMARY = 'Delete Discharge Summary',
+  DELETE_HEALTH_CONDITION = 'Delete Health Condition',
+  DELETE_BILL = 'Delete Bill',
+  DELETE_INSURANCE = 'Delete Insurance',
 }
 
 type EditDeleteArray = {
@@ -351,9 +361,66 @@ const sortByDays = (
   return dataArray;
 };
 
-export const editDeleteData = () => {
-  return ConsultRxEditDeleteArray.map((i) => {
-    return { key: i.key, value: i.title };
+export const editDeleteData = (recordType: MedicalRecordType) => {
+  let editDeleteArray: EditDeleteArray[] = [];
+  switch (recordType) {
+    case MedicalRecordType.PRESCRIPTION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_PRESCRIPTION,
+          title: EDIT_DELETE_TYPE.DELETE_PRESCRIPTION,
+        },
+      ];
+      break;
+    case MedicalRecordType.TEST_REPORT:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_TEST_REPORT,
+          title: EDIT_DELETE_TYPE.DELETE_TEST_REPORT,
+        },
+      ];
+      break;
+    case MedicalRecordType.HOSPITALIZATION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_DISCHARGE_SUMMARY,
+          title: EDIT_DELETE_TYPE.DELETE_DISCHARGE_SUMMARY,
+        },
+      ];
+      break;
+    case MedicalRecordType.ALLERGY:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+          title: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+        },
+      ];
+      break;
+    case MedicalRecordType.MEDICALBILL:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_BILL,
+          title: EDIT_DELETE_TYPE.DELETE_BILL,
+        },
+      ];
+      break;
+    case MedicalRecordType.MEDICALINSURANCE:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_INSURANCE,
+          title: EDIT_DELETE_TYPE.DELETE_INSURANCE,
+        },
+      ];
+      break;
+  }
+  return editDeleteArray?.map((i) => {
+    return { key: i?.key, value: i?.title };
   });
 };
 
@@ -2082,7 +2149,8 @@ export const addPharmaItemToCart = (
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
   onComplete?: () => void,
-  pharmacyCircleAttributes?: PharmacyCircleEvent
+  pharmacyCircleAttributes?: PharmacyCircleEvent,
+  onAddedSuccessfully?: () => void
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2171,6 +2239,7 @@ export const addPharmaItemToCart = (
           Response_Qty: qty,
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+        onAddedSuccessfully?.();
       } catch (error) {}
     })
     .catch(() => {
@@ -2447,11 +2516,14 @@ export const filterHtmlContent = (content: string = '') => {
   return content
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
+    .replace(/&gt;rnt/g, '>')
     .replace(/&gt;rn/g, '>')
     .replace(/&gt;r/g, '>')
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
-    .replace(/\.t/g, '.');
+    .replace(/\.t/g, '.')
+    .replace(/.rn/gi, '. ')
+    .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
   const { dc_availability, is_in_contract } = product;
@@ -2564,4 +2636,16 @@ export const getShipmentPrice = (shipmentItems: any, cartItems: any) => {
     });
   }
   return total;
+};
+
+export const paymentModeVersionCheck = (minSupportedVersion: string) => {
+  const { iOS_Version, Android_Version } = AppConfig.Configuration;
+  const isIOS = Platform.OS === 'ios';
+  const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+  const versionSupports = !(
+    appVersion &&
+    minSupportedVersion &&
+    isLessThan(appVersion, minSupportedVersion)
+  );
+  return versionSupports;
 };

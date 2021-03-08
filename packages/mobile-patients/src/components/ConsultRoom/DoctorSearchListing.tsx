@@ -86,7 +86,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   BackHandler,
@@ -101,7 +101,6 @@ import {
   View,
   ViewStyle,
   Platform,
-  AsyncStorage,
   Share,
 } from 'react-native';
 import {
@@ -110,6 +109,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
@@ -123,6 +123,7 @@ import {
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -253,7 +254,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
   const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
-
+  const fireLocationEvent = useRef<boolean>(false);
   const [
     platinumDoctor,
     setPlatinumDoctor,
@@ -358,19 +359,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fetchFilter();
   }, []);
   useEffect(() => {
-    AsyncStorage.getItem(SKIP_LOCATION_PROMPT)
-      .then((skipLocationPrompt) => {
-        if (skipLocationPrompt == 'true') {
-          fetchDoctorListByAvailability();
-        } else {
-          checkLocation();
-        }
-      })
-      .catch((error) => {
-        checkLocation();
-        CommonBugFender('DocSearchListing_check_skip_location_prompt', error);
-      });
-
+    fetchDoctorListByAvailability();
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
@@ -419,9 +408,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
-        console.log('data', data);
+        console.log('platinum doc data', JSON.stringify(data));
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
+          postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
         } else {
           setPlatinumDoctor(null);
         }
@@ -628,6 +618,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               style={{ flex: 1, marginRight: 16 }}
               title={'ENTER MANUALLY'}
               onPress={() => {
+                fireLocationEvent.current = true;
                 hideAphAlert!();
                 setshowLocationpopup(true);
                 fireLocationPermissionEvent('Enter Manually');
@@ -642,6 +633,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 setLoadingContext!(true);
                 doRequestAndAccessLocationModified()
                   .then((response) => {
+                    fireLocationEvent.current = true;
+                    locationWebEngageEvent(response, 'Auto Detect');
                     response && setLocationDetails!(response);
                     response && setcurrentLocation(response.displayName);
                     response && setLocationSearchText(response.displayName);
@@ -976,6 +969,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   pincode: findAddrComponents('postal_code', addrComponents),
                   lastUpdated: new Date().getTime(),
                 });
+                const locationAttribute = {
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                };
+                locationWebEngageEvent(locationAttribute, 'Manual entry');
               }
             })
             .catch((error) => {
@@ -1119,6 +1117,32 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         />
       </View>
     );
+  };
+
+  const postPlatinumDoctorWEGEvents = (
+    doctorData: any,
+    eventName: WebEngageEventName,
+    states: any
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
+      doctorId: doctorData?.id,
+      doctorName: doctorData?.displayName,
+      doctorType: doctorData?.doctorType,
+      specialtyId: props.navigation.getParam('specialityId') || '',
+      specialtyName: props.navigation.getParam('specialityName') || '',
+      zone: states || locationDetails?.state || '',
+      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      userPhoneNumber: currentPatient?.mobileNumber,
+    };
+
+    console.log(
+      'csk post event',
+      JSON.stringify(eventAttributes),
+      '------',
+      JSON.stringify(doctorData)
+    );
+
+    postWebEngageEvent(eventName, eventAttributes);
   };
 
   const postDoctorClickWEGEvent = (
@@ -1429,6 +1453,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             elevation: 15,
           }}
           onPress={() => {
+            locationWebEngageEvent(undefined, 'Manual entry');
             setshowLocationpopup(false);
             setshowSpinner(false);
             !doctorsList?.length &&
@@ -1441,7 +1466,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 false,
                 doctorSearch
               );
-            // !locationDetails && checkLocation();
           }}
         >
           <View
@@ -1523,6 +1547,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const locationWebEngageEvent = (location: any, type: 'Auto Detect' | 'Manual entry') => {
+    if (fireLocationEvent.current) {
+      userLocationConsultWEBEngage(currentPatient, location, 'Doctor list', type);
+    }
+    fireLocationEvent.current = false;
+  };
+
   const renderSearchLoadingView = () => {
     const getWidth = (percentage: number) => screenWidth * (percentage / 100);
     const localStyles = StyleSheet.create({
@@ -1602,6 +1633,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
     const doctorOfHourText =
       platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
+
     return (
       <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
@@ -1622,6 +1654,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
           onPress={() => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
+            postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,

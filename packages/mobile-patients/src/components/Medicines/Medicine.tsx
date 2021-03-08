@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   buyAgain: {
     paddingVertical: 10,
     paddingHorizontal: 0,
+    borderBottomWidth: 0.75,
   },
   buyAgainLoader: {
     marginVertical: 10,
@@ -1229,6 +1230,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderYourOrders = () => {
     return (
       <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 0 }}>
+        {renderBuyAgain()}
         <ListItem
           title={'My Orders'}
           leftAvatar={<MedicineIcon />}
@@ -1242,7 +1244,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           containerStyle={{ paddingHorizontal: 0 }}
           titleStyle={theme.viewStyles.text('M', 16, '#01475b', 1, 24)}
         />
-        {renderBuyAgain()}
       </View>
     );
   };

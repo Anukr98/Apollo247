@@ -1715,6 +1715,31 @@ export const CallCollapseIcon: React.FC<IconProps> = (props) => (
     resizeMode="contain"
   />
 );
+export const OnlineAppointmentMarkerIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 16 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/onlinemarker.png')}
+    resizeMode="contain"
+  />
+);
+export const PhysicalAppointmentMarkerIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 14, height: 24 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/appointmentMarker.png')}
+    resizeMode="contain"
+  />
+);
+
+export const AppointmentCalendarIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('./icons/calendarAppointment.png')}
+    resizeMode="contain"
+  />
+);
 
 export const CallCameraIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/camera.png')} resizeMode="contain" />
@@ -1790,4 +1815,11 @@ export const ExpiredBanner: React.FC<IconProps> = (props) => (
 
 export const CircleBannerExpired: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/Renew_circle_banner.png')} />
+);
+
+export const LowNetworkIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/lowNetworkIcon.png')} />
+);
+export const Truecaller: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/truecaller.png')} resizeMode="contain" />
 );

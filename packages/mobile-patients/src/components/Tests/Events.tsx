@@ -373,12 +373,14 @@ export function DiagnosticAddToCartClicked() {
 export function DiagnosticRemoveFromCartClicked(
   itemId: string | number,
   itemName: string,
-  pincode: string | number
+  pincode: string | number,
+  mode: 'Customer' | 'Automated'
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE] = {
     'Item ID': itemId,
     'Item name': itemName,
     Pincode: pincode,
+    Mode: mode,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);
 }
