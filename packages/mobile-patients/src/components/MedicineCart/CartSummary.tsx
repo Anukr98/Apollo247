@@ -235,21 +235,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            updatePricesAfterTat(inventoryData, updatedCartItems);
-            if (unserviceableSkus.length) {
-              props.navigation.goBack();
-            }
-          } else {
-            handleTatApiFailure(selectedAddress, {});
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+          updatePricesAfterTat(inventoryData, updatedCartItems);
+          if (unserviceableSkus.length) {
+            props.navigation.goBack();
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
         }
-      } catch (error) {
-        handleTatApiFailure(selectedAddress, error);
-      }
+      } catch (error) {}
     }
   }
 
