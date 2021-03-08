@@ -1868,8 +1868,18 @@ export const SAVE_DEVICE_TOKEN = gql`
 `;
 
 export const UPDATE_PATIENT_APP_VERSION = gql`
-  mutation UpdatePatientAppVersion($patientId: String!, $appVersion: String!, $osType: DEVICETYPE) {
-    updatePatientAppVersion(patientId: $patientId, appVersion: $appVersion, osType: $osType) {
+  mutation UpdatePatientAppVersion(
+    $patientId: String!
+    $appVersion: String!
+    $osType: DEVICETYPE
+    $appsflyerId: String
+  ) {
+    updatePatientAppVersion(
+      patientId: $patientId
+      appVersion: $appVersion
+      osType: $osType
+      appsflyerId: $appsflyerId
+    ) {
       status
     }
   }
@@ -3793,6 +3803,9 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
       displayId
       status
       errorMessageToDisplay
+      attributes {
+        itemids
+      }
     }
   }
 `;
@@ -4404,6 +4417,7 @@ export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
       cityName
       stateID
       stateName
+      areaSelectionEnabled
     }
   }
 `;
@@ -4689,3 +4703,24 @@ export const INITIATE_DOC_ON_CALL = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
+  query getNearestArea($patientAddressId: String!) {
+    getNearestArea(patientAddressId: $patientAddressId) {
+      area {
+        id
+        area
+      }
+    }
+  }
+`;
+
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
+    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
+      slots{
+        Timeslot
+        TimeslotID
+        }
+      }
+    }`

@@ -832,19 +832,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <Header
         title={'HEALTH RECORDS'}
         leftIcon={'homeIcon'}
-        rightComponent={
-          <ProfileList
-            showProfilePic={true}
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={renderProfileImage()}
-            listContainerStyle={{ marginLeft: 6, marginTop: 44 }}
-            selectedProfile={profile}
-            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-            onProfileChange={() => setUpdatePatientDetailsApi(true)}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-        }
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={() => {
           setPhrNotificationData && setPhrNotificationData(null);
@@ -865,11 +852,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       return <View style={styles.separatorLineStyle} />;
     };
 
-    const patientTextView = (text: string) => {
+    const patientTextView = (text: string, style: any = {}) => {
       return (
         <Text
           numberOfLines={1}
-          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }]}
+          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }, style]}
         >
           {text}
         </Text>
@@ -937,7 +924,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                       currentPatient?.patientMedicalHistory?.height?.includes('’') ||
                         currentPatient?.patientMedicalHistory?.height?.includes("'")
                         ? currentPatient?.patientMedicalHistory?.height
-                        : currentPatient?.patientMedicalHistory?.height + ' cm'
+                        : currentPatient?.patientMedicalHistory?.height + ' cms',
+                      { paddingLeft: 7 }
                     )
                   : patientTextView('-')}
               </View>
@@ -960,7 +948,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 {isWeightAvailable
                   ? patientTextView(
                       currentPatient?.patientMedicalHistory?.weight
-                        ? currentPatient?.patientMedicalHistory?.weight + ' Kgs'
+                        ? currentPatient?.patientMedicalHistory?.weight + ' kgs'
                         : '-'
                     )
                   : patientTextView('-')}

@@ -82,6 +82,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   discount: number;
   valid: boolean;
   reason: String;
+  freeDelivery: boolean;
   products: [];
 }
 
@@ -651,16 +652,24 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ? AppConfig.Configuration.PACKAGING_CHARGES
     : 0;
 
-  const grandTotal = parseFloat(
-    (
-      cartTotal +
-      packagingCharges +
-      deliveryCharges -
-      couponDiscount -
-      productDiscount +
-      (!!circleMembershipCharges ? circleMembershipCharges : 0)
-    ).toFixed(2)
-  );
+  const getGrandTotalFromShipments = () => {
+    let total = 0;
+    shipments.forEach((item: any) => (total = total + item.estimatedAmount));
+    return total;
+  };
+
+  const grandTotal = shipments?.length
+    ? getGrandTotalFromShipments()
+    : parseFloat(
+        (
+          cartTotal +
+          packagingCharges +
+          deliveryCharges -
+          couponDiscount -
+          productDiscount +
+          (!!circleMembershipCharges ? circleMembershipCharges : 0)
+        ).toFixed(2)
+      );
 
   const uploadPrescriptionRequired =
     cartItems.findIndex((item) => item.prescriptionRequired) != -1 ||
@@ -735,7 +744,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     updateShipments();
-  }, [orders, coupon, cartItems, deliveryCharges]);
+  }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
 
   function updateShipments() {
     let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];
@@ -750,16 +759,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         ?.map((item) => {
           if (sku.includes(item?.id)) {
             const discountedPrice = formatNumber(
-              (coupon && item?.couponPrice) || item?.specialPrice || item?.price
+              coupon && item.couponPrice == 0
+                ? 0
+                : (coupon && item.couponPrice) || item.specialPrice || item.price
             );
-            shipmentCouponDiscount =
-              shipmentCouponDiscount +
-              formatNumber(
-                item?.quantity * (item?.couponPrice ? item?.price - item?.couponPrice : 0)
-              );
-            shipmentProductDiscount =
-              shipmentProductDiscount +
-              formatNumber(item?.quantity * (item?.price - (item?.specialPrice || item?.price)));
+
+            shipmentCouponDiscount = shipmentCouponDiscount + getShipmentCouponDiscount(item);
+            shipmentProductDiscount = shipmentProductDiscount + getShipmentProductDiscount(item);
             shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
             shipmentCashback += item?.circleCashbackAmt;
             return {
@@ -782,8 +788,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         })
         .filter((item) => item);
       let shipmentDeliveryfee = orders?.length ? deliveryCharges / orders?.length : 0;
+      let shipmentPackagingfee = orders?.length ? packagingCharges / orders?.length : 0;
       let estimatedAmount =
-        shipmentTotal + shipmentDeliveryfee - shipmentCouponDiscount - shipmentProductDiscount;
+        shipmentTotal +
+        shipmentDeliveryfee +
+        shipmentPackagingfee -
+        shipmentCouponDiscount -
+        shipmentProductDiscount;
       console.log('shipmentTotal >>>', shipmentTotal);
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
@@ -792,7 +803,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['orderTat'] = order['tat'];
       shipment['couponDiscount'] = shipmentCouponDiscount;
       shipment['productDiscount'] = shipmentProductDiscount;
-      shipment['packagingCharges'] = orders?.length ? packagingCharges / orders?.length : 0;
+      shipment['packagingCharges'] = shipmentPackagingfee;
       shipment['storeDistanceKm'] = order['distance'];
       shipment['items'] = items;
       shipment['tatCity'] = order['tatCity'];
@@ -805,6 +816,30 @@ export const ShoppingCartProvider: React.FC = (props) => {
     });
     setShipments(shipmentsArray);
   }
+
+  const getShipmentProductDiscount = (item: ShoppingCartItem) => {
+    let discount = 0;
+    let quantity = item.quantity;
+    if (!!item.isFreeCouponProduct) {
+      quantity = 1; // one free product
+      discount = item.price * quantity;
+    } else if (item.price != item.specialPrice) {
+      discount = (item?.price - (item?.specialPrice || item?.price)) * quantity;
+    }
+    return discount;
+  };
+
+  const getShipmentCouponDiscount = (item: ShoppingCartItem) => {
+    let discount = 0;
+    discount = !!item.isFreeCouponProduct
+      ? 0
+      : formatNumber(
+          item?.quantity *
+            (item?.couponPrice || item?.couponPrice == 0 ? item?.price - item?.couponPrice : 0)
+        );
+    return discount;
+  };
+
   useEffect(() => {
     // update cart items from async storage the very first time app opened
     const updateCartItemsFromStorage = async () => {

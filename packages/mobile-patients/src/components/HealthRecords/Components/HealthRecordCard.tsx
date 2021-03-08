@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   SelfUploadPhrIcon,
@@ -10,7 +10,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { EDIT_DELETE_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { DeleteReportPopup } from '@aph/mobile-patients/src/components/HealthRecords/Components/DeleteReportPopup';
 
 const styles = StyleSheet.create({
   menuContainerStyle: {
@@ -65,6 +65,7 @@ export interface HealthRecordCardProps {
   healthCondtionCardTopView?: React.ReactElement;
   hideUpdateDeleteOption?: boolean;
   familyMember?: string;
+  deleteRecordText: string;
 }
 
 export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
@@ -88,7 +89,23 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     showUpdateDeleteOption,
     hideUpdateDeleteOption,
     familyMember,
+    deleteRecordText,
   } = props;
+  const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false);
+
+  const renderDeletePopup = () => {
+    return showDeletePopup ? (
+      <DeleteReportPopup
+        onPressOK={() => {
+          setShowDeletePopup(false);
+          onDeletePress && onDeletePress(item);
+        }}
+        onPressClose={() => setShowDeletePopup(false)}
+        deleteRecordText={deleteRecordText}
+      />
+    ) : null;
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -104,7 +121,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
             <MaterialMenu
               options={editDeleteData}
               menuContainerStyle={[styles.menuContainerStyle, { marginTop: 25 }]}
-              itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
+              itemContainer={{ height: 44.8, marginHorizontal: 12, width: 400 / 2 }}
               itemTextStyle={styles.itemTextStyle}
               showItemDifferentColor={true}
               lastContainerStyle={{ borderBottomWidth: 0 }}
@@ -113,7 +130,9 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
                 if (selectedOption.key === EDIT_DELETE_TYPE.EDIT) {
                   onEditPress && onEditPress(item);
                 } else {
-                  onDeletePress && onDeletePress(item);
+                  setTimeout(() => {
+                    setShowDeletePopup(true);
+                  }, 500);
                 }
               }}
             >
@@ -185,6 +204,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
           </View>
         )}
       </View>
+      {renderDeletePopup()}
     </TouchableOpacity>
   );
 };
