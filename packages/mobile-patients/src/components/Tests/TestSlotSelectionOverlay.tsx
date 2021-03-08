@@ -3,10 +3,11 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  formatTestSlot,
+  formatTestSlotWithBuffer,
   g,
+  isValidTestSlotWithArea,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
   handleGraphQlError,
@@ -17,12 +18,13 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import {
+  getDiagnosticSlotsWithAreaID,
+  getDiagnosticSlotsWithAreaIDVariables,
+  getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import {
-  getDiagnosticSlotsCustomized,
-  getDiagnosticSlotsCustomizedVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 
 export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   zipCode: number;
@@ -56,49 +58,69 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const tm = moment(props.slotBooked!).format('hh:mm') || null;
   const isSameDate = moment().isSame(moment(date), 'date');
   const itemId = props.itemId;
-  const cartItemsWithId = cartItems?.map((item) => Number(item?.id));
 
+  const checkCovidItem = props.isReschdedule
+    ? itemId?.map((item) =>
+        AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item))
+      )
+    : cartItems?.map((item) =>
+        AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item?.id))
+      );
+  const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
+  const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
   type UniqueSlotType = typeof uniqueSlots[0];
 
   const fetchSlots = () => {
     if (!isVisible || !zipCode) return;
     showSpinner(true);
     client
-      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
-        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+      .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
+        query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(date).format('YYYY-MM-DD'),
-          areaID: Number(props.areaId!),
-          itemIds: props.isReschdedule ? itemId! : cartItemsWithId,
+          areaID: parseInt(props.areaId!),
         },
       })
       .then(({ data }) => {
-        const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
+        const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt && props.isReschdedule
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
 
+        const covidItem_Slot_StartTime = moment(
+          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
+          'HH:mm'
+        );
+        const diagnosticSlotsToShow = isContainOnlyCovidItem
+          ? updatedDiagnosticSlots?.filter((item) =>
+              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
+            )
+          : updatedDiagnosticSlots;
         const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots?.forEach((item) => {
-          //all the hardcoded values are not returned by api.
-          slotsArray.push({
-            employeeCode: 'apollo_employee_code',
-            employeeName: 'apollo_employee_name',
-            slotInfo: {
-              endTime: item?.Timeslot!,
-              status: 'empty',
-              startTime: item?.Timeslot!,
-              slot: item?.TimeslotID,
-            },
-            date: date,
-            diagnosticBranchCode: 'apollo_route',
-          } as TestSlot);
+        diagnosticSlotsToShow?.forEach((item) => {
+          if (isValidTestSlotWithArea(item!, date, isContainOnlyCovidItem!)) {
+            //all the hardcoded values are not returned by api.
+            slotsArray.push({
+              employeeCode: 'apollo_employee_code',
+              employeeName: 'apollo_employee_name',
+              slotInfo: {
+                endTime: item?.Timeslot!,
+                status: 'empty',
+                startTime: item?.Timeslot!,
+                slot: item?.TimeslotID,
+              },
+              date: date,
+              diagnosticBranchCode: 'apollo_route',
+            } as TestSlot);
+          }
         });
 
+        const uniqueSlots = getUniqueTestSlots(slotsArray);
         console.log('ARRAY OF SLOTS', { slotsArray });
+        console.log('UNIQUE SLOTS', { uniqueSlots });
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(date), 'date');
         if (isSameDate && uniqueSlots?.length == 0 && isDateAutoSelected) {
@@ -110,7 +132,14 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
           showSpinner(true);
         } else {
           setSlots(slotsArray);
-          slotsArray?.length && setSlotInfo(slotsArray?.[0]);
+          uniqueSlots.length &&
+            setSlotInfo(
+              getTestSlotDetailsByTime(
+                slotsArray,
+                uniqueSlots[0].startTime!,
+                uniqueSlots[0].endTime!
+              )
+            );
           showSpinner(false);
         }
       })
@@ -130,8 +159,8 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
   const renderSlotSelectionView = () => {
     const dropDownOptions = uniqueSlots?.map((val) => ({
-      key: `${formatTestSlot(val.startTime)}`,
-      value: `${formatTestSlot(val.startTime)}`,
+      key: `${formatTestSlotWithBuffer(val.startTime)}`,
+      value: `${formatTestSlotWithBuffer(val.startTime)}`,
       data: val,
     }));
 
@@ -144,7 +173,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         <View style={styles.optionsView}>
           <MaterialMenu
             options={dropDownOptions}
-            selectedText={slotInfo && `${formatTestSlot(slotInfo.slotInfo.startTime!)}`}
+            selectedText={slotInfo && `${formatTestSlotWithBuffer(slotInfo.slotInfo.startTime!)}`}
             menuContainerStyle={{
               alignItems: 'flex-end',
               marginTop: 24,
@@ -173,7 +202,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
                     ? 'Loading...'
                     : dropDownOptions?.length
                     ? slotInfo
-                      ? `${formatTestSlot(slotInfo.slotInfo.startTime!)}`
+                      ? `${formatTestSlotWithBuffer(slotInfo.slotInfo.startTime!)}`
                       : 'Please select a slot'
                     : 'No slots available'}
                 </Text>

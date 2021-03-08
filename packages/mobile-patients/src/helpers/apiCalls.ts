@@ -725,14 +725,11 @@ export const trackTagalysEvent = (
   });
 };
 
-let cancelGetMedicineSearchSuggestionsApi: Canceler | undefined;
 export const getMedicineSearchSuggestionsApi = (
   searchText: string,
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelGetMedicineSearchSuggestionsApi && cancelGetMedicineSearchSuggestionsApi();
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
@@ -744,9 +741,6 @@ export const getMedicineSearchSuggestionsApi = (
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
-    cancelToken: new CancelToken((c) => {
-      cancelGetMedicineSearchSuggestionsApi = c;
-    }),
   });
 };
 
@@ -1139,10 +1133,7 @@ export const getDiagnosticTestDetails = (
   });
 };
 
-export const getDiagnosticListingWidget = (
-  pageName: string,
-  widgetName: string
-): Promise<AxiosResponse<any>> => {
+export const getDiagnosticListingWidget = (pageName: string, widgetName: string): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
   return Axios.get(getWidgets, {

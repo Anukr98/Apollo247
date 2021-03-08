@@ -6,9 +6,9 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
-  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+  GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
   GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
@@ -51,7 +51,10 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   g,
   getTestOrderStatusText,
+  getTestSlotDetailsByTime,
+  getUniqueTestSlots,
   handleGraphQlError,
+  isValidTestSlotWithArea,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -73,6 +76,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
 import { TestSlotSelectionOverlay } from './TestSlotSelectionOverlay';
 import {
+  getDiagnosticSlotsWithAreaID,
+  getDiagnosticSlotsWithAreaIDVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
+import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
@@ -91,10 +98,6 @@ import {
   getOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 import { DiagnosticRescheduleOrder } from '@aph/mobile-patients/src/components/Tests/Events';
-import {
-  getDiagnosticSlotsCustomized,
-  getDiagnosticSlotsCustomizedVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -479,55 +482,78 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
     const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm') || null;
 
-    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
-      Number(item?.itemId)
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
+    const checkCovidItem = orderItemId?.map((item) =>
+      AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item))
     );
 
+    const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
+    const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
+
     client
-      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
-        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+      .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
+        query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(date).format('YYYY-MM-DD'), //whether current date or the one which we gt fron diagnostiv api
           areaID: Number(selectedOrder?.areaId!),
-          itemIds: orderItemId!,
         },
       })
       .then(({ data }) => {
-        const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
+        const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+
+        const covidItem_Slot_StartTime = moment(
+          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
+          'HH:mm'
+        );
 
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
 
+        const diagnosticSlotsToShow = isContainOnlyCovidItem
+          ? updatedDiagnosticSlots?.filter((item) =>
+              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
+            )
+          : updatedDiagnosticSlots;
+
         const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots?.forEach((item) => {
-          slotsArray.push({
-            employeeCode: 'apollo_employee_code',
-            employeeName: 'apollo_employee_name',
-            slotInfo: {
-              endTime: item?.Timeslot!,
-              status: 'empty',
-              startTime: item?.Timeslot!,
-              slot: item?.TimeslotID,
-            },
-            date: date,
-            diagnosticBranchCode: 'apollo_route',
-          } as TestSlot);
+        diagnosticSlotsToShow?.forEach((item) => {
+          if (isValidTestSlotWithArea(item!, date)) {
+            slotsArray.push({
+              employeeCode: 'apollo_employee_code',
+              employeeName: 'apollo_employee_name',
+              slotInfo: {
+                endTime: item?.Timeslot!,
+                status: 'empty',
+                startTime: item?.Timeslot!,
+                slot: item?.TimeslotID,
+              },
+              date: date,
+              diagnosticBranchCode: 'apollo_route',
+            } as TestSlot);
+          }
         });
 
+        const uniqueSlots = getUniqueTestSlots(slotsArray);
         const isSameDate = moment().isSame(moment(date), 'date');
-        if (isSameDate && slotsArray?.length == 0) {
+        if (isSameDate && uniqueSlots?.length == 0) {
           setTodaySlotNotAvailable(true);
         } else {
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
 
         setSlots(slotsArray);
-        const slotDetails = slotsArray?.[0];
-        slotsArray?.length && setselectedTimeSlot(slotDetails);
+        uniqueSlots?.length &&
+          setselectedTimeSlot(
+            getTestSlotDetailsByTime(
+              slotsArray,
+              uniqueSlots?.[0]?.startTime!,
+              uniqueSlots?.[0]?.endTime!
+            )
+          );
 
         //call the api to get the pincode.
         getAddressDatails();

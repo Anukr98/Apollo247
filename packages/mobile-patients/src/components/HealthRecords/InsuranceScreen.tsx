@@ -414,7 +414,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       <HealthRecordCard
         item={item}
         index={index}
-        editDeleteData={editDeleteData(MedicalRecordType.MEDICALINSURANCE)}
+        editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
@@ -423,7 +423,6 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         dateText={dateText}
         selfUpload={selfUpload}
         sourceName={soureName || ''}
-        deleteRecordText={'insurance'}
       />
     );
   };
@@ -459,7 +458,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={string.common.addInsuranceText}
+          title={`ADD DATA`}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {

@@ -666,7 +666,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       <HealthRecordCard
         item={item}
         index={index}
-        editDeleteData={editDeleteData(MedicalRecordType.ALLERGY)}
+        editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
@@ -678,7 +678,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         sourceName={soureName || ''}
         healthConditionCard
         healthCondtionCardTopView={renderHealthConditionTopView()}
-        deleteRecordText={'health condition'}
       />
     );
   };
@@ -714,7 +713,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={string.common.addHealthConditionText}
+          title={`ADD DATA`}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {

@@ -19,7 +19,7 @@
     "add_comment_text": "Add Comments (Optional)",
     "return_order_comment_text": "Enter your comments here…",
     "delete_report_text": "Delete Report",
-    "delete_report_confirm_text": "Are you sure you want to delete the selected {0}?",
+    "delete_report_confirm_text": "Are you sure you want to delete the selected record?",
     "upload": "UPLOAD",
     "submit_request": "SUBMIT REQUEST",
     "continue": "CONTINUE",
@@ -39,19 +39,6 @@
     "clicnical_document_text": "Self upload",
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
-    "addPrescriptionText": "ADD PRESCRIPTION",
-    "addTestReportText": "ADD TEST REPORT",
-    "doctorConsultPHRText": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room",
-    "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
-    "addHealthConditionText": "ADD HEALTH CONDITIONS",
-    "addBillText": "ADD BILL",
-    "addInsuranceText": "ADD INSURANCE",
-    "uploadPrescriptionText": "UPLOAD PRESCRIPTION",
-    "uploadTestReportText": "UPLOAD TEST REPORT",
-    "uploadDischargeSummaryText": "UPLOAD DISCHARGE SUMMARY",
-    "uploadHealthConditionText": "UPLOAD HEALTH CONDITIONS",
-    "uploadBillText": "UPLOAD BILL",
-    "uploadInsuranceText": "UPLOAD INSURANCE",
     "best_doctor_text": "Here are our best ",
     "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
@@ -212,7 +199,7 @@
   },
   "login": {
     "hello": "hello!",
-    "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
+    "please_enter_no": "Please enter your number to get access to an entire hospital on your phone!",
     "otp_sent_to": "An OTP will be sent to this number",
     "wrong_number": "This seems like a wrong number",
     "numberPrefix": "+91",
@@ -392,20 +379,7 @@
       },
       {
         "label": "Language",
-        "options": [
-          "Hindi",
-          "English",
-          "Telugu",
-          "Punjabi",
-          "Bengali",
-          "Marathi",
-          "Urdu",
-          "Gujarati",
-          "Tamil",
-          "Kannada",
-          "Oriya",
-          "Persian"
-        ]
+        "options": ["Hindi", "English", "Telugu", "Punjabi" ,"Bengali" ,"Marathi" ,"Urdu","Gujarati","Tamil","Kannada","Oriya","Persian"]
       }
     ]
   },
@@ -495,9 +469,8 @@
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
     "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
-    "incorrectUserReport": "This report does not belongs to this user.",
-    "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
-    "cartPhelboTxt": "The phlebotomist will reach within 30 mins"
+    "incorrectUserReport" : "This report does not belongs to this user.",
+    "unableToFetchReport" : "We could not fetch your report. Please view report in my order section"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -969,10 +942,5 @@
     { "title": "Terms and Conditions", "url": "https://www.apollo247.com/terms?isMobile=true" },
     { "title": "Returns Policy", "url": "https://www.apollo247.com/returns?isMobile=true" },
     { "title": "Privacy Policy", "url": "https://www.apollo247.com/privacy?isMobile=true" }
-  ],
-  "truecaller": {
-    "networkProblem": "There is a problem with network connection.",
-    "userNotVerified": "User is not verified on truecaller.",
-    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in."
-  }
+  ]
 }

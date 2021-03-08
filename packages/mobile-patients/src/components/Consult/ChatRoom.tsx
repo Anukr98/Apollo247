@@ -5741,14 +5741,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           )}
           {!isPublishAudio && showVideo && renderShowNoAudioView()}
           {subscriberConnected.current && renderSubscriberConnectedInfo()}
-
-          {showDoctorProfile &&
-            !subscriberConnected.current &&
-            !patientJoinedCall.current &&
-            renderTextConnecting()}
-          {showDoctorProfile &&
-          !patientJoinedCall.current &&
-          (!subscriberConnected.current || isPaused !== '' || callToastStatus.current)
+          {!subscriberConnected.current && renderTextConnecting()}
+          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
             ? renderToastMessages()
             : null}
           {!showVideo && renderDisableVideoSubscriber()}

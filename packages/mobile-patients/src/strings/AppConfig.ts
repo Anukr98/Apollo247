@@ -62,58 +62,6 @@ const testApiCredentialsProd = {
   InterfaceClient: 'MCKINSEY',
 };
 
-const loginSection = {
-  bannerUrl: 'https://newassets.apollo247.com/images/banners/FirstTransactionOffer.png',
-  mainTitle: 'Why choose Apollo 247?',
-  data: [
-    {
-      title: 'Express Medicine Delivery',
-      description: '5 lakh happy customers every day',
-      iconUrl: 'https://newassets.apollo247.com/images/onboarding_doorstep.png',
-    },
-    {
-      title: 'Consult with Apollo Doctors',
-      description: '7000+ doctors available online in 15 min',
-      iconUrl: 'https://newassets.apollo247.com/images/onboarding_anytime.png',
-    },
-    {
-      title: 'Up to 60% off on Medical Checkup',
-      description: 'Diagnostic tests starting at 199',
-      iconUrl: 'https://newassets.apollo247.com/images/onboarding_healthrecord.png',
-    },
-  ],
-};
-
-const covidVaccineSection = {
-  mainTitle: 'For COVID-19 Vaccination related queries',
-  data: [
-    {
-      title: 'Vaccine Related Link',
-      url: 'https://www.apollo247.com/specialties/vaccine-related-consult',
-      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
-      reverse: true,
-    },
-    {
-      title: 'Vaccine Queries',
-      url: 'https://www.apollo247.com/specialties/vaccine-related-consult',
-      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
-      reverse: false,
-    },
-    {
-      title: 'Chat With Us',
-      url: 'https://www.apollo247.com/chat/chat-bot-vaccine.html',
-      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
-      reverse: false,
-    },
-    {
-      title: 'FAQs & Articles',
-      url: 'https://www.apollo247.com/blog/covid19-vaccines',
-      iconPath: 'https://newassets.apollo247.com/images/vaccineTracker.png',
-      reverse: false,
-    },
-  ],
-};
-
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
@@ -171,9 +119,6 @@ const appStaticVariables = {
   PACKAGING_CHARGES: 0,
   MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
   COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
-  APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
-  LOGIN_SECTION: loginSection,
-  COVID_VACCINE_SECTION: covidVaccineSection,
 };
 
 const DEV_top_specialties = [
@@ -323,17 +268,6 @@ const Apollo247Config = {
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
     DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
-  },
-};
-
-const ServiceabiltyAvailabilityConfig = {
-  dev: {
-    SERVICEABLE_CONFIG: ['https://serviceabilty.apollo247.com/pincode', tatTokenProd],
-    AVAILABILITY_CONFIG: ['https://uatavail.apollo247.com', tatTokenDev],
-  },
-  prod: {
-    SERVICEABLE_CONFIG: ['https://serviceabilty.apollo247.com/pincode', tatTokenProd],
-    AVAILABILITY_CONFIG: ['https://avail.apollo247.com', tatTokenProd],
   },
 };
 
@@ -620,7 +554,6 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
-  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -688,7 +621,6 @@ const ConfigurationQA = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
-  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -756,7 +688,6 @@ const ConfigurationQA2 = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
-  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -824,7 +755,6 @@ const ConfigurationQA3 = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
-  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -886,7 +816,6 @@ const ConfigurationVAPT = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
-  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -953,7 +882,6 @@ const ConfigurationProd = {
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   ...Apollo247Config.prod,
-  ...ServiceabiltyAvailabilityConfig.prod,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -975,7 +903,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [],
+  DIAGNOSTIC_COVID_SLOT_ITEMID: [2613, 2446, 2462, 2388, 2419, 2411, 2410, 2539, 2614, 2462, 2613],
 };
 
 //PERFORMANCE
@@ -1008,7 +936,6 @@ const ConfigurationPERFORM = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
-  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -1077,7 +1004,6 @@ const ConfigurationDevReplica = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
-  ...ServiceabiltyAvailabilityConfig.dev,
   NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
@@ -1473,7 +1399,7 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED',
+  'SAMPLE_REJECTED'
 ];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
@@ -1494,7 +1420,7 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED',
+  'SAMPLE_REJECTED'
 ];
 
 type SpecialitiesType = {

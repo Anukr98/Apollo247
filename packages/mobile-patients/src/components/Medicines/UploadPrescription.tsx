@@ -253,10 +253,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         (data.getPatientAddressList
           .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       setAddresses!(addressList);
-      const deliveryAddress = addressList.find(({ defaultAddress }) => defaultAddress === true);
-      if (deliveryAddress && !deliveryAddressId) {
-        setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
-      }
     } catch (error) {
       console.log(error);
     }

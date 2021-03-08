@@ -194,12 +194,6 @@ export interface AppCommonDataContextProps {
   setNeedHelpToContactInMessage: ((value: string) => void) | null;
   needHelpReturnPharmaOrderSuccessMessage: string;
   setNeedHelpReturnPharmaOrderSuccessMessage: ((value: string) => void) | null;
-  covidVaccineCta: any;
-  setCovidVaccineCta: ((value: any) => void) | null;
-  covidVaccineCtaV2: any;
-  setCovidVaccineCtaV2: ((value: any) => void) | null;
-  loginSection: any;
-  setLoginSection: ((value: any) => void) | null;
   phrSession: string;
   setPhrSession: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
@@ -291,12 +285,6 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setNeedHelpToContactInMessage: null,
   needHelpReturnPharmaOrderSuccessMessage: '',
   setNeedHelpReturnPharmaOrderSuccessMessage: null,
-  covidVaccineCta: null,
-  setCovidVaccineCta: null,
-  covidVaccineCtaV2: null,
-  setCovidVaccineCtaV2: null,
-  loginSection: null,
-  setLoginSection: null,
   phrSession: '',
   setPhrSession: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
@@ -363,9 +351,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   >(null);
 
   const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
-  const [bannerDataHome, _setBannerDataHome] = useState<
-    AppCommonDataContextProps['bannerDataHome']
-  >(null);
+  const [bannerDataHome, _setBannerDataHome] = useState<AppCommonDataContextProps['bannerDataHome']>(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
@@ -432,16 +418,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
     needHelpReturnPharmaOrderSuccessMessage,
     setNeedHelpReturnPharmaOrderSuccessMessage,
   ] = useState<AppCommonDataContextProps['needHelpReturnPharmaOrderSuccessMessage']>('');
-
-  const [covidVaccineCta, setCovidVaccineCta] = useState<
-    AppCommonDataContextProps['covidVaccineCta']
-  >(null);
-
-  const [covidVaccineCtaV2, setCovidVaccineCtaV2] = useState<
-    AppCommonDataContextProps['covidVaccineCtaV2']
-  >(null);
-
-  const [loginSection, setLoginSection] = useState<AppCommonDataContextProps['loginSection']>(null);
 
   const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
@@ -517,9 +493,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
-  const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>(
-    ''
-  );
+  const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>('');
   const [isRenew, setIsRenew] = useState<AppCommonDataContextProps['isRenew']>('');
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
@@ -620,12 +594,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setNeedHelpToContactInMessage,
         needHelpReturnPharmaOrderSuccessMessage,
         setNeedHelpReturnPharmaOrderSuccessMessage,
-        covidVaccineCta,
-        setCovidVaccineCta,
-        covidVaccineCtaV2,
-        setCovidVaccineCtaV2,
-        loginSection,
-        setLoginSection,
         phrSession,
         setPhrSession,
         notificationCount,

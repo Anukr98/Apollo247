@@ -1868,18 +1868,8 @@ export const SAVE_DEVICE_TOKEN = gql`
 `;
 
 export const UPDATE_PATIENT_APP_VERSION = gql`
-  mutation UpdatePatientAppVersion(
-    $patientId: String!
-    $appVersion: String!
-    $osType: DEVICETYPE
-    $appsflyerId: String
-  ) {
-    updatePatientAppVersion(
-      patientId: $patientId
-      appVersion: $appVersion
-      osType: $osType
-      appsflyerId: $appsflyerId
-    ) {
+  mutation UpdatePatientAppVersion($patientId: String!, $appVersion: String!, $osType: DEVICETYPE) {
+    updatePatientAppVersion(patientId: $patientId, appVersion: $appVersion, osType: $osType) {
       status
     }
   }
@@ -2485,6 +2475,10 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         tatType
         shopId
         totalCashBack
+        consultInfo {
+          doctorName
+          appointmentDateTime
+        }
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -4743,34 +4737,27 @@ export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
 `;
 
 export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
-  query getDiagnosticOrderDetailsByDisplayID($displayId: Int!) {
-    getDiagnosticOrderDetailsByDisplayID(displayId: $displayId) {
-      ordersList {
-        patientId
-        patientAddressId
+query getDiagnosticOrderDetailsByDisplayID($displayId: Int!) {
+  getDiagnosticOrderDetailsByDisplayID(displayId: $displayId) {
+    ordersList{
+      patientId
+      patientAddressId
+      orderStatus
+      totalPrice
+      createdDate
+      slotDateTimeInUTC
+      visitNo
+      isRescheduled
+      preBookingId
+      id
+      diagnosticOrdersStatus{
         orderStatus
-        totalPrice
-        createdDate
-        slotDateTimeInUTC
-        visitNo
-        isRescheduled
-        preBookingId
-        id
-        diagnosticOrdersStatus {
-          orderStatus
-        }
       }
     }
   }
+}
 `;
 
-export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
-    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
-      slots {
-        Timeslot
-        TimeslotID
-      }
-    }
-  }
-`;
+
+
+

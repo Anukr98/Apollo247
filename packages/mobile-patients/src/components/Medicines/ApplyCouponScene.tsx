@@ -147,7 +147,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     circleMembershipCharges,
     circleSubscriptionId,
     hdfcSubscriptionId,
-    setIsFreeDelivery,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
@@ -222,7 +221,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
             setIsCircleSubscription && setIsCircleSubscription(false);
             console.log(g(resp.data, 'response'));
             setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
-            setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
             setCouponError(g(resp.data, 'response', 'reason'));

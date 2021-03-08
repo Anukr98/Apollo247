@@ -60,12 +60,14 @@ export interface PaymentSceneProps
   extends NavigationScreenProps<{
     orders: any;
     transactionId: number;
+    token: string;
     amount: number;
     burnHC: number;
     deliveryTime: string;
     paymentTypeID: string;
     bankCode: any;
     checkoutEventAttributes?: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED];
+    appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED];
     coupon: any;
     cartItems: ShoppingCartItem[];
     orderInfo: saveMedicineOrderOMSVariables;
@@ -89,11 +91,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const burnHC = props.navigation.getParam('burnHC');
   const orders = props.navigation.getParam('orders');
   const transactionId = props.navigation.getParam('transactionId');
+  const authToken = props.navigation.getParam('token');
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const bankCode = props.navigation.getParam('bankCode');
   const isStorePickup = props.navigation.getParam('isStorePickup');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const coupon = props.navigation.getParam('coupon');
   const cartItems = props.navigation.getParam('cartItems');
   const orderInfo = props.navigation.getParam('orderInfo');
@@ -242,6 +246,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       orderInfo: orderInfo,
       deliveryTime: deliveryTime,
       checkoutEventAttributes: checkoutEventAttributes,
+      appsflyerEventAttributes: appsflyerEventAttributes,
       isStorePickup: isStorePickup,
     });
   };
@@ -292,7 +297,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         subPlanId ? '&subPlanId=' + subPlanId : ''
       }${'&storeCode=' + storeCode}`;
     }
-    console.log({ totalAmount, transactionId, url });
+    console.log({ totalAmount, transactionId, authToken, url });
     console.log(`%cMEDICINE_PG_URL:\t${url}`, 'color: #bada55');
 
     let WebViewRef: any;

@@ -22,5 +22,4 @@ export interface UpdatePatientAppVersionVariables {
   patientId: string;
   appVersion: string;
   osType?: DEVICETYPE | null;
-  appsflyerId?: string | null;
 }

@@ -852,11 +852,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       return <View style={styles.separatorLineStyle} />;
     };
 
-    const patientTextView = (text: string, style: any = {}) => {
+    const patientTextView = (text: string) => {
       return (
         <Text
           numberOfLines={1}
-          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }, style]}
+          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }]}
         >
           {text}
         </Text>
@@ -924,8 +924,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                       currentPatient?.patientMedicalHistory?.height?.includes('’') ||
                         currentPatient?.patientMedicalHistory?.height?.includes("'")
                         ? currentPatient?.patientMedicalHistory?.height
-                        : currentPatient?.patientMedicalHistory?.height + ' cms',
-                      { paddingLeft: 7 }
+                        : currentPatient?.patientMedicalHistory?.height + ' cms'
                     )
                   : patientTextView('-')}
               </View>

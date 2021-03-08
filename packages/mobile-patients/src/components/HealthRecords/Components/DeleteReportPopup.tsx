@@ -9,11 +9,10 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 interface DeleteReportPopupProps extends Omit<OverlayProps, 'children' | 'isVisible'> {
   onPressClose: () => void;
   onPressOK: () => void;
-  deleteRecordText: string;
 }
 
 export const DeleteReportPopup: React.FC<DeleteReportPopupProps> = (props) => {
-  const { onPressClose, onPressOK, deleteRecordText, ...overlayProps } = props;
+  const { onPressClose, onPressOK, ...overlayProps } = props;
 
   const renderCloseIcon = () => {
     return (
@@ -45,10 +44,7 @@ export const DeleteReportPopup: React.FC<DeleteReportPopupProps> = (props) => {
             <View style={styles.deleteMessageViewStyle}>
               <View style={styles.deleteReportMessageTextViewStyle}>
                 <Text style={styles.deleteReportMessage1TextStyle}>
-                  {string.common.delete_report_confirm_text.replace(
-                    '{0}',
-                    deleteRecordText || 'record'
-                  )}
+                  {string.common.delete_report_confirm_text}
                 </Text>
               </View>
               <View style={styles.buttonViewStyle}>

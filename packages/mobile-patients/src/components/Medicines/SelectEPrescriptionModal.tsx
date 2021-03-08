@@ -174,11 +174,10 @@ const styles = StyleSheet.create({
   loadMoreText: {
     ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 24),
     textAlign: 'center',
-    marginBottom: 0,
   },
 });
 
-export interface SelectEPrescriptionModalProps extends NavigationScreenProps {
+export interface SelectEPrescriptionModalProps {
   onSubmit: (prescriptions: EPrescription[]) => void;
   isVisible: boolean;
   selectedEprescriptionIds?: EPrescription['id'][];
@@ -195,7 +194,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const [isPdfPrescription, setIsPdfPrescription] = useState<boolean>(false);
   const loadRecordsStep = 12;
   const [healthRecordIndex, setHealthRecordIndex] = useState<number>(loadRecordsStep);
-  const [refreshHealthRecords, setRefreshHealthRecords] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const DATE_FORMAT = 'DD MMM YYYY';
@@ -335,7 +333,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const getBlobUrl = (
     caseSheet: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet[]
   ) => {
-    const url = caseSheet?.find(
+    const url = caseSheet.find(
       (casesheet) => !!casesheet?.blobName && casesheet?.doctorType !== DoctorType.JUNIOR
     );
     return url?.blobName ? `${AppConfig.Configuration.DOCUMENT_BASE_URL}${url?.blobName}` : '';
@@ -467,25 +465,24 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       <View>
         <Text style={styles.sectionHeadings}>Health Records</Text>
         <FlatList
-          data={combination?.slice(0, healthRecordIndex) || []}
-          extraData={refreshHealthRecords}
+          data={combination || []}
           renderItem={renderHealthRecord}
           keyExtractor={(item) => item.id}
           numColumns={3}
+          style={{ flex: 1 }}
           contentContainerStyle={{ paddingHorizontal: 15 }}
         />
-        {healthRecordIndex < (combination?.length || 0) && (
+        {/* {healthRecordIndex < (combination?.length || 0) && (
           <TouchableOpacity
             style={styles.loadMoreButton}
             activeOpacity={0.4}
             onPress={() => {
               setHealthRecordIndex(healthRecordIndex + loadRecordsStep);
-              setRefreshHealthRecords(!refreshHealthRecords);
             }}
           >
             <Text style={styles.loadMoreText}>LOAD MORE</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
     );
   };
@@ -550,9 +547,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         <FlatList
           data={isOldPrescription ? prescriptionOlderThan6months : prescriptionUpto6months}
           renderItem={renderEPrescription}
-          extraData={refreshHealthRecords}
           keyExtractor={(item) => item.id}
           numColumns={3}
+          style={{ flex: 1 }}
           contentContainerStyle={{ paddingHorizontal: 15 }}
         />
       </View>
@@ -756,7 +753,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       <View style={theme.viewStyles.container}>
         <SafeAreaView style={styles.safeAreaStyle}>
           {renderHeader()}
-          <ScrollView bounces={false} contentContainerStyle={{ flexGrow: 0 }}>
+          <ScrollView bounces={false}>
             {!(loading || (props.displayPrismRecords && medPrismloading)) && (
               <>
                 {renderNoPrescriptions()}

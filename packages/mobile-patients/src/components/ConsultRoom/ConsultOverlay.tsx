@@ -97,24 +97,15 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   isDoctorsOfTheHourStatus?: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
-  const { doctor } = props;
-  const { availableModes } = doctor;
-
   const client = useApolloClient();
   const { circleSubscriptionId } = useShoppingCart();
-  const isOnline = availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.ONLINE
-  );
-  const isBoth = availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
-  );
   const tabs =
-    props.doctor?.doctorType !== DoctorType.PAYROLL
-      ? isBoth?.length > 0
+    props.doctor!.doctorType !== DoctorType.PAYROLL
+      ? props.availableMode === ConsultMode.BOTH
         ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
-        : isOnline?.length > 0
+        : props.availableMode === ConsultMode.ONLINE
         ? [{ title: 'Consult Online' }]
-        : [{ title: 'Meet In Person' }]
+        : [{ title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');

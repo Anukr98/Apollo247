@@ -1,8 +1,9 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
-import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
+import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -41,21 +42,14 @@ import {
   Text,
   TextInput,
   View,
-  ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
+import { WebView } from 'react-native-webview';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
-// let TRUECALLER: any;
-
-// if (Platform.OS === 'android') {
-//   TRUECALLER = require('react-native-truecaller-sdk').default;
-// }
 
 const { height, width } = Dimensions.get('window');
 
@@ -83,7 +77,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: width - 135,
+    width: '82%',
     paddingBottom: 0,
   },
   inputView: {
@@ -91,7 +85,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: width - 135,
+    width: '82%',
     paddingBottom: 0,
   },
   bottomDescription: {
@@ -123,30 +117,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     elevation: 20,
   },
-  hyperlink: {
-    color: theme.colors.PURPLE,
-    ...fonts.IBMPlexSansBold(10),
-    textDecorationLine: 'underline',
-  },
-  leftSeperatorLine: {
-    width: '40%',
-    height: 0.5,
-    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
-  },
-  rightSeperatorLine: {
-    width: '43%',
-    height: 0.5,
-    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
-  },
-  authContainer: {
-    marginTop: 25,
-    marginHorizontal: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
 });
 
 export interface LoginProps extends NavigationScreenProps {}
@@ -170,16 +140,14 @@ export const Login: React.FC<LoginProps> = (props) => {
   const { signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [appSign, setAppSign] = useState<string>('');
-  const isAndroid = Platform.OS === 'android';
 
-  const { setLoading, showAphAlert } = useUIElements();
+  const { setLoading } = useUIElements();
   const webengage = new WebEngage();
 
   useEffect(() => {
-    // isAndroid && initializeTruecaller();
-    // isAndroid && truecallerEventListeners();
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -190,7 +158,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     try {
       fireBaseFCM();
       setLoading && setLoading(false);
-      if (isAndroid) {
+      if (Platform.OS === 'android') {
         AppSignature.getAppSignature().then((sign: string[]) => {
           setAppSign(sign[0] || '');
         });
@@ -199,53 +167,6 @@ export const Login: React.FC<LoginProps> = (props) => {
       CommonBugFender('Login_useEffect_try', error);
     }
   }, []);
-
-  // const initializeTruecaller = () => {
-  //   TRUECALLER.initializeClient(
-  //     'CONSENT_MODE_POPUP',
-  //     'SDK_CONSENT_TITLE_LOG_IN',
-  //     'FOOTER_TYPE_SKIP'
-  //   );
-  // };
-
-  // const truecallerEventListeners = () => {
-  //   // For handling the success event
-  //   TRUECALLER.on('profileSuccessReponse', (profile: any) => {
-  //     setLoading?.(false);
-  //     // add other logic here related to login/sign-up as per your use-case.
-  //   });
-
-  //   // For handling the reject event
-  //   TRUECALLER.on('profileErrorReponse', (error: any) => {
-  //     setLoading?.(false);
-  //     if (error && error.errorCode) {
-  //       switch (error.errorCode) {
-  //         case 1: {
-  //           showAphAlert!({
-  //             title: 'Uh oh.. :(',
-  //             description: string.truecaller.networkProblem,
-  //           });
-  //           break;
-  //         }
-  //         case 4:
-  //         case 10: {
-  //           showAphAlert!({
-  //             title: 'Uh oh.. :(',
-  //             description: string.truecaller.userNotVerified,
-  //           });
-  //           break;
-  //         }
-  //         case 11: {
-  //           showAphAlert!({
-  //             title: 'Uh oh.. :(',
-  //             description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-  //           });
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   });
-  // };
 
   const fireBaseFCM = async () => {
     try {
@@ -392,42 +313,48 @@ export const Login: React.FC<LoginProps> = (props) => {
   const openWebView = () => {
     CommonLogEvent(AppRoutes.Login, 'Terms  Conditions clicked');
     Keyboard.dismiss();
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
-      isGoBack: true,
-    });
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          title={'Terms & Conditions'}
+          leftIcon="close"
+          container={{
+            borderBottomWidth: 0,
+          }}
+          onPressLeftIcon={() => setonClickOpen(false)}
+        />
+        <View
+          style={{
+            flex: 1,
+            overflow: 'hidden',
+            backgroundColor: 'white',
+          }}
+        >
+          <WebView
+            source={{
+              uri: 'https://www.apollo247.com/terms',
+            }}
+            style={{
+              flex: 1,
+              backgroundColor: 'white',
+            }}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setShowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setShowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setShowSpinner(false);
+            }}
+          />
+        </View>
+      </View>
+    );
   };
-
-  // const renderTruecallerButton = () => {
-  //   return (
-  //     <View style={styles.authContainer}>
-  //       <View style={styles.row}>
-  //         <View style={styles.leftSeperatorLine} />
-  //         <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR) }}>
-  //           Or
-  //         </Text>
-  //         <View style={styles.rightSeperatorLine} />
-  //       </View>
-  //       <AuthButton onPress={loginWithTruecaller} />
-  //     </View>
-  //   );
-  // };
-
-  // const loginWithTruecaller = () => {
-  //   setLoading?.(true);
-  //   TRUECALLER.isUsable((result: boolean) => {
-  //     if (result) {
-  //       // Authenticate via truecaller flow can be used
-  //       TRUECALLER.requestTrueProfile();
-  //     } else {
-  //       setLoading?.(false);
-  //       showAphAlert!({
-  //         title: 'Uh oh.. :(',
-  //         description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-  //       });
-  //     }
-  //   });
-  // };
 
   return (
     <View style={{ flex: 1 }}>
@@ -438,6 +365,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         <View style={{ height: 16 }} />
         <LoginCard
           cardContainer={{ marginTop: 0, paddingBottom: 12 }}
+          heading={string.login.hello_login}
           description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
@@ -481,35 +409,40 @@ export const Login: React.FC<LoginProps> = (props) => {
               : string.login.wrong_number}
           </Text>
 
-          <TouchableOpacity
-            onPress={() => openWebView()}
+          <View
             style={{
               marginHorizontal: 16,
             }}
           >
             <HyperLink
-              linkStyle={styles.hyperlink}
+              linkStyle={{
+                color: '#02475b',
+                ...fonts.IBMPlexSansBold(10),
+                lineHeight: 16,
+                letterSpacing: 0.4,
+              }}
               linkText={(url) =>
                 url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
               }
-              onPress={(url, text) => openWebView()}
+              onPress={(url, text) => setonClickOpen(true)}
             >
               <Text
                 style={{
                   color: '#02475b',
                   ...fonts.IBMPlexSansMedium(10),
+                  lineHeight: 16,
+                  letterSpacing: 0,
                 }}
               >
                 By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
               </Text>
             </HyperLink>
-          </TouchableOpacity>
+          </View>
         </LoginCard>
-        <ScrollView>
-          {/** Truecaller integration will come in next phase */}
-          {/* {isAndroid && renderTruecallerButton()} */}
+        <ScrollView bounces={false}>
           <LandingDataView />
         </ScrollView>
+        {onClickOpen && openWebView()}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

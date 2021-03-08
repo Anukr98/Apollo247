@@ -14,10 +14,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { g } from '../../helpers/helperFunctions';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  phrNotificationCountApi,
-  updatePatientAppVersion,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
@@ -200,10 +197,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [!currentPatient]);
 
   useEffect(() => {
-    if (currentPatient) {
-      setProfile(currentPatient);
-      updatePatientAppVersion(client, currentPatient);
-    }
+    currentPatient && setProfile(currentPatient);
   }, [currentPatient]);
 
   useEffect(() => {
