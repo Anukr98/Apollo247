@@ -170,7 +170,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
 
   DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
-  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'Diagonstic cart item removed',
+  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'Diagnostic cart item removed',
   DIAGNOSITC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic cart item added',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
@@ -1248,6 +1248,7 @@ export interface WebEngageEvents {
     'Item ID': string | number;
     'Item name': string;
     Pincode: string | number;
+    'Mode': 'Customer' | 'Automated'
   };
   [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]: {
     Reschedule: string;
