@@ -182,6 +182,7 @@ import {
 import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
+import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import {
   editProfile,
   editProfileVariables,
@@ -2088,7 +2089,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ...theme.viewStyles.cardViewStyle,
           marginHorizontal: 20,
           // marginTop: 4,
-          marginBottom: 12,
+          marginBottom: 50,
           padding: 16,
           marginTop: 10,
           flexDirection: 'row',
@@ -3021,7 +3022,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ''}, ${currentPatient?.gender || ''}, ${
       currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
     }`;
-    const address_text = addresses ? formatAddressWithLandmark(addresses?.[0]) || '' : '';
+    const address_text = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
     return (
       <View style={styles.patientDetailsViewStyle}>
         <View style={styles.patientNameViewStyle}>
@@ -3035,13 +3036,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
         <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
-        <View style={styles.patientNameViewStyle}>
-          <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
-          <Text style={[styles.patientNameTextStyle, styles.changeTextStyle]}>
-            {string.diagnostics.changeText}
-          </Text>
-        </View>
-        <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>{address_text}</Text>
+        {address_text ? (
+          <>
+            <View style={styles.patientNameViewStyle}>
+              <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
+              <Text
+                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
+                onPress={() => showAddressPopup()}
+              >
+                {string.diagnostics.changeText}
+              </Text>
+            </View>
+            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
+              {address_text}
+            </Text>
+          </>
+        ) : null}
       </View>
     );
   };
@@ -3126,16 +3136,91 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTestProceedBar = () => {
+    const showTime = deliveryAddressId && areaSelected && !isEmptyObject(areaSelected);
     return (
       <TestProceedBar
-        onPressAddDeliveryAddress={() => {}}
-        onPressProceedtoPay={() => {}}
-        onPressSelectDeliveryAddress={() => {}}
+        selectedTimeSlot={selectedTimeSlot}
+        onPressAddDeliveryAddress={() => _onPressAddAddress()}
+        onPressProceedtoPay={() => onPressProceedToPay()}
+        onPressSelectDeliveryAddress={() => showAddressPopup()}
+        showTime={showTime}
+        onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
       />
     );
   };
 
-  const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
+  function _onPressAddAddress() {
+    postPharmacyAddNewAddressClick('Diagnostics Cart');
+    props.navigation.navigate(AppRoutes.AddAddressNew, {
+      addOnly: true,
+      source: 'Diagnostics Cart' as AddressSource,
+    });
+    setDiagnosticSlot && setDiagnosticSlot(null);
+    setselectedTimeSlot(undefined);
+  }
+
+  function showAddressPopup() {
+    return showAphAlert?.({
+      removeTopIcon: true,
+      onPressOutside: () => {
+        hideAphAlert?.();
+      },
+      children: (
+        <AccessLocation
+          source={AppRoutes.Tests}
+          hidePincodeCurrentLocation
+          addresses={addresses}
+          onPressSelectAddress={(_address) => {
+            CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            const tests = cartItems?.filter(
+              (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
+            );
+            const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(_address);
+            hideAphAlert?.();
+
+            if (tests?.length) {
+              showAphAlert?.({
+                title: string.common.uhOh,
+                description: `${(currentPatient && currentPatient.firstName) ||
+                  'Hi'}, since your cart includes tests (${tests
+                  .map((item) => item.name)
+                  .join(
+                    ', '
+                  )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
+              });
+            } else {
+              if (isSelectedAddressWithNoLatLng) {
+                //show the error
+                renderAlert(
+                  string.diagnostics.updateAddressLatLngMessage,
+                  'updateLocation',
+                  _address
+                );
+              } else {
+                AddressSelectedEvent(_address);
+                setDeliveryAddressId?.(_address?.id);
+                setDiagnosticAreas?.([]);
+                setAreaSelected?.({});
+                setDiagnosticSlot?.(null);
+              }
+            }
+          }}
+          onPressEditAddress={(_address) => {
+            _navigateToEditAddress('Update', _address, AppRoutes.TestsCart);
+            hideAphAlert?.();
+          }}
+          onPressAddAddress={() => {
+            _onPressAddAddress();
+            hideAphAlert?.();
+          }}
+          onPressCurrentLocaiton={() => {}}
+          onPressPincode={() => {}}
+        />
+      ),
+    });
+  }
+
+  const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   const isCovidItem = cartItemsWithId?.map((item) =>
     AppConfig.Configuration.Covid_Items.includes(item)

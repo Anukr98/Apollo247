@@ -1,16 +1,20 @@
+import { formatTestSlot } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { WhiteChevronRightIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { WhiteChevronRightIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export interface TestProceedBarProps {
   onPressAddDeliveryAddress?: () => void;
   onPressSelectDeliveryAddress?: () => void;
   onPressProceedtoPay?: () => void;
   onPressTimeSlot?: () => void;
+  selectedTimeSlot?: any;
+  showTime?: any;
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
@@ -20,6 +24,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     onPressSelectDeliveryAddress,
     onPressProceedtoPay,
     onPressTimeSlot,
+    selectedTimeSlot,
+    showTime,
   } = props;
 
   function getButtonTitle() {
@@ -39,6 +45,11 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   }
 
   const renderTimeSlot = () => {
+    const timeSlotText = `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
+      selectedTimeSlot
+        ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)}`
+        : string.diagnostics.noSlotSelectedText
+    }`;
     return (
       <View style={styles.timeSlotMainViewStyle}>
         <View style={styles.timeSlotChangeViewStyle}>
@@ -49,12 +60,12 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
             style={{ flexDirection: 'row', alignItems: 'center' }}
           >
             <Text style={[styles.timeSlotTextStyle, { paddingHorizontal: 8 }]}>
-              {string.diagnostics.changeText}
+              {showTime ? string.diagnostics.changeText : string.diagnostics.selectSlotText}
             </Text>
             <WhiteChevronRightIcon style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.timeTextStyle}>{'Mon, 1st Feb 2021, 9.00am to 9:40am'}</Text>
+        <Text style={styles.timeTextStyle}>{timeSlotText || ''}</Text>
       </View>
     );
   };
@@ -80,7 +91,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
 
   return (
     <View style={styles.container}>
-      {renderTimeSlot()}
+      {selectedTimeSlot ? renderTimeSlot() : null}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}
