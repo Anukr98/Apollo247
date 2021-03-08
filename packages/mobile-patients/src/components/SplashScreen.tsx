@@ -485,7 +485,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             break;
 
           case 'webview':
-            if (data.length === 2) {
+            if (data.length >= 1) {
               let url = data[1].replace('param=', '');
               getData('webview', url);
             }
