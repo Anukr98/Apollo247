@@ -655,6 +655,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const getGrandTotalFromShipments = () => {
     let total = 0;
     shipments.forEach((item: any) => (total = total + item.estimatedAmount));
+    if (circleMembershipCharges) {
+      total += circleMembershipCharges;
+    }
     return total;
   };
 
