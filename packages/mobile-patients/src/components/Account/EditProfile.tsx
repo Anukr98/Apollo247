@@ -715,6 +715,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           navigation.state.params!.goBackCallback(data.data!.addNewProfile.patient);
         } else {
           props.navigation.goBack();
+          props.navigation.state.params!.onNewProfileAdded({
+            added: true,
+            id: data.data!.addNewProfile?.patient?.id,
+          });
         }
         selectUser(data.data!.addNewProfile.patient);
       })
