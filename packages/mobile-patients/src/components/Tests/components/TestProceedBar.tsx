@@ -1,4 +1,4 @@
-import { formatTestSlot } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { formatTestSlot, isEmptyObject } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { WhiteChevronRightIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -13,19 +13,23 @@ export interface TestProceedBarProps {
   onPressSelectDeliveryAddress?: () => void;
   onPressProceedtoPay?: () => void;
   onPressTimeSlot?: () => void;
+  onPressSelectArea?: () => void;
   selectedTimeSlot?: any;
   showTime?: any;
+  showAreaSelection?: boolean;
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
-  const { grandTotal, deliveryAddressId, addresses } = useDiagnosticsCart();
+  const { grandTotal, deliveryAddressId, addresses, areaSelected } = useDiagnosticsCart();
   const {
     onPressAddDeliveryAddress,
     onPressSelectDeliveryAddress,
     onPressProceedtoPay,
     onPressTimeSlot,
+    onPressSelectArea,
     selectedTimeSlot,
     showTime,
+    showAreaSelection,
   } = props;
 
   function getButtonTitle() {
@@ -33,6 +37,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
       ? addresses?.length
         ? string.diagnostics.selectAddressText
         : string.diagnostics.addAddressText
+      : isEmptyObject(areaSelected)
+      ? string.diagnostics.selectAreaText
       : string.proceedToPay;
   }
 
@@ -41,6 +47,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
       ? addresses?.length
         ? onPressSelectDeliveryAddress?.()
         : onPressAddDeliveryAddress?.()
+      : isEmptyObject(areaSelected)
+      ? onPressSelectArea?.()
       : onPressProceedtoPay?.();
   }
 

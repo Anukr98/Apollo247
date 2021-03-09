@@ -76,7 +76,11 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
                 {string.diagnostics.patientTestOrderMsg}
               </Text>
               <View style={styles.patientListCardStyle}>
-                <FlatList data={allCurrentPatients || []} renderItem={renderPatientListItem} />
+                <FlatList
+                  keyExtractor={(_, index) => index.toString()}
+                  data={allCurrentPatients || []}
+                  renderItem={renderPatientListItem}
+                />
               </View>
               <Button
                 title={'DONE'}
