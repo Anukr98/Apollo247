@@ -816,6 +816,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['totalCashBack'] =
         isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
       shipmentsArray.push(shipment);
+      shipment['coupon'] = coupon ? coupon.coupon : '';
     });
     setShipments(shipmentsArray);
   }
@@ -878,6 +879,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     shipment['clusterId'] = null;
     shipment['totalCashBack'] =
       isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+    shipment['coupon'] = coupon ? coupon.coupon : '';
     setShipments([shipment]);
   }
 
