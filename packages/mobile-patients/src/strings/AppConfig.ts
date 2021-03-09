@@ -150,7 +150,6 @@ const appStaticVariables = {
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
-  PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   CIRCLE_PLAN_ID: 'CIRCLEPlan',
   CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,

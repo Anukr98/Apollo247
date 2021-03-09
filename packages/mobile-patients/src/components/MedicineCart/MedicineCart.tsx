@@ -144,6 +144,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setNewAddressAdded,
     orders,
     setOrders,
+    productDiscount,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -437,20 +438,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            addressChange && NavigateToCartSummary();
-            updatePricesAfterTat(inventoryData, updatedCartItems);
-          } else {
-            addressChange && NavigateToCartSummary();
-            handleTatApiFailure(selectedAddress, {});
-          }
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+          addressChange && NavigateToCartSummary();
+          updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
+          setloading!(false);
           handleTatApiFailure(selectedAddress, error);
           addressChange && NavigateToCartSummary();
         }
       } catch (error) {
-        handleTatApiFailure(selectedAddress, error);
+        setloading!(false);
       }
     } else if (!deliveryAddressId) {
       setlastCartItems(newCartItems);
@@ -635,7 +632,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
       coupon: coupon,
       pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
