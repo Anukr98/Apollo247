@@ -442,10 +442,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
+          setloading!(false);
           handleTatApiFailure(selectedAddress, error);
           addressChange && NavigateToCartSummary();
         }
-      } catch (error) {}
+      } catch (error) {
+        setloading!(false);
+      }
     } else if (!deliveryAddressId) {
       setlastCartItems(newCartItems);
       validatePharmaCoupon();
