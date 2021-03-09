@@ -45,6 +45,7 @@ import {
   GetTatResponse247,
   TatApiInput247,
   getDeliveryTAT247,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -93,8 +94,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     circleSubscriptionId,
     isCircleSubscription,
     setOrders,
+    coupon,
+    setCoupon,
+    cartTotal,
+    hdfcSubscriptionId,
+    productDiscount,
+    pinCode,
+    setCouponProducts,
   } = useShoppingCart();
-  const { setPharmacyLocation, setAxdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
+  const {
+    setPharmacyLocation,
+    setAxdcCode,
+    pharmacyUserTypeAttribute,
+    hdfcStatus,
+    hdfcPlanId,
+    circleStatus,
+    circlePlanId,
+    pharmacyLocation,
+    locationDetails,
+  } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -116,6 +134,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   );
   const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -212,6 +232,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           unserviceable: unserviceableSkus.indexOf(item.id) != -1,
         }));
         setCartItems!(updatedCartItems);
+        validatePharmaCoupon();
 
         const serviceableItems = updatedCartItems
           .filter((item) => !item.unserviceable)
@@ -244,6 +265,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           handleTatApiFailure(selectedAddress, error);
         }
       } catch (error) {}
+    } else {
+      validatePharmaCoupon();
     }
   }
 
@@ -261,6 +284,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setdeliveryTime?.(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
     setloading(false);
+    validatePharmaCoupon();
   }
 
   function addressSelectedEvent(
@@ -325,6 +349,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       Items.push(object);
     });
     setCartItems!(Items);
+    validatePharmaCoupon();
     console.log(loading);
   }
   const onFinishUpload = () => {
@@ -540,6 +565,112 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         }}
       />
     );
+  };
+
+  async function validatePharmaCoupon() {
+    if (coupon && cartTotal > 0) {
+      try {
+        await validateCoupon(coupon.coupon, coupon.message);
+      } catch (error) {
+        return;
+      }
+    }
+  }
+
+  const showAlert = (message: string) => {
+    try {
+      showAphAlert!({
+        title: 'Hi :)',
+        description: message,
+        unDismissable: true,
+        CTAs: [
+          {
+            text: 'Okay',
+            type: 'orange-button',
+            onPress: () => {
+              hideAphAlert && hideAphAlert();
+              props.navigation.goBack();
+            },
+          },
+        ],
+      });
+    } catch (error) {}
+  };
+
+  const removeCouponWithAlert = (message: string) => {
+    setCoupon!(null);
+    showAlert(message);
+  };
+
+  const setCouponFreeProducts = (products: any) => {
+    const freeProducts = products.filter((product) => {
+      return product.couponFree === 1;
+    });
+    freeProducts.forEach((item, index) => {
+      const filteredProduct = cartItems.filter((product) => {
+        return product.id === item.sku;
+      });
+      if (filteredProduct.length) {
+        item.quantity = filteredProduct[0].quantity;
+      }
+    });
+    setCouponProducts!(freeProducts);
+  };
+
+  const validateCoupon = (coupon: string, message: string | undefined, autoApply?: boolean) => {
+    CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
+    setloading!(true);
+    let packageId: string[] = [];
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleStatus === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`);
+    }
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
+      coupon: coupon,
+      pinCode: pharmacyPincode,
+      products: cartItems.map((item) => ({
+        sku: item.id,
+        categoryId: item.productType,
+        mrp: item.price,
+        quantity: item.quantity,
+        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+      })),
+      packageIds: packageId,
+    };
+    return new Promise(async (res, rej) => {
+      try {
+        const response = await validateConsultCoupon(data);
+        setloading!(false);
+        if (response.data.errorCode == 0) {
+          if (response.data.response.valid) {
+            setCoupon!({ ...g(response.data, 'response')!, message: message ? message : '' });
+            res();
+          } else {
+            !autoApply && removeCouponWithAlert(g(response.data, 'response', 'reason'));
+            rej(response.data.response.reason);
+          }
+
+          // set coupon free products again (in case when price of sku is changed)
+          const products = g(response.data, 'response', 'products');
+          if (products && products.length) {
+            setCouponFreeProducts(products);
+          }
+        } else {
+          CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
+          !autoApply && removeCouponWithAlert(g(response.data, 'errorMsg'));
+          rej(response.data.errorMsg);
+        }
+      } catch (error) {
+        CommonBugFender('validatingPharmaCoupon', error);
+        !autoApply && removeCouponWithAlert('Sorry, unable to validate coupon right now.');
+        setloading!(false);
+        rej('Sorry, unable to validate coupon right now.');
+      }
+    });
   };
 
   return (
