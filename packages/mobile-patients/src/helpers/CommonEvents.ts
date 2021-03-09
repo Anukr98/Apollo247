@@ -24,7 +24,7 @@ export const userLocationConsultWEBEngage = (
     'Customer ID': g(currentPatient, 'id'),
     'User location': location,
     Screen: screen,
-    Platform: Platform.OS,
+    Platform: 'App',
     'Doctor details': doctorDetails,
     Type: type,
   };
