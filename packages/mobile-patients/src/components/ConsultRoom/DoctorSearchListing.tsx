@@ -124,6 +124,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -1058,17 +1059,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         const MoveDoctor = props.navigation.getParam('movedFrom') || '';
 
         if (MoveDoctor === 'registration') {
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.ConsultRoom,
-                }),
-              ],
-            })
-          );
+          navigateToHome(props.navigation);
         } else {
           CommonLogEvent(AppRoutes.DoctorSearchListing, 'Go back clicked');
           props.navigation.goBack();

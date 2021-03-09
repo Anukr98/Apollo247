@@ -108,6 +108,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -997,17 +998,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   removeFreeProductsFromCart();
                 }
                 if (navigatedFrom === 'registration') {
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [
-                        NavigationActions.navigate({
-                          routeName: AppRoutes.ConsultRoom,
-                        }),
-                      ],
-                    })
-                  );
+                  navigateToHome(props.navigation);
                 } else {
                   props.navigation.navigate('MEDICINES', { focusSearch: true });
                   // to stop triggering useEffect on every change in cart items

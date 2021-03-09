@@ -29,6 +29,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from './UIElementsProvider';
 import { ErrorBoundary } from '@aph/mobile-patients/src/components/ErrorBoundary';
 import AsyncStorage from '@react-native-community/async-storage';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 const styles = StyleSheet.create({
@@ -133,13 +134,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
     console.log('navigateToPrev hardwareBackPress');
     hideAphAlert && hideAphAlert();
     BackHandler.removeEventListener('hardwareBackPress', navigateToPrev);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    navigateToHome(props.navigation);
     return false;
   };
 
@@ -197,13 +192,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
         <Header
           leftIcon="backArrow"
           onPressLeftIcon={() => (
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            ),
+            navigateToHome(props.navigation),
             CommonLogEvent(AppRoutes.SymptomChecker, 'Go back clicked')
           )}
           titleComponent={

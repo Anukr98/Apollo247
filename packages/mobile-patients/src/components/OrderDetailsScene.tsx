@@ -116,7 +116,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
 const screenWidth = Dimensions.get('window').width;
 
@@ -373,13 +373,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (goToHomeOnBack) {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
+      navigateToHome(props.navigation);
     } else {
       props.navigation.goBack();
     }
@@ -1731,13 +1725,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         aphConsole.log({
           s: data,
         });
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-          })
-        );
+        navigateToHome(props.navigation);
         renderSuccessPopup();
       })
       .catch((e) => {

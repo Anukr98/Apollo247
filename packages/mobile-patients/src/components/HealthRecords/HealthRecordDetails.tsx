@@ -69,6 +69,7 @@ import {
   getPrismAuthToken,
   getPrismAuthTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -1147,17 +1148,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
 
   const onGoBack = () => {
     if (movedFrom == 'deeplink') {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      navigateToHome(props.navigation);
     } else {
       props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
       props.navigation.goBack();

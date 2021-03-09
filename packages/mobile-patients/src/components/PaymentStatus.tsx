@@ -59,6 +59,7 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -153,17 +154,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
+        navigateToHome(props.navigation);
         renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -173,17 +164,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   }, []);
 
   const handleBack = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    navigateToHome(props.navigation);
     return true;
   };
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -256,13 +237,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   };
 
   const handleOrderSuccess = (orderAutoId: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    navigateToHome(props.navigation);
     fireOrderSuccessEvent(orderAutoId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -516,17 +491,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     } else if (status == failure || status == aborted) {
       navigate(AppRoutes.MedicineCart);
     } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      navigateToHome(props.navigation);
     }
   };
 

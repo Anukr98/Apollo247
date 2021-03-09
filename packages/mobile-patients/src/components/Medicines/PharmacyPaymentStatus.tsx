@@ -85,6 +85,7 @@ import {
   saveMedicineOrderPaymentMqV2,
   saveMedicineOrderPaymentMqV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderPaymentMqV2';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -206,17 +207,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   const handleBack = () => {
     clearCircleSubscriptionData();
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    navigateToHome(props.navigation);
     return true;
   };
 
@@ -269,13 +260,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const handleOrderSuccess = (orderAutoId: string, orderId: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    navigateToHome(props.navigation);
     fireOrderSuccessEvent(orderAutoId, orderId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -690,17 +675,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       props.navigation.navigate(AppRoutes.MedicineCart);
     } else {
       clearCircleSubscriptionData();
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      navigateToHome(props.navigation);
     }
   };
 

@@ -2540,6 +2540,50 @@ export const takeToHomePage = (props: any) => {
     })
   );
 };
+
+export const navigateToHome = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>
+) => {
+  const navigate = navigation.popToTop();
+  if (!navigate) {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+          }),
+        ],
+      })
+    );
+  }
+};
+
+export const navigateToScreenWithEmptyStack = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string
+) => {
+  const navigate = navigation.popToTop({ immediate: true });
+  if (navigate) {
+    setTimeout(() => {
+      navigation.navigate(screenName);
+    }, 0);
+  } else {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: screenName,
+          }),
+        ],
+      })
+    );
+  }
+};
+
 export const isSmallDevice = width < 370;
 
 //customText needs to be shown for itemId = 8

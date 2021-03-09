@@ -18,6 +18,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { APPOINTMENT_STATE, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,13 +59,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   });
   const networkBack = () => {
     setNetworkStatus(false);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-      })
-    );
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
   };
 
   const acceptChange = () => {

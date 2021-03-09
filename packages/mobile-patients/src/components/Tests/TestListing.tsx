@@ -34,6 +34,10 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  navigateToHome,
+  navigateToScreenWithEmptyStack,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -141,11 +145,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      });
-      props.navigation.dispatch(resetAction);
+      navigateToHome(props.navigation);
     },
   };
 
@@ -164,11 +164,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Order Tests',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: 'TESTS' })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
           },
         });
         breadcrumb.push({
@@ -182,11 +178,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TestsCart })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
           },
         });
       }

@@ -26,6 +26,7 @@ import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEv
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -54,14 +55,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
   console.log('orderDetails >>>', orderDetails);
-  const navigateToHome = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+  const moveToHome = () => {
+    navigateToHome(props.navigation);
   };
 
   useEffect(() => {
@@ -84,7 +79,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const handleBack = () => {
-    navigateToHome();
+    moveToHome();
     return true;
   };
 
@@ -226,7 +221,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View>
         <Spearator style={styles.separator} />
-        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => navigateToHome()}>
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToHome()}>
           <Text style={styles.homeScreen}>GO TO HOMESCREEN</Text>
         </TouchableOpacity>
       </View>

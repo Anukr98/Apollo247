@@ -56,6 +56,7 @@ import {
 import { OrderCancelOverlay } from './OrderCancelOverlay';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '../NavigatorContainer';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -184,14 +185,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
         });
     }
     if (isComingFrom == AppRoutes.TestsCart) {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
-      props.navigation.navigate('TESTS', { focusSearch: false });
+      navigateToHome(props.navigation);
     } else {
       props.navigation.goBack();
     }

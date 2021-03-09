@@ -30,6 +30,7 @@ import {
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { WebView } from 'react-native-webview';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -114,13 +115,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
     CommonLogEvent(AppRoutes.TestPayment, 'handleOrderSuccess');
     setLoading!(false);
     clearDiagnoticCartInfo && clearDiagnoticCartInfo!();
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    navigateToHome(props.navigation);
     showAphAlert!({
       // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
