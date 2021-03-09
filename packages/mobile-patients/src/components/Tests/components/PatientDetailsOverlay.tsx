@@ -39,8 +39,9 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
   const [date, setDate] = useState<Date>(new Date(selectedPatient?.dateOfBirth) || undefined);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [gender, setGender] = useState<Gender>(selectedPatient?.gender || undefined);
-  console.log('selectedPatient', selectedPatient);
-  const patientDetailsText = `Details for ${selectedPatient?.firstName || ''}`;
+  const patientDetailsText = `Details for ${selectedPatient?.firstName ||
+    selectedPatient?.lastName ||
+    ''}`;
   const patientFullName = `${selectedPatient?.firstName || ''} ${selectedPatient?.lastName}`;
   const dateOfBirth = moment(selectedPatient?.dateOfBirth).format('DD/MM/YYYY');
 

@@ -183,6 +183,7 @@ import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/co
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
+import { SelectAreaOverlay } from '@aph/mobile-patients/src/components/Tests/components/SelectAreaOverlay';
 import {
   editProfile,
   editProfileVariables,
@@ -329,6 +330,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
@@ -3022,7 +3024,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ''}, ${currentPatient?.gender || ''}, ${
       currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
     }`;
-    const address_text = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
     return (
       <View style={styles.patientDetailsViewStyle}>
         <View style={styles.patientNameViewStyle}>
@@ -3036,7 +3037,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
         <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
-        {address_text ? (
+        {addressText ? (
           <>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
@@ -3048,7 +3049,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </Text>
             </View>
             <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
-              {address_text}
+              {addressText}
+            </Text>
+          </>
+        ) : null}
+        {showAreaSelection && !isEmptyObject(areaSelected) ? (
+          <>
+            <View style={styles.patientNameViewStyle}>
+              <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
+              <Text
+                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
+                onPress={() => setShowSelectAreaOverlay(true)}
+              >
+                {string.diagnostics.changeText}
+              </Text>
+            </View>
+            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
+              {(areaSelected as any)?.value || ''}
             </Text>
           </>
         ) : null}
@@ -3145,6 +3162,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         onPressSelectDeliveryAddress={() => showAddressPopup()}
         showTime={showTime}
         onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
+        onPressSelectArea={() => setShowSelectAreaOverlay(true)}
+        showAreaSelection={showAreaSelection}
       />
     );
   };
@@ -3199,9 +3218,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               } else {
                 AddressSelectedEvent(_address);
                 setDeliveryAddressId?.(_address?.id);
-                setDiagnosticAreas?.([]);
-                setAreaSelected?.({});
-                setDiagnosticSlot?.(null);
+                if (deliveryAddressId !== _address?.id) {
+                  setDiagnosticAreas?.([]);
+                  setAreaSelected?.({});
+                  setDiagnosticSlot?.(null);
+                }
               }
             }
           }}
@@ -3220,7 +3241,27 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   }
 
+  const renderSelectAreaOverlay = () => {
+    return showSelectAreaOverlay ? (
+      <SelectAreaOverlay
+        addressText={addressText}
+        onPressChangeAddress={() => {
+          setShowSelectAreaOverlay(false);
+          showAddressPopup();
+        }}
+        onPressClose={() => setShowSelectAreaOverlay(false)}
+        onPressDone={(_selectedArea) => {
+          setShowSelectAreaOverlay(false);
+          setAreaSelected?.(_selectedArea);
+          checkSlotSelection(_selectedArea);
+          setWebEngageEventForAreaSelection(_selectedArea);
+        }}
+      />
+    ) : null;
+  };
+
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+  const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   const isCovidItem = cartItemsWithId?.map((item) =>
     AppConfig.Configuration.Covid_Items.includes(item)
@@ -3270,19 +3311,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         {renderPatientListOverlay()}
+        {renderSelectAreaOverlay()}
         {renderPatientDetailsOverlay()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderPatientDetails()}
             {renderItemsInCart()}
-            {renderProfiles()}
+            {/* {renderProfiles()} */}
             {/* <MedicineUploadPrescriptionView
               isTest={true}
               navigation={props.navigation}
               isMandatory={false}
               listOfTest={[]}
             /> */}
-            {renderDelivery()}
+            {/* {renderDelivery()} */}
             {renderTotalCharges()}
             {/* {renderTestSuggestions()} */}
           </View>
