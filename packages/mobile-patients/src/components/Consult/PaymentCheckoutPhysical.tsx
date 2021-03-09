@@ -220,9 +220,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       </View>
     );
   };
+
   const renderPatient = () => {
-    console.log('finalAppointmentInput', finalAppointmentInput);
-    console.log('patient change', currentPatient?.id);
     return (
       <View style={styles.subViewPopup}>
         <View style={{ paddingHorizontal: 16 }}>
@@ -949,7 +948,7 @@ const styles = StyleSheet.create({
   },
   priceBreakupTitle: {
     ...theme.viewStyles.text('B', 13, theme.colors.SHERPA_BLUE),
-    marginHorizontal: 8,
+    marginHorizontal: 6,
     marginVertical: 6,
   },
   seperatorLine: {
