@@ -389,7 +389,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'test':
           case 'Test':
-            console.log('Test');
             getData('Test');
             break;
 
@@ -534,7 +533,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'testreport':
           case 'TestReport':
-            console.log('here..');
             getData('TestReport', data?.length === 2 ? linkId : undefined);
             break;
 
