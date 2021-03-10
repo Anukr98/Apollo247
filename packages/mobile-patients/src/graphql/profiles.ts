@@ -2217,6 +2217,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         collectionCharges
         slotDateTimeInUTC
         paymentType
+        visitNo
         diagnosticOrderLineItems {
           id
           itemId
@@ -4601,18 +4602,6 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
   }
 `;
 
-export const GET_BANK_OPTIONS = gql`
-  query getPaymentMethods {
-    getPaymentMethods {
-      name
-      featured_banks {
-        bank
-        method
-        image_url
-      }
-    }
-  }
-`;
 
 export const GET_PAYMENT_METHODS = gql`
   query getPaymentMethods($is_mobile: Boolean) {

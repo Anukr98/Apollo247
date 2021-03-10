@@ -71,7 +71,7 @@ import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
-import { TestSlotSelectionOverlay } from './TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
@@ -80,7 +80,7 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
-import { TestOrderSummaryView } from '../TestOrderSummaryView';
+import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/Tests/components/TestOrderSummaryView';
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
