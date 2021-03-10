@@ -100,13 +100,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
   const { circleSubscriptionId } = useShoppingCart();
   const tabs =
-    props.doctor!.doctorType !== DoctorType.PAYROLL
-      ? props.availableMode === ConsultMode.BOTH
-        ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
-        : props.availableMode === ConsultMode.ONLINE
-        ? [{ title: 'Consult Online' }]
-        : [{ title: 'Visit Clinic' }]
-      : [{ title: 'Consult Online' }];
+    props.availableMode === ConsultMode.BOTH
+      ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
+      : props.availableMode === ConsultMode.ONLINE
+      ? [{ title: 'Consult Online' }]
+      : [{ title: 'Meet In Person' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
 
@@ -172,6 +170,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       setselectedTab(tabs[0].title);
     } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
       setselectedTab(tabs[1].title);
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length === 0) {
+      setselectedTab(tabs[0].title);
     }
   }, [props.consultModeSelected]);
 
@@ -499,7 +499,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 />
               ) : null}
 
-              {selectedTab !== tabs[0].title && renderFootNote()}
+              {selectedTab === 'Meet In Person' && renderFootNote()}
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
