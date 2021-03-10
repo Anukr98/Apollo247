@@ -42,9 +42,9 @@ export const SelectAreaOverlay: React.FC<SelectAreaOverlayProps> = (props) => {
     addressText,
   } = props;
   const { areaSelected, diagnosticAreas } = useDiagnosticsCart();
-  const [localAreas, setLocalAreas] = useState(
-    diagnosticAreas.map((item: any) => ({ key: item.id, value: item.area }))
-  );
+  const localAreas = diagnosticAreas.map((item: any) => ({ key: item.id, value: item.area }));
+  const [searchAreaResult, setSearchAreaResult] = useState<any>([]);
+
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedArea, setSelectedArea] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
@@ -79,19 +79,25 @@ export const SelectAreaOverlay: React.FC<SelectAreaOverlayProps> = (props) => {
     );
   };
 
-  const onSearchArea = () => {};
+  const onSearchArea = () => {
+    const _searchAreaResult = localAreas?.filter((item) => {
+      const itemData = `${item?.value?.toUpperCase()}`;
+      const textData = searchText?.toUpperCase();
+      return itemData.indexOf(textData) > -1;
+    });
+    setSearchAreaResult(_searchAreaResult);
+  };
 
   const onSearchTextChange = (value: string) => {
     SetIsSearchFocus(true);
     if (isValidSearch(value)) {
       setSearchText(value);
       if (!(value && value.length > 2)) {
-        // setHealthRecordSearchResults([]);
+        setSearchAreaResult([]);
         return;
       }
-      //   setSearchLoading(true);
       const search = _.debounce(onSearchArea, 300);
-      search(value);
+      search();
     }
   };
 
@@ -140,7 +146,7 @@ export const SelectAreaOverlay: React.FC<SelectAreaOverlayProps> = (props) => {
                 <FlatList
                   bounces={false}
                   keyExtractor={(_, index) => index.toString()}
-                  data={localAreas || []}
+                  data={searchText?.length > 2 ? searchAreaResult : localAreas || []}
                   renderItem={renderPatientListItem}
                 />
               </View>

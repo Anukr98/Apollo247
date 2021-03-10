@@ -16,7 +16,7 @@ export interface TestProceedBarProps {
   onPressSelectArea?: () => void;
   selectedTimeSlot?: any;
   showTime?: any;
-  showAreaSelection?: boolean;
+  disableProceedToPay?: boolean;
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
@@ -29,7 +29,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     onPressSelectArea,
     selectedTimeSlot,
     showTime,
-    showAreaSelection,
+    disableProceedToPay,
   } = props;
 
   function getButtonTitle() {
@@ -88,8 +88,11 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   };
 
   const renderButton = () => {
+    const disableProceedToPayButton =
+      getButtonTitle() === string.proceedToPay && disableProceedToPay;
     return (
       <Button
+        disabled={disableProceedToPayButton}
         title={getButtonTitle()}
         onPress={() => onPressButton()}
         style={{ flex: 1, marginLeft: 15, borderRadius: 5 }}

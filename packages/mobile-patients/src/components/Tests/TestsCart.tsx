@@ -3154,7 +3154,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const renderTestProceedBar = () => {
     const showTime = deliveryAddressId && areaSelected && !isEmptyObject(areaSelected);
-    return (
+    return cartItems?.length > 0 ? (
       <TestProceedBar
         selectedTimeSlot={selectedTimeSlot}
         onPressAddDeliveryAddress={() => _onPressAddAddress()}
@@ -3163,9 +3163,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         showTime={showTime}
         onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
         onPressSelectArea={() => setShowSelectAreaOverlay(true)}
-        showAreaSelection={showAreaSelection}
       />
-    );
+    ) : null;
   };
 
   function _onPressAddAddress() {
@@ -3330,14 +3329,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>
-        <StickyBottomComponent defaultBG>
+        {/* <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
             title={'MAKE PAYMENT'}
             onPress={() => onPressProceedToPay()}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
-        </StickyBottomComponent>
+        </StickyBottomComponent> */}
         {renderTestProceedBar()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
