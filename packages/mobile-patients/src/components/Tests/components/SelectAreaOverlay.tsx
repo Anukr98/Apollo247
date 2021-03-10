@@ -45,7 +45,7 @@ export const SelectAreaOverlay: React.FC<SelectAreaOverlayProps> = (props) => {
   const localAreas = diagnosticAreas.map((item: any) => ({ key: item.id, value: item.area }));
   const [searchAreaResult, setSearchAreaResult] = useState<any>([]);
 
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
   const [selectedArea, setSelectedArea] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
