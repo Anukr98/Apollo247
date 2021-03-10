@@ -238,6 +238,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   useEffect(() => {
     // getTxnStatus(orderId)
     console.log(webEngageEventAttributes['Consult Mode']);
+
     client
       .query({
         query: GET_TRANSACTION_STATUS,
@@ -259,6 +260,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          locationDetails && saveLocationWithConsultation(locationDetails);
+
           const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
           if (isCircleDoctor && amountBreakup?.slashed_price) {
             setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
