@@ -111,6 +111,7 @@ const Common = {
   REMOVE_RED: '#E31E24',
   PURPLE: '#393487',
   TRUECALLER_THEME: '#3780F6',
+  TEST_CARD_BUTTOM_BG: '#FCFDDA',
 };
 
 const Header = {
