@@ -296,6 +296,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           console.log('Error occured', { error });
         });
     }
+
     if (isBoth) {
       props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
         DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),

@@ -108,12 +108,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const isBoth = availableModes?.filter(
     (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
   );
-  const tabs =
-    props.availableMode === ConsultMode.BOTH
-      ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
-      : props.availableMode === ConsultMode.ONLINE
-      ? [{ title: 'Consult Online' }]
-      : [{ title: 'Meet In Person' }];
+  const tabs = props.availableMode.includes(ConsultMode.BOTH)
+    ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
+    : props.availableMode.includes(ConsultMode.ONLINE)
+    ? [{ title: 'Consult Online' }]
+    : [{ title: 'Meet In Person' }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
