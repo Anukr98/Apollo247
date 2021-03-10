@@ -162,7 +162,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     const { data } = response;
     const { getPaymentMethods } = data;
-    console.log('getPaymentMethods >>', getPaymentMethods);
     setPaymentMethods(getPaymentMethods);
     const types = getPaymentMethods.find((item: any) => item?.name == 'CARD');
     setCardTypes(types?.payment_methods);
@@ -264,7 +263,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
-      console.log('response >>', response?.data?.verifyVPA);
       if (response?.data?.verifyVPA?.status == 'VALID') {
         const token = await getClientToken();
         InitiateVPATxn(currentPatient?.id, token, paymentId, VPA);
