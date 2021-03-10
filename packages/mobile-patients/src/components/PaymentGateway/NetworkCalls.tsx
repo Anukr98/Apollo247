@@ -231,7 +231,7 @@ export const InitiateUPIIntentTxn = (
       upiSdkPresent: true,
       showLoader: false,
       payWithApp: packageName,
-      displayNote: 'UPI Intent',
+      displayNote: 'Payment to Apollo247',
       clientAuthToken: clientAuthToken,
     },
   };
