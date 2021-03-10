@@ -184,6 +184,7 @@ import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests
 import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import { SelectAreaOverlay } from '@aph/mobile-patients/src/components/Tests/components/SelectAreaOverlay';
+import { TestItemCard } from '@aph/mobile-patients/src/components/Tests/components/TestItemCard';
 import {
   editProfile,
   editProfileVariables,
@@ -1191,7 +1192,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               : undefined
             : undefined;
           return (
-            <MedicineCard
+            <TestItemCard
               isComingFrom={AppRoutes.TestsCart}
               isCareSubscribed={isDiagnosticCircleSubscription}
               containerStyle={medicineCardContainerStyle}
@@ -1230,7 +1231,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   'onPress'
                 );
               }}
-              medicineName={test?.name}
+              testName={test?.name}
               price={price}
               mrpToDisplay={Number(mrpToDisplay!)}
               specialPrice={sellingPrice}
@@ -1258,9 +1259,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
               packOfCount={test.mou}
-              onChangeSubscription={() => {}}
-              onEditPress={() => {}}
-              onAddSubscriptionPress={() => {}}
               duplicateArray={duplicateNameArray}
             />
           );
