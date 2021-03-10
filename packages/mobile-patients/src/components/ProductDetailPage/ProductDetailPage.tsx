@@ -934,6 +934,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               isBanned={medicineDetails?.banned === 'Yes'}
               cashback={cashback}
               deliveryError={deliveryError}
+              name={medicineDetails?.name}
             />
           )}
         {!loading &&

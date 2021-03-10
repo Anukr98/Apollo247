@@ -23,6 +23,7 @@ export interface BottomStickyComponentProps {
   setShowAddedToCart: (show: boolean) => void;
   isBanned: boolean;
   cashback: number;
+  name: string;
   deliveryError?: string;
 }
 
@@ -42,6 +43,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     isBanned,
     cashback,
     deliveryError,
+    name,
   } = props;
   const { cartItems, updateCartItem, circleSubscriptionId } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
