@@ -830,7 +830,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const hasDrJoined = useRef<boolean>(false);
   hasDrJoined.current = doctorJoinedChat;
   const isConsultStarted = useRef<boolean>(false);
-
+  const makeUpdateAppointmentCall = useRef<boolean>(true);
   const isPaused = subscriberConnected.current
     ? !callerAudio && !callerVideo
       ? 'audio/video'
@@ -2018,7 +2018,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               if (token) {
                 PublishAudioVideo();
               } else {
-                APICallAgain();
+                makeUpdateAppointmentCall.current = true;
+                APICallAgain(true);
               }
             }
           }
@@ -2185,7 +2186,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-      eventsAfterConnectionDestroyed();
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
@@ -2341,7 +2341,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (!JSON.parse(data || 'false')) {
             setSnackbarState(true);
             callEndWebengageEvent('Network');
-            setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
           }
         });
       }, 2000);
@@ -5533,11 +5532,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       changeVideoStyles();
       setDropdownVisible(false);
       setCallerVideo(true);
-      if (token) {
-        PublishAudioVideo();
-      } else {
-        APICallAgain();
-      }
+      makeUpdateAppointmentCall.current = true;
+      APICallAgain(true);
     });
   };
 
@@ -5744,8 +5740,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           )}
           {!isPublishAudio && showVideo && renderShowNoAudioView()}
           {subscriberConnected.current && renderSubscriberConnectedInfo()}
-          {!subscriberConnected.current && renderTextConnecting()}
-          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
+
+          {showDoctorProfile &&
+            !subscriberConnected.current &&
+            !patientJoinedCall.current &&
+            renderTextConnecting()}
+          {showDoctorProfile &&
+          !patientJoinedCall.current &&
+          (!subscriberConnected.current || isPaused !== '' || callToastStatus.current)
             ? renderToastMessages()
             : null}
           {!showVideo && renderDisableVideoSubscriber()}
@@ -6039,7 +6041,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [callTimer]);
 
   const handleEndCall = () => {
+    APICallAgain(false);
     setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
@@ -6085,7 +6089,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndAudioCall = () => {
+    APICallAgain(false);
     setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
@@ -6129,10 +6135,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 2000);
   };
 
-  const APICallAgain = () => {
+  const APICallAgain = (isUserJoining?: boolean) => {
+    if (!makeUpdateAppointmentCall.current) {
+      return;
+    }
     const input = {
       appointmentId: appointmentData.id,
       requestRole: 'PATIENT',
+      isUserJoining,
     };
 
     console.log('input', input);

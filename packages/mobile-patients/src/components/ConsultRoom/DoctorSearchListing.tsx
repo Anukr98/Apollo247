@@ -86,7 +86,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   BackHandler,
@@ -101,7 +101,6 @@ import {
   View,
   ViewStyle,
   Platform,
-  AsyncStorage,
   Share,
 } from 'react-native';
 import {
@@ -110,6 +109,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
@@ -122,6 +122,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
+import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -252,7 +254,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
   const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
-
+  const fireLocationEvent = useRef<boolean>(false);
   const [
     platinumDoctor,
     setPlatinumDoctor,
@@ -357,7 +359,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fetchFilter();
   }, []);
   useEffect(() => {
-    checkLocation();
+    AsyncStorage.getItem(SKIP_LOCATION_PROMPT)
+      .then((skipLocationPrompt) => {
+        if (skipLocationPrompt == 'true') {
+          fetchDoctorListByAvailability();
+        } else {
+          checkLocation();
+        }
+      })
+      .catch((error) => {
+        checkLocation();
+        CommonBugFender('DocSearchListing_check_skip_location_prompt', error);
+      });
+
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
@@ -558,11 +572,47 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const onLocationAlertCloseIconPres = () => {
+    fireLocationPermissionEvent('Not provided');
+    AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'true');
+    hideAphAlert!();
+    fetchDoctorListByAvailability();
+  };
+
+  const fetchDoctorListByAvailability = () => {
+    setNearyByFlag(false);
+    setAvailabilityFlag(true);
+    setshowSpinner(false);
+
+    !doctorsList?.length &&
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        'availability',
+        undefined,
+        false,
+        doctorSearch
+      );
+  };
+
   const checkLocation = (docTabSelected: boolean = false) => {
     if (!locationDetails) {
       showAphAlert!({
-        unDismissable: true,
+        unDismissable: false,
         title: 'Hi! :)',
+        onPressOutside: () => {
+          setSortValue('availability');
+          fetchSpecialityFilterData(
+            filterMode,
+            FilterData,
+            latlng,
+            'availability',
+            undefined,
+            false,
+            doctorSearch
+          );
+        },
         description:
           'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
         children: (
@@ -579,18 +629,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               style={{ flex: 1, marginRight: 16 }}
               title={'ENTER MANUALLY'}
               onPress={() => {
+                fireLocationEvent.current = true;
                 hideAphAlert!();
                 setshowLocationpopup(true);
+                fireLocationPermissionEvent('Enter Manually');
               }}
             />
             <Button
               style={{ flex: 1 }}
               title={'ALLOW AUTO DETECT'}
               onPress={() => {
+                fireLocationPermissionEvent('Allow auto detect');
                 hideAphAlert!();
                 setLoadingContext!(true);
                 doRequestAndAccessLocationModified()
                   .then((response) => {
+                    fireLocationEvent.current = true;
+                    locationWebEngageEvent(response, 'Auto Detect');
                     response && setLocationDetails!(response);
                     response && setcurrentLocation(response.displayName);
                     response && setLocationSearchText(response.displayName);
@@ -628,8 +683,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             />
           </View>
         ),
+        showCloseIcon: true,
+        onCloseIconPress: onLocationAlertCloseIconPres,
       });
     }
+  };
+
+  const fireLocationPermissionEvent = (permissionType: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.LOCATION_PERMISSION] = {
+      'Location permission': permissionType,
+    };
+    postWebEngageEvent(WebEngageEventName.LOCATION_PERMISSION, eventAttributes);
+    console.log('check event ', eventAttributes);
   };
 
   const fetchSpecialityFilterData = (
@@ -915,6 +980,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   pincode: findAddrComponents('postal_code', addrComponents),
                   lastUpdated: new Date().getTime(),
                 });
+                const locationAttribute = {
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                };
+                locationWebEngageEvent(locationAttribute, 'Manual entry');
               }
             })
             .catch((error) => {
@@ -1368,6 +1438,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             elevation: 15,
           }}
           onPress={() => {
+            locationWebEngageEvent(undefined, 'Manual entry');
             setshowLocationpopup(false);
             setshowSpinner(false);
             !doctorsList?.length &&
@@ -1460,6 +1531,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </TouchableOpacity>
       );
     }
+  };
+
+  const locationWebEngageEvent = (location: any, type: 'Auto Detect' | 'Manual entry') => {
+    if (fireLocationEvent.current) {
+      userLocationConsultWEBEngage(currentPatient, location, 'Doctor list', type);
+    }
+    fireLocationEvent.current = false;
   };
 
   const renderSearchLoadingView = () => {

@@ -6,7 +6,10 @@ import {
   SafeAreaView,
   StackActions,
 } from 'react-navigation';
-import { CircleLogo, OrderPlacedCheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CircleLogo,
+  OrderPlacedCheckedIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -110,7 +113,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         <OrderPlacedCheckedIcon style={styles.placedIcon} />
         <Text style={styles.orderPlacedText}>Your order has been placed successfully.</Text>
       </View>
-    );
+    ) ;
   };
 
   const renderBookingInfo = () => {

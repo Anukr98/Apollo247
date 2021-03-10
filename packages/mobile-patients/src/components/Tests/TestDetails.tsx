@@ -122,6 +122,7 @@ export interface CMSTestInclusions {
   inclusionName: string;
 }
 export interface CMSTestDetails {
+  TestObservation: any;
   diagnosticItemName: string;
   diagnosticFAQs: any;
   diagnosticItemImageUrl: string;
@@ -165,6 +166,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     pharmacyCircleAttributes,
     deliveryAddressId,
   } = useShoppingCart();
+
   const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
@@ -182,8 +184,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
-  console.log({ deliveryAddressId });
-  console.log({ diagnosticDeliveryAddressId });
 
   const itemName =
     testDetails?.ItemName ||
@@ -193,11 +193,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     '';
 
   const hdfc_values = string.Hdfc_values;
-  aphConsole.log('currentItemId : ' + itemId);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
+  const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -229,7 +229,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
-      console.log({ result });
       setCmsTestDetails(result);
       setLoadingContext?.(false);
 
@@ -375,9 +374,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     },
   };
 
+  const scrollToTop = () => {
+    setTimeout(() => {
+      scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+    }, 0);
+  };
+
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
+      scrollToTop();
+
       if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
@@ -609,7 +616,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderPriceView = () => {
-    console.log({ testInfo });
     //if coming from anywhere other than cart page
     //check other conidtions
     const slashedPrice =
@@ -801,6 +807,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cmsTestDetails?.diagnosticInclusionName?.length > 0;
     const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
 
+    const getMandatoryParamter = cmsTestDetails?.diagnosticInclusionName?.map((inclusion: any) =>
+      inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+    );
+    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
+      (prevVal: any, curr: any) => prevVal + curr?.length,
+      0
+    );
+
     return (
       <>
         <View style={{ width: '75%' }}>
@@ -814,39 +828,41 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         <View style={styles.inclusionsView}>
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>
-              Tests included : {cmsTestDetails?.diagnosticInclusionName?.length}
+              Total tests included :{' '}
+              {getMandatoryParameterCount || cmsTestDetails?.diagnosticInclusionName?.length}
             </Text>
           ) : null}
           {isInclusionPrsent &&
             !moreInclusions &&
             inclusions?.map((item: any, index: number) =>
               index < 4 ? (
-                <View style={styles.rowStyle}>
-                  <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                  <Text style={styles.inclusionsItemText}>
-                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                    {index == 3 && inclusions?.length - 4 > 0 && (
-                      <Text
-                        onPress={() => setMoreInclusions(!moreInclusions)}
-                        style={styles.moreText}
-                      >
-                        {'   '}
-                        {!moreInclusions && `+${inclusions?.length - 4} MORE`}
-                      </Text>
-                    )}
-                  </Text>
-                </View>
+                <>
+                  <View style={styles.rowStyle}>
+                    <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                    <Text style={styles.inclusionsItemText}>
+                      {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
+                      {index == 3 &&
+                        inclusions?.length - 4 > 0 &&
+                        item?.TestObservation?.length == 0 &&
+                        renderShowMore(inclusions, item?.inclusionName)}
+                    </Text>
+                  </View>
+                  {renderParamterData(item, inclusions, index, true)}
+                </>
               ) : null
             )}
           {isInclusionPrsent &&
             moreInclusions &&
             inclusions?.map((item: any, index: number) => (
-              <View style={styles.rowStyle}>
-                <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                <Text style={styles.inclusionsItemText}>
-                  {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                </Text>
-              </View>
+              <>
+                <View style={styles.rowStyle}>
+                  <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                  <Text style={styles.inclusionsItemText}>
+                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
+                  </Text>
+                </View>
+                {renderParamterData(item, inclusions, index, false)}
+              </>
             ))}
           {isInclusionPrsent && moreInclusions && (
             <Text onPress={() => setMoreInclusions(!moreInclusions)} style={styles.showLessText}>
@@ -854,6 +870,59 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             </Text>
           )}
         </View>
+      </>
+    );
+  };
+
+  const renderShowMore = (inclusions: any, name: string) => {
+    return (
+      <Text
+        onPress={() => setMoreInclusions(!moreInclusions)}
+        style={[
+          styles.moreText,
+          {
+            ...theme.viewStyles.text(
+              'SB',
+              isSmallDevice ? (name?.length > 25 ? 10 : 12) : name?.length > 25 ? 11 : 13,
+              theme.colors.APP_YELLOW,
+              1,
+              15
+            ),
+          },
+        ]}
+      >
+        {'   '}
+        {!moreInclusions && `+${inclusions?.length - 4} MORE`}
+      </Text>
+    );
+  };
+
+  const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
+    const getMandatoryParameters =
+      item?.TestObservation?.length > 0 &&
+      item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
+    return (
+      <>
+        {!!getMandatoryParameters && getMandatoryParameters?.length > 0 ? (
+          getMandatoryParameters.map((para: any, pIndex: number, array: any) => (
+            <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
+              <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
+              <Text style={styles.parameterText}>
+                {!!para?.observationName ? nameFormater(para?.observationName!, 'title') : ''}{' '}
+                {index == 3 &&
+                  inclusions?.length - 4 > 0 &&
+                  array?.length - 1 == pIndex &&
+                  renderShowMore(inclusions, para?.observationName)}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <>
+            {index == 3 && inclusions?.length - 4 > 0 && !moreInclusions
+              ? renderShowMore(inclusions, 'test')
+              : null}
+          </>
+        )}
       </>
     );
   };
@@ -871,6 +940,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <TestListingHeader
         navigation={props.navigation}
         headerText={nameFormater('TEST PACKAGE DETAIL', 'upper')}
+        movedFrom={'testDetails'}
       />
     );
   };
@@ -1025,7 +1095,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         <>
           {renderHeader()}
           {renderBreadCrumb()}
-          <ScrollView bounces={false} keyboardDismissMode="on-drag" style={{ marginBottom: 60 }}>
+          <ScrollView
+            bounces={false}
+            keyboardDismissMode="on-drag"
+            style={{ marginBottom: 60 }}
+            ref={scrollViewRef}
+          >
             {!!testInfo && !!cmsTestDetails && renderItemCard()}
             {renderWhyBookUs()}
             {renderDescriptionCard()}
@@ -1198,6 +1273,12 @@ const styles = StyleSheet.create({
   },
   inclusionsItemText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
+    letterSpacing: 0,
+    marginBottom: '1.5%',
+    marginHorizontal: '3%',
+  },
+  parameterText: {
+    ...theme.viewStyles.text('R', isSmallDevice ? 10.5 : 11, '#007C9D', 1, 15),
     letterSpacing: 0,
     marginBottom: '1.5%',
     marginHorizontal: '3%',

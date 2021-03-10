@@ -1321,7 +1321,7 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  patient_id?: any | null;
+  patient_id: any;
 }
 
 export interface OrderInput {
@@ -1642,6 +1642,7 @@ export interface UpdateAppointmentInput {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
+  isUserJoining?: boolean | null;
 }
 
 export interface UpdatePatientAddressInput {
@@ -1677,6 +1678,7 @@ export interface UpdatePatientInput {
   deviceCode?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
+  appsflyerId?: string | null;
 }
 
 export interface UploadDocumentInput {

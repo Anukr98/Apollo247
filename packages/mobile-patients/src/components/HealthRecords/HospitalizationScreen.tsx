@@ -427,7 +427,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       <HealthRecordCard
         item={item}
         index={index}
-        editDeleteData={editDeleteData()}
+        editDeleteData={editDeleteData(MedicalRecordType.HOSPITALIZATION)}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
@@ -436,6 +436,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         dateText={dateText}
         selfUpload={selfUpload}
         sourceName={soureName || ''}
+        deleteRecordText={'discharge summary'}
       />
     );
   };
@@ -574,7 +575,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={`ADD DATA`}
+          title={string.common.addDischargeSummaryText}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {

@@ -115,6 +115,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
     addresses,
+    productDiscount,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -216,7 +217,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         if (productDetails) {
           setMedicineDetails(productDetails || {});
           setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
-          postProductPageViewedEvent(productDetails);
+          postProductPageViewedEvent(productDetails, zipcode || pincode);
           trackTagalysViewEvent(productDetails);
           savePastSearch(client, {
             typeId: productDetails?.sku,
@@ -350,7 +351,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const postProductPageViewedEvent = ({ sku, name, is_in_stock }: MedicineProductDetails) => {
+  const postProductPageViewedEvent = (
+    { sku, name, is_in_stock }: MedicineProductDetails,
+    pincode?: string
+  ) => {
     if (movedFrom) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
@@ -360,6 +364,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...productPageViewedEventProps,
         ...pharmacyCircleAttributes,
         ...pharmacyUserTypeAttribute,
+        Pincode: pincode,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -657,7 +662,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
               string.common.Rs
-            }${convertNumberToDecimal(cartTotal)}`}
+            }${convertNumberToDecimal(cartTotal - productDiscount)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -876,6 +881,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               pharmaOverview={
                 isPharma ? medicineDetails?.PharmaOverview?.[0]?.NewPharmaOverview : null
               }
+              directionsOfUse={medicineDetails?.direction_for_use_dosage}
             />
             {!!substitutes.length && (
               <SimilarProducts
@@ -928,6 +934,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               isBanned={medicineDetails?.banned === 'Yes'}
               cashback={cashback}
               deliveryError={deliveryError}
+              name={medicineDetails?.name}
             />
           )}
         {!loading &&
@@ -991,8 +998,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 const styles = StyleSheet.create({
   badgelabelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
