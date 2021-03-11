@@ -54,8 +54,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
 
   const renderTimeSlot = () => {
     const timeSlotText = `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
-      selectedTimeSlot
-        ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)}`
+      selectedTimeSlot?.slotInfo?.startTime
+        ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
         : string.diagnostics.noSlotSelectedText
     }`;
     return (
@@ -68,7 +68,9 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
             style={{ flexDirection: 'row', alignItems: 'center' }}
           >
             <Text style={[styles.timeSlotTextStyle, { paddingHorizontal: 8 }]}>
-              {showTime ? string.diagnostics.changeText : string.diagnostics.selectSlotText}
+              {showTime || selectedTimeSlot?.slotInfo?.startTime
+                ? string.diagnostics.changeText
+                : string.diagnostics.selectSlotText}
             </Text>
             <WhiteChevronRightIcon style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
