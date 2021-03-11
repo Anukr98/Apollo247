@@ -364,7 +364,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const moveBack = () => {
     try {
       if (movedFrom === ProductPageViewedSource.REGISTRATION) {
-        navigateToHome(props.navigation);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
       } else {
         props.navigation.goBack();
       }

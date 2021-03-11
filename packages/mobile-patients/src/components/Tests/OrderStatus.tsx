@@ -19,6 +19,8 @@ import moment from 'moment';
 import {
   formatTestSlotWithBuffer,
   postWebEngageEvent,
+  apiCallEnums,
+  navigateToHome,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -26,7 +28,7 @@ import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEv
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -42,6 +44,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
+  const { apisToCall } = useAppCommonData();
   const {
     isDiagnosticCircleSubscription,
     clearDiagnoticCartInfo,
@@ -56,6 +59,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
   console.log('orderDetails >>>', orderDetails);
   const moveToHome = () => {
+    // use apiCallsEnum values here in order to make that api call in home screen
+    apisToCall.current = [apiCallEnums.circleSavings];
     navigateToHome(props.navigation);
   };
 
@@ -85,6 +90,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading!(false);
+    apisToCall.current = [apiCallEnums.circleSavings];
     props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
       goToHomeOnBack: true,
       showOrderSummaryTab,

@@ -5224,22 +5224,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTransferAccept(false);
           }, 1000);
         AsyncStorage.setItem('showTransferPopup', 'true');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  TransferData: rowData.transferInfo,
-                  TranferDateTime:
-                    data.data.bookTransferAppointment.appointment.appointmentDateTime,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          TransferData: rowData?.transferInfo,
+          TranferDateTime: data?.data?.bookTransferAppointment?.appointment?.appointmentDateTime,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_transferAppointmentAPI', e);
@@ -5401,27 +5390,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(data, 'data');
         setLoading(false);
         AsyncStorage.setItem('showSchduledPopup', 'true');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_rescheduleAPI', e);

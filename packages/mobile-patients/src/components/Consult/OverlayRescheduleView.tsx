@@ -159,27 +159,11 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
     AsyncStorage.setItem('showSchduledPopup', 'true');
     console.log('navigateToView', data);
     console.log('doctorname', props.doctor);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.TabBar,
-            params: {
-              Data:
-                data &&
-                data.bookRescheduleAppointment &&
-                data.bookRescheduleAppointment.appointmentDetails,
-              DoctorName:
-                props.navigation.state.params!.data &&
-                props.navigation.state.params!.data.doctorInfo &&
-                props.navigation.state.params!.data.doctorInfo.fullName,
-            },
-          }),
-        ],
-      })
-    );
+    const params = {
+      Data: data?.bookRescheduleAppointment?.appointmentDetails,
+      DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+    };
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
   };
 
   const renderBottomButton = () => {

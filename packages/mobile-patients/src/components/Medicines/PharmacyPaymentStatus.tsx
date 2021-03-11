@@ -19,7 +19,7 @@ import {
   SAVE_MEDICINE_ORDER_OMS_V2,
   SAVE_MEDICINE_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { apiCallEnums, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -86,6 +86,7 @@ import {
   saveMedicineOrderPaymentMqV2Variables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderPaymentMqV2';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -127,6 +128,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
+  const { apisToCall } = useAppCommonData();
+
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -207,8 +210,22 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   const handleBack = () => {
     clearCircleSubscriptionData();
-    navigateToHome(props.navigation);
+    moveToHome();
     return true;
+  };
+
+  const moveToHome = () => {
+    apisToCall.current = [
+      apiCallEnums.circleSavings,
+      apiCallEnums.getAllBanners,
+      apiCallEnums.getUserSubscriptions,
+      apiCallEnums.getUserSubscriptionsV2,
+      apiCallEnums.oneApollo,
+      apiCallEnums.pharmacyUserType,
+      apiCallEnums.getPlans,
+      apiCallEnums.plansCashback,
+    ];
+    navigateToHome(props.navigation);
   };
 
   const fireCirclePlanActivatedEvent = (planPurchased: boolean) => {
@@ -260,7 +277,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const handleOrderSuccess = (orderAutoId: string, orderId: string) => {
-    navigateToHome(props.navigation);
+    moveToHome();
     fireOrderSuccessEvent(orderAutoId, orderId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -675,7 +692,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       props.navigation.navigate(AppRoutes.MedicineCart);
     } else {
       clearCircleSubscriptionData();
-      navigateToHome(props.navigation);
+      moveToHome();
     }
   };
 
@@ -697,7 +714,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             style={styles.textButtonStyle}
             onPress={() => {
               clearCircleSubscriptionData();
-              props.navigation.navigate(AppRoutes.ConsultRoom);
+              moveToHome();
             }}
           >
             <Text style={{ ...theme.viewStyles.text('B', 13, '#fcb716', 1, 24) }}>

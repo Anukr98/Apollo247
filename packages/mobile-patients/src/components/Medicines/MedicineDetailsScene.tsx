@@ -93,7 +93,6 @@ import {
 import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width, height } = Dimensions.get('window');
-import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -1463,7 +1462,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const moveBack = () => {
     try {
       if (movedFrom === ProductPageViewedSource.REGISTRATION) {
-        navigateToHome(props.navigation);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
       } else {
         props.navigation.goBack();
       }

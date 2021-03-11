@@ -383,27 +383,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         postAppointmentWEGEvents('Rescheduled by Customer');
         console.log(data, 'data');
         setshowSpinner(false);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('AppointmentDetails_rescheduleAPI', e);
@@ -841,41 +825,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
-        {/* {sucesspopup && (
-          <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-            description={'Appointment sucessfully cancelled'}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                marginHorizontal: 20,
-                //justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end',
-              }}
-            >
-              <View style={{ height: 60 }}>
-                <TouchableOpacity
-                  style={styles.gotItStyles}
-                  onPress={() => {
-                    setShowCancelPopup(false);
-                    setSucessPopup(false);
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                      })
-                    );
-                  }}
-                >
-                  <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </BottomPopUp>
-        )} */}
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{

@@ -37,6 +37,8 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  apiCallEnums,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -95,6 +97,7 @@ import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -138,6 +141,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
+  const { apisToCall, homeScreenParamsOnPop } = useAppCommonData();
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -708,24 +712,20 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           if (appointmentData) {
             try {
               if (appointmentData?.[0]?.doctorInfo !== null) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.ConsultRoom,
-                        params: {
-                          isFreeConsult: true,
-                          isPhysicalConsultBooked: true,
-                          doctorName: doctorName,
-                          appointmentData: appointmentData[0],
-                          skipAutoQuestions: doctor?.skipAutoQuestions,
-                        },
-                      }),
-                    ],
-                  })
-                );
+                // use apiCallsEnum values here in order to make that api call in home screen
+                apisToCall.current = [
+                  apiCallEnums.patientAppointments,
+                  apiCallEnums.patientAppointmentsCount,
+                ];
+                const params = {
+                  isFreeConsult: true,
+                  isPhysicalConsultBooked: true,
+                  doctorName: doctorName,
+                  appointmentData: appointmentData[0],
+                  skipAutoQuestions: doctor?.skipAutoQuestions,
+                };
+                homeScreenParamsOnPop.current = params;
+                navigateToHome(props.navigation, params);
               }
             } catch (error) {
               console.log('csk', error);

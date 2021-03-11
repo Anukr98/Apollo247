@@ -749,27 +749,11 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         postAppointmentWEGEvents('Rescheduled by Customer');
         console.log(data, 'data');
         setshowSpinner(false);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data?.data?.bookRescheduleAppointment?.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data?.doctorInfo?.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('AppointmentDetails_rescheduleAPI', e);

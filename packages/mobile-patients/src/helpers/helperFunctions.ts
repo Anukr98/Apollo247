@@ -2542,7 +2542,8 @@ export const takeToHomePage = (props: any) => {
 };
 
 export const navigateToHome = (
-  navigation: NavigationScreenProp<NavigationRoute<object>, object>
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any
 ) => {
   const navigate = navigation.popToTop();
   if (!navigate) {
@@ -2553,6 +2554,7 @@ export const navigateToHome = (
         actions: [
           NavigationActions.navigate({
             routeName: AppRoutes.ConsultRoom,
+            params,
           }),
         ],
       })
@@ -2562,12 +2564,13 @@ export const navigateToHome = (
 
 export const navigateToScreenWithEmptyStack = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
-  screenName: string
+  screenName: string,
+  params?: any
 ) => {
   const navigate = navigation.popToTop({ immediate: true });
   if (navigate) {
     setTimeout(() => {
-      navigation.navigate(screenName);
+      navigation.navigate(screenName, params);
     }, 0);
   } else {
     navigation.dispatch(
@@ -2577,11 +2580,25 @@ export const navigateToScreenWithEmptyStack = (
         actions: [
           NavigationActions.navigate({
             routeName: screenName,
+            params,
           }),
         ],
       })
     );
   }
+};
+
+export const apiCallEnums = {
+  circleSavings: 'GetCircleSavingsOfUserByMobile',
+  getAllBanners: 'GetAllGroupBannersOfUser',
+  getUserSubscriptions: 'GetSubscriptionsOfUserByStatus',
+  getUserSubscriptionsV2: 'GetAllUserSubscriptionsWithPlanBenefitsV2',
+  oneApollo: 'getOneApolloUser',
+  pharmacyUserType: 'getUserProfileType',
+  getPlans: 'GetPlanDetailsByPlanId',
+  plansCashback: 'GetCashbackDetailsOfPlanById',
+  patientAppointments: 'getPatientPersonalizedAppointments',
+  patientAppointmentsCount: 'getPatientFutureAppointmentCount',
 };
 
 export const isSmallDevice = width < 370;

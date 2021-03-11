@@ -58,6 +58,7 @@ import {
   getNetStatus,
   postWebEngageEvent,
   statusBarHeight,
+  navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -70,6 +71,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
   Dimensions,
   Image,
   SafeAreaView,
@@ -82,7 +84,6 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { CancelConsultation } from '../../strings/AppConfig';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
-import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
 const { width, height } = Dimensions.get('window');
@@ -491,27 +492,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       .then((data: any) => {
         postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER);
         setshowSpinner(false);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('AppointmentOnlineDetails_rescheduleAPI', e);

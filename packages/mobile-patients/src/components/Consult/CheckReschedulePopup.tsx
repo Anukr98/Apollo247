@@ -258,21 +258,11 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
       .then((res: any) => {
         rescheduleSuccessCallback();
         setLoading!(false);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data: res?.data?.bookRescheduleAppointment?.appointmentDetails,
-                  DoctorName: data?.doctorInfo?.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: res?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('AppointmentOnlineDetails_rescheduleAPI', e);
