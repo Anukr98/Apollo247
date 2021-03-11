@@ -20,7 +20,6 @@ import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -28,7 +27,6 @@ import {
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   ArrowRight,
@@ -40,10 +38,8 @@ import {
   InfoIconRed,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -98,6 +94,7 @@ import {
   getPlaceInfoByLatLng,
   getPlaceInfoByPincode,
   searchClinicApi,
+  getDiagnosticCartItemReportGenDetails,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -342,6 +339,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
+  const [reportGenDetails, setReportGenDetails] = useState<any>([]);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
@@ -384,6 +382,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     checkPatientAge();
   }, [currentPatient]);
 
+  const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
+    const removeSpaces =
+      typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
+    const listOfIds =
+      typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
+    const res: any = await getDiagnosticCartItemReportGenDetails(
+      listOfIds?.toString() || _cartItemId?.toString()
+    );
+    if (res?.data?.success) {
+      const result = g(res, 'data', 'data');
+      setReportGenDetails(result || []);
+    } else {
+      setReportGenDetails([]);
+    }
+  };
+
   const checkPatientAge = () => {
     let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
 
@@ -408,6 +422,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItemsWithId?.length > 0) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
+      fetchTestReportGenDetails(cartItemsWithId);
     }
   }, [diagnosticServiceabilityData]);
 
@@ -1186,6 +1201,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ? specialPrice!
               : undefined
             : undefined;
+          const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+
           return (
             <TestItemCard
               isComingFrom={AppRoutes.TestsCart}
@@ -1194,6 +1211,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               showCartInclusions={showInclusions}
               key={test?.id}
               testId={test?.id}
+              reportGenItem={reportGenItem}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
                 fetchPackageDetails(
@@ -1240,19 +1258,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   ? specialDiscount!
                   : discount!
               }
-              imageUrl={imageUrl}
-              onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
                 cartItems?.length == 0 ? setDeliveryAddressId!('') : null;
                 onRemoveCartItem(test);
               }}
-              onChangeUnit={() => {}}
               isCardExpanded={true}
-              isInStock={true}
-              isTest={true}
-              isPrescriptionRequired={false}
-              subscriptionStatus={'unsubscribed'}
               packOfCount={test.mou}
               duplicateArray={duplicateNameArray}
             />
@@ -2217,7 +2228,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const disableProceedToPay = !(
     cartItems?.length > 0 &&
     forPatientId &&
-    !!((deliveryAddressId && selectedTimeSlot) || clinicId) &&
+    !!(
+      (deliveryAddressId &&
+        selectedTimeSlot &&
+        selectedTimeSlot?.date &&
+        selectedTimeSlot?.slotInfo?.startTime) ||
+      clinicId
+    ) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
@@ -3143,6 +3160,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return cartItems?.length > 0 ? (
       <TestProceedBar
         selectedTimeSlot={selectedTimeSlot}
+        disableProceedToPay={disableProceedToPay}
         onPressAddDeliveryAddress={() => _onPressAddAddress()}
         onPressProceedtoPay={() => onPressProceedToPay()}
         onPressSelectDeliveryAddress={() => showAddressPopup()}

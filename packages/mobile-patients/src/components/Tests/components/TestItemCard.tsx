@@ -2,19 +2,17 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
   CircleTestLogoIcon,
-  InfoIconRed,
   RemoveIcon,
-  TestTimeIcon,
   TestInfoIcon,
+  TestTimeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   default as string,
   default as strings,
 } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Dimensions,
   StyleProp,
@@ -29,28 +27,17 @@ const width = Dimensions.get('window').width;
 
 export interface TestItemCardProps {
   testId?: string | number;
-  isTest?: boolean;
+  reportGenItem?: any;
   testName: string;
-  personName?: string;
   specialPrice?: number;
   price: number;
   circlePrice?: number;
-  imageUrl?: string;
-  type?: Doseform;
-  subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   packOfCount?: number;
-  unit?: number;
-  isInStock: boolean;
-  unserviceable?: boolean; // If yes, card shows "Not serviceable in your area.", using for TAT API in cart.
   showRemoveWhenOutOfStock?: boolean;
-  isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
   onPress: () => void;
-  onChangeUnit: (unit: number) => void;
   onPressRemove: () => void;
-  onPressAdd: () => void;
   containerStyle?: StyleProp<ViewStyle>;
-  maxQty?: number;
   isCareSubscribed?: boolean;
   isComingFrom?: string;
   discount?: number | string;
@@ -62,30 +49,19 @@ export interface TestItemCardProps {
 }
 
 export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
-  const [dropDownVisible, setDropDownVisible] = useState(false);
   const {
-    isTest,
     isCardExpanded,
     packOfCount,
+    reportGenItem,
     testName,
-    personName,
     specialPrice,
     price,
-    imageUrl,
-    type,
-    unit,
-    isInStock,
-    unserviceable,
     containerStyle,
-    subscriptionStatus,
-    isPrescriptionRequired,
-    onChangeUnit,
     onPressRemove,
-    onPressAdd,
     onPress,
-    maxQty,
     testId,
   } = props;
+  console.log('props', props);
 
   const renderSpecialDiscountText = (styleObj?: any) => {
     return <SpecialDiscountText isImage={true} text={'TEST 247'} />;
@@ -116,11 +92,12 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
   };
 
   const renderSavingView = () => {
+    const savingAmount = Number(props.packageMrp || props.mrpToDisplay) - Number(props.circlePrice);
     return (
       <View style={styles.flexRow}>
         <CircleTestLogoIcon style={styles.circleLogoIcon} />
         <Text style={styles.savingTextStyle}>
-          {'Savings'} {string.common.Rs} {Number(props.packageMrp) - Number(props.circlePrice)}
+          {'Savings'} {string.common.Rs} {savingAmount}
         </Text>
       </View>
     );
@@ -232,18 +209,32 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
   };
 
   const renderReportTimeAndInfoView = () => {
-    return (
+    return reportGenItem?.itemPrepration || reportGenItem?.itemReportTat ? (
       <View style={styles.timeAndInfoMainViewStyle}>
-        <View style={styles.reportGenViewStyle}>
-          <TestTimeIcon style={styles.timeIconStyle} />
-          <Text style={styles.reportGenTextStyle}>{'Report Generation time - 12 to 14 hrs'}</Text>
-        </View>
-        <View style={styles.reportGenViewStyle}>
-          <TestInfoIcon style={styles.timeIconStyle} />
-          <Text style={styles.reportGenTextStyle}>{'10 to 12 hrs fasting required'}</Text>
-        </View>
+        {reportGenItem?.itemReportTat ? (
+          <View style={styles.reportGenViewStyle}>
+            <TestTimeIcon style={styles.timeIconStyle} />
+            <Text
+              style={styles.reportGenTextStyle}
+            >{`Report Generation time - ${reportGenItem?.itemReportTat}`}</Text>
+          </View>
+        ) : null}
+        {reportGenItem?.itemPrepration ? (
+          <View style={styles.reportGenViewStyle}>
+            <TestInfoIcon style={styles.timeIconStyle} />
+            <Text style={styles.reportGenTextStyle}>{reportGenItem?.itemPrepration}</Text>
+          </View>
+        ) : null}
+        {props.isComingFrom == AppRoutes.TestsCart &&
+        props.showCartInclusions &&
+        !!inclusionItemToShow ? (
+          <View style={styles.reportGenViewStyle}>
+            <TestInfoIcon style={styles.timeIconStyle} />
+            <Text style={styles.reportGenTextStyle}>Includes {inclusionItemToShow}</Text>
+          </View>
+        ) : null}
       </View>
-    );
+    ) : null;
   };
 
   const inclusionItem =
@@ -268,14 +259,6 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
         {renderPriceView()}
       </View>
       {renderReportTimeAndInfoView()}
-      {props.isComingFrom == AppRoutes.TestsCart &&
-        props.showCartInclusions &&
-        !!inclusionItemToShow && (
-          <View style={styles.inclusionsView}>
-            <InfoIconRed style={styles.infoIconStyle} />
-            <Text style={styles.inclusionsText}>Includes {inclusionItemToShow}</Text>
-          </View>
-        )}
     </TouchableOpacity>
   );
 };
@@ -320,23 +303,6 @@ const styles = StyleSheet.create({
   },
   circlePriceTextSub: {
     ...text('B', isSmallDevice ? 12 : 14, SHERPA_BLUE, 1, 18),
-  },
-  inclusionsView: {
-    backgroundColor: '#FCFDDA',
-    flex: 1,
-    padding: 8,
-    flexDirection: 'row',
-    marginLeft: -16,
-    width: width - 40,
-  },
-  infoIconStyle: { resizeMode: 'contain', height: 16, width: 16 },
-  inclusionsText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    lineHeight: 16,
-    letterSpacing: 0.04,
-    color: theme.colors.SHERPA_BLUE,
-    opacity: 0.7,
-    marginHorizontal: '2%',
   },
   savingTextStyle: {
     ...text('M', isSmallDevice ? 10.5 : 11, APP_GREEN, 1, 18),
