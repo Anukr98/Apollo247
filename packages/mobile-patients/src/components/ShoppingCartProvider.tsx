@@ -814,7 +814,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['allocationProfileName'] = order['allocationProfileName'];
       shipment['clusterId'] = order['clusterId'];
       shipment['totalCashBack'] =
-        isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+        !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+          ? Number(shipmentCashback) || 0
+          : 0;
       shipmentsArray.push(shipment);
       shipment['coupon'] = coupon ? coupon.coupon : '';
     });
@@ -878,7 +880,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     shipment['allocationProfileName'] = null;
     shipment['clusterId'] = null;
     shipment['totalCashBack'] =
-      isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+      !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+        ? Number(shipmentCashback) || 0
+        : 0;
     shipment['coupon'] = coupon ? coupon.coupon : '';
     setShipments([shipment]);
   }
