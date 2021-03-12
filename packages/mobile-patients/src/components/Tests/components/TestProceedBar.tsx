@@ -68,7 +68,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
             style={{ flexDirection: 'row', alignItems: 'center' }}
           >
             <Text style={[styles.timeSlotTextStyle, { paddingHorizontal: 8 }]}>
-              {showTime || selectedTimeSlot?.slotInfo?.startTime
+              {showTime && selectedTimeSlot?.slotInfo?.startTime
                 ? string.diagnostics.changeText
                 : string.diagnostics.selectSlotText}
             </Text>
