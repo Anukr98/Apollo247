@@ -2958,6 +2958,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           prescribedBy
           notes
           prescriptionSource
+          siteDisplayName
           source
           fileUrl
           prescriptionFiles {
@@ -2986,6 +2987,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           date
           healthCheckName
           healthCheckDate
+          siteDisplayName
           healthCheckSummary
           healthCheckFiles {
             id
@@ -3015,6 +3017,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           hospitalName
           doctorName
           reasonForAdmission
+          siteDisplayName
           diagnosisNotes
           dateOfDischarge
           dischargeSummary
@@ -3041,6 +3044,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           hospitalName
           billDate
           source
+          siteDisplayName
           notes
           fileUrl
           billDateTime
@@ -3067,6 +3071,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           startDateTime
           endDateTime
           source
+          siteDisplayName
           fileUrl
           notes
           sumInsured
@@ -3094,6 +3099,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           notes
           illnessType
           fileUrl
+          siteDisplayName
           startDateTime
           endDateTime
           medicationFiles {
@@ -3121,6 +3127,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           endDateTime
           morning
           noon
+          siteDisplayName
           evening
           notes
           source
@@ -3139,6 +3146,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           restrictionName
           suggestedByDoctor
           nature
+          siteDisplayName
           source
           notes
         }
@@ -3159,6 +3167,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           reactionToAllergy
           doctorTreated
           notes
+          siteDisplayName
           source
           attachmentList {
             id
@@ -3182,6 +3191,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           fileUrl
           familyMember
           notes
+          siteDisplayName
           recordDateTime
           age
           familyHistoryFiles {
