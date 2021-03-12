@@ -82,7 +82,7 @@ import {
   DiagnosticTrackOrderViewed,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import { MaterialMenu } from '../../ui/MaterialMenu';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 
 /**
  * this needs to be removed once hidestatus starts working

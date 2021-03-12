@@ -118,7 +118,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   const fetchTestReportResult = useCallback(() => {
     const getVisitId = orderSelected?.visitNo;
-    console.log({ getVisitId });
     getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
       .then((data: any) => {
         const labResultsData = g(
@@ -127,12 +126,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           'labResults',
           'response'
         );
-        console.log({ data });
         setLabResults(labResultsData);
         let resultForVisitNo = labResultsData?.filter(
           (item: any) => item?.identifier == getVisitId
         );
-        console.log({ resultForVisitNo });
 
         !!resultForVisitNo
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
