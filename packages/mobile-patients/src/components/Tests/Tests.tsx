@@ -972,9 +972,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
-      <View>
+      <TouchableOpacity onPress={()=>{
+        setSearchFocused(true);
+            props.navigation.navigate(AppRoutes.SearchTestScene, {
+              searchText: searchText,
+            });
+            setSearchText('');
+            setDiagnosticResults([]);
+      }}>
         <SearchInput
           _isSearchFocused={isSearchFocused}
+          editable={false}
           autoFocus={
             !diagnosticLocation && !pharmacyLocation && !locationDetails ? false : focusSearch!
           }
@@ -986,9 +994,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           }}
           value={searchText}
-          onFocus={() => {
-            setSearchFocused(true);
-          }}
+          // onFocus={() => {
+          //   setSearchFocused(true);
+          //   props.navigation.navigate(AppRoutes.SearchTestScene, {
+          //     searchText: searchText,
+          //   });
+          //   setSearchText('');
+          //   setDiagnosticResults([]);
+          // }}
           onBlur={() => {
             setSearchFocused(false);
             setDiagnosticResults([]);
@@ -1021,7 +1034,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           inputStyle={styles.searchInput}
           containerStyle={styles.searchInputContainer}
         />
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -2019,4 +2032,26 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   whyBookUsImage: { width: '100%', height: 200 },
+  headingSections: {
+    fontFamily: 'IBM Plex Sans',
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#01475B',
+  },
+  viewDefaultContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  defaultContainer: {
+    width: '100%',
+    justifyContent:'space-between',
+    marginVertical: 10,
+    paddingVertical: 0,
+    backgroundColor: 'white'
+  },
 });

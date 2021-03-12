@@ -55,6 +55,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  ListRenderItemInfo
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
@@ -65,6 +66,7 @@ import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsSearchResults,
   PackageInclusion,
+  getDiagnosticsPopularResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -75,11 +77,11 @@ import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEv
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { DiagnosticsSearchSuggestionItem } from './components/DiagnosticsSearchSuggestionItem';
-
+import { DiagnosticsNewSearch } from './components/DiagnosticsNewSearch';
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
     flex: 1,
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    backgroundColor: 'white' //theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   headerStyle: {},
   headerSearchInputShadow: {
@@ -155,6 +157,28 @@ const styles = StyleSheet.create({
     padding: 12,
     ...theme.fonts.IBMPlexSansSemiBold(14),
   },
+  headingSections: {
+    fontFamily: 'IBM Plex Sans',
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#01475B',
+  },
+  viewDefaultContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  defaultContainer: {
+    width: '100%',
+    justifyContent:'space-between',
+    marginVertical: 10,
+    paddingVertical: 0,
+    backgroundColor: 'white'
+  },
 });
 
 export interface SearchTestSceneProps
@@ -174,6 +198,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
   >([]);
+  const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
 
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
@@ -193,6 +218,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   useEffect(() => {
     searchTextFromProp && onSearchTest(searchTextFromProp);
+  }, []);
+  useEffect(() => {
+    fetchPopularDetails()
   }, []);
 
   useEffect(() => {
@@ -245,7 +273,27 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       setGlobalLoading!(false);
     }
   };
-
+  const fetchPopularDetails = async () => {
+    try {
+      const res: any = await getDiagnosticsPopularResults('diagnostic');
+      console.log('in response')
+      if (res?.data?.success) {
+        // console.log('response>>>.', res.data.data)
+        const product = g(res, 'data', 'data') || [];
+        setPopularArray(product)
+        // func && func(product);
+      } else {
+        errorAlert();
+      }
+      setGlobalLoading!(false);
+    } catch (error) {
+      console.log('error>>>.', error)
+      CommonBugFender('SearchTestScene_fetchPackageDetails', error);
+      aphConsole.log({ error });
+      errorAlert();
+      setGlobalLoading!(false);
+    }
+  };
   const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
     try {
       const arrayOfId = [Number(id)];
@@ -626,6 +674,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderMatchingTests = () => {
+    let popularTests: never[] = []
+    let popularPackages: never[] = []
+    if (popularArray?.length) {
+      popularPackages = popularArray.filter(item => item?.diagnostic_inclusions?.length > 1)
+      popularTests = popularArray.filter(item => item?.diagnostic_inclusions?.length == 1)
+    }
+
     return (
       <>
         {isLoading ? (
@@ -637,7 +692,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           />
         ) : (
           !!searchText &&
-          searchText?.length > 2 && (
+          searchText?.length > 2 ? (
             <FlatList
               onScroll={() => Keyboard.dismiss()}
               data={diagnosticResults}
@@ -647,18 +702,64 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               ListHeaderComponent={
                 (diagnosticResults?.length > 0 && (
                   <SectionHeaderComponent
-                    sectionTitle={`Matching Tests — ${diagnosticResults?.length}`}
-                    style={{ marginBottom: 0 }}
+                    sectionTitle={`Showing search results (${diagnosticResults?.length})`}
+                    style={{ marginBottom: 5 }}
                   />
                 )) ||
                 null
               }
             />
+          ) : (
+            <View style={styles.viewDefaultContainer}>
+                  <Text style={styles.headingSections}>Popular Tests</Text>
+                  <View style={styles.defaultContainer}>
+                    <FlatList
+                      keyExtractor={(_, index) => `${index}`}
+                      data={popularTests}
+                      renderItem={renderPopularDiagnostic}
+                    />
+                  </View>
+                  <Text style={styles.headingSections}>Popular Packages</Text>
+                  <View style={styles.defaultContainer}>
+                    <FlatList
+                      keyExtractor={(_, index) => `${index}`}
+                      data={popularPackages}
+                      renderItem={renderPopularDiagnostic}
+                    />
+                  </View>
+                </View>
           )
         )}
       </>
     );
   };
+  const renderPopularDiagnostic = (data: ListRenderItemInfo<any>) => {
+    const { index, item } = data;
+    return (
+    <DiagnosticsNewSearch
+    onPress={() => {
+      CommonLogEvent(AppRoutes.Tests, 'Search suggestion Item');
+      props.navigation.navigate(AppRoutes.TestDetails, {
+        itemId: item?.diagnostic_item_id,
+        itemName: item?.diagnostic_item_name,
+        source: 'Partial Search',
+        comingFrom: AppRoutes.Tests,
+      });
+    }}
+    onPressAddToCart={() => {
+      onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name);
+    }}
+    data={item}
+    loading={true}
+    showSeparator={index !== diagnosticResults?.length - 1}
+    style={{
+      marginHorizontal: 5,
+      paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
+    }}
+    onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+    />
+    )
+  }
 
   return (
     <SafeAreaView style={styles.safeAreaViewStyle}>
