@@ -65,7 +65,6 @@ import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/
 import {
   CommonBugFender,
   CommonLogEvent,
-  CommonSetUserBugsnag,
   DeviceHelper,
   isIos,
   setBugFenderLog,
@@ -1761,10 +1760,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         return item.isActive === true;
       });
       setNotificationCount && setNotificationCount(selectedCount.length);
-
-      CommonSetUserBugsnag(
-        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-      );
     } catch (error) {}
   };
 
