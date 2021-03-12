@@ -1960,6 +1960,12 @@ export const setCrashlyticsAttributes = async (
   } catch (error) {}
 };
 
+export const postFirebaseRecordError = (error: any) => {
+  try {
+    crashlytics().recordError(error);
+  } catch (error) {}
+};
+
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
     const logContent = `[Firebase Event] ${eventName}`;
