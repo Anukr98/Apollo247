@@ -65,7 +65,6 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import _ from 'lodash';
-import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -329,7 +328,17 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
             console.log('MoveDoctor', MoveDoctor);
             if (MoveDoctor === 'registration') {
-              navigateToHome(props.navigation);
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [
+                    NavigationActions.navigate({
+                      routeName: AppRoutes.ConsultRoom,
+                    }),
+                  ],
+                })
+              );
             } else {
               props.navigation.goBack();
             }

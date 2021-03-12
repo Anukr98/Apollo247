@@ -186,6 +186,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     }
     if (isComingFrom == AppRoutes.TestsCart) {
       navigateToHome(props.navigation);
+      props.navigation.navigate('TESTS', { focusSearch: false });
     } else {
       props.navigation.goBack();
     }
