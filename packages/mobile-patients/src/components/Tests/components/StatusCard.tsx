@@ -44,7 +44,7 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
           },
         ]}
       >
-        {nameFormater(getTestOrderStatusText(props.titleText), 'title')}
+        {nameFormater(getTestOrderStatusText(props.titleText!), 'title')}
       </Text>
     </View>
   );
@@ -52,10 +52,12 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 5,
-    borderWidth: 1,
+    borderRadius: 8,
+    borderWidth: 2,
     borderColor: 'transparent',
     padding: 4,
+    height: 25,
+    justifyContent: 'center',
   },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,

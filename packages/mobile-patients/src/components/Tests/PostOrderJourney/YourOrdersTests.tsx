@@ -95,6 +95,7 @@ import {
   getDiagnosticSlotsCustomized,
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
+import { OrderTestCard } from '../components/OrderTestCard';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -917,45 +918,45 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
      *  4. if greater than this, then start showing view report option
      *  5. only showing if reschedule is showing + !orderCancelled + done reschedule
      */
-
     return (
-      <TestOrderCard
-        key={`${order.id}`}
-        orderId={`${order.displayId}`}
-        showStatus={false}
+      <OrderTestCard
+        orderId={order?.displayId}
+        key={order?.id}
+        createdOn={order?.createdDate}
+        orderLevelStatus={order?.orderStatus}
         patientName={patientName}
-        isComingFrom={'individualOrders'}
-        showDateTime={
-          showCancel && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
-            ? showDateTime
-            : false
-        }
+        gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
+        showAddTest={false}
+        ordersData={order?.diagnosticOrderLineItems!}
+        showPretesting={showPreTesting!}
+        dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
+        slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.slotTimings}
+        isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
+        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         showRescheduleCancel={
           showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
-        ordersData={order?.diagnosticOrderLineItems!}
-        dateTime={`Rescheduled For: ${dtTm}`}
-        statusDesc={'Home Visit'}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
-        showViewReport={false}
-        onPress={() => {
-          _navigateToYourTestDetails(order);
-        }}
-        status={currentStatus}
-        statusText={getTestOrderStatusText(currentStatus)}
+        price={order?.totalPrice}
+        onPressAddTest={() => _onPressAddTest()}
+        onPressReschedule={() => _onPressReschedule()}
+        onPressViewDetails={() => _navigateToYourTestDetails(order)}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        onPressCancel={() => onPressTestCancel(order)}
-        onPressReschedule={() => onPressTestReschedule(order)}
-        showTestPreparation={showPreTesting!}
-        onOptionPress={() => _openOrderSummary(order)}
-        onPressViewReport={() => _navigateToPHR()}
       />
     );
   };
+
+  function _onPressAddTest() {
+    console.log('add test pressed');
+  }
+
+  function _onPressReschedule() {
+    console.log('pressed reschedule');
+  }
+
   const renderOrders = () => {
     return (
       <FlatList

@@ -1,21 +1,10 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect } from 'react';
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableOpacityProps,
-  View,
-} from 'react-native';
+import { Dimensions, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  g,
-  formatTestSlotWithBuffer,
-  postWebEngageEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -23,7 +12,6 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { ScrollView } from 'react-native-gesture-handler';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
@@ -375,14 +363,16 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
 
   return (
-    <View style={{ margin: 16 }}>
-      {renderOrderId()}
-      {renderSlotView()}
-      {renderHeading(`Tests for ${currentPatient?.firstName}`)}
-      {renderItemsCard()}
-      {renderPricesCard()}
-      {renderPaymentCard()}
-    </View>
+    <ScrollView style={{ flex: 1 }}>
+      <View style={{ margin: 16 }}>
+        {renderOrderId()}
+        {renderSlotView()}
+        {renderHeading(`Tests for ${currentPatient?.firstName}`)}
+        {renderItemsCard()}
+        {renderPricesCard()}
+        {renderPaymentCard()}
+      </View>
+    </ScrollView>
   );
 };
 
