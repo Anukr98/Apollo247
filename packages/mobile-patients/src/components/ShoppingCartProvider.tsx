@@ -901,7 +901,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ? 0
       : formatNumber(
           item?.quantity *
-            (item?.couponPrice || item?.couponPrice == 0 ? item?.price - item?.couponPrice : 0)
+            (item?.couponPrice || item?.couponPrice == 0
+              ? (item?.specialPrice || item?.price) - item?.couponPrice
+              : 0)
         );
     return discount;
   };

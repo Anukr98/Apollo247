@@ -763,7 +763,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id')!,
       'Consult Date Time': date,
-      'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
+      'Consult Mode': 'Online',
       'Hospital Name':
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0]?.facility?.name}`

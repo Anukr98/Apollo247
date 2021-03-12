@@ -115,6 +115,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
     addresses,
+    productDiscount,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -661,7 +662,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
               string.common.Rs
-            }${convertNumberToDecimal(cartTotal)}`}
+            }${convertNumberToDecimal(cartTotal - productDiscount)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -933,6 +934,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               isBanned={medicineDetails?.banned === 'Yes'}
               cashback={cashback}
               deliveryError={deliveryError}
+              name={medicineDetails?.name}
             />
           )}
         {!loading &&
