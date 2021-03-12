@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  FlatList,
+  Image,
+  Dimensions,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+const { width } = Dimensions.get('window');
+const newWidth = width - 40;
 export interface UPIPaymentsProps {
   upiApps: any;
   onPressUPIApp: (app: any) => void;
@@ -21,8 +31,9 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     return match.test(VPA);
   };
   const upiApp = (item: any) => {
+    const marginLeft = item?.index == 0 ? 0 : (newWidth - 192) * 0.33;
     return (
-      <View style={styles.AppCont}>
+      <View style={{ ...styles.AppCont, marginLeft: marginLeft }}>
         <TouchableOpacity style={styles.imageCont} onPress={() => onPressUPIApp(item?.item)}>
           <Image
             source={{ uri: item?.item?.image_url }}
@@ -41,6 +52,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
         <Text style={styles.UPIHeader}>Select your UPI App</Text>
         <FlatList
           style={{ marginTop: 12 }}
+          horizontal={true}
           data={upiApps}
           renderItem={(item: any) => {
             return paymentModeVersionCheck(item?.item?.minimum_supported_version)
@@ -143,17 +155,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   AppCont: {
-    flexDirection: 'row',
+    width: 48,
     alignItems: 'center',
     marginBottom: 15,
   },
   image: {
-    height: 30,
-    width: 70,
+    height: 37,
+    width: 37,
   },
   imageCont: {
     height: 48,
-    width: 90,
+    width: 48,
     borderRadius: 5,
     borderWidth: 1,
     borderColor: 'rgba(0,124,157,0.4)',
@@ -162,9 +174,9 @@ const styles = StyleSheet.create({
   },
   App: {
     ...theme.fonts.IBMPlexSansSemiBold(14),
-    lineHeight: 24,
+    lineHeight: 20,
     color: '#01475B',
-    marginLeft: 24,
+    textAlign: 'center',
   },
   or: {
     ...theme.fonts.IBMPlexSansRegular(10),

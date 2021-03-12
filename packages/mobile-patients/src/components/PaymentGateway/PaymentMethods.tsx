@@ -21,8 +21,10 @@ import { UPIPayments } from '@aph/mobile-patients/src/components/PaymentGateway/
 import {
   isSDKInitialised,
   fetchPaymentMethods,
+  fetchAvailableUPIApps,
   InitiateNetBankingTxn,
   InitiateWalletTxn,
+  InitiateUPISDKTxn,
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
@@ -82,10 +84,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [cardTypes, setCardTypes] = useState<any>([]);
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
   const [isCardValid, setisCardValid] = useState<boolean>(true);
+  const [availableUPIApps, setAvailableUPIapps] = useState([]);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
+
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -110,17 +114,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
-        console.log('payload >>', JSON.stringify(payload));
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
-          console.log(payload?.payload?.paymentMethods);
           const banks = payload?.payload?.paymentMethods?.filter(
             (item: any) => item?.paymentMethodType == 'NB'
           );
           setBanks(banks);
           setloading(false);
+        } else if (payload?.payload?.action == 'upiTxn' && !payload?.error) {
+          setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
           payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
-          payload?.payload?.status == 'PENDING_VBV' && navigatetoOrderStatus(false, 'pending');
+          payload?.payload?.status == 'PENDING_VBV' &&
+            !payload?.error &&
+            navigatetoOrderStatus(false, 'pending');
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
         } else if (payload?.error) {
           handleError(payload?.errorMessage);
@@ -145,6 +151,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const response: boolean = await isSDKInitialised();
     if (response) {
       fetchPaymentMethods(currentPatient?.id);
+      fetchAvailableUPIApps(currentPatient?.id);
     }
   };
 
@@ -156,7 +163,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     const { data } = response;
     const { getPaymentMethods } = data;
-    console.log('getPaymentMethods >>', getPaymentMethods);
     setPaymentMethods(getPaymentMethods);
     const types = getPaymentMethods.find((item: any) => item?.name == 'CARD');
     setCardTypes(types?.payment_methods);
@@ -237,7 +243,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressBank(bankCode: string) {
-    console.log({ bankCode });
     triggerWebengege('Prepaid', 'Net Banking');
     const token = await getClientToken();
     InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode);
@@ -252,26 +257,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
-    const sdkPresent =
-      app?.payment_method_code == 'PHONEPE'
-        ? 'ANDROID_PHONEPE'
-        : app?.payment_method_code == 'GOOGLEPAY'
-        ? 'ANDROID_GOOGLEPAY'
-        : '';
-    InitiateUPIIntentTxn(
-      currentPatient?.id,
-      token,
-      paymentId,
-      app?.payment_method_code,
-      sdkPresent
-    );
+    // const sdkPresent =
+    //   app?.payment_method_code == 'PHONEPE'
+    //     ? 'ANDROID_PHONEPE'
+    //     : app?.payment_method_code == 'GOOGLEPAY'
+    //     ? 'ANDROID_GOOGLEPAY'
+    //     : '';
+    // InitiateUPISDKTxn(currentPatient?.id, token, paymentId, app?.payment_method_code, sdkPresent);
+    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
   }
 
   async function onPressVPAPay(VPA: string) {
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
-      console.log('response >>', response?.data?.verifyVPA);
       if (response?.data?.verifyVPA?.status == 'VALID') {
         const token = await getClientToken();
         InitiateVPATxn(currentPatient?.id, token, paymentId, VPA);
@@ -321,6 +320,26 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const filterUPIApps = () => {
+    if (availableUPIApps?.length) {
+      const available = availableUPIApps?.map((item: any) => item?.appName);
+      const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
+      const apps = UPIApps?.map((app: any) => {
+        if (available.includes(app?.payment_method_name)) {
+          let object = app;
+          const packageName = availableUPIApps?.find(
+            (item: any) => item?.appName == app.payment_method_name
+          )?.['packageName'];
+          object['packageName'] = packageName;
+          return object;
+        }
+      });
+      return apps;
+    } else {
+      return [];
+    }
+  };
+
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
     props.navigation.navigate(AppRoutes.OrderStatus, {
       orderDetails: orderDetails,
@@ -366,8 +385,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
               );
             case 'UPI':
               return (
-                paymentModeVersionCheck(minVersion) &&
-                renderUPIPayments(item?.payment_methods || [])
+                paymentModeVersionCheck(minVersion) && renderUPIPayments(filterUPIApps() || [])
               );
             case 'NB':
               return (
