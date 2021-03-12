@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 
-const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN } = theme.colors;
+const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
 
 interface PatientListOverlayProps {
   onPressAddNewProfile: () => void;
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     margin: 0,
     width: '100%',
     height: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
     overflow: 'hidden',
     elevation: 0,
     bottom: 0,
@@ -110,20 +110,20 @@ const styles = StyleSheet.create({
   },
   overlayViewStyle: {
     width: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
     bottom: 0,
     position: 'absolute',
   },
   overlayViewStyle1: {
     flexGrow: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
   },
   overlaySafeAreaViewStyle: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
   },
   mainViewStyle: {
-    backgroundColor: theme.colors.WHITE,
+    backgroundColor: WHITE,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 20,

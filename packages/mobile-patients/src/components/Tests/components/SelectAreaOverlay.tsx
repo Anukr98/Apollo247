@@ -25,6 +25,7 @@ const {
   WHITE,
   APP_GREEN,
   searchAreaPlaceholderTextColor,
+  CLEAR,
 } = theme.colors;
 
 interface SelectAreaOverlayProps {
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     margin: 0,
     width: '100%',
     height: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
     overflow: 'hidden',
     elevation: 0,
     bottom: 0,
@@ -178,17 +179,17 @@ const styles = StyleSheet.create({
   },
   overlayViewStyle: {
     width: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
     bottom: 0,
     position: 'absolute',
   },
   overlayViewStyle1: {
     flexGrow: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
   },
   overlaySafeAreaViewStyle: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
   },
   mainViewStyle: {
     backgroundColor: WHITE,
