@@ -364,17 +364,20 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const fireOrderSuccessEvent = (orderAutoId: string, orderId: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+    let eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
       'Payment failed order id': transId,
       'Payment Success Order Id': orderAutoId,
       status: true,
     };
     postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
-    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
     postAppsFlyerEvent(
       AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
       getPrepaidCheckoutCompletedAppsFlyerEventAttributes(orderAutoId, orderId)
     );
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...checkoutEventAttributes,
+      'Cart Items': JSON.stringify(cartItems),
+    });
     firePurchaseEvent(orderAutoId);
   };
 

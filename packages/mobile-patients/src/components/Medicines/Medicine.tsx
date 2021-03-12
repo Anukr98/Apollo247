@@ -1717,6 +1717,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
+      JSON.stringify(cartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),
       pharmacyCircleAttributes!
     );

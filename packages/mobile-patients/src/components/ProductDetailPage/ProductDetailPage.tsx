@@ -438,6 +438,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(cartItems),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
       } catch (error) {}

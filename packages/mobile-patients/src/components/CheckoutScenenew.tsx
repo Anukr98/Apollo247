@@ -367,6 +367,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Prescription Option selected': uploadPrescriptionRequired
         ? 'Prescription Upload'
         : 'Not Applicable',
+      'Cart Items': JSON.stringify(cartItems),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -746,6 +747,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
       'Service Area': 'Pharmacy',
+      'Cart Items': JSON.stringify(cartItems),
+      Coupon: coupon ? coupon.coupon : '',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 

@@ -243,6 +243,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
               ? g(resp.data, 'response', 'discount')
               : 'Not Applicable',
             'Customer ID': g(currentPatient, 'id'),
+            'Cart Items': JSON.stringify(cartItems),
           };
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
