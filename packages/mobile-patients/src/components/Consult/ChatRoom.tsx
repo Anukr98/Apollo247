@@ -1907,7 +1907,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setTimeout(
       () => {
         const successSteps = [
-          'Please describe your medical condition and upload pictures if required ',
+          'Please describe your medical condition and upload pictures/reports if required. The same will be available for your reference in the health records section',
         ];
         pubnub.publish(
           {
