@@ -121,6 +121,7 @@ import {
   setWebEngageScreenNames,
   timeDiffDaysFromNow,
   setCircleMembershipType,
+  apiCallEnums,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -710,6 +711,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setPharmacyUserType,
     pharmacyUserTypeAttribute,
     covidVaccineCtaV2,
+    apisToCall,
+    homeScreenParamsOnPop,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -894,6 +897,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
 
   useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      checkApisToCall();
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      apisToCall.current = [];
+      homeScreenParamsOnPop.current = null;
+    });
+
+    return () => {
+      didBlur && didBlur.remove();
+      didFocus && didFocus.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       circleActivatedRef.current = false;
       logHomePageMovedAway();
@@ -954,6 +972,91 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
     }
   }, [upgradePlans]);
+
+  const checkApisToCall = () => {
+    isserviceable();
+    currentPatient && saveDeviceNotificationToken(currentPatient.id);
+    const params = homeScreenParamsOnPop.current;
+    if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
+      // reset will be true only from the payment screen(fill medical details)
+      checkPermissions(['camera', 'microphone']).then((response: any) => {
+        const { camera, microphone } = response;
+        if (camera !== 'authorized' || microphone !== 'authorized') {
+          fetchInProgressAppointments();
+        }
+      });
+    }
+    if (params?.isFreeConsult) {
+      checkPermissions(['camera', 'microphone']).then((response: any) => {
+        const { camera, microphone } = response;
+        if (camera === 'authorized' && microphone === 'authorized') {
+          showFreeConsultOverlay(params);
+        } else {
+          overlyCallPermissions(
+            currentPatient!.firstName!,
+            params?.doctorName,
+            showAphAlert,
+            hideAphAlert,
+            true,
+            () => {
+              if (params?.doctorName) {
+                showFreeConsultOverlay(params);
+              }
+            }
+          );
+        }
+      });
+    }
+
+    apisToCall?.current?.forEach((item: any) => {
+      const {
+        circleSavings,
+        patientAppointments,
+        patientAppointmentsCount,
+        getAllBanners,
+        getUserSubscriptions,
+        getUserSubscriptionsV2,
+        oneApollo,
+        pharmacyUserType,
+        getPlans,
+        plansCashback,
+      } = apiCallEnums;
+      switch (item) {
+        case circleSavings:
+          fetchCircleSavings();
+          break;
+        case patientAppointments:
+          getPersonalizesAppointments();
+          break;
+        case patientAppointmentsCount:
+          getAppointmentsCount();
+          break;
+        case getAllBanners:
+          getUserBanners();
+          break;
+        case getUserSubscriptions:
+          getUserSubscriptionsByStatus();
+          break;
+        case getUserSubscriptionsV2:
+          getUserSubscriptionsWithBenefits();
+          break;
+        case oneApollo:
+          fetchHealthCredits();
+          break;
+        case pharmacyUserType:
+          getUserProfileType();
+          break;
+        case getPlans:
+          fetchCarePlans();
+          break;
+        case plansCashback:
+          getProductCashbackDetails();
+          break;
+        default:
+          break;
+      }
+    });
+  };
 
   const fetchInProgressAppointments = async () => {
     try {
@@ -1888,28 +1991,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
         getPersonalizesAppointments();
-        setAppointmentLoading(true);
+        getAppointmentsCount();
         setSelectedProfile(currentPatient.id);
-        client
-          .query<getPatientFutureAppointmentCount>({
-            query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-            fetchPolicy: 'no-cache',
-            variables: {
-              patientId: currentPatient.id,
-            },
-          })
-          .then((data) => {
-            const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
-            setCurrentAppointments(`${count}`);
-            setAppointmentLoading(false);
-          })
-          .catch((e) => {
-            CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
-          })
-          .finally(() => setAppointmentLoading(false));
       }
     }
   }, [currentPatient, props.navigation.state.params]);
+
+  const getAppointmentsCount = () => {
+    setAppointmentLoading(true);
+    client
+      .query<getPatientFutureAppointmentCount>({
+        query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: currentPatient?.id,
+        },
+      })
+      .then((data) => {
+        const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
+        setCurrentAppointments(`${count}`);
+        setAppointmentLoading(false);
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
+      })
+      .finally(() => setAppointmentLoading(false));
+  };
 
   useEffect(() => {
     async function fetchData() {

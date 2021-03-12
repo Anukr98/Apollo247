@@ -140,6 +140,7 @@ import Carousel from 'react-native-snap-carousel';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -936,13 +937,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          navigateToHome(props.navigation);
         }}
       >
         <HomeIcon style={{ height: 33, width: 33 }} />

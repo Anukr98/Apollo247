@@ -45,6 +45,7 @@ import {
   getMedicineOrderOMSDetailsWithAddress,
   getMedicineOrderOMSDetailsWithAddressVariables,
 } from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -480,13 +481,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
                   if (currentScreenName === AppRoutes.ChatRoom) {
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                      })
-                    );
+                    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                   }
                 },
                 type: 'white-button',
@@ -559,13 +554,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   text: 'DISMISS',
                   onPress: () => {
                     hideAphAlert && hideAphAlert();
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                      })
-                    );
+                    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                   },
                   type: 'white-button',
                 },
@@ -603,13 +592,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                       currentScreenName === AppRoutes.AppointmentDetails ||
                       currentScreenName === AppRoutes.AppointmentOnlineDetails
                     ) {
-                      props.navigation.dispatch(
-                        StackActions.reset({
-                          index: 0,
-                          key: null,
-                          actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                        })
-                      );
+                      navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                     }
                   } catch (error) {}
                 },

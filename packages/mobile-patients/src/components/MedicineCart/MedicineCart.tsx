@@ -104,6 +104,7 @@ import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart
 import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
 import AsyncStorage from '@react-native-community/async-storage';
 import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -906,17 +907,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         activeOpacity={0.5}
         onPress={() => {
           setCoupon!(null);
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.Medicine,
-                }),
-              ],
-            })
-          );
+          navigateToScreenWithEmptyStack(props.navigation, AppRoutes.Medicine);
         }}
       >
         <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), color: theme.colors.APP_YELLOW }}>

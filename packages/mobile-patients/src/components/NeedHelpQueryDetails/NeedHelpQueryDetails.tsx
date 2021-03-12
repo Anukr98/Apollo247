@@ -64,6 +64,7 @@ import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEv
 import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const { width } = Dimensions.get('window');
 import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -182,13 +183,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-          })
-        );
+        navigateToHome(navigation);
       },
     });
   };
@@ -434,13 +429,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-          })
-        );
+        navigateToHome(navigation);
       },
     });
   };

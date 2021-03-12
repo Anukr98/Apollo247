@@ -1,6 +1,6 @@
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
@@ -241,6 +241,8 @@ export interface AppCommonDataContextProps {
   pharmacyUserType: PharmaUserStatus;
   setPharmacyUserType: ((type: PharmaUserStatus) => void) | null;
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
+  apisToCall: any;
+  homeScreenParamsOnPop: any;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -332,12 +334,17 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyUserType: '',
   setPharmacyUserType: null,
   pharmacyUserTypeAttribute: null,
+  apisToCall: [],
+  homeScreenParamsOnPop: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
   const [isCurrentLocationFetched, setCurrentLocationFetched] = useState<
     AppCommonDataContextProps['isCurrentLocationFetched']
   >(false);
+
+  const apisToCall = useRef<AppCommonDataContextProps['apisToCall']>([]);
+  const homeScreenParamsOnPop = useRef<AppCommonDataContextProps['homeScreenParamsOnPop']>([]);
 
   const [locationDetails, _setLocationDetails] = useState<
     AppCommonDataContextProps['locationDetails']
@@ -661,6 +668,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         pharmacyUserType,
         setPharmacyUserType,
         pharmacyUserTypeAttribute,
+        apisToCall,
+        homeScreenParamsOnPop,
       }}
     >
       {props.children}

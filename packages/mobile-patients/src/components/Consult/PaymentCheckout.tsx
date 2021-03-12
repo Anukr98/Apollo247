@@ -30,6 +30,8 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  apiCallEnums,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -115,6 +117,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     circlePlanId,
     hdfcStatus,
     circleStatus,
+    apisToCall,
+    homeScreenParamsOnPop,
   } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
@@ -812,23 +816,19 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           if (appointmentData) {
             try {
               if (appointmentData?.[0]?.doctorInfo !== null) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.ConsultRoom,
-                        params: {
-                          isFreeConsult: true,
-                          doctorName: doctorName,
-                          appointmentData: appointmentData[0],
-                          skipAutoQuestions: doctor?.skipAutoQuestions,
-                        },
-                      }),
-                    ],
-                  })
-                );
+                // use apiCallsEnum values here in order to make that api call in home screen
+                apisToCall.current = [
+                  apiCallEnums.patientAppointments,
+                  apiCallEnums.patientAppointmentsCount,
+                ];
+                const params = {
+                  isFreeConsult: true,
+                  doctorName: doctorName,
+                  appointmentData: appointmentData[0],
+                  skipAutoQuestions: doctor?.skipAutoQuestions,
+                };
+                homeScreenParamsOnPop.current = params;
+                navigateToHome(props.navigation, params);
               }
             } catch (error) {}
           }

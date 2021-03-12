@@ -32,6 +32,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  apiCallEnums,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -59,6 +60,8 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -86,6 +89,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const { apisToCall } = useAppCommonData();
   const {
     clearCartInfo,
     cartItems,
@@ -153,17 +157,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
+        moveToHome();
         renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -173,19 +167,16 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   }, []);
 
   const handleBack = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    moveToHome();
     return true;
   };
+
+  const moveToHome = () => {
+    // use apiCallsEnum values here in order to make that api call in home screen
+    apisToCall.current = [apiCallEnums.circleSavings];
+    navigateToHome(props.navigation);
+  };
+
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
   const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
@@ -256,13 +247,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   };
 
   const handleOrderSuccess = (orderAutoId: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    moveToHome();
     fireOrderSuccessEvent(orderAutoId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -516,17 +501,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     } else if (status == failure || status == aborted) {
       navigate(AppRoutes.MedicineCart);
     } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      moveToHome();
     }
   };
 

@@ -12,6 +12,7 @@ import {
   StackActions,
 } from 'react-navigation';
 import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -68,15 +69,8 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
     >
       <TouchableOpacity
         activeOpacity={1}
-        // onPress={() => props.navigation.popToTop()}
         onPress={() => {
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          navigateToHome(props.navigation);
         }}
       >
         {!props.hideHomeIcon ? <HomeIcon /> : null}

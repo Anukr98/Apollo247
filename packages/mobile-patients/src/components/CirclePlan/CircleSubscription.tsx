@@ -7,6 +7,7 @@ import { CircleTotalBill } from '@aph/mobile-patients/src/components/ui/CircleTo
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
@@ -33,14 +34,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
         text: 'Yes',
         onPress: () => {
           if (action === 'PAY') {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
-            // props.navigation.navigate('TESTS');
+            navigateToHome(props.navigation);
           } else {
             props.navigation.goBack();
           }

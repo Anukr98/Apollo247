@@ -72,6 +72,7 @@ import { Spinner } from '../ui/Spinner';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import DeviceInfo from 'react-native-device-info';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -464,13 +465,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
                   showOrderSummaryTab: false,
                   orderAutoId: orderAutoId,
                 })
-              : props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-                  })
-                );
+              : navigateToHome(props.navigation);
           },
         },
       ],

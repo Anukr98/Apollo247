@@ -97,6 +97,7 @@ import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/Ci
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height, width } = Dimensions.get('window');
 
@@ -669,17 +670,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const navigateToSpecialitySearch = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.DoctorSearch,
-          }),
-        ],
-      })
-    );
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.DoctorSearch);
   };
 
   const formatTime = (time: string) => {

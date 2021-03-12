@@ -51,6 +51,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -151,40 +152,18 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   }
 
   const navigateToView = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-      })
-    );
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
   };
 
   const navigateToViewRescdule = (data: any) => {
     AsyncStorage.setItem('showSchduledPopup', 'true');
     console.log('navigateToView', data);
     console.log('doctorname', props.doctor);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.TabBar,
-            params: {
-              Data:
-                data &&
-                data.bookRescheduleAppointment &&
-                data.bookRescheduleAppointment.appointmentDetails,
-              DoctorName:
-                props.navigation.state.params!.data &&
-                props.navigation.state.params!.data.doctorInfo &&
-                props.navigation.state.params!.data.doctorInfo.fullName,
-            },
-          }),
-        ],
-      })
-    );
+    const params = {
+      Data: data?.bookRescheduleAppointment?.appointmentDetails,
+      DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+    };
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
   };
 
   const renderBottomButton = () => {

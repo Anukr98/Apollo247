@@ -87,6 +87,10 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import HTML from 'react-native-render-html';
 import _ from 'lodash';
+import {
+  navigateToHome,
+  navigateToScreenWithEmptyStack,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -367,11 +371,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      });
-      props.navigation.dispatch(resetAction);
+      navigateToHome(props.navigation);
     },
   };
 
@@ -394,11 +394,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TestsCart })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
           },
         });
       }

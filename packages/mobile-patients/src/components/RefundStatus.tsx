@@ -18,6 +18,7 @@ import {
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -173,17 +174,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = (props) => {
     const { navigation } = props;
     const { navigate } = navigation;
 
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    navigateToHome(props.navigation);
   };
 
   const renderButton = () => {

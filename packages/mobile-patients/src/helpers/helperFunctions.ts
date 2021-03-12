@@ -2540,6 +2540,67 @@ export const takeToHomePage = (props: any) => {
     })
   );
 };
+
+export const navigateToHome = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any
+) => {
+  const navigate = navigation.popToTop();
+  if (!navigate) {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+            params,
+          }),
+        ],
+      })
+    );
+  }
+};
+
+export const navigateToScreenWithEmptyStack = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string,
+  params?: any
+) => {
+  const navigate = navigation.popToTop({ immediate: true });
+  if (navigate) {
+    setTimeout(() => {
+      navigation.navigate(screenName, params);
+    }, 0);
+  } else {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: screenName,
+            params,
+          }),
+        ],
+      })
+    );
+  }
+};
+
+export const apiCallEnums = {
+  circleSavings: 'GetCircleSavingsOfUserByMobile',
+  getAllBanners: 'GetAllGroupBannersOfUser',
+  getUserSubscriptions: 'GetSubscriptionsOfUserByStatus',
+  getUserSubscriptionsV2: 'GetAllUserSubscriptionsWithPlanBenefitsV2',
+  oneApollo: 'getOneApolloUser',
+  pharmacyUserType: 'getUserProfileType',
+  getPlans: 'GetPlanDetailsByPlanId',
+  plansCashback: 'GetCashbackDetailsOfPlanById',
+  patientAppointments: 'getPatientPersonalizedAppointments',
+  patientAppointmentsCount: 'getPatientFutureAppointmentCount',
+};
+
 export const isSmallDevice = width < 370;
 
 //customText needs to be shown for itemId = 8

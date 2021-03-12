@@ -191,6 +191,7 @@ import { RescheduleCancelPopup } from '@aph/mobile-patients/src/components/Consu
 import { CancelAppointmentPopup } from '@aph/mobile-patients/src/components/Consult/CancelAppointmentPopup';
 import { CancelReasonPopup } from '@aph/mobile-patients/src/components/Consult/CancelReasonPopup';
 import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consult/CheckReschedulePopup';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface OpentokStreamObject {
   connection: {
@@ -5223,22 +5224,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTransferAccept(false);
           }, 1000);
         AsyncStorage.setItem('showTransferPopup', 'true');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  TransferData: rowData.transferInfo,
-                  TranferDateTime:
-                    data.data.bookTransferAppointment.appointment.appointmentDateTime,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          TransferData: rowData?.transferInfo,
+          TranferDateTime: data?.data?.bookTransferAppointment?.appointment?.appointmentDateTime,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_transferAppointmentAPI', e);
@@ -5400,27 +5390,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(data, 'data');
         setLoading(false);
         AsyncStorage.setItem('showSchduledPopup', 'true');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_rescheduleAPI', e);
@@ -7167,17 +7141,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 setBottompopup(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.TabBar,
-                      }),
-                    ],
-                  })
-                );
+                navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
               }}
             >
               <Text
@@ -7273,17 +7237,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 setBottompopup(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.TabBar,
-                      }),
-                    ],
-                  })
-                );
+                navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
               }}
             >
               <Text
@@ -7313,17 +7267,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 setBottompopup(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.TabBar,
-                      }),
-                    ],
-                  })
-                );
+                navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
               }}
             >
               <Text
@@ -7354,13 +7298,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={styles.gotItStyles}
                 onPress={() => {
                   setSucessPopup(false);
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                    })
-                  );
+                  navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                 }}
               >
                 <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>

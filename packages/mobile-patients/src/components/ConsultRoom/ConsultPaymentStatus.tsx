@@ -27,6 +27,7 @@ import {
   g,
   doRequestAndAccessLocationModified,
   checkPermissions,
+  apiCallEnums,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   autoCompletePlaceSearch,
@@ -101,6 +102,7 @@ import {
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -151,7 +153,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const circleSavings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
 
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
-  const { setLocationDetails, locationDetails, locationForDiagnostics } = useAppCommonData();
+  const {
+    setLocationDetails,
+    locationDetails,
+    locationForDiagnostics,
+    apisToCall,
+    homeScreenParamsOnPop,
+  } = useAppCommonData();
   const { clearDiagnoticCartInfo } = useDiagnosticsCart();
 
   const copyToClipboard = (refId: string) => {
@@ -790,18 +798,23 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         doctorId: doctorID,
       });
     } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      moveToHome();
     }
+  };
+
+  const moveToHome = (navigateToChatRoom?: boolean, appointmentData?: any) => {
+    // use apiCallsEnum values here in order to make that api call in home screen
+    apisToCall.current = [apiCallEnums.patientAppointments, apiCallEnums.patientAppointmentsCount];
+    const params = {
+      isFreeConsult: navigateToChatRoom ? false : true,
+      doctorName: doctorName,
+      appointmentData: appointmentData[0],
+      skipAutoQuestions: doctor?.skipAutoQuestions,
+    };
+    if (!navigateToChatRoom) {
+      homeScreenParamsOnPop.current = params;
+    }
+    navigateToHome(props.navigation, params);
   };
 
   const getAppointmentInfo = (navigateToChatRoom?: boolean) => {
@@ -827,23 +840,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           if (appointmentData) {
             try {
               if (appointmentData[0]!.doctorInfo !== null) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.ConsultRoom,
-                        params: {
-                          isFreeConsult: navigateToChatRoom ? false : true,
-                          doctorName: doctorName,
-                          appointmentData: appointmentData[0],
-                          skipAutoQuestions: doctor?.skipAutoQuestions,
-                        },
-                      }),
-                    ],
-                  })
-                );
+                moveToHome(navigateToChatRoom, appointmentData);
                 if (navigateToChatRoom) {
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],

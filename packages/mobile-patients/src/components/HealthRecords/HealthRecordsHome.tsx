@@ -97,6 +97,7 @@ import _ from 'lodash';
 import { ListItem, Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width } = Dimensions.get('window');
 
@@ -835,13 +836,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={() => {
           setPhrNotificationData && setPhrNotificationData(null);
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          navigateToHome(props.navigation);
         }}
       />
     );
