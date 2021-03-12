@@ -11,6 +11,7 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
+  GET_PRISM_AUTH_TOKEN,
   RESCHEDULE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { AlertPopup } from '@aph/mobile-patients/src/components/ui/AlertPopup';
@@ -26,7 +27,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -43,6 +44,7 @@ import {
   CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
+  MedicalRecordType,
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
@@ -90,12 +92,27 @@ import {
   getOrderInternal,
   getOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
-import { DiagnosticRescheduleOrder } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticRescheduleOrder,
+  DiagnosticViewReportClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import {
   getDiagnosticSlotsCustomized,
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { OrderTestCard } from '../components/OrderTestCard';
+import {
+  getPrismAuthToken,
+  getPrismAuthTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+
+const SHOW_REPORT_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+];
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -383,6 +400,68 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
+  const getAuthToken = async (order: any) => {
+    setLoading?.(true);
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          fetchTestReportResult(order);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('YourOrdersTests_GET_PRISM_AUTH_TOKEN', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        setLoading?.(false);
+      });
+  };
+
+  const fetchTestReportResult = useCallback((order: any) => {
+    const getVisitId = order?.visitNo;
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        console.log({ data });
+        let resultForVisitNo = labResultsData?.filter(
+          (item: any) => item?.identifier == getVisitId
+        );
+        console.log({ resultForVisitNo });
+
+        !!resultForVisitNo && resultForVisitNo?.length > 0
+          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+              data: resultForVisitNo,
+              labResults: true,
+            })
+          : renderReportError(string.diagnostics.responseUnavailableForReport);
+      })
+      .catch((error) => {
+        CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
+        console.log('Error occured fetchTestReportsResult', { error });
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading?.(false));
+  }, []);
+
+  const renderReportError = (message: string) => {
+    showAphAlert?.({
+      title: string.common.uhOh,
+      description: message,
+    });
+  };
+
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
     return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
@@ -399,34 +478,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return filterPreTestingData?.length == 0 ? false : true;
     }
     return false;
-  };
-
-  const renderOrderSummary = () => {
-    return showSummaryPopup ? (
-      <View style={styles.reasonCancelOverlay}>
-        <View style={styles.orderSummaryOuterView}>
-          <View
-            style={[
-              styles.reasonCancelView,
-              {
-                backgroundColor: 'transparent',
-              },
-            ]}
-          >
-            <TestOrderSummaryView
-              orderDetails={orderDetails!}
-              showViewOrderDetails={true}
-              onPressViewDetails={() => _navigateToYourTestDetails(selectedOrder)}
-            />
-          </View>
-          <TouchableOpacity style={{ marginTop: 20 }} onPress={() => setSummaryPopup(false)}>
-            <CrossPopup
-              style={{ height: isSmallDevice ? 20 : 28, width: isSmallDevice ? 20 : 28 }}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    ) : null;
   };
 
   const onPressTestCancel = (item: any) => {
@@ -863,19 +914,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return <View style={{ paddingTop: 4 }} />;
     }
     const getUTCDateTime = order?.slotDateTimeInUTC;
-    const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
-      `D MMM YYYY`
-    );
-    const tm =
-      getUTCDateTime != null
-        ? moment(getUTCDateTime).format('hh:mm A')
-        : getSlotStartTime(order?.slotTimings);
-    const dtTm = `${dt}, ${tm}`;
+    //add a check to see if report is generated or not.
+    // if status is partial completed or order compeleted
 
     const currentStatus = order?.orderStatus;
     const patientName = g(currentPatient, 'firstName');
-
-    const showDateTime = order?.isRescheduled ? true : false;
     const isPastOrder = moment(getUTCDateTime).diff(moment(), 'minutes') < 0;
     /**
      * show cancel & reschdule if status is something like this.
@@ -884,40 +927,50 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       BLACK_LIST_CANCEL_STATUS_ARRAY.includes(item?.orderStatus!)
     );
     const isCancelValidAtOrderLevel = BLACK_LIST_CANCEL_STATUS_ARRAY.includes(order?.orderStatus!);
-
     // const showCancel = isCancelValid == undefined && !isPastOrder ? true : false;
     const showCancel = isCancelValid == undefined && !isCancelValidAtOrderLevel ? true : false;
-
     const isRescheduleValid = order?.diagnosticOrdersStatus?.find((item: any) =>
       BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(item?.orderStatus)
     );
-
     const isRescheduleValidAtOrderLevel = BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(
       order?.orderStatus!
     );
-
     // const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
     const showReschedule =
       isRescheduleValid == undefined && !isRescheduleValidAtOrderLevel ? true : false;
-
-    /**
-     * as per previous check
-     */
-    // const isCancelRescheduleValid =
-    //   moment(getUTCDateTime).diff(moment(), 'minutes') > 120 &&
-    //   statusForCancelReschedule.includes(currentStatus);
 
     //show the reschedule option :-
 
     const showPreTesting = showReschedule && checkIfPreTestingExists(order);
     const showRescheduleOption = showReschedule && order?.rescheduleCount! <= 3;
-    /**
-     *  1. show reports generated, if any of the status of the test goes into sample collected.
-     *  2. if status is pickup requested, then show cancel - reschedule option prior 2hrs to pick up date-time
-     *  3. if pickup confirmed, then don't show anything?
-     *  4. if greater than this, then start showing view report option
-     *  5. only showing if reschedule is showing + !orderCancelled + done reschedule
-     */
+
+    //show view report option => inclusion level as report generated.
+    const showReportInclusionLevel = order?.diagnosticOrdersStatus?.find(
+      (
+        item:
+          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | any
+      ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
+    );
+    const showReport = !!showReportInclusionLevel;
+
+    //show extra view if array contains SAMPLE_REJECTED_IN_LAB, 2nd reqd.
+    const showExtraInfo = order?.diagnosticOrdersStatus?.filter(
+      (
+        item:
+          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | any
+      ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+    );
+
+    const sampleRejectedString = showExtraInfo?.map(
+      (
+        item:
+          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | any
+      ) => item?.itemName
+    );
+
     return (
       <OrderTestCard
         orderId={order?.displayId}
@@ -936,10 +989,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         showRescheduleCancel={
           showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
+        showReportOption={showReport}
+        showAdditonalView={!!showExtraInfo && showExtraInfo?.length > 0}
+        additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
+        onPressCard={() => _navigateToYourTestDetails(order)}
         onPressAddTest={() => _onPressAddTest()}
-        onPressReschedule={() => _onPressReschedule()}
+        onPressReschedule={() => onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order)}
+        onPressViewReport={() => _onPressViewReport(order)}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
@@ -955,6 +1013,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   function _onPressReschedule() {
     console.log('pressed reschedule');
+  }
+
+  function _onPressViewReport(order: any) {
+    const visitId = order?.visitNo;
+    DiagnosticViewReportClicked();
+    if (visitId) {
+      getAuthToken(order);
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
   }
 
   const renderOrders = () => {
@@ -1009,7 +1077,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       {showCancelReasonPopUp && renderCancelReasonPopUp()}
       {showRescheduleReasonPopUp && renderRescheduleReasonPopUp()}
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-      {showSummaryPopup && renderOrderSummary()}
+
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"

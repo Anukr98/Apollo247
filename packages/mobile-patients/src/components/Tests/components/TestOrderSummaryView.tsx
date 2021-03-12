@@ -15,9 +15,10 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
-import { Button } from '../../ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Spearator } from '../../ui/BasicComponents';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -282,6 +283,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <Button
         title={'VIEW REPORT'}
         style={{ width: '40%', marginBottom: 5, alignSelf: 'flex-start', marginTop: 10 }}
+        titleTextStyle={{
+          ...theme.viewStyles.text('SB', isIphone5s() ? 12 : 14, theme.colors.BUTTON_TEXT),
+        }}
         onPress={props.onPressViewReport}
       />
     );
