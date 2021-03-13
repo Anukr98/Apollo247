@@ -49,23 +49,9 @@ export const CommonLogEvent = async (stringName: string, parameterName: string) 
 
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
   try {
-    // const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    // bugsnag.notify(errorValue, function(report) {
-    //   report.metadata = {
-    //     stringName: {
-    //       viewSource:
-    //         Platform.OS === 'ios'
-    //           ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
-    //           : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
-    //       errorValue: errorValue as any,
-    //       phoneNumber: storedPhoneNumber as string,
-    //     },
-    //   };
-    // });
     const phoneNumber = await AsyncStorage.getItem('phoneNumber');
     const devicePlatform = Platform.OS === 'ios' ? 'iOS' : 'android';
     const error = JSON.stringify(errorValue);
-    console.log('setBugFenderLog', error);
     Bugfender.d(`${stringName} ${phoneNumber}`, `${devicePlatform} ${error}`);
   } catch (error) {
     aphConsole.log('CommonBugFender error', error);
@@ -85,7 +71,6 @@ export const setBugFenderLog = async (stringName: string, errorValue?: any) => {
     const phoneNumber = await AsyncStorage.getItem('phoneNumber');
     const devicePlatform = Platform.OS === 'ios' ? 'iOS' : 'android';
     const error = JSON.stringify(errorValue);
-    console.log('setBugFenderLog', error);
     Bugfender.d(`${stringName} ${phoneNumber}`, `${devicePlatform} ${error}`);
   } catch (error) {
     aphConsole.log('setBugFenderLog error', error);

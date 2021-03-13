@@ -32,13 +32,11 @@ import {
   bookRescheduleAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import { BOOK_APPOINTMENT_RESCHEDULE } from '@aph/mobile-patients/src/graphql/profiles';
-import { StackActions, NavigationActions } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelAppointment';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';

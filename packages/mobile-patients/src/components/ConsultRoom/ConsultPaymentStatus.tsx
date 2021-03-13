@@ -63,7 +63,7 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   getAppointmentData,
@@ -72,7 +72,6 @@ import {
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
 import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -131,7 +130,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
-  const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
@@ -245,7 +243,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     // getTxnStatus(orderId)
-    console.log(webEngageEventAttributes['Consult Mode']);
     client
       .query({
         query: GET_TRANSACTION_STATUS,
@@ -265,7 +262,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
           postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
         } catch (error) {}
-        console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
           const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
           if (isCircleDoctor && amountBreakup?.slashed_price) {
@@ -310,7 +306,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       .catch((error) => {
         setShowSpinner?.(false);
         CommonBugFender('fetchingTxnStutus', error);
-        console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
         renderErrorPopup(string.common.tryAgainLater);
       });
@@ -391,7 +386,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       value: Number(price),
       LOB: 'Consult',
     };
-    console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
     isCircleDoctor && amountBreakup?.slashed_price && fireCirclePurchaseEvent(amountBreakup);
   };
@@ -420,7 +414,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       !circleSubscriptionId &&
       postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
 
-    console.log('eventAttributes >>>>', eventAttributes);
     clearCircleSubscriptionData();
   };
 
@@ -441,12 +434,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ) {
       }
       if (resuts) {
-        console.log(resuts);
         downloadInvoice();
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
 
@@ -571,7 +562,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const rightIconView = () => {
-    console.log(isSatisfyingEmailRegex(email.trim()));
     return (
       <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
         <TouchableOpacity
@@ -604,9 +594,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         },
         fetchPolicy: 'no-cache',
       })
-      .then((res) => {
-        console.log(res);
-      })
+      .then((res) => {})
       .catch((error) => {
         CommonBugFender('Error while sending invoice on mail', error);
       })
@@ -614,7 +602,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const downloadInvoice = () => {
-    console.log('-------------', currentPatient.id, orderId);
     client
       .query({
         query: CONSULT_ORDER_INVOICE,
@@ -625,7 +612,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log('-------------', res);
         const { data } = res;
         const { getOrderInvoice } = data;
         let dirs = RNFetchBlob.fs.dirs;
@@ -652,7 +638,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             //some headers ..
           })
           .then((res) => {
-            console.log('invoiceURL-->', res);
             if (Platform.OS === 'android') {
               Alert.alert('Download Complete');
             }
@@ -662,7 +647,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           })
           .catch((err) => {
             CommonBugFender('ConsultView_downloadInvoice', err);
-            console.log('error ', err);
           });
       })
       .catch((error) => {
@@ -831,11 +815,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       .then((_data) => {
         try {
           setShowSpinner && setShowSpinner(false);
-
-          console.log(
-            'GetDoctorNextAvailableSlot',
-            _data.data.getAppointmentData!.appointmentsHistory
-          );
           const appointmentData = _data.data.getAppointmentData!.appointmentsHistory;
           if (appointmentData) {
             try {
@@ -858,7 +837,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         }
       })
       .catch((e) => {
-        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setShowSpinner && setShowSpinner(false);
         props.navigation.navigate('APPOINTMENTS');
       });

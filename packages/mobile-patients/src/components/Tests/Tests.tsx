@@ -23,7 +23,6 @@ import {
   ArrowRightYellow,
   ShieldIcon,
   Remove,
-  PendingIcon,
   DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -78,7 +77,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
@@ -194,7 +193,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setLocationDetails,
     diagnosticLocation,
     setDiagnosticLocation,
-    locationForDiagnostics,
     diagnosticServiceabilityData,
     setDiagnosticServiceabilityData,
     isDiagnosticLocationServiceable,
@@ -203,7 +201,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     bannerData,
     pharmacyLocation,
     notificationCount,
-    setNotificationCount,
   } = useAppCommonData();
 
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
@@ -238,24 +235,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
-  const [optionSelected, setOptionSelected] = useState<string>('');
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
-  const [locationError, setLocationError] = useState(false);
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
-  const diagnosticPincode =
-    g(diagnosticLocation, 'pincode') ||
-    g(pharmacyLocation, 'pincode') ||
-    g(locationDetails, 'pincode');
-
   const [serviceableObject, setServiceableObject] = useState({} as any);
   Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
-
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
-    currentPatient!
-  );
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -318,9 +304,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
    * fetch widgets
    */
   useEffect(() => {
-    // getHomePageWidgets(
-    //   (!!diagnosticServiceabilityData && diagnosticServiceabilityData?.cityId) || '9'
-    // );
     getDiagnosticBanner();
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(currentPatient, isDiagnosticLocationServiceable);
@@ -454,7 +437,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setSectionLoading(false);
       setLoading?.(false);
     } catch (error) {
-      console.log('errorInFetchPricing api__', error);
       setSectionLoading(false);
       setReloadWidget(true);
       setLoading?.(false);
@@ -662,8 +644,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
-      console.log({ pincode });
-      console.log({ comingFrom });
       setLoadingContext!(true);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
@@ -724,7 +704,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         .catch((e) => {
           CommonBugFender('Tests_', e);
           setLoadingContext!(false);
-          console.log('getDiagnosticsPincode serviceability Error\n', { e });
           showAphAlert!({
             unDismissable: true,
             title: string.common.uhOh,
@@ -1303,7 +1282,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View>
               <FlatList
                 keyboardShouldPersistTaps="always"
-                // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
                 bounces={false}
                 keyExtractor={(_, index) => `${index}`}
                 showsVerticalScrollIndicator={true}
@@ -1314,7 +1292,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   backgroundColor: '#f7f8f5',
                 }}
                 data={diagnosticResults}
-                // extraData={itemsLoading}
                 renderItem={renderSearchSuggestionItemView}
               />
               {diagnosticResults?.length > 6 && (
@@ -1682,7 +1659,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
-        {/* {uploadPrescriptionCTA()} */}
         {renderBanner()}
         {renderYourOrders()}
 

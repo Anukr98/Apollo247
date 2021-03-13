@@ -1,11 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  SafeAreaView,
-  StackActions,
-} from 'react-navigation';
+import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
   CircleLogo,
   OrderPlacedCheckedIcon,
@@ -51,13 +46,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     cartItems,
   } = useDiagnosticsCart();
   const { circleSubscriptionId } = useShoppingCart();
-  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { setLoading } = useUIElements();
   const savings = isDiagnosticCircleSubscription
     ? Number(orderCartSaving) + Number(orderCircleSaving)
     : orderCartSaving;
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
-  console.log('orderDetails >>>', orderDetails);
   const moveToHome = () => {
     // use apiCallsEnum values here in order to make that api call in home screen
     apisToCall.current = [apiCallEnums.circleSavings];

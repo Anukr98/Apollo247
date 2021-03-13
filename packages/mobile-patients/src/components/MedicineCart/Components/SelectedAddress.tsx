@@ -3,7 +3,6 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { LocationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface SelectedAddressProps {

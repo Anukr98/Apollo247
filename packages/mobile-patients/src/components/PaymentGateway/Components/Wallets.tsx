@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/Components/WalletIcon';

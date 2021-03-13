@@ -8,15 +8,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { CareCashbackBanner } from './CareCashbackBanner';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableOpacityProps,
-  View,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, StyleProp, ViewStyle } from 'react-native';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
@@ -150,15 +142,12 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     price,
     special_price,
     thumbnail,
-    is_in_stock,
     sell_online,
     is_prescription_required,
     MaxOrderQty,
     quantity,
     containerStyle,
     onPress,
-    maxOrderQty,
-    removeCartItem,
     type_id,
     is_express,
     onPressAddToCart,
@@ -242,7 +231,6 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const off_text = discount ? ' ' + discount + '%off' : '';
     return !isOutOfStock ? (
       <View style={{ flexDirection: 'row', marginBottom: 20 }}>
-        {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>
             {'('}

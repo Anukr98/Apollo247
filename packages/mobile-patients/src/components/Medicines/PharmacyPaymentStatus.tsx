@@ -13,8 +13,6 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_PHARMA_TRANSACTION_STATUS,
-  SAVE_MEDICINE_ORDER_PAYMENT,
-  SAVE_MEDICINE_ORDER_OMS,
   GET_PHARMA_TRANSACTION_STATUS_V2,
   SAVE_MEDICINE_ORDER_OMS_V2,
   SAVE_MEDICINE_ORDER_PAYMENT_V2,
@@ -39,7 +37,7 @@ import {
   View,
   Clipboard,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Snackbar } from 'react-native-paper';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -61,14 +59,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
-import {
-  SaveMedicineOrderPaymentMq,
-  SaveMedicineOrderPaymentMqVariables,
-} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
-import {
-  saveMedicineOrderOMS,
-  saveMedicineOrderOMSVariables,
-} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   AppsFlyerEventName,
@@ -122,7 +112,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
   const client = useApolloClient();
-  const { success, failure, pending, aborted } = Payment;
+  const { success, failure, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
@@ -315,7 +305,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       if (errorCode || errorMessage) {
         errorPopUp();
       } else {
-        console.log('inside success');
         orders?.forEach((order) => {
           handleOrderSuccess(`${order?.orderAutoId}`, order?.id!);
         });
@@ -430,7 +419,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       value: Number(circlePlanSelected?.currentSellingPrice),
       LOB: 'Circle',
     };
-    console.log('eventAttributes >>>>', eventAttributes);
     planPurchased && postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
@@ -679,11 +667,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const handleButton = () => {
     if (status == success || paymentMode === 'COD') {
       clearCircleSubscriptionData();
-      // props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-      //   goToHomeOnBack: true,
-      //   showOrderSummaryTab: false,
-      //   orderAutoId: orderId,
-      // });
       props.navigation.navigate(AppRoutes.YourOrdersScene);
     } else if (status == failure || status == aborted) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);

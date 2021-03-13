@@ -79,7 +79,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { CancelConsultation } from '../../strings/AppConfig';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
@@ -261,8 +261,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const doctorDetails = data.doctorInfo!;
   const movedFrom = props.navigation.state.params!.from;
   const cancellationReasons = CancelConsultation.reason;
-  console.log('******DATA*********', { data, doctorDetails });
-
   const fifteenMinutesLater = new Date();
   const dateIsAfter = moment(data.appointmentDateTime).isAfter(
     moment(fifteenMinutesLater.setMinutes(fifteenMinutesLater.getMinutes() + 15))
@@ -278,7 +276,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
   const [appointmentTime, setAppointmentTime] = useState<string>('');
-  const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<any>();
@@ -333,14 +330,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorDetails.id)
       .then((apiResponse: any) => {
-        console.log('apiResponse', apiResponse);
         const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
         setSecretaryData(secretaryDetails);
-        console.log('apiResponse');
       })
-      .catch((error) => {
-        console.log('error', error);
-      });
+      .catch((error) => {});
   };
 
   const NextAvailableSlotAPI = (isAwaitingReschedule?: boolean) => {
@@ -479,7 +472,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     };
 
     setshowSpinner(true);
-    setRescheduleApICalled(true);
     client
       .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
         mutation: BOOK_APPOINTMENT_RESCHEDULE,

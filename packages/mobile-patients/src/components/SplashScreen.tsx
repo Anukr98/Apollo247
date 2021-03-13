@@ -12,18 +12,17 @@ import {
   NativeModules,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
-import { AppConfig, updateAppConfig, PharmacyHomepageInfo, AppEnv } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
-import { apiRoutes } from '../helpers/apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
@@ -84,11 +83,7 @@ import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
    * [ Update ] => In the next version it will part of SDK, user will not be required to add this code-block
    */
   let globalObject;
-  // if (typeof global !== 'undefined') {
   globalObject = global;
-  // } else if (typeof window !== 'undefined' && window.document) {
-  // globalObject = window;
-  // }
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
@@ -171,7 +166,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PrefetchAPIReuqest({
         clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
       })
-        .then((res: any) => console.log(res, 'PrefetchAPIReuqest'))
+        .then((res: any) => {})
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
@@ -210,7 +205,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       messaging()
         .getToken()
         .then((token) => {
-          console.log('token', token);
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
           UnInstallAppsFlyer(token);
         })
@@ -303,7 +297,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             try {
               handleOpenURL(url);
               fireAppOpenedEvent(url);
-              console.log('linking', url);
             } catch (e) {}
           } else {
             settakeToConsultRoom(true);
@@ -316,7 +309,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         try {
-          console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           handleOpenURL(event.url);
           fireAppOpenedEvent(event.url);
@@ -362,18 +354,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
           }
         } catch (error) {}
-        console.log(linkId, 'linkId');
 
         switch (route) {
           case 'consult':
           case 'Consult':
-            console.log('Consult');
             getData('Consult', data.length === 2 ? linkId : undefined);
             break;
 
           case 'medicine':
           case 'Medicine':
-            console.log('Medicine');
             getData('Medicine', data.length === 2 ? linkId : undefined);
             break;
 
@@ -394,39 +383,33 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'speciality':
           case 'Speciality':
-            console.log('Speciality handleopen');
             if (data.length === 2) getData('Speciality', linkId);
             else getData('DoctorSearch');
             break;
 
           case 'doctor':
           case 'Doctor':
-            console.log('Doctor handleopen');
             if (data.length === 2)
               getData('Doctor', linkId, undefined, undefined, attributes?.media_source);
             break;
 
           case 'doctorsearch':
           case 'DoctorSearch':
-            console.log('DoctorSearch handleopen');
             getData('DoctorSearch');
             break;
 
           case 'medicinesearch':
           case 'MedicineSearch':
-            console.log('MedicineSearch handleopen');
             getData('MedicineSearch', data.length === 2 ? linkId : undefined);
             break;
 
           case 'medicinedetail':
           case 'MedicineDetail':
-            console.log('MedicineDetail handleopen');
             getData('MedicineDetail', data.length === 2 ? linkId : undefined);
             break;
 
           case 'medicinecart':
           case 'MedicineCart':
-            console.log('MedicineCart handleopen');
             getData('MedicineCart', data.length === 2 ? linkId : undefined);
             break;
 
@@ -496,13 +479,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'healthrecordshome':
           case 'HealthRecordsHome':
-            console.log('HealthRecordsHome handleopen');
             getData('HealthRecordsHome');
             break;
 
           case 'manageprofile':
           case 'ManageProfile':
-            console.log('ManageProfile handleopen');
             getData('ManageProfile');
             break;
 
@@ -545,7 +526,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
             break;
         }
-        console.log('route', route);
       }
     } catch (error) {}
   };
@@ -622,7 +602,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const params = data[1].split('&');
         const utmParams = params.map((item: any) => item.split('='));
         utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
     } else if (b == 0) {
@@ -632,16 +611,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const params = data[1].split('&');
         const utmParams = params.map((item: any) => item.split('='));
         utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       } else {
         const referrer = await NativeModules.GetReferrer.referrer();
         attributes['referrer'] = referrer;
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
     } else {
-      console.log('attributes >>>', attributes);
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }
   }
@@ -653,7 +629,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     mediaSource?: string
   ) => {
     async function fetchData() {
-      // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
       const multiSignUp = await AsyncStorage.getItem('multiSignUp');
@@ -784,19 +759,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     isCircleMember?: boolean,
     mediaSource?: string
   ) => {
-    console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
       case 'Consult':
-        console.log('Consult');
-        // if (id) {
-        //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
-        // } else
         props.navigation.navigate('APPOINTMENTS');
         break;
 
       case 'Medicine':
-        console.log('Medicine');
         props.navigation.navigate('MEDICINES');
         break;
 
@@ -809,7 +778,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'MedicineDetail':
-        console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: id,
           movedFrom: ProductPageViewedSource.DEEP_LINK,
@@ -817,31 +785,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'Test':
-        console.log('Test');
         props.navigation.navigate('TESTS');
         break;
 
       case 'ConsultRoom':
-        console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
         break;
 
       case 'Speciality':
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
         const filtersData = id ? handleEncodedURI(id) : '';
-        console.log('filtersData============', filtersData);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: filtersData[0] ? filtersData[0] : '',
           typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
           doctorType: filtersData.length > 2 ? filtersData[2] : '',
         });
-        // props.navigation.replace(AppRoutes.DoctorSearchListing, {
-        //   specialityId: id ? id : '',
-        // });
         break;
       case 'FindDoctors':
         const cityBrandFilter = id ? handleEncodedURI(id) : '';
-        console.log('cityBrandFilter', cityBrandFilter);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
           city:
@@ -871,7 +832,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'MedicineSearch':
         if (id) {
           const [itemId, name] = id.split(',');
-          console.log(itemId, name);
 
           props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: itemId,
@@ -882,7 +842,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'MedicineCart':
-        console.log('MedicineCart handleopen');
         props.navigation.navigate(AppRoutes.MedicineCart, {
           movedFrom: 'splashscreen',
         });
@@ -973,7 +932,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'TestReport':
-        console.log('TestReport');
         props.navigation.navigate(AppRoutes.HealthRecordDetails, {
           movedFrom: 'deeplink',
           id: id,
@@ -1038,7 +996,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     if (nextAppState === 'active') {
       try {
         const settingsCalled: string | null = await AsyncStorage.getItem('settingsCalled');
-        console.log(settingsCalled, 'redolocartions');
         if (settingsCalled && settingsCalled === 'true') {
           doRequestAndAccessLocation()
             .then((response) => {
@@ -1330,7 +1287,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => console.log('An error occurred', err));
+              ).catch((err) => {});
             }}
           />
         </View>

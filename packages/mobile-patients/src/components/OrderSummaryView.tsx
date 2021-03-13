@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#01475b',
     letterSpacing: 0,
-    // lineHeight: 20,
   },
   orderStyles: {
     ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -131,7 +130,6 @@ const styles = StyleSheet.create({
   cashBackView: {
     ...theme.viewStyles.cardViewStyle,
     marginTop: 10,
-    // marginHorizontal: 13,
     borderRadius: 5,
     marginBottom: 16,
     paddingHorizontal: 15,
@@ -161,7 +159,6 @@ export interface OrderSummaryViewProps {
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   orderDetails,
-  isTest,
   addressData,
   onBillChangesClick,
 }) => {
@@ -204,7 +201,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     'itemDetails'
   );
   const itemDetails = item_details ? JSON.parse(item_details) : null;
-  // console.log('itemDetails', itemDetails, JSON.stringify(itemDetails));
   const billDetails = g(
     orderDetails,
     'medicineOrderShipments',
@@ -214,7 +210,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     'billDetails'
   );
   const billingDetails = billDetails ? JSON.parse(billDetails) : null;
-  // console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
   const orderBilledAndPacked = medicineOrderStatus.find(
     (item) =>
       item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
@@ -289,12 +284,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       ? billingDetails.invoiceValue - orderDetails.estimatedAmount!
       : billDetails && orderDetails.estimatedAmount! - billingDetails.invoiceValue
     : 0;
-  // console.log(
-  //   'prepaidBilledValue',
-  //   prepaidBilledValue,
-  //   Math.round(billingDetails && billingDetails.discountValue),
-  //   billingDetails && billingDetails.invoiceValue > billingDetails.prepaidValue
-  // );
 
   const noAdditionalDiscount =
     orderBilledAndPacked &&
@@ -318,8 +307,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     orderDetails.medicineOrderShipments &&
     billingDetails &&
     billingDetails.discountValue != undefined;
-  // console.log('prescriptionUpload', prescriptionUpload, billingDiscount);
-  // console.log('newOrders', newOrders);
   const getOrderDifferenceAmounts = (
     paymentMethod: MEDICINE_ORDER_PAYMENT_TYPE,
     orderInfo: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
@@ -336,7 +323,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       'billDetails'
     );
     const billingDetails = billDetails ? JSON.parse(billDetails) : null;
-    // console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
     const billedDiscount = billingDetails.discountValue || 0;
     const billedValue = billingDetails.invoiceValue || 0;
 
@@ -590,7 +576,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             marginBottom: 8,
             paddingTop: 13,
             paddingBottom: 29,
-            //put a check here as well
             borderColor:
               isNewItemsAdded || isCartItemsUpdated ? 'rgba(79, 176, 144,0.8)' : 'transparent',
             borderWidth: isNewItemsAdded || isCartItemsUpdated ? 2 : 0,
@@ -810,9 +795,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               {!offlineOrderNumber && !billingDetails && (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
-                  <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
-                    {/* {paymentMethodToDisplay} */}
-                  </Text>
+                  <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}></Text>
                 </View>
               )}
               {!offlineOrderNumber && healthCreditsRedeemed != 0 && !billingDetails && (

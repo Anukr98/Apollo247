@@ -19,7 +19,6 @@ import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -30,11 +29,9 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  ArrowRight,
   CalendarShow,
   CheckedIcon,
   CircleLogo,
-  CouponIcon,
   DropdownGreen,
   InfoIconRed,
   TestsIcon,
@@ -56,7 +53,6 @@ import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
   GET_DIAGNOSTIC_AREAS,
-  GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
   GET_DIAGNOSTICS_HC_CHARGES,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   VALIDATE_DIAGNOSTIC_COUPON,
@@ -95,7 +91,6 @@ import {
   DIAGNOSTIC_GROUP_PLAN,
   getPlaceInfoByLatLng,
   getPlaceInfoByPincode,
-  searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { differenceInYears, parse } from 'date-fns';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -113,16 +108,9 @@ import {
   View,
   Keyboard,
   Dimensions,
-  Linking,
   Platform,
 } from 'react-native';
-import {
-  FlatList,
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from 'react-native-geolocation-service';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
 import {
@@ -146,7 +134,6 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
@@ -188,7 +175,6 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 const { width: screenWidth } = Dimensions.get('window');
-const screenHeight = Dimensions.get('window').height;
 
 type clinicHoursData = {
   week: string;
@@ -248,8 +234,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDiagnosticClinic,
     diagnosticClinic,
     setDiagnosticSlot,
-    setEPrescriptions,
-    deliveryCharges,
     setHcCharges,
     hcCharges,
     coupon,
@@ -547,13 +531,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               })
               .catch((error) => {
                 CommonBugFender('TestsCart_getPlaceInfoByLatLng', error);
-                console.log(error, 'geocode error');
               });
           },
           (error) => {},
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
         );
-        console.log('pincode');
       } else {
         filterClinics(locationDetails.pincode || '');
       }
@@ -729,7 +711,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading?.(false);
           setDeliveryAddressCityId?.('');
           setDeliveryAddressId?.('');
-          console.log('getDiagnosticsPincode serviceability Error\n', { e });
         });
     }
   };
@@ -759,7 +740,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       checkSlotSelection(obj);
       setWebEngageEventForAreaSelection(obj);
     } catch (e) {
-      console.log({ e });
       CommonBugFender('TestsCart_', e);
 
       setselectedTimeSlot(undefined);
@@ -989,10 +969,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          console.log('findDiagnosticsItemsForCityId\n', { data });
           const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics');
-          console.log({ product });
-
           if (product) {
             func && func(product[0]!);
 
@@ -1040,7 +1017,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('TestsCart_fetchPackageDetails', e);
-          console.log({ e });
           errorAlert();
         })
         .finally(() => {
@@ -1098,7 +1074,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setselectedTimeSlot(undefined);
         setWebEngageEventForAddressNonServiceable(pincode);
         CommonBugFender('TestsCart_getArea selection', e);
-        console.log('error' + e);
         showAphAlert!({
           title: string.common.uhOh,
           description: string.diagnostics.areaNotAvailableMessage,
@@ -1276,7 +1251,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
-        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
         const diagnosticSlotsToShow = diagnosticSlots;
 
@@ -1296,8 +1270,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           } as TestSlot);
         });
 
-        console.log('ARRAY OF SLOTS', { slotsArray });
-
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
         if (isSameDate && slotsArray?.length == 0) {
@@ -1311,7 +1283,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
           const slotDetails = slotsArray?.[0];
-          console.log({ slotDetails });
           slotsArray?.length && setselectedTimeSlot(slotDetails);
 
           setDiagnosticSlot!({
@@ -1333,7 +1304,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('TestsCart_checkServicability', e);
-        console.log('Error occured', { e });
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
@@ -1536,24 +1506,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setClinicId!('');
     }
   }, [pinCode]);
-
-  const fetchStorePickup = () => {
-    setStorePickUpLoading(true);
-    searchClinicApi()
-      .then((data) => {
-        setStorePickUpLoading(false);
-        aphConsole.log('clinic response', data.data.data, data);
-        setClinics && setClinics(data.data.data || []);
-        setTimeout(() => {
-          setTestCentresLoaded(true);
-        }, 100);
-        updateClinicSelection();
-      })
-      .catch((e) => {
-        CommonBugFender('TestsCart_searchClinicApi', e);
-        setStorePickUpLoading(false);
-      });
-  };
 
   const filterClinics = (key: string, isId?: boolean, hideLoader?: boolean) => {
     if (isId) {
@@ -1774,7 +1726,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 setAreaSelected!(item);
                 checkSlotSelection(item);
                 setWebEngageEventForAreaSelection(item);
-                // checkServicability(selectedAddress);
               }}
             >
               {renderAreaSelectionField()}
@@ -1879,7 +1830,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               setselectedTab(selectedTab);
               setClinicId!('');
               setDeliveryAddressId!('');
-              // setPinCode!('');
             }}
             selectedTab={selectedTab}
           />
@@ -1887,45 +1837,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         {showAreaSelection ? renderAreaSelectionCard() : null}
         {renderTimingCard()}
-      </View>
-    );
-  };
-
-  const renderCouponView = () => {
-    const isCouponEnable =
-      selectedTimeSlot?.slotInfo?.slot! && areaSelected && deliveryAddressId != '';
-    return (
-      <View pointerEvents={isCouponEnable ? 'auto' : 'none'}>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            marginTop: 16,
-            marginBottom: 4,
-            flexDirection: 'row',
-            height: 56,
-            paddingHorizontal: 16,
-            alignItems: 'center',
-          }}
-          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isDiag: true })}
-        >
-          <CouponIcon style={{ opacity: isCouponEnable ? 1 : 0.5 }} />
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
-              color: theme.colors.SHERPA_BLUE,
-              lineHeight: 24,
-              paddingLeft: 16,
-              opacity: isCouponEnable ? 1 : 0.5,
-            }}
-          >
-            {!coupon ? 'Apply Coupon' : `${coupon.code} Applied`}
-          </Text>
-          <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <ArrowRight style={{ opacity: isCouponEnable ? 1 : 0.5 }} />
-          </View>
-        </TouchableOpacity>
       </View>
     );
   };
@@ -1940,13 +1851,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
-        {/* {renderCouponView()} */}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
-            // marginTop: 4,
             marginBottom: 12,
             padding: 16,
             marginTop: 16,
@@ -1974,13 +1883,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </Text>
             </View>
           )}
-          {/* {selectedTab == tabs[0].title && ppeKitCharges && (
-            <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={styles.blueTextStyle}>PPE kit charges</Text>
-              <Text style={styles.blueTextStyle}>{string.common.Rs} 500.00</Text>
-            </View>
-          )} */}
-
           {selectedTab == tabs[0].title && normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
@@ -2031,7 +1933,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </View>
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
-        {/* {isDiagnosticCircleSubscription ? null : circleSaving > 0 && renderSavedBanner()} */}
       </View>
     );
   };
@@ -2051,15 +1952,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return dashedBanner('benefits APPLIED!', '', '', 'left');
   };
 
-  const renderSavedBanner = () => {
-    return dashedBanner(
-      'You could have',
-      `saved extra ${string.common.Rs}${convertNumberToDecimal(circleSaving)}`,
-      'with',
-      'right'
-    );
-  };
-
   const dashedBanner = (
     leftText: string,
     greenText: string,
@@ -2071,7 +1963,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         style={{
           ...theme.viewStyles.cardViewStyle,
           marginHorizontal: 20,
-          // marginTop: 4,
           marginBottom: 12,
           padding: 16,
           marginTop: 10,
@@ -2173,35 +2064,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const renderTestSuggestions = () => {
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          paddingTop: 16,
-          marginTop: 12,
-        }}
-      >
-        {renderLabel('PEOPLE ALSO BOUGHT')}
-
-        <FlatList
-          contentContainerStyle={{
-            marginHorizontal: 14,
-            paddingRight: 28,
-          }}
-          horizontal={true}
-          bounces={false}
-          data={medicineSuggestions}
-          renderItem={({ item, index }) =>
-            renderMedicineItem(item, index, medicineSuggestions.length)
-          }
-          keyExtractor={(_, index) => index.toString()}
-          showsHorizontalScrollIndicator={false}
-        />
-      </View>
-    );
-  };
-
   const disableProceedToPay = !(
     cartItems?.length > 0 &&
     forPatientId &&
@@ -2210,21 +2072,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
   );
-
-  // const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
-  //   return Promise.all(
-  //     prescriptions.map((item) =>
-  //       client.mutate<uploadFile, uploadFileVariables>({
-  //         mutation: UPLOAD_FILE,
-  //         fetchPolicy: 'no-cache',
-  //         variables: {
-  //           fileType: item.fileType,
-  //           base64FileInput: item.base64,
-  //         },
-  //       })
-  //     )
-  //   );
-  // };
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
     return Promise.all(
@@ -2249,7 +2096,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const prescriptions = physicalPrescriptions;
     setLoading!(true);
     const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-    console.log('unUploadedPres', unUploadedPres);
     if (unUploadedPres.length > 0) {
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
@@ -2270,8 +2116,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 prismPrescriptionFileId: uploadUrls![index]!.fileId,
               } as PhysicalPrescription)
           );
-          console.log('precp:di', newuploadedPrescriptions);
-
           setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
           setisPhysicalUploadComplete(true);
         })
@@ -2361,14 +2205,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       employeeSlotId,
       date,
       diagnosticEmployeeCode,
-      // city, // ignore city for now from this and take from "locationForDiagnostics" context
       diagnosticBranchCode,
     } = diagnosticSlot || {};
     const slotTimings = (slotStartTime && slotEndTime
       ? `${slotStartTime}-${slotEndTime}`
       : ''
     ).replace(' ', '');
-    console.log(physicalPrescriptions, 'physical prescriptions');
 
     const orderInfo: DiagnosticOrderInput = {
       // <- for home collection order
@@ -2396,11 +2238,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ...ePrescriptions.map((item) => item.uploadedUrl),
       ].join(','),
       paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-
-      // prismPrescriptionFileId: [
-      //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
-      //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
-      // ].join(','),
       totalPrice: grandTotal,
       patientId: (currentPatient && currentPatient.id) || '',
       items: cartItems.map(
@@ -2416,14 +2253,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
     };
 
-    console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     saveOrder(orderInfo)
-      .then(({ data }) => {
-        console.log('data >>>>', data);
-      })
+      .then(({ data }) => {})
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
-        console.log('SaveDiagnosticOrder API Error\n', { error });
         setshowSpinner(false);
         setLoading!(false);
         showAphAlert!({
@@ -2439,7 +2272,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const saveHomeCollectionOrder = () => {
-    console.log('unique id' + validateCouponUniqueId);
     //for circle members if unique id is blank, show error
     if (
       isDiagnosticCircleSubscription &&
@@ -2448,7 +2280,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       renderAlert(string.common.tryAgainLater);
       setshowSpinner(false);
     } else {
-      console.log({ diagnosticSlot });
       const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
       const slotTimings = (slotStartTime && slotEndTime
         ? `${slotStartTime}-${slotEndTime}`
@@ -2476,9 +2307,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         diagnosticDate: formattedDate,
         bookingSource: DiagnosticsBookingSource.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-        // paymentType: isCashOnDelivery
-        //   ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
-        //   : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
         items: createItemPrice(),
         slotId: employeeSlotId?.toString() || '0',
         areaId: (areaSelected || ({} as any)).key!,
@@ -2486,13 +2314,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         totalPriceExcludingDiscounts: totalPriceExcludingAnyDiscounts + hcCharges,
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId,
-        // prismPrescriptionFileId: [
-        //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
-        //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
-        // ].join(','),
       };
 
-      console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
           // in case duplicate test, price mismatch, address mismatch, slot issue
@@ -2580,7 +2403,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('TestsCheckoutScene_saveOrder', error);
-          console.log('DiagnosticBookHomeCollectionInput API Error\n', { error });
           setshowSpinner(false);
           setLoading!(false);
           showAphAlert!({
@@ -2749,7 +2571,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         }
       })
       .catch((e) => {
-        console.log({ e });
         //if api fails then also show the name... & remove..
         CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
         setLoading!(false);
@@ -2882,7 +2703,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         testsOrdered: orderedTestArray,
         cityId: parseInt(addressCityId),
       };
-      console.log({ CouponInput });
       try {
         const validateDiagnosticCouponApi = await client.query<
           vaidateDiagnosticCoupon,
@@ -2898,7 +2718,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         });
 
-        console.log({ validateDiagnosticCouponApi });
         const validateApiResponse = g(
           validateDiagnosticCouponApi,
           'data',
@@ -2952,7 +2771,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setLoading!(false);
     } catch (error) {
       setLoading!(false);
-      // renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
     }
   };
 
@@ -2971,7 +2789,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             paddingBottom: 16,
           }}
         >
-          {/* {renderProfilePicker()} */}
           <ProfileList
             defaultText={'Select who are these tests for'}
             saveUserChange={true}
@@ -3017,7 +2834,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: date.getTime(),
-              // employeeSlotId: parseInt(slotInfo.slotInfo.slot!),
               employeeSlotId: slotInfo?.slotInfo?.slot!,
               diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
               diagnosticEmployeeCode: slotInfo?.employeeCode,
@@ -3034,15 +2850,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             {renderProfiles()}
-            {/* <MedicineUploadPrescriptionView
-              isTest={true}
-              navigation={props.navigation}
-              isMandatory={false}
-              listOfTest={[]}
-            /> */}
             {renderDelivery()}
             {renderTotalCharges()}
-            {/* {renderTestSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>

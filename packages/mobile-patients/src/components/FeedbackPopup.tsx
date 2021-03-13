@@ -30,15 +30,14 @@ import {
   ConsultFeedBackData,
   MedicineFeedBackData,
   TestsFeedBackData,
-  TestsNewFeedbackData,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { StyleSheet, Text, View, ViewStyle, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, ViewStyle, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DropdownGreen, CrossPopup, BackArrow } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
@@ -113,7 +112,7 @@ export interface FeedbackPopupProps {
 }
 
 export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
-  const { showAphAlert, setLoading } = useUIElements();
+  const { setLoading } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -123,24 +122,6 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
   const [overlayDropdown, setOverlayDropdown] = useState(false);
 
   const OTHERS_FEEDBACK = string.Diagnostics_Feedback_Others;
-  // For feedback popup
-  // useEffect(() => {
-  //   if (props.isVisible && false) {
-  //     //write conditions later
-  //     showAphAlert!({
-  //       unDismissable: true,
-  //       title: props.title,
-  //       description: props.description,
-  //       children: (
-  //         <KeyboardAwareScrollView bounces={false}>{renderRatingContent()}</KeyboardAwareScrollView>
-  //       ),
-  //     });
-  //   }
-  // }, [props.isVisible, ratingStatus, ratingOption, ratingSuggestion]);
-
-  // const feedbackOptions = ratingStatus! && TestsFeedBackData[ratingStatus!].options;
-  // const feedbackQuestions = ratingStatus! && TestsFeedBackData[ratingStatus!].question;
-
   const feedbackQuestions = ratingStatus
     ? props.type == FEEDBACKTYPE.CONSULT
       ? ConsultFeedBackData[ratingStatus].question
@@ -270,7 +251,6 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
         ? TestsFeedBackData[ratingStatus].options
         : MedicineFeedBackData[ratingStatus].options
       : [];
-    console.log({ question, options });
 
     return (
       <View style={{}}>
@@ -287,7 +267,6 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
           style={{ marginTop: 36.5, marginBottom: ratingStatus ? 0 : 40, marginHorizontal: 20 }}
           status={ratingStatus}
           onStatusChange={(_ratingStatus) => {
-            console.log('_ratingStatus \n', { _ratingStatus });
             setRatingStatus(_ratingStatus);
             setRatingOption('');
           }}

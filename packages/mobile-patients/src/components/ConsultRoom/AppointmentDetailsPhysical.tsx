@@ -70,7 +70,7 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
@@ -416,8 +416,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
 
-  // const [consultStarted, setConsultStarted] = useState<boolean>(false);
-  // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
@@ -425,7 +423,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   useEffect(() => {
     getSecretaryData();
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
 
@@ -444,7 +441,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     getNetStatus()
       .then((status) => {
         if (status) {
-          console.log('nextAvailableSlot called');
           if (isAwaitingReschedule) {
             getAppointmentNextSlotInitiatedByDoctor();
           } else {
@@ -464,8 +460,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
       moment(data.appointmentDateTime).format('YYYY-MM-DD')
     );
-    console.log('dateValidate', dateValidate);
-
     if (dateValidate == 0) {
       const time = `Today, ${moment
         .utc(data.appointmentDateTime)
@@ -484,14 +478,10 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorDetails.id)
       .then((apiResponse: any) => {
-        console.log('apiResponse', apiResponse);
         const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
         setSecretaryData(secretaryDetails);
-        console.log('apiResponse');
       })
-      .catch((error) => {
-        console.log('error', error);
-      });
+      .catch((error) => {});
   };
 
   const todayDate = moment
@@ -505,7 +495,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       .then(({ data }: any) => {
         setshowSpinner(false);
         try {
-          console.log(data, 'nextavailable res');
           data[0] && setAvailability(data[0].physicalAvailableSlot);
         } catch (error) {
           CommonBugFender('AppointmentDetails_nextAvailableSlot_try', error);
@@ -516,7 +505,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         CommonBugFender('AppointmentDetails_nextAvailableSlot', e);
         setshowSpinner(false);
         const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while GetDoctorNextAvailableSlot', error);
       })
       .finally(() => {
         checkIfReschedule();
@@ -552,7 +540,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         })
         .then((_data: any) => {
           const result = _data.data.checkIfReschedule;
-          console.log('checfReschedulesuccess', result);
           setshowSpinner(false);
 
           try {
@@ -577,7 +564,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           CommonBugFender('AppointmentDetails_checkIfReschedule', e);
           setshowSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
-          console.log('Error occured while checkIfRescheduleprofile', error);
         })
         .finally(() => {
           setResheduleoverlay(true);
@@ -585,7 +571,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     } catch (error) {
       CommonBugFender('AppointmentDetails_checkIfReschedule_try', error);
       setshowSpinner(false);
-      console.log(error, 'error');
     }
   };
   const renderPrice = () => {
@@ -713,8 +698,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     }
   };
   const rescheduleAPI = (availability: any) => {
-    console.log('availability', availability);
-
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
@@ -733,8 +716,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       rescheduledId: '',
     };
 
-    console.log(bookRescheduleInput, 'bookRescheduleInput');
-    // if (!rescheduleApICalled) {
     setshowSpinner(true);
     setRescheduleApICalled(true);
     client
@@ -747,7 +728,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       })
       .then((data: any) => {
         postAppointmentWEGEvents('Rescheduled by Customer');
-        console.log(data, 'data');
         setshowSpinner(false);
         const params = {
           Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
@@ -759,18 +739,15 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         CommonBugFender('AppointmentDetails_rescheduleAPI', e);
         setBottompopup(true);
       });
-    // }
   };
   const acceptChange = () => {
     try {
-      console.log('acceptChange');
       setResheduleoverlay(false);
       AsyncStorage.setItem('showSchduledPopup', 'true');
 
       rescheduleAPI(availability);
     } catch (error) {
       CommonBugFender('AppointmentDetails_rescheduleAPI_try', error);
-      console.log(error, 'error');
     }
   };
 
@@ -785,7 +762,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       | WebEngageEventName.CONTINUE_CONSULTATION_CLICKED
       | WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER
       | WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER
-    // data: getPatinetAppointments_getPatinetAppointments_patinetAppointments
   ) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.RESCHEDULE_CLICKED]
@@ -828,8 +804,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       cancelledById: userId ? userId : data.patientId,
     };
 
-    console.log(appointmentTransferInput, 'appointmentTransferInput');
-
     client
       .mutate<cancelAppointment, cancelAppointmentVariables>({
         mutation: CANCEL_APPOINTMENT,
@@ -841,14 +815,12 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       .then((data: any) => {
         postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
         setshowSpinner(false);
-        console.log(data, 'data');
         // setSucessPopup(true);
         showAppointmentCancellSuccessAlert();
       })
       .catch((e: any) => {
         CommonBugFender('AppointmentDetails_cancelAppointmentApi', e);
         setshowSpinner(false);
-        console.log('Error occured while adding Doctor', e);
         const message = e.message ? e.message.split(':')[1].trim() : '';
         if (message == 'INVALID_APPOINTMENT_ID') {
           showAphAlert!({
@@ -861,7 +833,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
 
   const showAppointmentCancellSuccessAlert = () => {
     setShowCancelPopup(false);
-    // setSucessPopup(false);
     const appointmentNum = g(data, 'displayId');
     const doctorName = g(data, 'doctorInfo', 'displayName');
     showAphAlert!({

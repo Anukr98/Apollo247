@@ -47,7 +47,7 @@ import {
   Image,
 } from 'react-native';
 import { Divider } from 'react-native-elements';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Overlay } from 'react-native-elements';
 import {
   CrossPopup,
@@ -479,7 +479,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         onError();
       }
     } catch (error) {
-      console.log('RETURN_PHARMA_ORDER error', error);
       closeReturnView();
       setLoading!(false);
       onError();

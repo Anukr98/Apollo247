@@ -28,10 +28,8 @@ import {
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { GET_PATIENT_ALL_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   callPermissions,
-  getNetStatus,
   postWebEngageEvent,
   g,
   followUpChatDaysCaseSheet,
@@ -102,7 +100,6 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
     marginRight: -5,
@@ -121,7 +118,6 @@ const styles = StyleSheet.create({
   buttonStyles: {
     height: 40,
     width: 180,
-    // paddingHorizontal: 26
     marginTop: 16,
   },
   doctorView: {
@@ -412,8 +408,6 @@ export interface AppointmentFilterObject {
 export type Appointment = getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
 
 export const Consult: React.FC<ConsultProps> = (props) => {
-  const thingsToDo = string.consult_room.things_to_do.data;
-  const articles = string.consult_room.articles.data;
   const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
 
@@ -441,7 +435,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [filteredAppointmentsList, setFilteredAppointmentsList] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState(true);
 
@@ -463,20 +456,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
-    console.log('current', currentPatient && currentPatient!.id);
-    console.log('profile', profile && profile!.id);
     if (currentPatient && profile) {
       if (currentPatient.id != profile.id) {
-        console.log('userchanged', currentPatient, profile);
         setLoading && setLoading(true);
         fetchAppointments();
       }
     }
-    // if (consultations.length <= 0) {
-    //   if (currentPatient) {
-    //     fetchAppointments();
-    //   }
-    // }
     currentPatient && setProfile(currentPatient!);
   }, [currentPatient, props.navigation.state.params]);
 
@@ -496,7 +481,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    // callPermissions();
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -698,11 +682,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         : WebEngageEventName.FILL_MEDICAL_DETAILS,
       eventAttributes
     );
-  };
-
-  const inputData = {
-    patientId: currentPatient ? currentPatient!.id : '',
-    appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
   };
 
   const fetchAppointments = async () => {
@@ -1133,49 +1112,48 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           });
         }
       };
-      if(item.appointmentType==='PHYSICAL'){
-      return (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{ flex: 1 }}
-            onPress={()=>{
-            props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical,
-            {data: item,from: 'Consult'})
-            }}>
-            <Text style={styles.prepareForConsult}>
-            VIEW DETAILS
-            </Text>
-          </TouchableOpacity>
-        </View>
-      );
-
-      }
-      else
-      return (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{ flex: 1 }}
-            onPress={onPressActiveUpcomingButtons}
-          >
-            <Text
-              style={[
-                styles.prepareForConsult,
-                {
-                  opacity: 1,
-                  paddingBottom: 0,
-                },
-              ]}
+      if (item.appointmentType === 'PHYSICAL') {
+        return (
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ flex: 1 }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
+                  data: item,
+                  from: 'Consult',
+                });
+              }}
             >
-              {item.isConsultStarted
-                ? string.common.continueConsult
-                : string.common.prepareForConsult}
-            </Text>
-            <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
-          </TouchableOpacity>
-        </View>
-      );
+              <Text style={styles.prepareForConsult}>VIEW DETAILS</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      } else
+        return (
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ flex: 1 }}
+              onPress={onPressActiveUpcomingButtons}
+            >
+              <Text
+                style={[
+                  styles.prepareForConsult,
+                  {
+                    opacity: 1,
+                    paddingBottom: 0,
+                  },
+                ]}
+              >
+                {item.isConsultStarted
+                  ? string.common.continueConsult
+                  : string.common.prepareForConsult}
+              </Text>
+              <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
+            </TouchableOpacity>
+          </View>
+        );
     };
 
     const renderPickAnotherButton = () => {
@@ -1208,7 +1186,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     };
 
     const onPressDoctorCardClick = () => {
-    console.log("csk item",item.appointmentType);
       postConsultCardEvents('Card Click', item);
       CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
       if (item.doctorInfo && !pastAppointmentItem) {
@@ -1217,15 +1194,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               data: item,
               from: 'Consult',
             })
-          : item.appointmentType === 'PHYSICAL'?
-          (props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
-                        data: item,
-                        from: 'Consult',
-                      }))
-          :(props.navigation.navigate(AppRoutes.AppointmentDetails, {
+          : item.appointmentType === 'PHYSICAL'
+          ? props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
               data: item,
               from: 'Consult',
-            }));
+            })
+          : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+              data: item,
+              from: 'Consult',
+            });
       }
     };
 
@@ -1341,7 +1318,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </View>
             ) : null}
             {item.status == STATUS.PENDING ||
-            // dateIsAfterconsult ||
             item.status == STATUS.IN_PROGRESS ||
             item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
             item.status == STATUS.NO_SHOW ||
@@ -1680,13 +1656,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     <View style={{ flex: 1 }}>
       <NavigationEvents
         onDidFocus={(payload) => {
-          console.log('did focus', payload);
           if (callFetchAppointmentApi) {
             setLoading && setLoading(true);
             fetchAppointments();
           }
         }}
-        onDidBlur={(payload) => console.log('did blur', payload)}
+        onDidBlur={(payload) => {}}
       />
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {renderTopView()}

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   Symptomtracker,
   LinkedUhidIcon,

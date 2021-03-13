@@ -29,7 +29,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // alignItems: 'center',
   },
   flexStyle: {
     flex: 1,
@@ -39,7 +38,6 @@ const styles = StyleSheet.create({
     marginRight: 0,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(12),
-    // lineHeight: 24,
   },
   offTextStyle: {
     ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
@@ -106,15 +104,12 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     price,
     special_price,
     thumbnail,
-    is_in_stock,
     sell_online,
     is_prescription_required,
     MaxOrderQty,
     quantity,
     containerStyle,
     onPress,
-    maxOrderQty,
-    removeCartItem,
     type_id,
     is_express,
     onPressAddToCart,
@@ -216,14 +211,12 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
       <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
       <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-        {/* {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>} */}
         <Text style={styles.priceTextCollapseStyle}>
           {string.common.Rs}
           {convertNumberToDecimal(discount ? special_price : price)}
         </Text>
         {!!special_price && (
           <>
-            {/* {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>} */}
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
               <Text style={{ textDecorationLine: 'line-through' }}>{`${

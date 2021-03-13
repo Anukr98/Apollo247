@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   SelfUploadPhrIcon,
@@ -80,7 +80,6 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     dateText,
     selfUpload,
     sourceName,
-    index,
     onOrderTestAndMedicinePress,
     onFollowUpPress,
     showFollowUp,

@@ -843,21 +843,11 @@ export const getLatLongFromAddress = (
   return Axios.get(url);
 };
 
-// let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
-
 export const autoCompletePlaceSearch = (
   searchText: string
 ): Promise<AxiosResponse<AutoCompleteApiResponse>> => {
-  // const CancelToken = Axios.CancelToken;
-  // cancelAutoCompletePlaceSearchApi && cancelAutoCompletePlaceSearchApi();
-
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&components=country:in&key=${googlePlacesApiKey}`;
-  return Axios.get(url, {
-    // cancelToken: new CancelToken((c) => {
-    //   // An executor function receives a cancel function as a parameter
-    //   cancelSearchSuggestionsApi = c;
-    // }),
-  });
+  return Axios.get(url, {});
 };
 
 let cancelGetDeliveryTAT247: Canceler | undefined;
@@ -939,7 +929,6 @@ export const GenerateTokenforCM = (
   phoneNumber: string
 ): Promise<AxiosResponse<any>> => {
   const url = `${config.CONDITIONAL_MANAGENET_BASE_URL}/getCmToken?appUserId=${uhid}&userName=${userName}&gender=${gender}&emailId=${emailId}&phoneNumber=${phoneNumber}`;
-  console.log('GenerateTokenforCMurl', url);
   return Axios.get(url);
 };
 

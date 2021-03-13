@@ -130,13 +130,11 @@ export interface OrderModifiedScreenProps
 
 export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) => {
   const orderDetails = props.navigation.getParam('orderDetails');
-  const offlineOrderNumber = g(orderDetails, 'billNumber');
   const orderedItems = orderDetails.medicineOrderLineItems || [];
   const orderAutoId = `Your order #${orderDetails.orderAutoId} has been modified.`;
   const [removedItems, setRemovedItems] = useState([]);
   const [addedItems, setAddedItems] = useState([]);
   const [updatedItems, setUpdatedItems] = useState([]);
-  console.log('orderedItems', orderedItems);
   const itemDetails = g(
     orderDetails,
     'medicineOrderShipments',
@@ -147,7 +145,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
   );
 
   const billedItems = itemDetails ? JSON.parse(itemDetails) : null;
-  console.log('billedItems', billedItems, JSON.stringify(billedItems));
 
   useEffect(() => {
     sortItems();
@@ -160,13 +157,11 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
     let addedItems = billedItems.filter((item: any) => {
       return orderedItemIds.indexOf(item.itemId) < 0;
     });
-    console.log('addedItems--', addedItems);
     setAddedItems(addedItems);
 
     let removedItems = orderedItems.filter((item: any) => {
       return billedItemIds.indexOf(item.medicineSKU) < 0;
     });
-    console.log('removedItems--', removedItems);
     setRemovedItems(removedItems);
 
     let updatedItems: any = [];
@@ -175,7 +170,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
         if (item.itemId == product.medicineSKU) {
           if (item.mrp != product.mrp || Math.ceil(item.issuedQty) != product.quantity) {
             if (item.mrp != product.mrp) {
-              console.log('hi');
               item['updatedprice'] = true;
               item['originalPrice'] = product.mrp;
             }
@@ -188,7 +182,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
         }
       });
     });
-    console.log('updatedItems--', updatedItems);
     setUpdatedItems(updatedItems);
   };
 
@@ -313,7 +306,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             )}
           </View>
         </View>
-        {/* <View style={[styles.blueLineViewStyle, { marginHorizontal: 3.5, marginBottom: 15 }]} /> */}
       </View>
     );
   };

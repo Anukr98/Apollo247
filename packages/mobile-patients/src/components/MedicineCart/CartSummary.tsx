@@ -204,7 +204,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       const selectedAddress: any = addresses.find((item) => item.id == id);
       try {
         const response = await availabilityApi247(selectedAddress.zipcode || '', skus.join(','));
-        console.log('in summary >>', response.data);
         const items = g(response, 'data', 'response') || [];
         const unserviceableSkus = items.filter(({ exist }) => exist == false).map(({ sku }) => sku);
         const updatedCartItems = cartItems.map((item) => ({
@@ -331,7 +330,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       Items.push(object);
     });
     setCartItems!(Items);
-    console.log(loading);
   }
   const onFinishUpload = () => {
     if (isPhysicalUploadComplete) {

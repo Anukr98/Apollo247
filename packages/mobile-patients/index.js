@@ -4,9 +4,10 @@ import { AppRegistry, YellowBox } from 'react-native';
 import { name as appName } from './app.json';
 import AppContainer from '@aph/mobile-patients/src/components/AppContainer';
 import { Client, Configuration } from 'bugsnag-react-native';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 if (__DEV__) {
-  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));
+  import('./ReactotronConfig').then(() => aphConsole.log('Reactotron Configured'));
 }
 const configuration = new Configuration();
 configuration.autoCaptureSessions = true;

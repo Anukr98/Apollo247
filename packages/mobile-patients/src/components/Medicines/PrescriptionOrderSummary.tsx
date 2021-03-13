@@ -113,7 +113,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
     address: savePatientAddress_savePatientAddress_patientAddress,
     forceCheck?: boolean
   ) {
-    console.log('inside serviceability check >>>>>>');
     if (deliveryAddressId && deliveryAddressId == address.id && !forceCheck) {
       return;
     }
@@ -121,7 +120,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
       setLoading?.(true);
       const response = await pinCodeServiceabilityApi247(address.zipcode!);
       const { data } = response;
-      console.log('data >>>>>', data);
       if (data?.response?.servicable) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
@@ -134,7 +132,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
       }
     } catch (error) {
-      console.log(error);
       setLoading?.(false);
     }
   }
@@ -193,7 +190,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
     try {
       // Physical Prescription Upload
       const uploadedPhyPrescriptionsData = await uploadMultipleFiles(physicalPrescription);
-      console.log('upload of prescriptions done');
 
       const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
         ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
@@ -245,7 +241,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         variables,
       })
       .then(({ data }) => {
-        console.log({ data });
         const { errorCode, orderAutoId } = g(data, 'savePrescriptionMedicineOrderOMS') || {};
         postwebEngageSubmitPrescriptionEvent(orderAutoId);
         if (errorCode) {
@@ -256,7 +251,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
       })
       .catch((e) => {
         CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
-        console.log({ e });
         renderErrorAlert(`Something went wrong, please try later.`);
       })
       .finally(() => {
@@ -330,7 +324,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         ...addresses.filter((item) => item.id != address.id),
       ];
       setAddresses!(newAddrList);
-      // setTestAddresses!(newAddrList);
       onComplete();
     } catch (error) {
       // Let the user order journey continue, even if no lat-lang.
@@ -356,7 +349,6 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
             patientId: g(currentPatient, 'id')!,
           },
         };
-        console.log(JSON.stringify(variables));
         return client.mutate<uploadDocument, uploadDocumentVariables>({
           mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',

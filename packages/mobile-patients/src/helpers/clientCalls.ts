@@ -160,7 +160,6 @@ export const getNextAvailableSlots = (
       })
       .catch((e) => {
         CommonBugFender('clientCalls_getNextAvailableSlots', e);
-        console.log('Error occured while searching Doctor', e);
         rej({ error: e });
       });
   });
@@ -600,7 +599,6 @@ export const whatsAppUpdateAPICall = (
       patientId: patientId,
     };
 
-    console.log('whatsAppUpdate', inputVariables);
     client
       .mutate<updateWhatsAppStatus>({
         mutation: UPDATE_WHATSAPP_STATUS,
@@ -632,7 +630,6 @@ export const updateExternalConnect = (
       appointmentId: appointmentID,
     };
 
-    console.log('inputVariables', inputVariables);
     client
       .mutate<updateSaveExternalConnect, updateSaveExternalConnectVariables>({
         mutation: UPDATE_SAVE_EXTERNAL_CONNECT,
@@ -755,7 +752,6 @@ export const saveTokenDevice = (client: ApolloClient<object>, token: any, patien
     deviceOS: '',
     patientId: patientId,
   };
-  console.log('input', input);
   return client.mutate<saveDeviceToken, saveDeviceTokenVariables>({
     mutation: SAVE_DEVICE_TOKEN,
     variables: {

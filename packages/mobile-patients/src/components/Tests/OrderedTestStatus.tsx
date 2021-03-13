@@ -111,7 +111,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
         setLoading!(false);
       });
   };
@@ -137,7 +136,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsResult', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading!(false));
@@ -390,7 +388,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           {renderError()}
           {renderOrders()}
           {renderRefund()}
-          {/* {!loading && !error && renderChatWithUs()} */}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}

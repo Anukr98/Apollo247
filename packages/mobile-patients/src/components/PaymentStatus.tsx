@@ -13,7 +13,7 @@ import {
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
-import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -53,10 +53,7 @@ import {
   saveMedicineOrderOMSVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 
-import {
-  MEDICINE_ORDER_PAYMENT_TYPE,
-  CODCity,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -75,7 +72,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState<string>('');
   const client = useApolloClient();
-  const { success, failure, pending, aborted } = Payment;
+  const { success, failure, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
   const totalAmount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
@@ -87,7 +84,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
-  const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const { apisToCall } = useAppCommonData();
   const {
@@ -138,7 +134,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log(res.data.pharmaPaymentStatus);
         const paymentEventAttributes = {
           order_Id: orderId,
           order_AutoId: orderAutoId,
@@ -156,7 +151,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
-        console.log(error);
         moveToHome();
         renderErrorPopup(string.common.tryAgainLater);
       });
@@ -209,7 +203,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       if (errorCode || errorMessage) {
         errorPopUp();
       } else {
-        console.log('inside success');
         handleOrderSuccess(`${orderAutoId}`);
         clearCartInfo?.();
       }

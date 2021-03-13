@@ -1,5 +1,5 @@
-import React, { FC, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Platform, TextInput } from 'react-native';
+import React, { FC } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, TextInput } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 

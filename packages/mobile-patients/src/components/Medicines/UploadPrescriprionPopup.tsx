@@ -86,7 +86,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.35,
   },
   cardViewStyle: {
-    // width: 136,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(2, 71, 91, 0.2)',
@@ -198,7 +197,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   }, [props.openCamera]);
 
   const formatResponse = (response: ImageCropPickerResponse[]) => {
-    console.log('response Img', response);
     if (props.isProfileImage) {
       const res = response[0] || response;
       const isPdf = res.mime == 'application/pdf';
@@ -217,7 +215,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     if (response.length == 0) return [];
 
     return response.map((item) => {
-      //console.log('item', item);
       const isPdf = item.mime == 'application/pdf';
       const fileUri = item!.path || `folder/file.jpg`;
       const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
@@ -243,8 +240,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
       setshowSpinner(true);
       ImagePicker.openCamera({
-        // width: 400,
-        // height: 400,
         cropping: props.isProfileImage ? true : false,
         hideBottomControls: true,
         width: props.isProfileImage ? 2096 : undefined,
@@ -266,7 +261,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         })
         .catch((e: Error) => {
           CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
-          // aphConsole.log({ e });
           setshowSpinner(false);
         });
     } else {
@@ -283,7 +277,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       uri = Platform.OS === 'ios' ? decodeURI(uri.replace('file://', '')) : uri;
       let compressedImageUri = '';
       if (!isPdf) {
-        // Image Quality 0-100
         compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
           .uri;
         compressedImageUri =
@@ -367,7 +360,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     postWebEngageEvent('Upload Photo', eventAttributes);
 
     setshowSpinner(true);
-    console.log('openGallery');
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
@@ -395,7 +387,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       })
       .catch((e: Error) => {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
-        //aphConsole.log({ e });
         setshowSpinner(false);
       });
   };
@@ -432,7 +423,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         <View
           style={{
             flexDirection: 'row',
-            // justifyContent: 'space-between',
             justifyContent: 'center',
           }}
         >
@@ -441,7 +431,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           </View>
           <View
             style={{
-              // alignItems: 'center',
               justifyContent: 'center',
             }}
           >
@@ -751,7 +740,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           cancelButtonIndex={2}
           onPress={(index: number) => {
             /* do something */
-            console.log('index', index);
             if (index === 0) {
               setTimeout(() => {
                 openGallery();

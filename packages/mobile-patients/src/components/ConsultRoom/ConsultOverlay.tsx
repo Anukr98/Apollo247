@@ -188,8 +188,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
-        console.log(data, 'next');
-
         try {
           const nextSlot = data[0] ? data[0]!.availableSlot : '';
           if (!nextSlot && data[0]!.physicalAvailableSlot) {
@@ -201,7 +199,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       })
       .catch((e: any) => {
         CommonBugFender('ConsultOverlay_getNextAvailableSlots', e);
-        console.log('error', e);
       });
   }, []);
 
@@ -352,7 +349,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
-    console.log('updateCouponDiscountOnChangeTab isOnlineConsult', isOnlineConsult);
     // this function will reset coupon discount on change in consultation type
     setCoupon('');
     setDoctorDiscountedFees(0);
@@ -366,8 +362,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     }
     // to avoid duplicate events
     if (!slotsSelected.find((val) => val == slot)) {
-      console.log('new Date >>>>', new Date(slot));
-      console.log('moment >>>>>', moment(slot).toDate());
       const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
         if (item && item.facility && item.facility.facilityType)
           return item.facility.facilityType === 'HOSPITAL';
@@ -404,7 +398,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       <View style={{ paddingHorizontal: showSpinner ? 0 : 20 }}>
         <View
           style={{
-            // backgroundColor: 'white',
             alignItems: 'flex-end',
           }}
         >
@@ -480,10 +473,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   clinics={props.clinics}
                   setDate={(date) => {
                     setDate(date);
-                    // fetchSlots(date);//removed
-                    // scrollViewRef.current &&
-                    //   scrollViewRef.current.scrollTo &&
-                    //   scrollViewRef.current.scrollTo({ x: 0, y: 465, animated: true });
                   }}
                   setselectedTimeSlot={(timeSlot) => {
                     postSlotSelectedEvent(timeSlot);
@@ -500,7 +489,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               {renderDisclamer()}
               {!g(currentPatient, 'whatsAppConsult') ? (
                 <WhatsAppStatus
-                  // style={{ marginTop: 6 }}
                   onPress={() => {
                     whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
                   }}

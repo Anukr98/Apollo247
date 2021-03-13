@@ -22,7 +22,6 @@ import {
   More,
   NotificationIcon,
   NotifySymbolGreen,
-  PendingIcon,
   RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -110,14 +109,8 @@ import {
   View,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
-const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
 const screenWidth = Dimensions.get('window').width;
 
 export interface OrderDetailsSceneProps
@@ -862,11 +855,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const tatInfo = orderDetails.orderTat;
     const expectedDeliveryDiff = moment.duration(
       moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
-      // moment('27-JAN-2020 10:51 AM').diff(moment())
     );
     const hours = expectedDeliveryDiff.asHours();
-    // const formattedDateDeliveryTime =
-    //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
     let orderCompleteText =
       orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
         ? `Your order no. #${orderAutoId} is successfully picked up on ${isDelivered &&
@@ -1339,7 +1329,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? shouldScrollToSlot(isNotTatBreach!)
         : scrollToSlots();
     }
-    console.log({ orderDetails });
 
     const cartObject = {
       heading: '',
@@ -1351,7 +1340,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       description: 'Items added to the order by our pharmacist as per your instructions.',
       showOption: true,
     };
-    console.log({ reasonForOnHold });
     const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
 
     const renderCourierTrackingCta = () => {
@@ -1969,8 +1957,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       },
     };
 
-    console.log(JSON.stringify(variables));
-
     client
       .mutate<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>({
         mutation: CANCEL_MEDICINE_ORDER_OMS,
@@ -2299,7 +2285,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 : !loading && renderOrderSummary()}
             </ScrollView>
             {renderReOrderButton()}
-            {/* {renderHelpButton()} */}
           </>
         )}
       </SafeAreaView>

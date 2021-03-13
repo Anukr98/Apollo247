@@ -45,7 +45,6 @@ export const WhatsAppStatus: React.FC<WhatsAppStatusProps> = (props) => {
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
 
   useEffect(() => {
-    console.log('isSelected', isSelected);
     setWhatsAppUpdate(isSelected);
   }, [isSelected]);
 

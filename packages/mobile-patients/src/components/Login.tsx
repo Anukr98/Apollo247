@@ -152,7 +152,6 @@ const styles = StyleSheet.create({
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  // const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
     ? !/^(234){1}\d{0,9}$/.test(number)
       ? false
@@ -302,7 +301,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             const dif = t1.getTime() - t2.getTime();
 
             const seconds = Math.round(dif / 1000);
-            console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
               if (seconds < 900) {
                 isNoBlocked = true;
@@ -313,7 +311,6 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('Login_getTimerData_try', error);
-      console.log(error.message);
     }
     return isNoBlocked;
   };
@@ -353,7 +350,6 @@ export const Login: React.FC<LoginProps> = (props) => {
 
               loginAPI('+91' + phoneNumber, appSign)
                 .then((confirmResult: any) => {
-                  console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);
 
                   const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
@@ -361,7 +357,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   };
                   postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
 
-                  console.log('confirmResult login', confirmResult);
                   try {
                     signOut();
                   } catch (error) {}
@@ -373,7 +368,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   });
                 })
                 .catch((error: Error) => {
-                  console.log(error, 'error');
                   setShowSpinner(false);
 
                   CommonLogEvent('OTP_SEND_FAIL', error.message);
@@ -454,7 +448,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               style={[
                 {
                   paddingTop: Platform.OS === 'ios' ? 22 : 15,
-                  // flex: 1
                 },
                 phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
               ]}
