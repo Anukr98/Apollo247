@@ -274,7 +274,12 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const fetchTestReportResult = useCallback((visitId: string) => {
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
       .then((data: any) => {
         const labResultsData = g(
           data,

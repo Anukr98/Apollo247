@@ -88,7 +88,12 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const fetchTestReportResult = useCallback((order: any) => {
     setLoading?.(true);
     const getVisitId = orderSelected?.visitNo;
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
       .then((data: any) => {
         const labResultsData = g(
           data,

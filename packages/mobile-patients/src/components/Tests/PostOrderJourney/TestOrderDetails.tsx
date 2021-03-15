@@ -214,7 +214,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const fetchTestReportResult = useCallback(() => {
     setLoading?.(true);
     const getVisitId = selectedOrder?.visitNo;
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
       .then((data: any) => {
         const labResultsData = g(
           data,
