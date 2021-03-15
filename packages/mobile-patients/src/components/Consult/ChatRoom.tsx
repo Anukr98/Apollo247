@@ -191,7 +191,7 @@ import { RescheduleCancelPopup } from '@aph/mobile-patients/src/components/Consu
 import { CancelAppointmentPopup } from '@aph/mobile-patients/src/components/Consult/CancelAppointmentPopup';
 import { CancelReasonPopup } from '@aph/mobile-patients/src/components/Consult/CancelReasonPopup';
 import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consult/CheckReschedulePopup';
-
+import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
 interface OpentokStreamObject {
   connection: {
     connectionId: string;
@@ -658,6 +658,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 2,
   },
+  headerText: {
+    marginHorizontal: 5,
+    ...theme.fonts.IBMPlexSansMedium(13),
+    lineHeight: 17,
+    color: '#01475B',
+    marginBottom: 10,
+    textAlign: 'center',
+    flex: 1,
+    flexWrap: 'wrap',
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -876,6 +886,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const rescheduleOrCancelAppointment = '^^#RescheduleOrCancelAppointment';
   const appointmentStartsInFifteenMin = '^^#appointmentStartsInFifteenMin';
   const appointmentStartsInTenMin = '^^#appointmentStartsInTenMin';
+  const sectionHeader = '^^#sectionHeader';
+  const followUpChatGuideLines = '^^#follouUpChatGuideLines';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -1609,21 +1621,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const sendDcotorChatMessage = () => {
-    pubnub.publish(
-      {
-        channel: channel,
-        message: {
-          message: doctorAutoResponse,
-          automatedText: `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of any emergency, it is advisable to contact a nearby hospital!`,
-          id: doctorId,
-          isTyping: true,
-          messageDate: new Date(),
-        },
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {}
-    );
+    const automatedText = `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. You will hear back from the doctor in the next 24 hrs.`;
+    sendMessage(sectionHeader, doctorId, automatedText);
   };
 
   const setSendAnswers = (val: number) => {
@@ -2515,6 +2514,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         if (messageType == followupconsult) {
           // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
+          sendFollowUpChatGuideLines();
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
         } else if (messageType == stopConsultJr) {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
@@ -2555,6 +2555,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     };
   }, []);
+
+  const sendFollowUpChatGuideLines = () => {
+    const headerText =
+      'If you have further queries related to your consultation, you may reach out to Dr. Simran via texts for the next 7 days.';
+    sendMessage(sectionHeader, doctorId, headerText);
+    setTimeout(() => {
+      sendMessage(followUpChatGuideLines, doctorId);
+    }, 1000);
+  };
+
+  const sendMessage = (message: string, id: string, automatedText?: string) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: {
+          message: message,
+          automatedText: automatedText,
+          id: id,
+          isTyping: true,
+          messageDate: new Date(),
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {}
+    );
+  };
 
   const HereNowPubnub = (message: string) => {
     if (status.current !== STATUS.COMPLETED) return;
@@ -2673,7 +2700,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           const end: any = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
-          console.log('msgs', msgs);
+          console.log('msgs >>>>>>>>', JSON.stringify(msgs));
 
           res.messages.forEach((element, index) => {
             let item = element.entry;
@@ -4202,6 +4229,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const sectionHeaderView = (rowData: any) => {
+    return (
+      <View>
+        <Text style={styles.headerText}>{rowData.automatedText}</Text>
+      </View>
+    );
+  };
+
   const messageView = (rowData: any, index: number) => {
     return (
       <View
@@ -4985,6 +5020,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     rowData.message === appointmentStartsInFifteenMin ||
                     rowData.message === appointmentStartsInTenMin ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === sectionHeader ? (
+                    <>{sectionHeaderView(rowData)}</>
+                  ) : rowData.message === followUpChatGuideLines ? (
+                    <>
+                      <FollowUpChatGuideLines />
+                    </>
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
