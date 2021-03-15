@@ -6176,6 +6176,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isTyping: true,
           message: !patientJoinedCall.current ? acceptedCallMsg : patientJoinedMeetingRoom,
           messageDate: new Date(),
+          platform: 'mobile',
         },
         channel: channel,
         storeInHistory: false,
