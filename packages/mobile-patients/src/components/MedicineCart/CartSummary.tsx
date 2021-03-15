@@ -415,7 +415,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   }
 
-  function onPressProceedtoPay() {
+  async function onPressProceedtoPay() {
     if (coupon && cartTotal > 0) {
       try {
         await validateCoupon(coupon.coupon, coupon.message);
