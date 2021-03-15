@@ -3300,27 +3300,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 24 }}>
             {renderPatientDetails()}
             {renderItemsInCart()}
-            {/* {renderProfiles()} */}
-            {/* <MedicineUploadPrescriptionView
-              isTest={true}
-              navigation={props.navigation}
-              isMandatory={false}
-              listOfTest={[]}
-            /> */}
-            {/* {renderDelivery()} */}
             {renderTotalCharges()}
-            {/* {renderTestSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>
-        {/* <StickyBottomComponent defaultBG>
-          <Button
-            disabled={disableProceedToPay}
-            title={'MAKE PAYMENT'}
-            onPress={() => onPressProceedToPay()}
-            style={{ flex: 1, marginHorizontal: 40 }}
-          />
-        </StickyBottomComponent> */}
         {renderTestProceedBar()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
