@@ -70,6 +70,7 @@ import {
   Linking,
   Platform,
 } from 'react-native';
+import { RescheduleCancelPopup } from '@aph/mobile-patients/src/components/Consult/RescheduleCancelPopup';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 
@@ -355,6 +356,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...theme.viewStyles.shadowStyle,
   },
+  cancelSubText2: {
+    backgroundColor: 'white',
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansMedium(16),
+    textAlign: 'center',
+  },
   ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
   ctaOrangeTextStyle: {
     textAlign: 'center',
@@ -401,7 +408,10 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     moment(fifteenMinutesLater.setMinutes(fifteenMinutesLater.getMinutes() + 15))
   );
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
+  const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
+  const [showReschedulePopup, setShowReschedulePopup] = useState<boolean>(false);
+  const [isCancelVisible, setCancelVisible] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [appointmentTime, setAppointmentTime] = useState<string>('');
@@ -916,7 +926,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                   activeOpacity={1}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
-                    setCancelAppointment(true);
+                    setShowRescheduleCancel(true);
                   }}
                 >
                   <More />
@@ -955,83 +965,81 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           </View>
         </SafeAreaView>
 
-        {cancelAppointment && (
-          <View style={[styles.cancelView, { top: statusBarHeight() }]}>
-            <TouchableOpacity
-              onPress={() => {
-                CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
-                setCancelAppointment(false);
-              }}
-            >
-              <View style={styles.cancelSubView}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowCancelPopup(true);
-                    setCancelAppointment(false);
-                  }}
-                >
-                  <View style={styles.cancelSubView2}>
-                    <Text
-                      style={{
-                        backgroundColor: 'white',
-                        color: '#02475b',
-                        ...theme.fonts.IBMPlexSansMedium(16),
-                        textAlign: 'center',
-                      }}
-                    >
-                      Cancel
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </View>
+        {showRescheduleCancel && (
+          // (
+          //   <View style={[styles.cancelView, { top: statusBarHeight() }]}>
+          //     <TouchableOpacity
+          //       onPress={() => {
+          //         CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
+          //         setCancelAppointment(false);
+          //       }}
+          //     >
+          //       <View style={styles.cancelSubView}>
+          //         <TouchableOpacity
+          //           onPress={() => {
+          //             setShowCancelPopup(true);
+          //             setCancelAppointment(false);
+          //           }}
+          //         >
+          //           <View style={styles.cancelSubView2}>
+          //             <Text style={styles.cancelSubText2}>Cancel</Text>
+          //           </View>
+          //         </TouchableOpacity>
+          //       </View>
+          //     </TouchableOpacity>
+          //   </View>
+          // )
+          <RescheduleCancelPopup
+            onPressCancelAppointment={() => {
+              CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
+              setShowCancelPopup(true);
+              setShowRescheduleCancel(false);
+            }}
+            onPressRescheduleAppointment={() => {
+              postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+              setShowReschedulePopup(true);
+              setShowRescheduleCancel(false);
+            }}
+            closeModal={() => setShowRescheduleCancel(false)}
+            appointmentDiffMin={appointmentDiffMin}
+            appointmentDateTime={appointmentData?.appointmentDateTime}
+            isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
+            isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}
+          />
         )}
         {showCancelPopup && (
-          <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient?.firstName) || ''} :)`}
-            description={
-              "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!"
+          <CancelAppointmentPopup
+            data={appointmentData}
+            navigation={props.navigation}
+            title={cancelAppointmentTitle}
+            onPressBack={() => setShowCancelPopup(false)}
+            onPressReschedule={() => {
+              postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+              CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
+              setShowCancelPopup(false);
+              setShowReschedulePopup(true);
+            }}
+            onPressCancel={() => {
+              postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
+              CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
+              setShowCancelPopup(false);
+              setCancelVisible(true); //to show the reasons for cancelling the consultation
+            }}
+          />
+        )}
+        {showReschedulePopup && (
+          <CheckReschedulePopup
+            data={appointmentData}
+            navigation={props.navigation}
+            closeModal={() => setShowReschedulePopup(false)}
+            cancelSuccessCallback={() => {
+              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+              setShowCancelPopup(false);
+            }}
+            rescheduleSuccessCallback={() =>
+              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER)
             }
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                marginHorizontal: 20,
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-              }}
-            >
-              <View style={{ height: 60 }}>
-                <TouchableOpacity
-                  style={styles.gotItStyles}
-                  onPress={() => {
-                    postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
-                    setShowCancelPopup(false);
-                    NextAvailableSlotAPI(isAwaitingReschedule);
-                  }}
-                >
-                  <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ height: 60 }}>
-                <TouchableOpacity
-                  style={styles.gotItStyles}
-                  onPress={() => {
-                    postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
-                    CommonLogEvent(
-                      AppRoutes.AppointmentDetails,
-                      'AppointmentDetails  Cancel Concsult Clicked'
-                    );
-                    setShowCancelPopup(false);
-                    cancelAppointmentApi();
-                  }}
-                >
-                  <Text style={styles.gotItTextStyles}>{'CANCEL CONSULT'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </BottomPopUp>
+          />
         )}
 
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
