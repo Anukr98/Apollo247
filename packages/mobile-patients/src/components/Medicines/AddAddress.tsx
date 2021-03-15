@@ -17,7 +17,6 @@ import {
   CommonLogEvent,
   DeviceHelper,
   CommonBugFender,
-  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DELETE_PATIENT_ADDRESS,

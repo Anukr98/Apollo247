@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 87
-        versionName "5.4.3"
+        versionCode 91
+        versionName "5.5.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -223,7 +223,6 @@ dependencies {
     implementation project(':react-native-incall-manager')
     implementation project(':opentok-react-native')
     implementation project(':react-native-sms-retriever')
-    implementation project(':@bugfender_rn-bugfender')
     implementation project(':react-native-fbsdk')
     implementation project(':react-native-appsflyer')
     implementation 'com.webengage:android-sdk:3.+'
@@ -235,7 +234,6 @@ dependencies {
     implementation project(':react-native-image-picker')
     implementation project(':react-native-device-info')
     implementation project(':react-native-webview')
-    implementation project(':bugsnag-react-native')
     implementation project(':react-native-pdf')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-vector-icons')

@@ -65,7 +65,6 @@ import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/
 import {
   CommonBugFender,
   CommonLogEvent,
-  CommonSetUserBugsnag,
   DeviceHelper,
   isIos,
   setBugFenderLog,
@@ -179,6 +178,7 @@ import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTy
 import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 const { Vitals } = NativeModules;
 
@@ -793,6 +793,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     createHyperServiceObject();
+    initiateSDK(currentPatient?.id, currentPatient?.id);
   }, []);
 
   //to be called only when the user lands via app launch
@@ -1759,10 +1760,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         return item.isActive === true;
       });
       setNotificationCount && setNotificationCount(selectedCount.length);
-
-      CommonSetUserBugsnag(
-        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-      );
     } catch (error) {}
   };
 

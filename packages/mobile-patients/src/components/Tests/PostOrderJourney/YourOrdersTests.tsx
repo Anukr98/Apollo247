@@ -13,7 +13,6 @@ import {
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { AlertPopup } from '@aph/mobile-patients/src/components/ui/AlertPopup';
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
@@ -26,7 +25,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -43,6 +42,7 @@ import {
   CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
+  MedicalRecordType,
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
@@ -54,7 +54,11 @@ import {
   handleGraphQlError,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossPopup,
+  DisabledTickIcon,
+  TickIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
@@ -71,7 +75,7 @@ import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
-import { TestSlotSelectionOverlay } from './TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
@@ -80,7 +84,7 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
-import { TestOrderSummaryView } from '../TestOrderSummaryView';
+import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/Tests/components/TestOrderSummaryView';
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
@@ -90,11 +94,20 @@ import {
   getOrderInternal,
   getOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
-import { DiagnosticRescheduleOrder } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticRescheduleOrder,
+  DiagnosticViewReportClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import {
   getDiagnosticSlotsCustomized,
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
+import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Overlay } from 'react-native-elements';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+const screenHeight = Dimensions.get('window').height;
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -118,11 +131,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const [date, setDate] = useState<Date>(new Date());
 
-  /**cancel & reschedule */
-  const [showCancelPopUp, setCancelPopUp] = useState<boolean>(false);
-  const [showReschedulePopUp, setReschedulePopUp] = useState<boolean>(false);
-  const [showCancelReasonPopUp, setCancelReasonPopUp] = useState<boolean>(false);
-  const [showRescheduleReasonPopUp, setRescheduleReasonPopUp] = useState<boolean>(false);
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [pincode, setPincode] = useState<string>('');
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
@@ -138,6 +146,34 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [rescheduledTime, setRescheduledTime] = useState<any>('');
   const [selectedReasonForCancel, setSelectedReasonForCancel] = useState('');
   const [commentForCancel, setCommentForCancel] = useState('');
+
+  const RESCHEDULE_REASONS = [
+    'Phlebo did not arrive on time',
+    'I am not available right now',
+    'I did not follow fasting requirement',
+    'I picked a wrong slot',
+    'Not feeling well to provide sample',
+  ];
+
+  const CANCELLATION_REASONS = [
+    'Phlebo didn’t Arrive on Time',
+    'Need to Modify Order Details',
+    'I am not Available Right Now',
+    'Booked by Mistake',
+    'Need Report Urgently',
+    'Others (Please specify)',
+  ];
+
+  //new reschedule.
+  const [showBottomOverlay, setShowBottomOverlay] = useState<boolean>(false);
+  const [showRescheduleOptions, setShowRescheduleOptions] = useState<boolean>(false);
+  const [selectRescheduleOption, setSelectRescheduleOption] = useState<boolean>(true);
+  const [selectCancelOption, setSelectCancelOption] = useState<boolean>(false);
+  const [showRescheduleReasons, setShowRescheduleReasons] = useState<boolean>(false);
+  const [showCancelReasons, setShowCancelReasons] = useState<boolean>(false);
+  const [selectCancelReason, setSelectCancelReason] = useState<string>('');
+  const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
+  const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
 
   const [selectedReasonForReschedule, setSelectedReasonForReschedule] = useState('');
   const [commentForReschedule, setCommentForReschedule] = useState('');
@@ -343,7 +379,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setLoading?.(true);
     setSelectedReasonForCancel(reason);
     setCommentForCancel(comment);
-    setCancelReasonPopUp(false);
 
     const orderCancellationInput: CancellationDiagnosticsInput = {
       comment: comment,
@@ -382,8 +417,49 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
-  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
-    return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+  const fetchTestReportResult = useCallback(
+    (order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) => {
+      const getVisitId = order?.visitNo;
+      getPatientPrismMedicalRecordsApi(
+        client,
+        currentPatient?.id,
+        [MedicalRecordType.TEST_REPORT],
+        'Diagnostics'
+      )
+        .then((data: any) => {
+          const labResultsData = g(
+            data,
+            'getPatientPrismMedicalRecords_V2',
+            'labResults',
+            'response'
+          );
+          let resultForVisitNo = labResultsData?.find(
+            (item: any) => item?.identifier == getVisitId
+          );
+          console.log({ resultForVisitNo });
+
+          !!resultForVisitNo && resultForVisitNo?.length > 0
+            ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+                data: resultForVisitNo,
+                labResults: true,
+              })
+            : renderReportError(string.diagnostics.responseUnavailableForReport);
+        })
+        .catch((error) => {
+          CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
+          console.log('Error occured fetchTestReportsResult', { error });
+          currentPatient && handleGraphQlError(error);
+        })
+        .finally(() => setLoading?.(false));
+    },
+    []
+  );
+
+  const renderReportError = (message: string) => {
+    showAphAlert?.({
+      title: string.common.uhOh,
+      description: message,
+    });
   };
 
   const checkIfPreTestingExists = (
@@ -398,81 +474,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return filterPreTestingData?.length == 0 ? false : true;
     }
     return false;
-  };
-
-  const renderOrderSummary = () => {
-    return showSummaryPopup ? (
-      <View style={styles.reasonCancelOverlay}>
-        <View style={styles.orderSummaryOuterView}>
-          <View
-            style={[
-              styles.reasonCancelView,
-              {
-                backgroundColor: 'transparent',
-              },
-            ]}
-          >
-            <TestOrderSummaryView
-              orderDetails={orderDetails!}
-              showViewOrderDetails={true}
-              onPressViewDetails={() => _navigateToYourTestDetails(selectedOrder)}
-            />
-          </View>
-          <TouchableOpacity style={{ marginTop: 20 }} onPress={() => setSummaryPopup(false)}>
-            <CrossPopup
-              style={{ height: isSmallDevice ? 20 : 28, width: isSmallDevice ? 20 : 28 }}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    ) : null;
-  };
-
-  const onPressTestCancel = (item: any) => {
-    setCancelPopUp(true);
-    setSelectedOrderId(item.id);
-    setSelectedOrder(item);
-  };
-
-  const renderCancelPopUp = () => {
-    return (
-      <AlertPopup
-        visible={showCancelPopUp}
-        onDismiss={() => setCancelPopUp(false)}
-        title={'Are you sure you wish to cancel your order?'}
-        leftButton={"DON'T CANCEL"}
-        rightButton={'CANCEL'}
-        showCloseIcon={false}
-        onContinue={() => {
-          setCancelPopUp(false);
-          setCancelReasonPopUp(true);
-        }}
-      />
-    );
-  };
-
-  const renderCancelReasonPopUp = () => {
-    return showCancelReasonPopUp ? (
-      <View style={styles.reasonCancelOverlay}>
-        <ReasonPopUp
-          onPressSubmit={(reason, comment) => {
-            onSubmitCancelOrder(reason, comment);
-          }}
-          cancelVisible={showCancelReasonPopUp}
-          headingText={'Cancel Order'}
-          reasonForCancelText={'Why are you cancelling this order?'}
-          dropDownOptions={reasonForCancellation}
-          onPressCross={hideReasonOverlay}
-          otherReasonText={OTHER_REASON}
-          optionPlaceholderText={'Select reason for cancelling'}
-          submitOthersWithoutComment={false}
-        />
-      </View>
-    ) : null;
-  };
-
-  const hideReasonOverlay = () => {
-    setCancelReasonPopUp(false);
   };
 
   const checkSlotSelection = () => {
@@ -552,7 +553,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           });
         } else {
           //not trigger
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.areaNotAvailableMessage,
           });
@@ -560,73 +561,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
-  const onPressTestReschedule = (item: any) => {
+  const _onPressTestReschedule = (item: any) => {
     setSelectedOrderId(item?.id);
     setSelectedOrder(item);
-    setReschedulePopUp(true);
-  };
-
-  const renderReschedulePopUp = () => {
-    const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
-    const setRescheduleCount = !!selectedOrderRescheduleCount
-      ? 2 - selectedOrderRescheduleCount
-      : 2;
-
-    return (
-      <AlertPopup
-        visible={showReschedulePopUp}
-        onDismiss={() => setReschedulePopUp(false)}
-        title={
-          selectedOrderRescheduleCount == 3
-            ? string.diagnostics.reschduleCountExceed
-            : string.diagnostics.rescheduleCountText.replace(
-                '{{setRescheduleCount}}',
-                String(setRescheduleCount)
-              )
-        }
-        leftButton={'CANCEL'}
-        rightButton={'OK, GOT IT'}
-        showCloseIcon={false}
-        onContinue={() => {
-          //call the cancel
-          setReschedulePopUp(false);
-          selectedOrderRescheduleCount == 3 ? null : setRescheduleReasonPopUp(true);
-        }}
-      />
-    );
-  };
-
-  const renderRescheduleReasonPopUp = () => {
-    //show skip option
-    return showRescheduleReasonPopUp ? (
-      <View style={styles.reasonCancelOverlay}>
-        <ReasonPopUp
-          onPressSubmit={(reason, comment) => onSubmitRescheduleRequest(reason, comment)}
-          cancelVisible={showRescheduleReasonPopUp}
-          headingText={'Reschedule Order'}
-          reasonForCancelText={'Why are you rescheduling this order?'}
-          dropDownOptions={reasonForRescheduling}
-          onPressCross={hideRescheduleReasonOverlay}
-          otherReasonText={OTHER_REASON}
-          optionPlaceholderText={'Select reason for rescheduling'}
-          submitOthersWithoutComment={true}
-          showSkip={true}
-        />
-      </View>
-    ) : null;
-  };
-
-  const onSubmitRescheduleRequest = (reason: string, comment: string) => {
-    setLoading!(true);
-    setSelectedReasonForReschedule(reason);
-    setCommentForReschedule(comment);
-    setRescheduleReasonPopUp(false);
-
-    checkSlotSelection();
-  };
-
-  const hideRescheduleReasonOverlay = () => {
-    setRescheduleReasonPopUp(false);
+    setShowBottomOverlay(true); //show the overlay
+    setShowRescheduleOptions(true); //show the cancel, reschedule options
   };
 
   const onReschduleDoneSelected = () => {
@@ -646,7 +585,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       dateTimeInUTC: dateTimeInUTC,
       orderId: String(selectedOrderId),
       patientId: g(currentPatient, 'id'),
-      reason: selectedReasonForReschedule,
+      // reason: selectedReasonForReschedule,
+      reason: selectRescheduleReason,
       slotId: employeeSlot,
     };
     DiagnosticRescheduleOrder(
@@ -760,6 +700,249 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  //new reschedule flow
+  const renderBottomPopUp = () => {
+    return (
+      <Overlay
+        onRequestClose={() => onPressCloseOverlay()}
+        isVisible={showBottomOverlay}
+        onBackdropPress={() => onPressCloseOverlay()}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        transparent
+        overlayStyle={styles.overlayStyle}
+      >
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()}>
+            <View style={styles.overlayTouch}>
+              <TouchableOpacity>
+                <SafeAreaView style={styles.overlaySafeArea}>
+                  <>
+                    {showRescheduleOptions ? renderRescheduleCancelOptions() : null}
+                    {showRescheduleReasons ? renderRescheduleReasons() : null}
+                    {showCancelReasons ? renderCancelReasons() : null}
+                  </>
+                </SafeAreaView>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Overlay>
+    );
+  };
+
+  const renderRescheduleReasons = () => {
+    return (
+      <View style={[styles.overlayContainer]}>
+        <Text style={styles.overlayHeadingText}>Reason for Rescheduling</Text>
+        <View style={styles.reasonsContainer}>
+          {RESCHEDULE_REASONS?.map((item: string, index: number) => {
+            return (
+              <>
+                <TouchableOpacity
+                  onPress={() => setSelectRescheduleReason(item)}
+                  style={styles.reasonsTouch}
+                >
+                  <View style={styles.rowStyle}>
+                    <Text style={styles.reasonsText}>{item}</Text>
+                    {selectRescheduleReason === item ? (
+                      <TickIcon style={styles.checkIconStyle} />
+                    ) : (
+                      <DisabledTickIcon style={styles.checkIconStyle} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+                {index === RESCHEDULE_REASONS?.length - 1 ? null : <Spearator />}
+              </>
+            );
+          })}
+        </View>
+        <View style={styles.buttonView}>
+          <Button
+            title={'RESCHEDULE NOW'}
+            style={styles.buttonStyle}
+            disabled={selectRescheduleReason == ''}
+            onPress={() => _onPressRescheduleNow()}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderCancelReasons = () => {
+    return (
+      <View style={[styles.overlayContainer]}>
+        <Text style={styles.overlayHeadingText}>Reason for Cancellation</Text>
+        <View style={styles.reasonsContainer}>
+          {CANCELLATION_REASONS?.map((item: string, index: number) => {
+            return (
+              <>
+                <TouchableOpacity
+                  onPress={() => setSelectCancelReason(item)}
+                  style={styles.reasonsTouch}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={styles.reasonsText}>{item}</Text>
+                    {selectCancelReason === item ? (
+                      <TickIcon style={styles.checkIconStyle} />
+                    ) : (
+                      <DisabledTickIcon style={styles.checkIconStyle} />
+                    )}
+                  </View>
+                  {index === CANCELLATION_REASONS?.length - 1 ? null : (
+                    <Spearator style={{ marginTop: 6 }} />
+                  )}
+                  {selectCancelReason === 'Others (Please specify)' &&
+                  item === 'Others (Please specify)' ? (
+                    <TextInputComponent
+                      value={cancelReasonComment}
+                      onChangeText={(text) => {
+                        setCancelReasonComment(text);
+                      }}
+                      placeholder={'Enter your comments here'}
+                    />
+                  ) : null}
+                </TouchableOpacity>
+              </>
+            );
+          })}
+        </View>
+        <View style={styles.buttonView}>
+          <Button
+            title={'CANCEL NOW'}
+            style={styles.buttonStyle}
+            disabled={
+              selectCancelReason == 'Others (Please specify)'
+                ? cancelReasonComment == ''
+                : selectCancelReason == ''
+            }
+            onPress={() => _onPressCancelNow()}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderRescheduleCancelOptions = () => {
+    const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
+    const setRescheduleCount = !!selectedOrderRescheduleCount
+      ? 2 - selectedOrderRescheduleCount
+      : 2;
+    return (
+      <View style={styles.overlayContainer}>
+        <Text style={styles.overlayHeadingText}>What would you like to do?</Text>
+        <TouchableOpacity onPress={() => _onPressReschduleOption()} style={styles.optionsTouch}>
+          <View>
+            <View style={styles.rowStyle}>
+              <Text style={styles.optionText}>Reschedule Booking</Text>
+              {selectRescheduleOption ? (
+                <TickIcon style={styles.checkIconStyle} />
+              ) : (
+                <DisabledTickIcon style={styles.checkIconStyle} />
+              )}
+            </View>
+            {selectRescheduleOption ? (
+              <View style={{ marginVertical: '2%' }}>
+                <Text style={styles.optionSubHeadingText}>
+                  {selectedOrderRescheduleCount == 3
+                    ? string.diagnostics.reschduleCountExceed
+                    : string.diagnostics.rescheduleCountText.replace(
+                        '{{setRescheduleCount}}',
+                        String(setRescheduleCount)
+                      )}
+                </Text>
+                <Button
+                  onPress={() => _onPressProceedToReschedule(selectedOrderRescheduleCount!)}
+                  title={'PROCEED TO RESCHEDULE'}
+                />
+              </View>
+            ) : null}
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => _onPressCancelOption()} style={styles.optionsTouch}>
+          <View>
+            <View style={styles.rowStyle}>
+              <Text style={styles.optionText}>Cancel Booking</Text>
+              {selectCancelOption ? (
+                <TickIcon style={styles.checkIconStyle} />
+              ) : (
+                <DisabledTickIcon style={styles.checkIconStyle} />
+              )}
+            </View>
+            {selectCancelOption ? (
+              <View style={{ marginVertical: '2%' }}>
+                <Text style={styles.optionSubHeadingText}>
+                  Are you sure you want to Cancel the booking?
+                </Text>
+                <Button onPress={() => _onPressProceedToCancel()} title={'PROCEED TO CANCEL'} />
+              </View>
+            ) : null}
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  function _onPressRescheduleNow() {
+    setLoading?.(true);
+    setShowBottomOverlay(false);
+    setShowRescheduleOptions(false);
+    setShowRescheduleReasons(false);
+    setSelectRescheduleReason('');
+    checkSlotSelection();
+  }
+
+  function _onPressCancelNow() {
+    setLoading?.(true);
+    setShowBottomOverlay(false);
+    setShowRescheduleOptions(false);
+    setShowRescheduleReasons(false);
+    setShowCancelReasons(false);
+    onSubmitCancelOrder(selectCancelReason, cancelReasonComment);
+    setSelectCancelReason('');
+    setCancelReasonComment('');
+    setSelectRescheduleReason('');
+  }
+
+  //reset to default states
+  function onPressCloseOverlay() {
+    setShowBottomOverlay(false);
+    setShowRescheduleOptions(false);
+    setShowRescheduleReasons(false);
+    setShowCancelReasons(false);
+    setSelectRescheduleOption(true);
+    setSelectCancelOption(false);
+    setSelectRescheduleReason('');
+    setSelectCancelReason('');
+    setCancelReasonComment('');
+  }
+
+  function _onPressProceedToReschedule(count: number) {
+    //hide the current view
+    if (count == 3) {
+      return;
+    }
+    setShowRescheduleOptions(false); //hide the options view
+    setShowRescheduleReasons(true);
+    showCancelReasons && setShowCancelReasons(false);
+  }
+
+  function _onPressProceedToCancel() {
+    setShowRescheduleOptions(false); //hide the options view
+    setShowCancelReasons(true);
+    showRescheduleReasons && setShowRescheduleReasons(false);
+  }
+  function _onPressReschduleOption() {
+    setSelectRescheduleOption(true);
+    setSelectCancelOption(false);
+  }
+
+  function _onPressCancelOption() {
+    setSelectCancelOption(true);
+    setSelectRescheduleOption(false);
+  }
+
   const _navigateToYourTestDetails = (order: any) => {
     const isPrepaid = order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
     setLoading?.(true);
@@ -853,28 +1036,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     fetchOrderDetails(order);
   }
 
-  function _navigateToPHR() {
-    props.navigation.navigate(AppRoutes.HealthRecordsHome);
-  }
-
   const renderOrder = (order: DiagnosticsOrderList, index: number) => {
     if (order?.diagnosticOrderLineItems?.length == 0) {
       return <View style={{ paddingTop: 4 }} />;
     }
     const getUTCDateTime = order?.slotDateTimeInUTC;
-    const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
-      `D MMM YYYY`
-    );
-    const tm =
-      getUTCDateTime != null
-        ? moment(getUTCDateTime).format('hh:mm A')
-        : getSlotStartTime(order?.slotTimings);
-    const dtTm = `${dt}, ${tm}`;
+    //add a check to see if report is generated or not.
+    // if status is partial completed or order compeleted
 
     const currentStatus = order?.orderStatus;
     const patientName = g(currentPatient, 'firstName');
-
-    const showDateTime = order?.isRescheduled ? true : false;
     const isPastOrder = moment(getUTCDateTime).diff(moment(), 'minutes') < 0;
     /**
      * show cancel & reschdule if status is something like this.
@@ -883,79 +1054,100 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       BLACK_LIST_CANCEL_STATUS_ARRAY.includes(item?.orderStatus!)
     );
     const isCancelValidAtOrderLevel = BLACK_LIST_CANCEL_STATUS_ARRAY.includes(order?.orderStatus!);
-
     // const showCancel = isCancelValid == undefined && !isPastOrder ? true : false;
     const showCancel = isCancelValid == undefined && !isCancelValidAtOrderLevel ? true : false;
-
     const isRescheduleValid = order?.diagnosticOrdersStatus?.find((item: any) =>
       BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(item?.orderStatus)
     );
-
     const isRescheduleValidAtOrderLevel = BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(
       order?.orderStatus!
     );
-
     // const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
     const showReschedule =
       isRescheduleValid == undefined && !isRescheduleValidAtOrderLevel ? true : false;
-
-    /**
-     * as per previous check
-     */
-    // const isCancelRescheduleValid =
-    //   moment(getUTCDateTime).diff(moment(), 'minutes') > 120 &&
-    //   statusForCancelReschedule.includes(currentStatus);
 
     //show the reschedule option :-
 
     const showPreTesting = showReschedule && checkIfPreTestingExists(order);
     const showRescheduleOption = showReschedule && order?.rescheduleCount! <= 3;
-    /**
-     *  1. show reports generated, if any of the status of the test goes into sample collected.
-     *  2. if status is pickup requested, then show cancel - reschedule option prior 2hrs to pick up date-time
-     *  3. if pickup confirmed, then don't show anything?
-     *  4. if greater than this, then start showing view report option
-     *  5. only showing if reschedule is showing + !orderCancelled + done reschedule
-     */
+
+    //show view report option => inclusion level as report generated.
+    const showReportInclusionLevel = order?.diagnosticOrdersStatus?.find(
+      (
+        item:
+          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | any
+      ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
+    );
+    const showReport = !!showReportInclusionLevel;
+
+    //show extra view if array contains SAMPLE_REJECTED_IN_LAB, 2nd reqd.
+    const showExtraInfo = order?.diagnosticOrdersStatus?.filter(
+      (
+        item:
+          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | any
+      ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+    );
+
+    const sampleRejectedString = showExtraInfo?.map(
+      (
+        item:
+          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | any
+      ) => item?.itemName
+    );
 
     return (
-      <TestOrderCard
-        key={`${order.id}`}
-        orderId={`${order.displayId}`}
-        showStatus={false}
+      <OrderTestCard
+        orderId={order?.displayId}
+        key={order?.id}
+        createdOn={order?.createdDate}
+        orderLevelStatus={order?.orderStatus}
         patientName={patientName}
-        isComingFrom={'individualOrders'}
-        showDateTime={
-          showCancel && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
-            ? showDateTime
-            : false
-        }
+        gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
+        showAddTest={false}
+        ordersData={order?.diagnosticOrderLineItems!}
+        showPretesting={showPreTesting!}
+        dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
+        slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.slotTimings}
+        isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
+        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         showRescheduleCancel={
           showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
-        ordersData={order?.diagnosticOrderLineItems!}
-        dateTime={`Rescheduled For: ${dtTm}`}
-        statusDesc={'Home Visit'}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
-        showViewReport={false}
-        onPress={() => {
-          _navigateToYourTestDetails(order);
-        }}
-        status={currentStatus}
-        statusText={getTestOrderStatusText(currentStatus)}
+        showReportOption={showReport}
+        showAdditonalView={!!showExtraInfo && showExtraInfo?.length > 0}
+        additonalRejectedInfo={sampleRejectedString}
+        price={order?.totalPrice}
+        onPressCard={() => _navigateToYourTestDetails(order)}
+        onPressAddTest={() => _onPressAddTest()}
+        onPressReschedule={() => _onPressTestReschedule(order)}
+        onPressViewDetails={() => _navigateToYourTestDetails(order)}
+        onPressViewReport={() => _onPressViewReport(order)}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        onPressCancel={() => onPressTestCancel(order)}
-        onPressReschedule={() => onPressTestReschedule(order)}
-        showTestPreparation={showPreTesting!}
-        onOptionPress={() => _openOrderSummary(order)}
-        onPressViewReport={() => _navigateToPHR()}
       />
     );
   };
+
+  function _onPressAddTest() {
+    console.log('add test pressed');
+  }
+
+  function _onPressViewReport(order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) {
+    const visitId = order?.visitNo;
+    DiagnosticViewReportClicked();
+    if (visitId) {
+      fetchTestReportResult(order);
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
+  }
+
   const renderOrders = () => {
     return (
       <FlatList
@@ -1005,10 +1197,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {showCancelReasonPopUp && renderCancelReasonPopUp()}
-      {showRescheduleReasonPopUp && renderRescheduleReasonPopUp()}
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-      {showSummaryPopup && renderOrderSummary()}
+
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
@@ -1019,8 +1209,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
-          {renderCancelPopUp()}
-          {renderReschedulePopUp()}
+          {showBottomOverlay && renderBottomPopUp()}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}
@@ -1036,76 +1225,84 @@ const styles = StyleSheet.create({
     shadowColor: 'white',
     elevation: 0,
   },
-  chatWithUsView: { paddingBottom: 10, paddingTop: 5 },
-  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
-  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
-  chatWithUsText: {
-    textAlign: 'center',
-    paddingRight: 0,
-    marginHorizontal: 5,
-    ...theme.viewStyles.text('B', 14, colors.APP_YELLOW),
-  },
-  dropdownOverlayStyle: {
-    padding: 0,
-    margin: 0,
-    height: 'auto',
-    borderRadius: 10,
-  },
-  cancelReasonHeadingView: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: theme.colors.WHITE,
-    padding: 18,
-    marginBottom: 24,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    flexDirection: 'row',
-  },
-  cancelReasonHeadingText: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SHERPA_BLUE,
-    textAlign: 'center',
-    marginHorizontal: '20%',
-  },
-  cancelReasonContentHeading: {
-    marginBottom: 12,
-    color: '#0087ba',
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
-  },
-  cancelReasonContentView: { flexDirection: 'row', alignItems: 'center' },
-  cancelReasonContentText: {
-    flex: 0.9,
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
-  },
-  reasonCancelDropDownExtraView: {
-    marginTop: 5,
-    backgroundColor: '#00b38e',
-    height: 2,
-  },
-  cancelReasonSubmitButton: { margin: 16, marginTop: 32, width: 'auto' },
-  reasonCancelOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-start',
-    flex: 1,
-    left: 0,
-    right: 0,
-    zIndex: 3000,
-  },
-  reasonCancelCrossTouch: { marginTop: 80, alignSelf: 'flex-end' },
-  reasonCancelView: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-  },
+
   orderSummaryOuterView: {
     marginHorizontal: 20,
     flexDirection: 'row',
     marginVertical: '15%',
   },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.CLEAR,
+    zIndex: 3000,
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
+  },
+  overlayTouch: {
+    width: '100%',
+    backgroundColor: colors.CLEAR,
+    bottom: 0,
+    position: 'absolute',
+  },
+  overlaySafeArea: { flex: 1, backgroundColor: colors.CLEAR },
+  overlayContainer: {
+    backgroundColor: 'white',
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: 'transparent',
+  },
+  overlayHeadingText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'left',
+    lineHeight: 24,
+    margin: 16,
+    marginBottom: 0,
+  },
+  optionsTouch: {
+    ...theme.viewStyles.cardContainer,
+    margin: 16,
+    padding: 10,
+    borderRadius: 8,
+    borderColor: 'transparent',
+  },
+  rowStyle: { justifyContent: 'space-between', flexDirection: 'row' },
+  optionText: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'left',
+    lineHeight: 24,
+  },
+  checkIconStyle: { height: 16, width: 16, resizeMode: 'contain' },
+  optionSubHeadingText: {
+    ...theme.fonts.IBMPlexSansRegular(10),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'left',
+    lineHeight: 14,
+    marginBottom: '4%',
+  },
+  reasonsContainer: {
+    ...theme.viewStyles.cardContainer,
+    margin: 16,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: 'white',
+    flex: 1,
+    borderColor: 'transparent',
+  },
+  reasonsTouch: { flex: 1, margin: 16, marginBottom: 10 },
+  buttonView: { margin: 16, marginTop: 4 },
+  reasonsText: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'left',
+    lineHeight: 18,
+  },
+  buttonStyle: { width: '85%', alignSelf: 'center' },
 });
