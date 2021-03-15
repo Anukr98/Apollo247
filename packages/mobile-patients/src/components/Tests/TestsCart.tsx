@@ -383,17 +383,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
-    const removeSpaces =
-      typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
-    const listOfIds =
-      typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
-    const res: any = await getDiagnosticCartItemReportGenDetails(
-      listOfIds?.toString() || _cartItemId?.toString()
-    );
-    if (res?.data?.success) {
-      const result = g(res, 'data', 'data');
-      setReportGenDetails(result || []);
-    } else {
+    try {
+      const removeSpaces =
+        typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
+      const listOfIds =
+        typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
+      const res: any = await getDiagnosticCartItemReportGenDetails(
+        listOfIds?.toString() || _cartItemId?.toString()
+      );
+      if (res?.data?.success) {
+        const result = g(res, 'data', 'data');
+        setReportGenDetails(result || []);
+      } else {
+        setReportGenDetails([]);
+      }
+    } catch (e) {
+      CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
       setReportGenDetails([]);
     }
   };
@@ -2096,20 +2101,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   ) => {
     return (
       <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          marginHorizontal: 20,
-          // marginTop: 4,
-          marginBottom: 50,
-          padding: 16,
-          marginTop: 10,
-          flexDirection: 'row',
-          borderColor: theme.colors.APP_GREEN,
-          borderWidth: 2,
-          borderRadius: 5,
-          borderStyle: 'dashed',
-          justifyContent: imagePosition == 'left' ? 'flex-start' : 'center',
-        }}
+        style={[
+          styles.dashedBannerViewStyle,
+          { justifyContent: imagePosition == 'left' ? 'flex-start' : 'center' },
+        ]}
       >
         {imagePosition == 'left' && (
           <View style={{ flexDirection: 'row' }}>
@@ -3356,7 +3351,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     </View>
   );
 };
-const { text } = theme.viewStyles;
+const { text, cardViewStyle } = theme.viewStyles;
 const { SHERPA_BLUE, APP_YELLOW } = theme.colors;
 const styles = StyleSheet.create({
   labelView: {
@@ -3489,5 +3484,17 @@ const styles = StyleSheet.create({
   testReportMsgStyle: {
     ...text('R', 10, SHERPA_BLUE, 0.7, 14),
     marginBottom: 24,
+  },
+  dashedBannerViewStyle: {
+    ...cardViewStyle,
+    marginHorizontal: 20,
+    marginBottom: 50,
+    padding: 16,
+    marginTop: 10,
+    flexDirection: 'row',
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 2,
+    borderRadius: 5,
+    borderStyle: 'dashed',
   },
 });
