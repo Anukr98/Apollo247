@@ -984,7 +984,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           <Text style={styles.doctorTextStyle}>{data?.policyNumber}</Text>
         ) : null}
         {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
-          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.prescribedBy || 'Dr. -'}</Text>
+          <Text style={styles.doctorTextStyle}>
+            {data?.prescribedBy ? 'Dr. ' + data?.prescribedBy : 'Dr. -'}
+          </Text>
         ) : null}
         {data?.suggestedByDoctor ? (
           <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}</Text>
@@ -997,7 +999,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {medicalInsurance || hospitalization || data?.diseaseName ? null : (
           <Text style={styles.sourceTextStyle}>
-            {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) || '-'}
+            {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) ===
+            string.common.clicnical_document_text
+              ? string.common.clicnical_document_text
+              : data?.siteDisplayName || '-'}
           </Text>
         )}
         {data?.age ? (
@@ -1007,7 +1012,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {hospitalization ? (
           <Text style={styles.sourceTextStyle}>
-            {data?.hospitalName ? data?.hospitalName : getSourceName(data?.source) || '-'}
+            {data?.hospitalName &&
+            getSourceName(data?.source) === string.common.clicnical_document_text
+              ? data?.hospitalName
+              : data?.siteDisplayName || '-'}
           </Text>
         ) : null}
         <View style={styles.separatorLineStyle} />
