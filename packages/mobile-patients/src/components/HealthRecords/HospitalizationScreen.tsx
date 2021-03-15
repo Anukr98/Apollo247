@@ -254,7 +254,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };

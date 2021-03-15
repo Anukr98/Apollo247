@@ -332,7 +332,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };
