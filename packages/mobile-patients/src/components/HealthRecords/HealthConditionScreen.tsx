@@ -260,7 +260,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        CommonBugFender('HealthConditionScreen_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
@@ -316,6 +316,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         }
       })
       .catch((error) => {
+        CommonBugFender('HealthConditionScreen_searchPHRApiWithAuthToken', error);
         console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
@@ -331,7 +332,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };
@@ -406,6 +407,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('HealthConditionScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
@@ -589,6 +591,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         }
       })
       .catch((error) => {
+        CommonBugFender('HealthConditionScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });
