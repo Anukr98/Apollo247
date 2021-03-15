@@ -304,6 +304,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [newAddressAddedHomePage]);
 
   /** added so that if phramacy code change, then this also changes. */
+  /**need to put a check if pincode is entered then that needs to be saved, and only change in pharama location comes here. */
   useEffect(() => {
     setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
     checkIsPinCodeServiceable(
@@ -549,9 +550,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
           setDeliveryAddressId?.(deliveryAddress?.id);
-        } else {
-          let location = diagnosticLocation || pharmacyLocation || locationDetails;
-          checkIsPinCodeServiceable(location?.pincode!, undefined, 'fetchAddressElse');
         }
       } else {
         checkLocation(addressList);

@@ -1814,3 +1814,6 @@ export const LowNetworkIcon: React.FC<IconProps> = (props) => (
 export const Truecaller: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/truecaller.png')} resizeMode="contain" />
 );
+export const DisabledTickIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_tick_disabled.png')} />
+);

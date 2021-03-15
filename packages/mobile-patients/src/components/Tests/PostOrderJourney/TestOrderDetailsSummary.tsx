@@ -1,27 +1,17 @@
-import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOrderSummaryView';
-import {
-  SlotInfo,
-  TestScheduleOverlay,
-  TestScheduleType,
-} from '@aph/mobile-patients/src/components/Tests/TestScheduleOverlay';
+import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/Tests/components/TestOrderSummaryView';
+
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-// import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
-  CANCEL_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-  UPDATE_DIAGNOSTIC_ORDER,
+  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  cancelDiagnosticOrder,
-  cancelDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrder';
+
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
@@ -31,20 +21,12 @@ import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  updateDiagnosticOrder,
-  updateDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
-import {
-  g,
-  handleGraphQlError,
-  postWEGNeedHelpEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { BackHandler, SafeAreaView, StyleSheet, View } from 'react-native';
 import {
@@ -53,9 +35,16 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { OrderCancelOverlay } from './OrderCancelOverlay';
+import { OrderCancelOverlay } from '@aph/mobile-patients/src/components/Tests/OrderCancelOverlay';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  getPrismAuthToken,
+  getPrismAuthTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useUIElements } from '../../UIElementsProvider';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -76,23 +65,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const cancelOptions: [string, string][] = [
-  'Booked from else where',
-  'Pick up person did not turn up',
-  'Not available at selected time',
-  'Pick up person was late',
-  'Do not require medicines any longer',
-  'Unhappy with the discounts',
-  'Others',
-].map((val, idx) => [(idx + 1).toString(), val]);
-
-const rescheduleOptions: [string, string][] = [
-  'Not available at selected time',
-  'Pick up person was late',
-  'Not in fasting condition',
-  'Others',
-].map((val, idx) => [(idx + 1).toString(), val]);
-
 export interface TestOrderDetailsSummaryProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -105,9 +77,9 @@ export interface TestOrderDetailsSummaryProps extends NavigationScreenProps {
 export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
-  const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
   const isComingFrom = props.navigation.getParam('comingFrom');
+  const { showAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -225,122 +197,12 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     );
   };
 
-  const renderCancelOrderOverlay = () => {
-    return (
-      isCancelVisible && (
-        <OrderCancelOverlay
-          heading="Cancel Order"
-          onClose={() => setCancelVisible(false)}
-          isVisible={isCancelVisible}
-          loading={apiLoading}
-          options={cancelOptions}
-          onSubmit={onSubmitCancelOrder}
-        />
-      )
-    );
-  };
-
-  const renderRescheduleOrderOverlay = () => {
-    return (
-      isRescheduleVisible && (
-        <TestScheduleOverlay
-          type={g(order, 'slotTimings') ? 'home-visit' : 'clinic-visit'}
-          heading="Schedule Appointment"
-          onClose={() => setRescheduleVisible(false)}
-          isVisible={isRescheduleVisible}
-          loading={apiLoading}
-          options={rescheduleOptions}
-          onReschedule={onSubmitRescheduleOrder}
-          addressId={orderDetails.patientAddressId}
-        />
-      )
-    );
-  };
-
-  const setInitialSate = () => {
-    setApiLoading(false);
-    setCancelVisible(false);
-    setRescheduleVisible(false);
-  };
-
-  const callApiAndRefetchOrderDetails = (func: Promise<any>) => {
-    func
-      .then(() => {
-        refetch()
-          .then(() => {
-            setInitialSate();
-          })
-          .catch((e) => {
-            CommonBugFender('TestOrderDetails_refetch_callApiAndRefetchOrderDetails', e);
-            setInitialSate();
-          });
-      })
-      .catch((e) => {
-        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', e);
-        console.log({ e });
-        handleGraphQlError(e);
-        setApiLoading(false);
-      });
-  };
-
-  const onSubmitCancelOrder = (reason: string, comment?: string) => {
-    // TODO: call api and change visibility, refetch
-    setApiLoading(true);
-    const api = client.mutate<cancelDiagnosticOrder, cancelDiagnosticOrderVariables>({
-      mutation: CANCEL_DIAGNOSTIC_ORDER,
-      context: {
-        sourceHeaders,
-      },
-      variables: { diagnosticOrderId: orderDetails.displayId },
-    });
-    callApiAndRefetchOrderDetails(api);
-  };
-
-  const onSubmitRescheduleOrder = (
-    type: TestScheduleType,
-    date: Date,
-    reason: string,
-    comment?: string,
-    slotInfo?: SlotInfo
-  ) => {
-    // TODO: call api and change visibility, refetch
-    setApiLoading(true);
-    const isClinicVisit = type == 'clinic-visit';
-    const slotTimings = !isClinicVisit
-      ? [slotInfo!.startTime, slotInfo!.endTime].map((val) => val.trim()).join(' - ')
-      : '';
-    const variables: updateDiagnosticOrderVariables = {
-      updateDiagnosticOrderInput: {
-        id: g(order, 'id'),
-        prescriptionUrl: g(order, 'prescriptionUrl')!,
-        centerName: g(order, 'centerName')!,
-        centerCode: g(order, 'centerCode')!,
-        centerCity: g(order, 'centerCity')!,
-        centerState: g(order, 'centerState')!,
-        centerLocality: g(order, 'centerLocality')!,
-        // customizations
-        diagnosticDate: moment(date).format('YYYY-MM-DD'),
-        slotTimings: slotTimings || '',
-        employeeSlotId: g(slotInfo, 'slot')!,
-        diagnosticEmployeeCode: g(slotInfo, 'employeeCode') || '',
-        diagnosticBranchCode: g(slotInfo, 'diagnosticBranchCode') || '',
-      },
-    };
-    console.log({ variables });
-    console.log(JSON.stringify(variables));
-
-    const api = client.mutate<updateDiagnosticOrder, updateDiagnosticOrderVariables>({
-      mutation: UPDATE_DIAGNOSTIC_ORDER,
-      context: {
-        sourceHeaders,
-      },
-      variables,
-    });
-    callApiAndRefetchOrderDetails(api);
-  };
-
   const renderOrderSummary = () => {
-    return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
+    return (
+      !!g(orderDetails, 'totalPrice') && (
+        <TestOrderSummaryView orderDetails={orderDetails} onPressViewReport={() => {}} />
+      )
+    );
   };
 
   const renderMoreMenu = () => {
@@ -372,8 +234,6 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
 
   return (
     <View style={{ flex: 1 }}>
-      {renderCancelOrderOverlay()}
-      {renderRescheduleOrderOverlay()}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -387,24 +247,8 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
             }}
           />
         </View>
-        {/* <TabsComponent
-          style={styles.tabsContainer}
-          onChange={(title) => {
-            setSelectedTab(title);
-          }}
-          data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
-          selectedTab={selectedTab}
-        /> */}
-        <ScrollView bounces={false}>
-          {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
-          {/* <NeedHelpAssistant
-            containerStyle={{ marginTop: 20, marginBottom: 30 }}
-            navigation={props.navigation}
-            onNeedHelpPress={() => {
-              postWEGNeedHelpEvent(currentPatient, 'Tests');
-            }}
-          /> */}
-        </ScrollView>
+
+        <ScrollView bounces={false}>{renderOrderSummary()}</ScrollView>
       </SafeAreaView>
       {loading && <Spinner style={{ zIndex: 200 }} />}
     </View>

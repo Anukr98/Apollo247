@@ -99,7 +99,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { differenceInYears, parse } from 'date-fns';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -124,7 +124,7 @@ import {
   StackActions,
 } from 'react-navigation';
 import Geolocation from 'react-native-geolocation-service';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -1931,10 +1931,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTotalCharges = () => {
-    const isPPEKitChargesApplicable = cartItems.map((item) =>
-      COVID_NOTIFICATION_ITEMID.includes(item.id)
-    );
-    const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
 
     return (
