@@ -202,9 +202,9 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       ? products.filter((product: MedicineProduct) => isProductInStock(product))
       : [];
     if (pageId == 1) {
-      setProducts(filteredProducts || []);
+      setProducts(products || []);
     } else {
-      setProducts([...existingProducts, ...(filteredProducts || [])]);
+      setProducts([...existingProducts, ...(products || [])]);
     }
   };
 
