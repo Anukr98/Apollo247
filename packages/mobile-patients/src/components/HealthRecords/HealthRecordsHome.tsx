@@ -799,6 +799,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           }, 1800);
         })
         .catch((e) => {
+          CommonBugFender('HealthRecordsHome_UPDATE_PATIENT_MEDICAL_PARAMETERS', e);
           setShowUpdateProfilePopup(false);
           setOverlaySpinner(false);
           loading && setLoading!(false);
@@ -1536,6 +1537,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_searchPHRApiWithAuthToken', error);
         console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);

@@ -202,7 +202,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        CommonBugFender('HospitalizationScreen_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
@@ -238,6 +238,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         }
       })
       .catch((error) => {
+        CommonBugFender('HospitalizationScreen_searchPHRApiWithAuthToken', error);
         console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
@@ -358,6 +359,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('HospitalizationScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
@@ -387,6 +389,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         }
       })
       .catch((error) => {
+        CommonBugFender('HospitalizationScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });
