@@ -544,7 +544,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
-      setAddresses!(addressList);
+      setAddresses?.(addressList);
       setTestAddress?.(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
@@ -1039,7 +1039,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ...item,
         defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
       }));
-      setAddresses!(updatedAddresses);
+      setAddresses?.(updatedAddresses);
       setTestAddress?.(updatedAddresses);
       patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
