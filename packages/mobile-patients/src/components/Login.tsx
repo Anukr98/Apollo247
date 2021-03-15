@@ -19,6 +19,9 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
+  SetAppsFlyerCustID,
+  setFirebaseUserId,
+  setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
@@ -47,15 +50,38 @@ import {
 import messaging from '@react-native-firebase/messaging';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
-import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  NavigationEventSubscription,
+  NavigationScreenProps,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
-// let TRUECALLER: any;
+import { VERIFY_TRUECALLER_PROFILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  verifyTrueCallerProfile,
+  verifyTrueCallerProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/verifyTrueCallerProfile';
+import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  saveTokenDevice,
+  phrNotificationCountApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 
-// if (Platform.OS === 'android') {
-//   TRUECALLER = require('react-native-truecaller-sdk').default;
-// }
+let TRUECALLER: any;
+
+if (Platform.OS === 'android') {
+  TRUECALLER = require('react-native-truecaller-sdk').default;
+}
 
 const { height, width } = Dimensions.get('window');
 
@@ -167,19 +193,22 @@ let didBlurSubscription: NavigationEventSubscription;
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { signOut } = useAuth();
+  const { signOut, getFirebaseToken, getPatientApiCall, getPatientByPrism } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [appSign, setAppSign] = useState<string>('');
   const isAndroid = Platform.OS === 'android';
+  const client = useApolloClient();
+  const [openFillerView, setOpenFillerView] = useState<boolean>(false);
+  const { setPhrNotificationData } = useAppCommonData();
 
   const { setLoading, showAphAlert } = useUIElements();
   const webengage = new WebEngage();
 
   useEffect(() => {
-    // isAndroid && initializeTruecaller();
-    // isAndroid && truecallerEventListeners();
+    isAndroid && initializeTruecaller();
+    isAndroid && truecallerEventListeners();
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -200,52 +229,217 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   }, []);
 
-  // const initializeTruecaller = () => {
-  //   TRUECALLER.initializeClient(
-  //     'CONSENT_MODE_POPUP',
-  //     'SDK_CONSENT_TITLE_LOG_IN',
-  //     'FOOTER_TYPE_SKIP'
-  //   );
-  // };
+  const initializeTruecaller = () => {
+    TRUECALLER.initializeClient(
+      'CONSENT_MODE_POPUP',
+      'SDK_CONSENT_TITLE_LOG_IN',
+      'FOOTER_TYPE_SKIP'
+    );
+  };
 
-  // const truecallerEventListeners = () => {
-  //   // For handling the success event
-  //   TRUECALLER.on('profileSuccessReponse', (profile: any) => {
-  //     setLoading?.(false);
-  //     // add other logic here related to login/sign-up as per your use-case.
-  //   });
+  const truecallerEventListeners = () => {
+    // For handling the success event
+    TRUECALLER.on('profileSuccessReponse', (profile: any) => {
+      setLoading?.(false);
+      // add other logic here related to login/sign-up as per your use-case.
+      verifyTrueCallerProfile(profile);
+    });
 
-  //   // For handling the reject event
-  //   TRUECALLER.on('profileErrorReponse', (error: any) => {
-  //     setLoading?.(false);
-  //     if (error && error.errorCode) {
-  //       switch (error.errorCode) {
-  //         case 1: {
-  //           showAphAlert!({
-  //             title: 'Uh oh.. :(',
-  //             description: string.truecaller.networkProblem,
-  //           });
-  //           break;
-  //         }
-  //         case 4:
-  //         case 10: {
-  //           showAphAlert!({
-  //             title: 'Uh oh.. :(',
-  //             description: string.truecaller.userNotVerified,
-  //           });
-  //           break;
-  //         }
-  //         case 11: {
-  //           showAphAlert!({
-  //             title: 'Uh oh.. :(',
-  //             description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-  //           });
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   });
-  // };
+    // For handling the reject event
+    TRUECALLER.on('profileErrorReponse', (error: any) => {
+      setLoading?.(false);
+      if (error && error.errorCode) {
+        switch (error.errorCode) {
+          case 1: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.networkProblem,
+            });
+            break;
+          }
+          case 4:
+          case 10: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.userNotVerified,
+            });
+            break;
+          }
+          case 11: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+            });
+            break;
+          }
+        }
+      }
+    });
+  };
+
+  const verifyTrueCallerProfile = async (profile: any) => {
+    console.log('profile', profile);
+    try {
+      const res = await client.mutate<verifyTrueCallerProfile, verifyTrueCallerProfileVariables>({
+        mutation: VERIFY_TRUECALLER_PROFILE,
+        variables: {
+          profile,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      console.log('Res', res);
+      if (res?.data?.verifyTrueCallerProfile?.id) {
+        getAuthToken();
+      }
+    } catch (error) {
+      CommonBugFender('Login_verifyTrueCallerProfile', error);
+    }
+  };
+
+  const getAuthToken = async () => {
+    try {
+      const res = await getFirebaseToken();
+      console.log('authtokenres', res);
+      if (res) {
+        getOTPPatientApiCall();
+      }
+    } catch (error) {
+      CommonBugFender('Login_getFirebaseToken', error);
+      console.log('Login_getFirebaseToken', error);
+      setOpenFillerView(false);
+    }
+  };
+
+  const getOTPPatientApiCall = async () => {
+    console.log('getOTPPatientApiCall');
+    try {
+      const res = await getPatientApiCall();
+      console.log('getOTPPatientApiCall_OTPVerification', res);
+      AsyncStorage.setItem('currentPatient', JSON.stringify(res));
+      AsyncStorage.setItem('callByPrism', 'false');
+      dataFetchFromMobileNumber(res);
+    } catch (error) {
+      CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
+      console.log('getOTPPatientApiCallerror', error);
+      setOpenFillerView(false);
+    }
+  };
+
+  const dataFetchFromMobileNumber = async (data: any) => {
+    const profileData = data?.data?.getPatientByMobileNumber?.patients;
+    console.log('dataFetchFromMobileNumber', data);
+    if (profileData && profileData.length === 0) {
+      try {
+        const res = await getPatientByPrism();
+        if (res) {
+          const allPatients = res?.data?.getCurrentPatients?.patients || null;
+          const mePatient =
+            allPatients?.find((patient: any) => patient?.relation === Relation.ME) ||
+            allPatients[0] ||
+            null;
+          moveScreenForward(mePatient);
+        }
+      } catch (error) {
+        setOpenFillerView(false);
+      }
+    } else {
+      const mePatient =
+        profileData?.find((patient: any) => patient?.relation === Relation.ME) ||
+        profileData[0] ||
+        null;
+      moveScreenForward(mePatient);
+    }
+  };
+
+  const moveScreenForward = (mePatient: any) => {
+    AsyncStorage.setItem('logginHappened', 'true');
+    setOpenFillerView(false);
+    console.log('mePatient-----------------------', mePatient);
+    SetAppsFlyerCustID(mePatient.primaryPatientId);
+    postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
+    if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
+      if (mePatient.relation == null) {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PRE_APOLLO_CUSTOMER] = {
+          value: 'Yes',
+        };
+        postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
+        navigateTo(AppRoutes.MultiSignup);
+      } else {
+        AsyncStorage.setItem('userLoggedIn', 'true');
+        deviceTokenAPI(mePatient.id);
+        callPhrNotificationApi(mePatient?.id);
+        fireUserLoggedInEvent(mePatient, 'Login');
+        navigateTo(AppRoutes.ConsultRoom);
+      }
+    } else {
+      if (mePatient.firstName == '') {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PRE_APOLLO_CUSTOMER] = {
+          value: 'No',
+        };
+        postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
+        navigateTo(AppRoutes.SignUp);
+        fireUserLoggedInEvent(mePatient, 'Registration');
+      } else {
+        AsyncStorage.setItem('userLoggedIn', 'true');
+        deviceTokenAPI(mePatient.id);
+        callPhrNotificationApi(mePatient?.id);
+        navigateTo(AppRoutes.ConsultRoom);
+        fireUserLoggedInEvent(mePatient, 'Login');
+      }
+    }
+  };
+
+  const fireUserLoggedInEvent = (mePatient: any, type: 'Registration' | 'Login') => {
+    setFirebaseUserId(mePatient.id);
+    setCrashlyticsAttributes(mePatient);
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.USER_LOGGED_IN] = {
+      Type: type,
+      userId: mePatient.id,
+    };
+    postFirebaseEvent(FirebaseEventName.USER_LOGGED_IN, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_IN, firebaseAttributes);
+  };
+
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    try {
+      const res = await phrNotificationCountApi(client, currentPatient || '');
+      if (res) {
+        setPhrNotificationData &&
+          setPhrNotificationData(
+            res! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+          );
+      }
+    } catch (error) {
+      CommonBugFender('Login_callPhrNotificationApi', error);
+    }
+  };
+
+  const deviceTokenAPI = async (patientId: string) => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    saveTokenDevice(client, deviceToken2, patientId);
+  };
+
+  const navigateTo = (routeName: AppRoutes) => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: routeName,
+          }),
+        ],
+      })
+    );
+  };
+
+  const postOtpSuccessAppsflyerEvet = (id: string) => {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.OTP_VERIFICATION_SUCCESS] = {
+      'customer id': id,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, appsflyerEventAttributes);
+  };
 
   const fireBaseFCM = async () => {
     try {
@@ -398,36 +592,36 @@ export const Login: React.FC<LoginProps> = (props) => {
     });
   };
 
-  // const renderTruecallerButton = () => {
-  //   return (
-  //     <View style={styles.authContainer}>
-  //       <View style={styles.row}>
-  //         <View style={styles.leftSeperatorLine} />
-  //         <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR) }}>
-  //           Or
-  //         </Text>
-  //         <View style={styles.rightSeperatorLine} />
-  //       </View>
-  //       <AuthButton onPress={loginWithTruecaller} />
-  //     </View>
-  //   );
-  // };
+  const renderTruecallerButton = () => {
+    return (
+      <View style={styles.authContainer}>
+        <View style={styles.row}>
+          <View style={styles.leftSeperatorLine} />
+          <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR) }}>
+            Or
+          </Text>
+          <View style={styles.rightSeperatorLine} />
+        </View>
+        <AuthButton onPress={loginWithTruecaller} />
+      </View>
+    );
+  };
 
-  // const loginWithTruecaller = () => {
-  //   setLoading?.(true);
-  //   TRUECALLER.isUsable((result: boolean) => {
-  //     if (result) {
-  //       // Authenticate via truecaller flow can be used
-  //       TRUECALLER.requestTrueProfile();
-  //     } else {
-  //       setLoading?.(false);
-  //       showAphAlert!({
-  //         title: 'Uh oh.. :(',
-  //         description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-  //       });
-  //     }
-  //   });
-  // };
+  const loginWithTruecaller = () => {
+    setLoading?.(true);
+    TRUECALLER.isUsable((result: boolean) => {
+      if (result) {
+        // Authenticate via truecaller flow can be used
+        TRUECALLER.requestTrueProfile();
+      } else {
+        setLoading?.(false);
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+        });
+      }
+    });
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -507,11 +701,12 @@ export const Login: React.FC<LoginProps> = (props) => {
         </LoginCard>
         <ScrollView>
           {/** Truecaller integration will come in next phase */}
-          {/* {isAndroid && renderTruecallerButton()} */}
-          <LandingDataView />
+          {isAndroid && renderTruecallerButton()}
+          <LandingDataView text="one" />
         </ScrollView>
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
+      {openFillerView && <FetchingDetails />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
