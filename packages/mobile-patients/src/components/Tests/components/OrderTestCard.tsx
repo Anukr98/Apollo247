@@ -287,6 +287,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       activeOpacity={1}
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
+      key={props?.key?.toString()}
     >
       <View key={props?.key?.toString()} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}

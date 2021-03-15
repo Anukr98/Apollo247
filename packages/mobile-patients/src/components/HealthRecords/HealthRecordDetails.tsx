@@ -27,7 +27,6 @@ import {
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_LAB_RESULT_PDF,
-  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
@@ -65,10 +64,6 @@ import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
-import {
-  getPrismAuthToken,
-  getPrismAuthTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -262,7 +257,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       const visitId = getData?.visitNo;
       if (currentPatient?.id === getData?.patientId) {
         if (!!visitId) {
-          getAuthToken(visitId);
+          fetchTestReportResult(visitId);
         } else {
           setLoading?.(false);
           renderError(string.diagnostics.unableToFetchReport, true);
@@ -278,35 +273,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     }
   };
 
-  const getAuthToken = async (visitId: string) => {
-    setLoading?.(true);
-    client
-      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
-        query: GET_PRISM_AUTH_TOKEN,
-        fetchPolicy: 'no-cache',
-        variables: {
-          uhid: currentPatient?.uhid || '',
-        },
-      })
-      .then(({ data }) => {
-        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
-        if (prism_auth_token) {
-          fetchTestReportResult(visitId, prism_auth_token);
-        } else {
-          setLoading?.(false);
-          renderError(string.diagnostics.unableToFetchReport, true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
-        setLoading?.(false);
-        renderError(string.diagnostics.unableToFetchReport, true);
-      });
-  };
-
-  const fetchTestReportResult = useCallback((visitId: string, authToken: string) => {
+  const fetchTestReportResult = useCallback((visitId: string) => {
     getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
       .then((data: any) => {
         const labResultsData = g(
