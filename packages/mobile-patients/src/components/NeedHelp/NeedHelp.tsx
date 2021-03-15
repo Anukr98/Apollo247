@@ -7,11 +7,11 @@ import { GrayEditIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   SafeAreaView,
   ScrollView,
@@ -24,6 +24,12 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { GET_HELP_SECTION_QUERIES } from '../../graphql/profiles';
+import {
+  GetHelpSectionQueries,
+  GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries,
+} from '../../graphql/types/GetHelpSectionQueries';
+import { NeedHelpQueries } from '../../strings/NeedHelpQueries';
 
 const { text } = theme.viewStyles;
 const { LIGHT_BLUE } = theme.colors;
@@ -86,13 +92,17 @@ export interface Props extends NavigationScreenProps {}
 export const NeedHelp: React.FC<Props> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
+  const [queries, setQueries] = useState<
+    GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries[]
+  >([]);
   const [isFocused, setFocused] = useState<boolean>(false);
   const [ongoingQuery, setOngoingQuery] = useState<Query>();
   const [emailValidation, setEmailValidation] = useState<boolean>(
     currentPatient?.emailAddress ? true : false
   );
   const { showAphAlert } = useUIElements();
-  const NeedHelp = AppConfig.Configuration.NEED_HELP;
+  const apolloClient = useApolloClient();
+  const NeedHelp = NeedHelpQueries;
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
@@ -106,8 +116,21 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
+    fetchQueries();
     fetchOngoingQuery();
   }, []);
+
+  const fetchQueries = async () => {
+    try {
+      const { data } = await apolloClient.query<GetHelpSectionQueries>({
+        query: GET_HELP_SECTION_QUERIES,
+        variables: {},
+        fetchPolicy: 'no-cache',
+      });
+      const a = data?.getHelpSectionQueries?.needHelpQueries;
+      setQueries(NeedHelpQueries);
+    } catch (error) {}
+  };
 
   const fetchOngoingQuery = async () => {
     try {
@@ -123,18 +146,18 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const renderCategory = (
-    { category, id }: typeof NeedHelp[0],
+    { title, id }: typeof NeedHelp[0],
     containerStyle?: StyleProp<ViewStyle>
   ) => {
-    const onPress = () => onSubmit(category, id);
+    const onPress = () => onSubmit(title, id);
     return (
       <TouchableOpacity
         activeOpacity={1}
-        key={category}
+        key={title}
         style={[styles.categoryItemStyle, containerStyle]}
         onPress={onPress}
       >
-        <Text style={[styles.categoryTextStyle]}>{category}</Text>
+        <Text style={[styles.categoryTextStyle]}>{title}</Text>
       </TouchableOpacity>
     );
   };
@@ -180,15 +203,15 @@ export const NeedHelp: React.FC<Props> = (props) => {
     });
   };
 
-  const onSubmit = (helpCategory: string, helpCategoryId: string) => {
+  const onSubmit = (helpCategory: string, helpCategoryId: number) => {
     if (!emailValidation) {
       showAlert();
       return;
     }
     const route =
-      helpCategoryId === 'pharmacy'
+      helpCategoryId === 1
         ? AppRoutes.NeedHelpPharmacyOrder
-        : helpCategoryId === 'virtualOnlineConsult'
+        : helpCategoryId === 2
         ? AppRoutes.NeedHelpConsultOrder
         : AppRoutes.NeedHelpQueryDetails;
     props.navigation.navigate(route, {
