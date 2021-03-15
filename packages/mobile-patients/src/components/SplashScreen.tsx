@@ -27,7 +27,6 @@ import { apiRoutes } from '../helpers/apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  setBugfenderPhoneNumber,
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -163,7 +162,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         getAppointmentDataAndNavigate(params.appointment_id, false);
       }
     });
-    setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
