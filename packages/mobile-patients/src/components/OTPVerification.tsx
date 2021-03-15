@@ -47,7 +47,6 @@ import {
 } from 'react-native';
 import firebaseAuth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
-import Hyperlink from 'react-native-hyperlink';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { BottomPopUp } from './ui/BottomPopUp';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
@@ -716,22 +715,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           marginHorizontal: 16,
         }}
       >
-        <Hyperlink
-          linkStyle={styles.hyperlink}
-          linkText={(url) =>
-            url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
-          }
-          onPress={(url, text) => openWebView()}
+        <Text
+          style={{
+            color: '#02475b',
+            ...fonts.IBMPlexSansMedium(10),
+          }}
         >
-          <Text
-            style={{
-              color: '#02475b',
-              ...fonts.IBMPlexSansMedium(10),
-            }}
-          >
-            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
-          </Text>
-        </Hyperlink>
+          By signing up, I agree to the <Text style={styles.hyperlink}>Terms and Conditions</Text>{' '}
+          of Apollo247
+        </Text>
       </TouchableOpacity>
     );
   };
