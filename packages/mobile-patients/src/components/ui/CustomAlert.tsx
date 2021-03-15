@@ -1,19 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  StyleProp,
-  ViewStyle,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '../../theme/theme';
-import {
-  CheckBoxFilled,
-  CheckBox,
-  WhatsAppIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const styles = StyleSheet.create({
@@ -92,9 +79,6 @@ export const CustomAlert: React.FC<CustomAlertProps> = (props) => {
       {alertParams.map((item, index, array) =>
         item.type == 'orange-link' ? (
           <Text
-            onPress={() => {
-              console.log('myself');
-            }}
             style={[styles.ctaOrangeTextStyle, { marginRight: index == array.length - 1 ? 0 : 16 }]}
           >
             {item.text}

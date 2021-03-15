@@ -72,14 +72,8 @@ import {
   View,
   Platform,
   Modal,
-  Alert,
 } from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { ProfileList } from '../ui/ProfileList';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import _ from 'lodash';
@@ -164,7 +158,6 @@ const styles = StyleSheet.create({
   bookConsultTxt: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.LIGHT_BLUE,
-    // lineHeight: 20,
     marginLeft: 20,
     marginTop: 8,
   },
@@ -353,8 +346,6 @@ const styles = StyleSheet.create({
   },
 });
 
-let timeout: NodeJS.Timeout;
-
 export interface DoctorSearchProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -401,7 +392,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   useEffect(() => {
     newUserPastSearch();
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -524,7 +514,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           setSymptoms([]);
           setisSearching(false);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
-          console.log('Error occured while searching Doctor', e);
         });
     }
   };
@@ -618,7 +607,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const fetchSpecialities = () => {
-    console.log('fetchSpecialities');
     setshowSpinner(true);
     client
       .query<getAllSpecialties>({
@@ -643,7 +631,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorSearch_fetchSpecialities', e);
         setshowSpinner(false);
-        console.log('Error occured', e);
       });
   };
 
@@ -758,7 +745,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .catch((e) => {
         setshowPastSearchSpinner(false);
         CommonBugFender('DoctorSearch_fetchPastSearches', e);
-        console.log('Error occured', e);
         !!searchText && fetchSearchData();
       });
   };
@@ -931,12 +917,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             style={{ marginBottom: 0, marginTop: 10 }}
           />
           <FlatList
-            contentContainerStyle={
-              {
-                // flexWrap: 'wrap',
-                // marginHorizontal: 12,
-              }
-            }
             horizontal={true}
             bounces={false}
             data={PastSearches}
@@ -1237,9 +1217,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                         saveSearchInput: searchInput,
                       },
                     });
-                  } catch (error) {
-                    console.log(error);
-                  }
+                  } catch (error) {}
                 }
               }}
               style={[
@@ -1646,8 +1624,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               flexDirection: 'row',
               paddingRight: 8,
               borderRightWidth: 0,
-              // paddingTop: 80,
-              // marginTop: 30,
               borderRightColor: 'rgba(2, 71, 91, 0.2)',
               backgroundColor: theme.colors.CLEAR,
             }}
@@ -1678,7 +1654,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             </View>
           </View>
         }
-        // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
         unsetloaderDisplay={true}
       />
     );

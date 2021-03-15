@@ -47,7 +47,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const planSelected = props.navigation.getParam('planSelected');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
-  const mobileNumber = currentPatient && currentPatient.mobileNumber;
   const [loading, setLoading] = useState(true);
   const displayID = props.navigation.getParam('displayID');
   let WebViewRef: any;
@@ -80,9 +79,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
         JSON.stringify([...appointmentIds, appointmentId])
       );
-    } catch (error) {
-      console.log({ error });
-    }
+    } catch (error) {}
   };
 
   const navigatetoStatusscreen = (status: string) => {
@@ -111,8 +108,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
 
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
-    console.log({ data, redirectedUrl });
-    console.log(`RedirectedUrl: ${redirectedUrl}`);
 
     if (
       redirectedUrl &&
@@ -124,7 +119,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   };
 
   const renderwebView = () => {
-    console.log(JSON.stringify(paymentTypeID));
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
@@ -132,7 +126,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     if (planSelected && isCircleDoctorOnSelectedConsultMode && circleSubscriptionId == '') {
       url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
     }
-    console.log(url);
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
@@ -155,14 +148,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         onPress: () => {
           WebViewRef && WebViewRef.stopLoading();
           props.navigation.goBack();
-          // props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
-          //   orderId: appointmentId,
-          //   price: price,
-          //   doctorName: doctorName,
-          //   appointmentDateTime: appointmentInput.appointmentDateTime,
-          //   appointmentType: appointmentInput.appointmentType,
-          //   status: 'PENDING',
-          // });
         },
       },
     ]);

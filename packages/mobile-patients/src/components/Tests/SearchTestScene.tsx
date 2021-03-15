@@ -1,8 +1,7 @@
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -13,7 +12,6 @@ import {
 import {
   GET_PATIENT_PAST_MEDICINE_SEARCHES,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientPastMedicineSearches,
@@ -24,18 +22,12 @@ import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
   aphConsole,
   g,
-  getDiscountPercentage,
   isValidSearch,
   postWebEngageEvent,
-  postWEGNeedHelpEvent,
   postFirebaseEvent,
   postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -64,7 +56,6 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsSearchResults,
-  PackageInclusion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -73,7 +64,6 @@ import moment from 'moment';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { DiagnosticsSearchSuggestionItem } from './components/DiagnosticsSearchSuggestionItem';
 
 const styles = StyleSheet.create({
@@ -246,29 +236,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
-  const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
-    try {
-      const arrayOfId = [Number(id)];
-      setGlobalLoading!(true);
-      const res: any = await getPackageInclusions(client, arrayOfId);
-      if (res) {
-        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
-        setGlobalLoading!(false);
-        const product = data;
-        if (product && product.length) {
-          func && func(product);
-        } else {
-          errorAlert();
-        }
-      }
-    } catch (e) {
-      CommonBugFender('Tests_fetchPackageInclusion', e);
-      setGlobalLoading!(false);
-      console.log('getPackageData Error\n', { e });
-      errorAlert();
-    }
-  };
-
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     aphConsole.log({ errorResponse: e.response, error }); //remove this line later
@@ -299,7 +266,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       );
 
       if (res?.data?.success) {
-        console.log({ res });
         const products = g(res, 'data', 'data') || [];
         setDiagnosticResults(
           products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
@@ -307,7 +273,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         setSearchResult(products?.length == 0);
         setWebEngageEventOnSearchItem(_searchText, products);
       } else {
-        console.log('po');
         setDiagnosticResults([]);
         setSearchResult(true);
       }
@@ -392,7 +357,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
-    // postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate);
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
 
     addCartItem!({
@@ -436,7 +400,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              // style={{ marginRight: 24 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.MedAndTestCart);
@@ -445,14 +408,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity
-              style={{ marginLeft: 10 }}
-              disabled={true}
-              activeOpacity={1}
-              onPress={() => console.log('filter press')}
-            >
-              <Filter />
-            </TouchableOpacity> */}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -582,13 +537,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               renderPastSearchItem(pastSearch!, i == array?.length - 1 ? { marginRight: 0 } : {})
             )}
         </View>
-        {/* <NeedHelpAssistant
-          navigation={props.navigation}
-          containerStyle={{ marginTop: 84, marginBottom: 50 }}
-          onNeedHelpPress={() => {
-            postWEGNeedHelpEvent(currentPatient, 'Tests');
-          }}
-        /> */}
       </ScrollView>
     );
   };
@@ -598,8 +546,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     index: number,
     array: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
-    const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
-
     return (
       <DiagnosticsSearchSuggestionItem
         onPress={() => {

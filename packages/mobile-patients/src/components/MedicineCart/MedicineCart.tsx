@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import React, { useEffect, useState } from 'react';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   View,
   SafeAreaView,
@@ -87,7 +87,6 @@ import {
   postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
-  postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -123,7 +122,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setDeliveryAddressId,
     addMultipleCartItems,
     physicalPrescriptions,
-    ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
     setCircleMembershipCharges,
@@ -175,7 +173,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [appState, setappState] = useState<string>('');
   const [availableHC, setAvailableHC] = useState<number>(0);
   const shoppingCart = useShoppingCart();
-  const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
@@ -322,7 +319,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       }
       setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
     } catch (error) {
-      console.log(error);
       renderAlert(`Something went wrong, unable to fetch addresses.`);
     }
   }
@@ -330,7 +326,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Pharmacy')
       .then(async (resp: any) => {
-        console.log(resp.data);
         if (resp.data.errorCode == 0) {
           let couponList = resp.data.response;
           if (typeof couponList != null && couponList.length) {
@@ -386,7 +381,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
       }
     } catch (error) {
-      console.log(error);
       setloading(false);
     }
   }
@@ -398,14 +392,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       return;
     }
     if (deliveryAddressId && cartItems.length > 0) {
-      console.log('inside tat');
       setloading(true);
       setlastCartItems(newCartItems);
       const skus = cartItems.map((item) => item.id);
       const selectedAddress: any = addresses.find((item) => item.id == deliveryAddressId);
       try {
         const response = await availabilityApi247(selectedAddress.zipcode || '', skus.join(','));
-        console.log('in cart >>', response.data);
         const items = g(response, 'data', 'response') || [];
         const unserviceableSkus = items.filter(({ exist }) => exist == false).map(({ sku }) => sku);
         const updatedCartItems = cartItems.map((item) => ({
@@ -625,7 +617,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const validateCoupon = (coupon: string, message: string | undefined, autoApply?: boolean) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
-    console.log('inside validate');
     setloading!(true);
     let packageId: string[] = [];
     if (hdfcSubscriptionId && hdfcStatus === 'active') {
@@ -651,7 +642,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return new Promise(async (res, rej) => {
       try {
         const response = await validateConsultCoupon(data);
-        console.log('coupon response >>', response.data.response);
         setloading!(false);
         if (response.data.errorCode == 0) {
           if (response.data.response.valid) {
@@ -707,9 +697,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         } else {
           setshowStorePickupCard(false);
         }
-      } catch (error) {
-        console.log(error);
-      }
+      } catch (error) {}
     }
   }
 
@@ -746,7 +734,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       })
       .catch((e) => {
         setloading!(false);
-        console.log({ e });
       });
   };
 

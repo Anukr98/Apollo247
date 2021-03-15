@@ -21,7 +21,6 @@ import {
   LabTestPhrSearchIcon,
   BillPhrSearchIcon,
   InsurancePhrSearchIcon,
-  ClinicalDocumentPhrSearchIcon,
   HospitalPhrSearchIcon,
   HealthConditionPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -79,12 +78,11 @@ import {
 } from 'react-native';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
-import stripHtml from 'string-strip-html';
 import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response,
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
@@ -422,7 +420,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   >([]);
 
   const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
-  const { loading, setLoading, showAphAlert } = useUIElements();
+  const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
   const [arrayValues, setarrayValues] = useState<any>([]);
@@ -496,8 +494,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
@@ -583,8 +579,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_fetchPastData', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching Heath records', error);
       })
       .finally(() => setPastDataLoader(false));
   };
@@ -643,7 +637,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
-        console.log('Error occured', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
@@ -673,7 +666,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsData', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
@@ -693,7 +685,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchPrescriptionData', error);
-        console.log('Error occured fetchPrescriptionData', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
@@ -803,7 +794,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setShowUpdateProfilePopup(false);
           setOverlaySpinner(false);
           loading && setLoading!(false);
-          console.log(e);
         });
     }
   };
@@ -1531,7 +1521,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
       });

@@ -10,13 +10,11 @@ import { ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/global
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { getPatientByMobileNumber } from '../graphql/types/getPatientByMobileNumber';
 import DeviceInfo from 'react-native-device-info';
 
 export const handleDeepLink = (navigationProps: any) => {
   try {
     Linking.addEventListener('url', (event) => {
-      console.log('linkingEvent==>', event);
       handleOpenURL(navigationProps, event.url);
       setBugFenderLog('UTIL_handleDeepLink', JSON.stringify(event));
     });
@@ -28,14 +26,12 @@ export const handleDeepLink = (navigationProps: any) => {
 
 export const handleOpenURL = (navigationProps: any, event: any) => {
   try {
-    console.log('linkinghandleOpenURL', event);
     let route;
     route = event.replace('apollopatients://', '');
 
     const data = route.split('?');
     route = data[0];
     setBugFenderLog('UTIL_handleOpenURL', data);
-    // console.log(data, 'data');
 
     let linkId = '';
 
@@ -47,46 +43,35 @@ export const handleOpenURL = (navigationProps: any, event: any) => {
         }
       }
     } catch (error) {}
-    console.log(linkId, 'linkId');
-
     switch (route) {
       case 'Consult':
-        console.log('Consult');
         pushTheView(navigationProps, 'Consult', data.length === 2 ? linkId : undefined);
         break;
       case 'Medicine':
-        console.log('Medicine');
         pushTheView(navigationProps, 'Medicine', data.length === 2 ? linkId : undefined);
         break;
       case 'Test':
-        console.log('Test');
         pushTheView(navigationProps, 'Test');
         break;
       case 'Speciality':
-        console.log('Speciality handleopen');
         if (data.length === 2) pushTheView(navigationProps, 'Speciality', linkId);
         break;
       case 'Doctor':
-        console.log('Doctor handleopen');
         if (data.length === 2) pushTheView(navigationProps, 'Doctor', linkId);
         break;
       case 'DoctorSearch':
-        console.log('DoctorSearch handleopen');
         pushTheView(navigationProps, 'DoctorSearch');
         break;
 
       case 'MedicineSearch':
-        console.log('MedicineSearch handleopen');
         pushTheView(navigationProps, 'MedicineSearch', data.length === 2 ? linkId : undefined);
         break;
 
       case 'MedicineDetail':
-        console.log('MedicineDetail handleopen');
         pushTheView(navigationProps, 'MedicineDetail', data.length === 2 ? linkId : undefined);
         break;
 
       case 'MedicineCart':
-        console.log('MedicineCart handleopen');
         pushTheView(navigationProps, 'MedicineCart', data.length === 2 ? linkId : undefined);
         break;
 
@@ -94,18 +79,13 @@ export const handleOpenURL = (navigationProps: any, event: any) => {
         pushTheView(navigationProps, 'ConsultRoom');
         break;
     }
-    console.log('route', route);
   } catch (error) {}
 };
 
 export const pushTheView = (navigationProps: any, routeName: String, id?: String) => {
-  console.log('pushTheView', routeName);
   setBugFenderLog('UTIL_pushTheView', { routeName, id });
   switch (routeName) {
     case 'Consult':
-      // if (id) {
-      //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
-      // } else
       navigationProps.navigate('APPOINTMENTS');
       break;
 
@@ -132,9 +112,6 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
       navigationProps.navigate(AppRoutes.DoctorSearchListing, {
         specialityId: id ? id : '',
       });
-      // navigationProps.replace(AppRoutes.DoctorSearchListing, {
-      //   specialityId: id ? id : '',
-      // });
       break;
 
     case 'Doctor':

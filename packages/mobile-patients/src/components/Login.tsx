@@ -45,7 +45,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -152,7 +151,6 @@ const styles = StyleSheet.create({
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  // const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
     ? !/^(234){1}\d{0,9}$/.test(number)
       ? false
@@ -302,7 +300,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             const dif = t1.getTime() - t2.getTime();
 
             const seconds = Math.round(dif / 1000);
-            console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
               if (seconds < 900) {
                 isNoBlocked = true;
@@ -313,7 +310,6 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('Login_getTimerData_try', error);
-      console.log(error.message);
     }
     return isNoBlocked;
   };
@@ -353,7 +349,6 @@ export const Login: React.FC<LoginProps> = (props) => {
 
               loginAPI('+91' + phoneNumber, appSign)
                 .then((confirmResult: any) => {
-                  console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);
 
                   const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
@@ -361,7 +356,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   };
                   postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
 
-                  console.log('confirmResult login', confirmResult);
                   try {
                     signOut();
                   } catch (error) {}
@@ -373,7 +367,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   });
                 })
                 .catch((error: Error) => {
-                  console.log(error, 'error');
                   setShowSpinner(false);
 
                   CommonLogEvent('OTP_SEND_FAIL', error.message);
@@ -454,7 +447,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               style={[
                 {
                   paddingTop: Platform.OS === 'ios' ? 22 : 15,
-                  // flex: 1
                 },
                 phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
               ]}
@@ -487,22 +479,15 @@ export const Login: React.FC<LoginProps> = (props) => {
               marginHorizontal: 16,
             }}
           >
-            <HyperLink
-              linkStyle={styles.hyperlink}
-              linkText={(url) =>
-                url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
-              }
-              onPress={(url, text) => openWebView()}
+            <Text
+              style={{
+                color: '#02475b',
+                ...fonts.IBMPlexSansMedium(10),
+              }}
             >
-              <Text
-                style={{
-                  color: '#02475b',
-                  ...fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
-              </Text>
-            </HyperLink>
+              By signing up, I agree to the{' '}
+              <Text style={styles.hyperlink}>Terms and Conditions</Text> of Apollo247
+            </Text>
           </TouchableOpacity>
         </LoginCard>
         <ScrollView>

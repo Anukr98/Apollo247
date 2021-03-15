@@ -476,9 +476,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         setUpgradePlans([...upgradePlans, subscription]);
       }
       return subscription;
-    } catch (e) {
-      console.log('ERROR: ', e);
-    }
+    } catch (e) {}
   };
 
   const fetchCircleSavings = async () => {
@@ -1069,7 +1067,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       .catch((error) => {
         setLoading!(false);
         setShowDiabeticQuestionaire(false);
-        console.log(error);
         showAphAlert!({
           title: string.common.uhOh,
           description: 'Error while connecting to the Doctor, Please try again',

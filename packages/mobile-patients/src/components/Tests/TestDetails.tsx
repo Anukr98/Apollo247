@@ -8,7 +8,6 @@ import {
   CircleLogo,
   ClockIcon,
   InfoIconRed,
-  PendingIcon,
   WhyBookUs,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -21,13 +20,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
-import {
-  aphConsole,
-  g,
-  nameFormater,
-  isSmallDevice,
-  filterHtmlContent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, nameFormater, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -39,14 +32,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -55,15 +46,8 @@ import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import {
-  GetSubscriptionsOfUserByStatus,
-  GetSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
-import {
-  calculatePackageDiscounts,
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
@@ -84,7 +68,6 @@ import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import HTML from 'react-native-render-html';
 import _ from 'lodash';
 import {
@@ -92,9 +75,7 @@ import {
   navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
-const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
-
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
@@ -156,21 +137,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     addCartItem,
     removeCartItem,
     isDiagnosticCircleSubscription,
-    setIsDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
     deliveryAddressId: diagnosticDeliveryAddressId,
   } = useDiagnosticsCart();
-  const {
-    setIsCircleSubscription,
-    setHdfcSubscriptionId,
-    setCircleSubscriptionId,
-    setHdfcPlanName,
-    setIsFreeDelivery,
-    setCirclePlanValidity,
-    pharmacyCircleAttributes,
-    deliveryAddressId,
-  } = useShoppingCart();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
@@ -181,7 +152,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const movedFrom = props.navigation.getParam('comingFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
-  const source = props.navigation.getParam('source');
 
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
@@ -197,7 +167,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     testInfo?.ItemName ||
     '';
 
-  const hdfc_values = string.Hdfc_values;
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -328,7 +297,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
       setTestInfo({ ...(partialTestDetails || []) });
     } catch (error) {
-      console.log({ error });
       setErrorState(true);
     } finally {
       setLoadingContext?.(false);
@@ -418,57 +386,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   }, []);
 
-  const getUserSubscriptionsByStatus = async () => {
-    try {
-      const query: GetSubscriptionsOfUserByStatusVariables = {
-        mobile_number: g(currentPatient, 'mobileNumber'),
-        status: ['active', 'deferred_inactive'],
-      };
-      const res = await client.query<GetSubscriptionsOfUserByStatus>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        context: {
-          sourceHeaders,
-        },
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
-      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
-          const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-          };
-          setCirclePlanValidity && setCirclePlanValidity(planValidity);
-        } else {
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCirclePlanValidity && setCirclePlanValidity(null);
-        }
-
-        if (data?.HDFC?.[0]._id) {
-          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
-
-          const planName = data?.HDFC?.[0].name;
-          setHdfcPlanName && setHdfcPlanName(planName);
-
-          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
-            setIsFreeDelivery && setIsFreeDelivery(true);
-          }
-        } else {
-          setHdfcSubscriptionId && setHdfcSubscriptionId('');
-          setHdfcPlanName && setHdfcPlanName('');
-        }
-      }
-    } catch (error) {
-      CommonBugFender('Diagnositic_DetailsPage_GetSubscriptionsOfUserByStatus', error);
-    }
-  };
-
   function createSampleType(data: any) {
     const array = data?.map(
       (item: CMSTestInclusions) => nameFormater(item?.sampleTypeName),
@@ -477,20 +394,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const sampleTypeArray = [...new Set(array)];
     return sampleTypeArray;
   }
-
-  const renderNotification = () => {
-    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
-      return null;
-    }
-    return (
-      <View style={styles.notificationCard}>
-        <PendingIcon style={styles.pendingIconStyle} />
-        <Text style={[styles.personDetailStyles, { marginTop: 0, marginLeft: 4, marginRight: 6 }]}>
-          {string.diagnostics.priceNotificationForCovidText}
-        </Text>
-      </View>
-    );
-  };
 
   const renderDescriptionCard = () => {
     const sampleType =
@@ -1109,7 +1012,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               }
             />
           </StickyBottomComponent>
-          {/* {loading && <Spinner />} */}
         </>
       ) : (
         <>
@@ -1135,7 +1037,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 10,
     backgroundColor: theme.colors.WHITE,
-    // height: height === 812 || height === 896 ? 120 : 110,
     height: 'auto',
     paddingHorizontal: 20,
     shadowColor: theme.colors.WHITE,

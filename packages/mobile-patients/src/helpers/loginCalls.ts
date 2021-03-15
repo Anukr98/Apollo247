@@ -15,7 +15,6 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
-    console.log('-------error-------', error);
     const { graphQLErrors, operation, forward } = error;
     if (graphQLErrors) {
       const unauthenticatedError = graphQLErrors.some(
@@ -23,7 +22,6 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
       );
       if (unauthenticatedError) {
         handleUnauthenticated();
-        console.log('-------unauthenticatedError-------', unauthenticatedError);
       }
     }
     return forward(operation);
@@ -37,11 +35,6 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const httpLink = createHttpLink({
     uri: apiRoutes.graphql(),
   });
-  console.log(
-    '-------loginauthToken-------',
-    authToken ? authToken : 'Bearer 3d1833da7020e0602165529446587434'
-  );
-
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({
@@ -55,9 +48,7 @@ const apolloClient: ApolloClient<NormalizedCacheObject> = buildApolloClient(
   () => tokenFailed()
 );
 
-const tokenFailed = () => {
-  console.log('Failed');
-};
+const tokenFailed = () => {};
 
 export const loginAPI = (mobileNumber: string, appSign?: string) => {
   return new Promise((res, rej) => {
@@ -73,7 +64,6 @@ export const loginAPI = (mobileNumber: string, appSign?: string) => {
         variables: inputData,
       })
       .then((data) => {
-        console.log('logindata', data);
         res(data.data.login);
       })
       .catch((e) => {
@@ -90,7 +80,6 @@ export const verifyOTP = (mobileNumber: string, otp: string) => {
       loginType: LOGIN_TYPE.PATIENT,
       otp: otp,
     };
-    console.log('inputData', inputData);
     apolloClient
       .query<verifyLoginOtp, verifyLoginOtpVariables>({
         query: VERIFY_LOGIN_OTP,
@@ -98,7 +87,6 @@ export const verifyOTP = (mobileNumber: string, otp: string) => {
         variables: { otpVerificationInput: inputData },
       })
       .then((data) => {
-        console.log('verifyOTPdata', data);
         res(data.data.verifyLoginOtp);
       })
       .catch((e) => {
@@ -122,7 +110,6 @@ export const resendOTP = (mobileNumber: string, id: string) => {
         variables: inputData,
       })
       .then((data) => {
-        console.log('resendOTPdata', data);
         res(data.data.resendOtp);
       })
       .catch((e) => {

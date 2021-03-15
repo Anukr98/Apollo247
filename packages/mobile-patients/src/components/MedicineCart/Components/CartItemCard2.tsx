@@ -11,7 +11,6 @@ import {
   DeleteBoldIcon,
   DeleteIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 export interface CartItemCard2Props {
@@ -22,7 +21,6 @@ export interface CartItemCard2Props {
 }
 
 export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
-  const { coupon } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);

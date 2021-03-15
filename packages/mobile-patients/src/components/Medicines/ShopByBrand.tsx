@@ -89,7 +89,6 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
   const fetchAllBrands = () => {
     getAllBrands()
       .then((res) => {
-        console.log(res, 'fetchAllBrands');
         if (res && res.data && res.data.brands) {
           setallBrands(res.data.brands);
           setAllBrandData(res.data.brands);
@@ -97,7 +96,6 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
       })
       .catch((err) => {
         CommonBugFender('ShopByBrand_getAllBrands', err);
-        console.log(err, 'errr');
       })
       .finally(() => {
         setshowSpinner(false);
@@ -205,7 +203,6 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
             top: 0,
             left: 0,
             right: 0,
-            // height: 54,
             zIndex: 10,
             elevation: 10,
           }}

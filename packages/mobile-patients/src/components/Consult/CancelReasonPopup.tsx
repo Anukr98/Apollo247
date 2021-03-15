@@ -20,18 +20,12 @@ import { CANCEL_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  NavigationScreenProp,
-  NavigationRoute,
-  StackActions,
-  NavigationActions,
-} from 'react-navigation';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
-
 interface CancelReasonProps {
   isCancelVisible: boolean;
   closePopup: () => void;

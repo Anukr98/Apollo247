@@ -206,7 +206,6 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
@@ -240,7 +239,6 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -298,7 +296,6 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .catch((error) => {
         setShowSpinner(false);
         setApiError(true);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };

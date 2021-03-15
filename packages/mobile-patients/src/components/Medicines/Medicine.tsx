@@ -137,7 +137,7 @@ import {
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
 import Carousel from 'react-native-snap-carousel';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -235,9 +235,7 @@ type Address = savePatientAddress_savePatientAddress_patientAddress;
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
-  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     locationDetails,
     pharmacyLocation,
@@ -249,7 +247,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setLocationDetails,
     setAxdcCode,
     axdcCode,
-    circleSubscription,
     setBannerData,
     bannerData,
     pharmacyUserType,
@@ -261,8 +258,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     addCartItem,
     removeCartItem,
     updateCartItem,
-    addMultipleCartItems,
-    addMultipleEPrescriptions,
     addresses,
     setAddresses,
     deliveryAddressId,
@@ -380,7 +375,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       let from = currentPatient.mobileNumber;
       let to = pharmacyPhoneNumber;
       let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
-      // const param = `fromPhone=${from}&toPhone=${to}&callerId=${caller_id}`;
       const param = {
         fromPhone: from,
         toPhone: to,
@@ -392,7 +386,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         .then((response) => {
           hideAphAlert!();
           globalLoading!(false);
-          console.log('exotelCallAPI response', response, 'params', param);
         })
         .catch((error) => {
           hideAphAlert!();
@@ -401,7 +394,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             title: string.common.uhOh,
             description: 'We could not connect to the pharmacy now. Please try later.',
           });
-          console.log('exotelCallAPI error', error, 'params', param);
         });
     };
     globalLoading!(true);
@@ -478,7 +470,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 ),
               });
               globalLoading!(false);
-              console.log('getNearByStoreDetailsApi', response.data.phoneNumber.toString());
             })
             .catch((error) => {
               showAphAlert!({
@@ -497,7 +488,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 ],
               });
               globalLoading!(false);
-              console.log('getNearByStoreDetailsApi error', error);
             });
         }
       })
@@ -879,7 +869,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          console.log('data >>', data);
           if (data.results.length) {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
@@ -2121,7 +2110,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
           } else {
             // if plan is removed
-            // setShowCareSelectPlans(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
           }
         }}

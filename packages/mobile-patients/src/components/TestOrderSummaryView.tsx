@@ -3,23 +3,16 @@ import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  g,
-  formatTestSlotWithBuffer,
-  postWebEngageEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { ScrollView } from 'react-native-gesture-handler';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-
 export interface LineItemPricing {
   packageMrp: number;
   pricingObj: any;
@@ -54,54 +47,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
   }, []);
 
-  const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-  );
-
-  const getAllObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-  );
-
   const getAllObjectForNull = orderDetails?.diagnosticOrderLineItems?.filter(
     (items) => items?.groupPlan == null
-  );
-
-  const getDiscountObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
 
   let newCircleArray: LineItemPricing[] = [];
   let newAllArray: LineItemPricing[] = [];
   let newSpecialArray: LineItemPricing[] = [];
-
-  const allCirclePlanObjects =
-    getCircleObject?.map((item) =>
-      newCircleArray?.push({
-        packageMrp: item?.itemObj?.packageCalculatedMrp!,
-        pricingObj:
-          item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE) || [],
-      })
-    ) || [];
-
-  const allNormalPlanObjects =
-    getAllObject?.map((item) =>
-      newAllArray?.push({
-        packageMrp: item?.itemObj?.packageCalculatedMrp!,
-        pricingObj:
-          item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL) || [],
-      })
-    ) || [];
-
-  const allSpecialPlanObjects =
-    getDiscountObject?.map((item) =>
-      newSpecialArray?.push({
-        packageMrp: item?.itemObj?.packageCalculatedMrp!,
-        pricingObj:
-          item?.pricingObj?.filter(
-            (obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-          ) || [],
-      })
-    ) || [];
 
   const discountCirclePrice =
     newCircleArray?.map((item) =>
@@ -176,11 +128,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
     0
   );
 
-  const totalSavings =
-    grossCharges + HomeCollectionCharges - orderDetails?.totalPrice != 0
-      ? totalCartSaving + totalDiscountSaving
-      : 0;
-
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
 
   const renderOptions = () => {
@@ -221,22 +168,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
               <Text style={styles.orderName}>Order Type</Text>
               <Text style={styles.hideText}>{isPrepaid ? 'Prepaid' : 'COD'}</Text>
             </View>
-            {/* {!!orderDetails.slotTimings && (
-          <View style={styles.subView}>
-            <Text style={styles.orderName}>Pickup Date</Text>
-            <Text style={styles.hideText}>
-              {`${moment(orderDetails.diagnosticDate).format(`D MMM YYYY`)}`}
-            </Text>
-          </View>
-        )}
-        {!!orderDetails.slotTimings && (
-          <View style={styles.subView}>
-            <Text style={styles.orderName}>Pickup Time</Text>
-            <Text style={styles.hideText}>{`${formatTestSlotWithBuffer(
-              orderDetails.slotTimings
-            )}`}</Text>
-          </View>
-        )} */}
           </View>
           <View style={styles.horizontalline} />
           <View style={styles.headeingView}>
@@ -287,7 +218,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
             <View style={{ flex: 1, alignItems: 'center' }}>
               <Text style={styles.commonText}>
                 {string.common.Rs}
-                {/* {totalIndividalDiagonsticsCharges} */}
                 {convertNumberToDecimal(grossCharges)}
               </Text>
             </View>

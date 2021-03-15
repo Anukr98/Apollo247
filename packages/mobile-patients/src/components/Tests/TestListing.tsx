@@ -14,16 +14,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Dimensions,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Image as ImageNative,
-} from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
@@ -49,14 +41,12 @@ export interface TestListingProps
 
 export const TestListing: React.FC<TestListingProps> = (props) => {
   const {
-    cartItems,
     setTestListingBreadCrumbs,
     testListingBreadCrumbs,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
+  const { isDiagnosticLocationServiceable } = useAppCommonData();
 
   const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');

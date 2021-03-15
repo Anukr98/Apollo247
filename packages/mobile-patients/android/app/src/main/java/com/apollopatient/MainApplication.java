@@ -15,8 +15,6 @@ import com.facebook.soloader.SoLoader;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
-import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
-import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
 import com.apollopatient.GetReferrerPackage;
 
 import com.microsoft.codepush.react.CodePush;
@@ -78,51 +76,11 @@ public class MainApplication extends Application implements ReactApplication {
         });
 
         SoLoader.init(this, /* native exopackage */ false);
-        initializeFlipper(this); // Remove this line if you don't want Flipper enabled
 
         WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
                 .setWebEngageKey("in~~c2ab3529")
                 .setDebugMode(false) // only in development mode
                 .build();
         registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));
-
-        ReactNativeExceptionHandlerModule.setNativeExceptionHandler(new NativeExceptionHandlerIfc() {
-            @Override
-            public void handleNativeException(Thread thread, Throwable throwable, Thread.UncaughtExceptionHandler originalHandler) {
-                // Put your error handling code here
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getApplicationContext());
-                alertDialogBuilder.setTitle("Uh oh.. :(");
-                alertDialogBuilder.setMessage("Oops! Unexpected error occurred. We have reported this to our team. Please close the app and start again.");
-                alertDialogBuilder.setPositiveButton("OK, GOT IT",null);
-                AlertDialog alertDialog = alertDialogBuilder.create();
-                alertDialog.show();
-            }
-        });
-    }
-
-    /**
-     * Loads Flipper in React Native templates.
-     *
-     * @param context
-     */
-    private static void initializeFlipper(Context context) {
-        if (BuildConfig.DEBUG) {
-            try {
-        /*
-         We use reflection here to pick up the class that initializes Flipper,
-        since Flipper library is not available in release mode
-        */
-                Class<?> aClass = Class.forName("com.facebook.flipper.ReactNativeFlipper");
-                aClass.getMethod("initializeFlipper", Context.class).invoke(null, context);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

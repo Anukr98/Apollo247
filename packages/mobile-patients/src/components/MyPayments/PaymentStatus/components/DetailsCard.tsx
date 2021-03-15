@@ -7,8 +7,6 @@ import React, { FC } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
-import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { textComponent } from './GenericText';
 
@@ -18,7 +16,6 @@ interface DetailsCardProps {
 }
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 const DetailsCard: FC<DetailsCardProps> = (props) => {
   const PaymentModes: any = {

@@ -33,7 +33,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Image } from 'react-native-elements';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -301,7 +301,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
         setLoading?.(false);
         renderError(string.diagnostics.unableToFetchReport, true);
       });
@@ -326,7 +325,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsResult', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading?.(false));
@@ -352,7 +350,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       }
     } catch (error) {
       CommonBugFender('RecordDetails_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
 
@@ -475,7 +472,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         .catch((error) => {
           setApiError(true);
           CommonBugFender('HealthRecordsHome_fetchTestData', error);
-          console.log('Error occured', { error });
           currentPatient && handleGraphQlError(error);
         })
         .finally(() => setLoading && setLoading(false));
@@ -548,7 +544,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           }
         })
         .catch((e: any) => {
-          console.log(e);
           setLoading?.(false);
           currentPatient && handleGraphQlError(e, 'Report is yet not available');
         });
@@ -827,15 +822,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 30 }}>
               <Pdf
                 key={data.fileUrl}
-                onLoadComplete={(numberOfPages, filePath) => {
-                  console.log(`number of pages: ${numberOfPages}, fb:${filePath}`);
-                }}
-                onPageChanged={(page, numberOfPages) => {
-                  console.log(`current page: ${page}`);
-                }}
-                onError={(error) => {
-                  console.log(error);
-                }}
                 source={{ uri: data.fileUrl }}
                 style={{
                   height: 425,
@@ -1128,7 +1114,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
-        console.log('error ', err);
         currentPatient && handleGraphQlError(err);
         setLoading && setLoading(false);
       })

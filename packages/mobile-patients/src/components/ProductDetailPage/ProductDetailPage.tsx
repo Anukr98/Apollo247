@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -280,9 +280,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         });
         breadcrumb.push({
           title: 'Medicine Search',
-          onPress: () => {
-            // props.navigation.navigate(AppRoutes.MedicineListing);
-          },
+          onPress: () => {},
         });
       }
       if (movedFrom === ProductPageViewedSource.CART) {
