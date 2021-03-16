@@ -1,6 +1,5 @@
-import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOrderSummaryView';
+import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/Tests/components/TestOrderSummaryView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
@@ -18,15 +17,13 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { BackHandler, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
@@ -60,7 +57,6 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   const setOrders = props.navigation.getParam('setOrders');
   const isComingFrom = props.navigation.getParam('comingFrom');
   const { currentPatient } = useAllCurrentPatients();
-  const [selectedTab, setSelectedTab] = useState<string>(string.orders.viewBill);
   const { getPatientApiCall } = useAuth();
 
   const refetchOrders =
@@ -131,34 +127,12 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     return true;
   };
 
-  const getFormattedDate = (time: string) => {
-    return moment(time).format('D MMM YYYY');
-  };
-
-  const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm A');
-  };
-
-  const renderOrderHistory = () => {
-    return (
-      <View>
-        <View style={{ margin: 20 }}>
-          <OrderProgressCard
-            style={{ marginBottom: 8 }}
-            description={''}
-            status={orderDetails.orderStatus && orderDetails.orderStatus.replace('_', ' ')}
-            date={getFormattedDate(orderDetails.createdDate)}
-            time={getFormattedTime(orderDetails.createdDate)}
-            isStatusDone={true}
-            nextItemStatus={'NOT_EXIST'}
-          />
-        </View>
-      </View>
-    );
-  };
-
   const renderOrderSummary = () => {
-    return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
+    return (
+      !!g(orderDetails, 'totalPrice') && (
+        <TestOrderSummaryView orderDetails={orderDetails} onPressViewReport={() => {}} />
+      )
+    );
   };
 
   return (
@@ -175,9 +149,8 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
             }}
           />
         </View>
-        <ScrollView bounces={false}>
-          {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
-        </ScrollView>
+
+        <ScrollView bounces={false}>{renderOrderSummary()}</ScrollView>
       </SafeAreaView>
       {loading && <Spinner style={{ zIndex: 200 }} />}
     </View>

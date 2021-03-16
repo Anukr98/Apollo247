@@ -111,20 +111,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
+        let status = payload?.payload?.status;
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
           const banks = payload?.payload?.paymentMethods?.filter(
             (item: any) => item?.paymentMethodType == 'NB'
           );
           setBanks(banks);
           setloading(false);
-        } else if (payload?.payload?.action == 'upiTxn' && !payload?.error) {
-          setAvailableUPIapps(payload?.payload?.availableApps || []);
-        } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
-          payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
-          payload?.payload?.status == 'PENDING_VBV' &&
-            !payload?.error &&
-            navigatetoOrderStatus(false, 'pending');
+        } else if (paymentActions.indexOf(payload?.payload?.action) != -1 && status) {
+          status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
+          status == 'PENDING_VBV' && !payload?.error && navigatetoOrderStatus(false, 'pending');
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
+        } else if (payload?.payload?.action == 'upiTxn' && !payload?.error && !status) {
+          setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (payload?.error) {
           handleError(payload?.errorMessage);
         }

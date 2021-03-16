@@ -199,13 +199,10 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     productsApiResponse: MedicineProductsResponse
   ) => {
     const { products } = productsApiResponse;
-    const filteredProducts = products
-      ? products.filter((product: MedicineProduct) => isProductInStock(product))
-      : [];
     if (pageId == 1) {
-      setProducts(filteredProducts || []);
+      setProducts(products || []);
     } else {
-      setProducts([...existingProducts, ...(filteredProducts || [])]);
+      setProducts([...existingProducts, ...(products || [])]);
     }
   };
 

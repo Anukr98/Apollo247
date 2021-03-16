@@ -11,6 +11,7 @@ import {
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { EDIT_DELETE_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DeleteReportPopup } from '@aph/mobile-patients/src/components/HealthRecords/Components/DeleteReportPopup';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   menuContainerStyle: {
@@ -174,7 +175,9 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
               <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />
             )}
             <Text numberOfLines={1} style={styles.sourceNameTextStyle}>
-              {sourceName}
+              {sourceName === string.common.clicnical_document_text
+                ? sourceName
+                : item?.siteDisplayName || '-'}
             </Text>
           </View>
         )}
