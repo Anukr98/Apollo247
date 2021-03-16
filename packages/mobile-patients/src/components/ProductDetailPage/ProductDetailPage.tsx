@@ -649,6 +649,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const renderBottomButton = () => {
+    const total = cartItems
+      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
+      .toFixed(2);
     return (
       <StickyBottomComponent style={styles.stickyBottomComponent}>
         <TouchableOpacity
@@ -661,7 +664,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
               string.common.Rs
-            }${convertNumberToDecimal(cartTotal)}`}
+            }${convertNumberToDecimal(total)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
