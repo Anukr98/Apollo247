@@ -511,7 +511,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         console.log('apiResponse', apiResponse);
         const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
         setSecretaryData(secretaryDetails);
-        console.log('apiResponse');
       })
       .catch((error) => {
         console.log('error', error);
@@ -529,7 +528,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       .then(({ data }: any) => {
         setshowSpinner(false);
         try {
-          console.log(data, 'nextavailable res');
           data[0] && setAvailability(data[0].physicalAvailableSlot);
         } catch (error) {
           CommonBugFender('AppointmentDetails_nextAvailableSlot_try', error);
@@ -576,7 +574,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         })
         .then((_data: any) => {
           const result = _data.data.checkIfReschedule;
-          console.log('checfReschedulesuccess', result);
           setshowSpinner(false);
 
           try {
@@ -737,8 +734,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     }
   };
   const rescheduleAPI = (availability: any) => {
-    console.log('availability', availability);
-
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
@@ -757,8 +752,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       rescheduledId: '',
     };
 
-    console.log(bookRescheduleInput, 'bookRescheduleInput');
-    // if (!rescheduleApICalled) {
     setshowSpinner(true);
     setRescheduleApICalled(true);
     client
@@ -771,7 +764,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       })
       .then((data: any) => {
         postAppointmentWEGEvents('Rescheduled by Customer');
-        console.log(data, 'data');
         setshowSpinner(false);
         props.navigation.dispatch(
           StackActions.reset({
@@ -803,14 +795,12 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   };
   const acceptChange = () => {
     try {
-      console.log('acceptChange');
       setResheduleoverlay(false);
       AsyncStorage.setItem('showSchduledPopup', 'true');
 
       rescheduleAPI(availability);
     } catch (error) {
       CommonBugFender('AppointmentDetails_rescheduleAPI_try', error);
-      console.log(error, 'error');
     }
   };
 
@@ -868,8 +858,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       cancelledById: userId ? userId : data.patientId,
     };
 
-    console.log(appointmentTransferInput, 'appointmentTransferInput');
-
     client
       .mutate<cancelAppointment, cancelAppointmentVariables>({
         mutation: CANCEL_APPOINTMENT,
@@ -881,8 +869,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       .then((data: any) => {
         postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
         setshowSpinner(false);
-        console.log(data, 'data');
-        // setSucessPopup(true);
         showAppointmentCancellSuccessAlert();
       })
       .catch((e: any) => {
@@ -922,8 +908,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   };
 
   if (data.doctorInfo) {
-    console.log('csk log data', JSON.stringify(data));
-
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const showCancel =
       dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;

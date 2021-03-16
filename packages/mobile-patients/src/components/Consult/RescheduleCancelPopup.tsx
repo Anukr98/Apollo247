@@ -24,13 +24,7 @@ export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) =>
     isAppointmentExceedsTenMin,
     isAppointmentStartsInFifteenMin,
   } = props;
-  console.log(
-    'csk rcpopup params',
-    appointmentDiffMin,
-    appointmentDateTime,
-    isAppointmentExceedsTenMin,
-    isAppointmentStartsInFifteenMin
-  );
+
   const btnDisable = isAppointmentStartsInFifteenMin || isAppointmentExceedsTenMin;
   const btnTextColor = btnDisable ? theme.colors.DISABLE_TEXT : theme.colors.APP_YELLOW;
   const postTenMinAppointmentTime = moment(appointmentDateTime)
