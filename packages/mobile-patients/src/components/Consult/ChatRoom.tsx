@@ -1225,6 +1225,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkAutoTriggerMessagePostAppointmentTime = () => {
+    console.log('csk log adata', JSON.stringify(appointmentData));
+
     const diffMin = Math.ceil(
       moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
     );

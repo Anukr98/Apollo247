@@ -71,6 +71,9 @@ import {
   Platform,
 } from 'react-native';
 import { RescheduleCancelPopup } from '@aph/mobile-patients/src/components/Consult/RescheduleCancelPopup';
+import { CancelAppointmentPopup } from '@aph/mobile-patients/src/components/Consult/CancelAppointmentPopup';
+import { CancelReasonPopup } from '@aph/mobile-patients/src/components/Consult/CancelReasonPopup';
+import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consult/CheckReschedulePopup';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 
@@ -430,6 +433,16 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
+  const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+  let cancelAppointmentTitle = '';
+  if (appointmentDiffMin >= 15) {
+    cancelAppointmentTitle =
+      "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+  } else {
+    cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+  }
+  const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
+  const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
 
   useEffect(() => {
     getSecretaryData();
@@ -488,6 +501,8 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         .format('DD MMM h:mm A')}`;
       setAppointmentTime(time);
     }
+    const diffMin = Math.ceil(moment(data?.appointmentDateTime).diff(moment(), 'minutes', true));
+    setAppointmentDiffMin(diffMin);
   }, []);
 
   const getSecretaryData = () => {
@@ -907,6 +922,8 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   };
 
   if (data.doctorInfo) {
+    console.log('csk log data', JSON.stringify(data));
+
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const showCancel =
       dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
@@ -966,29 +983,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         </SafeAreaView>
 
         {showRescheduleCancel && (
-          // (
-          //   <View style={[styles.cancelView, { top: statusBarHeight() }]}>
-          //     <TouchableOpacity
-          //       onPress={() => {
-          //         CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
-          //         setCancelAppointment(false);
-          //       }}
-          //     >
-          //       <View style={styles.cancelSubView}>
-          //         <TouchableOpacity
-          //           onPress={() => {
-          //             setShowCancelPopup(true);
-          //             setCancelAppointment(false);
-          //           }}
-          //         >
-          //           <View style={styles.cancelSubView2}>
-          //             <Text style={styles.cancelSubText2}>Cancel</Text>
-          //           </View>
-          //         </TouchableOpacity>
-          //       </View>
-          //     </TouchableOpacity>
-          //   </View>
-          // )
           <RescheduleCancelPopup
             onPressCancelAppointment={() => {
               CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
@@ -1002,26 +996,26 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             }}
             closeModal={() => setShowRescheduleCancel(false)}
             appointmentDiffMin={appointmentDiffMin}
-            appointmentDateTime={appointmentData?.appointmentDateTime}
+            appointmentDateTime={data?.appointmentDateTime}
             isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
             isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}
           />
         )}
         {showCancelPopup && (
           <CancelAppointmentPopup
-            data={appointmentData}
+            data={data}
             navigation={props.navigation}
             title={cancelAppointmentTitle}
             onPressBack={() => setShowCancelPopup(false)}
             onPressReschedule={() => {
               postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
-              CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
+              CommonLogEvent(AppRoutes.AppointmentDetailsPhysical, 'RESCHEDULE_INSTEAD_Clicked');
               setShowCancelPopup(false);
               setShowReschedulePopup(true);
             }}
             onPressCancel={() => {
               postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
-              CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
+              CommonLogEvent(AppRoutes.AppointmentDetailsPhysical, 'CANCEL CONSULT_CLICKED');
               setShowCancelPopup(false);
               setCancelVisible(true); //to show the reasons for cancelling the consultation
             }}
@@ -1029,7 +1023,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         )}
         {showReschedulePopup && (
           <CheckReschedulePopup
-            data={appointmentData}
+            data={data}
             navigation={props.navigation}
             closeModal={() => setShowReschedulePopup(false)}
             cancelSuccessCallback={() => {
@@ -1039,6 +1033,17 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             rescheduleSuccessCallback={() =>
               postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER)
             }
+          />
+        )}
+        {isCancelVisible && (
+          <CancelReasonPopup
+            isCancelVisible={isCancelVisible}
+            closePopup={() => setCancelVisible(false)}
+            data={data}
+            cancelSuccessCallback={() => {
+              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+            }}
+            navigation={props.navigation}
           />
         )}
 
