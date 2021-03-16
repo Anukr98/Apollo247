@@ -396,6 +396,7 @@ type rescheduleType = {
   isFollowUp: number;
   isPaid: number;
 };
+let appointmentDiffMinTimerId: any;
 
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
@@ -510,7 +511,6 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     } else {
       cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
     }
-    let appointmentDiffMinTimerId: any;
     if (diffMin <= 30 && diffMin >= -10) {
       appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
         let updatedDiffMin = Math.ceil(
@@ -529,6 +529,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         }
       }, 40000);
     }
+    return () => BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
   }, []);
 
   const getSecretaryData = () => {
