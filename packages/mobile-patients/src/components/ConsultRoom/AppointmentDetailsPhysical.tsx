@@ -8,6 +8,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import BackgroundTimer from 'react-native-background-timer';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -503,6 +504,18 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     }
     const diffMin = Math.ceil(moment(data?.appointmentDateTime).diff(moment(), 'minutes', true));
     setAppointmentDiffMin(diffMin);
+    let appointmentDiffMinTimerId: any;
+    if (diffMin <= 30 && diffMin >= -10) {
+      appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
+        const updatedDiffMin = Math.ceil(
+          moment(data?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        setAppointmentDiffMin(updatedDiffMin);
+        if (updatedDiffMin === -10) {
+          BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+        }
+      }, 40000);
+    }
   }, []);
 
   const getSecretaryData = () => {
