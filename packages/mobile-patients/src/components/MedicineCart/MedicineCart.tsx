@@ -554,27 +554,39 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     inventoryData: GetTatResponse247['response']['items'],
     updatedCartItems: ShoppingCartItem[]
   ) {
-    let Items: ShoppingCartItem[] = [];
+    const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
+    const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
+    const updatePricesNotAllowed = updatePrices === 'No';
+    if (updatePricesNotAllowed) {
+      return;
+    }
+
+    const cartItemsAfterPriceUpdate: ShoppingCartItem[] = [];
     updatedCartItems.forEach((item) => {
-      let object = item;
-      let cartItem = inventoryData?.filter((cartItem) => cartItem?.sku == item?.id);
-      if (cartItem?.length) {
-        const storePrice = Number(object?.mou) * cartItem?.[0]?.mrp;
-        if (object?.price != storePrice && cartItem?.[0]?.mrp != 0) {
+      const cartItem = { ...item };
+      const storeItem = inventoryData?.find((cartItem) => cartItem?.sku == item?.id);
+      if (storeItem) {
+        const storePrice = Number(cartItem?.mou) * storeItem?.mrp;
+        const allowPriceUpdate =
+          updatePrices === 'ByPercentage'
+            ? isPricesWithInSpecifiedRange(cartItem?.price, storePrice, updatePricePercent)
+            : true;
+        if (storeItem?.mrp != 0 && allowPriceUpdate) {
           showAphAlert!({
-            title: `Hi, ${currentPatient?.firstName || ''}`,
+            title: `Hi ${currentPatient?.firstName || ''},`,
             description: `Important message for items in your Cart:\n\nSome items' prices have been updated based on the updated MRP from Manufacturer. Please check before you place the order.`,
           });
-          PricemismatchEvent(object, g(currentPatient, 'mobileNumber'), storePrice);
-          object?.specialPrice &&
-            (object?.specialPrice =
-              Number(object?.mou) * cartItem?.[0].mrp * (object?.specialPrice / object?.price));
-          object?.price = Number(object?.mou) * cartItem?.[0]?.mrp;
+          if (cartItem?.specialPrice) {
+            cartItem['specialPrice'] =
+              Number(cartItem?.mou) * storeItem?.mrp * (cartItem?.specialPrice / cartItem?.price);
+          }
+          cartItem['price'] = Number(cartItem?.mou) * storeItem?.mrp;
+          PricemismatchEvent(cartItem, currentPatient?.mobileNumber, storePrice);
         }
       }
-      Items.push(object);
+      cartItemsAfterPriceUpdate.push(cartItem);
     });
-    setCartItems!(Items);
+    setCartItems!(cartItemsAfterPriceUpdate);
     await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
@@ -1265,6 +1277,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     );
   };
   return <View style={{ flex: 1 }}>{cartItems?.length ? renderScreen() : renderEmptyCart()}</View>;
+};
+
+const isPricesWithInSpecifiedRange = (num1: number, num2: number, percentage: number) => {
+  const diffP = ((num1 - num2) / num1) * 100;
+  const result = diffP <= percentage && diffP >= -percentage;
+  return result;
 };
 
 const styles = StyleSheet.create({
