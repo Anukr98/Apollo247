@@ -217,7 +217,6 @@ dependencies {
     implementation project(':react-native-system-setting')
     implementation project(':opentok-react-native')
     implementation project(':react-native-sms-retriever')
-    implementation project(':@bugfender_rn-bugfender')
     implementation project(':react-native-appsflyer')
     implementation 'com.webengage:android-sdk:3.+'
     implementation 'com.google.android.gms:play-services-ads:15.0.1' // optional for webengage
@@ -226,7 +225,6 @@ dependencies {
     implementation project(':@react-native-community_async-storage')
     implementation project(':react-native-device-info')
     implementation project(':react-native-webview')
-    implementation project(':bugsnag-react-native')
     implementation project(':react-native-pdf')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-vector-icons')
