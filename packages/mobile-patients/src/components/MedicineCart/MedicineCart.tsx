@@ -128,6 +128,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setCircleMembershipCharges,
     isCircleSubscription,
     circlePlanSelected,
+    circleSubPlanId,
     setCircleSubPlanId,
     setIsCircleSubscription,
     deliveryTime,
@@ -193,7 +194,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         pharmacyCircleAttributes!,
         pharmacyUserTypeAttribute!
       );
-    setCircleMembershipCharges && setCircleMembershipCharges(0);
+    if (!circleSubPlanId) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+    }
     if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
     }
@@ -469,7 +472,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     error: any
   ) {
     // remove applied circle subscription if tat api returns error
-    if (!circleSubscriptionId && !physicalPrescriptions.length) {
+    if (!circleSubscriptionId && !physicalPrescriptions.length && error?.message === 'undefined') {
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setCirclePlanSelected && setCirclePlanSelected(null);
