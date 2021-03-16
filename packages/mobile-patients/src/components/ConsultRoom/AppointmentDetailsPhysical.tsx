@@ -504,15 +504,28 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     }
     const diffMin = Math.ceil(moment(data?.appointmentDateTime).diff(moment(), 'minutes', true));
     setAppointmentDiffMin(diffMin);
+    if (diffMin >= 15) {
+      cancelAppointmentTitle =
+        "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+    } else {
+      cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+    }
     let appointmentDiffMinTimerId: any;
     if (diffMin <= 30 && diffMin >= -10) {
       appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
-        const updatedDiffMin = Math.ceil(
+        let updatedDiffMin = Math.ceil(
           moment(data?.appointmentDateTime).diff(moment(), 'minutes', true)
         );
         setAppointmentDiffMin(updatedDiffMin);
         if (updatedDiffMin === -10) {
           BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+        }
+        if (updatedDiffMin >= 15) {
+          cancelAppointmentTitle =
+            "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+        } else {
+          cancelAppointmentTitle =
+            'We regret the inconvenience caused. We’ll issue you a full refund.';
         }
       }, 40000);
     }
