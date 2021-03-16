@@ -4765,7 +4765,7 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
 export const VERIFY_TRUECALLER_PROFILE = gql`
   mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
     verifyTrueCallerProfile(profile: $profile) {
-      id
+      authToken
     }
   }
 `;

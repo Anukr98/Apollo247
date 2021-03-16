@@ -193,7 +193,7 @@ let didBlurSubscription: NavigationEventSubscription;
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { signOut, getFirebaseToken, getPatientApiCall, getPatientByPrism } = useAuth();
+  const { signOut, getFirebaseToken, getPatientApiCall, getPatientByPrism, sendOtp } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
@@ -278,7 +278,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const verifyTrueCallerProfile = async (profile: any) => {
-    console.log('profile', profile);
+    AsyncStorage.setItem('phoneNumber', profile?.phoneNumber?.substring(3)); // to ignore +91
+    setOpenFillerView(true);
     try {
       const res = await client.mutate<verifyTrueCallerProfile, verifyTrueCallerProfileVariables>({
         mutation: VERIFY_TRUECALLER_PROFILE,
@@ -287,8 +288,16 @@ export const Login: React.FC<LoginProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      console.log('Res', res);
-      if (res?.data?.verifyTrueCallerProfile?.id) {
+      const authToken = res?.data?.verifyTrueCallerProfile?.authToken;
+      if (authToken) {
+        sendOtp(authToken)
+          .then(() => {
+            getAuthToken();
+          })
+          .catch((e) => {
+            CommonBugFender('OTPVerification_sendOtp', e);
+            // setBugFenderLog('OTPVerification_sendOtp', e);
+          });
         getAuthToken();
       }
     } catch (error) {
@@ -298,36 +307,30 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const getAuthToken = async () => {
     try {
-      const res = await getFirebaseToken();
-      console.log('authtokenres', res);
+      const res = await getFirebaseToken?.();
       if (res) {
         getOTPPatientApiCall();
       }
     } catch (error) {
       CommonBugFender('Login_getFirebaseToken', error);
-      console.log('Login_getFirebaseToken', error);
       setOpenFillerView(false);
     }
   };
 
   const getOTPPatientApiCall = async () => {
-    console.log('getOTPPatientApiCall');
     try {
       const res = await getPatientApiCall();
-      console.log('getOTPPatientApiCall_OTPVerification', res);
       AsyncStorage.setItem('currentPatient', JSON.stringify(res));
       AsyncStorage.setItem('callByPrism', 'false');
       dataFetchFromMobileNumber(res);
     } catch (error) {
       CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
-      console.log('getOTPPatientApiCallerror', error);
       setOpenFillerView(false);
     }
   };
 
   const dataFetchFromMobileNumber = async (data: any) => {
     const profileData = data?.data?.getPatientByMobileNumber?.patients;
-    console.log('dataFetchFromMobileNumber', data);
     if (profileData && profileData.length === 0) {
       try {
         const res = await getPatientByPrism();
@@ -354,7 +357,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
     setOpenFillerView(false);
-    console.log('mePatient-----------------------', mePatient);
     SetAppsFlyerCustID(mePatient.primaryPatientId);
     postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
@@ -496,7 +498,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             const dif = t1.getTime() - t2.getTime();
 
             const seconds = Math.round(dif / 1000);
-            console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
               if (seconds < 900) {
                 isNoBlocked = true;
@@ -507,7 +508,6 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('Login_getTimerData_try', error);
-      console.log(error.message);
     }
     return isNoBlocked;
   };
@@ -547,7 +547,6 @@ export const Login: React.FC<LoginProps> = (props) => {
 
               loginAPI('+91' + phoneNumber, appSign)
                 .then((confirmResult: any) => {
-                  console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);
 
                   const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
@@ -555,7 +554,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   };
                   postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
 
-                  console.log('confirmResult login', confirmResult);
                   try {
                     signOut();
                   } catch (error) {}
@@ -567,7 +565,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   });
                 })
                 .catch((error: Error) => {
-                  console.log(error, 'error');
                   setShowSpinner(false);
 
                   CommonLogEvent('OTP_SEND_FAIL', error.message);
