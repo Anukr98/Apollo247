@@ -59,6 +59,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
+            ignoredStyles={['line-height', 'margin-bottom']}
           />
         </View>
       )
@@ -79,6 +80,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
+            ignoredStyles={['line-height', 'margin-bottom']}
           />
         </View>
       )
@@ -99,6 +101,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
+            ignoredStyles={['line-height', 'margin-bottom']}
           />
         </View>
       )
@@ -119,6 +122,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
+            ignoredStyles={['line-height', 'margin-bottom']}
           />
         </View>
       )
