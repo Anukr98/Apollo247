@@ -2096,7 +2096,7 @@ export interface WebEngageEvents {
     source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
-    Stockavailability: YesOrNo;
+    Stockavailability: YesOrNo | 'Not for Sale';
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
