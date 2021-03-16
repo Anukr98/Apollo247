@@ -27,7 +27,6 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
   const isAddedToCart = !!cartItems?.find(
     (item) => Number(item?.id) == Number(data?.diagnostic_item_id)
   );
-    console.log('check',data.diagnostic_inclusions.length)
   const renderNamePriceAndInStockStatus = () => {
     return (
       <View style={styles.detailContainer}>
@@ -41,7 +40,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
           <Text style={styles.categories}>{data?.diagnostic_inclusions?.length > 1 ? 'in Packages' : 'in Tests'}</Text>
         </View>
         <View style={styles.nameAndPriceViewStyle}>
-          <Text style={styles.numberPlate}>{data?.diagnostic_inclusions?.length > 1 ? `${data?.diagnostic_inclusions?.length} Tests included` : `${data?.diagnostic_inclusions?.length} Packages included`}</Text>
+          {data?.diagnostic_inclusions_test_parameter_data?.length ? <Text style={styles.numberPlate}>{`${data?.diagnostic_inclusions_test_parameter_data?.length} ${data?.diagnostic_inclusions_test_parameter_data?.length > 1 ? `Tests` : `Test`} included`}</Text> : <></>}
           <View style={{ alignSelf: 'center',width: '30%',}}>{renderAddToCartView()}</View>
         </View>
       </View>

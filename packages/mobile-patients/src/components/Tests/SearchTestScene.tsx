@@ -111,6 +111,13 @@ const styles = StyleSheet.create({
   searchValueStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SHERPA_BLUE,
+    backgroundColor: '#F7F8F5',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 5,
+    width:'100%',
+    height: 48,
+    paddingHorizontal: 10,
   },
   deliveryPinCodeContaner: {
     ...theme.viewStyles.cardContainer,
@@ -276,9 +283,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const fetchPopularDetails = async () => {
     try {
       const res: any = await getDiagnosticsPopularResults('diagnostic');
-      console.log('in response')
       if (res?.data?.success) {
-        // console.log('response>>>.', res.data.data)
         const product = g(res, 'data', 'data') || [];
         setPopularArray(product)
         // func && func(product);
@@ -287,7 +292,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       }
       setGlobalLoading!(false);
     } catch (error) {
-      console.log('error>>>.', error)
       CommonBugFender('SearchTestScene_fetchPackageDetails', error);
       aphConsole.log({ error });
       errorAlert();
@@ -518,7 +522,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const renderSearchInput = () => {
     return (
-      <View style={{ paddingHorizontal: 20, backgroundColor: theme.colors.WHITE }}>
+      <View style={{ paddingHorizontal: 10, backgroundColor: theme.colors.WHITE }}>
         <TextInputComponent
           conatinerstyles={{ paddingBottom: 0 }}
           inputStyle={[
