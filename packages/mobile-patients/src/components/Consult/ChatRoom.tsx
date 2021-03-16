@@ -6794,7 +6794,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         <Header
-          title={'CONSULT ROOMss'}
+          title={'CONSULT ROOM'}
           leftIcon="backArrow"
           container={showProgressBarOnHeader.current ? styles.headerView : styles.headerShadowView}
           onPressLeftIcon={() => {
