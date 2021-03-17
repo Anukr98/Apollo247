@@ -251,7 +251,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         switch (error.errorCode) {
           case 1: {
             showAphAlert!({
-              title: 'Uh oh.. :(',
+              title: string.truecaller.errorTitle,
               description: string.truecaller.networkProblem,
             });
             break;
@@ -259,21 +259,21 @@ export const Login: React.FC<LoginProps> = (props) => {
           case 4:
           case 10: {
             showAphAlert!({
-              title: 'Uh oh.. :(',
+              title: string.truecaller.errorTitle,
               description: string.truecaller.userNotVerified,
             });
             break;
           }
           case 11: {
             showAphAlert!({
-              title: 'Uh oh.. :(',
+              title: string.truecaller.errorTitle,
               description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
             });
             break;
           }
           default:
             showAphAlert!({
-              title: 'Uh oh.. :(',
+              title: string.truecaller.errorTitle,
               description: string.truecaller.tryAgainLater,
             });
             break;
@@ -314,7 +314,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const showLoginError = () => {
     setOpenFillerView(false);
     showAphAlert!({
-      title: 'Uh oh.. :(',
+      title: string.truecaller.errorTitle,
       description: string.truecaller.tryAgainLater,
     });
   };
@@ -629,7 +629,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       } else {
         setLoading?.(false);
         showAphAlert!({
-          title: 'Uh oh.. :(',
+          title: string.truecaller.errorTitle,
           description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
         });
       }
