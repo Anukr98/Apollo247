@@ -446,6 +446,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           fireBannerClickedWebengageEvent(hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: Circle.planName,
+            comingFrom: `${from || 'HomePage'} banners`,
           });
         } else if (
           (action === hdfc_values.MEDICINE_LISTING ||

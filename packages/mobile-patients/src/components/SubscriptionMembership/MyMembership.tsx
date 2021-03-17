@@ -565,6 +565,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               membershipType: subscriptionName,
               isActive: isActive,
               isExpired: isExpired,
+              comingFrom: 'My Memberships',
             });
           }}
           style={styles.viewMoreText}
@@ -637,6 +638,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: subscriptionName,
               isActive: isActive,
+              comingFrom: 'My Memberships',
             });
           }}
         >
