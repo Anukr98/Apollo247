@@ -226,7 +226,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);
   useEffect(() => {
-    fetchPopularDetails()
+    setIsLoading(true)
+    if (!popularArray.length) {
+      fetchPopularDetails()
+    }
   }, []);
 
   useEffect(() => {
@@ -285,6 +288,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         setPopularArray(product)
+        setIsLoading(false)
         // func && func(product);
       } else {
         errorAlert();
@@ -770,7 +774,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         {renderHeader()}
         {renderSearchInput()}
       </View>
-      {showMatchingMedicines ? renderMatchingTests() : renderPastSearches()}
+      {renderMatchingTests()}
     </SafeAreaView>
   );
 };
