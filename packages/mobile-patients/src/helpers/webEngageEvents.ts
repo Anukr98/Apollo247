@@ -393,6 +393,7 @@ export enum WebEngageEventName {
   CIRCLE_RENEW_NOW_CLICKED = 'Circle Section Renew Now Clicked',
   CIRCLE_VIEW_BENEFITS_CLICKED = 'Circle Section View Benefits Clicked',
   CIRCLE_MEMBERSHIP_RENEWED = 'Circle Membership Renewed',
+  CIRCLE_MEMBERSHIP_DETAILS_VIEWED = 'Circle Membership Details Viewed',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -2420,6 +2421,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
+  [WebEngageEventName.CIRCLE_MEMBERSHIP_DETAILS_VIEWED]: CircleRenewalAttributes;
   [WebEngageEventName.HOME_VIEWED]: {
     'Patient Name': string;
     'Patient UHID': string;
