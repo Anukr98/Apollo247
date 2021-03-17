@@ -469,10 +469,12 @@ export const getSourceName = (
   if (
     labTestSource === 'self' ||
     labTestSource === '247self' ||
+    labTestSource === '247selfConsultation' ||
     siteDisplayName === 'self' ||
     siteDisplayName === '247self' ||
     healthCheckSource === 'self' ||
-    healthCheckSource === '247self'
+    healthCheckSource === '247self' ||
+    healthCheckSource === '247selfConsultation'
   ) {
     return string.common.clicnical_document_text;
   }

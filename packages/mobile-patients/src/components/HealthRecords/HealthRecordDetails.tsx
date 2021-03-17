@@ -532,7 +532,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'DISCHARGE SUMMARY'
       : prescriptions
-      ? 'PRESCRIPTION'
+      ? data?.source !== '247selfConsultation'
+        ? 'PRESCRIPTION'
+        : 'FILE'
       : medicalBill
       ? 'BILLS'
       : medicalInsurance
