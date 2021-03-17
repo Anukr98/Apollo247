@@ -5,7 +5,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useDiagnosticsCart } from '../../DiagnosticsCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface DiagnosticsNewSearchProps {
   onPress: () => void;
@@ -40,8 +40,6 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (
 
           <View style={{ alignItems: 'flex-end' }}>{renderAddToCartView()}</View>
         </View>
-
-        {/* <Text style={styles.numberPlate}>01 Parameters included</Text> */}
       </View>
     );
   };
@@ -82,7 +80,6 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (
     >
       <View style={styles.containerStyle} key={data.name}>
         <View style={styles.iconAndDetailsContainerStyle}>
-          {/* {renderIconOrImage()} */}
           <View style={{ width: 16}} />
           {renderNamePriceAndInStockStatus()}
         </View>

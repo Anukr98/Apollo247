@@ -76,8 +76,8 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { DiagnosticsSearchSuggestionItem } from './components/DiagnosticsSearchSuggestionItem';
-import { DiagnosticsNewSearch } from './components/DiagnosticsNewSearch';
+import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
+import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
     flex: 1,
@@ -228,7 +228,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   }, []);
   useEffect(() => {
     setIsLoading(true)
-    if (!popularArray.length) {
+    if (!popularArray?.length) {
       fetchPopularDetails()
     }
   }, []);

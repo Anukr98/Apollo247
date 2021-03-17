@@ -41,7 +41,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
         </View>
         <View style={styles.nameAndPriceViewStyle}>
           {data?.diagnostic_inclusions_test_parameter_data?.length ? <Text style={styles.numberPlate}>{`${data?.diagnostic_inclusions_test_parameter_data?.length} ${data?.diagnostic_inclusions_test_parameter_data?.length > 1 ? `Tests` : `Test`} included`}</Text> : <></>}
-          <View style={{ alignSelf: 'center',width: '30%',}}>{renderAddToCartView()}</View>
+          <View style={styles.cartViewContainer}>{renderAddToCartView()}</View>
         </View>
       </View>
     );
@@ -88,7 +88,6 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
       <View style={styles.containerStyle} key={data.name}>
         <View style={styles.iconAndDetailsContainerStyle}>
           {renderIconOrImage()}
-          {/* <View style={{ width: 16,backgroundColor: 'yellow' }} /> */}
           {renderNamePriceAndInStockStatus()}
         </View>
         {props.showSeparator ? <Spearator /> : null}
@@ -157,6 +156,10 @@ const styles = StyleSheet.create({
     color: '#66909C',
     width: '30%',
     alignSelf: 'flex-start'
+  },
+  cartViewContainer: {
+    alignSelf: 'center',
+    width: '30%'
   },
   testNameText: { ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '95%' },
   imageIcon: { height: 40, width: 40 },
