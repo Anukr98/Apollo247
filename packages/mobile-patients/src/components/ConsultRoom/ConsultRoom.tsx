@@ -65,7 +65,6 @@ import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/
 import {
   CommonBugFender,
   CommonLogEvent,
-  CommonSetUserBugsnag,
   DeviceHelper,
   isIos,
   setBugFenderLog,
@@ -1761,10 +1760,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         return item.isActive === true;
       });
       setNotificationCount && setNotificationCount(selectedCount.length);
-
-      CommonSetUserBugsnag(
-        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-      );
     } catch (error) {}
   };
 
@@ -2398,6 +2393,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate('MembershipDetails', {
           membershipType: 'CIRCLE PLAN',
           isActive: true,
+          comingFrom: 'Circle Benifits(Home Screen)',
         });
       } else if (action?.cta_action === string.Hdfc_values.ABSOLUTE_URL) {
         openWebViewFromBanner(url || action?.url);
@@ -2645,6 +2641,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                comingFrom: 'Circle Benifits(Home Screen)',
               });
             }}
             credits={healthCredits}
@@ -2657,6 +2654,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                comingFrom: 'Circle Benifits(Home Screen)',
               });
             }}
             credits={healthCredits}

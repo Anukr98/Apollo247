@@ -1,5 +1,5 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOrderSummaryView';
+import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/Tests/components/TestOrderSummaryView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -7,13 +7,13 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
 
 import {
+  More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
-  DIAGNOSTIC_JUSPAY_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW,
   SequenceForDiagnosticStatus,
@@ -26,7 +26,6 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_PATIENT_FEEDBACK,
-  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrderDetails,
@@ -61,19 +60,12 @@ import {
   MedicalRecordType,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
-import {
-  getPrismAuthToken,
-  getPrismAuthTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '../../graphql/types/getPatientPrismMedicalRecords_V2';
 
-const OTHER_REASON = string.Diagnostics_Feedback_Others;
+import { getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
+
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import {
@@ -81,6 +73,7 @@ import {
   DiagnosticTrackOrderViewed,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 
 /**
  * this needs to be removed once hidestatus starts working
@@ -120,7 +113,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
-  const [prismAuthToken, setPrismAuthToken] = useState('');
   const [labResults, setLabResults] = useState<
     | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
     | null
@@ -219,34 +211,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     orderStatusList[0] = !!individualTestStatus ? individualTestStatus : [];
   }
 
-  const getAuthToken = async () => {
-    setLoading?.(true);
-    client
-      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
-        query: GET_PRISM_AUTH_TOKEN,
-        fetchPolicy: 'no-cache',
-        variables: {
-          uhid: currentPatient?.uhid || '',
-        },
-      })
-      .then(({ data }) => {
-        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
-        if (prism_auth_token) {
-          setPrismAuthToken(prism_auth_token);
-          fetchTestReportResult();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
-        setLoading!(false);
-      });
-  };
-
   const fetchTestReportResult = useCallback(() => {
+    setLoading?.(true);
     const getVisitId = selectedOrder?.visitNo;
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
       .then((data: any) => {
         const labResultsData = g(
           data,
@@ -255,10 +228,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           'response'
         );
         setLabResults(labResultsData);
-        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
-        !!resultForVisitNo
+        let resultForVisitNo = labResultsData?.filter(
+          (item: any) => item?.identifier == getVisitId
+        );
+        let itemNameResult =
+          resultForVisitNo?.length > 0 &&
+          resultForVisitNo?.find((item: any) => item?.labTestName == selectedTest?.itemName);
+
+        !!itemNameResult
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-              data: resultForVisitNo,
+              data: itemNameResult,
               labResults: true,
             })
           : renderReportError(string.diagnostics.responseUnavailableForReport);
@@ -509,7 +488,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const onPressViewReport = () => {
     const visitId = selectedOrder?.visitNo;
     if (visitId) {
-      getAuthToken();
+      fetchTestReportResult();
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
@@ -562,7 +541,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderSummary = () => {
-    return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
+    return (
+      !!g(orderDetails, 'totalPrice') && (
+        <TestOrderSummaryView orderDetails={orderDetails} onPressViewReport={() => onPressButton} />
+      )
+    );
   };
 
   const renderError = () => {
@@ -579,18 +562,44 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   };
 
+  const renderMoreMenu = () => {
+    return (
+      <MaterialMenu
+        options={['Help'].map((item) => ({
+          key: item,
+          value: item,
+        }))}
+        menuContainerStyle={{
+          alignItems: 'center',
+          marginTop: 30,
+        }}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 0 }}
+        itemTextStyle={{ ...theme.viewStyles.text('M', 14, '#01475b') }}
+        onPress={({ value }) => {
+          if (value === 'Help') {
+            props.navigation.navigate(AppRoutes.MobileHelp);
+          }
+        }}
+      >
+        <More />
+      </MaterialMenu>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
             leftIcon="backArrow"
-            title={`ORDER #${orderDetails.displayId || ''}`}
+            title={`ORDER DETAILS`}
             titleStyle={{ marginHorizontal: 10 }}
             container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={() => {
               handleBack();
             }}
+            rightComponent={renderMoreMenu()}
           />
         </View>
         <TabsComponent

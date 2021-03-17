@@ -89,7 +89,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
-    setLoading!(false);
+    setLoading?.(false);
+    //change here.
     props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
       goToHomeOnBack: true,
       showOrderSummaryTab,

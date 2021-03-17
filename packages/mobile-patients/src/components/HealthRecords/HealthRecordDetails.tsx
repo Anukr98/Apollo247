@@ -27,7 +27,6 @@ import {
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_LAB_RESULT_PDF,
-  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
@@ -65,10 +64,6 @@ import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
-import {
-  getPrismAuthToken,
-  getPrismAuthTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -262,7 +257,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       const visitId = getData?.visitNo;
       if (currentPatient?.id === getData?.patientId) {
         if (!!visitId) {
-          getAuthToken(visitId);
+          fetchTestReportResult(visitId);
         } else {
           setLoading?.(false);
           renderError(string.diagnostics.unableToFetchReport, true);
@@ -278,36 +273,13 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     }
   };
 
-  const getAuthToken = async (visitId: string) => {
-    setLoading?.(true);
-    client
-      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
-        query: GET_PRISM_AUTH_TOKEN,
-        fetchPolicy: 'no-cache',
-        variables: {
-          uhid: currentPatient?.uhid || '',
-        },
-      })
-      .then(({ data }) => {
-        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
-        if (prism_auth_token) {
-          fetchTestReportResult(visitId, prism_auth_token);
-        } else {
-          setLoading?.(false);
-          renderError(string.diagnostics.unableToFetchReport, true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
-        setLoading?.(false);
-        renderError(string.diagnostics.unableToFetchReport, true);
-      });
-  };
-
-  const fetchTestReportResult = useCallback((visitId: string, authToken: string) => {
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+  const fetchTestReportResult = useCallback((visitId: string) => {
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
       .then((data: any) => {
         const labResultsData = g(
           data,
@@ -560,7 +532,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'DISCHARGE SUMMARY'
       : prescriptions
-      ? 'PRESCRIPTION'
+      ? data?.source !== '247selfConsultation'
+        ? 'PRESCRIPTION'
+        : 'FILE'
       : medicalBill
       ? 'BILLS'
       : medicalInsurance
@@ -984,7 +958,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           <Text style={styles.doctorTextStyle}>{data?.policyNumber}</Text>
         ) : null}
         {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
-          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.prescribedBy || 'Dr. -'}</Text>
+          <Text style={styles.doctorTextStyle}>
+            {data?.prescribedBy ? 'Dr. ' + data?.prescribedBy : 'Dr. -'}
+          </Text>
         ) : null}
         {data?.suggestedByDoctor ? (
           <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}</Text>
@@ -997,7 +973,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {medicalInsurance || hospitalization || data?.diseaseName ? null : (
           <Text style={styles.sourceTextStyle}>
-            {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) || '-'}
+            {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) ===
+            string.common.clicnical_document_text
+              ? string.common.clicnical_document_text
+              : data?.siteDisplayName || '-'}
           </Text>
         )}
         {data?.age ? (
@@ -1007,7 +986,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {hospitalization ? (
           <Text style={styles.sourceTextStyle}>
-            {data?.hospitalName ? data?.hospitalName : getSourceName(data?.source) || '-'}
+            {data?.hospitalName &&
+            getSourceName(data?.source) === string.common.clicnical_document_text
+              ? data?.hospitalName
+              : data?.siteDisplayName || '-'}
           </Text>
         ) : null}
         <View style={styles.separatorLineStyle} />

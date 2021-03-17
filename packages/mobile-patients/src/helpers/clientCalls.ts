@@ -368,7 +368,8 @@ export const phrNotificationCountApi = (client: ApolloClient<object>, patientId:
 export const getPatientPrismMedicalRecordsApi = (
   client: ApolloClient<object>,
   patientId: string,
-  records: MedicalRecordType[]
+  records: MedicalRecordType[],
+  comingFrom?: string
 ) => {
   return new Promise((res, rej) => {
     client
@@ -376,7 +377,7 @@ export const getPatientPrismMedicalRecordsApi = (
         query: GET_MEDICAL_PRISM_RECORD_V2,
         context: {
           headers: {
-            callingsource: 'healthRecords',
+            callingsource: comingFrom == 'Diagnostics' ? "" : 'healthRecords',
           },
         },
         variables: {

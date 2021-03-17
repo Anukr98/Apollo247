@@ -93,10 +93,6 @@
         <service android:name=".RingtonePlayingService" />
 
         <meta-data
-            android:name="com.bugsnag.android.API_KEY"
-            android:value="53a0b9fd23719632a22d2c262a06bb4e" />
-
-        <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification_white" />
 

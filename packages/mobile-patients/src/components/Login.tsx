@@ -10,7 +10,6 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   CommonBugFender,
   CommonLogEvent,
-  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppSignature } from '@aph/mobile-patients/src/helpers/AppSignature';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
@@ -556,7 +555,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                 phoneNumber: phoneNumber,
               });
             } else {
-              CommonSetUserBugsnag(phoneNumber);
               AsyncStorage.setItem('phoneNumber', phoneNumber);
               setShowSpinner(true);
 

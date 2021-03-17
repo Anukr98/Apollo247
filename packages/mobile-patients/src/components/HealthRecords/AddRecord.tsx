@@ -4072,6 +4072,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     return (
       <UploadPrescriprionPopup
+        type={'Consult Flow'}
         isVisible={displayPopup}
         openCamera={openCamera}
         phrUpload={true}

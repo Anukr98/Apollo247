@@ -109,6 +109,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  //add try catch.
   const fetchWidgetsPrices = async (widgetsData: any) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
 
