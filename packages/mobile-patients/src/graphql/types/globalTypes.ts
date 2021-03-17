@@ -1232,7 +1232,6 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
-  subCategory?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {
@@ -1329,7 +1328,8 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  patient_id: any;
+  patient_id?: any | null;
+  customer_id?: any | null;
 }
 
 export interface OrderInput {
@@ -1341,8 +1341,9 @@ export interface OrderInput {
 }
 
 export interface OrderInputEntity {
-  order_id?: string | null;
-  amount?: number | null;
+  order_id: string;
+  amount: number;
+  patient_id?: any | null;
 }
 
 export interface OrderLineItems {
@@ -1579,6 +1580,7 @@ export interface SaveBookHomeCollectionOrderInput {
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
   attachmentData?: (Attachments | null)[] | null;
+  caseSheets?: (string | null)[] | null;
 }
 
 export interface SaveDeviceTokenInput {
@@ -1640,6 +1642,32 @@ export interface SourceMetaData {
   source_identifier?: string | null;
   sub_plan_id?: string | null;
   purchase_type?: PlanPurchaseType | null;
+}
+
+export interface TrueCallerProfile {
+  avatarUrl?: string | null;
+  city?: string | null;
+  companyName?: string | null;
+  countryCode?: string | null;
+  email?: string | null;
+  facebookId?: string | null;
+  firstName?: string | null;
+  gender?: string | null;
+  isAmbassador?: boolean | null;
+  isSimChanged?: boolean | null;
+  isTrueName?: boolean | null;
+  jobTitle?: string | null;
+  lastName?: string | null;
+  payload?: string | null;
+  phoneNumber?: string | null;
+  requestNonce?: string | null;
+  signature?: string | null;
+  signatureAlgorithm?: string | null;
+  street?: string | null;
+  twitterId?: string | null;
+  url?: string | null;
+  verificationMode?: string | null;
+  zipcode?: string | null;
 }
 
 export interface UpdateAppointmentInput {
