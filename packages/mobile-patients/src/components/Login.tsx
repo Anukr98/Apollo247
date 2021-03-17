@@ -302,7 +302,6 @@ export const Login: React.FC<LoginProps> = (props) => {
           })
           .catch((e) => {
             CommonBugFender('OTPVerification_sendOtp', e);
-            // setBugFenderLog('OTPVerification_sendOtp', e);
           });
         getAuthToken();
       }
