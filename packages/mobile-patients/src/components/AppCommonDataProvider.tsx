@@ -135,6 +135,7 @@ export interface TotalCircleSavings {
 }
 
 export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
+export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
 
 export interface PharmacyUserTypeEvent {
   User_Type: PharmaUserStatus;
