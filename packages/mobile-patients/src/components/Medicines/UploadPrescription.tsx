@@ -1193,7 +1193,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       {renderPrescriptionModal()}
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
-        type={isComingFromReUpload ? undefined : 'nonCartFlow'}
+        type={isComingFromReUpload ? 'Re-Upload' : 'Upload Flow'}
         heading={isComingFromReUpload ? 'Re-Upload Prescription(s)' : 'Upload Prescription(s)'}
         instructionHeading={'Instructions For Uploading Prescriptions'}
         instructions={[

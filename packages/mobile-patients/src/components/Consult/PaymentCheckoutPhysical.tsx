@@ -109,10 +109,12 @@ interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   nextAvailableSlot: string;
   selectedTimeSlot: string;
   whatsAppUpdate: boolean;
+  newProfileAdded: boolean;
 }
 export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
+  const newProfileAdded = props.navigation.getParam('newProfileAdded');
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -130,6 +132,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [showList, setShowList] = useState<boolean>(false);
+  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(false);
+  const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
@@ -217,9 +221,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       </View>
     );
   };
+
   const renderPatient = () => {
-    console.log('finalAppointmentInput', finalAppointmentInput);
-    console.log('patient change', currentPatient?.id);
     return (
       <View style={styles.subViewPopup}>
         <View style={{ paddingHorizontal: 16 }}>
@@ -346,64 +349,72 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {moveSelectedToTop()
-        ?.slice(0, 5)
-        ?.map((item: any, index: any, array: any) =>
-          item.firstName !== '+ADD MEMBER' ? (
-            <TouchableOpacity
-              onPress={() => {
-                setLoading && setLoading(true);
-                onSelectedProfile(item);
-              }}
+      {moveSelectedToTop()?.map((item: any, index: any, array: any) =>
+        item.firstName !== '+ADD MEMBER' ? (
+          <TouchableOpacity
+            onPress={() => {
+              setLoading && setLoading(true);
+              onSelectedProfile(item);
+              setIsSelectedOnce(true);
+              setShowErrorSelect(false);
+            }}
+            style={
+              currentPatient?.id === item.id && isSelectedOnce
+                ? styles.ctaSelectButtonViewStyle
+                : styles.ctaWhiteButtonViewStyle
+            }
+          >
+            <Text
               style={
-                currentPatient?.id === item.id
-                  ? styles.ctaSelectButtonViewStyle
-                  : styles.ctaWhiteButtonViewStyle
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectTextStyle
+                  : styles.ctaOrangeTextStyle
               }
             >
-              <Text
-                style={
-                  currentPatient?.id === item.id
-                    ? styles.ctaSelectTextStyle
-                    : styles.ctaOrangeTextStyle
-                }
-              >
-                {item.firstName}
-              </Text>
-              <Text
-                style={
-                  currentPatient?.id === item.id
-                    ? styles.ctaSelectText2Style
-                    : styles.ctaOrangeText2Style
-                }
-              >
-                {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
-              </Text>
-              {console.log('csk pat', item)}
-            </TouchableOpacity>
-          ) : null
-        )}
+              {item.firstName}
+            </Text>
+            <Text
+              style={
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectText2Style
+                  : styles.ctaOrangeText2Style
+              }
+            >
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+            </Text>
+          </TouchableOpacity>
+        ) : null
+      )}
       <View style={[styles.textViewStyle]}>
         <Text
           onPress={() => {
-            if (allCurrentPatients.length > 6) {
-              setShowList(true);
-            } else {
-              setShowProfilePopUp(false);
-              props.navigation.navigate(AppRoutes.EditProfile, {
-                isEdit: false,
-                isPoptype: true,
-                mobileNumber: currentPatient && currentPatient!.mobileNumber,
-              });
-            }
+            setShowProfilePopUp(false);
+            props.navigation.navigate(AppRoutes.EditProfile, {
+              isEdit: false,
+              isPoptype: true,
+              mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              onNewProfileAdded: onNewProfileAdded,
+            });
           }}
           style={[styles.ctaOrangeTextStyle]}
         >
-          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
+          {'+ADD MEMBER'}
         </Text>
       </View>
+
+      {showErrorSelect ? (
+        <Text style={styles.errorSelectMessage}>
+          *Please select the patient before proceeding to pay!
+        </Text>
+      ) : null}
     </View>
   );
+
+  const onNewProfileAdded = (onAdd: any) => {
+    finalAppointmentInput['patientId'] = onAdd?.id;
+    setIsSelectedOnce(onAdd?.added);
+    setShowErrorSelect(!onAdd?.added);
+  };
   const onSelectedProfile = (item: any) => {
     setshowSpinner(true);
     selectUser(item);
@@ -540,21 +551,25 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const onPressPay = () => {
     // Pay Button Clicked	event
-    postWebEngagePayButtonClickedEvent();
-    whatsappAPICalled();
-    CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, 'Book Appointment clicked');
-    CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, `PAY AT HOSPITAL`);
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          onSubmitBookAppointment();
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
-      });
+    if (isSelectedOnce) {
+      postWebEngagePayButtonClickedEvent();
+      whatsappAPICalled();
+      CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, 'Book Appointment clicked');
+      CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, `PAY AT HOSPITAL`);
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            onSubmitBookAppointment();
+          } else {
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
+        });
+    } else {
+      setShowErrorSelect(true);
+    }
   };
 
   const selectUser = (selectedUser: any) => {
@@ -586,7 +601,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log('csk data-------', JSON.stringify(data));
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
         if (consultedWithDoctorBefore) {
           storeAppointmentId(g(apptmt, 'id')!);
@@ -690,7 +704,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
-    console.log('csk', 'handleOrderSuccess', appointmentId);
     setLoading && setLoading(true);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
@@ -701,7 +714,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('csk', 'getAppointmentData-->', JSON.stringify(_data));
         try {
           setLoading && setLoading(false);
           const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
@@ -933,7 +945,7 @@ const styles = StyleSheet.create({
   },
   priceBreakupTitle: {
     ...theme.viewStyles.text('B', 13, theme.colors.SHERPA_BLUE),
-    marginHorizontal: 8,
+    marginHorizontal: 6,
     marginVertical: 6,
   },
   seperatorLine: {
@@ -1099,14 +1111,14 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   congratulationsDescriptionStyle: {
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     marginTop: 8,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
   popDescriptionStyle: {
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     marginTop: 8,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
@@ -1115,15 +1127,15 @@ const styles = StyleSheet.create({
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 20,
-    marginVertical: 4,
+    paddingHorizontal: 18,
+    marginVertical: 5,
   },
   ctaWhiteButtonViewStyle: {
     padding: 2,
     borderRadius: 10,
     backgroundColor: theme.colors.WHITE,
     marginRight: 15,
-    marginVertical: 2,
+    marginVertical: 5,
     shadowColor: '#4c808080',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
@@ -1135,7 +1147,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#fc9916',
     marginRight: 15,
-    marginVertical: 2,
+    marginVertical: 5,
     shadowColor: '#4c808080',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
@@ -1148,14 +1160,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   ctaSelectText2Style: {
-    ...theme.viewStyles.text('R', 10, '#ffffff', 1, 24),
+    ...theme.viewStyles.text('R', 10, '#ffffff', 1, 20),
     textAlign: 'center',
     marginHorizontal: 5,
   },
   textViewStyle: {
-    padding: 8,
-    marginRight: 15,
-    marginVertical: 5,
+    marginTop: 8,
+    paddingVertical: 8,
   },
   ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
   ctaOrangeTextStyle: {
@@ -1163,8 +1174,14 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
     marginHorizontal: 5,
   },
+  errorSelectMessage: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
+    marginHorizontal: 5,
+    marginBottom: 5,
+  },
   ctaOrangeText2Style: {
-    ...theme.viewStyles.text('R', 10, '#fc9916', 1, 24),
+    ...theme.viewStyles.text('R', 10, '#fc9916', 1, 20),
     textAlign: 'center',
     marginHorizontal: 5,
   },

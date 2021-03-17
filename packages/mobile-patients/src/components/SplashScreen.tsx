@@ -27,7 +27,6 @@ import { apiRoutes } from '../helpers/apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  setBugfenderPhoneNumber,
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -163,7 +162,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         getAppointmentDataAndNavigate(params.appointment_id, false);
       }
     });
-    setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -389,7 +387,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'test':
           case 'Test':
-            console.log('Test');
             getData('Test');
             break;
 
@@ -534,7 +531,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'testreport':
           case 'TestReport':
-            console.log('here..');
             getData('TestReport', data?.length === 2 ? linkId : undefined);
             break;
 
@@ -963,6 +959,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: string.Circle.planName,
             isActive: true,
+            comingFrom: 'Deeplink',
           });
         }
         break;
@@ -1140,6 +1137,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Need_Help_Return_Pharma_Order_Success_Message: {
       PROD: 'Need_Help_Return_Pharma_Order_Success_Message',
     },
+    Cart_Update_Price_Config: {
+      QA: 'Cart_Update_Price_Config_QA',
+      PROD: 'Cart_Update_Price_Config',
+    },
     Covid_Vaccine_Cta_Key: {
       QA: 'Covid_Vaccine_CTA_QA',
       PROD: 'Covid_Vaccine_CTA',
@@ -1260,6 +1261,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Need_Help',
         'NEED_HELP',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.NEED_HELP
+      );
+
+      setAppConfig(
+        'Cart_Update_Price_Config',
+        'CART_UPDATE_PRICE_CONFIG',
+        (key) =>
+          JSON.parse(config.getString(key)) || AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG
       );
 
       setAppConfig(

@@ -55,7 +55,7 @@ import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import {
@@ -481,20 +481,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const sampleTypeArray = [...new Set(array)];
     return sampleTypeArray;
   }
-
-  const renderNotification = () => {
-    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
-      return null;
-    }
-    return (
-      <View style={styles.notificationCard}>
-        <PendingIcon style={styles.pendingIconStyle} />
-        <Text style={[styles.personDetailStyles, { marginTop: 0, marginLeft: 4, marginRight: 6 }]}>
-          {string.diagnostics.priceNotificationForCovidText}
-        </Text>
-      </View>
-    );
-  };
 
   const renderDescriptionCard = () => {
     const sampleType =

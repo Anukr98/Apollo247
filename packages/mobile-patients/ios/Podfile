@@ -59,7 +59,6 @@ target 'ApolloPatient' do
   pod 'Stylish'
  
   pod 'rn-fetch-blob', :path => '../node_modules/rn-fetch-blob'
-  pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
   pod 'react-native-pdf', :path => '../node_modules/react-native-pdf'
   pod 'RNGestureHandler', :path => '../node_modules/react-native-gesture-handler'
   pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
@@ -86,7 +85,6 @@ target 'ApolloPatient' do
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
   pod 'react-native-fbsdk', :path => '../node_modules/react-native-fbsdk'
-  pod 'RNBugfender', :path => '../node_modules/@bugfender/rn-bugfender'
   pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
   pod 'RNSound', :path => '../node_modules/react-native-sound'
   pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'

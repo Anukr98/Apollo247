@@ -1,10 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { View, Text, StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { REFUND_STATUSES } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import moment from 'moment';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface CertifiedCardProps {
   leftIcon?: React.ReactNode;

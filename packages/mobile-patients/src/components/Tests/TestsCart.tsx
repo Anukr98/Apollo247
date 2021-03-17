@@ -12,6 +12,7 @@ import {
   postFirebaseEvent,
   isSmallDevice,
   nameFormater,
+  getAge,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -19,7 +20,6 @@ import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -27,7 +27,6 @@ import {
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   ArrowRight,
@@ -39,10 +38,8 @@ import {
   InfoIconRed,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -64,6 +61,7 @@ import {
   SAVE_DIAGNOSTIC_ORDER,
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
+  EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -96,10 +94,10 @@ import {
   getPlaceInfoByLatLng,
   getPlaceInfoByPincode,
   searchClinicApi,
+  getDiagnosticCartItemReportGenDetails,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { differenceInYears, parse } from 'date-fns';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -124,7 +122,7 @@ import {
   StackActions,
 } from 'react-navigation';
 import Geolocation from 'react-native-geolocation-service';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -179,6 +177,17 @@ import {
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
+import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
+import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
+import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
+import { SelectAreaOverlay } from '@aph/mobile-patients/src/components/Tests/components/SelectAreaOverlay';
+import { TestItemCard } from '@aph/mobile-patients/src/components/Tests/components/TestItemCard';
+import {
+  editProfile,
+  editProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/editProfile';
+import AsyncStorage from '@react-native-community/async-storage';
 import {
   getNearestArea,
   getNearestAreaVariables,
@@ -291,7 +300,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [isMinor, setIsMinor] = useState<boolean>(false);
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const currentPatientId = currentPatient && currentPatient?.id;
   const client = useApolloClient();
@@ -300,7 +309,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
+    setDoctorJoinedChat,
   } = useAppCommonData();
+
+  const shopCart = useShoppingCart();
+  const diagCart = useDiagnosticsCart();
+  const { getPatientApiCall } = useAuth();
 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
@@ -320,7 +334,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
+  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
+  const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
+  const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
+  const [reportGenDetails, setReportGenDetails] = useState<any>([]);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
@@ -363,10 +382,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     checkPatientAge();
   }, [currentPatient]);
 
-  const getAge = (dob: string) => {
-    const now = new Date();
-    let age = parse(dob);
-    return differenceInYears(now, age);
+  const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
+    try {
+      const removeSpaces =
+        typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
+      const listOfIds =
+        typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
+      const res: any = await getDiagnosticCartItemReportGenDetails(
+        listOfIds?.toString() || _cartItemId?.toString()
+      );
+      if (res?.data?.success) {
+        const result = g(res, 'data', 'data');
+        setReportGenDetails(result || []);
+      } else {
+        setReportGenDetails([]);
+      }
+    } catch (e) {
+      CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
+      setReportGenDetails([]);
+    }
   };
 
   const checkPatientAge = () => {
@@ -393,6 +427,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItemsWithId?.length > 0) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
+      fetchTestReportGenDetails(cartItemsWithId);
     }
   }, [diagnosticServiceabilityData]);
 
@@ -1171,14 +1206,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ? specialPrice!
               : undefined
             : undefined;
+          const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+
           return (
-            <MedicineCard
+            <TestItemCard
               isComingFrom={AppRoutes.TestsCart}
               isCareSubscribed={isDiagnosticCircleSubscription}
               containerStyle={medicineCardContainerStyle}
               showCartInclusions={showInclusions}
               key={test?.id}
               testId={test?.id}
+              reportGenItem={reportGenItem}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
                 fetchPackageDetails(
@@ -1211,7 +1249,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   'onPress'
                 );
               }}
-              medicineName={test?.name}
+              testName={test?.name}
               price={price}
               mrpToDisplay={Number(mrpToDisplay!)}
               specialPrice={sellingPrice}
@@ -1225,23 +1263,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   ? specialDiscount!
                   : discount!
               }
-              imageUrl={imageUrl}
-              onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
                 cartItems?.length == 0 ? setDeliveryAddressId!('') : null;
                 onRemoveCartItem(test);
               }}
-              onChangeUnit={() => {}}
               isCardExpanded={true}
-              isInStock={true}
-              isTest={true}
-              isPrescriptionRequired={false}
-              subscriptionStatus={'unsubscribed'}
               packOfCount={test.mou}
-              onChangeSubscription={() => {}}
-              onEditPress={() => {}}
-              onAddSubscriptionPress={() => {}}
               duplicateArray={duplicateNameArray}
             />
           );
@@ -1931,10 +1959,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTotalCharges = () => {
-    const isPPEKitChargesApplicable = cartItems.map((item) =>
-      COVID_NOTIFICATION_ITEMID.includes(item.id)
-    );
-    const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
 
     return (
@@ -2068,20 +2092,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   ) => {
     return (
       <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          marginHorizontal: 20,
-          // marginTop: 4,
-          marginBottom: 12,
-          padding: 16,
-          marginTop: 10,
-          flexDirection: 'row',
-          borderColor: theme.colors.APP_GREEN,
-          borderWidth: 2,
-          borderRadius: 5,
-          borderStyle: 'dashed',
-          justifyContent: imagePosition == 'left' ? 'flex-start' : 'center',
-        }}
+        style={[
+          styles.dashedBannerViewStyle,
+          { justifyContent: imagePosition == 'left' ? 'flex-start' : 'center' },
+        ]}
       >
         {imagePosition == 'left' && (
           <View style={{ flexDirection: 'row' }}>
@@ -2205,7 +2219,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const disableProceedToPay = !(
     cartItems?.length > 0 &&
     forPatientId &&
-    !!((deliveryAddressId && selectedTimeSlot) || clinicId) &&
+    !!(
+      (deliveryAddressId &&
+        selectedTimeSlot &&
+        selectedTimeSlot?.date &&
+        selectedTimeSlot?.slotInfo?.startTime) ||
+      clinicId
+    ) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
@@ -2536,17 +2556,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
             const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
             const orders: OrderVerticals = {
-              diagnostics: [{ order_id: orderId, amount: grandTotal }],
+              diagnostics: [
+                { order_id: orderId, amount: grandTotal, patient_id: currentPatient?.id },
+              ],
             };
             const orderInput: OrderCreate = {
               orders: orders,
               total_amount: grandTotal,
-              patient_id: currentPatient?.id,
+              customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
             };
+            console.log('orderInput >>', JSON.stringify(orderInput));
             const response = await createOrderInternal(orderInput);
             if (response?.data?.createOrderInternal?.success) {
               const isInitiated: boolean = await isSDKInitialised();
-              !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
+              !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
               const orderInfo = {
                 orderId: orderId,
                 displayId: displayId,
@@ -2992,7 +3015,250 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       </View>
     );
   };
-  const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
+
+  const renderPatientDetails = () => {
+    const patientDetailsText = `${currentPatient?.firstName || ''} ${currentPatient?.lastName ||
+      ''}, ${currentPatient?.gender || ''}, ${
+      currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
+    }`;
+    return (
+      <View style={styles.patientDetailsViewStyle}>
+        <View style={styles.patientNameViewStyle}>
+          <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
+          <Text
+            style={[styles.patientNameTextStyle, styles.changeTextStyle]}
+            onPress={() => setShowPatientListOverlay(true)}
+          >
+            {string.diagnostics.changeText}
+          </Text>
+        </View>
+        <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
+        <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
+        {addressText ? (
+          <>
+            <View style={styles.patientNameViewStyle}>
+              <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
+              <Text
+                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
+                onPress={() => showAddressPopup()}
+              >
+                {string.diagnostics.changeText}
+              </Text>
+            </View>
+            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
+              {addressText}
+            </Text>
+          </>
+        ) : null}
+        {showAreaSelection && !isEmptyObject(areaSelected) ? (
+          <>
+            <View style={styles.patientNameViewStyle}>
+              <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
+              <Text
+                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
+                onPress={() => setShowSelectAreaOverlay(true)}
+              >
+                {string.diagnostics.changeText}
+              </Text>
+            </View>
+            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
+              {(areaSelected as any)?.value || ''}
+            </Text>
+          </>
+        ) : null}
+      </View>
+    );
+  };
+
+  const setAddressList = (key: string) => {
+    shopCart?.setDeliveryAddressId?.('');
+    diagCart?.setDeliveryAddressId?.('');
+    shopCart?.setAddresses?.([]);
+    diagCart?.setAddresses?.([]);
+    setDoctorJoinedChat?.(false);
+  };
+
+  const renderPatientListOverlay = () => {
+    return showPatientListOverlay ? (
+      <PatientListOverlay
+        onPressClose={() => setShowPatientListOverlay(false)}
+        onPressDone={(_selectedPatient: any) => {
+          setShowPatientListOverlay(false);
+          if (currentPatient?.id === _selectedPatient?.id) {
+            return;
+          } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
+            setSelectedPatient(_selectedPatient);
+            setShowPatientDetailsOverlay(true);
+            return;
+          }
+          setCurrentPatientId?.(_selectedPatient?.id);
+          AsyncStorage.setItem('selectUserId', _selectedPatient?.id);
+          AsyncStorage.setItem('selectUserUHId', _selectedPatient?.uhid);
+          setAddressList(_selectedPatient?.id);
+        }}
+        onPressAddNewProfile={() => {
+          setShowPatientListOverlay(false);
+          props.navigation.navigate(AppRoutes.EditProfile, {
+            isEdit: false,
+            isPoptype: true,
+            mobileNumber: currentPatient?.mobileNumber,
+          });
+        }}
+      />
+    ) : null;
+  };
+
+  const renderPatientDetailsOverlay = () => {
+    return showPatientDetailsOverlay ? (
+      <PatientDetailsOverlay
+        selectedPatient={selectedPatient}
+        onPressClose={() => setShowPatientDetailsOverlay(false)}
+        onPressDone={(_date, _gender, _selectedPatient) => {
+          setShowPatientDetailsOverlay(false);
+          setLoading?.(true);
+          client
+            .mutate<editProfile, editProfileVariables>({
+              mutation: EDIT_PROFILE,
+              variables: {
+                editProfileInput: {
+                  id: _selectedPatient?.id,
+                  photoUrl: _selectedPatient?.photoUrl,
+                  firstName: _selectedPatient?.firstName?.trim(),
+                  lastName: _selectedPatient?.lastName?.trim(),
+                  relation: _selectedPatient?.relation,
+                  gender: _gender,
+                  dateOfBirth: moment(_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                  emailAddress: _selectedPatient?.emailAddress?.trim(),
+                },
+              },
+            })
+            .then((data) => {
+              setLoading?.(false);
+              getPatientApiCall();
+            })
+            .catch((e) => {
+              setLoading?.(false);
+              showAphAlert!({
+                title: 'Network Error!',
+                description: 'Please try again later.',
+              });
+              CommonBugFender('EditProfile_updateUserProfile', e);
+            });
+        }}
+      />
+    ) : null;
+  };
+
+  const renderTestProceedBar = () => {
+    const showTime = deliveryAddressId && areaSelected && !isEmptyObject(areaSelected);
+    return cartItems?.length > 0 ? (
+      <TestProceedBar
+        selectedTimeSlot={selectedTimeSlot}
+        disableProceedToPay={disableProceedToPay}
+        onPressAddDeliveryAddress={() => _onPressAddAddress()}
+        onPressProceedtoPay={() => onPressProceedToPay()}
+        onPressSelectDeliveryAddress={() => showAddressPopup()}
+        showTime={showTime}
+        onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
+        onPressSelectArea={() => setShowSelectAreaOverlay(true)}
+      />
+    ) : null;
+  };
+
+  function _onPressAddAddress() {
+    postPharmacyAddNewAddressClick('Diagnostics Cart');
+    props.navigation.navigate(AppRoutes.AddAddressNew, {
+      addOnly: true,
+      source: 'Diagnostics Cart' as AddressSource,
+    });
+    setDiagnosticSlot && setDiagnosticSlot(null);
+    setselectedTimeSlot(undefined);
+  }
+
+  function showAddressPopup() {
+    return showAphAlert?.({
+      removeTopIcon: true,
+      onPressOutside: () => {
+        hideAphAlert?.();
+      },
+      children: (
+        <AccessLocation
+          source={AppRoutes.Tests}
+          hidePincodeCurrentLocation
+          addresses={addresses}
+          onPressSelectAddress={(_address) => {
+            CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            const tests = cartItems?.filter(
+              (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
+            );
+            const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(_address);
+            hideAphAlert?.();
+
+            if (tests?.length) {
+              showAphAlert?.({
+                title: string.common.uhOh,
+                description: `${(currentPatient && currentPatient.firstName) ||
+                  'Hi'}, since your cart includes tests (${tests
+                  .map((item) => item.name)
+                  .join(
+                    ', '
+                  )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
+              });
+            } else {
+              if (isSelectedAddressWithNoLatLng) {
+                //show the error
+                renderAlert(
+                  string.diagnostics.updateAddressLatLngMessage,
+                  'updateLocation',
+                  _address
+                );
+              } else {
+                AddressSelectedEvent(_address);
+                setDeliveryAddressId?.(_address?.id);
+                if (deliveryAddressId !== _address?.id) {
+                  setDiagnosticAreas?.([]);
+                  setAreaSelected?.({});
+                  setDiagnosticSlot?.(null);
+                }
+              }
+            }
+          }}
+          onPressEditAddress={(_address) => {
+            _navigateToEditAddress('Update', _address, AppRoutes.TestsCart);
+            hideAphAlert?.();
+          }}
+          onPressAddAddress={() => {
+            _onPressAddAddress();
+            hideAphAlert?.();
+          }}
+          onPressCurrentLocaiton={() => {}}
+          onPressPincode={() => {}}
+        />
+      ),
+    });
+  }
+
+  const renderSelectAreaOverlay = () => {
+    return showSelectAreaOverlay ? (
+      <SelectAreaOverlay
+        addressText={addressText}
+        onPressChangeAddress={() => {
+          setShowSelectAreaOverlay(false);
+          showAddressPopup();
+        }}
+        onPressClose={() => setShowSelectAreaOverlay(false)}
+        onPressDone={(_selectedArea) => {
+          setShowSelectAreaOverlay(false);
+          setAreaSelected?.(_selectedArea);
+          checkSlotSelection(_selectedArea);
+          setWebEngageEventForAreaSelection(_selectedArea);
+        }}
+      />
+    ) : null;
+  };
+
+  const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+  const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   return (
     <View style={{ flex: 1 }}>
@@ -3030,36 +3296,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       )}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
+        {renderPatientListOverlay()}
+        {renderSelectAreaOverlay()}
+        {renderPatientDetailsOverlay()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
+            {renderPatientDetails()}
             {renderItemsInCart()}
-            {renderProfiles()}
-            {/* <MedicineUploadPrescriptionView
-              isTest={true}
-              navigation={props.navigation}
-              isMandatory={false}
-              listOfTest={[]}
-            /> */}
-            {renderDelivery()}
             {renderTotalCharges()}
-            {/* {renderTestSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>
-        <StickyBottomComponent defaultBG>
-          <Button
-            disabled={disableProceedToPay}
-            title={'MAKE PAYMENT'}
-            onPress={() => onPressProceedToPay()}
-            style={{ flex: 1, marginHorizontal: 40 }}
-          />
-        </StickyBottomComponent>
+        {renderTestProceedBar()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
     </View>
   );
 };
-
+const { text, cardViewStyle } = theme.viewStyles;
+const { SHERPA_BLUE, APP_YELLOW } = theme.colors;
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -3136,6 +3391,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.3,
   },
+  patientDetailsViewStyle: {
+    flex: 1,
+    marginHorizontal: 20,
+  },
+  patientNameViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  patientNameTextStyle: {
+    ...text('B', 13, SHERPA_BLUE, 1, 20),
+  },
+  changeTextStyle: {
+    color: APP_YELLOW,
+  },
+  patientDetailsTextStyle: {
+    ...text('R', 12, SHERPA_BLUE, 1, 18),
+  },
+  testReportMsgStyle: {
+    ...text('R', 10, SHERPA_BLUE, 0.7, 14),
+    marginBottom: 24,
+  },
   phelboTextView: {
     backgroundColor: '#FCFDDA',
     flex: 1,
@@ -3152,4 +3431,16 @@ const styles = StyleSheet.create({
     marginHorizontal: '2%',
   },
   infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
+  dashedBannerViewStyle: {
+    ...cardViewStyle,
+    marginHorizontal: 20,
+    marginBottom: 50,
+    padding: 16,
+    marginTop: 10,
+    flexDirection: 'row',
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 2,
+    borderRadius: 5,
+    borderStyle: 'dashed',
+  },
 });

@@ -182,8 +182,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const updateCodePushVersioninUi = async () => {
     try {
-      const version = (await codePush.getUpdateMetadata())!.label;
-      setCodePushVersion(version.replace('v', 'H'));
+      const version = (await codePush.getUpdateMetadata())?.label;
+      version && setCodePushVersion(version.replace('v', 'H'));
     } catch (error) {
       CommonBugFender(`${AppRoutes.MyAccount}_codePush.getUpdateMetadata`, error);
     }
