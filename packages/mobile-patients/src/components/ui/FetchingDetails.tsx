@@ -8,15 +8,7 @@ const { height, width } = Dimensions.get('window');
 export const FetchingDetails = () => {
   return (
     <View style={styles.viewAbsoluteStyles}>
-      <View
-        style={{
-          flex: 1,
-          overflow: 'hidden',
-          backgroundColor: 'white',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <View style={styles.container}>
         <ApolloLogo />
         <Loader style={{ marginTop: 12, height: 26, width: 76 }} />
         <Text style={styles.pleaseWaitText}>Please Wait!</Text>
@@ -27,6 +19,13 @@ export const FetchingDetails = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   viewAbsoluteStyles: {
     position: 'absolute',
     width: width,
