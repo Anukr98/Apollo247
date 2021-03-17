@@ -192,6 +192,7 @@ import { CancelAppointmentPopup } from '@aph/mobile-patients/src/components/Cons
 import { CancelReasonPopup } from '@aph/mobile-patients/src/components/Consult/CancelReasonPopup';
 import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consult/CheckReschedulePopup';
 import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
+import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
 interface OpentokStreamObject {
   connection: {
     connectionId: string;
@@ -679,6 +680,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
   const [callMinimize, setCallMinimize] = useState<boolean>(false);
+  const [availableMessages, setavailableMessages] = useState(3);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
@@ -887,7 +889,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const appointmentStartsInFifteenMin = '^^#appointmentStartsInFifteenMin';
   const appointmentStartsInTenMin = '^^#appointmentStartsInTenMin';
   const sectionHeader = '^^#sectionHeader';
-  const followUpChatGuideLines = '^^#follouUpChatGuideLines';
+  const followUpChatGuideLines = '^^#followUpChatGuideLines';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -1293,6 +1295,47 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     fetchDoctorDetails();
     isProgressBarVisible.current = appointmentData.status !== STATUS.COMPLETED;
   }, []);
+
+  useEffect(() => {
+    messages?.length && analyzeMessages(messages);
+  }, [messages]);
+
+  function analyzeMessages(messages: any) {
+    const prescUploadIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult);
+    messages.reverse();
+    if (prescUploadIndex == -1) {
+      return;
+    }
+    const lastDocMsgIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.sentBy == 'DOCTOR');
+    messages.reverse();
+    let msgsByPatient = 0;
+    if (lastDocMsgIndex && lastDocMsgIndex < prescUploadIndex) {
+      const latestFollowUpChat = messages.slice(-lastDocMsgIndex);
+      msgsByPatient = latestFollowUpChat.filter(
+        (item: any) => item?.id == patientId && item?.message != imageconsult
+      )?.length;
+    } else if (lastDocMsgIndex == 0) {
+      msgsByPatient = 0;
+    } else {
+      let guideLinesIndex = messages
+        .reverse()
+        .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
+      messages.reverse();
+      const latestFollowUpChat = messages.slice(-guideLinesIndex);
+      msgsByPatient = latestFollowUpChat.filter(
+        (item: any) => item?.id == patientId && item?.message != imageconsult
+      )?.length;
+    }
+    msgsByPatient >= 0 && msgsByPatient <= 3
+      ? setavailableMessages(3 - msgsByPatient)
+      : msgsByPatient > 3
+      ? setavailableMessages(0)
+      : setavailableMessages(3);
+  }
 
   const fetchDoctorDetails = async () => {
     const input = {
@@ -2539,8 +2582,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const sendFollowUpChatGuideLines = () => {
-    const headerText =
-      'If you have further queries related to your consultation, you may reach out to Dr. Simran via texts for the next 7 days.';
+    const headerText = `If you have further queries related to your consultation, you may reach out to ${appointmentData.doctorInfo.displayName} via texts for the next 7 days.`;
     sendMessage(sectionHeader, doctorId, headerText);
     setTimeout(() => {
       sendMessage(followUpChatGuideLines, doctorId);
@@ -2682,7 +2724,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           const end: any = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
-          console.log('msgs >>>>>>>>', JSON.stringify(msgs));
 
           res.messages.forEach((element, index) => {
             let item = element.entry;
@@ -5625,17 +5666,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM, eventAttributesFollowUp);
   };
   const renderChatView = () => {
+    console.log('disableChat || availableMessages >>>>', disableChat || availableMessages == 0);
+    console.log(
+      '!disableChat && availableMessages != 0 >>>>>',
+      !disableChat && availableMessages != 0
+    );
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
-          style={{
-            flex: 1,
-            marginBottom: 80,
-          }}
-          // ListHeaderComponent={renderChatHeader()}
+          style={{ flex: 1, marginBottom: 65 }}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
-          // stickyHeaderIndices={[0]}
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
@@ -5654,7 +5695,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (disableChat) {
               return chatDisabled();
             } else {
-              return null;
+              return <View style={{ height: 150 }}></View>;
             }
           }}
         />
@@ -6938,7 +6979,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </Text>
               </TouchableOpacity>
             ) : null}
-            <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
+            {availableMessages == 0 && <ChatDisablePrompt />}
+            <View
+              style={[
+                styles.inputMainContainer,
+                { opacity: disableChat || availableMessages == 0 ? 0.5 : 1 },
+              ]}
+            >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
@@ -6957,7 +7004,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  editable={!disableChat}
+                  editable={!disableChat && availableMessages != 0}
                 />
                 <View
                   style={{
@@ -7009,6 +7056,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </>
         ) : (
           <>
+            {availableMessages == 0 && <ChatDisablePrompt />}
             <TouchableOpacity
               activeOpacity={1}
               style={[styles.uploadButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
@@ -7034,7 +7082,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </Text>
             </TouchableOpacity>
             <View
-              style={[styles.inputMainContainer, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
+              style={[
+                styles.inputMainContainer,
+                { bottom: 0, opacity: disableChat || availableMessages == 0 ? 0.5 : 1 },
+              ]}
             >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
@@ -7054,7 +7105,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  editable={!disableChat}
+                  editable={!disableChat && availableMessages != 0}
                 />
                 <View
                   style={{
@@ -7073,7 +7124,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               onPress={async () => {
                 if (!disableChat) {
                   const textMessage = messageText.trim();
-
                   if (textMessage.length == 0) {
                     Alert.alert('Apollo', 'Please write something to send message.');
                     CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
