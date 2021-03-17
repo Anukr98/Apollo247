@@ -1540,6 +1540,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const renderUploadPrescriptionPopUp = () => {
     return (
       <UploadPrescriprionPopup
+        type={'Re-Upload'}
         isVisible={showPrescriptionPopup}
         disabledOption="NONE"
         heading={'Re-Upload Prescription(s)'}

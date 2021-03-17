@@ -51,6 +51,12 @@ export const postCircleWEGEvent = (
       Type: paymentType,
     };
     postWebEngageEvent(WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED, renewedAttributes);
+  } else if (action === 'viewed') {
+    const renewedAttributes = {
+      ...eventAttributes,
+      'Platform Device': Platform.OS,
+    };
+    postWebEngageEvent(WebEngageEventName.CIRCLE_MEMBERSHIP_DETAILS_VIEWED, renewedAttributes);
   } else if (
     action?.cta_action === string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE ||
     action === string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE

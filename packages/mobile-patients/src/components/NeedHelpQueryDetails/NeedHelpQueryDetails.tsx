@@ -623,6 +623,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderUploadImagePopup = () => {
     return (
       <UploadPrescriprionPopup
+        type={'Non-cart'}
         isVisible={uploadVisible}
         uploadImage
         heading={string.common.upload_image_text}

@@ -959,6 +959,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: string.Circle.planName,
             isActive: true,
+            comingFrom: 'Deeplink',
           });
         }
         break;
