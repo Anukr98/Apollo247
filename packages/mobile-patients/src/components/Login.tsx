@@ -272,6 +272,12 @@ export const Login: React.FC<LoginProps> = (props) => {
             });
             break;
           }
+          default:
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.tryAgainLater,
+            });
+            break;
         }
       }
     });
@@ -606,6 +612,9 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const loginWithTruecaller = () => {
     setLoading?.(true);
+    /**
+     * If you are checking in local, then you need to change truecaller_appkey(debug key) from strings.xml file
+     */
     TRUECALLER.isUsable((result: boolean) => {
       if (result) {
         // Authenticate via truecaller flow can be used
@@ -699,7 +708,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         <ScrollView>
           {/** Truecaller integration will come in next phase */}
           {isAndroid && renderTruecallerButton()}
-          <LandingDataView text="one" />
+          <LandingDataView />
         </ScrollView>
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
