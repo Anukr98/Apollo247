@@ -231,7 +231,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const token = createOrder?.juspay?.client_auth_token;
       return token;
     } catch (e) {
-      setisTxnProcessing(true);
+      setisTxnProcessing(false);
       renderErrorPopup();
     }
   };
@@ -306,6 +306,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       paymentId: paymentId,
       amount: amount,
       banks: otherBanks,
+      orderId: orderId,
     });
   };
 
