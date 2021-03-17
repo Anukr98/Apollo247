@@ -301,13 +301,23 @@ export const Login: React.FC<LoginProps> = (props) => {
             getAuthToken();
           })
           .catch((e) => {
+            showLoginError();
             CommonBugFender('OTPVerification_sendOtp', e);
           });
         getAuthToken();
       }
     } catch (error) {
+      showLoginError();
       CommonBugFender('Login_verifyTrueCallerProfile', error);
     }
+  };
+
+  const showLoginError = () => {
+    setOpenFillerView(false);
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: string.truecaller.tryAgainLater,
+    });
   };
 
   const getAuthToken = async () => {
@@ -318,7 +328,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('Login_getFirebaseToken', error);
-      setOpenFillerView(false);
+      showLoginError();
     }
   };
 
@@ -330,7 +340,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       dataFetchFromMobileNumber(res);
     } catch (error) {
       CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
-      setOpenFillerView(false);
+      showLoginError();
     }
   };
 
@@ -348,7 +358,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           moveScreenForward(mePatient);
         }
       } catch (error) {
-        setOpenFillerView(false);
+        showLoginError();
       }
     } else {
       const mePatient =
