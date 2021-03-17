@@ -289,13 +289,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         const product = g(res, 'data', 'data') || [];
         setPopularArray(product)
         setIsLoading(false)
-        // func && func(product);
       } else {
         errorAlert();
       }
       setGlobalLoading!(false);
     } catch (error) {
-      CommonBugFender('SearchTestScene_fetchPackageDetails', error);
+      CommonBugFender('SearchTestScene_getDiagnosticsPopularResults', error);
       aphConsole.log({ error });
       errorAlert();
       setGlobalLoading!(false);
