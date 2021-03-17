@@ -4,7 +4,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { SymptomsSpecialities } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { UserEvent } from 'pubnub';
-import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  PharmaUserStatus,
+  UploadPrescSource,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -390,6 +393,7 @@ export enum WebEngageEventName {
   CIRCLE_RENEW_NOW_CLICKED = 'Circle Section Renew Now Clicked',
   CIRCLE_VIEW_BENEFITS_CLICKED = 'Circle Section View Benefits Clicked',
   CIRCLE_MEMBERSHIP_RENEWED = 'Circle Membership Renewed',
+  CIRCLE_MEMBERSHIP_DETAILS_VIEWED = 'Circle Membership Details Viewed',
 
   // Pharma Circle Events
   PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
@@ -1058,7 +1062,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
-    'Upload Source'?: 'Cart' | 'Upload Flow';
+    'Upload Source'?: UploadPrescSource;
     User_Type?: PharmaUserStatus;
   };
   [WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
@@ -2096,7 +2100,7 @@ export interface WebEngageEvents {
     source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
-    Stockavailability: YesOrNo;
+    Stockavailability: YesOrNo | 'Not for Sale';
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
@@ -2417,6 +2421,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
+  [WebEngageEventName.CIRCLE_MEMBERSHIP_DETAILS_VIEWED]: CircleRenewalAttributes;
   [WebEngageEventName.HOME_VIEWED]: {
     'Patient Name': string;
     'Patient UHID': string;

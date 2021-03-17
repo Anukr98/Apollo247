@@ -110,6 +110,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     circleMembershipCharges,
     setCircleSubPlanId,
     circleSubscriptionId,
+    cartItems,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -680,6 +681,13 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                   '{price}',
                   circlePlanSelected?.currentSellingPrice
                 )
+            : !cartItems?.length
+            ? !circlePlanSelected
+              ? string.circleDoctors.upgrade
+              : string.circleDoctors.upgradeWithPrice.replace(
+                  '{price}',
+                  circlePlanSelected?.currentSellingPrice
+                )
             : string.circleDoctors.addToCart
         }
         style={[
@@ -708,6 +716,18 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 soruce: source,
                 screenName: screenName,
               });
+            }
+          } else if (from === string.banner_context.PHARMACY_HOME) {
+            if (!cartItems?.length) {
+              props.navigation.navigate(AppRoutes.CircleSubscription, {
+                from: from,
+                soruce: source,
+                screenName: screenName,
+              });
+            } else {
+              setCircleMembershipCharges &&
+                setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
             }
           } else {
             setDefaultCirclePlan && setDefaultCirclePlan(null);

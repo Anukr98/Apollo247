@@ -18,6 +18,7 @@ export interface AccessLocationProps {
   onPressEditAddress: (address: savePatientAddress_savePatientAddress_patientAddress) => void;
   onPressSelectAddress: (address: savePatientAddress_savePatientAddress_patientAddress) => void;
   source?: string;
+  hidePincodeCurrentLocation?: boolean;
 }
 
 export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
@@ -29,6 +30,7 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
     onPressCurrentLocaiton,
     onPressPincode,
     source,
+    hidePincodeCurrentLocation,
   } = props;
 
   const isFromTest = source == AppRoutes.Tests;
@@ -124,8 +126,8 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   return (
     <View style={{ paddingHorizontal: 20 }}>
       {isFromTest ? <View style={{ marginTop: '5%' }} /> : renderHeader()}
-      {renderCurrentLocationAccess()}
-      {renderDeliveryPincode()}
+      {hidePincodeCurrentLocation ? null : renderCurrentLocationAccess()}
+      {hidePincodeCurrentLocation ? null : renderDeliveryPincode()}
       {renderAddresses()}
       {isFromTest ? renderAddAddressText() : null}
     </View>

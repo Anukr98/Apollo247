@@ -48,6 +48,7 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
         html={content}
         baseFontStyle={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
         imagesMaxWidth={Dimensions.get('window').width}
+        ignoredStyles={['line-height', 'margin-bottom']}
       />
     </View>
   );

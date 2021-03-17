@@ -216,7 +216,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         if (productDetails) {
           setMedicineDetails(productDetails || {});
           setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
-          postProductPageViewedEvent(productDetails, zipcode || pincode);
           trackTagalysViewEvent(productDetails);
           savePastSearch(client, {
             typeId: productDetails?.sku,
@@ -350,16 +349,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const postProductPageViewedEvent = (
-    { sku, name, is_in_stock }: MedicineProductDetails,
-    pincode?: string
-  ) => {
+  const postProductPageViewedEvent = (pincode?: string) => {
     if (movedFrom) {
+      const { sku, name, is_in_stock, sell_online } = medicineDetails;
+      const stock_availability = !sell_online ? 'Not for Sale' : !!is_in_stock ? 'Yes' : 'No';
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
         ProductId: sku,
         ProductName: name,
-        Stockavailability: !!is_in_stock ? 'Yes' : 'No',
+        Stockavailability: stock_availability,
         ...productPageViewedEventProps,
         ...pharmacyCircleAttributes,
         ...pharmacyUserTypeAttribute,
@@ -428,6 +426,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setIsInStock(!outOfStock);
       try {
         const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
+        !checkButtonClicked && postProductPageViewedEvent(currentPincode);
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
           Source: 'PDP',
           Input_SKU: sku,
@@ -649,6 +648,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const renderBottomButton = () => {
+    const total = cartItems
+      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
+      .toFixed(2);
     return (
       <StickyBottomComponent style={styles.stickyBottomComponent}>
         <TouchableOpacity
@@ -661,7 +663,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
               string.common.Rs
-            }${convertNumberToDecimal(cartTotal)}`}
+            }${convertNumberToDecimal(total)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>

@@ -2393,6 +2393,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate('MembershipDetails', {
           membershipType: 'CIRCLE PLAN',
           isActive: true,
+          comingFrom: 'Circle Benifits(Home Screen)',
         });
       } else if (action?.cta_action === string.Hdfc_values.ABSOLUTE_URL) {
         openWebViewFromBanner(url || action?.url);
@@ -2640,6 +2641,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                comingFrom: 'Circle Benifits(Home Screen)',
               });
             }}
             credits={healthCredits}
@@ -2652,6 +2654,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
+                comingFrom: 'Circle Benifits(Home Screen)',
               });
             }}
             credits={healthCredits}

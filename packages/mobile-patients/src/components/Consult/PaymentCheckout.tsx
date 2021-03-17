@@ -393,7 +393,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   );
 
   const onNewProfileAdded = (onAdd: any) => {
-    console.log('csk 222', onAdd);
     finalAppointmentInput['patientId'] = onAdd?.id;
     setIsSelectedOnce(onAdd?.added);
     setShowErrorSelect(!onAdd?.added);
