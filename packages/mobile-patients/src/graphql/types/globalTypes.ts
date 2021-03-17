@@ -146,6 +146,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
+  PHLEBO_ON_THE_WAY = "PHLEBO_ON_THE_WAY",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -1232,7 +1233,6 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
-  subCategory?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {
@@ -1329,7 +1329,8 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  patient_id: any;
+  patient_id?: any | null;
+  customer_id?: any | null;
 }
 
 export interface OrderInput {
@@ -1341,8 +1342,9 @@ export interface OrderInput {
 }
 
 export interface OrderInputEntity {
-  order_id?: string | null;
-  amount?: number | null;
+  order_id: string;
+  amount: number;
+  patient_id?: any | null;
 }
 
 export interface OrderLineItems {
@@ -1579,6 +1581,7 @@ export interface SaveBookHomeCollectionOrderInput {
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
   attachmentData?: (Attachments | null)[] | null;
+  caseSheets?: (string | null)[] | null;
 }
 
 export interface SaveDeviceTokenInput {
@@ -1687,6 +1690,7 @@ export interface UpdatePatientInput {
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;
+  isConsulted?: boolean | null;
 }
 
 export interface UploadDocumentInput {

@@ -2089,6 +2089,17 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        diagnosticOrderReschedule{
+          rescheduleDate
+          rescheduleReason
+          comments
+        }
+        diagnosticOrderCancellation{
+          cancellationReason
+          cancelType
+          cancelByName
+          comments
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -4772,4 +4783,23 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
       }
     }
   }
+`;
+
+export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
+query getHCOrderFormattedTrackingHistory($diagnosticOrderID: String) {
+  getHCOrderFormattedTrackingHistory(diagnosticOrderID: $diagnosticOrderID) {
+    statusHistory{
+      statusDate
+      orderStatus
+    }
+    statusInclusions{
+      statusDate
+      orderStatus
+      itemId
+      packageId
+      itemName
+      packageName
+    }
+  }
+}
 `;

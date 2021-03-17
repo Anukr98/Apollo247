@@ -63,6 +63,7 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
+  DIAGNOSTIC_ONLINE_PAYMENT_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   TestCancelReasons,
   TestReschedulingReasons,
@@ -348,7 +349,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const fetchRefundForOrder = async (orderSelected: any, itemNameExist: any, itemIdObject: any) => {
+  const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
     setRefundStatusArr(null);
     setLoading?.(true);
     client
@@ -367,7 +368,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         if (refundData?.length! > 0) {
           setRefundStatusArr(refundData);
         }
-        performNavigation(itemNameExist, orderSelected, itemIdObject, refundData);
+        performNavigation(orderSelected, tab, refundData);
       })
       .catch((e) => {
         CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
@@ -400,7 +401,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             description: string.diagnostics.orderCancelledSuccessText,
           });
         } else {
-          setLoading!(false);
+          setLoading?.(false);
           showAphAlert!({
             unDismissable: true,
             title: string.common.uhOh,
@@ -436,7 +437,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           let resultForVisitNo = labResultsData?.find(
             (item: any) => item?.identifier == getVisitId
           );
-          console.log({ resultForVisitNo });
 
           !!resultForVisitNo && resultForVisitNo?.length > 0
             ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
@@ -943,97 +943,30 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectRescheduleOption(false);
   }
 
-  const _navigateToYourTestDetails = (order: any) => {
+  function _navigateToYourTestDetails(
+    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+    tab: boolean
+  ) {
     const isPrepaid = order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
     setLoading?.(true);
-    showSummaryPopup && setSummaryPopup(!showSummaryPopup);
-
-    const itemLevelStatus = order?.diagnosticOrdersStatus?.map(
-      (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus) =>
-        item
-    );
-    /**
-     * if itemName == null , then directly show vertical tracking.
-     */
-    const itemNameExist = itemLevelStatus?.find(
-      (order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus) =>
-        order?.itemName != null && order?.itemId != null
-    );
-
-    const itemIdObject = _.groupBy(itemLevelStatus, 'itemId') as any;
-
-    //call refund api only if prepaid order + order level status is failed/cancelled
-
     if (isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)) {
-      fetchRefundForOrder(order, itemNameExist, itemIdObject);
+      fetchRefundForOrder(order, tab);
     } else {
-      performNavigation(itemNameExist, order, itemIdObject);
-    }
-  };
-
-  function performNavigation(itemNameExist: any, order: any, itemIdObject: any, refundArray?: any) {
-    if (!!itemNameExist) {
-      _navigateToHorizontalTracking(order, itemIdObject, refundArray);
-    } else {
-      _navigateToVerticalTracking(order, itemIdObject, refundArray);
+      performNavigation(order, tab);
     }
   }
 
-  function _navigateToVerticalTracking(order: any, itemIdObject: any, refundArray?: any) {
-    const getUTCDateTime = order?.slotDateTimeInUTC;
-    const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
-      `D MMM YYYY`
-    );
-    const tm =
-      getUTCDateTime != null ? moment(getUTCDateTime).format('hh:mm A') : order?.slotTimings;
-
-    const updatedItemLevelStatus = itemIdObject?.['null']?.map((item: any) => ({
-      ...item,
-    }));
-
-    let selectedTestStatus = [];
-    const resultToShow = updatedItemLevelStatus?.[updatedItemLevelStatus?.length - 1];
-    selectedTestStatus.push({
-      id: resultToShow?.id,
-      displayId: order?.displayId,
-      slotTimings: tm,
-      patientName: currentPatient?.firstName,
-      showDateTime: dt,
-      itemId: resultToShow?.itemId,
-      currentStatus:
-        order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
-          ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
-          : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-
-      statusDate: resultToShow?.statusDate,
-    });
+  function performNavigation(order: any, tab: boolean, refundArray?: any) {
     setLoading?.(false);
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
         setOrders(orders),
-      selectedTest: selectedTestStatus,
       selectedOrder: order,
-      individualTestStatus: updatedItemLevelStatus,
+      refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
-      refundStatusArr: refundArray || refundStatusArr,
+      showOrderSummaryTab: tab,
     });
-  }
-
-  function _navigateToHorizontalTracking(order: any, itemIdObject: any, refundArray?: any) {
-    setLoading?.(false);
-    props.navigation.navigate(AppRoutes.OrderedTestStatus, {
-      orderId: order?.id,
-      selectedOrder: order,
-      itemLevelStatus: itemIdObject,
-      setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
-        setOrders(orders),
-      refundStatusArr: refundArray || refundStatusArr,
-    });
-  }
-
-  function _openOrderSummary(order: any) {
-    fetchOrderDetails(order);
   }
 
   const renderOrder = (order: DiagnosticsOrderList, index: number) => {
@@ -1113,6 +1046,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.slotTimings}
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
+        cancelledReason={
+          currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED &&
+          order?.diagnosticOrderCancellation != null
+            ? order?.diagnosticOrderCancellation
+            : null
+        }
         showRescheduleCancel={
           showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
@@ -1120,10 +1059,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         showAdditonalView={!!showExtraInfo && showExtraInfo?.length > 0}
         additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
-        onPressCard={() => _navigateToYourTestDetails(order)}
+        onPressCard={() => _navigateToYourTestDetails(order, false)}
         onPressAddTest={() => _onPressAddTest()}
         onPressReschedule={() => _onPressTestReschedule(order)}
-        onPressViewDetails={() => _navigateToYourTestDetails(order)}
+        onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReport(order)}
         style={[
           { marginHorizontal: 20 },

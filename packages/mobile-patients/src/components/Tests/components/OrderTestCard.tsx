@@ -40,6 +40,7 @@ interface OrderTestCardProps {
   price: string | number;
   style?: StyleProp<ViewStyle>;
   isCancelled?: boolean;
+  cancelledReason?: any;
   showRescheduleCancel?: boolean;
   showReportOption: boolean;
   showAdditonalView: boolean;
@@ -266,16 +267,25 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   };
 
   const renderAdditionalInfoView = () => {
-    const isPresent = !!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0;
+    const isPresent =
+      (!!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0) ||
+      (props.isCancelled && props.cancelledReason != null);
     const consRejectedString = isPresent && props.additonalRejectedInfo?.join(', ');
+    let textToShow =
+      props.isCancelled && props.cancelledReason != null
+        ? `Order was cancelled because of ${
+            !!props.cancelledReason?.comments && props.cancelledReason?.comments != ''
+              ? props.cancelledReason?.comments
+              : props.cancelledReason?.cancellationReason
+          }`
+        : `Sample for ${consRejectedString} ${
+            props.additonalRejectedInfo?.length > 1 ? 'are' : 'is'
+          } rejected`;
     return (
       <>
         {isPresent ? (
           <View style={styles.preparationViewContainer}>
-            <Text style={styles.preparationText}>
-              Sample for {nameFormater(consRejectedString, 'default')}{' '}
-              {props.additonalRejectedInfo?.length > 1 ? 'are' : 'is'} rejected{' '}
-            </Text>
+            <Text style={styles.preparationText}>{nameFormater(textToShow, 'default')}</Text>
           </View>
         ) : null}
       </>
@@ -297,7 +307,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderBottomView()}
         {renderCTAsView()}
       </View>
-      {props.showAdditonalView ? renderAdditionalInfoView() : null}
+      {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
     </TouchableOpacity>
   );
 };
