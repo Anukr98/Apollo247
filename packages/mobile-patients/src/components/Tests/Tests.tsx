@@ -991,14 +991,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           }}
           value={searchText}
-          // onFocus={() => {
-          //   setSearchFocused(true);
-          //   props.navigation.navigate(AppRoutes.SearchTestScene, {
-          //     searchText: searchText,
-          //   });
-          //   setSearchText('');
-          //   setDiagnosticResults([]);
-          // }}
           onBlur={() => {
             setSearchFocused(false);
             setDiagnosticResults([]);
