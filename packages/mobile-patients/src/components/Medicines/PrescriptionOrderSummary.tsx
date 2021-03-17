@@ -477,7 +477,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         showPopUp={showPopUp}
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
-        type={'cartOrMedicineFlow'}
+        type={'Cart'}
       />
     );
   };

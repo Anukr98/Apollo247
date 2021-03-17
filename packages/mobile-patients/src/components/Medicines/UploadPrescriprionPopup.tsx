@@ -47,7 +47,10 @@ import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-imag
 import ImageResizer from 'react-native-image-resizer';
 import { ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  UploadPrescSource,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -141,7 +144,7 @@ const styles = StyleSheet.create({
 });
 
 export interface UploadPrescriprionPopupProps {
-  type?: 'cartOrMedicineFlow' | 'nonCartFlow';
+  type: UploadPrescSource;
   isVisible: boolean;
   disabledOption?: EPrescriptionDisableOption;
   heading: string;
@@ -177,17 +180,11 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
-    const uploadSource =
-      props!.type === 'cartOrMedicineFlow'
-        ? 'Cart'
-        : props!.type === 'nonCartFlow'
-        ? 'Upload Flow'
-        : 'Upload Flow';
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
       User_Type: pharmacyUserType,
+      'Upload Source': props.type,
     };
-    if (!!uploadSource) eventAttributes['Upload Source'] = uploadSource;
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
 
@@ -737,7 +734,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
               borderBottomRightRadius: 10,
             }}
           >
-            {props.type == 'nonCartFlow' && renderOrderSteps()}
+            {props.type == 'Upload Flow' && renderOrderSteps()}
             {renderOptions()}
             {renderInstructions()}
             {!props.hideTAndCs && renderTermsAndCondns()}
