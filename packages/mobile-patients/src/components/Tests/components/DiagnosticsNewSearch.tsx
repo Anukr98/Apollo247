@@ -107,14 +107,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
   },
-  numberPlate: {
-    fontFamily: 'IBM Plex Sans',
-    fontStyle: 'normal',
-    fontWeight: 'normal',
-    fontSize: 10,
-    lineHeight: 18,
-    color: '#01475B',
-  },
+  numberPlate: { ...theme.viewStyles.text('SB', 10, theme.colors.SKY_BLUE, 1, 18)},
   flexRow: {
     flexDirection: 'row',
   },
