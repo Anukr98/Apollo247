@@ -2022,14 +2022,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   whyBookUsImage: { width: '100%', height: 200 },
-  headingSections: {
-    fontFamily: 'IBM Plex Sans',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#01475B',
-  },
+  headingSections: { ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 22)},
   viewDefaultContainer: {
     paddingVertical: 10,
     paddingHorizontal: 10,
