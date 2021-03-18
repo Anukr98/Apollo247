@@ -114,6 +114,11 @@ const covidVaccineSection = {
   ],
 };
 
+const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613 ]; 
+const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
+const covidMaxSlotDays = 6;
+const nonCovidMaxSlotDays = 3;
+
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
@@ -175,6 +180,9 @@ const appStaticVariables = {
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
   FollowUp_Chat_Limit: 4,
+  Covid_Items : QA_covid_items,
+  Covid_Max_Slot_Days : covidMaxSlotDays,
+  Non_Covid_Max_Slot_Days : nonCovidMaxSlotDays
 };
 
 const DEV_top_specialties = [
@@ -847,7 +855,7 @@ const ConfigurationVAPT = {
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
-  jusPayenvironment: 'sandbox'
+  jusPayenvironment: 'sandbox',
 };
 //Production
 const ConfigurationProd = {
@@ -900,6 +908,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
+  Covid_Items : Prod_covid_items,
 };
 
 //PERFORMANCE
@@ -953,7 +962,7 @@ const ConfigurationPERFORM = {
     'https://aph-staging-web-patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
-  jusPayenvironment: 'sandbox'
+  jusPayenvironment: 'sandbox',
 };
 
 //DevelopmentReplica

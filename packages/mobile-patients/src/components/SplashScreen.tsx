@@ -1167,6 +1167,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_FollowUp_Chat_Limit',
       PROD: 'FollowUp_Chat_Limit',
     },
+    Covid_Items: {
+      QA: 'QA_Covid_Items',
+      PROD: 'Covid_Items',
+    },
+    Covid_Max_Slot_Days: {
+      QA: 'QA_Covid_Max_Slot_Days',
+      PROD: 'Covid_Max_Slot_Days',
+    },
+    Non_Covid_Max_Slot_Days: {
+      QA: 'QA_Non_Covid_Max_Slot_Days',
+      PROD: 'Non_Covid_Max_Slot_Days',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1296,6 +1308,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+
+      setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
+      setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
+      setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
+        config.getNumber(key)
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
