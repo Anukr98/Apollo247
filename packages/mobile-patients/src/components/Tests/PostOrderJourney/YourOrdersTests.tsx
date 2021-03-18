@@ -647,7 +647,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderRescheduleOrderOverlay = () => {
-    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
+      Number(item?.itemId)
+    );
+    const isCovidItem = orderItemId?.map((item: number) =>
+      AppConfig.Configuration.Covid_Items.includes(item)
+    );
+    const isOrderHasCovidItem = isCovidItem?.find((item) => item === true);
+    const maxDaysToShow = !!isOrderHasCovidItem
+      ? AppConfig.Configuration.Covid_Max_Slot_Days
+      : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
@@ -656,7 +666,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           areaId={String(selectedOrder?.areaId)}
           isTodaySlotUnavailable={todaySlotNotAvailable}
           maxDate={moment()
-            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .add(maxDaysToShow, 'day')
             .toDate()}
           isVisible={showDisplaySchedule}
           onClose={() => setDisplaySchedule(false)}
