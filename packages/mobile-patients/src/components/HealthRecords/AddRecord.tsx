@@ -1006,7 +1006,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       let imageObj = {} as any;
       imageObj.title = item?.fileName;
       imageObj.fileType = item?.mimeType;
-      imageObj.base64 = selectedRecord?.fileUrl;
+      imageObj.base64 = item?.file_Url;
       imagesArray.push(imageObj);
     });
     return imagesArray;
@@ -2116,6 +2116,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         ? medicalConditionImage
         : familyHistoryImage;
     const onPressAddPage = () => {
+      setOpenCamera(false);
       id === 1
         ? setdisplayOrderPopup(true)
         : id === 2
@@ -3874,6 +3875,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     fin = base64Icon.concat(currentImage?.base64 || '');
 
     const onPressReviewPhotoSave = () => {
+      setOpenCamera(false);
       setDisplayReviewPhotoPopup(false);
       setdisplayOrderPopup(false);
       setdisplayMedicalConditionPopup(false);
@@ -3943,6 +3945,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     setdisplayMedicalConditionPopup(false);
     setdisplayFamilyHistoryPopup(false);
     setdisplayAllergyPopup(false);
+    setOpenCamera(false);
   };
 
   const renderUploadPrescriptionPopup = (id: number) => {
