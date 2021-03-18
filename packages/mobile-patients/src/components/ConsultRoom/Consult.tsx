@@ -85,6 +85,7 @@ import {
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { renderAppointmentShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const { width, height } = Dimensions.get('window');
 
@@ -436,7 +437,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [filteredAppointmentsList, setFilteredAppointmentsList] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [appointmentItem, setAppoinmentItem] = useState<Appointment | null>();
@@ -458,7 +460,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   useEffect(() => {
     if (currentPatient && profile) {
       if (currentPatient.id != profile.id) {
-        setLoading && setLoading(true);
+        setPageLoading(true);
         fetchAppointments();
       }
     }
@@ -731,6 +733,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setFilteredAppointmentsList(allAppointments);
       setAllAppointments(allAppointments);
       setLoading(false);
+      setPageLoading(false);
 
       if (activeAppointments?.length || followUpAppointments?.length) {
         if (Platform.OS === 'ios') {
@@ -748,7 +751,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         }
       }
     } catch (error) {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -779,15 +782,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const renderTodaysConsultations = () => {
     return (
-      <SectionList
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 0 }}
-        bounces={false}
-        sections={selectedTab === tabs[0].title ? activeFollowUpAppointments : []}
-        ListEmptyComponent={renderNoAppointments()}
-        renderSectionHeader={({ section }) => renderSectionHeader(section)}
-        renderItem={({ item, index }) => renderConsultationCard(item, index)}
-      />
+      <View>
+        {pageLoading ? (
+          renderAppointmentShimmer()
+        ) : (
+          <SectionList
+            keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 0 }}
+            bounces={false}
+            sections={selectedTab === tabs[0].title ? activeFollowUpAppointments : []}
+            ListEmptyComponent={renderNoAppointments()}
+            renderSectionHeader={({ section }) => renderSectionHeader(section)}
+            renderItem={({ item, index }) => renderConsultationCard(item, index)}
+          />
+        )}
+      </View>
     );
   };
 
@@ -1346,31 +1355,43 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const renderConsultations = () => {
     return (
-      <FlatList
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
-        data={selectedTab === tabs[1].title ? completedAppointments : cancelledAppointments}
-        bounces={false}
-        removeClippedSubviews={true}
-        showsHorizontalScrollIndicator={false}
-        ListEmptyComponent={renderNoAppointments()}
-        renderItem={({ item, index }) => renderConsultationCard(item, index)}
-      />
+      <View>
+        {pageLoading ? (
+          renderAppointmentShimmer()
+        ) : (
+          <FlatList
+            keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
+            data={selectedTab === tabs[1].title ? completedAppointments : cancelledAppointments}
+            bounces={false}
+            removeClippedSubviews={true}
+            showsHorizontalScrollIndicator={false}
+            ListEmptyComponent={renderNoAppointments()}
+            renderItem={({ item, index }) => renderConsultationCard(item, index)}
+          />
+        )}
+      </View>
     );
   };
 
   const renderFilterConsultations = () => {
     return (
-      <FlatList
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
-        data={filteredAppointmentsList}
-        bounces={false}
-        removeClippedSubviews={true}
-        showsHorizontalScrollIndicator={false}
-        ListEmptyComponent={renderNoAppointments()}
-        renderItem={({ item, index }) => renderConsultationCard(item, index)}
-      />
+      <View style={{ flexDirection: 'column' }}>
+        {pageLoading ? (
+          renderAppointmentShimmer()
+        ) : (
+          <FlatList
+            keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
+            data={filteredAppointmentsList}
+            bounces={false}
+            removeClippedSubviews={true}
+            showsHorizontalScrollIndicator={false}
+            ListEmptyComponent={renderNoAppointments()}
+            renderItem={({ item, index }) => renderConsultationCard(item, index)}
+          />
+        )}
+      </View>
     );
   };
 
@@ -1639,6 +1660,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         <Text style={styles.viewAnotherMemberTextStyle}>
           {'View appointments of another member?'}
         </Text>
+
         <ProfileList
           navigation={props.navigation}
           saveUserChange={true}
@@ -1657,7 +1679,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <NavigationEvents
         onDidFocus={(payload) => {
           if (callFetchAppointmentApi) {
-            setLoading && setLoading(true);
+            setPageLoading(true);
             fetchAppointments();
           }
         }}
@@ -1675,6 +1697,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         >
           {renderProfileChangeView()}
           {filterLength > 0 ? renderSelectedFilters() : renderTabSwitch()}
+
           <View>
             {filterLength === 0 ? renderSelectMemberView() : null}
             {filterLength > 0

@@ -175,6 +175,11 @@ import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  renderCovidVaccinationShimmer,
+  renderCircleShimmer,
+  renderBannerShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const { Vitals } = NativeModules;
 
@@ -3175,6 +3180,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+
+              {circleDataLoading && renderCircleShimmer()}
+              {circleDataLoading && renderCovidVaccinationShimmer()}
+              {hdfcLoading && renderBannerShimmer()}
+
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {isCircleMember === 'yes' && renderCircle()}
               </View>

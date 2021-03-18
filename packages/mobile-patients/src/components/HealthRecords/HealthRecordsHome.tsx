@@ -96,6 +96,7 @@ import { ListItem, Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { renderHealthRecordShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const { width } = Dimensions.get('window');
 
@@ -442,6 +443,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
   const _searchInputRef = useRef(null);
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
@@ -499,9 +501,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
-      !loading && setLoading!(true);
+      setPageLoading!(true);
     } else {
-      loading && setLoading!(false);
+      setPageLoading!(false);
     }
   }, [prismdataLoader, pastDataLoader]);
 
@@ -853,14 +855,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     };
 
     const renderProfileNameView = () => {
-      return (
-        <View style={styles.profileNameViewStyle}>
-          <Text style={styles.profileNameTextStyle} numberOfLines={1}>
-            {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
-          </Text>
-          <DropdownGreen />
-        </View>
-      );
+      if (pageLoading) {
+        return renderHealthRecordShimmer(35);
+      } else {
+        return (
+          <View style={styles.profileNameViewStyle}>
+            <Text style={styles.profileNameTextStyle} numberOfLines={1}>
+              {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
+            </Text>
+            <DropdownGreen />
+          </View>
+        );
+      }
     };
 
     return (
@@ -1119,9 +1125,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderHealthCategoriesView = () => {
     return (
       <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
-        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
-          {'Health Categories'}
-        </Text>
+        {pageLoading ? (
+          renderHealthRecordShimmer(20)
+        ) : (
+          <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
+            {'Health Categories'}
+          </Text>
+        )}
+
         <View style={styles.listItemCardStyle}>
           {renderListItemView('Doctor Consultations', 1)}
           {renderListItemView('Test Reports', 2)}

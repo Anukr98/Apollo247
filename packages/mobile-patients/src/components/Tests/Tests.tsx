@@ -134,6 +134,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
+import {
+  renderBannerShimmer,
+  renderTestDiagonosticsShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -238,6 +242,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
@@ -520,7 +525,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         }
       }
-      setLoadingContext!(true);
+      setPageLoading!(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
         variables: { patientId: currentPatient?.id },
@@ -539,16 +544,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         checkLocation(addressList);
       }
-      setLoadingContext!(false);
+      setPageLoading!(false);
     } catch (error) {
       checkLocation(addresses);
-      setLoadingContext!(false);
+      setPageLoading!(false);
       CommonBugFender('fetching_Addresses_on_Test_Page', error);
     }
   }
 
   const updatePlaceInfoByPincode = (pincode: string, serviceableResponse: DiagnosticData) => {
-    setLoadingContext!(true);
+
     let isPinCodeServiceable = serviceableResponse?.city != '';
 
     getPlaceInfoByPincode(pincode)
@@ -614,17 +619,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   /**check current location */
   const autoDetectLocation = (addresses: addressListType) => {
-    setLoadingContext!(true);
+    setPageLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
-        setLoadingContext!(false);
+        setPageLoading!(false);
         response && setDiagnosticLocation!(response);
         response && !locationDetails && setLocationDetails!(response);
         setDeliveryAddressId!('');
         checkIsPinCodeServiceable(response.pincode, 'Auto-select', 'autoDetect');
       })
       .catch((e) => {
-        setLoadingContext!(false);
+        setPageLoading!(false);
         checkLocation(addresses);
         CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
         e &&
@@ -643,7 +648,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
-      setLoadingContext!(true);
+      setPageLoading!(true);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -681,7 +686,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: '',
             };
             setServiceableObject(obj);
-            setLoadingContext!(false);
+            setPageLoading!(false);
             setDiagnosticLocationServiceable!(false);
 
             isCurrentScreen == AppRoutes.Tests
@@ -702,7 +707,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('Tests_', e);
-          setLoadingContext!(false);
+          setPageLoading!(false);
           showAphAlert!({
             unDismissable: true,
             title: string.common.uhOh,
@@ -717,7 +722,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <ListCard
         onPress={() => {
           postMyOrdersClicked('Diagnostics', currentPatient);
-          setLoadingContext!(true);
           props.navigation.navigate(AppRoutes.YourOrdersTest, {
             isTest: true,
           });
@@ -810,7 +814,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async () => {
-    setLoadingContext!(true);
+    setPageLoading!(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -822,7 +826,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      setLoadingContext!(false);
+      setPageLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
@@ -855,7 +859,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       }
     } catch (error) {
-      setLoadingContext!(false);
+      setPageLoading!(false);
       CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
     }
   };
@@ -1006,7 +1010,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   async function setDefaultAddress(address: Address) {
     try {
-      setLoadingContext?.(true);
+      setPageLoading!(true);
       hideAphAlert?.();
       const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
         query: SET_DEFAULT_ADDRESS,
@@ -1026,9 +1030,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
       checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
-      setLoadingContext!(false);
+      setPageLoading!(false);
     } catch (error) {
-      setLoadingContext!(false);
+      setPageLoading!(false);
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
@@ -1163,6 +1167,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderBanner = () => {
     if (loading || bannerLoading) {
+      //To do add another section shimmer
+      return renderBannerShimmer();
+
       return (
         <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
           <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
@@ -1332,6 +1339,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <>
         {!!isWidget1 ? renderWidgets(isWidget1) : null}
         {renderStepsToBook()}
+
         {renderCarouselBanners()}
         {!!isWidget2 ? renderWidgets(isWidget2) : null}
         {renderWhyBookUs()}
@@ -1768,24 +1776,34 @@ export const Tests: React.FC<TestsProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        <View style={{ backgroundColor: 'white' }}>
-          {renderDiagnosticHeader()}
-          {renderSearchBar()}
-          {renderSearchSuggestions()}
-        </View>
-        <View style={{ flex: 1 }}>
-          <ScrollView
-            removeClippedSubviews={true}
-            bounces={false}
-            style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
-            keyboardShouldPersistTaps="always"
-            showsVerticalScrollIndicator={false}
-          >
-            {renderSections()}
-            {renderOverlay()}
-          </ScrollView>
-          {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
-        </View>
+        {pageLoading ? (
+          <View style={{ backgroundColor: 'white' }}>
+            {renderDiagnosticHeader()}
+            {renderSearchBar()}
+            {renderTestDiagonosticsShimmer()}
+          </View>
+        ) : (
+          <>
+            <View style={{ backgroundColor: 'white' }}>
+              {renderDiagnosticHeader()}
+              {renderSearchBar()}
+              {renderSearchSuggestions()}
+            </View>
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                removeClippedSubviews={true}
+                bounces={false}
+                style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
+                keyboardShouldPersistTaps="always"
+                showsVerticalScrollIndicator={false}
+              >
+                {renderSections()}
+                {renderOverlay()}
+              </ScrollView>
+              {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
+            </View>
+          </>
+        )}
       </SafeAreaView>
       {showbookingStepsModal ? renderBookingStepsModal() : null}
     </View>
