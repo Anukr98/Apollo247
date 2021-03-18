@@ -216,17 +216,16 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
       <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
       <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-        {/* {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>} */}
         <Text style={styles.priceTextCollapseStyle}>
+          {!discount && `MRP `}
           {string.common.Rs}
           {convertNumberToDecimal(discount ? special_price : price)}
         </Text>
         {!!special_price && (
           <>
-            {/* {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>} */}
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>{`${
+              <Text style={{ textDecorationLine: 'line-through' }}>{`MRP ${
                 string.common.Rs
               }${convertNumberToDecimal(price)}`}</Text>
               {')'}
