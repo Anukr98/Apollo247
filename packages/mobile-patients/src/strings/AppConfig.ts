@@ -114,7 +114,7 @@ const covidVaccineSection = {
   ],
 };
 
-const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613 ]; 
+const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
 const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
 const covidMaxSlotDays = 7;
 const nonCovidMaxSlotDays = 4;
@@ -173,9 +173,10 @@ const appStaticVariables = {
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
-  Covid_Items : QA_covid_items,
-  Covid_Max_Slot_Days : covidMaxSlotDays,
-  Non_Covid_Max_Slot_Days : nonCovidMaxSlotDays
+  Covid_Items: QA_covid_items,
+  Covid_Max_Slot_Days: covidMaxSlotDays,
+  Non_Covid_Max_Slot_Days: nonCovidMaxSlotDays,
+  FollowUp_Chat_Limit: 4,
 };
 
 const DEV_top_specialties = [
@@ -644,7 +645,7 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  Covid_Items : QA_covid_items,
+  Covid_Items: QA_covid_items,
 };
 
 // QA
@@ -801,7 +802,7 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  Covid_Items : QA_covid_items,
+  Covid_Items: QA_covid_items,
 };
 
 // VAPT
@@ -856,7 +857,7 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  Covid_Items : QA_covid_items,
+  Covid_Items: QA_covid_items,
 };
 //Production
 const ConfigurationProd = {
@@ -910,7 +911,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  Covid_Items : Prod_covid_items,
+  Covid_Items: Prod_covid_items,
 };
 
 //PERFORMANCE
@@ -966,7 +967,7 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  Covid_Items : QA_covid_items,
+  Covid_Items: QA_covid_items,
 };
 
 //DevelopmentReplica
@@ -1022,7 +1023,7 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  Covid_Items : QA_covid_items,
+  Covid_Items: QA_covid_items,
 };
 
 const Configuration =
@@ -1280,8 +1281,8 @@ export const DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED
-]
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
 
 export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
@@ -1293,7 +1294,7 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
-]
+];
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1372,7 +1373,6 @@ export const TestReschedulingReasons = {
     string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
     string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
     string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
-
   ],
 };
 
@@ -1447,9 +1447,8 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
 export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL
-]
-
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+];
 
 type SpecialitiesType = {
   [key: string]: string[];
