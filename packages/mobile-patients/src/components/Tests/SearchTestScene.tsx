@@ -164,14 +164,7 @@ const styles = StyleSheet.create({
     padding: 12,
     ...theme.fonts.IBMPlexSansSemiBold(14),
   },
-  headingSections: {
-    fontFamily: 'IBM Plex Sans',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#01475B',
-  },
+  headingSections: { ...theme.viewStyles.text('B', 14, '#01475B', 1, 22)},
   viewDefaultContainer: {
     paddingVertical: 10,
     paddingHorizontal: 10,
