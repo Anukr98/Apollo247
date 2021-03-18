@@ -1,7 +1,12 @@
-import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { PreviousQuery } from '@aph/mobile-patients/src/components/NeedHelp';
-import { Helpers, Query } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import {
+  Helpers as NeedHelpHelpers,
+  PreviousQuery,
+} from '@aph/mobile-patients/src/components/NeedHelp';
+import {
+  Helpers as NeedHelpQueryDetailsHelpers,
+  Query,
+} from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { GrayEditIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -24,12 +29,6 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { GET_HELP_SECTION_QUERIES } from '../../graphql/profiles';
-import {
-  GetHelpSectionQueries,
-  GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries,
-} from '../../graphql/types/GetHelpSectionQueries';
-import { NeedHelpQueries } from '../../strings/NeedHelpQueries';
 
 const { text } = theme.viewStyles;
 const { LIGHT_BLUE } = theme.colors;
@@ -85,24 +84,25 @@ const styles = StyleSheet.create({
   editIcon: { height: 25, width: 25, resizeMode: 'contain' },
   emailInput: { paddingBottom: 5 },
   emailInputContainer: { marginBottom: 10 },
+  invisible: { height: 0, width: 0, overflow: 'hidden' },
 });
 
 export interface Props extends NavigationScreenProps {}
 
 export const NeedHelp: React.FC<Props> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
-  const [queries, setQueries] = useState<
-    GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries[]
-  >([]);
+  const [email, setEmail] = useState<string>(
+    currentPatient?.emailAddress || 'muqeeth246@gmail.com'
+  );
+  const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>([]);
   const [isFocused, setFocused] = useState<boolean>(false);
   const [ongoingQuery, setOngoingQuery] = useState<Query>();
   const [emailValidation, setEmailValidation] = useState<boolean>(
     currentPatient?.emailAddress ? true : false
   );
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, setLoading } = useUIElements();
   const apolloClient = useApolloClient();
-  const NeedHelp = NeedHelpQueries;
+  const { getHelpSectionQueries } = NeedHelpHelpers;
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
@@ -122,19 +122,22 @@ export const NeedHelp: React.FC<Props> = (props) => {
 
   const fetchQueries = async () => {
     try {
-      const { data } = await apolloClient.query<GetHelpSectionQueries>({
-        query: GET_HELP_SECTION_QUERIES,
-        variables: {},
-        fetchPolicy: 'no-cache',
+      setLoading?.(true);
+      const queries = await getHelpSectionQueries(apolloClient);
+      setQueries(queries);
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.genericError,
       });
-      const a = data?.getHelpSectionQueries?.needHelpQueries;
-      setQueries(NeedHelpQueries);
-    } catch (error) {}
+    }
   };
 
   const fetchOngoingQuery = async () => {
     try {
-      const { getNeedHelpQuery: getTicket } = Helpers;
+      const { getNeedHelpQuery: getTicket } = NeedHelpQueryDetailsHelpers;
       const DISPLAY_TILL_HOURS = 48;
       const ticket = await getTicket();
       if (ticket?.createdDate) {
@@ -146,14 +149,14 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const renderCategory = (
-    { title, id }: typeof NeedHelp[0],
+    { title, id }: NeedHelpHelpers.HelpSectionQuery,
     containerStyle?: StyleProp<ViewStyle>
   ) => {
-    const onPress = () => onSubmit(title, id);
+    const onPress = () => onSubmit(id!);
     return (
       <TouchableOpacity
         activeOpacity={1}
-        key={title}
+        key={id}
         style={[styles.categoryItemStyle, containerStyle]}
         onPress={onPress}
       >
@@ -191,7 +194,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
         <Text style={styles.fieldLabel}>{toReportAnIssue}</Text>
         {renderEmailField()}
         <Text style={[styles.fieldLabel]}>{whatYouNeedHelp}</Text>
-        <View style={styles.categoryWrapper}>{NeedHelp.map((item) => renderCategory(item))}</View>
+        <View style={styles.categoryWrapper}>{queries.map((item) => renderCategory(item))}</View>
       </View>
     );
   };
@@ -203,7 +206,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
     });
   };
 
-  const onSubmit = (helpCategory: string, helpCategoryId: number) => {
+  const onSubmit = (helpCategoryId: number) => {
     if (!emailValidation) {
       showAlert();
       return;
@@ -215,9 +218,8 @@ export const NeedHelp: React.FC<Props> = (props) => {
         ? AppRoutes.NeedHelpConsultOrder
         : AppRoutes.NeedHelpQueryDetails;
     props.navigation.navigate(route, {
-      queryCategory: helpCategory,
-      breadCrumb: [{ title: string.needHelp }, { title: helpCategory }] as BreadcrumbProps['links'],
-      pageTitle: helpCategory.toUpperCase(),
+      queries: queries,
+      queryIdLevel1: helpCategoryId,
       email: email,
     });
   };
@@ -226,7 +228,6 @@ export const NeedHelp: React.FC<Props> = (props) => {
     return (
       <View>
         <Header
-          container={{ borderBottomWidth: 0 }}
           title={'NEED HELP'}
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
@@ -243,7 +244,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        <View style={{ flex: 1 }}>
+        <View style={[{ flex: 1 }, !queries?.length && styles.invisible]}>
           <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
             <KeyboardAwareScrollView style={styles.subViewPopup} bounces={false}>
               <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>

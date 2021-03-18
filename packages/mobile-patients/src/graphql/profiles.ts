@@ -2682,9 +2682,20 @@ export const GET_HELP_SECTION_QUERIES = gql`
           nonOrderQueries
           queriesByOrderStatus
           queries {
+            id
+            title
+            nonOrderQueries
+            queriesByOrderStatus
             queries {
+              id
+              title
+              nonOrderQueries
+              queriesByOrderStatus
               queries {
                 id
+                title
+                nonOrderQueries
+                queriesByOrderStatus
               }
             }
           }

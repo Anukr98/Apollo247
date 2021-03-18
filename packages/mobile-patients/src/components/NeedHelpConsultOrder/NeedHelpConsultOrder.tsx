@@ -26,8 +26,7 @@ import { NavigationScreenProps } from 'react-navigation';
 export interface Props
   extends NavigationScreenProps<{
     pageTitle?: string;
-    breadCrumb: BreadcrumbProps['links'];
-    queryCategory: string;
+    queryIdLevel1: number;
     email: string;
   }> {}
 
@@ -35,12 +34,9 @@ type Consult = GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appoin
 
 export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
   const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
-  const breadCrumb = navigation.getParam('breadCrumb') || [
-    { title: string.needHelp },
-    { title: string.pharmacy },
-  ];
-  const queryCategory = navigation.getParam('queryCategory') || string.pharmacy;
+  const queryIdLevel1 = navigation.getParam('queryIdLevel1') || NaN;
   const email = navigation.getParam('email') || '';
+  const breadCrumb = [{ title: string.needHelp }, { title: string.consult }];
 
   const { currentPatient } = useAllCurrentPatients();
   const [displayAll, setDisplayAll] = useState<boolean>(false);
@@ -81,9 +77,8 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
         orderId: item.displayId,
-        queryCategory,
+        queryIdLevel1,
         email,
-        breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
         isConsult: true,
       });
     };
@@ -134,9 +129,8 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
   const renderIssueNotRelatedToOrder = () => {
     const onPress = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
-        queryCategory,
+        queryIdLevel1,
         email,
-        breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
         isConsult: true,
       });
     };

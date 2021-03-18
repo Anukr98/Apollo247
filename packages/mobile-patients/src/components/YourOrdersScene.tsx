@@ -69,7 +69,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
-  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   useEffect(() => {
     fetchOrders();
@@ -262,13 +261,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const onPressHelp = () => {
-    const { category } = NeedHelp[0];
     props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
-      queryCategory: category,
-      breadCrumb: [{ title: string.needHelp }, { title: category }] as BreadcrumbProps['links'],
-      pageTitle: category.toUpperCase(),
-      email: currentPatient?.emailAddress || '',
-      fromOrderFlow: true,
+      queryIdLevel1: 1,
     });
   };
 
