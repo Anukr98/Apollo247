@@ -13,6 +13,7 @@ import {
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
   availabilityApi247,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -39,6 +40,7 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
@@ -82,6 +84,8 @@ import {
   EPrescription,
   useShoppingCart,
   PharmacyCircleEvent,
+  PharmaCoupon,
+  CouponProducts,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -2648,4 +2652,89 @@ export const paymentModeVersionCheck = (minSupportedVersion: string) => {
     isLessThan(appVersion, minSupportedVersion)
   );
   return versionSupports;
+};
+
+const setCouponFreeProducts = (
+  products: any,
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  cartItems: ShoppingCartItem[]
+) => {
+  const freeProducts = products.filter((product) => {
+    return product.couponFree === 1;
+  });
+  freeProducts.forEach((item, index) => {
+    const filteredProduct = cartItems.filter((product) => {
+      return product.id === item.sku;
+    });
+    if (filteredProduct.length) {
+      item.quantity = filteredProduct[0].quantity;
+    }
+  });
+  setCouponProducts!(freeProducts);
+};
+
+export const validateCoupon = async (
+  coupon: string,
+  message: string | undefined,
+  pharmacyPincode: any,
+  mobileNumber: string,
+  hdfcSubscriptionId: string,
+  circleSubscriptionId: string,
+  setCoupon: ((coupon: PharmaCoupon | null) => void) | null,
+  cartTotal: number,
+  productDiscount: number,
+  cartItems: ShoppingCartItem[],
+  hdfcStatus: string,
+  hdfcPlanId: string,
+  circleStatus: string,
+  circlePlanId: string,
+  setCouponProducts: ((items: CouponProducts[]) => void) | null
+) => {
+  CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
+  }
+  const data = {
+    mobile: mobileNumber,
+    billAmount: (cartTotal - productDiscount).toFixed(2),
+    coupon: coupon,
+    pinCode: pharmacyPincode,
+    products: cartItems.map((item) => ({
+      sku: item.id,
+      categoryId: item.productType,
+      mrp: item.price,
+      quantity: item.quantity,
+      specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+    })),
+    packageIds: packageId,
+  };
+  return new Promise(async (res, rej) => {
+    try {
+      const response = await validateConsultCoupon(data);
+      if (response.data.errorCode == 0) {
+        if (response.data.response.valid) {
+          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
+          res('success');
+        } else {
+          rej(response.data.response.reason);
+        }
+
+        // set coupon free products again (in case when price of sku is changed)
+        const products = response?.data?.response?.products;
+        if (products && products.length) {
+          setCouponFreeProducts(products, setCouponProducts, cartItems);
+        }
+      } else {
+        CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
+        rej(response.data.errorMsg);
+      }
+    } catch (error) {
+      CommonBugFender('validatingPharmaCoupon', error);
+      rej('Sorry, unable to validate coupon right now.');
+    }
+  });
 };

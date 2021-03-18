@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   View,
@@ -23,11 +23,9 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SelectedAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/SelectedAddress';
-import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/ChooseAddress';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemsList';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
@@ -36,11 +34,10 @@ import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Com
 import {
   g,
   formatAddress,
-  formatAddressToLocation,
   getShipmentPrice,
+  validateCoupon,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
-  pinCodeServiceabilityApi247,
   availabilityApi247,
   GetTatResponse247,
   TatApiInput247,
@@ -52,21 +49,12 @@ import {
   uploadPrescriptionClickedEvent,
   postTatResponseFailureEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { UPLOAD_DOCUMENT, SET_DEFAULT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
+import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  postPhamracyCartAddressSelectedFailure,
-  postPharmacyAddNewAddressClick,
-  postPhamracyCartAddressSelectedSuccess,
-} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
+import { postPhamracyCartAddressSelectedSuccess } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  makeAdressAsDefaultVariables,
-  makeAdressAsDefault,
-} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import moment from 'moment';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
 import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
@@ -79,13 +67,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     cartItems,
     addresses,
     deliveryAddressId,
-    setDeliveryAddressId,
     uploadPrescriptionRequired,
     physicalPrescriptions,
     ePrescriptions,
     setCartItems,
     setPhysicalPrescriptions,
-    setAddresses,
     deliveryTime,
     setdeliveryTime,
     pharmacyCircleAttributes,
@@ -93,8 +79,23 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     circleSubscriptionId,
     isCircleSubscription,
     setOrders,
+    coupon,
+    setCoupon,
+    hdfcSubscriptionId,
+    cartTotal,
+    productDiscount,
+    setCouponProducts,
+    pinCode,
   } = useShoppingCart();
-  const { setPharmacyLocation, setAxdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
+  const {
+    pharmacyLocation,
+    locationDetails,
+    pharmacyUserTypeAttribute,
+    hdfcPlanId,
+    hdfcStatus,
+    circleStatus,
+    circlePlanId,
+  } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -116,6 +117,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   );
   const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -146,49 +149,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
     unserviceableItems?.length && props.navigation.goBack();
-  }
-
-  async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
-    if (deliveryAddressId && deliveryAddressId == address.id) {
-      return;
-    }
-    setloading(true);
-    const response = await pinCodeServiceabilityApi247(address.zipcode!);
-    const { data } = response;
-    setAxdcCode && setAxdcCode(data?.response?.axdcCode);
-    if (data?.response?.servicable) {
-      setloading(false);
-      setDeliveryAddressId && setDeliveryAddressId(address.id);
-      setDefaultAddress(address);
-    } else {
-      props.navigation.goBack();
-      setDeliveryAddressId && setDeliveryAddressId('');
-      setloading!(false);
-      postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
-      renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
-    }
-  }
-
-  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
-    try {
-      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
-        query: SET_DEFAULT_ADDRESS,
-        variables: { patientAddressId: address?.id },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
-      const updatedAddresses = addresses.map((item) => ({
-        ...item,
-        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
-      }));
-      setAddresses!(updatedAddresses);
-      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
-      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
-      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
-    } catch (error) {
-      CommonBugFender('set_default_Address_on_Cart_Page', error);
-    }
   }
 
   async function availabilityTat(id: string) {
@@ -395,7 +355,39 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   }
 
-  function onPressProceedtoPay() {
+  const removeCouponWithAlert = (message: string) => {
+    setCoupon!(null);
+    renderAlert(message);
+  };
+
+  async function onPressProceedtoPay() {
+    if (coupon && cartTotal > 0) {
+      try {
+        const response = await validateCoupon(
+          coupon.coupon,
+          coupon.message,
+          pharmacyPincode,
+          g(currentPatient, 'mobileNumber'),
+          hdfcSubscriptionId,
+          circleSubscriptionId,
+          setCoupon,
+          cartTotal,
+          productDiscount,
+          cartItems,
+          hdfcStatus,
+          hdfcPlanId,
+          circleStatus,
+          circlePlanId,
+          setCouponProducts
+        );
+        if (response !== 'success') {
+          removeCouponWithAlert(response);
+        }
+      } catch (error) {
+        return;
+      }
+    }
+    await availabilityTat(deliveryAddressId);
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       storeDistance: storeDistance,
@@ -430,39 +422,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     });
   };
 
-  function showAddressPopup() {
-    showAphAlert!({
-      title: string.common.selectAddress,
-      removeTopIcon: true,
-      children: (
-        <ChooseAddress
-          addresses={addresses}
-          deliveryAddressId={deliveryAddressId}
-          onPressAddAddress={() => {
-            props.navigation.navigate(AppRoutes.AddAddressNew, {
-              source: 'Cart' as AddressSource,
-              addOnly: true,
-            });
-            postPharmacyAddNewAddressClick('Cart');
-            hideAphAlert!();
-          }}
-          onPressEditAddress={(address) => {
-            props.navigation.push(AppRoutes.AddAddressNew, {
-              KeyName: 'Update',
-              addressDetails: address,
-              ComingFrom: AppRoutes.MedicineCart,
-            });
-            hideAphAlert!();
-          }}
-          onPressSelectAddress={(address) => {
-            checkServicability(address);
-            hideAphAlert && hideAphAlert();
-          }}
-        />
-      ),
-    });
-  }
-
   const renderHeader = () => {
     return (
       <Header
@@ -478,7 +437,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
 
   const renderAddress = () => {
-    return <SelectedAddress orderType={'Delivery'} onPressChange={() => showAddressPopup()} />;
+    return <SelectedAddress orderType={'Delivery'} showChangeAddress={false} />;
   };
 
   const renderAmountSection = () => {

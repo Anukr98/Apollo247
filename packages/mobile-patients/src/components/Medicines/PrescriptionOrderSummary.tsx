@@ -468,7 +468,13 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   };
 
   const renderAddress = () => {
-    return <SelectedAddress orderType={'Delivery'} onPressChange={() => showAddressPopup()} />;
+    return (
+      <SelectedAddress
+        orderType={'Delivery'}
+        onPressChange={() => showAddressPopup()}
+        showChangeAddress={true}
+      />
+    );
   };
 
   const renderuploadPrescriptionPopup = () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   View,
@@ -51,6 +51,7 @@ import {
   formatAddress,
   formatAddressToLocation,
   getShipmentPrice,
+  validateCoupon,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -59,7 +60,6 @@ import {
   getMedicineDetailsApi,
   TatApiInput247,
   getDeliveryTAT247,
-  validateConsultCoupon,
   userSpecificCoupon,
   searchPickupStoresApi,
   getProductsByCategoryApi,
@@ -87,7 +87,6 @@ import {
   postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
-  postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -145,6 +144,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setNewAddressAdded,
     orders,
     setOrders,
+    productDiscount,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -340,7 +340,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             const msg = couponList[0].message;
             try {
               setCoupon!(null);
-              await validateCoupon(coupon, msg, true);
+              await validateCoupon(
+                coupon.coupon,
+                coupon.message,
+                pharmacyPincode,
+                g(currentPatient, 'mobileNumber'),
+                hdfcSubscriptionId,
+                circleSubscriptionId,
+                setCoupon,
+                cartTotal,
+                productDiscount,
+                cartItems,
+                hdfcStatus,
+                hdfcPlanId,
+                circleStatus,
+                circlePlanId,
+                setCouponProducts
+              );
             } catch (error) {
               return;
             }
@@ -589,7 +605,26 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   async function validatePharmaCoupon() {
     if (coupon && cartTotal > 0) {
       try {
-        await validateCoupon(coupon.coupon, coupon.message);
+        const response = await validateCoupon(
+          coupon.coupon,
+          coupon.message,
+          pharmacyPincode,
+          g(currentPatient, 'mobileNumber'),
+          hdfcSubscriptionId,
+          circleSubscriptionId,
+          setCoupon,
+          cartTotal,
+          productDiscount,
+          cartItems,
+          hdfcStatus,
+          hdfcPlanId,
+          circleStatus,
+          circlePlanId,
+          setCouponProducts
+        );
+        if (response !== 'success') {
+          removeCouponWithAlert(response);
+        }
       } catch (error) {
         return;
       }
@@ -623,79 +658,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
     renderAlert(message);
-  };
-
-  const validateCoupon = (coupon: string, message: string | undefined, autoApply?: boolean) => {
-    CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
-    console.log('inside validate');
-    setloading!(true);
-    let packageId: string[] = [];
-    if (hdfcSubscriptionId && hdfcStatus === 'active') {
-      packageId.push(`HDFC:${hdfcPlanId}`);
-    }
-    if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`);
-    }
-    const data = {
-      mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
-      coupon: coupon,
-      pinCode: pharmacyPincode,
-      products: cartItems.map((item) => ({
-        sku: item.id,
-        categoryId: item.productType,
-        mrp: item.price,
-        quantity: item.quantity,
-        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
-      })),
-      packageIds: packageId,
-    };
-    return new Promise(async (res, rej) => {
-      try {
-        const response = await validateConsultCoupon(data);
-        console.log('coupon response >>', response.data.response);
-        setloading!(false);
-        if (response.data.errorCode == 0) {
-          if (response.data.response.valid) {
-            setCoupon!({ ...g(response.data, 'response')!, message: message ? message : '' });
-            res();
-          } else {
-            !autoApply && removeCouponWithAlert(g(response.data, 'response', 'reason'));
-            rej(response.data.response.reason);
-          }
-
-          // set coupon free products again (in case when price of sku is changed)
-          const products = g(response.data, 'response', 'products');
-          if (products && products.length) {
-            setCouponFreeProducts(products);
-          }
-        } else {
-          CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
-          !autoApply && removeCouponWithAlert(g(response.data, 'errorMsg'));
-          rej(response.data.errorMsg);
-        }
-      } catch (error) {
-        CommonBugFender('validatingPharmaCoupon', error);
-        !autoApply && removeCouponWithAlert('Sorry, unable to validate coupon right now.');
-        setloading!(false);
-        rej('Sorry, unable to validate coupon right now.');
-      }
-    });
-  };
-
-  const setCouponFreeProducts = (products: any) => {
-    const freeProducts = products.filter((product) => {
-      return product.couponFree === 1;
-    });
-    freeProducts.forEach((item, index) => {
-      const filteredProduct = cartItems.filter((product) => {
-        return product.id === item.sku;
-      });
-      if (filteredProduct.length) {
-        item.quantity = filteredProduct[0].quantity;
-      }
-    });
-    setCouponProducts!(freeProducts);
   };
 
   async function fetchPickupStores(pincode: string) {
@@ -775,7 +737,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       const products = response?.data?.products.slice(0, 15) || [];
       setsuggestedProducts(products);
     } catch (error) {
-      CommonBugFender('YourCart_error_whilefetchingSuggestedProducts', error);
+      CommonBugFender('MedicineCart_error_whilefetchingSuggestedProducts', error);
     }
   }
 
@@ -824,7 +786,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
         setisPhysicalUploadComplete(true);
       } catch (error) {
-        CommonBugFender('YourCart_physicalPrescriptionUpload', error);
+        CommonBugFender('MedicineCart_physicalPrescriptionUpload', error);
         setloading!(false);
         renderAlert('Error occurred while uploading prescriptions.');
       }
@@ -869,7 +831,26 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   async function onPressProceedtoPay() {
     if (coupon) {
       try {
-        await validateCoupon(coupon.coupon, coupon.message);
+        const response = await validateCoupon(
+          coupon.coupon,
+          coupon.message,
+          pharmacyPincode,
+          g(currentPatient, 'mobileNumber'),
+          hdfcSubscriptionId,
+          circleSubscriptionId,
+          setCoupon,
+          cartTotal,
+          productDiscount,
+          cartItems,
+          hdfcStatus,
+          hdfcPlanId,
+          circleStatus,
+          circlePlanId,
+          setCouponProducts
+        );
+        if (response !== 'success') {
+          removeCouponWithAlert(response);
+        }
       } catch (error) {
         return;
       }
@@ -1175,7 +1156,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         }}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
-        onPressTatCard={() =>
+        onPressTatCard={() => {
+          /*
           !hasUnserviceableproduct() &&
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
@@ -1183,12 +1165,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             tatType: storeType,
             shopId: shopId,
           })
-        }
+          */
+        }}
         screen={'MedicineCart'}
-        onPressReviewOrder={() => props.navigation.navigate(AppRoutes.CartSummary)}
+        onPressReviewOrder={onPressReviewOrder}
       />
     );
   };
+
+  async function onPressReviewOrder() {
+    availabilityTat(true);
+    if (coupon) {
+      await validatePharmaCoupon();
+    }
+    !hasUnserviceableproduct() && props.navigation.navigate(AppRoutes.CartSummary);
+  }
 
   const renderUnServiceable = () => {
     return <UnServiceable style={{ marginTop: 24 }} />;
