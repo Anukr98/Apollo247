@@ -146,6 +146,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
+  PHLEBO_ON_THE_WAY = "PHLEBO_ON_THE_WAY",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -1715,6 +1716,7 @@ export interface UpdatePatientInput {
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;
+  isConsulted?: boolean | null;
 }
 
 export interface UploadDocumentInput {

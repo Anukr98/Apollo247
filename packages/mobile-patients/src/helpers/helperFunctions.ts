@@ -2525,7 +2525,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST:
       statusString = 'Order rescheduled';
       break;
+    //first status has been added
     //last two status => report awaited (need not show in ui, so showing previous)
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
@@ -2561,6 +2563,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
     case REFUND_STATUSES.MANUAL_REVIEW:
       statusString = 'Refund initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
+      statusString = 'Partial Order Completed';
       break;
     default:
       statusString = status || '';
