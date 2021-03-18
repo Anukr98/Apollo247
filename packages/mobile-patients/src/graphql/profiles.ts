@@ -4612,7 +4612,6 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
   }
 `;
 
-
 export const GET_PAYMENT_METHODS = gql`
   query getPaymentMethods($is_mobile: Boolean) {
     getPaymentMethods(is_mobile: $is_mobile) {
@@ -4770,6 +4769,14 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
         Timeslot
         TimeslotID
       }
+    }
+  }
+`;
+
+export const VERIFY_TRUECALLER_PROFILE = gql`
+  mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
+    verifyTrueCallerProfile(profile: $profile) {
+      authToken
     }
   }
 `;

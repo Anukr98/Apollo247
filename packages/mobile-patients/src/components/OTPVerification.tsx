@@ -73,6 +73,7 @@ import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@ap
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
 
 const { height, width } = Dimensions.get('window');
 
@@ -800,47 +801,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
-  const fillerView = () => {
-    return (
-      <View style={styles.viewAbsoluteStyles}>
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ApolloLogo />
-          <Loader style={{ marginTop: 12, height: 26, width: 76 }} />
-          <Text
-            style={{
-              marginTop: 22,
-              color: '#02475b',
-              ...theme.fonts.IBMPlexSansBold(17),
-              lineHeight: 24,
-              textAlign: 'center',
-            }}
-          >
-            Please Wait!
-          </Text>
-          <Text
-            style={{
-              marginTop: 4,
-              color: '#02475b',
-              ...theme.fonts.IBMPlexSansRegular(17),
-              lineHeight: 24,
-              textAlign: 'center',
-            }}
-          >
-            {`While we're fetching\nyour details`}
-          </Text>
-        </View>
-      </View>
-    );
-  };
-
   const { phoneNumber } = props.navigation.state.params!;
   const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
@@ -994,7 +954,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </LoginCard>
         )}
         <LandingDataView />
-        {openFillerView && fillerView()}
+        {openFillerView && <FetchingDetails />}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
