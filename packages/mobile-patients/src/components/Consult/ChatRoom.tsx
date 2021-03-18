@@ -680,7 +680,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
   const [callMinimize, setCallMinimize] = useState<boolean>(false);
-  const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 5;
+  const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 4;
   const [availableMessages, setavailableMessages] = useState(followChatLimit);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
