@@ -114,6 +114,11 @@ const covidVaccineSection = {
   ],
 };
 
+const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613 ]; 
+const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
+const covidMaxSlotDays = 6;
+const nonCovidMaxSlotDays = 3;
+
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
@@ -124,11 +129,7 @@ const appStaticVariables = {
   TAT_API_RESPONSE_DATE_FORMAT: 'DD-MMM-YYYY HH:mm',
   CASESHEET_PRESCRIPTION_DATE_FORMAT: 'DD MMM YYYY',
   CASESHEET_PRESCRIPTION_TIME_FORMAT: 'hh:mm A',
-  DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 120, // slots visible after this period for current date (APP-7687)
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
-  DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
-  DIAGNOSTIC_COVID_MAX_SLOT_TIME: '15:00',
-  DIAGNOSTIC_COVID_MIN_SLOT_TIME: '10:00',
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
@@ -178,6 +179,10 @@ const appStaticVariables = {
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
+  FollowUp_Chat_Limit: 4,
+  Covid_Items : QA_covid_items,
+  Covid_Max_Slot_Days : covidMaxSlotDays,
+  Non_Covid_Max_Slot_Days : nonCovidMaxSlotDays
 };
 
 const DEV_top_specialties = [
@@ -645,20 +650,6 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // QA
@@ -712,20 +703,6 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // QA2
@@ -779,20 +756,6 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // QA3
@@ -840,20 +803,6 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // VAPT
@@ -907,20 +856,6 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 //Production
 const ConfigurationProd = {
@@ -973,7 +908,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [],
+  Covid_Items : Prod_covid_items,
 };
 
 //PERFORMANCE
@@ -1028,20 +963,6 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 //DevelopmentReplica
@@ -1096,20 +1017,6 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 const Configuration =
@@ -1318,6 +1225,8 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   REFUND_STATUSES.PENDING,
   REFUND_STATUSES.SUCCESS,
 ];
@@ -1351,12 +1260,11 @@ export const DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
 ];
 
-export const DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY=[
+export const DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
-  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
-]
-
+  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
+];
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1507,6 +1415,12 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
 ];
+
+export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL
+]
 
 type SpecialitiesType = {
   [key: string]: string[];

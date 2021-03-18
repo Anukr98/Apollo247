@@ -371,13 +371,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [loading, banners]);
 
   const getDiagnosticBanner = async () => {
-    const res: any = await getLandingPageBanners('diagnostic');
-    if (res?.data?.success) {
-      const bannerData = g(res, 'data', 'data');
-      setBanners(bannerData);
-    } else {
+    try {
+      const res: any = await getLandingPageBanners('diagnostic');
+      if (res?.data?.success) {
+        const bannerData = g(res, 'data', 'data');
+        setBanners(bannerData);
+      } else {
+        setBanners([]);
+        setBannerLoading(false);
+      }
+    } catch (error) {
+      CommonBugFender('getDiagnosticBanner_Tests', error);
       setBanners([]);
       setBannerLoading(false);
+      setReloadWidget(true);
     }
   };
 
@@ -455,7 +462,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setSectionLoading(false);
       setLoading?.(false);
     } catch (error) {
-      console.log('errorInFetchPricing api__', error);
+      CommonBugFender('errorInFetchPricing api__Tests', error);
       setSectionLoading(false);
       setReloadWidget(true);
       setLoading?.(false);
@@ -720,10 +727,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
           updatePlaceInfoByPincode(pincode, obj);
         })
         .catch((e) => {
-          CommonBugFender('Tests_', e);
+          CommonBugFender('getDiagnosticsPincode serviceability Error_Tests', e);
           setLoadingContext!(false);
-          console.log('getDiagnosticsPincode serviceability Error\n', { e });
-          showAphAlert!({
+          setReloadWidget(true);
+          showAphAlert?.({
             unDismissable: true,
             title: string.common.uhOh,
             description: string.diagnostics.serviceabilityFailureText,
@@ -1653,6 +1660,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function refetchWidgets() {
     setWidgetsData([]);
     setLoading?.(true);
+    //if banners are not loaded, then refetch them.
+    banners?.length == 0 ? getDiagnosticBanner() : null;
     getHomePageWidgets(serviceableObject?.cityId);
   }
 

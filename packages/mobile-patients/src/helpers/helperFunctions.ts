@@ -1410,61 +1410,6 @@ export const formatTestSlotWithBuffer = (slotTime: string) => {
   return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
 };
 
-export const isValidTestSlot = (
-  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
-  date: Date
-) => {
-  return (
-    slot.status != 'booked' &&
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
-      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
-    )
-  );
-};
-
-export const isValidTestSlotWithArea = (
-  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
-  date: Date,
-  customSlot?: boolean
-) => {
-  return (
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
-      moment(
-        customSlot
-          ? AppConfig.Configuration.DIAGNOSTIC_COVID_MAX_SLOT_TIME.trim()
-          : AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(),
-        'HH:mm'
-      )
-    )
-  );
-};
-
 export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
   return slots.find(
     (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
@@ -2580,7 +2525,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST:
       statusString = 'Order rescheduled';
       break;
+    //first status has been added
     //last two status => report awaited (need not show in ui, so showing previous)
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
@@ -2616,6 +2563,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
     case REFUND_STATUSES.MANUAL_REVIEW:
       statusString = 'Refund initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
+      statusString = 'Partial Order Completed';
       break;
     default:
       statusString = status || '';

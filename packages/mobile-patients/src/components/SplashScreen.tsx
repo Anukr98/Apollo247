@@ -534,6 +534,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('TestReport', data?.length === 2 ? linkId : undefined);
             break;
 
+          case 'mytestorders':
+          case 'MyTestOrders':
+            getData('MyTestOrders');
+            break;
+
           default:
             getData('ConsultRoom', undefined, true);
             // webengage event
@@ -977,6 +982,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           movedFrom: 'deeplink',
           id: id,
         });
+        break;
+
+      case 'MyTestOrders':
+        props.navigation.navigate(AppRoutes.YourOrdersTest);
+        break;
 
       default:
         break;
@@ -1153,6 +1163,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Covid_Vaccine_CTA_V2_QA',
       PROD: 'Covid_Vaccine_CTA_V2',
     },
+    followUp_Chat: {
+      QA: 'QA_FollowUp_Chat_Limit',
+      PROD: 'FollowUp_Chat_Limit',
+    },
+    Covid_Items: {
+      QA: 'QA_Covid_Items',
+      PROD: 'Covid_Items',
+    },
+    Covid_Max_Slot_Days: {
+      QA: 'QA_Covid_Max_Slot_Days',
+      PROD: 'Covid_Max_Slot_Days',
+    },
+    Non_Covid_Max_Slot_Days: {
+      QA: 'QA_Non_Covid_Max_Slot_Days',
+      PROD: 'Non_Covid_Max_Slot_Days',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1189,7 +1215,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const checkForVersionUpdate = async () => {
     try {
       // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
-      const minimumFetchIntervalMillis = __DEV__ ? 43200000 : 0;
+      const minimumFetchIntervalMillis = __DEV__ ? 0 : 0;
       await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
       await remoteConfig().fetchAndActivate();
       const config = remoteConfig();
@@ -1279,6 +1305,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
         config.getBoolean(key)
+      );
+
+      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+
+      setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
+      setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
+      setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
+        config.getNumber(key)
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;

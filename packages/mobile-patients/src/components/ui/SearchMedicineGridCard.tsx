@@ -242,11 +242,10 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const off_text = discount ? ' ' + discount + '%off' : '';
     return !isOutOfStock ? (
       <View style={{ flexDirection: 'row', marginBottom: 20 }}>
-        {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>
             {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>{`${
+            <Text style={{ textDecorationLine: 'line-through' }}>{`MRP ${
               string.common.Rs
             }${convertNumberToDecimal(price)}`}</Text>
             {')'}
@@ -265,6 +264,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
       </Text>
     ) : (
       <Text style={styles.priceTextCollapseStyle}>
+        {!discount && `MRP `}
         {string.common.Rs}
         {convertNumberToDecimal(discount ? special_price : price)}
       </Text>

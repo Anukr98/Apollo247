@@ -16,7 +16,10 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  DIAGNOSTIC_ONLINE_PAYMENT_STATUS,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
@@ -35,10 +38,9 @@ export interface TestOrderSummaryViewProps {
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
   const { orderDetails } = props;
-  const getFormattedDateTime = (time: string) => {
-    return moment(time).format('D MMM YYYY | hh:mm A');
-  };
+
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
