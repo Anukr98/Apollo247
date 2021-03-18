@@ -680,7 +680,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
   const [callMinimize, setCallMinimize] = useState<boolean>(false);
-  const [availableMessages, setavailableMessages] = useState(3);
+  const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 5;
+  const [availableMessages, setavailableMessages] = useState(followChatLimit);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
@@ -698,7 +699,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
-
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -1330,11 +1330,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         (item: any) => item?.id == patientId && item?.message != imageconsult
       )?.length;
     }
-    msgsByPatient >= 0 && msgsByPatient <= 3
-      ? setavailableMessages(3 - msgsByPatient)
-      : msgsByPatient > 3
+    msgsByPatient >= 0 && msgsByPatient <= followChatLimit
+      ? setavailableMessages(followChatLimit - msgsByPatient)
+      : msgsByPatient > followChatLimit
       ? setavailableMessages(0)
-      : setavailableMessages(3);
+      : setavailableMessages(followChatLimit);
   }
 
   const fetchDoctorDetails = async () => {
@@ -1664,7 +1664,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const sendDcotorChatMessage = () => {
-    const automatedText = `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. You will hear back from the doctor in the next 24 hrs.`;
+    const automatedText = `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. You will get a response from the doctor at the earliest.`;
     sendMessage(sectionHeader, doctorId, automatedText);
   };
 
@@ -5065,7 +5065,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     <>{sectionHeaderView(rowData)}</>
                   ) : rowData.message === followUpChatGuideLines ? (
                     <>
-                      <FollowUpChatGuideLines />
+                      <FollowUpChatGuideLines followChatLimit={followChatLimit} />
                     </>
                   ) : (
                     <>{messageView(rowData, index)}</>
@@ -5684,11 +5684,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM, eventAttributesFollowUp);
   };
   const renderChatView = () => {
-    console.log('disableChat || availableMessages >>>>', disableChat || availableMessages == 0);
-    console.log(
-      '!disableChat && availableMessages != 0 >>>>>',
-      !disableChat && availableMessages != 0
-    );
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
@@ -6995,7 +6990,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </Text>
               </TouchableOpacity>
             ) : null}
-            {availableMessages == 0 && <ChatDisablePrompt />}
+            {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
             <View
               style={[
                 styles.inputMainContainer,
@@ -7072,7 +7067,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </>
         ) : (
           <>
-            {availableMessages == 0 && <ChatDisablePrompt />}
+            {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
             <TouchableOpacity
               activeOpacity={1}
               style={[styles.uploadButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}

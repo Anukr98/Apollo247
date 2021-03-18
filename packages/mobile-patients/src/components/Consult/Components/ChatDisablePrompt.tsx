@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
-export interface ChatDisablePromptProps {}
+export interface ChatDisablePromptProps {
+  followChatLimit: number;
+}
 
 export const ChatDisablePrompt: React.FC<ChatDisablePromptProps> = (props) => {
+  const { followChatLimit } = props;
   return (
     <View style={styles.container}>
       <Text style={styles.alertMsg}>
-        We request you to wait for the doctor’s response, this may take a few hours. You can send 3
-        more messages once the doctor has responded to your previous queries.
+        {`We request you to wait for the doctor’s response, this may take a few hours. You can send ${followChatLimit} more messages once the doctor has responded to your previous queries.`}
       </Text>
     </View>
   );

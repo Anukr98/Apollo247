@@ -2,16 +2,22 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Msgs, Wait, Emergency } from '@aph/mobile-patients/src/components/ui/Icons';
-export interface FollowUpChatGuideLinesProps {}
+export interface FollowUpChatGuideLinesProps {
+  followChatLimit: number;
+}
 
 export const FollowUpChatGuideLines: React.FC<FollowUpChatGuideLinesProps> = (props) => {
+  const { followChatLimit } = props;
+
   function line1() {
     return (
       <View style={styles.lineCont}>
         <View style={styles.imageCont}>
           <Msgs />
         </View>
-        <Text style={styles.line}>1. You can send 3 messages before the doctor replies</Text>
+        <Text
+          style={styles.line}
+        >{`1. You can send ${followChatLimit} messages before the doctor replies`}</Text>
       </View>
     );
   }
