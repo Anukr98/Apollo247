@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
   nameAndPriceViewStyle: {
     flex: 1,
     flexDirection: 'row',
+    justifyContent:'space-between'
   },
   detailContainer: {
     flex: 1,
@@ -116,44 +117,19 @@ const styles = StyleSheet.create({
   flexRow: {
     flexDirection: 'row',
   },
-  numberPlate: {
-    fontFamily: 'IBM Plex Sans',
-    fontStyle: 'normal',
-    fontWeight: 'normal',
-    fontSize: 10,
-    lineHeight: 18,
-    width:'70%',
-    color: '#01475B',
-  },
-  addCta: {
-    fontFamily: 'IBM Plex Sans',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    fontSize: 14,
-    lineHeight: 18,
+  numberPlate: { ...theme.viewStyles.text('R', 10, '#01475b', 1, 18)},
+  addCta: { ...theme.viewStyles.text('B', 14, '#FCA317', 1, 18, 0),
     textTransform: 'uppercase',
-    color: '#FCA317',
     textAlign: 'right',
     width:'auto',
   },
-  removeCta: {
-    fontFamily: 'IBM Plex Sans',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    fontSize: 14,
-    lineHeight: 18,
+  removeCta: { ...theme.viewStyles.text('B', 14, '#FF774B', 1, 18, 0),
     textTransform: 'uppercase',
     textAlign: 'right',
-    color: '#FF774B',
   },
   categories: {
-    fontFamily: 'IBM Plex Sans',
-    fontStyle: 'normal',
-    fontWeight: 'normal',
-    fontSize: 12,
-    lineHeight: 20,
+    ...theme.viewStyles.text('SB', 12, '#66909C', 1, 20, 0),
     textAlign:'right',
-    color: '#66909C',
     width: '30%',
     alignSelf: 'flex-start'
   },
