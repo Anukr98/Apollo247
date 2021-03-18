@@ -301,10 +301,14 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     AsyncStorage.setItem('signUp', 'true');
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       try {
-        if (backPressCount === 1) {
-          BackHandler.exitApp();
+        if (patient) {
+          props.navigation.goBack();
         } else {
-          backPressCount++;
+          if (backPressCount === 1) {
+            BackHandler.exitApp();
+          } else {
+            backPressCount++;
+          }
         }
         return true;
       } catch (e) {

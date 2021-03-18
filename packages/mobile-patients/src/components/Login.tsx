@@ -290,7 +290,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             showLoginError();
             CommonBugFender('OTPVerification_sendOtp', e);
           });
-        getAuthToken();
       }
     } catch (error) {
       showLoginError();
@@ -372,6 +371,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const navigateTo = (routeName: AppRoutes, patient?: any) => {
+    oneTimeApiCall.current = true;
     props.navigation.navigate(routeName, { patient });
     setOpenFillerView(false);
   };
