@@ -384,10 +384,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    newList =
+    newList = newList =
       refundStatusArr?.length > 0
-        ? orderStatusList?.map((item: any) => item?.orderStatus)
-        : orderLevelStatus?.statusHistory?.map((item: any) => item?.orderStatus);
+        ? orderStatusList?.filter((item: any) => statusToBeShown?.includes(item?.orderStatus))
+        : orderLevelStatus?.statusHistory?.filter((item: any) =>
+            statusToBeShown?.includes(item?.orderStatus)
+          );
     scrollToSlots();
     return (
       <View>
