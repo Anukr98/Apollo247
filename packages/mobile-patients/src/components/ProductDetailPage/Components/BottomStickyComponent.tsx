@@ -49,19 +49,18 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   const renderCartCTA = () => {
-    const showAddToCart = isInStock && !deliveryError;
-    const ctaText = showAddToCart ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
+    const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
     const productName = name ? name : 'the product';
     return (
       <View>
         <TouchableOpacity
           onPress={() => {
-            showAddToCart ? onAddToCart() : onNotifyMeClick(productName);
+            isInStock ? onAddToCart() : onNotifyMeClick(productName);
           }}
           activeOpacity={0.7}
-          style={showAddToCart ? styles.addToCartCta : styles.notifyCta}
+          style={isInStock ? styles.addToCartCta : styles.notifyCta}
         >
-          <Text style={showAddToCart ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
+          <Text style={isInStock ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
         </TouchableOpacity>
       </View>
     );
