@@ -135,7 +135,10 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 {dataToShow?.map((item: any, index: number) =>
                   index < 3 ? (
                     <Text style={styles.inclusionName}>
-                      {nameFormater(item?.incTitle, 'title')}{' '}
+                      {nameFormater(
+                        getMandatoryParameterCount > 0 ? item?.observationName : item?.incTitle,
+                        'title'
+                      )}{' '}
                       {index == 2 && dataToShow?.length - 3 > 0 && (
                         <Text style={styles.moreText}>
                           {'   '}+{dataToShow?.length - 3} more
