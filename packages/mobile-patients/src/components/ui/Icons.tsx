@@ -1530,6 +1530,10 @@ export const OrderPlacedCheckedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/checked.png')} />
 );
 
+export const OrderProcessingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/process.png')} />
+);
+
 export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/circle_banner.png')} />
 );

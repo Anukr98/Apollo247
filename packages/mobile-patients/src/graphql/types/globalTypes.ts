@@ -979,6 +979,10 @@ export interface DiagnosticBookHomeCollectionInput {
   attachmentData?: (Attachments | null)[] | null;
 }
 
+export interface DiagnosticInitiateOrderPayment {
+  orderId?: string | null;
+}
+
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;

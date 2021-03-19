@@ -4614,6 +4614,21 @@ export const GET_BANK_OPTIONS = gql`
   }
 `;
 
+export const GET_PAYMENT_METHODS = gql`
+  query getPaymentMethods($is_mobile: Boolean) {
+    getPaymentMethods(is_mobile: $is_mobile) {
+      name
+      minimum_supported_version
+      payment_methods {
+        image_url
+        payment_method_name
+        payment_method_code
+        minimum_supported_version
+      }
+    }
+  }
+`;
+
 export const CREATE_ORDER = gql`
   mutation createOrder($order_input: OrderInput) {
     createOrder(order_input: $order_input) {
@@ -4732,6 +4747,18 @@ export const GET_OTP_ON_CALL = gql`
       status
       loginId
       message
+    }
+  }
+`;
+
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
+  mutation initiateDiagonsticHCOrderPayment(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPayment!
+  ) {
+    initiateDiagonsticHCOrderPayment(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
     }
   }
 `;
