@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   bankOfferText: {
-    ...theme.fonts.IBMPlexSansRegular(14),
+    ...theme.fonts.IBMPlexSansRegular(16),
     lineHeight: 22,
     color: '#02475B',
     paddingRight: 25,

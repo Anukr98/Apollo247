@@ -1145,7 +1145,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Covid_Vaccine_CTA_V2',
     },
     Cart_Bank_Offer_Text: {
-      QA: 'CART_BANK_OFFER_TEXT_QA',
+      QA: 'QA_CART_BANK_OFFER_TEXT',
       PROD: 'CART_BANK_OFFER_TEXT',
     },
   };
