@@ -4,14 +4,23 @@ import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-
-import { LoginVariables, Login } from '../graphql/types/Login';
-import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
-
-import { LOGIN_TYPE } from '../graphql/types/globalTypes';
-import { VERIFY_LOGIN_OTP, LOGIN, RESEND_OTP, GET_OTP_ON_CALL } from '../graphql/profiles';
-import { resendOtp, resendOtpVariables } from '../graphql/types/resendOtp';
-import { getOTPOnCall, getOTPOnCallVariables } from '../graphql/types/getOTPOnCall';
+import { LoginVariables, Login } from '@aph/mobile-patients/src/graphql/types/Login';
+import {
+  verifyLoginOtpVariables,
+  verifyLoginOtp,
+} from '@aph/mobile-patients/src/graphql/types/verifyLoginOtp';
+import { LOGIN_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  VERIFY_LOGIN_OTP,
+  LOGIN,
+  RESEND_OTP,
+  GET_OTP_ON_CALL,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { resendOtp, resendOtpVariables } from '@aph/mobile-patients/src/graphql/types/resendOtp';
+import {
+  getOTPOnCall,
+  getOTPOnCallVariables,
+} from '@aph/mobile-patients/src/graphql/types/getOTPOnCall';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
