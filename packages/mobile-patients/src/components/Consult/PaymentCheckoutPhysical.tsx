@@ -567,7 +567,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log('csk data-------', JSON.stringify(data));
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
         if (consultedWithDoctorBefore) {
           storeAppointmentId(g(apptmt, 'id')!);
@@ -671,7 +670,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
-    console.log('csk', 'handleOrderSuccess', appointmentId);
     setLoading && setLoading(true);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
@@ -682,7 +680,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('csk', 'getAppointmentData-->', JSON.stringify(_data));
         try {
           setLoading && setLoading(false);
           const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;

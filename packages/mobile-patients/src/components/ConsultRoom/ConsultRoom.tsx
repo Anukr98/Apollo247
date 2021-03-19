@@ -2205,7 +2205,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               borderRightColor: 'rgba(2, 71, 91, 0.2)',
             }}
           >
-            {console.log('csk profile', currentPatient?.isConsulted)}
             {currentPatient?.gender === Gender.MALE ? (
               !!circleSubscriptionId ? (
                 <MaleCircleIcon style={styles.profileIcon} />

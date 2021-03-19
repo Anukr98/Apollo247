@@ -185,7 +185,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length === 0) {
       setselectedTab(tabs[0].title);
     }
-    console.log('csk props', JSON.stringify(props));
   }, [props.consultModeSelected]);
 
   useEffect(() => {
