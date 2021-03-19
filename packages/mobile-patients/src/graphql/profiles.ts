@@ -4740,6 +4740,17 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
     }
   }
 `;
+
+export const GET_OTP_ON_CALL = gql`
+  query getOTPOnCall($mobileNumber: String, $loginType: LOGIN_TYPE, $id: String!) {
+    getOTPOnCall(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      loginId
+      message
+    }
+  }
+`;
+
 export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
   mutation initiateDiagonsticHCOrderPayment(
     $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPayment!
