@@ -8,7 +8,6 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
   GET_DIAGNOSTIC_ORDER_LIST,
-  GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
@@ -45,25 +44,13 @@ import {
   MedicalRecordType,
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
-import { ReasonPopUp } from '@aph/mobile-patients/src/components/ui/ReasonPopUp';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  g,
-  getTestOrderStatusText,
-  handleGraphQlError,
-  TestSlot,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  CrossPopup,
-  DisabledTickIcon,
-  TickIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { g, handleGraphQlError, TestSlot } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
-  DIAGNOSTIC_ONLINE_PAYMENT_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   TestCancelReasons,
   TestReschedulingReasons,
@@ -85,12 +72,6 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
-import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/Tests/components/TestOrderSummaryView';
-import {
-  getDiagnosticOrderDetails,
-  getDiagnosticOrderDetailsVariables,
-  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   getOrderInternal,
   getOrderInternalVariables,
@@ -121,9 +102,8 @@ const isSmallDevice = width < 380;
 export interface YourOrdersTestProps extends NavigationScreenProps {}
 
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
-  const reasonForCancellation = TestCancelReasons.reasons;
-  const reasonForRescheduling = TestReschedulingReasons.reasons;
-  const OTHER_REASON = string.Diagnostics_Feedback_Others;
+  const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
+  const CANCELLATION_REASONS = TestCancelReasons.reasons;
 
   const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
 
@@ -140,30 +120,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showSummaryPopup, setSummaryPopup] = useState<boolean>(false);
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const showSummaryPopupRef = useRef<boolean>(false);
-  const [orderDetails, setOrderDetails] = useState<
-    getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList
-  >();
   const [rescheduleCount, setRescheduleCount] = useState<any>(null);
   const [rescheduledTime, setRescheduledTime] = useState<any>('');
   const [selectedReasonForCancel, setSelectedReasonForCancel] = useState('');
   const [commentForCancel, setCommentForCancel] = useState('');
-
-  const RESCHEDULE_REASONS = [
-    'Phlebo did not arrive on time',
-    'I am not available right now',
-    'I did not follow fasting requirement',
-    'I picked a wrong slot',
-    'Not feeling well to provide sample',
-  ];
-
-  const CANCELLATION_REASONS = [
-    'Phlebo didn’t Arrive on Time',
-    'Need to Modify Order Details',
-    'I am not Available Right Now',
-    'Booked by Mistake',
-    'Need Report Urgently',
-    'Others (Please specify)',
-  ];
 
   //new reschedule.
   const [showBottomOverlay, setShowBottomOverlay] = useState<boolean>(false);
@@ -280,38 +240,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setLoading!(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
-    }
-  };
-
-  const fetchOrderDetails = async (order: any) => {
-    try {
-      setLoading!(true);
-      client
-        .query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
-          query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-          context: {
-            sourceHeaders,
-          },
-          variables: { diagnosticOrderId: order?.id },
-          fetchPolicy: 'no-cache',
-        })
-
-        .then((data) => {
-          const getOrderDetails =
-            g(data, 'data', 'getDiagnosticOrderDetails', 'ordersList') ||
-            ({} as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList);
-          setSelectedOrder(order);
-          setOrderDetails(getOrderDetails);
-          setLoading!(false);
-          setSummaryPopup(true);
-        })
-        .catch((error) => {
-          setLoading!(false);
-          CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrderDetails`, error);
-        });
-    } catch (error) {
-      setLoading!(false);
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrderDetails`, error);
     }
   };
 
@@ -585,7 +513,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       dateTimeInUTC: dateTimeInUTC,
       orderId: String(selectedOrderId),
       patientId: g(currentPatient, 'id'),
-      // reason: selectedReasonForReschedule,
       reason: selectRescheduleReason,
       slotId: employeeSlot,
     };
@@ -745,7 +672,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const renderRescheduleReasons = () => {
     return (
       <View style={[styles.overlayContainer]}>
-        <Text style={styles.overlayHeadingText}>Reason for Rescheduling</Text>
+        <Text style={styles.overlayHeadingText}>
+          {string.diagnostics.reasonForReschedulingText}
+        </Text>
         <View style={styles.reasonsContainer}>
           {RESCHEDULE_REASONS?.map((item: string, index: number) => {
             return (
@@ -754,7 +683,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   onPress={() => setSelectRescheduleReason(item)}
                   style={styles.reasonsTouch}
                 >
-                  <View style={styles.rowStyle}>
+                  <View style={[styles.rowStyle]}>
                     <Text style={styles.reasonsText}>{item}</Text>
                     {selectRescheduleReason === item ? (
                       <TickIcon style={styles.checkIconStyle} />
@@ -783,7 +712,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const renderCancelReasons = () => {
     return (
       <View style={[styles.overlayContainer]}>
-        <Text style={styles.overlayHeadingText}>Reason for Cancellation</Text>
+        <Text style={styles.overlayHeadingText}>
+          {string.diagnostics.reasonForCancellationText}
+        </Text>
         <View style={styles.reasonsContainer}>
           {CANCELLATION_REASONS?.map((item: string, index: number) => {
             return (
@@ -792,7 +723,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   onPress={() => setSelectCancelReason(item)}
                   style={styles.reasonsTouch}
                 >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={styles.rowStyle}>
                     <Text style={styles.reasonsText}>{item}</Text>
                     {selectCancelReason === item ? (
                       <TickIcon style={styles.checkIconStyle} />
@@ -803,14 +734,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   {index === CANCELLATION_REASONS?.length - 1 ? null : (
                     <Spearator style={{ marginTop: 6 }} />
                   )}
-                  {selectCancelReason === 'Others (Please specify)' &&
-                  item === 'Others (Please specify)' ? (
+                  {selectCancelReason ===
+                    string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
+                  item === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
                     <TextInputComponent
                       value={cancelReasonComment}
                       onChangeText={(text) => {
                         setCancelReasonComment(text);
                       }}
-                      placeholder={'Enter your comments here'}
+                      placeholder={string.common.return_order_comment_text}
                     />
                   ) : null}
                 </TouchableOpacity>
@@ -823,7 +755,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             title={'CANCEL NOW'}
             style={styles.buttonStyle}
             disabled={
-              selectCancelReason == 'Others (Please specify)'
+              selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
                 ? cancelReasonComment == ''
                 : selectCancelReason == ''
             }
@@ -841,11 +773,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       : 2;
     return (
       <View style={styles.overlayContainer}>
-        <Text style={styles.overlayHeadingText}>What would you like to do?</Text>
+        <Text style={styles.overlayHeadingText}>{string.diagnostics.whatWudLikeText}</Text>
         <TouchableOpacity onPress={() => _onPressReschduleOption()} style={styles.optionsTouch}>
           <View>
             <View style={styles.rowStyle}>
-              <Text style={styles.optionText}>Reschedule Booking</Text>
+              <Text style={styles.optionText}>{string.diagnostics.rescheduleBookingText}</Text>
               {selectRescheduleOption ? (
                 <TickIcon style={styles.checkIconStyle} />
               ) : (
@@ -873,7 +805,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <TouchableOpacity onPress={() => _onPressCancelOption()} style={styles.optionsTouch}>
           <View>
             <View style={styles.rowStyle}>
-              <Text style={styles.optionText}>Cancel Booking</Text>
+              <Text style={styles.optionText}>{string.diagnostics.cancelBookingText}</Text>
               {selectCancelOption ? (
                 <TickIcon style={styles.checkIconStyle} />
               ) : (
@@ -882,9 +814,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             </View>
             {selectCancelOption ? (
               <View style={{ marginVertical: '2%' }}>
-                <Text style={styles.optionSubHeadingText}>
-                  Are you sure you want to Cancel the booking?
-                </Text>
+                <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
                 <Button onPress={() => _onPressProceedToCancel()} title={'PROCEED TO CANCEL'} />
               </View>
             ) : null}
@@ -1136,7 +1066,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <Card
           cardContainer={[styles.noDataCard]}
           heading={string.common.uhOh}
-          description={'Something went wrong.'}
+          description={string.common.somethingWentWrong}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
         />
@@ -1245,12 +1175,19 @@ const styles = StyleSheet.create({
     flex: 1,
     borderColor: 'transparent',
   },
-  reasonsTouch: { flex: 1, margin: 16, marginBottom: 10 },
+  reasonsTouch: {
+    flex: 1,
+    marginLeft: 16,
+    marginRight: 16,
+    marginBottom: 8,
+    height: 40,
+    justifyContent: 'center',
+  },
   buttonView: { margin: 16, marginTop: 4 },
   reasonsText: {
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SHERPA_BLUE,
-    textAlign: 'left',
+    textAlign: 'center',
     lineHeight: 18,
   },
   buttonStyle: { width: '85%', alignSelf: 'center' },
