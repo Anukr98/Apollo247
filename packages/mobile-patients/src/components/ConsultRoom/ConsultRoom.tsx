@@ -19,7 +19,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import CovidButton from './Components/CovidStyles';
-import codePush from 'react-native-code-push';
+
 import {
   ApolloHealthProIcon,
   CartIcon,
