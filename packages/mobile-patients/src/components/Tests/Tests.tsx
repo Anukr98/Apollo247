@@ -25,6 +25,7 @@ import {
   Remove,
   PendingIcon,
   DropdownGreen,
+  PrescriptionPad,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -134,6 +135,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
+import { PrescriptionCard } from './components/PrescriptionCard';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -981,14 +983,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
-      <TouchableOpacity onPress={()=>{
-        setSearchFocused(true);
-            props.navigation.navigate(AppRoutes.SearchTestScene, {
-              searchText: searchText,
-            });
-            setSearchText('');
-            setDiagnosticResults([]);
-      }}>
+      <TouchableOpacity
+        onPress={() => {
+          setSearchFocused(true);
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
+            searchText: searchText,
+          });
+          setSearchText('');
+          setDiagnosticResults([]);
+        }}
+      >
         <SearchInput
           _isSearchFocused={isSearchFocused}
           editable={false}
@@ -1687,6 +1691,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderPrescriptionCard = () => {
+    return (
+      <PrescriptionCard
+        heading1={'4 tests prescribed by'}
+        docName={'DR. BHAVNA CHAURASIA'}
+        docQualification={'MBBS, MD'}
+        buttonTitle={'BOOK NOW'}
+        dateTime={'on 18th Jan, 2021, 12:30 pm'}
+        patientName={'Loki'}
+        onPressBookNow={() => console.log('book now pressed')}
+      />
+    );
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1700,6 +1718,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {/* {uploadPrescriptionCTA()} */}
+        {renderPrescriptionCard()}
         {renderBanner()}
         {renderYourOrders()}
 
@@ -2037,7 +2056,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   whyBookUsImage: { width: '100%', height: 200 },
-  headingSections: { ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 22)},
+  headingSections: { ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 22) },
   viewDefaultContainer: {
     paddingVertical: 10,
     paddingHorizontal: 10,
@@ -2047,9 +2066,9 @@ const styles = StyleSheet.create({
   },
   defaultContainer: {
     width: '100%',
-    justifyContent:'space-between',
+    justifyContent: 'space-between',
     marginVertical: 10,
     paddingVertical: 0,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
 });
