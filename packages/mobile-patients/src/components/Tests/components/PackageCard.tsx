@@ -71,6 +71,20 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const name = getItem?.itemTitle;
     const inclusions = getItem?.inclusionData;
 
+    const getMandatoryParamter =
+      !!inclusions &&
+      inclusions?.length > 0 &&
+      inclusions?.map((inclusion: any) =>
+        inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+      );
+
+    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
+      (prevVal: any, curr: any) => prevVal + curr?.length,
+      0
+    );
+
+    const getParamterData = getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
     const circleDiscount = pricesForItem?.circleDiscount;
@@ -109,16 +123,18 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                   : discount
               )}
             </View>
-            {!!inclusions && inclusions?.length > 0 ? (
+            {!!inclusions && inclusions?.length > 0 && getMandatoryParameterCount > 0 ? (
               <View>
-                <Text style={styles.inclusionsText}>TOTAL INCLUSIONS : {inclusions?.length}</Text>
-                {inclusions?.map((item: any, index: number) =>
+                <Text style={styles.inclusionsText}>
+                  TOTAL PARAMETERS : {getMandatoryParameterCount || inclusions?.length}
+                </Text>
+                {getParamterData?.map((item: any, index: number) =>
                   index < 3 ? (
                     <Text style={styles.inclusionName}>
-                      {nameFormater(item?.incTitle, 'title')}{' '}
-                      {index == 2 && inclusions?.length - 3 > 0 && (
+                      {nameFormater(item?.observationName, 'title')}{' '}
+                      {index == 2 && getParamterData?.length - 3 > 0 && (
                         <Text style={styles.moreText}>
-                          {'   '}+{inclusions?.length - 3} more
+                          {'   '}+{getParamterData?.length - 3} more
                         </Text>
                       )}
                     </Text>
