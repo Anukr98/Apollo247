@@ -448,6 +448,7 @@ export interface PatientInfo {
   'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
+  User_Type: string;
 }
 
 export interface UserInfo {
@@ -606,6 +607,7 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
 export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
   'Speciality ID': string;
+  User_Type:string;
 }
 
 export interface ReorderMedicines extends PatientInfo {
@@ -768,6 +770,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type:string;
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -1262,6 +1265,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
+    User_Type:string;
   };
   [WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD]: {
     'Payment failed order id': string;
@@ -1277,6 +1281,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    User_Type:string;
   };
   [WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
   [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
@@ -1501,6 +1506,7 @@ export interface WebEngageEvents {
     'Hospital Name': string;
     'Hospital City': string;
     'Consult Date Time': Date;
+    User_Type:string;
   };
   [WebEngageEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;

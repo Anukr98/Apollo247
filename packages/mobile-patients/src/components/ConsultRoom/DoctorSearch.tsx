@@ -442,6 +442,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      User_Type:
+        currentPatient?.isConsulted === undefined
+          ? 'undefined'
+          : currentPatient?.isConsulted
+          ? 'Repeat'
+          : 'New',
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
 
@@ -1319,6 +1325,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Speciality Name': speciality,
       'Speciality ID': specialityId,
+      User_Type:
+        currentPatient?.isConsulted === undefined
+          ? 'undefined'
+          : currentPatient?.isConsulted
+          ? 'Repeat'
+          : 'New',
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);

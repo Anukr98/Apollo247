@@ -274,6 +274,12 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
+            User_Type:
+              currentPatient?.isConsulted === undefined
+                ? 'undefined'
+                : currentPatient?.isConsulted
+                ? 'Repeat'
+                : 'New',
           };
           postWebEngageEvent(
             WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,

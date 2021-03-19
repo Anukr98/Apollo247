@@ -1073,6 +1073,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      User_Type:
+        currentPatient?.isConsulted === undefined
+          ? 'undefined'
+          : currentPatient?.isConsulted
+          ? 'Repeat'
+          : 'New',
     };
     if (
       source &&

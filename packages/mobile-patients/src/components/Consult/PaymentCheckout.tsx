@@ -868,6 +868,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
+      User_Type:
+        currentPatient?.isConsulted === undefined
+          ? 'undefined'
+          : currentPatient?.isConsulted
+          ? 'Repeat'
+          : 'New',
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
