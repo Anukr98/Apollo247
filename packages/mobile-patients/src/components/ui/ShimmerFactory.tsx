@@ -106,19 +106,14 @@ const styles = StyleSheet.create({
     width: '45%',
     margin: 10,
   },
-  healthRecordLine1: {
-    height: height,
+  healthRecordLine: {
+    height: 27,
     borderRadius: 10,
     width: 40,
     marginVertical: 10,
     marginRight: 20,
   },
-  healthRecordLine2: {
-    height: height,
-    borderRadius: 10,
-    width: 120,
-    marginVertical: 10,
-  },
+
   banner1: {
     height: 145,
     width: '100%',
@@ -444,18 +439,18 @@ export const renderMedicineBannerShimmer = () => {
   );
 };
 
-export const renderHealthRecordShimmer = (height: number) => {
+export const renderHealthRecordShimmer = () => {
   return (
     <View style={{ flexDirection: 'row' }}>
       <ShimmerPlaceHolder
         shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.TEXT_LIGHT_BLUE]}
         LinearGradient={LinearGradient}
-        shimmerStyle={styles.healthRecordLine1}
+        shimmerStyle={[styles.healthRecordLine, { width: 40, marginRight: 20 }]}
       />
       <ShimmerPlaceHolder
         shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.TEXT_LIGHT_BLUE]}
         LinearGradient={LinearGradient}
-        shimmerStyle={styles.healthRecordLine2}
+        shimmerStyle={[styles.healthRecordLine, { width: 120 }]}
       />
     </View>
   );
