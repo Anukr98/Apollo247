@@ -45,7 +45,7 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  //  [RNSplashScreen show];  // here
+  // [RNSplashScreen show];  // here
   [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   
   if ([FIRApp defaultApp] == nil) {

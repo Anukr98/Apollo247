@@ -65,7 +65,6 @@ target 'ApolloPatient' do
   pod 'react-native-keep-awake', :path => '../node_modules/react-native-keep-awake'
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
   pod 'ReactNativePermissions', :path => '../node_modules/react-native-permissions'
-  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
   pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
@@ -109,6 +108,8 @@ target 'ApolloPatient' do
   pod 'react-native-camera', :path => '../node_modules/react-native-camera'
 
   pod 'hyper-sdk-react', :path => '../node_modules/hyper-sdk-react'
+
+  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
   target 'NotificationService' do
       platform :ios, '10.0'

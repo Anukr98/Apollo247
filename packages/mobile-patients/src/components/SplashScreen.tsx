@@ -8,8 +8,10 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  Text,
   DeviceEventEmitter,
   NativeModules,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -107,6 +109,7 @@ const styles = StyleSheet.create({
   mainView: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: '#fff',
     alignSelf: 'center',
     justifyContent: 'center',
   },
@@ -127,6 +130,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipCallType = useRef<string>('');
   const voipDoctorName = useRef<string>('');
 
+  const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
+
   const config: Pubnub.PubnubConfig = {
     origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -144,6 +149,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, [takeToConsultRoom]);
 
   useEffect(() => {
+    prefetchUserMetadata();
+
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
@@ -291,6 +298,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.getInitialURL()
         .then((url) => {
           setBugFenderLog('DEEP_LINK_URL', url);
+
           if (url) {
             try {
               handleOpenURL(url);
@@ -317,6 +325,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
   };
+
   const handleOpenURL = (event: any) => {
     try {
       if (Platform.OS === 'ios') {
@@ -358,7 +367,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           case 'Consult':
             getData('Consult', data.length === 2 ? linkId : undefined);
             break;
-
           case 'medicine':
           case 'Medicine':
             getData('Medicine', data.length === 2 ? linkId : undefined);
@@ -627,20 +635,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     mediaSource?: string
   ) => {
     async function fetchData() {
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      const signUp = await AsyncStorage.getItem('signUp');
-      const multiSignUp = await AsyncStorage.getItem('multiSignUp');
+      //we are prefetching the userLoggedIn because reading it from async storage was taking 400-500 ms
+      let userLoggedInState = userLoggedIn;
+      if (userLoggedInState == null) {
+        // if uninitilized then only read from Async Storage
+        userLoggedInState = await AsyncStorage.getItem('userLoggedIn');
+      }
+
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
       const item = JSON.parse(retrievedItem || 'null');
+
       const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
-
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
       let allPatients;
-
-      const isCircleMember: string | null = await AsyncStorage.getItem('isCircleMember');
-
       if (callByPrism === 'false') {
         allPatients =
           item && item.data && item.data.getPatientByMobileNumber
@@ -666,14 +676,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAllPatients(allPatients);
 
       setTimeout(
-        () => {
-          if (userLoggedIn == 'true') {
+        async () => {
+          if (userLoggedInState == 'true') {
             setshowSpinner(false);
-
             if (mePatient) {
               if (mePatient.firstName !== '') {
-                callPhrNotificationApi(currentPatient);
-                setCrashlyticsAttributes(mePatient);
+                const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
                 pushTheView(
                   routeName,
                   id ? id : undefined,
@@ -681,13 +689,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   isCircleMember === 'yes',
                   mediaSource
                 );
+                callPhrNotificationApi(currentPatient);
+                setCrashlyticsAttributes(mePatient);
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
             }
           } else {
+            const signUp: any = await AsyncStorage.getItem('signUp');
+            const multiSignUp: any = await AsyncStorage.getItem('multiSignUp');
             setshowSpinner(false);
-
             if (signUp == 'true') {
               props.navigation.replace(AppRoutes.SignUp);
             } else if (multiSignUp == 'true') {
@@ -703,8 +714,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         timeout ? 2000 : 0
       );
     }
+
     fetchData();
   };
+
+  const prefetchUserMetadata = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    setUserLoggedIn(userLoggedIn);
+  };
+
   const handleEncodedURI = (encodedString: string) => {
     const decodedString = decodeURIComponent(encodedString);
     const splittedString = decodedString.split('+');
@@ -1301,7 +1319,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           height: 117,
           ...Platform.select({
             android: {
-              top: 12,
+              top: -2,
             },
           }),
         }}

@@ -880,6 +880,7 @@ export const updatePatientAppVersion = async (
   client: ApolloClient<object>,
   currentPatient: any
 ) => {
+  console.log('checkguf --- updatePatientAppVersion--- ');
   try {
     appsFlyer.getAppsFlyerUID((error, appsFlyerUID) => {
       if (appsFlyerUID) {
@@ -889,7 +890,9 @@ export const updatePatientAppVersion = async (
         CommonBugFender('getAppsFlyerUID', error);
       }
     });
-  } catch (error) {}
+  } catch (error) {
+    console.log('checkguf --- updatePatientAppVersion--- ', error);
+  }
 };
 
 const notifyAppVersion = async (
@@ -897,26 +900,55 @@ const notifyAppVersion = async (
   currentPatient: any,
   appsflyerId?: string
 ) => {
+  console.log('checkguf --- notifyAppVersion--- ');
   try {
     const key = `${currentPatient?.id}-appVersion`;
     const savedAppVersion = await AsyncStorage.getItem(key);
     const appVersion = DeviceInfo.getVersion();
     const appsflyerIdKey = `${currentPatient?.id}-appsflyerId`;
+    console.log('checkguf --- appsflyeridkey ', appsflyerIdKey);
+
     const appsflyerSaved = await AsyncStorage.getItem(appsflyerIdKey);
+
+    console.log('checkguf --- appsflyerSaved ', appsflyerSaved);
+
     const variables = {
       appVersion,
       patientId: currentPatient?.id,
       osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
       appsflyerId,
     };
+
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  savedAppVersion -----',
+      savedAppVersion
+    );
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appVersion -----',
+      appVersion
+    );
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appsflyerSaved -----',
+      appsflyerSaved
+    );
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appsflyerId -----',
+      appsflyerId
+    );
+
     if (savedAppVersion !== appVersion || appsflyerSaved !== appsflyerId) {
+      console.log('checkguf --- notifyAppVersion UpdatePatientAppVersion  called -----');
+
       const res = await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
         mutation: UPDATE_PATIENT_APP_VERSION,
         variables,
         fetchPolicy: 'no-cache',
       });
+      console.log('checkguf --- notifyAppVersion res--- ', res);
       await AsyncStorage.setItem(key, appVersion);
       await AsyncStorage.setItem(appsflyerIdKey, appsflyerId!);
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log('checkguf --- notifyAppVersion--- ', error);
+  }
 };
