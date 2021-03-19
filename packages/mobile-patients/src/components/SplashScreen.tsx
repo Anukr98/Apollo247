@@ -1026,6 +1026,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setCovidVaccineCta,
     setLoginSection,
     setCovidVaccineCtaV2,
+    setCartBankOffer,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1143,6 +1144,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Covid_Vaccine_CTA_V2_QA',
       PROD: 'Covid_Vaccine_CTA_V2',
     },
+    Cart_Bank_Offer_Text: {
+      QA: 'QA_CART_BANK_OFFER_TEXT',
+      PROD: 'CART_BANK_OFFER_TEXT',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1212,6 +1217,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       needHelpReturnPharmaOrderSuccessMessage &&
         setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
+
+      const bankOfferText = getRemoteConfigValue('Cart_Bank_Offer_Text', (key) =>
+        config.getString(key)
+      );
+      bankOfferText && setCartBankOffer!(bankOfferText);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
