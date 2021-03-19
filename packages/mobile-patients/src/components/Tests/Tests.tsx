@@ -981,9 +981,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
-      <View>
+      <TouchableOpacity onPress={()=>{
+        setSearchFocused(true);
+            props.navigation.navigate(AppRoutes.SearchTestScene, {
+              searchText: searchText,
+            });
+            setSearchText('');
+            setDiagnosticResults([]);
+      }}>
         <SearchInput
           _isSearchFocused={isSearchFocused}
+          editable={false}
           autoFocus={false}
           onSubmitEditing={() => {
             if (searchText?.length > 2) {
@@ -993,9 +1001,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           }}
           value={searchText}
-          onFocus={() => {
-            setSearchFocused(true);
-          }}
           onBlur={() => {
             setSearchFocused(false);
             setDiagnosticResults([]);
@@ -1028,7 +1033,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           inputStyle={styles.searchInput}
           containerStyle={styles.searchInputContainer}
         />
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -2032,4 +2037,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   whyBookUsImage: { width: '100%', height: 200 },
+  headingSections: { ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 22)},
+  viewDefaultContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  defaultContainer: {
+    width: '100%',
+    justifyContent:'space-between',
+    marginVertical: 10,
+    paddingVertical: 0,
+    backgroundColor: 'white'
+  },
 });
