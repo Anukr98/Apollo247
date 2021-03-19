@@ -1527,6 +1527,8 @@ export interface WebEngageEvents {
     af_currency: string;
     'Dr of hour appointment'?: YesOrNo;
     'Circle discount': number;
+    User_Type:string;
+
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
