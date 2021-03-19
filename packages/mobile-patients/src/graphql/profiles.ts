@@ -4718,9 +4718,20 @@ export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
 export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
   query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
     getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
-      slots{
+      slots {
         Timeslot
         TimeslotID
-        }
       }
-    }`
+    }
+  }
+`;
+
+export const GET_OTP_ON_CALL = gql`
+  query getOTPOnCall($mobileNumber: String, $loginType: LOGIN_TYPE, $id: String!) {
+    getOTPOnCall(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      loginId
+      message
+    }
+  }
+`;
