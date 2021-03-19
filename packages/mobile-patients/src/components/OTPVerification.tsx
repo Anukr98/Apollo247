@@ -51,8 +51,8 @@ import firebaseAuth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import Hyperlink from 'react-native-hyperlink';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { BottomPopUp } from './ui/BottomPopUp';
-import { verifyOTP, resendOTP, getOtpOnCall } from '../helpers/loginCalls';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { verifyOTP, resendOTP, getOtpOnCall } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -62,8 +62,8 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Relation } from '../graphql/types/globalTypes';
-import { ApolloLogo } from './ApolloLogo';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
 import SmsRetriever from 'react-native-sms-retriever';
 import {
@@ -72,7 +72,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const { height, width } = Dimensions.get('window');
