@@ -923,7 +923,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                       _postWebEngageEvent(),
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
-                      AsyncStorage.setItem('gotIt', 'false'),
+                      AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
                       handleOpenURL())
                     : null}
