@@ -84,6 +84,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     );
 
     const getParamterData = getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+    const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
 
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
@@ -123,18 +124,21 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                   : discount
               )}
             </View>
-            {!!inclusions && inclusions?.length > 0 && getMandatoryParameterCount > 0 ? (
+            {!!inclusions && inclusions?.length > 0 ? (
               <View>
                 <Text style={styles.inclusionsText}>
-                  TOTAL PARAMETERS : {getMandatoryParameterCount || inclusions?.length}
+                  {getMandatoryParameterCount > 0
+                    ? `TOTAL PARAMETERS ${getMandatoryParameterCount}`
+                    : `TOTAL INCLUSIONS : ${inclusions?.length}`}{' '}
                 </Text>
-                {getParamterData?.map((item: any, index: number) =>
+
+                {dataToShow?.map((item: any, index: number) =>
                   index < 3 ? (
                     <Text style={styles.inclusionName}>
-                      {nameFormater(item?.observationName, 'title')}{' '}
-                      {index == 2 && getParamterData?.length - 3 > 0 && (
+                      {nameFormater(item?.incTitle, 'title')}{' '}
+                      {index == 2 && dataToShow?.length - 3 > 0 && (
                         <Text style={styles.moreText}>
-                          {'   '}+{getParamterData?.length - 3} more
+                          {'   '}+{dataToShow?.length - 3} more
                         </Text>
                       )}
                     </Text>
