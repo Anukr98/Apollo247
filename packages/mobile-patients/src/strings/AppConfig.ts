@@ -1330,23 +1330,22 @@ export const TestsFeedBackData = {
 export const TestCancelReasons = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.chargesTooHigh,
     string.diagnostics.reasonForCancel_TestOrder.editOrder,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.noSlot,
-    string.diagnostics.reasonForCancel_TestOrder.changePaymentMode,
-    string.diagnostics.reasonForCancel_TestOrder.highPrice,
+    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 
 export const TestReschedulingReasons = {
   reasons: [
+    string.diagnostics.reasonForReschedule_TestOrder.latePhelbo,
     string.diagnostics.reasonForReschedule_TestOrder.unavailable,
     string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
     string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
     string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
-    string.diagnostics.reasonForReschedule_TestOrder.otherReasons,
+
   ],
 };
 

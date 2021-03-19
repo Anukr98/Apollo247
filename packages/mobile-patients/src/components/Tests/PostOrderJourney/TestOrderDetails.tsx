@@ -78,10 +78,6 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
-/**
- * this needs to be removed once hidestatus starts working
- */
-const statusToBeShown = DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW;
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -385,11 +381,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderOrderTracking = () => {
     newList = newList =
-      refundStatusArr?.length > 0
-        ? orderStatusList?.filter((item: any) => statusToBeShown?.includes(item?.orderStatus))
-        : orderLevelStatus?.statusHistory?.filter((item: any) =>
-            statusToBeShown?.includes(item?.orderStatus)
-          );
+      refundStatusArr?.length > 0 ? orderStatusList : orderLevelStatus?.statusHistory;
     scrollToSlots();
     return (
       <View>
@@ -519,7 +511,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           style={{ marginBottom: 2 }}
         >
           <Text style={{ ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) }}>
-            RATE YOUR DELIVERY EXPERIENCE
+            {string.diagnostics.rateYourExperience}
           </Text>
         </TouchableOpacity>
       </View>
@@ -578,8 +570,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <>
         <FeedbackPopup
           containerStyle={{ paddingTop: 120 }}
-          title="We value your feedback! :)"
-          description="How was your overall experience -"
+          title={string.diagnostics.valueFeedbackTxt}
+          description={string.diagnostics.howWasExpTxt}
           info={{
             title: '',
             description: '',
@@ -593,7 +585,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             setShowFeedbackPopup(false);
             showAphAlert!({
               title: 'Thanks :)',
-              description: 'Your feedback has been submitted. Thanks for your time.',
+              description: string.diagnostics.feedbackSubTxt,
             });
             setShowRateDiagnosticBtn(false);
             // updateRateDeliveryBtnVisibility();
