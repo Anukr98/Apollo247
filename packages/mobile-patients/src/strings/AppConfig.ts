@@ -159,6 +159,12 @@ const appStaticVariables = {
   CIRCLE_PLAN_ID: 'CIRCLEPlan',
   CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,
+  HELP_SECTION_CUSTOM_QUERIES: {
+    pharmacy: '5df80ade-4eba-4ad3-9caf-e1169fcaeb32',
+    consult: 'd70e6ee8-ecf1-4c75-ae00-2f968641f260',
+    returnOrder: 'e2fc95ff-3ef5-4a9d-8fed-31609e426cbc',
+    deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
+  },
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
   MED_ORDER_ON_HOLD_ORDER_WHATSAPP_LINK:

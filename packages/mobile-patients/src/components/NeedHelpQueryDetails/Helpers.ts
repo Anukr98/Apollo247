@@ -13,8 +13,8 @@ export const Helpers = {
   },
   getQueryData: (
     queries: NeedHelpHelpers.HelpSectionQuery[],
-    idLevel1: number | null,
-    idLevel2: number | null
+    idLevel1: string | null,
+    idLevel2: string | null
   ) => {
     const data =
       idLevel1 && idLevel2
@@ -30,9 +30,9 @@ export const Helpers = {
   ) => {
     let queries = null;
     const queriesByOrderStatus = queryData?.queriesByOrderStatus?.[orderStatus] as
-      | number[]
+      | string[]
       | undefined;
-    const nonOrderQueries = queryData?.nonOrderQueries as number[] | undefined;
+    const nonOrderQueries = queryData?.nonOrderQueries as string[] | undefined;
 
     if (queriesByOrderStatus && orderStatus) {
       queries = queriesByOrderStatus.map((qId) => queryData?.queries?.find((q) => q?.id === qId));

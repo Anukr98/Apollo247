@@ -1,8 +1,6 @@
-import {
-  Breadcrumb,
-  Props as BreadcrumbProps,
-} from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
+import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 import { ConsultCard } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { AphListItem } from '@aph/mobile-patients/src/components/ui/AphListItem';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -26,8 +24,9 @@ import { NavigationScreenProps } from 'react-navigation';
 export interface Props
   extends NavigationScreenProps<{
     pageTitle?: string;
-    queryIdLevel1: number;
+    queryIdLevel1: string;
     email: string;
+    queries: NeedHelpHelpers.HelpSectionQuery[];
   }> {}
 
 type Consult = GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appointments;
@@ -36,6 +35,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
   const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || NaN;
   const email = navigation.getParam('email') || '';
+  const queries = navigation.getParam('queries');
   const breadCrumb = [{ title: string.needHelp }, { title: string.consult }];
 
   const { currentPatient } = useAllCurrentPatients();
@@ -132,6 +132,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
         queryIdLevel1,
         email,
         isConsult: true,
+        queries,
       });
     };
     return <AphListItem title={string.otherIssueNotMyConsults} onPress={onPress} />;

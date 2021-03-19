@@ -1,5 +1,4 @@
 import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
-import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import {
   MedicineReOrderOverlay,
   MedicineReOrderOverlayProps,
@@ -126,7 +125,6 @@ export interface OrderDetailsSceneProps
     orderAutoId?: string;
     billNumber?: string;
     isCancelOrder?: boolean;
-    isReturnOrder?: boolean;
     email: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
@@ -138,7 +136,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const billNumber = props.navigation.getParam('billNumber');
   const isCancelOrder = props.navigation.getParam('isCancelOrder');
-  const isReturnOrder = props.navigation.getParam('isReturnOrder');
   const email = props.navigation.getParam('email') || '';
   const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
@@ -255,8 +252,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   useEffect(() => {
     if (isCancelOrder && !loading) {
       showCancelOrder();
-    } else if (isReturnOrder) {
-      showReturnOrder();
     }
   }, [loading]);
 
@@ -2106,10 +2101,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
-  const showReturnOrder = () => {
-    // TODO: Implement return order
-  };
-
   const showCancelOrder = () => {
     const isOrderBilled = order?.currentStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED;
     if (isOrderBilled) {
@@ -2141,11 +2132,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const currentStatusDate = order?.medicineOrdersStatus?.find(
       (i) => i?.orderStatus === order?.currentStatus
     )?.statusDate;
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
       isOrderRelatedIssue: true,
       medicineOrderStatus: order?.currentStatus,
       orderId: billNumber || orderAutoId,
-      queryIdLevel1: 1,
+      queryIdLevel1: helpSectionQueryId.pharmacy,
       medicineOrderStatusDate: currentStatusDate,
       email,
     });

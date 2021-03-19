@@ -9,26 +9,26 @@
 
 export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries {
   __typename: "NeedHelpQuery";
-  id: number | null;
+  id: string | null;
   title: string | null;
-  nonOrderQueries: (number | null)[] | null;
+  nonOrderQueries: (string | null)[] | null;
   queriesByOrderStatus: any | null;
 }
 
 export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries {
   __typename: "NeedHelpQuery";
-  id: number | null;
+  id: string | null;
   title: string | null;
-  nonOrderQueries: (number | null)[] | null;
+  nonOrderQueries: (string | null)[] | null;
   queriesByOrderStatus: any | null;
   queries: (GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries | null)[] | null;
 }
 
 export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries {
   __typename: "NeedHelpQuery";
-  id: number | null;
+  id: string | null;
   title: string | null;
-  nonOrderQueries: (number | null)[] | null;
+  nonOrderQueries: (string | null)[] | null;
   queriesByOrderStatus: any | null;
   queries: (GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries | null)[] | null;
 }

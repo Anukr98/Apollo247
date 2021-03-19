@@ -28,6 +28,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
@@ -37,8 +38,8 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 export interface Props
   extends NavigationScreenProps<{
     queries: NeedHelpHelpers.HelpSectionQuery[];
-    queryIdLevel1: number;
-    queryIdLevel2: number;
+    queryIdLevel1: string;
+    queryIdLevel2: string;
     email: string;
     orderId?: string;
     isOrderRelatedIssue?: boolean;
@@ -49,8 +50,9 @@ export interface Props
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const _queries = navigation.getParam('queries');
-  const queryIdLevel1 = navigation.getParam('queryIdLevel1') || NaN;
-  const queryIdLevel2 = navigation.getParam('queryIdLevel2') || NaN;
+  const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
+  const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
+  const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
@@ -61,13 +63,14 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2);
   const subQueries = (subQueriesData?.queries as NeedHelpHelpers.HelpSectionQuery[]) || [];
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
+  const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
 
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const { needHelpToContactInMessage } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
-  const [selectedQueryId, setSelectedQueryId] = useState<number>();
+  const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
   const apolloClient = useApolloClient();
   const { getHelpSectionQueries } = NeedHelpHelpers;
@@ -154,9 +157,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const queryOrderId = Number(orderId) || null;
       const parentQuery = queries?.find(({ id }) => id === queryIdLevel1);
       const orderType =
-        parentQuery?.id == 1
+        parentQuery?.id == helpSectionQueryId.pharmacy
           ? ORDER_TYPE.PHARMACY
-          : parentQuery?.id == 2
+          : parentQuery?.id == helpSectionQueryId.consult
           ? ORDER_TYPE.CONSULT
           : null;
       const variables: SendHelpEmailVariables = {
@@ -187,7 +190,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderTextInputAndCTAs = () => {
-    const isDeliveryStatusQuery = queryIdLevel1 === 1 && !queryIdLevel2 && selectedQueryId === 8;
+    const isDeliveryStatusQuery = selectedQueryId === helpSectionQueryId.deliveryStatus;
 
     return [
       <TextInputComponent
@@ -269,7 +272,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
-      const isReturnQuery = queryIdLevel1 === 1 && !queryIdLevel2 && item?.id === 1;
+      const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
       if (item?.queries?.length) {
         navigation.push(AppRoutes.NeedHelpQueryDetails, {
           queryIdLevel2: item?.id,
@@ -281,13 +284,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           medicineOrderStatus,
           isConsult,
         });
-        setSelectedQueryId(undefined);
+        setSelectedQueryId('');
         setComments('');
       } else if (isReturnQuery) {
-        navigation.navigate(AppRoutes.OrderDetailsScene, {
-          orderAutoId: orderId,
-          isReturnOrder: true,
+        navigation.navigate(AppRoutes.ReturnMedicineOrder, {
+          orderId: orderId,
           queryIdLevel1,
+          queryIdLevel2: item?.id,
           queries,
           email,
         });
@@ -310,11 +313,14 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (!subQueries?.length) {
       return null;
     }
-    const data = getQueryDataByOrderStatus(
-      subQueriesData,
-      isOrderRelatedIssue,
-      medicineOrderStatus
-    );
+    let data = getQueryDataByOrderStatus(subQueriesData, isOrderRelatedIssue, medicineOrderStatus);
+    const showReturnOrder =
+      !!medicineOrderStatusDate &&
+      moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
+    if (showReturnOrder && medicineOrderStatus === MEDICINE_ORDER_STATUS.DELIVERED) {
+      data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
+    }
+
     return (
       <FlatList
         data={data}

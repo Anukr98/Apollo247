@@ -261,8 +261,9 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const onPressHelp = () => {
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
-      queryIdLevel1: 1,
+      queryIdLevel1: helpSectionQueryId.pharmacy,
     });
   };
 

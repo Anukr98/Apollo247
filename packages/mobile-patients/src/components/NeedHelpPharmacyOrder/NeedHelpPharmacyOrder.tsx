@@ -24,14 +24,14 @@ import { NavigationScreenProps } from 'react-navigation';
 export interface Props
   extends NavigationScreenProps<{
     pageTitle?: string;
-    queryIdLevel1: number;
+    queryIdLevel1: string;
     email: string;
     queries: NeedHelpHelpers.HelpSectionQuery[];
   }> {}
 
 export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
-  const queryIdLevel1 = navigation.getParam('queryIdLevel1') || NaN;
+  const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const email = navigation.getParam('email') || '';
   const queries = navigation.getParam('queries');
 

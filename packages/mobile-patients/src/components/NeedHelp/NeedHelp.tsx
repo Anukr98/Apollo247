@@ -12,6 +12,7 @@ import { GrayEditIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -92,7 +93,7 @@ export interface Props extends NavigationScreenProps {}
 export const NeedHelp: React.FC<Props> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [email, setEmail] = useState<string>(
-    currentPatient?.emailAddress || 'muqeeth246@gmail.com'
+    currentPatient?.emailAddress || ''
   );
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>([]);
   const [isFocused, setFocused] = useState<boolean>(false);
@@ -103,6 +104,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
   const { showAphAlert, setLoading } = useUIElements();
   const apolloClient = useApolloClient();
   const { getHelpSectionQueries } = NeedHelpHelpers;
+  const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
@@ -206,15 +208,15 @@ export const NeedHelp: React.FC<Props> = (props) => {
     });
   };
 
-  const onSubmit = (helpCategoryId: number) => {
+  const onSubmit = (helpCategoryId: string) => {
     if (!emailValidation) {
       showAlert();
       return;
     }
     const route =
-      helpCategoryId === 1
+      helpCategoryId === helpSectionQueryId.pharmacy
         ? AppRoutes.NeedHelpPharmacyOrder
-        : helpCategoryId === 2
+        : helpCategoryId === helpSectionQueryId.consult
         ? AppRoutes.NeedHelpConsultOrder
         : AppRoutes.NeedHelpQueryDetails;
     props.navigation.navigate(route, {
