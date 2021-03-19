@@ -315,7 +315,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const available = availableUPIApps?.map((item: any) => item?.appName);
       const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
       const apps = UPIApps?.map((app: any) => {
-        if (available.includes(app?.payment_method_name)) {
+        if (
+          available.includes(app?.payment_method_name) &&
+          paymentModeVersionCheck(app?.minimum_supported_version)
+        ) {
           let object = app;
           const packageName = availableUPIApps?.find(
             (item: any) => item?.appName == app.payment_method_name
