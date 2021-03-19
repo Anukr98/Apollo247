@@ -122,6 +122,7 @@ import {
   setWebEngageScreenNames,
   timeDiffDaysFromNow,
   setCircleMembershipType,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -1075,12 +1076,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      User_Type:
-        currentPatient?.isConsulted === undefined
-          ? 'undefined'
-          : currentPatient?.isConsulted
-          ? 'Repeat'
-          : 'New',
+      User_Type: getUserType(currentPatient),
     };
     if (
       source &&

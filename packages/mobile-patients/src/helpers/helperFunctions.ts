@@ -1171,6 +1171,17 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
+export const getUserType=(currentPatient:any)=>{
+  const user: string= 
+  currentPatient?.isConsulted === undefined
+          ? 'undefined'
+          : currentPatient?.isConsulted
+          ? 'Repeat'
+          : 'New'
+
+          return user;
+}
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails

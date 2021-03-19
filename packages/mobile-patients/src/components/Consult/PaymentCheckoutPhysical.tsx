@@ -34,6 +34,7 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -779,12 +780,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
-      User_Type:
-        currentPatient?.isConsulted === undefined
-          ? 'undefined'
-          : currentPatient?.isConsulted
-          ? 'Repeat'
-          : 'New',
+      User_Type: getUserType(currentPatient),
     };
     return eventAttributes;
   };
@@ -868,12 +864,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
-      User_Type:
-        currentPatient?.isConsulted === undefined
-          ? 'undefined'
-          : currentPatient?.isConsulted
-          ? 'Repeat'
-          : 'New',
+      User_Type: getUserType(currentPatient),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
