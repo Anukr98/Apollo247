@@ -19,8 +19,6 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   SetAppsFlyerCustID,
-  setFirebaseUserId,
-  setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
@@ -32,7 +30,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Dimensions,
   EmitterSubscription,
@@ -49,16 +47,8 @@ import {
 import messaging from '@react-native-firebase/messaging';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
-import {
-  NavigationEventSubscription,
-  NavigationScreenProps,
-  StackActions,
-  NavigationActions,
-} from 'react-navigation';
-import {
-  AppsFlyerEventName,
-  AppsFlyerEvents,
-} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
 import { VERIFY_TRUECALLER_PROFILE } from '@aph/mobile-patients/src/graphql/profiles';
@@ -69,12 +59,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/verifyTrueCallerProfile';
 import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  saveTokenDevice,
-  phrNotificationCountApi,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 
 let TRUECALLER: any;
 
@@ -200,10 +185,10 @@ export const Login: React.FC<LoginProps> = (props) => {
   const isAndroid = Platform.OS === 'android';
   const client = useApolloClient();
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
-  const { setPhrNotificationData } = useAppCommonData();
 
   const { setLoading, showAphAlert } = useUIElements();
   const webengage = new WebEngage();
+  const oneTimeApiCall = useRef<boolean>(true);
 
   useEffect(() => {
     isAndroid && initializeTruecaller();
@@ -241,13 +226,14 @@ export const Login: React.FC<LoginProps> = (props) => {
     TRUECALLER.on('profileSuccessReponse', (profile: any) => {
       setLoading?.(false);
       // add other logic here related to login/sign-up as per your use-case.
-      verifyTrueCallerProfile(profile);
+      oneTimeApiCall.current && verifyTrueCallerProfile(profile);
     });
 
     // For handling the reject event
     TRUECALLER.on('profileErrorReponse', (error: any) => {
       setLoading?.(false);
       if (error && error.errorCode) {
+        oneTimeApiCall.current = true;
         switch (error.errorCode) {
           case 1: {
             showAphAlert!({
@@ -283,6 +269,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const verifyTrueCallerProfile = async (profile: any) => {
+    oneTimeApiCall.current = false;
     AsyncStorage.setItem('phoneNumber', profile?.phoneNumber?.substring(3)); // to ignore +91
     setOpenFillerView(true);
     try {
@@ -303,7 +290,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             showLoginError();
             CommonBugFender('OTPVerification_sendOtp', e);
           });
-        getAuthToken();
       }
     } catch (error) {
       showLoginError();
@@ -312,6 +298,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const showLoginError = () => {
+    oneTimeApiCall.current = true;
     setOpenFillerView(false);
     showAphAlert!({
       title: string.truecaller.errorTitle,
@@ -368,93 +355,25 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   };
 
-  const moveScreenForward = (mePatient: any) => {
+  const moveScreenForward = async (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
-    setOpenFillerView(false);
     SetAppsFlyerCustID(mePatient.primaryPatientId);
-    postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
+    mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.PRE_APOLLO_CUSTOMER] = {
-          value: 'Yes',
-        };
-        postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
         navigateTo(AppRoutes.MultiSignup);
       } else {
-        AsyncStorage.setItem('userLoggedIn', 'true');
-        deviceTokenAPI(mePatient.id);
-        callPhrNotificationApi(mePatient?.id);
-        fireUserLoggedInEvent(mePatient, 'Login');
-        navigateTo(AppRoutes.ConsultRoom);
+        navigateTo(AppRoutes.SignUp, mePatient);
       }
     } else {
-      if (mePatient.firstName == '') {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.PRE_APOLLO_CUSTOMER] = {
-          value: 'No',
-        };
-        postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
-        navigateTo(AppRoutes.SignUp);
-        fireUserLoggedInEvent(mePatient, 'Registration');
-      } else {
-        AsyncStorage.setItem('userLoggedIn', 'true');
-        deviceTokenAPI(mePatient.id);
-        callPhrNotificationApi(mePatient?.id);
-        navigateTo(AppRoutes.ConsultRoom);
-        fireUserLoggedInEvent(mePatient, 'Login');
-      }
+      navigateTo(AppRoutes.SignUp);
     }
   };
 
-  const fireUserLoggedInEvent = (mePatient: any, type: 'Registration' | 'Login') => {
-    setFirebaseUserId(mePatient.id);
-    setCrashlyticsAttributes(mePatient);
-    const firebaseAttributes: FirebaseEvents[FirebaseEventName.USER_LOGGED_IN] = {
-      Type: type,
-      userId: mePatient.id,
-    };
-    postFirebaseEvent(FirebaseEventName.USER_LOGGED_IN, firebaseAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_IN, firebaseAttributes);
-  };
-
-  const callPhrNotificationApi = async (currentPatient: any) => {
-    try {
-      const res = await phrNotificationCountApi(client, currentPatient || '');
-      if (res) {
-        setPhrNotificationData &&
-          setPhrNotificationData(
-            res! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
-          );
-      }
-    } catch (error) {
-      CommonBugFender('Login_callPhrNotificationApi', error);
-    }
-  };
-
-  const deviceTokenAPI = async (patientId: string) => {
-    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-    saveTokenDevice(client, deviceToken2, patientId);
-  };
-
-  const navigateTo = (routeName: AppRoutes) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: routeName,
-          }),
-        ],
-      })
-    );
-  };
-
-  const postOtpSuccessAppsflyerEvet = (id: string) => {
-    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.OTP_VERIFICATION_SUCCESS] = {
-      'customer id': id,
-    };
-    postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, appsflyerEventAttributes);
+  const navigateTo = (routeName: AppRoutes, patient?: any) => {
+    oneTimeApiCall.current = true;
+    props.navigation.navigate(routeName, { patient });
+    setOpenFillerView(false);
   };
 
   const fireBaseFCM = async () => {
