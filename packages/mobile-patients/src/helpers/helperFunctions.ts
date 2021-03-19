@@ -99,6 +99,9 @@ import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@ap
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import stripHtml from 'string-strip-html';
+import isLessThan from 'semver/functions/lt';
+import coerce from 'semver/functions/coerce';
+
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -2628,4 +2631,16 @@ export const getShipmentPrice = (shipmentItems: any, cartItems: any) => {
     });
   }
   return total;
+};
+
+export const paymentModeVersionCheck = (minSupportedVersion: string) => {
+  const { iOS_Version, Android_Version } = AppConfig.Configuration;
+  const isIOS = Platform.OS === 'ios';
+  const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+  const versionSupports = !(
+    appVersion &&
+    minSupportedVersion &&
+    isLessThan(appVersion, minSupportedVersion)
+  );
+  return versionSupports;
 };
