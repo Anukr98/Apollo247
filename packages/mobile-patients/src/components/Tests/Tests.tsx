@@ -175,6 +175,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setNewAddressAddedHomePage,
     deliveryAddressId,
     setDeliveryAddressId,
+    setDiagnosticAreas,
+    setAreaSelected,
+    setDiagnosticSlot,
     setAddresses: setTestAddress,
   } = useDiagnosticsCart();
   const {
@@ -1047,6 +1050,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setAddresses?.(updatedAddresses);
       setTestAddress?.(updatedAddresses);
       patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+      setDiagnosticAreas?.([]);
+      setAreaSelected?.({});
+      setDiagnosticSlot?.(null);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
