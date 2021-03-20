@@ -271,15 +271,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           fireBaseFCM();
           try {
             let eventAttributes = webEngageEventAttributes;
-            console.log('csk att', JSON.stringify(eventAttributes));
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
             eventAttributes['User_Type'] = getUserType(currentPatient);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent(amountBreakup);
             eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
-
-            console.log('csk att2', JSON.stringify(eventAttributes));
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
             if (!currentPatient?.isConsulted) getPatientApiCall();
           } catch (error) {}
