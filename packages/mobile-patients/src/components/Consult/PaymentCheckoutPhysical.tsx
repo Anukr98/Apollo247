@@ -650,6 +650,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
+        eventAttributes['User_Type'] = getUserType(currentPatient);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -659,6 +660,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           )
         );
         setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
         handleOrderSuccess(
           `${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`,
           g(data, 'makeAppointmentPayment', 'appointment', 'appointment', 'id')!

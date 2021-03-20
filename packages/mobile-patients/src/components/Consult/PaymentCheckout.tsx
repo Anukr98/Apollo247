@@ -657,6 +657,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
+        eventAttributes['User_Type'] = getUserType(currentPatient);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -666,6 +667,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           )
         );
         setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {

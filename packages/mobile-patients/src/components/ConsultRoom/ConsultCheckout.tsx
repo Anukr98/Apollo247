@@ -187,6 +187,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscountedPrice,
+      User_Type: getUserType(currentPatient),
     };
     return eventAttributes;
   };
