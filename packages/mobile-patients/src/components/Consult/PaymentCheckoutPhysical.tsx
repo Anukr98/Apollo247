@@ -34,6 +34,7 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -567,7 +568,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log('csk data-------', JSON.stringify(data));
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
         if (consultedWithDoctorBefore) {
           storeAppointmentId(g(apptmt, 'id')!);
@@ -650,6 +650,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
+        eventAttributes['User_Type'] = getUserType(currentPatient);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -659,6 +660,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           )
         );
         setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
         handleOrderSuccess(
           `${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`,
           g(data, 'makeAppointmentPayment', 'appointment', 'appointment', 'id')!
@@ -671,7 +673,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
-    console.log('csk', 'handleOrderSuccess', appointmentId);
     setLoading && setLoading(true);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
@@ -682,7 +683,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('csk', 'getAppointmentData-->', JSON.stringify(_data));
         try {
           setLoading && setLoading(false);
           const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
@@ -782,6 +782,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
+      User_Type: getUserType(currentPatient),
     };
     return eventAttributes;
   };
@@ -865,6 +866,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
+      User_Type: getUserType(currentPatient),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
