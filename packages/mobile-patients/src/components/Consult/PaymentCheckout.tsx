@@ -364,7 +364,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
               >
                 {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
               </Text>
-              {console.log('csk pat', item)}
             </TouchableOpacity>
           ) : null
         )}
