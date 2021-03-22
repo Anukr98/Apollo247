@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/Components/WalletIcon';
+import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
 export interface WalletsProps {
   onPressPayNow: (wallet: string) => void;
   wallets: any;
@@ -18,7 +20,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           ...styles.wallet,
           borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
         }}
-        onPress={() => onPressPayNow(item?.item?.method)}
+        onPress={() => onPressPayNow(item?.item?.payment_method_code)}
       >
         <WalletIcon imageUrl={item?.item?.image_url} />
         <Text style={styles.payNow}>PAY NOW</Text>
@@ -28,7 +30,14 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
   const renderWallets = () => {
     return (
       <View style={styles.ChildComponent}>
-        <FlatList data={wallets} renderItem={(item) => renderWallet(item)} />
+        <FlatList
+          data={wallets}
+          renderItem={(item: any) => {
+            return paymentModeVersionCheck(item?.item?.minimum_supported_version)
+              ? renderWallet(item)
+              : null;
+          }}
+        />
       </View>
     );
   };

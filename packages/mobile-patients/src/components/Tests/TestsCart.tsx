@@ -5,10 +5,7 @@ import {
   formatNameNumber,
   g,
   TestSlot,
-  formatTestSlotWithBuffer,
-  getUniqueTestSlots,
-  getTestSlotDetailsByTime,
-  isValidTestSlotWithArea,
+  formatTestSlot,
   isEmptyObject,
   getDiscountPercentage,
   postAppsFlyerEvent,
@@ -18,6 +15,7 @@ import {
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  DiagnosticArea,
   DiagnosticsCartItem,
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -38,6 +36,7 @@ import {
   CircleLogo,
   CouponIcon,
   DropdownGreen,
+  InfoIconRed,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
@@ -65,6 +64,8 @@ import {
   SAVE_DIAGNOSTIC_ORDER,
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
+  GET_DIAGNOSTIC_NEAREST_AREA,
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -133,10 +134,6 @@ import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { getAreas, getAreasVariables } from '@aph/mobile-patients/src/graphql/types/getAreas';
 import {
-  getDiagnosticSlotsWithAreaID,
-  getDiagnosticSlotsWithAreaIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
-import {
   findDiagnosticsByItemIDsAndCityID,
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
@@ -182,6 +179,14 @@ import {
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  getNearestArea,
+  getNearestAreaVariables,
+} from '@aph/mobile-patients/src/graphql/types/getNearestArea';
+import {
+  getDiagnosticSlotsCustomized,
+  getDiagnosticSlotsCustomizedVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -315,6 +320,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
+  const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
@@ -323,6 +329,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const cartItemsWithId = cartItems?.map((item) => parseInt(item?.id!));
   var pricesForItemArray;
+  var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
@@ -616,9 +623,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      fetchAreasForAddress(
-        addresses?.[selectedAddressIndex]?.id,
-        addresses?.[selectedAddressIndex]?.zipcode!
+      showAreaSelection
+        ? fetchAreasForAddress(
+            addresses?.[selectedAddressIndex]?.id,
+            addresses?.[selectedAddressIndex]?.zipcode!,
+            showAreaSelection
+          )
+        : getAreas();
+      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
+    } else {
+      DiagnosticRemoveFromCartClicked(
+        id,
+        name,
+        diagnosticLocation?.pincode! || locationDetails?.pincode!
       );
       DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
     } else {
@@ -658,7 +675,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               .then(({ data }) => {
                 const diagnosticItems =
                   g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-                updatePricesInCart(diagnosticItems, selectedAddressIndex);
+                if (serviceableData?.areaSelectionEnabled) {
+                  setShowAreaSelection(true);
+                }
+                //don't show the area and hit the nearestPCC api.
+                else {
+                  setShowAreaSelection(false);
+                }
+                updatePricesInCart(
+                  diagnosticItems,
+                  selectedAddressIndex,
+                  serviceableData?.areaSelectionEnabled!
+                );
               })
               .catch((e) => {
                 CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
@@ -707,12 +735,54 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const updatePricesInCart = (results: any, selectedAddressIndex: any) => {
+  const getNearestPCCLocation = async () => {
+    const input: getNearestAreaVariables = {
+      patientAddressId: selectedAddr?.id!,
+    };
+    const res = await client.query<getNearestArea, getNearestAreaVariables>({
+      query: GET_DIAGNOSTIC_NEAREST_AREA,
+      variables: input,
+      fetchPolicy: 'no-cache',
+    });
+    return res;
+  };
+
+  const getAreas = async () => {
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    try {
+      const response = await getNearestPCCLocation();
+      const { data } = response;
+      const getAreaObject = g(data, 'getNearestArea', 'area');
+      let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
+      setAreaSelected?.(obj);
+      checkSlotSelection(obj);
+      setWebEngageEventForAreaSelection(obj);
+    } catch (e) {
+      console.log({ e });
+      CommonBugFender('TestsCart_', e);
+
+      setselectedTimeSlot(undefined);
+      setLoading?.(false);
+      setWebEngageEventForAddressNonServiceable(addresses?.[selectedAddressIndex]?.zipcode!);
+
+      //if goes in the catch then show the area selection.
+      setShowAreaSelection(true);
+      fetchAreasForAddress(
+        addresses?.[selectedAddressIndex]?.id,
+        addresses?.[selectedAddressIndex]?.zipcode!,
+        true
+      );
+    }
+  };
+
+  const updatePricesInCart = (results: any, selectedAddressIndex: any, shouldShowArea: boolean) => {
     const disabledCartItems = cartItems?.filter(
       (cartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
-            `${d!.itemId}` == cartItem.id
+            `${d?.itemId}` == cartItem?.id
         )
     );
     let isItemDisable = false,
@@ -742,12 +812,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
           const planToConsider = pricesForItem?.planToConsider;
 
-          const discount = pricesForItem?.discount;
-          const circleDiscount = pricesForItem?.circleDiscount;
-          const specialDiscount = pricesForItem?.specialDiscount;
-
-          const mrpToDisplay = pricesForItem?.mrpToDisplay;
-
           const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
           const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
 
@@ -770,14 +834,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               title: string.common.uhOh,
               description: string.diagnostics.pricesChangedMessage,
               onPressOk: () => {
-                hideAphAlert!();
-                fetchAreasForAddress(
-                  addresses?.[selectedAddressIndex]?.id,
-                  addresses?.[selectedAddressIndex]?.zipcode!
-                );
+                hideAphAlert?.();
+                shouldShowArea
+                  ? fetchAreasForAddress(
+                      addresses?.[selectedAddressIndex]?.id,
+                      addresses?.[selectedAddressIndex]?.zipcode!,
+                      shouldShowArea
+                    )
+                  : getAreas();
               },
             });
-            updateCartItem!({
+            updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
                 : String(cartItem?.id),
@@ -803,21 +870,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         }
         //if items not available
-        if (disabledCartItems.length) {
+        if (disabledCartItems?.length) {
           isItemDisable = true;
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
-          setLoading!(false);
+          setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
 
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.pricesChangedMessage,
             onPressOk: () => {
-              hideAphAlert!();
-              fetchAreasForAddress(
-                addresses?.[selectedAddressIndex]?.id,
-                addresses?.[selectedAddressIndex]?.zipcode!
-              );
+              hideAphAlert?.();
+              shouldShowArea
+                ? fetchAreasForAddress(
+                    addresses?.[selectedAddressIndex]?.id,
+                    addresses?.[selectedAddressIndex]?.zipcode!,
+                    shouldShowArea
+                  )
+                : getAreas();
             },
           });
         }
@@ -825,10 +895,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       if (!isItemDisable && !isPriceChange) {
         isPriceChange = false;
         isItemDisable = false;
-        fetchAreasForAddress(
-          addresses?.[selectedAddressIndex]?.id,
-          addresses?.[selectedAddressIndex]?.zipcode!
-        );
+        shouldShowArea
+          ? fetchAreasForAddress(
+              addresses?.[selectedAddressIndex]?.id,
+              addresses?.[selectedAddressIndex]?.zipcode!,
+              shouldShowArea
+            )
+          : getAreas();
       }
     }
   };
@@ -981,12 +1054,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
    * fetching the areas
    */
 
-  const fetchAreasForAddress = (id: string, pincode: string) => {
+  const fetchAreasForAddress = (id: string, pincode: string, shouldCallApi?: boolean) => {
+    setLoading?.(true);
+
     //wrt to address
-    if (cartItems?.length == 0) {
+    if (cartItems?.length == 0 || !shouldCallApi) {
+      setLoading?.(false);
       return;
     }
-    setLoading?.(true);
     client
       .query<getAreas, getAreasVariables>({
         context: {
@@ -1137,7 +1212,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   'onPress'
                 );
               }}
-              medicineName={test.name!}
+              medicineName={test?.name}
               price={price}
               mrpToDisplay={Number(mrpToDisplay!)}
               specialPrice={sellingPrice}
@@ -1176,70 +1251,57 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const checkSlotSelection = (item: areaObject, changedDate?: Date) => {
-    let dateToCheck = !!changedDate ? changedDate : date;
+  const checkSlotSelection = (
+    item: areaObject | DiagnosticArea | any,
+    changedDate?: Date,
+    comingFrom?: string
+  ) => {
+    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
 
-    const checkCovidItem = cartItems?.map((item) =>
-      AppConfig.Configuration.DIAGNOSTIC_COVID_SLOT_ITEMID.includes(Number(item?.id))
-    );
-    const isCovidItemInCart = checkCovidItem?.find((item) => item == false);
-    const isContainOnlyCovidItem = isCovidItemInCart == undefined ? true : isCovidItemInCart;
-
     client
-      .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
-        query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
+        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
         context: {
           sourceHeaders,
         },
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: parseInt((item as any).key!),
+          areaID: Number((item as any).key!),
+          itemIds: cartItemsWithId,
         },
       })
       .then(({ data }) => {
-        const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
+        const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
         console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
-        const covidItem_Slot_StartTime = moment(
-          AppConfig.Configuration.DIAGNOSTIC_COVID_MIN_SLOT_TIME,
-          'HH:mm'
-        );
-        const diagnosticSlotsToShow = isContainOnlyCovidItem
-          ? diagnosticSlots?.filter((item) =>
-              moment(item?.Timeslot!, 'HH:mm').isSameOrAfter(covidItem_Slot_StartTime)
-            )
-          : diagnosticSlots;
+        const diagnosticSlotsToShow = diagnosticSlots;
 
         const slotsArray: TestSlot[] = [];
         diagnosticSlotsToShow?.forEach((item) => {
-          if (isValidTestSlotWithArea(item!, dateToCheck, isContainOnlyCovidItem)) {
-            slotsArray.push({
-              employeeCode: 'apollo_employee_code',
-              employeeName: 'apollo_employee_name',
-              slotInfo: {
-                endTime: item?.Timeslot!,
-                status: 'empty',
-                startTime: item?.Timeslot!,
-                slot: item?.TimeslotID,
-              },
-              date: dateToCheck,
-              diagnosticBranchCode: 'apollo_route',
-            } as TestSlot);
-          }
+          slotsArray.push({
+            employeeCode: 'apollo_employee_code',
+            employeeName: 'apollo_employee_name',
+            slotInfo: {
+              endTime: item?.Timeslot!,
+              status: 'empty',
+              startTime: item?.Timeslot!,
+              slot: item?.TimeslotID,
+            },
+            date: dateToCheck,
+            diagnosticBranchCode: 'apollo_route',
+          } as TestSlot);
         });
-
-        const uniqueSlots = getUniqueTestSlots(slotsArray);
 
         console.log('ARRAY OF SLOTS', { slotsArray });
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
-        if (isSameDate && uniqueSlots?.length == 0) {
+        if (isSameDate && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
@@ -1249,13 +1311,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         } else {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
-          const slotDetails = getTestSlotDetailsByTime(
-            slotsArray,
-            uniqueSlots?.[0]?.startTime!,
-            uniqueSlots?.[0]?.endTime!
-          );
+          const slotDetails = slotsArray?.[0];
           console.log({ slotDetails });
-          uniqueSlots?.length && setselectedTimeSlot(slotDetails);
+          slotsArray?.length && setselectedTimeSlot(slotDetails);
 
           setDiagnosticSlot!({
             slotStartTime: slotDetails?.slotInfo?.startTime!,
@@ -1269,7 +1327,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading?.(false);
         }
 
-        // setDisplaySchedule(true); //show slot popup
+        comingFrom == 'errorState' ? setDisplaySchedule(true) : null; //show slot popup
 
         setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id);
         setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
@@ -1297,6 +1355,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           });
         } else {
           setDeliveryAddressId && setDeliveryAddressId('');
+          setDiagnosticAreas?.([]);
+          setAreaSelected?.({});
+          setselectedTimeSlot(undefined);
           showAphAlert!({
             title: string.common.uhOh,
             description: string.diagnostics.bookingOrderFailedMessage,
@@ -1349,12 +1410,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         {addresses?.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
-              key={item.id}
+              key={item?.id}
               title={formatAddressWithLandmark(item)}
               showMultiLine={true}
               subtitle={formatNameNumber(item)}
               subtitleStyle={styles.subtitleStyle}
-              isSelected={deliveryAddressId == item.id}
+              isSelected={deliveryAddressId == item?.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
                 const tests = cartItems?.filter(
@@ -1383,12 +1444,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   } else {
                     AddressSelectedEvent(item);
                     setDeliveryAddressId?.(item.id);
-                    setDiagnosticAreas?.([]);
-                    setAreaSelected?.({});
-                    setDiagnosticSlot?.(null);
+                    // add a check if same delivery id is there then do nothing.
+                    if (deliveryAddressId !== item?.id) {
+                      setDiagnosticAreas?.([]);
+                      setAreaSelected?.({});
+                      setDiagnosticSlot?.(null);
+                    }
                   }
-
-                  // fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}
               containerStyle={{ marginTop: 16 }}
@@ -1438,14 +1500,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                           );
                         } else {
                           setDeliveryAddressId && setDeliveryAddressId(id);
-                          setDiagnosticSlot && setDiagnosticSlot(null);
-                          setselectedTimeSlot(undefined);
-
-                          setDiagnosticAreas?.([]);
-                          setAreaSelected?.({});
+                          if (deliveryAddressId !== id) {
+                            setDiagnosticAreas?.([]);
+                            setAreaSelected?.({});
+                            setDiagnosticSlot?.(null);
+                            setselectedTimeSlot(undefined);
+                          }
                         }
-
-                        // fetchAreasForAddress(id, pincode!);
                       }
                     },
                   });
@@ -1639,12 +1700,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.dateTextStyle}>Time</Text>
               <Text style={styles.dateTextStyle}>
                 {selectedTimeSlot
-                  ? `${formatTestSlotWithBuffer(selectedTimeSlot.slotInfo.startTime!)}`
+                  ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)}`
                   : 'No slot selected'}
               </Text>
             </View>
+            {renderPhelboTimeView()}
           </>
         ) : null}
+
         <Text
           style={[
             styles.yellowTextStyle,
@@ -1656,6 +1719,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         >
           {showTime ? 'PICK ANOTHER SLOT' : 'SELECT SLOT'}
         </Text>
+      </View>
+    );
+  };
+
+  const renderPhelboTimeView = () => {
+    return (
+      <View style={styles.phelboTextView}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.phleboText}>{string.diagnostics.cartPhelboTxt}</Text>
       </View>
     );
   };
@@ -1814,7 +1886,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           />
           {selectedTab === tabs[0].title ? renderHomeDelivery() : renderStorePickup()}
         </View>
-        {renderAreaSelectionCard()}
+        {showAreaSelection ? renderAreaSelectionCard() : null}
         {renderTimingCard()}
       </View>
     );
@@ -2441,23 +2513,44 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 },
               });
             } else {
-              renderAlert(message);
+              if (
+                slotBookedArray.some((item) => message?.includes(item)) ||
+                message.includes('slot has been booked')
+              ) {
+                showAphAlert?.({
+                  title: string.common.uhOh,
+                  description: message,
+                  onPressOutside: () => {
+                    checkSlotSelection(areaSelected, '', 'errorState');
+                    hideAphAlert?.();
+                  },
+                  onPressOk: () => {
+                    checkSlotSelection(areaSelected, '', 'errorState');
+                    hideAphAlert?.();
+                  },
+                });
+              } else {
+                renderAlert(message);
+              }
             }
           } else {
             const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
             const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
             const orders: OrderVerticals = {
-              diagnostics: [{ order_id: orderId, amount: grandTotal }],
+              diagnostics: [
+                { order_id: orderId, amount: grandTotal, patient_id: currentPatient?.id },
+              ],
             };
             const orderInput: OrderCreate = {
               orders: orders,
               total_amount: grandTotal,
-              patient_id: currentPatient?.id,
+              customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
             };
+            console.log('orderInput >>', JSON.stringify(orderInput));
             const response = await createOrderInternal(orderInput);
             if (response?.data?.createOrderInternal?.success) {
               const isInitiated: boolean = await isSDKInitialised();
-              !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
+              !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
               const orderInfo = {
                 orderId: orderId,
                 displayId: displayId,
@@ -2741,10 +2834,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      fetchAreasForAddress(
-        addresses?.[selectedAddressIndex]?.id,
-        addresses?.[selectedAddressIndex]?.zipcode!
-      );
+      showAreaSelection
+        ? fetchAreasForAddress(
+            addresses?.[selectedAddressIndex]?.id,
+            addresses?.[selectedAddressIndex]?.zipcode!,
+            showAreaSelection
+          )
+        : getAreas();
     }
   }
 
@@ -3038,4 +3134,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.3,
   },
+  phelboTextView: {
+    backgroundColor: '#FCFDDA',
+    flex: 1,
+    padding: 8,
+    flexDirection: 'row',
+    marginVertical: '2%',
+  },
+  phleboText: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 18,
+    letterSpacing: 0.1,
+    color: theme.colors.SHERPA_BLUE,
+    opacity: 0.7,
+    marginHorizontal: '2%',
+  },
+  infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
 });

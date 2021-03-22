@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
+import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const { width } = Dimensions.get('window');
 const newWidth = width - 40;
 export interface NetBankingProps {
@@ -25,7 +26,7 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
     const marginLeft = item?.index == 0 ? 0 : (newWidth - 180) * 0.33;
     return (
       <View style={{ ...styles.bankCont, marginLeft: marginLeft }}>
-        <TouchableOpacity onPress={() => onPressBank(item?.item?.method)}>
+        <TouchableOpacity onPress={() => onPressBank(item?.item?.payment_method_code)}>
           <Image
             source={{ uri: item?.item?.image_url }}
             resizeMode={'contain'}
@@ -33,7 +34,7 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
           />
         </TouchableOpacity>
         <Text numberOfLines={2} style={styles.bankName}>
-          {item?.item?.bank}
+          {item?.item?.payment_method_name}
         </Text>
       </View>
     );
@@ -47,7 +48,11 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
           data={topBanks.slice(0, 4)}
           horizontal={true}
           showsHorizontalScrollIndicator={false}
-          renderItem={(item) => renderBank(item)}
+          renderItem={(item: any) => {
+            return paymentModeVersionCheck(item?.item?.minimum_supported_version)
+              ? renderBank(item)
+              : null;
+          }}
         />
       </View>
     );

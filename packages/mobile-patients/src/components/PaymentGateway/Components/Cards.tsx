@@ -125,7 +125,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
 
   const renderCardIcon = () => {
     const cardInfo =
-      cardbin?.brand && cardTypes?.find((item: any) => item?.method == cardbin?.brand);
+      cardbin?.brand && cardTypes?.find((item: any) => item?.payment_method_code == cardbin?.brand);
     return (
       <Image source={{ uri: cardInfo?.image_url }} resizeMode={'contain'} style={styles.cardIcon} />
     );

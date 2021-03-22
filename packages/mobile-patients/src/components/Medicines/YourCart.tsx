@@ -883,7 +883,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setLoading!(true);
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
       coupon: coupon,
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({

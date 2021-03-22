@@ -28,16 +28,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, {
-  forwardRef,
-  ForwardRefExoticComponent,
-  PropsWithoutRef,
-  RefAttributes,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Platform,
@@ -174,32 +165,14 @@ export interface UploadPrescriprionPopupProps {
   uploadImage?: boolean;
   phrUpload?: boolean;
   openCamera?: boolean;
-  isActionSheetOutOfOverlay?: boolean;
-}
-export interface UploadPrescriprionPopupRefProps {
-  onPressCamera: () => void;
-  onPressGallery: () => void;
 }
 
 const MAX_FILE_SIZE = 2000000; // 2MB
 
-export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
-  UploadPrescriprionPopupProps
-> &
-  RefAttributes<UploadPrescriprionPopupRefProps>> = forwardRef((props, ref) => {
-  useImperativeHandle(ref, () => ({
-    // To expose these functions to parent components through ref
-    onPressCamera() {
-      onClickTakePhoto();
-    },
-    onPressGallery() {
-      onClickGallery();
-    },
-  }));
-
+export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const { pharmacyUserType } = useAppCommonData();
-  const actionSheetRef = useRef<ActionSheet>();
+  let actionSheetRef: ActionSheet;
 
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
@@ -322,7 +295,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
 
   const onClickGallery = async () => {
     if (!props.isProfileImage) {
-      actionSheetRef.current?.show();
+      actionSheetRef.show();
     } else {
       openGallery();
     }
@@ -708,36 +681,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Cancel</Text>,
   ];
 
-  const renderActionSheet = () => {
-    return (
-      <ActionSheet
-        ref={(o: ActionSheet) => (actionSheetRef.current = o)}
-        title={''}
-        options={options}
-        cancelButtonIndex={2}
-        onPress={(index: number) => {
-          /* do something */
-          console.log('index', index);
-          if (index === 0) {
-            setTimeout(() => {
-              openGallery();
-            }, 100);
-          } else if (index === 1) {
-            setTimeout(() => {
-              if (Platform.OS === 'android') {
-                storagePermissions(() => {
-                  onBrowseClicked();
-                });
-              } else {
-                onBrowseClicked();
-              }
-            }, 100);
-          }
-        }}
-      />
-    );
-  };
-
   return props.phrUpload ? (
     <Overlay
       onRequestClose={() => props.onClickClose()}
@@ -759,53 +702,74 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       </>
     </Overlay>
   ) : (
-    <>
-      <Overlay
-        onRequestClose={() => props.onClickClose()}
-        isVisible={props.isVisible}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-        containerStyle={{
-          marginBottom: 20,
-        }}
-        fullScreen
-        transparent
-        overlayStyle={{
-          padding: 0,
-          margin: 0,
-          width: '88.88%',
-          height: '88.88%',
-          borderRadius: 10,
-          borderBottomLeftRadius: 10,
-          borderBottomRightRadius: 10,
-          backgroundColor: 'transparent',
-          overflow: 'hidden',
-          elevation: 0,
-        }}
-      >
-        <View style={styles.overlayViewStyle1}>
-          <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
-            {renderCloseIcon()}
-            {renderHeader()}
-            <ScrollView
-              bounces={false}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
-              {props.type == 'nonCartFlow' && renderOrderSteps()}
-              {renderOptions()}
-              {renderInstructions()}
-              {!props.hideTAndCs && renderTermsAndCondns()}
-            </ScrollView>
-          </SafeAreaView>
-          {showSpinner && <Spinner />}
-          {!props.isActionSheetOutOfOverlay && renderActionSheet()}
-        </View>
-      </Overlay>
-      {!!props.isActionSheetOutOfOverlay && renderActionSheet()}
-    </>
+    <Overlay
+      onRequestClose={() => props.onClickClose()}
+      isVisible={props.isVisible}
+      windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+      containerStyle={{
+        marginBottom: 20,
+      }}
+      fullScreen
+      transparent
+      overlayStyle={{
+        padding: 0,
+        margin: 0,
+        width: '88.88%',
+        height: '88.88%',
+        borderRadius: 10,
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
+        backgroundColor: 'transparent',
+        overflow: 'hidden',
+        elevation: 0,
+      }}
+    >
+      <View style={styles.overlayViewStyle1}>
+        <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+          {renderCloseIcon()}
+          {renderHeader()}
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              borderBottomLeftRadius: 10,
+              borderBottomRightRadius: 10,
+            }}
+          >
+            {props.type == 'nonCartFlow' && renderOrderSteps()}
+            {renderOptions()}
+            {renderInstructions()}
+            {!props.hideTAndCs && renderTermsAndCondns()}
+          </ScrollView>
+        </SafeAreaView>
+        {showSpinner && <Spinner />}
+        <ActionSheet
+          ref={(o: ActionSheet) => (actionSheetRef = o)}
+          title={''}
+          options={options}
+          cancelButtonIndex={2}
+          onPress={(index: number) => {
+            /* do something */
+            console.log('index', index);
+            if (index === 0) {
+              setTimeout(() => {
+                openGallery();
+              }, 100);
+            } else if (index === 1) {
+              setTimeout(() => {
+                if (Platform.OS === 'android') {
+                  storagePermissions(() => {
+                    onBrowseClicked();
+                  });
+                } else {
+                  onBrowseClicked();
+                }
+              }, 100);
+            }
+          }}
+        />
+      </View>
+    </Overlay>
   );
-});
+};

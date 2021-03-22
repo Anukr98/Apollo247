@@ -203,7 +203,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        CommonBugFender('InsuranceScreen_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
@@ -239,6 +239,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('InsuranceScreen_searchPHRApiWithAuthToken', error);
         console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
@@ -254,7 +255,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };
@@ -297,6 +298,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('InsuranceScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
@@ -382,6 +384,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('InsuranceScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });
@@ -414,7 +417,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       <HealthRecordCard
         item={item}
         index={index}
-        editDeleteData={editDeleteData()}
+        editDeleteData={editDeleteData(MedicalRecordType.MEDICALINSURANCE)}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
@@ -423,6 +426,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         dateText={dateText}
         selfUpload={selfUpload}
         sourceName={soureName || ''}
+        deleteRecordText={'insurance'}
       />
     );
   };
@@ -458,7 +462,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '100%' }}
-          title={`ADD DATA`}
+          title={string.common.addInsuranceText}
           onPress={() => {
             setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {

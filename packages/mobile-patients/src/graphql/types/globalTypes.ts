@@ -923,7 +923,8 @@ export interface CouponInput {
 
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
-  plan_id: string;
+  plan_id?: string | null;
+  group_plan_id?: string | null;
   payment_reference?: PaymentReference | null;
   coupon_availed?: string | null;
   mobile_number: string;
@@ -1328,6 +1329,7 @@ export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
   patient_id?: any | null;
+  customer_id?: any | null;
 }
 
 export interface OrderInput {
@@ -1339,8 +1341,9 @@ export interface OrderInput {
 }
 
 export interface OrderInputEntity {
-  order_id?: string | null;
-  amount?: number | null;
+  order_id: string;
+  amount: number;
+  patient_id?: any | null;
 }
 
 export interface OrderLineItems {
@@ -1684,6 +1687,8 @@ export interface UpdatePatientInput {
   deviceCode?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
+  appsflyerId?: string | null;
+  isConsulted?: boolean | null;
 }
 
 export interface UploadDocumentInput {
