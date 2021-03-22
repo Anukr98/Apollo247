@@ -187,18 +187,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     return (
       <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
         <View style={{ flex: 0.8 }}>
-          <Text style={{ ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) }}>
-            Order ID #{orderDetails?.displayId}
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) }}>
-            Booked on {bookedOn}
-          </Text>
+          <Text style={styles.orderId}>Order ID #{orderDetails?.displayId}</Text>
+          <Text style={styles.bookedOn}>Booked on {bookedOn}</Text>
         </View>
         <View>
           <StatusCard titleText={orderDetails?.orderStatus} />
         </View>
       </View>
     );
+  };
+
+  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+    return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
   const renderSlotView = () => {
@@ -214,7 +214,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         : getSlotStartTime(orderDetails?.slotTimings);
 
     return (
-      <View style={{ justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' }}>
+      <View style={styles.testSlotContainer}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
             <Text style={styles.headingText}>Test Slot</Text>
@@ -284,7 +284,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     return (
       <Button
         title={'VIEW REPORT'}
-        style={{ width: '40%', marginBottom: 5, alignSelf: 'flex-start', marginTop: 10 }}
+        style={styles.viewReport}
         titleTextStyle={{
           ...theme.viewStyles.text('SB', isIphone5s() ? 12 : 14, theme.colors.BUTTON_TEXT),
         }}
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   headingText: {
-    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
     marginBottom: '2%',
   },
@@ -523,7 +523,8 @@ const styles = StyleSheet.create({
   inclusionsText: {
     ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 15),
   },
+  viewReport: { width: '40%', marginBottom: 5, alignSelf: 'flex-start', marginTop: 10 },
+  orderId: { ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) },
+  bookedOn: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) },
+  testSlotContainer: { justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' },
 });
-function getSlotStartTime(slotTimings: string) {
-  throw new Error('Function not implemented.');
-}
