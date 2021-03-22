@@ -116,6 +116,26 @@ const styles = StyleSheet.create({
     paddingTop: 25,
     backgroundColor: '#F7F8F5',
   },
+  contentContainerStyle: {
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  overlayContainerStyle: {
+    marginBottom: 20,
+  },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '88.88%',
+    height: '88.88%',
+    borderRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    elevation: 0,
+  },
   phrOverlayStyle: {
     padding: 0,
     margin: 0,
@@ -222,7 +242,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
   }, [props.openCamera]);
 
   const formatResponse = (response: ImageCropPickerResponse[]) => {
-    console.log('response Img', response);
     if (props.isProfileImage) {
       const res = response[0] || response;
       const isPdf = res.mime == 'application/pdf';
@@ -241,7 +260,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     if (response.length == 0) return [];
 
     return response.map((item) => {
-      //console.log('item', item);
       const isPdf = item.mime == 'application/pdf';
       const fileUri = item!.path || `folder/file.jpg`;
       const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
@@ -391,7 +409,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     postWebEngageEvent('Upload Photo', eventAttributes);
 
     setshowSpinner(true);
-    console.log('openGallery');
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
@@ -713,8 +730,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
         options={options}
         cancelButtonIndex={2}
         onPress={(index: number) => {
-          /* do something */
-          console.log('index', index);
           if (index === 0) {
             setTimeout(() => {
               openGallery();
@@ -761,23 +776,10 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
         onRequestClose={() => props.onClickClose()}
         isVisible={props.isVisible}
         windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-        containerStyle={{
-          marginBottom: 20,
-        }}
+        containerStyle={styles.overlayContainerStyle}
         fullScreen
         transparent
-        overlayStyle={{
-          padding: 0,
-          margin: 0,
-          width: '88.88%',
-          height: '88.88%',
-          borderRadius: 10,
-          borderBottomLeftRadius: 10,
-          borderBottomRightRadius: 10,
-          backgroundColor: 'transparent',
-          overflow: 'hidden',
-          elevation: 0,
-        }}
+        overlayStyle={styles.overlayStyle}
       >
         <View style={styles.overlayViewStyle1}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
@@ -786,13 +788,9 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
             <ScrollView
               bounces={false}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
+              contentContainerStyle={styles.contentContainerStyle}
             >
-            {props.type == 'Upload Flow' && renderOrderSteps()}
+              {props.type == 'Upload Flow' && renderOrderSteps()}
               {renderOptions()}
               {renderInstructions()}
               {!props.hideTAndCs && renderTermsAndCondns()}
