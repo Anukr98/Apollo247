@@ -218,10 +218,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     });
 
   useEffect(() => {
-    !!circleMembershipCharges ? setIsFreeDelivery?.(true) : setIsFreeDelivery?.(false);
-  }, [circleMembershipCharges]);
-
-  useEffect(() => {
     fetchHealthCredits();
     fetchPaymentOptions()
       .then((res: any) => {
@@ -371,6 +367,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Prescription Option selected': uploadPrescriptionRequired
         ? 'Prescription Upload'
         : 'Not Applicable',
+      'Cart Items': JSON.stringify(cartItems),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -459,10 +456,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           } catch (error) {
             console.log(error);
           }
+          let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
+          orders[0] = {
+            __typename: 'MedicineOrderIds',
+            id: orderId,
+            orderAutoId: orderAutoId,
+          };
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
-            orderId: orderAutoId,
+            transId: orderAutoId,
+            orders: orders,
+            isStorePickup: isStorePickup,
           });
         }
       })
@@ -585,23 +590,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orders?.forEach((order) => {
       firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
     });
-    const token = await firebaseAuth().currentUser!.getIdToken();
-    console.log({ token });
     const checkoutEventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${transactionId}`, false),
-    };
-    const appsflyerEventAttributes = {
-      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${transactionId}`),
     };
     props.navigation.navigate(AppRoutes.PaymentScene, {
       orders,
       transactionId,
-      token,
       amount: getFormattedAmount(grandTotal - burnHC),
       burnHC: burnHC,
       deliveryTime,
       checkoutEventAttributes,
-      appsflyerEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
@@ -703,7 +701,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack: isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
@@ -749,6 +747,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
       'Service Area': 'Pharmacy',
+      'Cart Items': JSON.stringify(cartItems),
+      Coupon: coupon ? coupon.coupon : '',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 

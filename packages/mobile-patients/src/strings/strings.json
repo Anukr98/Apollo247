@@ -18,13 +18,14 @@
     "upload_image_file_size_text": "File size max upto 2MB. File type jpeg, jpg & png",
     "add_comment_text": "Add Comments (Optional)",
     "return_order_comment_text": "Enter your comments here…",
+    "delete_report_text": "Delete Report",
+    "delete_report_confirm_text": "Are you sure you want to delete the selected {0}?",
     "upload": "UPLOAD",
     "submit_request": "SUBMIT REQUEST",
     "continue": "CONTINUE",
-    "callDoctor": "Call an Apollo Doctor",
+    "vaccinationQueries": "Vaccination Queries",
     "faqsArticles": "FAQs & Articles",
     "chatWithUs": "Chat with us",
-    "covidVaccineTracker": "Vaccine Tracker",
     "upload_more": "+ UPLOAD MORE",
     "date_placeholder_text": "DD MMM, YYYY",
     "select_text": "Select",
@@ -38,6 +39,19 @@
     "clicnical_document_text": "Self upload",
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
+    "addPrescriptionText": "ADD PRESCRIPTION",
+    "addTestReportText": "ADD TEST REPORT",
+    "doctorConsultPHRText": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room",
+    "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
+    "addHealthConditionText": "ADD HEALTH CONDITIONS",
+    "addBillText": "ADD BILL",
+    "addInsuranceText": "ADD INSURANCE",
+    "uploadPrescriptionText": "UPLOAD PRESCRIPTION",
+    "uploadTestReportText": "UPLOAD TEST REPORT",
+    "uploadDischargeSummaryText": "UPLOAD DISCHARGE SUMMARY",
+    "uploadHealthConditionText": "UPLOAD HEALTH CONDITIONS",
+    "uploadBillText": "UPLOAD BILL",
+    "uploadInsuranceText": "UPLOAD INSURANCE",
     "best_doctor_text": "Here are our best ",
     "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
@@ -105,7 +119,8 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
-    "contactCustomerCare": "Something went wrong, please contact customer support"
+    "contactCustomerCare": "Something went wrong, please contact customer support",
+    "somethingWentWrong": "Something went wrong."
   },
   "components": {
     "medicineDetails": {
@@ -195,7 +210,7 @@
   },
   "login": {
     "hello": "hello!",
-    "please_enter_no": "Please enter your number to get access to an entire hospital on your phone!",
+    "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
     "otp_sent_to": "An OTP will be sent to this number",
     "wrong_number": "This seems like a wrong number",
     "numberPrefix": "+91",
@@ -462,7 +477,10 @@
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
-    "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date."
+    "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
+    "updateAddressLatLngMessage": "Unable to locate address. Please update.",
+    "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
+    "cartPhelboTxt": "The phlebotomist will reach within 30 mins"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -934,5 +952,10 @@
     { "title": "Terms and Conditions", "url": "https://www.apollo247.com/terms?isMobile=true" },
     { "title": "Returns Policy", "url": "https://www.apollo247.com/returns?isMobile=true" },
     { "title": "Privacy Policy", "url": "https://www.apollo247.com/privacy?isMobile=true" }
-  ]
+  ],
+  "truecaller": {
+    "networkProblem": "There is a problem with network connection.",
+    "userNotVerified": "User is not verified on truecaller.",
+    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in."
+  }
 }

@@ -37,12 +37,14 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   BookAppointmentInput,
   DoctorType,
   PLAN,
+  PAYMENT_METHODS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -670,6 +672,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
             responseMessage: 'Physical Mobile Api Call',
             bankTxnId: '',
             orderId: id,
+            paymentMode: PAYMENT_METHODS.COD,
           },
         },
         fetchPolicy: 'no-cache',
@@ -681,6 +684,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
+        eventAttributes['User_Type'] = getUserType(currentPatient);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -690,6 +694,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           )
         );
         setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
         handleOrderSuccess(
           `${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`,
           g(data, 'makeAppointmentPayment', 'appointment', 'appointment', 'id')!
@@ -811,6 +816,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
+      User_Type: getUserType(currentPatient),
     };
     return eventAttributes;
   };
@@ -894,6 +900,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
+      User_Type: getUserType(currentPatient),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);

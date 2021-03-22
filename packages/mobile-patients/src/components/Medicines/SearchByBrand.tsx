@@ -82,8 +82,8 @@ const styles = StyleSheet.create({
   },
   labelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
@@ -266,6 +266,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy List', categoryId: category_id },
+      JSON.stringify(cartItems),
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
       pharmacyCircleAttributes!
     );

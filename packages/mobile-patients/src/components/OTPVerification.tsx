@@ -1,16 +1,15 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   BackArrow,
   Loader,
   ArrowDisabled,
   ArrowYellow,
+  WhiteCallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
+import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
@@ -27,7 +26,7 @@ import {
   setFirebaseUserId,
   setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -38,8 +37,6 @@ import {
   Dimensions,
   EmitterSubscription,
   Keyboard,
-  ImageBackground,
-  ScrollView,
   Platform,
   SafeAreaView,
   StyleSheet,
@@ -50,16 +47,12 @@ import {
   AppStateStatus,
   TextInput,
 } from 'react-native';
-// import { WebView } from 'react-native-webview';
 import firebaseAuth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import Hyperlink from 'react-native-hyperlink';
-// import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { BottomPopUp } from './ui/BottomPopUp';
-import moment from 'moment';
-import { verifyOTP, resendOTP } from '../helpers/loginCalls';
-import { WebView } from 'react-native-webview';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { verifyOTP, resendOTP, getOtpOnCall } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -69,8 +62,8 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Relation } from '../graphql/types/globalTypes';
-import { ApolloLogo } from './ApolloLogo';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
 import SmsRetriever from 'react-native-sms-retriever';
 import {
@@ -79,8 +72,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { saveTokenDevice } from '../helpers/clientCalls';
-import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const { height, width } = Dimensions.get('window');
 
@@ -110,14 +103,12 @@ const styles = StyleSheet.create({
   },
   codeInputStyle: {
     borderBottomWidth: 2,
-    width: '80%',
+    width: width - 135,
     margin: 0,
     height: 48,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.LIGHT_BLUE,
-    // letterSpacing: 28, // 26
-    // paddingLeft: 12, // 25
   },
   viewAbsoluteStyles: {
     position: 'absolute',
@@ -159,6 +150,41 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
     lineHeight: 15,
   },
+  hyperlink: {
+    color: theme.colors.PURPLE,
+    ...fonts.IBMPlexSansBold(10),
+    textDecorationLine: 'underline',
+  },
+  otpOnCallContainer: {
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  otpOnCallButton: {
+    ...theme.viewStyles.cardViewStyle,
+    flexDirection: 'row',
+    backgroundColor: '#FCB716',
+    paddingVertical: 9,
+    marginTop: 10,
+    justifyContent: 'center',
+  },
+  otpOnCallIcon: {
+    resizeMode: 'contain',
+    width: 25,
+    height: 25,
+    transform: [{ rotate: '230deg' }],
+    marginRight: 10,
+  },
+  otpOnCallText: {
+    ...theme.viewStyles.text('B', 16, '#FFFFFF', 1, 25, 0.35),
+    textAlign: 'center',
+  },
+  horizontalLine: {
+    borderBottomColor: 'black',
+    opacity: 0.35,
+    borderBottomWidth: 0.5,
+    width: '45%',
+    marginVertical: 10,
+  },
 });
 
 let timer = 120;
@@ -186,11 +212,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isresent, setIsresent] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
-  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
+  const [disableOtpOnCallCta, setDisableOtpOnCallCta] = useState<boolean>(false);
+  const [showOtpOnCallCta, setShowOtpOnCallCta] = useState<boolean>(false);
 
   const {
     sendOtp,
@@ -198,19 +225,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     getPatientByPrism,
     getFirebaseToken,
     getPatientApiCall,
-    setMobileAPICalled,
-    setAllPatients,
   } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
-  const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
 
   const client = useApolloClient();
   const { setPhrNotificationData } = useAppCommonData();
 
   const handleBack = async () => {
-    setonClickOpen(false);
     setOpenFillerView(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     return true;
@@ -230,23 +253,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
-
-  // const startInterval = useCallback(
-  //   (timer: number) => {
-  //     const intervalId = setInterval(() => {
-  //       timer = timer - 1;
-  //       setRemainingTime(timer);
-  //       if (timer == 0) {
-  //         console.log('descriptionTextStyle remainingTime', remainingTime);
-  //         setRemainingTime(0);
-  //         setInvalidOtpCount(0);
-  //         setIsValidOTP(true);
-  //         clearInterval(intervalId);
-  //       }
-  //     }, 1000);
-  //   },
-  //   [remainingTime]
-  // );
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -312,9 +318,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [_removeFromStore, props.navigation.state.params]);
 
   useEffect(() => {
-    // const { otpString } = props.navigation.state.params!;
-    // setOtp(otpString);
-    // console.log('OTPVerification otpString', otpString);
+    setTimeout(() => {
+      setShowOtpOnCallCta(true);
+    }, 20000);
     getTimerData();
   }, [props.navigation, getTimerData]);
 
@@ -355,10 +361,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       await AsyncStorage.setItem('timeOutData', JSON.stringify(timeOutData));
     } catch (error) {
       CommonBugFender('OTPVerification__storeTimerData_try', error);
-      // setBugFenderLog('OTPVerification__storeTimerData_try', error);
-
       console.log(error, 'error');
-      // Error saving data
     }
   };
 
@@ -374,13 +377,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         ],
       })
     );
-    // props.navigation.replace(AppRoutes.ConsultRoom);
   };
 
   useEffect(() => {
     if (signInError && otp.length === 6) {
-      // Alert.alert('Apollo', 'Something went wrong. Please try again.');
-      // props.navigation.replace(AppRoutes.Login);
     }
   }, [signInError, props.navigation, otp.length]);
 
@@ -400,6 +400,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_VERIFICATION_SUCCESS] = {
       'Mobile Number': phoneNumberFromParams,
     };
+    AsyncStorage.setItem('APP_OPENED', 'true');
     postWebEngageEvent(WebEngageEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
   };
 
@@ -566,9 +567,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           const mePatient = allPatients
             ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
             : null;
-          // setMobileAPICalled && setMobileAPICalled(true);
-          // setAllPatients(allPatients);
-
           moveScreenForward(mePatient);
         })
         .catch(async (error) => {
@@ -578,9 +576,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       const mePatient = profileData
         ? profileData.find((patient: any) => patient.relation === Relation.ME) || profileData[0]
         : null;
-      // setAllPatients(profileData);
-      // setMobileAPICalled && setMobileAPICalled(false);
-
       moveScreenForward(mePatient);
     }
   };
@@ -701,7 +696,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     return () => {
       subscriptionId && subscriptionId.remove();
-      // backHandler && backHandler.remove();
     };
   }, [subscriptionId]);
 
@@ -803,85 +797,91 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     } catch (error) {}
   };
 
+  const onGetOtpOnCall = () => {
+    try {
+      setDisableOtpOnCallCta(true);
+      CommonLogEvent(AppRoutes.OTPVerification, 'Get OTP On Call Clicked');
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            setOtp('');
+            Keyboard.dismiss();
+            const { phoneNumber } = props.navigation.state.params!;
+            const { loginId } = props.navigation.state.params!;
+
+            getOtpOnCall('+91' + phoneNumber, loginId)
+              .then((otpOnCallResult: any) => {
+                if (otpOnCallResult?.status) {
+                  CommonBugFender('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
+                  setBugFenderLog('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
+                  props.navigation.setParams({ loginId: otpOnCallResult.loginId });
+                  setTimeout(() => {
+                    setDisableOtpOnCallCta(false);
+                  }, 20000);
+                } else {
+                  CommonBugFender('GET_OTP_ON_CALL_FAIL', otpOnCallResult);
+                  setBugFenderLog('GET_OTP_ON_CALL_FAIL', otpOnCallResult);
+                  setDisableOtpOnCallCta(false);
+                  Alert.alert('Error', 'Something went wrong, please try again after sometime');
+                }
+              })
+              .catch((error: Error) => {
+                setDisableOtpOnCallCta(false);
+                CommonBugFender('GET_OTP_ON_CALL_FAIL', error);
+                setBugFenderLog('GET_OTP_ON_CALL_FAIL', error);
+                Alert.alert('Error', 'The interaction was cancelled by the user.');
+              });
+          } else {
+            setDisableOtpOnCallCta(false);
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          setDisableOtpOnCallCta(false);
+          CommonBugFender('onGetOtpOnCall_getNetStatus', e);
+          setBugFenderLog('onGetOtpOnCall_getNetStatus', e);
+        });
+    } catch (error) {
+      setDisableOtpOnCallCta(false);
+    }
+  };
+
   const openWebView = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
-    return (
-      <View style={styles.viewAbsoluteStyles}>
-        <Header
-          title={'Terms & Conditions'}
-          leftIcon="close"
-          container={{
-            borderBottomWidth: 0,
-          }}
-          onPressLeftIcon={() => setonClickOpen(false)}
-        />
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
-        >
-          <WebView
-            source={{
-              uri: 'https://www.apollo247.com/terms',
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'white',
-            }}
-            // useWebKit={true}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setshowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setshowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setshowSpinner(false);
-            }}
-          />
-        </View>
-      </View>
-    );
+    Keyboard.dismiss();
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+      isGoBack: true,
+    });
   };
 
   const renderHyperLink = () => {
     return (
-      <View
+      <TouchableOpacity
+        onPress={() => openWebView()}
         style={{
           marginTop: 12,
           marginHorizontal: 16,
         }}
       >
         <Hyperlink
-          linkStyle={{
-            color: '#02475b',
-            ...fonts.IBMPlexSansBold(10),
-            lineHeight: 16,
-            letterSpacing: 0,
-          }}
+          linkStyle={styles.hyperlink}
           linkText={(url) =>
             url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
           }
-          onPress={(url, text) => setonClickOpen(true)}
+          onPress={(url, text) => openWebView()}
         >
           <Text
             style={{
               color: '#02475b',
               ...fonts.IBMPlexSansMedium(10),
-              lineHeight: 16,
-              letterSpacing: 0,
             }}
           >
             By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
           </Text>
         </Hyperlink>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -926,37 +926,35 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
-  const banner_image = require('@aph/mobile-patients/src/images/onboard/onboard_banner.png');
-  const banner = () => {
-    return (
-      <ImageBackground
-        source={banner_image}
-        style={{ height: 105, marginTop: 20, marginHorizontal: 10 }}
+  const renderOtpOnCall = () => (
+    <View style={styles.otpOnCallContainer}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={styles.horizontalLine} />
+        <Text style={{ textAlign: 'center' }}>Or</Text>
+        <View style={styles.horizontalLine} />
+      </View>
+      <TouchableOpacity
+        disabled={disableOtpOnCallCta}
+        onPress={onGetOtpOnCall}
+        activeOpacity={0.5}
+        style={[
+          styles.otpOnCallButton,
+          { backgroundColor: disableOtpOnCallCta ? '#A9A9A9' : '#FCB716' },
+        ]}
       >
-        <View style={{ padding: 16 }}>
-          <Text style={styles.bannerTitle}>Specially for you :)</Text>
-          <Text style={styles.bannerDescription}>
-            Use coupon code ‘<Text style={styles.bannerWelcome}>CARE247</Text>
-            {'’ for\n'}
-            <Text style={styles.bannerBoldText}>{string.common.Rs} 149 off</Text> on your 1st doctor
-            {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% off</Text> on medicines
-          </Text>
-        </View>
-      </ImageBackground>
-    );
-  };
+        <WhiteCallIcon style={styles.otpOnCallIcon} />
+        <Text
+          style={[
+            styles.otpOnCallText,
+            { color: disableOtpOnCallCta ? theme.colors.DEFAULT_BACKGROUND_COLOR : '#FFFFFF' },
+          ]}
+        >
+          GET OTP ON CALL
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-  // const renderTime = () => {
-  //   console.log(remainingTime, 'remainingTime', timer, 'timer');
-
-  //   const minutes = Math.floor(timer / 60);
-  //   const seconds = timer - minutes * 60;
-
-  //   return `${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-  //     seconds.toString().length < 2 ? '0' + seconds : seconds
-  //   }`;
-  // };
-  // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   const { phoneNumber } = props.navigation.state.params!;
   const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
@@ -1015,18 +1013,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 editable={false}
                 textContentType={'oneTimeCode'}
               />
-              {/* <OTPTextView
-                handleTextChange={(otp: string) => setOtp(otp)}
-                inputCount={6}
-                keyboardType="numeric"
-                value={otp}
-                textInputStyle={styles.codeInputStyle}
-                tintColor={'rgba(0, 179, 142, 0.4)'}
-                containerStyle={{
-                  flex: 1,
-                }}
-                editable={false}
-              /> */}
             </View>
 
             <Text style={[styles.errorText]}>
@@ -1060,14 +1046,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               )
             }
             onClickButton={() => onClickOk()}
-            buttonStyle={{
-              position: 'absolute',
-              top: Platform.OS === 'ios' ? 156 : 164,
-              right: -3,
-              height: 64,
-              width: 64,
-              zIndex: 20,
-            }}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
             descriptionTextStyle={{
               paddingBottom: Platform.OS === 'ios' ? 0 : 1,
@@ -1089,21 +1067,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 textContentType={'oneTimeCode'}
                 maxLength={6}
               />
-              {/* <OTPTextView
-                handleTextChange={isOtpValid}
-                inputCount={6}
-                keyboardType="numeric"
-                value={otp}
-                textInputStyle={styles.codeInputStyle}
-                tintColor={
-                  otp.length != 6 && invalidOtpCount >= 1
-                    ? theme.colors.INPUT_BORDER_FAILURE
-                    : theme.colors.INPUT_BORDER_SUCCESS
-                }
-                containerStyle={{
-                  flex: 1,
-                }}
-              /> */}
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
@@ -1144,13 +1107,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {renderHyperLink()}
           </LoginCard>
         )}
-        <ScrollView bounces={false}>
-          {/* <View> */}
-          {banner()}
-          <LandingDataView />
-          {/* </View> */}
-        </ScrollView>
-        {onClickOpen && openWebView()}
+        {showOtpOnCallCta && renderOtpOnCall()}
+        <LandingDataView />
         {openFillerView && fillerView()}
       </SafeAreaView>
       {showSpinner && <Spinner />}

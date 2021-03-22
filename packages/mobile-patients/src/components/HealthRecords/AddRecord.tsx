@@ -79,7 +79,7 @@ import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -95,8 +95,8 @@ import {
   TextInput,
   BackHandler,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
@@ -334,6 +334,14 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   parameterNameStyle: { ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) },
+  removeIconViewStyle: {
+    position: 'absolute',
+    right: -8,
+    zIndex: 99,
+    top: -8,
+    paddingBottom: 10,
+    paddingLeft: 10,
+  },
 });
 
 type RecordTypeType = {
@@ -543,6 +551,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [allergyReaction, setAllergyReaction] = useState<string>('');
   const [allergyAdditionalNotes, setAllergyAdditionalNotes] = useState<string>('');
   const [allergyImage, setAllergyImage] = useState<PickerImage>([]);
+  const allergyNameInput = useRef<TextInput | null>(null);
+  const allergyDocNameInput = useRef<TextInput | null>(null);
+  const allergyReactionInput = useRef<TextInput | null>(null);
 
   const [medicationCheckbox, setMedicationCheckbox] = useState(false);
   const [showMedicationDetails, setShowMedicationDetails] = useState<boolean>(false);
@@ -555,6 +566,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [isEveningChecked, setIsEveningChecked] = useState<boolean>(false);
   const [isMedicationDateTimePicker, setIsMedicationDateTimePicker] = useState<boolean>(false);
   const [medicationAdditionalNotes, setMedicationAdditionalNotes] = useState<string>('');
+  const medicationConditionInput = useRef<TextInput | null>(null);
+  const medicationDocNameInput = useRef<TextInput | null>(null);
 
   const [healthRestrictionCheckbox, setHealthRestrictionCheckbox] = useState(false);
   const [showHealthRestrictionDetails, setShowHealthRestrictionDetails] = useState<boolean>(false);
@@ -567,6 +580,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [isHealthRestrictionDateTimePicker, setIsHealthRestrictionDateTimePicker] = useState<
     boolean
   >(false);
+  const healthRestrictionNameInput = useRef<TextInput | null>(null);
+  const healthRestrictionDocNameInput = useRef<TextInput | null>(null);
 
   const [medicalConditionCheckbox, setMedicalConditionCheckbox] = useState(false);
   const [showMedicalConditionDetails, setShowMedicalConditionDetails] = useState<boolean>(false);
@@ -580,6 +595,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     ''
   );
   const [medicalConditionImage, setMedicalConditionImage] = useState<PickerImage>([]);
+  const medicalConditionNameInput = useRef<TextInput | null>(null);
+  const medicalConditionDocNameInput = useRef<TextInput | null>(null);
 
   const [familyHistoryCheckbox, setFamilyHistoryCheckbox] = useState(false);
   const [showFamilyHistoryDetails, setShowFamilyHistoryDetails] = useState<boolean>(false);
@@ -588,6 +605,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [familyHistoryAdditionalNotes, setFamilyHistoryAdditionalNotes] = useState<string>('');
   const [selectedRelationName, setSelectedRelationName] = useState<Relation | null>(Relation.ME);
   const [familyHistoryImage, setFamilyHistoryImage] = useState<PickerImage>([]);
+  const medicalHistoryNameInput = useRef<TextInput | null>(null);
+  const ageInput = useRef<TextInput | null>(null);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
@@ -610,6 +629,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const selectedRecord = props.navigation.state.params
     ? props.navigation.state.params.selectedRecord
     : null;
+
+  const testNameInput = useRef<TextInput | null>(null);
+  const docNameInput = useRef<TextInput | null>(null);
+  const locationInput = useRef<TextInput | null>(null);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -1290,7 +1313,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICATION_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
@@ -1365,7 +1388,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_HEALTH_RESTRICTION_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
@@ -1439,7 +1462,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_CONDITION_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
@@ -2112,10 +2135,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
         <View style={styles.imageViewStyle}>
-          <TouchableOpacity
-            onPress={onPressRemoveIcon}
-            style={{ position: 'absolute', right: -8, zIndex: 99, top: -8 }}
-          >
+          <TouchableOpacity onPress={onPressRemoveIcon} style={styles.removeIconViewStyle}>
             <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />
           </TouchableOpacity>
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
@@ -2156,7 +2176,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           >
             <Text style={[styles.plusTextStyle, id !== 1 && { color: '#FFFFFF' }]}>{'+'}</Text>
             <Text style={[styles.addMoreTextStyle, id !== 1 && { color: '#FFFFFF' }]}>
-              {id !== 1 ? 'ADD PAGE' : 'ADD MORE PAGES'}
+              {'UPLOAD FILE'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -2192,7 +2212,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderListItem = (
     title: string,
     rightIcon: boolean = true,
-    mandatoryField: boolean = false
+    mandatoryField: boolean = false,
+    inputRef?: TextInput | any | null,
+    onPressEditDate?: () => void
   ) => {
     const renderTitle = () => {
       return (
@@ -2202,12 +2224,27 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </Text>
       );
     };
+    const renderRightElement = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            onPressEditDate?.();
+            if (inputRef?.current) {
+              inputRef?.current?.focus();
+            }
+          }}
+        >
+          <PhrEditIcon style={{ width: 16, height: 16 }} />
+        </TouchableOpacity>
+      );
+    };
     return (
       <ListItem
         title={renderTitle()}
         pad={14}
         containerStyle={{ paddingTop: 0, paddingBottom: 3, paddingRight: 20 }}
-        rightElement={rightIcon ? <PhrEditIcon style={{ width: 16, height: 16 }} /> : undefined}
+        rightElement={rightIcon ? renderRightElement() : undefined}
       />
     );
   };
@@ -2322,7 +2359,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           {renderListItem(
             recordType === MedicalRecordType.MEDICALINSURANCE ? 'Record issue date' : 'Record date',
             true,
-            true
+            true,
+            null,
+            () => {
+              Keyboard.dismiss();
+              setIsDateTimePickerVisible(true);
+            }
           )}
           <View style={styles.dateViewStyle}>
             <Text
@@ -2358,13 +2400,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record name', true, true)}
+          {renderListItem('Record name', true, true, testNameInput)}
           <TextInput
             placeholder={'Enter Record name'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
+            ref={testNameInput}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(testName) => {
@@ -2375,7 +2418,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           />
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record prescribed by', true, true)}
+          {renderListItem('Record prescribed by', true, true, docNameInput)}
           {renderDoctorPrefixListItem(
             <TextInput
               placeholder={'Enter Record prescribed by'}
@@ -2383,6 +2426,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={docName}
+              ref={docNameInput}
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
               onChangeText={(docName) => {
@@ -2437,13 +2481,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record name', true, true)}
+          {renderListItem('Record name', true, true, testNameInput)}
           <TextInput
             placeholder={'Enter Record name'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
+            ref={testNameInput}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(testName) => {
@@ -2454,7 +2499,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           />
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record doctor’s name', true, true)}
+          {renderListItem('Record doctor’s name', true, true, docNameInput)}
           {renderDoctorPrefixListItem(
             <TextInput
               placeholder={'Enter Record doctor’s name'}
@@ -2462,6 +2507,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={docName}
+              ref={docNameInput}
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
               onChangeText={(docName) => {
@@ -2618,7 +2664,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record doctor’s name', true, true)}
+          {renderListItem('Record doctor’s name', true, true, docNameInput)}
           {renderDoctorPrefixListItem(
             <TextInput
               placeholder={'Enter Record doctor’s name'}
@@ -2626,6 +2672,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={docName}
+              ref={docNameInput}
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
               onChangeText={(docName) => {
@@ -2637,13 +2684,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           )}
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record from', true, true)}
+          {renderListItem('Record from', true, true, testNameInput)}
           <TextInput
             placeholder={'Enter Record from'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
+            ref={testNameInput}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(testName) => {
@@ -2662,13 +2710,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record hospital name', true, true)}
+          {renderListItem('Record hospital name', true, true, docNameInput)}
           <TextInput
             placeholder={'Enter Record hospital name'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={docName}
+            ref={docNameInput}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(docName) => {
@@ -2679,13 +2728,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           />
         </View>
         <View style={[styles.listItemViewStyle, { marginBottom: 33 }]}>
-          {renderListItem('Record bill number', true, true)}
+          {renderListItem('Record bill number', true, true, testNameInput)}
           <TextInput
             placeholder={'Enter Record bill number'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
+            ref={testNameInput}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(testName) => {
@@ -2703,7 +2753,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record end date', true, true)}
+          {renderListItem('Record end date', true, true, null, () => {
+            Keyboard.dismiss();
+            setEndDateTimePickerVisible(true);
+          })}
           <View style={styles.dateViewStyle}>
             <Text
               style={[styles.textInputStyle, endDate !== '' ? null : styles.placeholderStyle]}
@@ -2732,13 +2785,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           />
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record name', true, true)}
+          {renderListItem('Record name', true, true, testNameInput)}
           <TextInput
             placeholder={'Enter Record name'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
+            ref={testNameInput}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(testName) => {
@@ -2749,7 +2803,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           />
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record insurance amount ', true, true)}
+          {renderListItem('Record insurance amount ', true, true, locationInput)}
           {renderDoctorPrefixListItem(
             <TextInput
               placeholder={'Enter Record insurance amount '}
@@ -2757,6 +2811,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={locationName}
+              ref={locationInput}
               keyboardType={numberKeyboardType}
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
@@ -2771,13 +2826,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           )}
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record ID number', true)}
+          {renderListItem('Record ID number', true, false, docNameInput)}
           <TextInput
             placeholder={'Enter Record ID number'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={docName}
+            ref={docNameInput}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(docName) => {
@@ -2810,13 +2866,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View>
-          {renderListItem('Allergy name', true, true)}
+          {renderListItem('Allergy name', true, true, allergyNameInput)}
           <TextInput
             placeholder={string.common.enter_name_of_text?.replace('{0}', 'allergy')}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={allergyName}
+            ref={allergyNameInput}
             keyboardType={'numbers-and-punctuation'}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
@@ -2867,7 +2924,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showAllergyDetails ? (
           <>
-            {renderListItem(string.common.doctor_name_text)}
+            {renderListItem(string.common.doctor_name_text, true, false, allergyDocNameInput)}
             {renderDoctorPrefixListItem(
               <TextInput
                 placeholder={string.common.enter_doctor_name_text}
@@ -2875,6 +2932,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={allergyDocName}
+                ref={allergyDocNameInput}
                 keyboardType={'numbers-and-punctuation'}
                 placeholderTextColor={theme.colors.placeholderTextColor}
                 underlineColorAndroid={'transparent'}
@@ -2885,7 +2943,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }}
               />
             )}
-            {renderListItem(string.common.end_date_text)}
+            {renderListItem(string.common.end_date_text, true, false, null, () => {
+              Keyboard.dismiss();
+              setIsAllergyDateTimePicker(true);
+            })}
             <View style={styles.dateViewStyle}>
               <Text
                 style={[
@@ -2918,13 +2979,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               }}
               maximumDate={false}
             />
-            {renderListItem('Allergy Reaction')}
+            {renderListItem('Allergy Reaction', true, false, allergyReactionInput)}
             <TextInput
               placeholder={'Enter allergy reaction'}
               style={styles.textInputStyle}
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={allergyReaction}
+              ref={allergyReactionInput}
               keyboardType={'numbers-and-punctuation'}
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
@@ -2976,13 +3038,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View>
-          {renderListItem('Health restriction name', true, true)}
+          {renderListItem('Health restriction name', true, true, healthRestrictionNameInput)}
           <TextInput
             placeholder={string.common.enter_name_of_text?.replace('{0}', 'health restriction')}
             style={[styles.textInputStyle]}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={healthRestrictionName}
+            ref={healthRestrictionNameInput}
             keyboardType={'numbers-and-punctuation'}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
@@ -3032,7 +3095,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showHealthRestrictionDetails ? (
           <>
-            {renderListItem(string.common.doctor_name_text)}
+            {renderListItem(
+              string.common.doctor_name_text,
+              true,
+              false,
+              healthRestrictionDocNameInput
+            )}
             {renderDoctorPrefixListItem(
               <TextInput
                 placeholder={string.common.enter_doctor_name_text}
@@ -3040,6 +3108,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={healthRestrictionDocName}
+                ref={healthRestrictionDocNameInput}
                 keyboardType={'numbers-and-punctuation'}
                 placeholderTextColor={theme.colors.placeholderTextColor}
                 underlineColorAndroid={'transparent'}
@@ -3050,7 +3119,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }}
               />
             )}
-            {renderListItem(string.common.end_date_text)}
+            {renderListItem(string.common.end_date_text, true, false, null, () => {
+              Keyboard.dismiss();
+              setIsHealthRestrictionDateTimePicker(true);
+            })}
             <View style={styles.dateViewStyle}>
               <Text
                 style={[
@@ -3121,13 +3193,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View>
-          {renderListItem('Medical condition name', true, true)}
+          {renderListItem('Medical condition name', true, true, medicalConditionNameInput)}
           <TextInput
             placeholder={string.common.enter_name_of_text?.replace('{0}', 'medical condition')}
             style={[styles.textInputStyle]}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={medicalConditionName}
+            ref={medicalConditionNameInput}
             keyboardType={'numbers-and-punctuation'}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
@@ -3138,7 +3211,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }}
           />
         </View>
-        {renderListItem(string.common.doctor_name_text, false, true)}
+        {renderListItem(string.common.doctor_name_text, true, true, medicalConditionDocNameInput)}
         {renderDoctorPrefixListItem(
           <TextInput
             placeholder={string.common.enter_doctor_name_text}
@@ -3146,6 +3219,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={medicalConditionDocName}
+            ref={medicalConditionDocNameInput}
             keyboardType={'numbers-and-punctuation'}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
@@ -3195,7 +3269,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showMedicalConditionDetails ? (
           <>
-            {renderListItem(string.common.end_date_text)}
+            {renderListItem(string.common.end_date_text, true, false, null, () => {
+              Keyboard.dismiss();
+              setIsMedicalConditionDateTimePicker(true);
+            })}
             <View style={styles.dateViewStyle}>
               <Text
                 style={[
@@ -3288,13 +3365,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showMedicationDetails ? (
           <>
-            {renderListItem('Medical condition')}
+            {renderListItem('Medical condition', true, false, medicationConditionInput)}
             <TextInput
               placeholder={'Enter medical condition'}
               style={[styles.textInputStyle]}
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={medicationCondition}
+              ref={medicationConditionInput}
               keyboardType={'numbers-and-punctuation'}
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
@@ -3304,7 +3382,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
-            {renderListItem(string.common.doctor_name_text)}
+            {renderListItem(string.common.doctor_name_text, true, false, medicationDocNameInput)}
             {renderDoctorPrefixListItem(
               <TextInput
                 placeholder={string.common.enter_doctor_name_text}
@@ -3312,6 +3390,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={medicationDocName}
+                ref={medicationDocNameInput}
                 keyboardType={'numbers-and-punctuation'}
                 placeholderTextColor={theme.colors.placeholderTextColor}
                 underlineColorAndroid={'transparent'}
@@ -3322,7 +3401,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }}
               />
             )}
-            {renderListItem(string.common.end_date_text)}
+            {renderListItem(string.common.end_date_text, true, false, null, () => {
+              Keyboard.dismiss();
+              setIsMedicationDateTimePicker(true);
+            })}
             <View style={styles.dateViewStyle}>
               <Text
                 style={[
@@ -3431,13 +3513,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View>
-          {renderListItem('Medical history name', true, true)}
+          {renderListItem('Medical history name', true, true, medicalHistoryNameInput)}
           <TextInput
             placeholder={string.common.enter_name_of_text?.replace('{0}', 'medical history')}
             style={styles.textInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={medicalHistoryName}
+            ref={medicalHistoryNameInput}
             keyboardType={'numbers-and-punctuation'}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
@@ -3489,13 +3572,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
         {showFamilyHistoryDetails ? (
           <>
-            {renderListItem('Age')}
+            {renderListItem('Age', true, false, ageInput)}
             <TextInput
               placeholder={'Enter the age of relative'}
               style={styles.textInputStyle}
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={age}
+              ref={ageInput}
               keyboardType={numberKeyboardType}
               placeholderTextColor={theme.colors.placeholderTextColor}
               underlineColorAndroid={'transparent'}
@@ -3688,8 +3772,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderAllergyView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Do you have any allergy?', false)}
-        {renderAllergyTopView()}
+        {selectedRecordID ? null : renderListItem('Do you have any allergy?', false)}
+        {selectedRecordID ? null : renderAllergyTopView()}
         {allergyCheckbox ? renderAllergyDetails() : null}
       </View>
     );
@@ -3698,8 +3782,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderMedicationView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Are you taking any medication?', false)}
-        {renderMedicationTopView()}
+        {selectedRecordID ? null : renderListItem('Are you taking any medication?', false)}
+        {selectedRecordID ? null : renderMedicationTopView()}
         {medicationCheckbox ? renderMedicationDetails() : null}
       </View>
     );
@@ -3708,8 +3792,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderHealthRestrictionView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Do you have any health restrictions?', false)}
-        {renderHealthRestrictionTopView()}
+        {selectedRecordID ? null : renderListItem('Do you have any health restrictions?', false)}
+        {selectedRecordID ? null : renderHealthRestrictionTopView()}
         {healthRestrictionCheckbox ? renderHealthRestrictionDetails() : null}
       </View>
     );
@@ -3718,8 +3802,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderMedicalConditionView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Are you suffering from any medical condition?', false)}
-        {renderMedicalConditionTopView()}
+        {selectedRecordID
+          ? null
+          : renderListItem('Are you suffering from any medical condition?', false)}
+        {selectedRecordID ? null : renderMedicalConditionTopView()}
         {medicalConditionCheckbox ? renderMedicalConditionDetails() : null}
       </View>
     );
@@ -3728,8 +3814,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderFamilyHistoryView = () => {
     return (
       <View style={styles.listItemViewStyle}>
-        {renderListItem('Have any family medical history?', false)}
-        {renderFamilyHistoryTopView()}
+        {selectedRecordID ? null : renderListItem('Have any family medical history?', false)}
+        {selectedRecordID ? null : renderFamilyHistoryTopView()}
         {familyHistoryCheckbox ? renderFamilyHistoryDetails() : null}
       </View>
     );
@@ -3788,10 +3874,37 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const uploadButtonTitle = () => {
+    switch (recordType) {
+      case MedicalRecordType.PRESCRIPTION:
+        return string.common.uploadPrescriptionText;
+      case MedicalRecordType.TEST_REPORT:
+        return string.common.uploadTestReportText;
+      case MedicalRecordType.HOSPITALIZATION:
+        return string.common.uploadDischargeSummaryText;
+      case MedicalRecordType.MEDICALCONDITION:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.ALLERGY:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.MEDICATION:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.FAMILY_HISTORY:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return string.common.uploadHealthConditionText;
+      case MedicalRecordType.MEDICALBILL:
+        return string.common.uploadBillText;
+      case MedicalRecordType.MEDICALINSURANCE:
+        return string.common.uploadInsuranceText;
+      default:
+        return 'UPLOAD DATA';
+    }
+  };
+
   const renderBottomButton = () => {
     return (
       <Button
-        title="UPLOAD DATA"
+        title={uploadButtonTitle()}
         style={{ width: '70%', alignSelf: 'center', marginBottom: 20 }}
         onPress={onSavePress}
       />
@@ -4016,19 +4129,48 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const headerTitle = () => {
+    switch (recordType) {
+      case MedicalRecordType.PRESCRIPTION:
+        return string.common.addPrescriptionText;
+      case MedicalRecordType.TEST_REPORT:
+        return string.common.addTestReportText;
+      case MedicalRecordType.HOSPITALIZATION:
+        return string.common.addDischargeSummaryText;
+      case MedicalRecordType.MEDICALCONDITION:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.ALLERGY:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.MEDICATION:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.FAMILY_HISTORY:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return string.common.addHealthConditionText;
+      case MedicalRecordType.MEDICALBILL:
+        return string.common.addBillText;
+      case MedicalRecordType.MEDICALINSURANCE:
+        return string.common.addInsuranceText;
+      default:
+        return 'ADD DATA';
+    }
+  };
+
   return (
     <View style={{ ...theme.viewStyles.container }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header
           container={styles.headerContainerStyle}
-          title="ADD DATA"
+          title={headerTitle()}
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <KeyboardAwareScrollView bounces={false}>
-          {renderData()}
-          <View style={{ height: 60 }} />
-        </KeyboardAwareScrollView>
+        <KeyboardAvoidingView behavior={undefined} style={{ flex: 1 }}>
+          <ScrollView bounces={false} keyboardShouldPersistTaps={'handled'}>
+            {renderData()}
+            <View style={{ height: 60 }} />
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
       {displayReviewPhotoPopup && currentImage && renderReviewPhotoPopup()}
       {displayOrderPopup && renderUploadPrescriptionPopup(1)}

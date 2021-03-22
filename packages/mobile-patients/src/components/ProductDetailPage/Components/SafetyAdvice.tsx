@@ -21,7 +21,7 @@ export const SafetyAdvice: React.FC<SafetyAdviceProps> = (props) => {
   const replaceName = (string: string) => {
     const warningHtml = filterHtmlContent(string);
     const text = warningHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
-    const replacedName = text.replace(/\$name/gi, name.toLocaleLowerCase());
+    const replacedName = text.replace(/\$name/gi, name);
     return replacedName;
   };
 

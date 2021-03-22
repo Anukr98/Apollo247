@@ -101,6 +101,8 @@ export enum WebEngageEventName {
   RETURN_REQUEST_START = 'Return Request Start',
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
   HOME_VIEWED = 'Home page viewed',
+  MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
+  SEARCH_SUGGESTIONS_CLICKED = 'Search suggestion clicked',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -142,11 +144,16 @@ export enum WebEngageEventName {
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
   READ_ARTICLES = 'Read Articles',
   HDFC_HEALTHY_LIFE = 'Explore HDFC Tile Clicked on Homepage',
+  LOCATION_PERMISSION = 'Location permission',
+
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
   VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED = 'Vaccination Call a doctor - Proceed to connect',
   VACCINATION_CHAT_WITH_US = 'Vaccination Chat with us',
   VACCINATION_TRACKER_ON_HOME_PAGE = 'Vaccine tracker on home page',
+  COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
+  USER_LOCATION_CONSULT = 'User Location consult',
+  USER_CHANGED_LOCATION = 'Change location',
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -156,18 +163,23 @@ export enum WebEngageEventName {
   DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart page viewed',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic Order summary viewed',
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view report clicked',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
+
+  DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
+  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'Diagonstic cart item removed',
+  DIAGNOSITC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic cart item added',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
-  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
-  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
+  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
+  DIAGNOSITC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
+  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
 
   // Health Records
@@ -436,6 +448,7 @@ export interface PatientInfo {
   'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
+  User_Type: string;
 }
 
 export interface UserInfo {
@@ -594,6 +607,7 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
 export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
   'Speciality ID': string;
+  User_Type:string;
 }
 
 export interface ReorderMedicines extends PatientInfo {
@@ -668,6 +682,20 @@ export interface consultCallEndData {
   Platform: 'App';
 }
 
+interface consultLocation {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  'User location': string;
+  Screen: string;
+  Platform: string;
+  'Doctor details': any;
+  Type: 'Auto Detect' | 'Manual entry';
+}
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -686,6 +714,7 @@ export interface WebEngageEvents {
     Gender: string;
     Email: string;
     'Referral Code'?: string;
+    'Mobile Number': string;
   };
   [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
   [WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
@@ -741,6 +770,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type:string;
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -904,6 +934,7 @@ export interface WebEngageEvents {
     af_currency: string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    'Cart Items'?: string;
   };
   [WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
     'product name': string;
@@ -941,6 +972,7 @@ export interface WebEngageEvents {
     pincode: string | number;
     lookUp: { sku: string; qty: number }[];
     error: object;
+    'Cart Items'?: string;
   };
   [WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
@@ -959,6 +991,7 @@ export interface WebEngageEvents {
     'No. of out of stock items'?: number;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    'Cart Items'?: string;
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
@@ -971,6 +1004,8 @@ export interface WebEngageEvents {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Cart Items': string;
+    Coupon: string;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
@@ -987,11 +1022,13 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.CART_APPLY_COUPON_CLCIKED]: {
     'Customer ID': string;
+    'Cart Items'?: string;
   };
   [WebEngageEventName.CART_COUPON_APPLIED]: {
     'Coupon Code': string;
     'Discounted amount': string | number;
     'Customer ID': string;
+    'Cart Items': string;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
     OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
@@ -1049,6 +1086,7 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
+    'Cart Items': string;
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
@@ -1100,7 +1138,7 @@ export interface WebEngageEvents {
     'Items in cart': object[];
   };
   [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
-    'Order Amount': string | number;
+    'Order amount': string | number;
     'Order id:': string;
     'Order status'?: string;
     'Sample Collection Date': string; //Date
@@ -1163,7 +1201,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Patient Name': string;
     'Latest Order Status': string;
-    'Order ID': string;
+    'Order id': string;
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Patient UHID': string;
@@ -1176,7 +1214,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Patient Name': string;
     Rating: string | number;
-    'Thing to Imporve selected': string;
+    'Thing to Improve selected': string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
@@ -1186,11 +1224,11 @@ export interface WebEngageEvents {
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
+    'Order id': string | number;
     Pincode: string | number;
     'Patient UHID': string;
     'Total items in cart'?: number; // Optional
-    'Order Amount': number; // Optional
+    'Order amount': number; // Optional
     'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
     'Appointment Date'?: string;
@@ -1202,10 +1240,28 @@ export interface WebEngageEvents {
     Amount: number;
     ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
+    type?: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
+    'Selection type': 'New' | 'Existing';
+    Serviceability: 'Yes' | 'No';
+    Pincode: string | number;
+    Source: 'Home page' | 'Cart page';
+  };
+  [WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]: {
+    'Item ID': string | number;
+    'Item name': string;
+    Pincode: string | number;
+  };
+  [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]: {
+    Reschedule: string;
+    'Slot Time': string;
+    'Slot Date': string;
+    'Order id': string;
   };
 
   // ********** ConsultEvents ********** \\
@@ -1217,6 +1273,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
+    User_Type:string;
   };
   [WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD]: {
     'Payment failed order id': string;
@@ -1232,6 +1289,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    User_Type:string;
   };
   [WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
   [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
@@ -1456,6 +1514,7 @@ export interface WebEngageEvents {
     'Hospital Name': string;
     'Hospital City': string;
     'Consult Date Time': Date;
+    User_Type:string;
   };
   [WebEngageEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;
@@ -1482,6 +1541,8 @@ export interface WebEngageEvents {
     af_currency: string;
     'Dr of hour appointment'?: YesOrNo;
     'Circle discount': number;
+    User_Type:string;
+
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
@@ -1554,6 +1615,7 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
     'Split Cart': YesOrNo;
+    'Cart Items': string;
     Shipment_1_TAT?: Date;
     Shipment_2_TAT?: Date;
     Shipment_1_Value?: number; // amount after discount
@@ -1580,6 +1642,7 @@ export interface WebEngageEvents {
     Response_Exist: YesOrNo;
     Response_MRP: number;
     Response_Qty: number;
+    'Cart Items'?: string;
   };
 
   [WebEngageEventName.PHARMACY_TAT_API_CALLED]: {
@@ -1606,6 +1669,7 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {
     'Customer ID': string;
+    'Cart Items'?: string;
   };
 
   [WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED]: {
@@ -2021,6 +2085,9 @@ export interface WebEngageEvents {
     Type: string;
     'Patient Id': string;
   };
+  [WebEngageEventName.LOCATION_PERMISSION]: {
+    'Location permission': string;
+  };
   [WebEngageEventName.HOME_PAGE_VIEWED]: {
     source: 'deeplink' | 'app home';
   };
@@ -2041,6 +2108,7 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
+    Pincode?: string;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2052,6 +2120,7 @@ export interface WebEngageEvents {
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor ID': string;
+    'Media Source': string;
   };
   [WebEngageEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
@@ -2064,7 +2133,10 @@ export interface WebEngageEvents {
     'Text typed by the user': string;
     'Search Suggestions': string;
     Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
-    'Search Suggestion Clicked': string;
+    Doctors: string;
+    Symptoms: string;
+    Specialities: string;
+    Procedures: string;
   };
 
   [WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
@@ -2077,6 +2149,23 @@ export interface WebEngageEvents {
     'Customer ID': string;
     Bucket: 'Speciality' | 'Doctor' | 'Procedure' | 'Symptoms' | string;
     'Search suggestions in the particular bucket': string;
+  };
+
+  [WebEngageEventName.SEARCH_SUGGESTIONS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    Doctors: string;
+    Symptoms: string;
+    Specialities: string;
+    Procedures: string;
+    'Text typed by the user': string;
+    'Search Suggestion Clicked': string;
+    'Bucket Clicked': string;
   };
 
   [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
@@ -2327,4 +2416,27 @@ export interface WebEngageEvents {
   [WebEngageEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
   [WebEngageEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
+  [WebEngageEventName.HOME_VIEWED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Circle Member': 'Yes' | 'No';
+    'Circle Plan type': string;
+  };
+  [WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'CTA Clicked': string;
+  };
+  [WebEngageEventName.USER_LOCATION_CONSULT]: consultLocation;
+  [WebEngageEventName.USER_CHANGED_LOCATION]: consultLocation;
 }

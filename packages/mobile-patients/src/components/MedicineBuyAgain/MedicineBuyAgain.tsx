@@ -12,6 +12,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -23,6 +24,7 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
   const skuList = navigation.getParam('skuList') || [];
   const [products, setProducts] = useState<MedicineProduct[]>([]);
   const [isLoading, setLoading] = useState(true);
+  const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
   const { cartItems } = useShoppingCart();
   const { buyAgainPageViewed } = Events.Events;
@@ -75,26 +77,17 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
           SectionName: 'Buy Again',
         }}
         view={'list'}
+        onAddedSuccessfully={() => {
+          setShowAddedToCart(true);
+          setTimeout(() => {
+            setShowAddedToCart(false);
+          }, 7000);
+        }}
       />
     );
   };
 
-  const renderProceedToCheckout = () => {
-    const count = cartItems.length;
-    return (
-      <View style={styles.proceedToCheckout}>
-        <Button
-          onPress={() => navigation.navigate(AppRoutes.MedicineCart)}
-          title={
-            count
-              ? string.proceedToCheckoutItems.replace('{0}', `${count}`)
-              : string.proceedToCheckout
-          }
-          disabled={!count}
-        />
-      </View>
-    );
-  };
+  const renderAddedToCart = () => <AddedToCartToast navigation={navigation} />;
 
   const renderLoading = () => {
     return isLoading ? <ActivityIndicator color="green" size="large" /> : null;
@@ -113,7 +106,7 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderSelectFromItems()}
       {renderProducts()}
-      {renderProceedToCheckout()}
+      {showAddedToCart && renderAddedToCart()}
     </SafeAreaView>
   );
 };
@@ -129,10 +122,5 @@ const styles = StyleSheet.create({
     ...text('M', 13, LIGHT_BLUE, 0.8),
     paddingHorizontal: 16,
     paddingVertical: 16,
-  },
-  proceedToCheckout: {
-    ...card(0, 0, 0),
-    paddingVertical: 12,
-    paddingHorizontal: 20,
   },
 });

@@ -1868,8 +1868,18 @@ export const SAVE_DEVICE_TOKEN = gql`
 `;
 
 export const UPDATE_PATIENT_APP_VERSION = gql`
-  mutation UpdatePatientAppVersion($patientId: String!, $appVersion: String!, $osType: DEVICETYPE) {
-    updatePatientAppVersion(patientId: $patientId, appVersion: $appVersion, osType: $osType) {
+  mutation UpdatePatientAppVersion(
+    $patientId: String!
+    $appVersion: String!
+    $osType: DEVICETYPE
+    $appsflyerId: String
+  ) {
+    updatePatientAppVersion(
+      patientId: $patientId
+      appVersion: $appVersion
+      osType: $osType
+      appsflyerId: $appsflyerId
+    ) {
       status
     }
   }
@@ -3793,6 +3803,9 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
       displayId
       status
       errorMessageToDisplay
+      attributes {
+        itemids
+      }
     }
   }
 `;
@@ -3937,6 +3950,7 @@ export const GET_PATIENTS_MOBILE = gql`
         firstName
         lastName
         mobileNumber
+        isConsulted
         dateOfBirth
         emailAddress
         gender
@@ -4404,6 +4418,7 @@ export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
       cityName
       stateID
       stateName
+      areaSelectionEnabled
     }
   }
 `;
@@ -4600,6 +4615,21 @@ export const GET_BANK_OPTIONS = gql`
   }
 `;
 
+export const GET_PAYMENT_METHODS = gql`
+  query getPaymentMethods($is_mobile: Boolean) {
+    getPaymentMethods(is_mobile: $is_mobile) {
+      name
+      minimum_supported_version
+      payment_methods {
+        image_url
+        payment_method_name
+        payment_method_code
+        minimum_supported_version
+      }
+    }
+  }
+`;
+
 export const CREATE_ORDER = gql`
   mutation createOrder($order_input: OrderInput) {
     createOrder(order_input: $order_input) {
@@ -4686,6 +4716,50 @@ export const INITIATE_DOC_ON_CALL = gql`
   query initiateDocOnCall($mobileNumber: String, $callType: docOnCallType) {
     initiateDocOnCall(mobileNumber: $mobileNumber, callType: $callType) {
       success
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
+  query getNearestArea($patientAddressId: String!) {
+    getNearestArea(patientAddressId: $patientAddressId) {
+      area {
+        id
+        area
+      }
+    }
+  }
+`;
+
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
+    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
+      slots {
+        Timeslot
+        TimeslotID
+      }
+    }
+  }
+`;
+
+export const GET_OTP_ON_CALL = gql`
+  query getOTPOnCall($mobileNumber: String, $loginType: LOGIN_TYPE, $id: String!) {
+    getOTPOnCall(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      loginId
+      message
+    }
+  }
+`;
+
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
+  mutation initiateDiagonsticHCOrderPayment(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPayment!
+  ) {
+    initiateDiagonsticHCOrderPayment(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
     }
   }
 `;
