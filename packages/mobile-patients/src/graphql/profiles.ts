@@ -2217,6 +2217,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         collectionCharges
         slotDateTimeInUTC
         paymentType
+        visitNo
         diagnosticOrderLineItems {
           id
           itemId
@@ -4724,3 +4725,25 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
         }
       }
     }`
+
+export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
+  query getDiagnosticOrderDetailsByDisplayID($displayId: Int!) {
+    getDiagnosticOrderDetailsByDisplayID(displayId: $displayId) {
+      ordersList {
+        patientId
+        patientAddressId
+        orderStatus
+        totalPrice
+        createdDate
+        slotDateTimeInUTC
+        visitNo
+        isRescheduled
+        preBookingId
+        id
+        diagnosticOrdersStatus {
+          orderStatus
+        }
+      }
+    }
+  }
+`;

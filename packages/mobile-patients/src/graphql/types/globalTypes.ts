@@ -140,6 +140,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
+  PARTIAL_ORDER_COMPLETED = "PARTIAL_ORDER_COMPLETED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
@@ -153,6 +154,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   SAMPLE_NOT_COLLECTED_IN_LAB = "SAMPLE_NOT_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
   SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_SUBMITTED = "SAMPLE_SUBMITTED",
   SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
@@ -921,7 +923,8 @@ export interface CouponInput {
 
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
-  plan_id: string;
+  plan_id?: string | null;
+  group_plan_id?: string | null;
   payment_reference?: PaymentReference | null;
   coupon_availed?: string | null;
   mobile_number: string;
@@ -1321,7 +1324,8 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  patient_id: any;
+  patient_id?: any | null;
+  customer_id?: any | null;
 }
 
 export interface OrderInput {
@@ -1333,8 +1337,9 @@ export interface OrderInput {
 }
 
 export interface OrderInputEntity {
-  order_id?: string | null;
-  amount?: number | null;
+  order_id: string;
+  amount: number;
+  patient_id?: any | null;
 }
 
 export interface OrderLineItems {
@@ -1571,6 +1576,7 @@ export interface SaveBookHomeCollectionOrderInput {
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
   attachmentData?: (Attachments | null)[] | null;
+  caseSheets?: (string | null)[] | null;
 }
 
 export interface SaveDeviceTokenInput {

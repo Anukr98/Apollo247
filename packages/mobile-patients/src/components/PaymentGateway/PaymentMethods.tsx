@@ -56,6 +56,7 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
+import { DiagnosticPaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {}
@@ -77,7 +78,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const FailedStatuses = ['AUTHENTICATION_FAILED','PENDING_VBV', 'AUTHORIZATION_FAILED'];
+  const FailedStatuses = ['AUTHENTICATION_FAILED', 'PENDING_VBV', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -116,7 +117,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1) {
           payload?.payload?.status == 'CHARGED' && navigatetoOrderStatus(false);
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
-        } 
+        }
         break;
       default:
         console.log('Unknown Event', data);
@@ -207,17 +208,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
+  function triggerWebengege(mode: 'Prepaid' | 'Cash', type: string) {
+    DiagnosticPaymentInitiated(mode, amount, 'Diagnostic', 'Diagnostic', type);
+  }
+
   async function onPressBank(bankCode: string) {
+    triggerWebengege('Prepaid', 'Net Banking');
     const token = await getClientToken();
     InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode);
   }
 
   async function onPressWallet(wallet: string) {
+    triggerWebengege('Prepaid', wallet);
     const token = await getClientToken();
     InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
   }
 
   async function onPressUPIApp(app: any) {
+    triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
     const sdkPresent =
       app?.method == 'PHONEPE'
@@ -229,6 +237,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressVPAPay(VPA: string) {
+    triggerWebengege('Prepaid', VPA);
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -246,11 +255,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressCardPay(cardInfo: any) {
+    triggerWebengege('Prepaid', 'Card');
     const token = await getClientToken();
     InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo);
   }
 
   async function onPressPayByCash() {
+    triggerWebengege('Cash', 'Cash');
     setisTxnProcessing(true);
     try {
       const response = await createJusPayOrder(PAYMENT_MODE.COD);
@@ -273,6 +284,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
     const methods = topBanks?.featured_banks?.map((item: any) => item?.method) || [];
     const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    triggerWebengege('Prepaid', 'Other Banks');
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,

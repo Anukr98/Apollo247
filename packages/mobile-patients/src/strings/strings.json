@@ -480,7 +480,10 @@
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
     "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
-    "cartPhelboTxt": "The phlebotomist will reach within 30 mins"
+    "cartPhelboTxt": "The phlebotomist will reach within 30 mins",
+    "incorrectUserReport": "This report does not belongs to this user.",
+    "unableToFetchReport": "We could not fetch your report. Please view report in my order section"
+
   },
   "orders": {
     "urOrders": "MY ORDERS",

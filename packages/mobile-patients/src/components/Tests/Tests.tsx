@@ -370,11 +370,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [loading, banners]);
 
   const getDiagnosticBanner = async () => {
-    const res: any = await getLandingPageBanners('diagnostic');
-    if (res?.data?.success) {
-      const bannerData = g(res, 'data', 'data');
-      setBanners(bannerData);
-    } else {
+    try {
+      const res: any = await getLandingPageBanners('diagnostic');
+      if (res?.data?.success) {
+        const bannerData = g(res, 'data', 'data');
+        setBanners(bannerData);
+      } else {
+        setBanners([]);
+        setBannerLoading(false);
+      }
+    } catch (error) {
+      CommonBugFender('getDiagnosticBanner_Tests', error);
       setBanners([]);
       setBannerLoading(false);
     }
@@ -382,15 +388,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const getHomePageWidgets = async (cityId: string) => {
     setSectionLoading(true);
-    const result: any = await getDiagnosticHomePageWidgets('diagnostic');
-    if (result?.data?.success && result?.data?.data?.length > 0) {
-      const sortWidgets = result?.data?.data?.sort(
-        (a: any, b: any) =>
-          Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
-      );
-      //call here the prices.
-      fetchWidgetsPrices(sortWidgets, cityId);
-    } else {
+    try {
+      const result: any = await getDiagnosticHomePageWidgets('diagnostic');
+      if (result?.data?.success && result?.data?.data?.length > 0) {
+        const sortWidgets = result?.data?.data?.sort(
+          (a: any, b: any) =>
+            Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
+        );
+        //call here the prices.
+        fetchWidgetsPrices(sortWidgets, cityId);
+      } else {
+        setWidgetsData([]);
+        setLoading!(false);
+      }
+    } catch (error) {
+      CommonBugFender('getHomePageWidgets_Tests', error);
       setWidgetsData([]);
       setLoading!(false);
     }
@@ -418,35 +430,48 @@ export const Tests: React.FC<TestsProps> = (props) => {
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
     //restriction less than 12.
-    const res = Promise.all(
-      !!itemIds &&
-        itemIds?.length > 0 &&
-        itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
-        )
-    );
+    try {
+      const res = Promise.all(
+        !!itemIds &&
+          itemIds?.length > 0 &&
+          itemIds?.map((item: any) =>
+            fetchPricesForCityId(
+              Number(cityId!) || 9,
+              item?.length > 12 ? item?.slice(0, 12) : item
+            )
+          )
+      );
 
-    const response = (await res)?.map((item: any) =>
-      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-    );
-    let newWidgetsData = [...filterWidgets];
+      const response = (await res)?.map((item: any) =>
+        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+      );
+      let newWidgetsData = [...filterWidgets];
 
-    for (let i = 0; i < filterWidgets?.length; i++) {
-      for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
-        const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
-          (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-        );
-        if (findIndex !== -1) {
-          (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-            response?.[i]?.[j]?.packageCalculatedMrp),
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-              response?.[i]?.[j]?.diagnosticPricing);
+      for (let i = 0; i < filterWidgets?.length; i++) {
+        for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+          const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
+            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
+          );
+          if (findIndex !== -1) {
+            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
+              response?.[i]?.[j]?.packageCalculatedMrp),
+              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
+                response?.[i]?.[j]?.diagnosticPricing);
+          }
         }
       }
+      setWidgetsData(newWidgetsData);
+      setSectionLoading(false);
+      setLoading!(false);
+    } catch (error) {
+      CommonBugFender('errorInFetchPricing api__Tests', error);
+      setSectionLoading(false);
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.common.tryAgainLater,
+      });
     }
-    setWidgetsData(newWidgetsData);
-    setSectionLoading(false);
-    setLoading!(false);
   };
 
   const renderCarouselBanners = () => {
@@ -512,9 +537,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
-          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
-          setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
-          return;
+          if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+            checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
+            setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+            return;
+          }
         }
       }
       setLoadingContext!(true);
@@ -528,8 +555,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
         setDeliveryAddressId!(deliveryAddress?.id);
-        checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
-        setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+        if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
+          setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+        }
       } else {
         checkLocation(addressList);
       }
