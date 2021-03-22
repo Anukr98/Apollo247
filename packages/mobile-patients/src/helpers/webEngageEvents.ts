@@ -1256,6 +1256,7 @@ export interface WebEngageEvents {
     'Item ID': string | number;
     'Item name': string;
     Pincode: string | number;
+    Mode: 'Customer' | 'Automated';
   };
   [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]: {
     Reschedule: string;

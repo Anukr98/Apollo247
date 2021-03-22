@@ -114,6 +114,11 @@ const covidVaccineSection = {
   ],
 };
 
+const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613 ]; 
+const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
+const covidMaxSlotDays = 7;
+const nonCovidMaxSlotDays = 4;
+
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
@@ -173,6 +178,9 @@ const appStaticVariables = {
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
+  Covid_Items : QA_covid_items,
+  Covid_Max_Slot_Days : covidMaxSlotDays,
+  Non_Covid_Max_Slot_Days : nonCovidMaxSlotDays
 };
 
 const DEV_top_specialties = [
@@ -640,21 +648,7 @@ const ConfigurationDev = {
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
-  jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
+  jusPayenvironment: 'sandbox'
 };
 
 // QA
@@ -709,20 +703,6 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // QA2
@@ -777,20 +757,6 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // QA3
@@ -839,20 +805,6 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // VAPT
@@ -907,20 +859,6 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 //Production
 const ConfigurationProd = {
@@ -974,7 +912,6 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [],
 };
 
 //PERFORMANCE
@@ -1030,20 +967,6 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 //DevelopmentReplica
@@ -1099,20 +1022,6 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 const Configuration =
@@ -1342,7 +1251,6 @@ export const DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
 ];
 
-export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
 
 export const TestsNewFeedbackData = {
   options: [

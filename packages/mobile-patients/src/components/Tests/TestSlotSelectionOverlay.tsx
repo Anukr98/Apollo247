@@ -45,7 +45,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
-  const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.WEEK);
+  const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
   const [spinner, showSpinner] = useState(false);
@@ -234,7 +234,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
   const renderBottomButton = (
     <Button
-      style={{ margin: 16, marginTop: 32, width: 'auto' }}
+      style={{ margin: 16, marginTop: 5, width: 'auto' }}
       onPress={() => {
         if (!isDoneBtnDisabled) {
           onSchedule(date!, slotInfo!);

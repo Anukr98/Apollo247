@@ -1580,6 +1580,7 @@ export interface SaveBookHomeCollectionOrderInput {
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
   attachmentData?: (Attachments | null)[] | null;
+  caseSheets?: (string | null)[] | null;
 }
 
 export interface SaveDeviceTokenInput {

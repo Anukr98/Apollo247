@@ -3755,14 +3755,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     }
 
-    const testPrescription = (caseSheet?.[0]?.diagnosticPrescription ||
-      MedicinePrescriptions ||
+    const testPrescription = (caseSheet?.[0]?.diagnosticPrescription! ||
+      TestPrescriptions?.[0]?.diagnosticPrescription ||
       []) as getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription[];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
       caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
     );
 
-    if (!testPrescription.length) {
+    if (!testPrescription?.length) {
       Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
       setLoading && setLoading(false);
       return;
@@ -3783,22 +3783,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     )
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
-        const unAvailableItemsArray = testPrescription.filter(
-          (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
+        const unAvailableItemsArray = testPrescription?.filter(
+          (item) => !tests?.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
         console.log({ unAvailableItemsArray });
-        const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+        const unAvailableItems = unAvailableItemsArray?.map((item) => item?.itemname)?.join(', ');
 
-        if (tests.length) {
-          addMultipleTestCartItems!(tests);
-          addMultipleTestEPrescriptions!([
+        if (tests?.length) {
+          addMultipleTestCartItems?.(tests);
+          addMultipleTestEPrescriptions?.([
             {
               ...presToAdd,
-              medicines: (tests as DiagnosticsCartItem[]).map((item) => item.name).join(', '),
+              medicines: (tests as DiagnosticsCartItem[])?.map((item) => item.name).join(', '),
             },
           ]);
         }
-        if (testPrescription.length == unAvailableItemsArray.length) {
+        if (testPrescription?.length == unAvailableItemsArray?.length) {
           Alert.alert(
             'Uh oh.. :(',
             `Unfortunately, we do not have any diagnostic(s) available right now.`
@@ -3806,7 +3806,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         } else if (unAvailableItems) {
           Alert.alert(
             'Uh oh.. :(',
-            `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
+            `Out of ${testPrescription?.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
           );
         }
         setLoading!(false);
