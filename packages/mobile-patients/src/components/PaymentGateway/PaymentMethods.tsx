@@ -236,17 +236,25 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
+  function triggerWebengege(mode: 'Prepaid' | 'Cash', type: string) {
+    DiagnosticPaymentInitiated(mode, amount, 'Diagnostic', 'Diagnostic', type);
+  }
+
   async function onPressBank(bankCode: string) {
+    console.log({ bankCode });
+    triggerWebengege('Prepaid', 'Net Banking');
     const token = await getClientToken();
     InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode);
   }
 
   async function onPressWallet(wallet: string) {
+    triggerWebengege('Prepaid', wallet);
     const token = await getClientToken();
     InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
   }
 
   async function onPressUPIApp(app: any) {
+    triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
     // const sdkPresent =
     //   app?.payment_method_code == 'PHONEPE'
@@ -275,11 +283,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressCardPay(cardInfo: any) {
+    triggerWebengege('Prepaid', 'Card');
     const token = await getClientToken();
     InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo);
   }
 
   async function onPressPayByCash() {
+    triggerWebengege('Cash', 'Cash');
     setisTxnProcessing(true);
     try {
       const response = await createJusPayOrder(PAYMENT_MODE.COD);

@@ -340,7 +340,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         handleDeeplinkFormatTwo(event);
       } else {
         route = event.replace('apollopatients://', '');
-
         const data = route.split('?');
         setBugFenderLog('DEEP_LINK_DATA', data);
         route = data[0];

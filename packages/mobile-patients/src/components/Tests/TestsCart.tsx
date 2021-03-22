@@ -637,6 +637,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         name,
         diagnosticLocation?.pincode! || locationDetails?.pincode!
       );
+      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
+    } else {
+      DiagnosticRemoveFromCartClicked(
+        id,
+        name,
+        diagnosticLocation?.pincode! || locationDetails?.pincode!
+      );
     }
   };
 
