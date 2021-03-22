@@ -51,7 +51,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
             <Text style={styles.numberPlate}>{`${parameterData?.length} ${
               parameterData?.length > 1 ? `Tests` : `Test`
             } included`}</Text>
-          ) : null}
+          ) : <Text></Text>}
           <View style={styles.cartViewContainer}>{renderAddToCartView()}</View>
         </View>
       </View>
