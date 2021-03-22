@@ -433,7 +433,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const res = Promise.all(
         !!itemIds &&
-          itemIds?.length > 0 &&
           itemIds?.map((item: any) =>
             fetchPricesForCityId(
               Number(cityId!) || 9,
