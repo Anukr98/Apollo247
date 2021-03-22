@@ -116,7 +116,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from 'react-native-geolocation-service';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -633,7 +633,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
         'Customer'
       );
-      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
     }
   };
 

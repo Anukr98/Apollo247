@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/DisclaimerSection';
+import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/components/DisclaimerSection';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   getTestOrderStatusText,

@@ -2089,6 +2089,18 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        paymentOrderId
+        diagnosticOrderReschedule{
+          rescheduleDate
+          rescheduleReason
+          comments
+        }
+        diagnosticOrderCancellation{
+          cancellationReason
+          cancelType
+          cancelByName
+          comments
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -4603,19 +4615,6 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
   }
 `;
 
-export const GET_BANK_OPTIONS = gql`
-  query getPaymentMethods {
-    getPaymentMethods {
-      name
-      featured_banks {
-        bank
-        method
-        image_url
-      }
-    }
-  }
-`;
-
 export const GET_PAYMENT_METHODS = gql`
   query getPaymentMethods($is_mobile: Boolean) {
     getPaymentMethods(is_mobile: $is_mobile) {
@@ -4783,6 +4782,25 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
       diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
     ) {
       status
+    }
+  }
+`;
+
+export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
+  query getHCOrderFormattedTrackingHistory($diagnosticOrderID: String) {
+    getHCOrderFormattedTrackingHistory(diagnosticOrderID: $diagnosticOrderID) {
+      statusHistory{
+        statusDate
+        orderStatus
+      }
+      statusInclusions{
+        statusDate
+        orderStatus
+        itemId
+        packageId
+        itemName
+        packageName
+      }
     }
   }
 `;
