@@ -2,6 +2,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MedicineOrderShipmentInput,
   MedicineCartOMSItem,
+  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -147,6 +148,8 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
+  prescriptionType: PrescriptionType | null;
+  setPrescriptionType: (type: PrescriptionType | null) => void;
   isFreeDelivery: boolean;
   setIsFreeDelivery: ((value: boolean) => void) | null;
   circleCashback: CircleCashbackData | null;
@@ -254,7 +257,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
-
+  prescriptionType: null,
+  setPrescriptionType: () => {},
   couponProducts: [],
   setCouponProducts: null,
 
@@ -359,6 +363,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
+  const [prescriptionType, setPrescriptionType] = useState<
+    ShoppingCartContextProps['prescriptionType']
+  >(null);
   const [productDiscount, setProductDiscount] = useState<
     ShoppingCartContextProps['productDiscount']
   >(0);
@@ -454,19 +461,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
-    AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
-      showGenericAlert('Failed to save E-Prescriptions in local storage.');
-    });
   };
 
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
   ) => {
-    AsyncStorage.setItem(AsyncStorageKeys.physicalPrescriptions, JSON.stringify(items)).catch(
-      () => {
-        showGenericAlert('Failed to save Physical Prescriptions in local storage.');
-      }
-    );
     _setPhysicalPrescriptions(items);
   };
 
@@ -484,9 +483,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     const existingFilteredEPres = ePrescriptions.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredEPres\n', { existingFilteredEPres });
     const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
-    // console.log('updatedEPres\n', { updatedEPres });
     setEPrescriptions(updatedEPres);
   };
 
@@ -740,6 +737,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCouponProducts([]);
     setHdfcPlanName('');
     setdeliveryTime('');
+    setPrescriptionType(null);
   };
 
   useEffect(() => {
@@ -846,18 +844,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
       try {
         const cartItemsFromStorage = await AsyncStorage.multiGet([
           AsyncStorageKeys.cartItems,
-          AsyncStorageKeys.physicalPrescriptions,
-          AsyncStorageKeys.ePrescriptions,
           AsyncStorageKeys.onHoldOptionOrder,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
-        const physicalPrescriptions = cartItemsFromStorage[1][1];
-        const ePrescriptions = cartItemsFromStorage[2][1];
-        const showOnHoldOptions = cartItemsFromStorage[3][1];
+        const showOnHoldOptions = cartItemsFromStorage[1][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
-        _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
-        _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
         _setOnHoldOptionOrder(JSON.parse(showOnHoldOptions || 'null') || []);
       } catch (error) {
         CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
@@ -1032,6 +1024,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         deliveryCharges,
         packagingCharges,
         uploadPrescriptionRequired,
+        prescriptionType,
+        setPrescriptionType,
 
         couponProducts,
         setCouponProducts,

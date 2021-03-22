@@ -984,7 +984,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ? `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`
             : '',
         ],
-
+        [MEDICINE_ORDER_STATUS.CONSULT_PENDING]: [
+          '',
+          `Doctor Consult Booked! You will receive a call soon.  Doctor Name: ${
+            order?.consultInfo?.doctorName
+          }, Slot time: ${moment(order?.consultInfo?.appointmentDateTime).format(
+            'DD MMM YYYY, hh:mm A'
+          )}`,
+        ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
           `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,

@@ -28,7 +28,6 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
 import {
@@ -58,7 +57,10 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import moment from 'moment';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
 import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
-import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MedicineOrderShipmentInput,
+  PrescriptionType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -68,6 +70,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     addresses,
     deliveryAddressId,
     uploadPrescriptionRequired,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     setCartItems,
@@ -100,7 +103,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
-  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [storeType, setStoreType] = useState<string | undefined>(
     props.navigation.getParam('tatType') || ''
   );
@@ -452,7 +454,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
   const renderTatCard = () => {
     return orders?.length > 1 ? null : (
-      <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={orders?.[0]?.tat} />
+      <TatCardwithoutAddress style={{ marginTop: 10 }} deliveryDate={orders?.[0]?.tat} />
     );
   };
 
@@ -460,38 +462,28 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return <Shipments setloading={setloading} />;
   };
 
-  const renderuploadPrescriptionPopup = () => {
+  const renderPrescriptions = () => {
     return (
-      <UploadPrescription
-        showPopUp={showPopUp}
-        onClickClose={() => setshowPopUp(false)}
-        navigation={props.navigation}
-        type={'Cart'}
+      <Prescriptions
+        onPressUploadMore={() => {
+          shoppingCart.setPrescriptionType(null);
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }}
+        showSelectedOption
       />
     );
   };
 
-  const renderPrescriptions = () => {
-    return <Prescriptions onPressUploadMore={() => setshowPopUp(true)} screen={'summary'} />;
-  };
-
-  function isPrescriptionRequired() {
-    if (uploadPrescriptionRequired) {
-      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
-    } else {
-      return false;
-    }
-  }
-
   const renderButton = () => {
-    return isPrescriptionRequired() ? (
+    return uploadPrescriptionRequired &&
+    !prescriptionType ? (
       <View style={styles.buttonContainer}>
         <Button
           disabled={false}
           title={'UPLOAD PRESCRIPTION'}
           onPress={() => {
             uploadPrescriptionClickedEvent(currentPatient?.id);
-            setshowPopUp(true);
+            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
           }}
           titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
           style={{ borderRadius: 10 }}
@@ -514,11 +506,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
+          {uploadPrescriptionRequired &&
+            prescriptionType !== PrescriptionType.UPLOADED &&
+            renderPrescriptions()}
           {renderTatCard()}
           {renderCartItems()}
-          {uploadPrescriptionRequired && renderPrescriptions()}
+          {uploadPrescriptionRequired &&
+            prescriptionType === PrescriptionType.UPLOADED &&
+            renderPrescriptions()}
         </ScrollView>
-        {renderuploadPrescriptionPopup()}
         {renderButton()}
         {loading && <Spinner />}
       </SafeAreaView>
