@@ -964,7 +964,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderDeliverToLocationCTA = () => {
       let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
       const location = !deliveryAddress
-        ? pharmacyLocation
+        ? pharmacyLocation?.pincode
           ? `${formatText(
               g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '',
               18
