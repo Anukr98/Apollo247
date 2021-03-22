@@ -52,16 +52,17 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 2,
     borderColor: 'transparent',
-    padding: 4,
-    height: 25,
+    padding: 6,
+    height: 27,
     justifyContent: 'center',
   },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(10),
     lineHeight: 14,
+    textAlign: 'center',
   },
 });
