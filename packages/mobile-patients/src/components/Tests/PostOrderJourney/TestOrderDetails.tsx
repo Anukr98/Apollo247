@@ -16,7 +16,7 @@ import _ from 'lodash';
 import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
-  DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -425,7 +425,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           })}
         </View>
         {renderRefund()}
-        <View style={{ height: 30 }} />
+        <View style={{ height: 60 }} />
       </View>
     );
   };
@@ -437,7 +437,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       !!orderLevelStatus?.statusInclusions &&
       totalInclusions > 0 &&
       orderLevelStatus?.statusInclusions?.filter(
-        (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+        (item: any) => !DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)
       );
 
     const isReportText = orderLevelStatus?.statusHistory?.find(
@@ -460,7 +460,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
     return (
       <>
-        {hasDiffStatusLevelInclusion?.length !== 0 ? null : (
+        {hasDiffStatusLevelInclusion?.length === 0 ? null : (
           <View>
             {!showInclusionStatus ? <View style={styles.lineSeparator} /> : null}
 

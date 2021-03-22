@@ -17,8 +17,8 @@ import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  DIAGNOSTIC_ONLINE_PAYMENT_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
+  DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -355,14 +355,16 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
 
   const renderPaymentCard = () => {
+    const txtToShow = isPrepaid
+      ? 'Amount Paid Online'
+      : DIAGNOSTIC_STATUS_BEFORE_SUBMITTED.includes(orderDetails?.orderStatus)
+      ? 'Amount to be collected in Cash'
+      : 'Amount collected in Cash';
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(
-            isPrepaid ? 'Amount Paid Online' : 'Amount Collected in Cash',
-            orderDetails?.totalPrice
-          )}
+          {renderPrices(txtToShow, orderDetails?.totalPrice)}
         </View>
       </View>
     );
