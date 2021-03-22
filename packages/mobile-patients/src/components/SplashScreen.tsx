@@ -340,7 +340,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         handleDeeplinkFormatTwo(event);
       } else {
         route = event.replace('apollopatients://', '');
-
         const data = route.split('?');
         setBugFenderLog('DEEP_LINK_DATA', data);
         route = data[0];
@@ -1049,6 +1048,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setCovidVaccineCta,
     setLoginSection,
     setCovidVaccineCtaV2,
+    setCartBankOffer,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1178,6 +1178,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Non_Covid_Max_Slot_Days',
       PROD: 'Non_Covid_Max_Slot_Days',
     },
+    Cart_Bank_Offer_Text: {
+      QA: 'QA_CART_BANK_OFFER_TEXT',
+      PROD: 'CART_BANK_OFFER_TEXT',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1247,6 +1251,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       needHelpReturnPharmaOrderSuccessMessage &&
         setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
+
+      const bankOfferText = getRemoteConfigValue('Cart_Bank_Offer_Text', (key) =>
+        config.getString(key)
+      );
+      bankOfferText && setCartBankOffer!(bankOfferText);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',

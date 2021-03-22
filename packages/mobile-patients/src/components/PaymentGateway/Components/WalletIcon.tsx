@@ -25,7 +25,7 @@ export const WalletIcon: React.FC<WalletIconProps> = (props) => {
       resizeMode="contain"
       style={{
         ...styles.image,
-        width: aspectRatio ? 27 * aspectRatio : 110,
+        width: aspectRatio ? 27 * aspectRatio : 0,
       }}
     />
   );

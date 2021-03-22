@@ -49,18 +49,18 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   const renderCartCTA = () => {
-    const showAddToCart = isInStock && !deliveryError;
-    const ctaText = showAddToCart ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
+    const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
+    const productName = name ? name : 'the product';
     return (
       <View>
         <TouchableOpacity
           onPress={() => {
-            showAddToCart ? onAddToCart() : onNotifyMeClick(name);
+            isInStock ? onAddToCart() : onNotifyMeClick(productName);
           }}
           activeOpacity={0.7}
-          style={showAddToCart ? styles.addToCartCta : styles.notifyCta}
+          style={isInStock ? styles.addToCartCta : styles.notifyCta}
         >
-          <Text style={showAddToCart ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
+          <Text style={isInStock ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -69,7 +69,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
   const onNotifyMeClick = (name: string) => {
     showAphAlert!({
       title: 'Okay! :)',
-      description: `You will be notified when ${name} is back in stock.`,
+      description: `You will be notified when ${name || 'the product'} is back in stock.`,
     });
   };
 

@@ -1530,6 +1530,10 @@ export const OrderPlacedCheckedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/checked.png')} />
 );
 
+export const OrderProcessingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/process.png')} />
+);
+
 export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/circle_banner.png')} />
 );
@@ -1704,6 +1708,31 @@ export const CallCollapseIcon: React.FC<IconProps> = (props) => (
     style={{ borderRadius: 20, width: 40, height: 40 }}
     {...props}
     source={require('./icons/callCollapse.png')}
+    resizeMode="contain"
+  />
+);
+export const OnlineAppointmentMarkerIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 16 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/onlinemarker.png')}
+    resizeMode="contain"
+  />
+);
+export const PhysicalAppointmentMarkerIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 14, height: 24 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/appointmentMarker.png')}
+    resizeMode="contain"
+  />
+);
+
+export const AppointmentCalendarIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('./icons/calendarAppointment.png')}
     resizeMode="contain"
   />
 );

@@ -633,6 +633,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
         'Customer'
       );
+      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
     }
   };
 
@@ -2522,17 +2523,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
             const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
             const orders: OrderVerticals = {
-              diagnostics: [{ order_id: orderId, amount: grandTotal }],
+              diagnostics: [
+                { order_id: orderId, amount: grandTotal, patient_id: currentPatient?.id },
+              ],
             };
             const orderInput: OrderCreate = {
               orders: orders,
               total_amount: grandTotal,
-              patient_id: currentPatient?.id,
+              customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
             };
+            console.log('orderInput >>', JSON.stringify(orderInput));
             const response = await createOrderInternal(orderInput);
             if (response?.data?.createOrderInternal?.success) {
               const isInitiated: boolean = await isSDKInitialised();
-              !isInitiated && initiateSDK(currentPatient?.mobileNumber, currentPatient?.id);
+              !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
               const orderInfo = {
                 orderId: orderId,
                 displayId: displayId,

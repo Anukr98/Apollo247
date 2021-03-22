@@ -23,6 +23,9 @@ import {
   DoctorPlaceholderImage,
   DropdownGreen,
   LinkedUhidIcon,
+  OnlineAppointmentMarkerIcon,
+  AppointmentCalendarIcon,
+  PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -34,6 +37,7 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -87,6 +91,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import messaging from '@react-native-firebase/messaging';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
@@ -105,10 +110,13 @@ interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   nextAvailableSlot: string;
   selectedTimeSlot: string;
   whatsAppUpdate: boolean;
+  newProfileAdded: boolean;
 }
 export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
+  const newProfileAdded = props.navigation.getParam('newProfileAdded');
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
   const selectedTab = props.navigation.getParam('selectedTab');
@@ -125,6 +133,8 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [showList, setShowList] = useState<boolean>(false);
+  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(false);
+  const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
@@ -212,24 +222,15 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       </View>
     );
   };
+
   const renderPatient = () => {
     return (
-      <View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={styles.subViewPopup}>
+        <View style={{ paddingHorizontal: 16 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
         <View style={styles.seperatorLine} />
-        <Text
-          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
-        >
-          {g(currentPatient, 'firstName')} {g(currentPatient, 'lastName')}
-        </Text>
-        <Text
-          style={[styles.specializationStyle, { marginLeft: 6, flexWrap: 'wrap', fontSize: 14 }]}
-        >
-          {Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true))} ,
-          {g(currentPatient, 'gender')}
-        </Text>
+        {renderProfileListView()}
       </View>
     );
   };
@@ -274,10 +275,16 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               {doctor?.specialty?.name || ''} | {doctor?.experience} YR
               {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
             </Text>
-
-            <Text style={styles.appointmentTimeStyle}>
-              {dateFormatter(appointmentInput?.appointmentDateTime)}
-            </Text>
+            <View style={styles.doctorPointers}>
+              <PhysicalAppointmentMarkerIcon style={styles.doctorPointersImage} />
+              <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
+            </View>
+            <View style={styles.doctorPointers}>
+              <AppointmentCalendarIcon style={styles.doctorPointersImage} />
+              <Text style={styles.appointmentTimeStyle}>
+                {dateFormatter(appointmentInput?.appointmentDateTime)}
+              </Text>
+            </View>
             <Text style={styles.regularText}></Text>
           </View>
           <View>
@@ -343,44 +350,77 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {moveSelectedToTop()
-        ?.slice(0, 5)
-        ?.map((item: any, index: any, array: any) =>
-          item.firstName !== '+ADD MEMBER' ? (
-            <TouchableOpacity
-              onPress={() => {
-                onSelectedProfile(item);
-              }}
-              style={[styles.ctaWhiteButtonViewStyle]}
+      {moveSelectedToTop()?.map((item: any, index: any, array: any) =>
+        item.firstName !== '+ADD MEMBER' ? (
+          <TouchableOpacity
+            onPress={() => {
+              setLoading && setLoading(true);
+              onSelectedProfile(item);
+              setIsSelectedOnce(true);
+              setShowErrorSelect(false);
+            }}
+            style={
+              currentPatient?.id === item.id && isSelectedOnce
+                ? styles.ctaSelectButtonViewStyle
+                : styles.ctaWhiteButtonViewStyle
+            }
+          >
+            <Text
+              style={
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectTextStyle
+                  : styles.ctaOrangeTextStyle
+              }
             >
-              <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
-            </TouchableOpacity>
-          ) : null
-        )}
+              {item.firstName}
+            </Text>
+            <Text
+              style={
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectText2Style
+                  : styles.ctaOrangeText2Style
+              }
+            >
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+            </Text>
+          </TouchableOpacity>
+        ) : null
+      )}
       <View style={[styles.textViewStyle]}>
         <Text
           onPress={() => {
-            if (allCurrentPatients.length > 6) {
-              setShowList(true);
-            } else {
-              setShowProfilePopUp(false);
-              props.navigation.navigate(AppRoutes.EditProfile, {
-                isEdit: false,
-                isPoptype: true,
-                mobileNumber: currentPatient && currentPatient!.mobileNumber,
-              });
-            }
+            setShowProfilePopUp(false);
+            props.navigation.navigate(AppRoutes.EditProfile, {
+              isEdit: false,
+              isPoptype: true,
+              mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              onNewProfileAdded: onNewProfileAdded,
+            });
           }}
           style={[styles.ctaOrangeTextStyle]}
         >
-          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
+          {'+ADD MEMBER'}
         </Text>
       </View>
+
+      {showErrorSelect ? (
+        <Text style={styles.errorSelectMessage}>
+          *Please select the patient before proceeding to pay!
+        </Text>
+      ) : null}
     </View>
   );
+
+  const onNewProfileAdded = (onAdd: any) => {
+    finalAppointmentInput['patientId'] = onAdd?.id;
+    setIsSelectedOnce(onAdd?.added);
+    setShowErrorSelect(!onAdd?.added);
+  };
   const onSelectedProfile = (item: any) => {
+    setshowSpinner(true);
     selectUser(item);
     setShowProfilePopUp(false);
+    setLoading && setLoading(false);
   };
   const onProfileChange = () => {
     setShowList(false);
@@ -443,28 +483,16 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderProfileListView = () => {
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showProfilePopUp}
-        onRequestClose={() => {
-          setShowProfilePopUp(false);
-        }}
-        onDismiss={() => {
-          setShowProfilePopUp(false);
-        }}
-      >
-        <View style={styles.mainView}>
-          <View style={styles.subViewPopup}>
-            {renderProfileDrop()}
-            <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
-            <Text style={styles.popDescriptionStyle}>
-              Prescription to be generated in the name of?
-            </Text>
-            {renderCTAs()}
-          </View>
-        </View>
-      </Modal>
+      <View>
+        {/*renderProfileDrop()*/}
+
+        {showSpinner && (
+          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+        )}
+        <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
+        <Text style={styles.popDescriptionStyle}>Prescription to be generated in the name of?</Text>
+        {renderCTAs()}
+      </View>
     );
   };
 
@@ -524,21 +552,25 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const onPressPay = () => {
     // Pay Button Clicked	event
-    postWebEngagePayButtonClickedEvent();
-    whatsappAPICalled();
-    CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, 'Book Appointment clicked');
-    CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, `PAY AT HOSPITAL`);
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          onSubmitBookAppointment();
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
-      });
+    if (isSelectedOnce) {
+      postWebEngagePayButtonClickedEvent();
+      whatsappAPICalled();
+      CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, 'Book Appointment clicked');
+      CommonLogEvent(AppRoutes.PaymentCheckoutPhysical, `PAY AT HOSPITAL`);
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            onSubmitBookAppointment();
+          } else {
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
+        });
+    } else {
+      setShowErrorSelect(true);
+    }
   };
 
   const selectUser = (selectedUser: any) => {
@@ -547,6 +579,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
     AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
     AsyncStorage.setItem('isNewProfile', 'yes');
+    moveSelectedToTop();
+    setshowSpinner(false);
+    finalAppointmentInput['patientId'] = selectedUser?.id;
   };
 
   const onSubmitBookAppointment = async () => {
@@ -567,7 +602,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log('csk data-------', JSON.stringify(data));
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
         if (consultedWithDoctorBefore) {
           storeAppointmentId(g(apptmt, 'id')!);
@@ -650,6 +684,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
+        eventAttributes['User_Type'] = getUserType(currentPatient);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -659,6 +694,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           )
         );
         setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
         handleOrderSuccess(
           `${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`,
           g(data, 'makeAppointmentPayment', 'appointment', 'appointment', 'id')!
@@ -671,7 +707,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const handleOrderSuccess = (doctorName: string, appointmentId: string) => {
-    console.log('csk', 'handleOrderSuccess', appointmentId);
     setLoading && setLoading(true);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
@@ -682,7 +717,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('csk', 'getAppointmentData-->', JSON.stringify(_data));
         try {
           setLoading && setLoading(false);
           const appointmentData = _data?.data?.getAppointmentData?.appointmentsHistory;
@@ -782,6 +816,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
+      User_Type: getUserType(currentPatient),
     };
     return eventAttributes;
   };
@@ -865,6 +900,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
+      User_Type: getUserType(currentPatient),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
@@ -887,7 +923,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         <ScrollView ref={scrollviewRef}>
           <View style={styles.doctorCard}>
             {renderDoctorCard()}
-
             {renderPatient()}
             {renderPrice()}
           </View>
@@ -914,26 +949,26 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   priceBreakupTitle: {
-    ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('B', 13, theme.colors.SHERPA_BLUE),
     marginHorizontal: 6,
-    marginTop: 15,
+    marginVertical: 6,
   },
   seperatorLine: {
-    marginTop: 4,
+    marginTop: 2,
     height: 0.5,
     backgroundColor: theme.colors.LIGHT_BLUE,
-    opacity: 0.2,
-    marginHorizontal: 6,
+    opacity: 0.3,
+    marginHorizontal: 4,
   },
   couponStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   containerPay: {
-    margin: 20,
-    backgroundColor: 'red',
     borderRadius: 10,
     ...theme.viewStyles.card(10),
+    marginLeft: 1,
     paddingVertical: 16,
+    width: '98%',
   },
   rowContainerPay: {
     flexDirection: 'row',
@@ -1009,6 +1044,16 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
   },
+  doctorPointers: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  doctorPointersImage: {
+    width: 14,
+    height: '100%',
+    marginRight: 4,
+  },
   drImageBackground: {
     height: 95,
     width: 95,
@@ -1036,8 +1081,8 @@ const styles = StyleSheet.create({
   },
   appointmentTimeStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SKY_BLUE,
-    marginTop: 10,
+    color: '#02475B',
+    marginLeft: 4,
   },
   showPopUp: {
     backgroundColor: 'rgba(0,0,0,0.01)',
@@ -1060,7 +1105,7 @@ const styles = StyleSheet.create({
   },
   subViewPopup: {
     backgroundColor: 'white',
-    width: '88%',
+    width: '98%',
     alignSelf: 'center',
     borderRadius: 10,
     shadowColor: '#808080',
@@ -1068,16 +1113,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 15,
+    marginVertical: 10,
   },
   congratulationsDescriptionStyle: {
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     marginTop: 8,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
   popDescriptionStyle: {
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     marginTop: 8,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
@@ -1086,10 +1132,11 @@ const styles = StyleSheet.create({
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 20,
+    paddingHorizontal: 18,
+    marginVertical: 5,
   },
   ctaWhiteButtonViewStyle: {
-    padding: 8,
+    padding: 2,
     borderRadius: 10,
     backgroundColor: theme.colors.WHITE,
     marginRight: 15,
@@ -1100,15 +1147,47 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
-  textViewStyle: {
-    padding: 8,
+  ctaSelectButtonViewStyle: {
+    padding: 2,
+    borderRadius: 10,
+    backgroundColor: '#fc9916',
     marginRight: 15,
     marginVertical: 5,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  ctaSelectTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaSelectText2Style: {
+    ...theme.viewStyles.text('R', 10, '#ffffff', 1, 20),
+    textAlign: 'center',
+    marginHorizontal: 5,
+  },
+  textViewStyle: {
+    marginTop: 8,
+    paddingVertical: 8,
   },
   ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
   ctaOrangeTextStyle: {
     textAlign: 'center',
     ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+    marginHorizontal: 5,
+  },
+  errorSelectMessage: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
+    marginHorizontal: 5,
+    marginBottom: 5,
+  },
+  ctaOrangeText2Style: {
+    ...theme.viewStyles.text('R', 10, '#fc9916', 1, 20),
+    textAlign: 'center',
     marginHorizontal: 5,
   },
   hiTextStyle: {

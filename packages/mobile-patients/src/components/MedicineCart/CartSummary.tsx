@@ -325,6 +325,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orderSelected?.length > 1,
       splitOrderDetails
     );
@@ -414,29 +415,37 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   }
 
-  function onPressProceedtoPay() {
+  async function onPressProceedtoPay() {
+    if (coupon && cartTotal > 0) {
+      try {
+        await validateCoupon(coupon.coupon, coupon.message);
+      } catch (error) {
+        return;
+      }
+    }
+    let splitOrderDetails: any = {};
+    if (orders?.length > 1) {
+      orders?.forEach((order: any, index: number) => {
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items, cartItems) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+      });
+    }
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });
-    let splitOrderDetails: any = {};
-    if (orders?.length > 1) {
-      orders?.forEach((order: any, index: number) => {
-        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) +
-          (order?.deliveryCharge || 0) +
-          (order?.packingCharges || 0);
-        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-      });
-    }
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orders?.length > 1,
       splitOrderDetails
     );

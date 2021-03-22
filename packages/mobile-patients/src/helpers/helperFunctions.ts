@@ -99,6 +99,9 @@ import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@ap
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import stripHtml from 'string-strip-html';
+import isLessThan from 'semver/functions/lt';
+import coerce from 'semver/functions/coerce';
+
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -1171,6 +1174,17 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
+export const getUserType=(currentPatient:any)=>{
+  const user: string= 
+  currentPatient?.isConsulted === undefined
+          ? 'undefined'
+          : currentPatient?.isConsulted
+          ? 'Repeat'
+          : 'New'
+
+          return user;
+}
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
@@ -2138,6 +2152,7 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
+  itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
   onAddedSuccessfully?: () => void
@@ -2227,6 +2242,7 @@ export const addPharmaItemToCart = (
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
         onAddedSuccessfully?.();
@@ -2626,4 +2642,16 @@ export const getShipmentPrice = (shipmentItems: any, cartItems: any) => {
     });
   }
   return total;
+};
+
+export const paymentModeVersionCheck = (minSupportedVersion: string) => {
+  const { iOS_Version, Android_Version } = AppConfig.Configuration;
+  const isIOS = Platform.OS === 'ios';
+  const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+  const versionSupports = !(
+    appVersion &&
+    minSupportedVersion &&
+    isLessThan(appVersion, minSupportedVersion)
+  );
+  return versionSupports;
 };
