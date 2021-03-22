@@ -655,11 +655,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             <View style={styles.overlayTouch}>
               <TouchableOpacity>
                 <SafeAreaView style={styles.overlaySafeArea}>
-                  <>
-                    {showRescheduleOptions ? renderRescheduleCancelOptions() : null}
-                    {showRescheduleReasons ? renderRescheduleReasons() : null}
-                    {showCancelReasons ? renderCancelReasons() : null}
-                  </>
+                  <View style={styles.overlayContainer}>
+                    <View>
+                      {showRescheduleOptions && renderRescheduleCancelOptions()}
+                      {showRescheduleReasons && renderRescheduleReasons()}
+                      {showCancelReasons && renderCancelReasons()}
+                    </View>
+                  </View>
                 </SafeAreaView>
               </TouchableOpacity>
             </View>
@@ -671,7 +673,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderRescheduleReasons = () => {
     return (
-      <View style={[styles.overlayContainer]}>
+      <View>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForReschedulingText}
         </Text>
@@ -711,7 +713,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderCancelReasons = () => {
     return (
-      <View style={[styles.overlayContainer]}>
+      <View>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
@@ -772,7 +774,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? 2 - selectedOrderRescheduleCount
       : 2;
     return (
-      <View style={styles.overlayContainer}>
+      <View>
         <Text style={styles.overlayHeadingText}>{string.diagnostics.whatWudLikeText}</Text>
         <TouchableOpacity onPress={() => _onPressReschduleOption()} style={styles.optionsTouch}>
           <View>
@@ -1116,7 +1118,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: colors.CLEAR,
-    zIndex: 3000,
     overflow: 'hidden',
     elevation: 0,
     bottom: 0,
