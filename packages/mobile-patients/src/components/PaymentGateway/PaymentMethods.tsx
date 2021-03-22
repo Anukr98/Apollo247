@@ -147,7 +147,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const handlePaymentPending = (errorCode: string) => {
     switch (errorCode) {
-      case 'JP_002' || 'JP_005' || 'JP_009' || 'JP_012':
+      case ('JP_002', 'JP_005', 'JP_009', 'JP_012'):
         // User aborted txn or no Internet or user had exceeded the limit of incorrect OTP submissions or txn failed at PG end
         showTxnFailurePopUP();
         break;
