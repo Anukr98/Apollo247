@@ -4739,7 +4739,9 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
         Timeslot
         TimeslotID
       }
-    }`
+    }
+  }
+`;
 
 export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
   query getDiagnosticOrderDetailsByDisplayID($displayId: Int!) {
