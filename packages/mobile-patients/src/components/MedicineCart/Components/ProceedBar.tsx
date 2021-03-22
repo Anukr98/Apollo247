@@ -44,7 +44,6 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   const unServiceable = !!cartItems.find(
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
-  const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   function getTitle() {
     return !deliveryAddressId
@@ -53,7 +52,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         : string.addDeliveryAddress
       : isPrescriptionRequired()
       ? string.proceed
-      : isSplitCart && screen == 'MedicineCart'
+      : screen == 'MedicineCart'
       ? string.reviewOrder
       : string.proceedToPay;
   }
