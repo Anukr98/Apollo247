@@ -68,7 +68,9 @@ import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helper
 
 const { HyperSdkReact } = NativeModules;
 
-export interface PaymentMethodsProps extends NavigationScreenProps {}
+export interface PaymentMethodsProps extends NavigationScreenProps {
+  businessLine: string;
+}
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');

@@ -35,6 +35,8 @@ import {
   BookAppointmentInput,
   DoctorType,
   PLAN,
+  OrderCreate,
+  OrderVerticals,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -69,9 +71,13 @@ import {
   saveSearchSpeciality,
   whatsAppUpdateAPICall,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  bookAppointment,
+  bookAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
   BOOK_APPOINTMENT,
+  CREATE_INTERNAL_ORDER,
   MAKE_APPOINTMENT_PAYMENT,
   GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -91,7 +97,12 @@ import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -209,6 +220,32 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   useEffect(() => {
     fetchUserSpecificCoupon();
   }, []);
+
+  const bookAppointment = () => {
+    const appointmentInput: bookAppointmentVariables = {
+      bookAppointment: finalAppointmentInput,
+    };
+    return client.mutate<bookAppointment, bookAppointmentVariables>({
+      mutation: BOOK_APPOINTMENT,
+      variables: appointmentInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const createOrderInternal = (orderId: string) => {
+    const orders: OrderVerticals = {
+      consult: [{ order_id: orderId, amount: amountToPay, patient_id: currentPatient?.id }],
+    };
+    const orderInput: OrderCreate = {
+      orders: orders,
+      total_amount: amountToPay,
+      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
+    };
+    return client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      variables: { order: orderInput },
+    });
+  };
 
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Consult')
@@ -544,11 +581,44 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.PaymentCheckout, 'ConsultOverlay onSubmitBookAppointment clicked');
+    setLoading!(true);
     // again check coupon is valid or not
     verifyCoupon(true);
-    console.log('finalAppointmentInput', finalAppointmentInput);
+    try {
+      const response = await bookAppointment();
+      const apptmt = g(response, 'data', 'bookAppointment', 'appointment');
+      console.log('apptmt >>>', apptmt);
+      consultedWithDoctorBefore && storeAppointmentId(g(apptmt, 'id')!);
+      try {
+        if (callSaveSearch !== 'true') {
+          saveSearchDoctor(client, doctor?.id || '', patientId);
+          saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
+        }
+      } catch (error) {}
+      if (amountToPay == 0) {
+        makePayment(
+          apptmt?.id!,
+          Number(amountToPay),
+          apptmt?.appointmentDateTime,
+          apptmt?.displayId!
+        );
+      } else {
+        const data = await createOrderInternal(apptmt?.id!);
+        if (data?.data?.createOrderInternal?.success) {
+          const isInitiated: boolean = await isSDKInitialised();
+          !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+          props.navigation.navigate(AppRoutes.PaymentMethods, {
+            paymentId: data?.data?.createOrderInternal?.payment_order_id!,
+            amount: amountToPay,
+            orderId: apptmt?.id!,
+          });
+        }
+      }
+    } catch (error) {}
+    setLoading!(false);
+
+    return;
     if (amountToPay == 0) {
-      setLoading!(true);
       client
         .mutate<bookAppointment>({
           mutation: BOOK_APPOINTMENT,
