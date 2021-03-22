@@ -475,7 +475,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
 
   const renderButton = () => {
-    return !prescriptionType ? (
+    return uploadPrescriptionRequired &&
+    !prescriptionType ? (
       <View style={styles.buttonContainer}>
         <Button
           disabled={false}
