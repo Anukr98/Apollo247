@@ -1,5 +1,4 @@
 import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
-import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import {
   MedicineReOrderOverlay,
   MedicineReOrderOverlayProps,
@@ -126,9 +125,6 @@ export interface OrderDetailsSceneProps
     orderAutoId?: string;
     billNumber?: string;
     isCancelOrder?: boolean;
-    isOrderHelp?: boolean;
-    breadCrumb: BreadcrumbProps['links'];
-    queryCategory: string;
     email: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
@@ -140,10 +136,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const billNumber = props.navigation.getParam('billNumber');
   const isCancelOrder = props.navigation.getParam('isCancelOrder');
-  const isOrderHelp = props.navigation.getParam('isOrderHelp');
-  const queryCategory = props.navigation.getParam('queryCategory') || string.pharmacy;
   const email = props.navigation.getParam('email') || '';
-  const breadCrumb = props.navigation.getParam('breadCrumb') || [];
   const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
@@ -152,7 +145,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
   const client = useApolloClient();
-  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -2140,58 +2132,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const currentStatusDate = order?.medicineOrdersStatus?.find(
       (i) => i?.orderStatus === order?.currentStatus
     )?.statusDate;
-    const { category } = NeedHelp[0];
-    let breadCrudArray: BreadcrumbProps['links'] =
-      breadCrumb?.length > 1
-        ? [...breadCrumb, { title: string.help }]
-        : [
-            { title: string.needHelp },
-            { title: category },
-            { title: string.productDetail },
-            { title: string.help },
-          ];
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
       isOrderRelatedIssue: true,
       medicineOrderStatus: order?.currentStatus,
       orderId: billNumber || orderAutoId,
-      queryCategory,
+      queryIdLevel1: helpSectionQueryId.pharmacy,
       medicineOrderStatusDate: currentStatusDate,
       email,
-      breadCrumb: breadCrudArray,
-      fromOrderFlow: true,
     });
   };
 
-  const renderHelpButton = () => {
-    const currentStatusDate = order?.medicineOrdersStatus?.find(
-      (i) => i?.orderStatus === order?.currentStatus
-    )?.statusDate;
-    const onPress = () => {
-      props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
-        isOrderRelatedIssue: true,
-        medicineOrderStatus: order?.currentStatus,
-        orderId: billNumber || orderAutoId,
-        medicineOrderStatusDate: currentStatusDate,
-        queryCategory,
-        email,
-        breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
-      });
-    };
-    return (
-      !!isOrderHelp && (
-        <TouchableOpacity onPress={onPress} style={styles.helpButtonView}>
-          <Text style={styles.helpButtonText}>{string.help.toUpperCase()}</Text>
-        </TouchableOpacity>
-      )
-    );
-  };
-
   const renderReOrderButton = () => {
-    const showReOrder = isOrderHelp
-      ? false
-      : orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-        orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
-        orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
+    const showReOrder =
+      orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
     return (
       !!showReOrder && (
         <View>

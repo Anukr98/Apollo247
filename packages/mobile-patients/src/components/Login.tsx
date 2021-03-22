@@ -257,12 +257,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             });
             break;
           }
-          default:
-            showAphAlert!({
-              title: string.truecaller.errorTitle,
-              description: string.truecaller.tryAgainLater,
-            });
-            break;
         }
       }
     });

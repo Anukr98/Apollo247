@@ -53,6 +53,7 @@ import SignUp from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { ReturnMedicineOrder } from '@aph/mobile-patients/src/components/ReturnMedicineOrder';
 import { AzureUpload } from '@aph/mobile-patients/src/components/AzureUpload';
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
 import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';
@@ -171,6 +172,7 @@ export enum AppRoutes {
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
+  ReturnMedicineOrder = 'ReturnMedicineOrder',
   OrderDetailsScene = 'OrderDetailsScene',
   OrderModifiedScreen = 'OrderModifiedScreen',
   YourCart = 'YourCart',
@@ -392,6 +394,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     navigationOptions: {
       gesturesEnabled: false,
     },
+  },
+  [AppRoutes.ReturnMedicineOrder]: {
+    screen: ReturnMedicineOrder,
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,

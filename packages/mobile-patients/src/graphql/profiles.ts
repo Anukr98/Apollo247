@@ -2668,6 +2668,43 @@ export const SEND_HELP_EMAIL = gql`
   }
 `;
 
+export const GET_HELP_SECTION_QUERIES = gql`
+  query GetHelpSectionQueries {
+    getHelpSectionQueries {
+      needHelpQueries {
+        id
+        title
+        nonOrderQueries
+        queriesByOrderStatus
+        queries {
+          id
+          title
+          nonOrderQueries
+          queriesByOrderStatus
+          queries {
+            id
+            title
+            nonOrderQueries
+            queriesByOrderStatus
+            queries {
+              id
+              title
+              nonOrderQueries
+              queriesByOrderStatus
+              queries {
+                id
+                title
+                nonOrderQueries
+                queriesByOrderStatus
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_COUPONS = gql`
   query getCoupons {
     getCoupons {
