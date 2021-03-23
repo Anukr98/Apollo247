@@ -398,10 +398,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const checkPatientAge = () => {
     let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
-
-    if (age! <= 10 || age == null) {
+    let gender = currentPatient?.gender;
+    if (age! <= 10 || age == null || gender == null) {
       renderAlert(
-        age == null ? string.common.contactCustomerCare : string.diagnostics.minorAgeText
+        age == null
+          ? string.common.contactCustomerCare1
+          : gender == null
+          ? string.common.contactCustomerCare2
+          : string.diagnostics.minorAgeText
       );
       setIsMinor(true);
       setDeliveryAddressId!('');
@@ -3423,6 +3427,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flexDirection: 'row',
     marginVertical: '2%',
+    paddingRight: 15,
   },
   phleboText: {
     ...theme.fonts.IBMPlexSansMedium(10),

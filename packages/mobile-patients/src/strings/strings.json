@@ -119,7 +119,8 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
-    "contactCustomerCare": "Something went wrong, please contact customer support",
+    "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
+    "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong.",
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
@@ -513,7 +514,7 @@
     "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
     "incorrectUserReport": "This report does not belongs to this user.",
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
-    "cartPhelboTxt": "The phlebotomist will reach within 30 mins",
+    "cartPhelboTxt": "Sample collection executive to reach your home within 30 mins of your appointment time",
     "reasonForReschedulingText" : "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
     "whatWudLikeText":"What would you like to do?",
