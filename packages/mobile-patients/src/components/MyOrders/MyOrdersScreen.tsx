@@ -17,7 +17,7 @@ interface MyOrdersScreenProps extends NavigationScreenProps<{}> {}
 const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
   const tabs = [{ title: 'Medicine' }, { title: 'Lab Tests' }];
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
-  useEffect(() => {}, []);
+
   const renderHeader = () => {
     return (
       <Header
