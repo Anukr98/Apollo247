@@ -1300,6 +1300,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     messages?.length && analyzeMessages(messages);
   }, [messages]);
   const [guidelinesAdded, setguidelinesAdded] = useState<boolean>(false);
+
   function analyzeMessages(messages: any) {
     const prescUploadIndex = messages
       .reverse()
@@ -1325,7 +1326,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       msgsByPatient = latestFollowUpChat.filter(
         (item: any) => item?.id == patientId && item?.message != imageconsult
       )?.length;
-    } else if (lastDocMsgIndex == 0) {
+    } else if (lastDocMsgIndex == 0 || guideLinesIndex == 0) {
       msgsByPatient = 0;
     } else {
       const latestFollowUpChat = messages.slice(-guideLinesIndex);
@@ -1637,10 +1638,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               moment(saveAppointmentData[index].sendDate).diff(new Date())
             );
             const diffInMins = diff.asMinutes();
-            if (diffInMins <= -10) {
+            if (diffInMins <= -30) {
               sendDcotorChatMessage();
               saveAppointmentData[index].sendDate = new Date();
               saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
+            } else {
+              sendAutoMsg();
             }
 
             AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
@@ -1655,6 +1658,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointment));
       }
     } catch (error) {}
+  };
+
+  const sendAutoMsg = () => {
+    const prescUploadIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult);
+    messages.reverse();
+    const guideLinesIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
+    messages.reverse();
+    if (prescUploadIndex == -1) {
+      return;
+    }
+    const lastDocMsgIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.sentBy == 'DOCTOR');
+    messages.reverse();
+    if (guideLinesIndex && prescUploadIndex && lastDocMsgIndex == 0) {
+      sendDcotorChatMessage();
+    }
   };
 
   const sendDcotorChatMessage = () => {
@@ -2154,7 +2178,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const stopTimer = () => {
-    console.log('stopTimer', timerId);
     setCallTimer(0);
     timerId && BackgroundTimer.clearInterval(timerId);
   };
@@ -2177,7 +2200,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const stopJoinTimer = () => {
-    console.log('stopTimer join', joinTimerId);
     joinTimerId && BackgroundTimer.clearInterval(joinTimerId);
   };
 
