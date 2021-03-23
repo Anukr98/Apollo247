@@ -8,7 +8,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
@@ -19,6 +19,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CircleLogo, DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -176,6 +177,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
   ];
+  const [shipmentItems, setShipmentItems] = useState([]);
 
   const itemsFromMedicineShipment = g(
     orderDetails,
@@ -204,7 +206,33 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     'itemDetails'
   );
   const itemDetails = item_details ? JSON.parse(item_details) : null;
-  // console.log('itemDetails', itemDetails, JSON.stringify(itemDetails));
+  if (itemDetails.length) {
+    Promise.all(itemDetails.map((item) => getMedicineDetailsApi(item?.itemId)))
+      .then((result) => {
+        const shipmentDetails = result.map(({ data: { productdp } }, index) => {
+          const medicineDetails = (productdp && productdp[0]) || {};
+          const qty =
+            (itemDetails[index]?.issuedQty * itemDetails[index]?.mou) / medicineDetails?.mou;
+          console.log(medicineDetails?.name);
+          console.log('itemDetails[index]?.issuedQty >>> ', itemDetails[index]?.issuedQty);
+          console.log('itemDetails[index]?.mrp >>> ', itemDetails[index]?.mrp);
+          console.log('medicineDetails?.mou >>> ', medicineDetails?.mou);
+          console.log('itemDetails[index]?.mou >>> ', itemDetails[index]?.mou);
+          return {
+            itemId: medicineDetails?.sku,
+            medicineName: medicineDetails?.name,
+            quantity: Math.ceil(qty),
+            mrp:
+              (itemDetails[index]?.issuedQty * itemDetails[index]?.mrp * medicineDetails?.mou) /
+              itemDetails[index]?.mou,
+          };
+        });
+        setShipmentItems(shipmentDetails);
+      })
+      .catch((e) => {
+        console.log({ e });
+      });
+  }
   const billDetails = g(
     orderDetails,
     'medicineOrderShipments',
@@ -426,13 +454,15 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   };
 
   const renderOrderBilledMedicineRow = (item: any) => {
-    const isTablet = (item.itemName || '').includes('TABLET');
-    const medicineName = `${item.itemName}${
-      item.mou! > 1 ? ` (${item.mou}${isTablet ? ' tabs' : ''})` : ''
+    const isTablet = (item?.itemName || '').includes('TABLET');
+    const medicineName = `${item?.itemName}${
+      item?.mou > 1 ? ` (${item?.mou}${isTablet ? ' tabs' : ''})` : ''
     }`;
+    const quantity = Math.ceil(item?.issuedQty);
+    const mrp = (item?.mrp * item?.issuedQty || 0).toFixed(2);
     return (
       <View
-        key={item.itemId!}
+        key={item?.itemId!}
         style={{ flexDirection: 'row', paddingLeft: 11, paddingRight: 16, marginBottom: 8 }}
       >
         <View
@@ -443,7 +473,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text numberOfLines={2} style={styles.medicineText1}>
-            {medicineName}
+            {item?.medicineName || medicineName}
           </Text>
         </View>
         <View
@@ -453,7 +483,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text style={styles.medicineText1}>{Math.ceil(item.issuedQty)}</Text>
+          <Text style={styles.medicineText1}>{item?.quantity || quantity}</Text>
         </View>
         <View
           style={{
@@ -462,7 +492,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            {string.common.Rs} {(item.mrp! * item.issuedQty! || 0).toFixed(2)}
+            {string.common.Rs} {item?.mrp?.toFixed(2) || mrp}
           </Text>
         </View>
       </View>
@@ -690,7 +720,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
           </View>
           {orderBilledAndPacked && newOrders && itemDetails
-            ? itemDetails.map((item) => renderOrderBilledMedicineRow(item!))
+            ? shipmentItems?.map((item) => renderOrderBilledMedicineRow(item!))
             : isCartItemsUpdated
             ? item_details_from_shipments?.map((item) => renderMedicineRow(item!))
             : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
