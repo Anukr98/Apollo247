@@ -336,6 +336,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             description: cancelResponse?.message,
           });
         }
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
         //refetch the orders
       })
       .catch((error) => {
@@ -343,6 +346,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
         setLoading!(false);
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
       });
   };
 
@@ -550,9 +556,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 : string.common.tryAgainLater,
           });
         }
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
       })
       .catch((error) => {
         console.log('error' + error);
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         setLoading!(false);
         if (
@@ -831,7 +843,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowBottomOverlay(false);
     setShowRescheduleOptions(false);
     setShowRescheduleReasons(false);
-    setSelectRescheduleReason('');
+    setSelectCancelReason('');
     checkSlotSelection();
   }
 
@@ -842,8 +854,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleReasons(false);
     setShowCancelReasons(false);
     onSubmitCancelOrder(selectCancelReason, cancelReasonComment);
-    setSelectCancelReason('');
-    setCancelReasonComment('');
     setSelectRescheduleReason('');
   }
 
