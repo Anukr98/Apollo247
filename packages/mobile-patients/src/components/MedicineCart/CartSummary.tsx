@@ -535,7 +535,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         showPopUp={showPopUp}
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
-        type={'cartOrMedicineFlow'}
+        type={'Cart'}
       />
     );
   };
