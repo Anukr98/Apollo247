@@ -1924,6 +1924,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const renderHomeCollectionDisclaimer = () => {
+    return (
+      <View style={styles.homeCollectionContainer}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.phleboText}>{string.diagnostics.homeHomeCollectionDisclaimerTxt}</Text>
+      </View>
+    );
+  };
+
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
 
@@ -1931,17 +1940,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         {renderLabel('TOTAL CHARGES')}
         {/* {renderCouponView()} */}
+        {renderHomeCollectionDisclaimer()}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            // marginTop: 4,
-            marginBottom: 12,
-            padding: 16,
-            marginTop: 16,
-          }}
-        >
+        <View style={styles.totalChargesContainer}>
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
             <Text style={styles.blueTextStyle}>
@@ -3156,4 +3157,19 @@ const styles = StyleSheet.create({
     marginHorizontal: '2%',
   },
   infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
+  homeCollectionContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 12,
+    margin: 16,
+    flexDirection: 'row',
+    backgroundColor: '#FCFDDA',
+  },
+  totalChargesContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    // marginTop: 4,
+    marginBottom: 12,
+    padding: 16,
+    marginTop: 6,
+  },
 });

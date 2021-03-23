@@ -219,7 +219,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View style={styles.bottomContainer}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
-            <Text style={styles.headingText}>Test Slot</Text>
+            <Text style={styles.headingText}>Appointment Time</Text>
             {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime}</Text> : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
