@@ -1027,7 +1027,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.RVP_ASSIGNED]: [
           '',
-          `Our rider or courier partner will collect the item from you shortly, please be reachable on phone`,
+          `Rider/Courier partner has been assigned to pickup your return items, the Rider may call you before he reaches your place`,
         ],
       };
 
