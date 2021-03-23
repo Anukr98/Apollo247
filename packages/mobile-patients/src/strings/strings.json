@@ -119,7 +119,7 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
-    "contactCustomerCare": "Something went wrong, please contact customer support",
+    "contactCustomerCare": "We are unable to confirm your order, since gender and dob are missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong."
   },
   "components": {
