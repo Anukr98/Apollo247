@@ -321,7 +321,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     setTimeout(() => {
       setShowOtpOnCallCta(true);
-    }, 20000);
+    }, 10000);
     getTimerData();
   }, [props.navigation, getTimerData]);
 
@@ -812,13 +812,18 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
             getOtpOnCall('+91' + phoneNumber, loginId)
               .then((otpOnCallResult: any) => {
+                const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
+                const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ON_CALL_CLICK] = {
+                  'Mobile Number': phoneNumberFromParams,
+                };
+                postWebEngageEvent(WebEngageEventName.OTP_ON_CALL_CLICK, eventAttributes);
                 if (otpOnCallResult?.status) {
                   CommonBugFender('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
                   setBugFenderLog('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
-                  props.navigation.setParams({ loginId: otpOnCallResult.loginId });
+                  props.navigation.setParams({ loginId: otpOnCallResult?.loginId });
                   setTimeout(() => {
                     setDisableOtpOnCallCta(false);
-                  }, 20000);
+                  }, 10000);
                 } else {
                   CommonBugFender('GET_OTP_ON_CALL_FAIL', otpOnCallResult);
                   setBugFenderLog('GET_OTP_ON_CALL_FAIL', otpOnCallResult);
