@@ -1077,13 +1077,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
-  console.log({ props });
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
 
       <SafeAreaView style={theme.viewStyles.container}>
-        { props?.showHeader == false ? null : (
+        {props?.showHeader == false ? null : (
           <Header
             leftIcon="backArrow"
             title={string.orders.urOrders}
