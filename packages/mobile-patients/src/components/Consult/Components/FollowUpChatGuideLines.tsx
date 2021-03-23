@@ -17,7 +17,7 @@ export const FollowUpChatGuideLines: React.FC<FollowUpChatGuideLinesProps> = (pr
         </View>
         <Text
           style={styles.line}
-        >{`1. You can send ${followChatLimit} messages before the doctor replies`}</Text>
+        >{`1. You can send ${followChatLimit} text messages before the doctor replies`}</Text>
       </View>
     );
   }

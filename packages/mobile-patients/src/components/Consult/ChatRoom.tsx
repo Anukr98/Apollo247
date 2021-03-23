@@ -1299,13 +1299,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     messages?.length && analyzeMessages(messages);
   }, [messages]);
-
+  const [guidelinesAdded, setguidelinesAdded] = useState<boolean>(false);
   function analyzeMessages(messages: any) {
     const prescUploadIndex = messages
       .reverse()
       .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult);
     messages.reverse();
+    const guideLinesIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
+    messages.reverse();
     if (prescUploadIndex == -1) {
+      return;
+    } else if (prescUploadIndex != -1 && guideLinesIndex == -1) {
+      sendFollowUpChatGuideLines();
       return;
     }
     const lastDocMsgIndex = messages
@@ -1321,10 +1328,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else if (lastDocMsgIndex == 0) {
       msgsByPatient = 0;
     } else {
-      let guideLinesIndex = messages
-        .reverse()
-        .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
-      messages.reverse();
       const latestFollowUpChat = messages.slice(-guideLinesIndex);
       msgsByPatient = latestFollowUpChat.filter(
         (item: any) => item?.id == patientId && item?.message != imageconsult
@@ -2582,6 +2585,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const sendFollowUpChatGuideLines = () => {
+    if (guidelinesAdded) {
+      return;
+    }
+    setguidelinesAdded(true);
     const headerText = `If you have further queries related to your consultation, you may reach out to ${appointmentData.doctorInfo.displayName} via texts for the next 7 days.`;
     sendMessage(sectionHeader, doctorId, headerText);
     setTimeout(() => {
