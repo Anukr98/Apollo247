@@ -48,7 +48,12 @@ import {
 import messaging from '@react-native-firebase/messaging';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
-import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
+import {
+  NavigationEventSubscription,
+  NavigationScreenProps,
+  NavigationActions,
+  StackActions,
+} from 'react-navigation';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
@@ -61,6 +66,12 @@ import {
 import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import {
+  saveTokenDevice,
+  phrNotificationCountApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 
 let TRUECALLER: any;
 
@@ -186,6 +197,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const isAndroid = Platform.OS === 'android';
   const client = useApolloClient();
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
+  const { setPhrNotificationData } = useAppCommonData();
 
   const { setLoading, showAphAlert } = useUIElements();
   const webengage = new WebEngage();
@@ -362,13 +374,55 @@ export const Login: React.FC<LoginProps> = (props) => {
     mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
+        // prism user
         navigateTo(AppRoutes.MultiSignup);
       } else {
-        navigateTo(AppRoutes.SignUp, mePatient);
+        if (!mePatient?.dateOfBirth) {
+          // New user since we dont get dateOfBirth from truecaller profile and it will always ne null or empty for new user
+          navigateTo(AppRoutes.SignUp, mePatient);
+        } else {
+          // existing user
+          AsyncStorage.setItem('userLoggedIn', 'true');
+          deviceTokenAPI(mePatient?.id);
+          callPhrNotificationApi(mePatient?.id);
+          // fireUserLoggedInEvent(mePatient, 'Login');
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: AppRoutes.ConsultRoom,
+                }),
+              ],
+            })
+          );
+        }
       }
     } else {
       navigateTo(AppRoutes.SignUp);
     }
+  };
+
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
+
+  const deviceTokenAPI = async (patientId: string) => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    saveTokenDevice(client, deviceToken2, patientId);
   };
 
   const navigateTo = (routeName: AppRoutes, patient?: any) => {
