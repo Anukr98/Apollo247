@@ -38,6 +38,7 @@ export enum WebEngageEventName {
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
+  OTP_ON_CALL_CLICK = 'OTP on call clicked',
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
@@ -702,6 +703,9 @@ export interface WebEngageEvents {
   [WebEngageEventName.OTP_ENTERED]: { value: YesOrNo };
   [WebEngageEventName.PRE_APOLLO_CUSTOMER]: { value: YesOrNo };
   [WebEngageEventName.OTP_VERIFICATION_SUCCESS]: {
+    'Mobile Number': string;
+  };
+  [WebEngageEventName.OTP_ON_CALL_CLICK]: {
     'Mobile Number': string;
   };
   [WebEngageEventName.REGISTRATION_DONE]: {
