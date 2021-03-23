@@ -107,6 +107,7 @@ export enum WebEngageEventName {
   USER_LOGGED_IN_WITH_TRUECALLER = 'User logged in with truecaller',
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
+  LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -2455,4 +2456,5 @@ export interface WebEngageEvents {
     'Api Name': string;
     Error: any;
   };
+  [WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED]: {};
 }
