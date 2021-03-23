@@ -751,7 +751,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
       setAreaSelected?.(obj);
       checkSlotSelection(obj);
-      setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       console.log({ e });
       CommonBugFender('TestsCart_', e);
