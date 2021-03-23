@@ -257,7 +257,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
-                <Text style={styles.commonText}>{item?.itemName}</Text>
+                <Text style={styles.commonText}>
+                  {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
+                </Text>
                 {!!item?.itemObj?.inclusions && (
                   <Text style={styles.inclusionsText}>
                     Inclusions : {item?.itemObj?.inclusions?.length}

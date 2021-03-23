@@ -3141,6 +3141,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flexDirection: 'row',
     marginVertical: '2%',
+    paddingRight: 15,
   },
   phleboText: {
     ...theme.fonts.IBMPlexSansMedium(10),
