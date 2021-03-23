@@ -534,7 +534,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : prescriptions
       ? data?.source !== '247selfConsultation'
         ? 'PRESCRIPTION'
-        : 'FILE'
+        : 'MEDICAL FILE'
       : medicalBill
       ? 'BILLS'
       : medicalInsurance
