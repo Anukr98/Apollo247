@@ -1686,6 +1686,32 @@ export interface SourceMetaData {
   purchase_type?: PlanPurchaseType | null;
 }
 
+export interface TrueCallerProfile {
+  avatarUrl?: string | null;
+  city?: string | null;
+  companyName?: string | null;
+  countryCode?: string | null;
+  email?: string | null;
+  facebookId?: string | null;
+  firstName?: string | null;
+  gender?: string | null;
+  isAmbassador?: boolean | null;
+  isSimChanged?: boolean | null;
+  isTrueName?: boolean | null;
+  jobTitle?: string | null;
+  lastName?: string | null;
+  payload?: string | null;
+  phoneNumber?: string | null;
+  requestNonce?: string | null;
+  signature?: string | null;
+  signatureAlgorithm?: string | null;
+  street?: string | null;
+  twitterId?: string | null;
+  url?: string | null;
+  verificationMode?: string | null;
+  zipcode?: string | null;
+}
+
 export interface UpdateAppointmentInput {
   appointmentId: string;
   patientLocation?: PatientLocation | null;

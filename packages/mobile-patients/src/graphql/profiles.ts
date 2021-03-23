@@ -4803,4 +4803,12 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
       }
     }
   }
+  `;
+
+export const VERIFY_TRUECALLER_PROFILE = gql`
+  mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
+    verifyTrueCallerProfile(profile: $profile) {
+      authToken
+    }
+  }
 `;
