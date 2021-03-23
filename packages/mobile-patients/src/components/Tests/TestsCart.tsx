@@ -116,7 +116,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from 'react-native-geolocation-service';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -361,10 +361,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const checkPatientAge = () => {
     let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
-
-    if (age! <= 10 || age == null) {
+    let gender = currentPatient?.gender;
+    if (age! <= 10 || age == null || gender == null) {
       renderAlert(
-        age == null ? string.common.contactCustomerCare : string.diagnostics.minorAgeText
+        age == null
+          ? string.common.contactCustomerCare1
+          : gender == null
+          ? string.common.contactCustomerCare2
+          : string.diagnostics.minorAgeText
       );
       setIsMinor(true);
       setDeliveryAddressId!('');
@@ -633,7 +637,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
         'Customer'
       );
-      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
     }
   };
 
@@ -748,7 +751,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
       setAreaSelected?.(obj);
       checkSlotSelection(obj);
-      setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       console.log({ e });
       CommonBugFender('TestsCart_', e);
@@ -1921,6 +1923,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const renderHomeCollectionDisclaimer = () => {
+    return (
+      <View style={styles.homeCollectionContainer}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.phleboText}>{string.diagnostics.homeHomeCollectionDisclaimerTxt}</Text>
+      </View>
+    );
+  };
+
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
 
@@ -1928,17 +1939,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         {renderLabel('TOTAL CHARGES')}
         {/* {renderCouponView()} */}
+        {renderHomeCollectionDisclaimer()}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            // marginTop: 4,
-            marginBottom: 12,
-            padding: 16,
-            marginTop: 16,
-          }}
-        >
+        <View style={styles.totalChargesContainer}>
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
             <Text style={styles.blueTextStyle}>
@@ -3142,6 +3145,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flexDirection: 'row',
     marginVertical: '2%',
+    paddingRight: 15,
   },
   phleboText: {
     ...theme.fonts.IBMPlexSansMedium(10),
@@ -3152,4 +3156,19 @@ const styles = StyleSheet.create({
     marginHorizontal: '2%',
   },
   infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
+  homeCollectionContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 12,
+    margin: 16,
+    flexDirection: 'row',
+    backgroundColor: '#FCFDDA',
+  },
+  totalChargesContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    // marginTop: 4,
+    marginBottom: 12,
+    padding: 16,
+    marginTop: 6,
+  },
 });

@@ -64,7 +64,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
-  const [prismAuthToken, setPrismAuthToken] = useState('');
   const [labResults, setLabResults] = useState<
     | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
     | null
@@ -87,6 +86,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   }, []);
 
   const fetchTestReportResult = useCallback((order: any) => {
+    setLoading?.(true);
     const getVisitId = orderSelected?.visitNo;
     getPatientPrismMedicalRecordsApi(
       client,
@@ -249,7 +249,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         showTestPreparation={order?.testPreparationData != ''} //call the service
         onOptionPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
-            orderId: orderSelected!.id,
+            orderId: orderSelected?.id,
             selectedTest: order,
             selectedOrder: orderSelected,
             individualTestStatus: individualItemStatus,

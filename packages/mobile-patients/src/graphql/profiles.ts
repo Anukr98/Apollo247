@@ -2089,6 +2089,18 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        paymentOrderId
+        diagnosticOrderReschedule{
+          rescheduleDate
+          rescheduleReason
+          comments
+        }
+        diagnosticOrderCancellation{
+          cancellationReason
+          cancelType
+          cancelByName
+          comments
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -4773,6 +4785,25 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
     }
   }
 `;
+
+export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
+  query getHCOrderFormattedTrackingHistory($diagnosticOrderID: String) {
+    getHCOrderFormattedTrackingHistory(diagnosticOrderID: $diagnosticOrderID) {
+      statusHistory{
+        statusDate
+        orderStatus
+      }
+      statusInclusions{
+        statusDate
+        orderStatus
+        itemId
+        packageId
+        itemName
+        packageName
+      }
+    }
+  }
+  `;
 
 export const VERIFY_TRUECALLER_PROFILE = gql`
   mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {

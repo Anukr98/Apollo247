@@ -19,5 +19,5 @@ export interface initiateDiagonsticHCOrderPayment {
 }
 
 export interface initiateDiagonsticHCOrderPaymentVariables {
-  diagnosticInitiateOrderPaymentInput?: DiagnosticInitiateOrderPayment | null;
+  diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPayment;
 }
