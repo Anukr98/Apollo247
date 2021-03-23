@@ -110,20 +110,36 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [refNo, setrefNo] = useState<string>('');
   const [displayId, setdisplayId] = useState<String>('');
   const [paymentRefId, setpaymentRefId] = useState<string>('');
-  const price = props.navigation.getParam('price');
-  const orderId = props.navigation.getParam('orderId');
-  const doctorName = props.navigation.getParam('doctorName');
-  const doctorID = props.navigation.getParam('doctorID');
-  const doctor = props.navigation.getParam('doctor');
-  const appointmentDateTime = props.navigation.getParam('appointmentDateTime');
-  const appointmentType = props.navigation.getParam('appointmentType');
-  const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
-  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
-  const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
-  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
-  const coupon = props.navigation.getParam('coupon');
+  const orderDetails = props.navigation.getParam('orderDetails');
+  const {
+    price,
+    orderId,
+    doctorName,
+    doctorID,
+    doctor,
+    appointmentDateTime,
+    appointmentType,
+    webEngageEventAttributes,
+    appsflyerEventAttributes,
+    fireBaseEventAttributes,
+    isDoctorsOfTheHourStatus,
+    coupon,
+    isCircleDoctor,
+  } = orderDetails;
+  // const price = props.navigation.getParam('price');
+  // const orderId = props.navigation.getParam('orderId');
+  // const doctorName = props.navigation.getParam('doctorName');
+  // const doctorID = props.navigation.getParam('doctorID');
+  // const doctor = props.navigation.getParam('doctor');
+  // const appointmentDateTime = props.navigation.getParam('appointmentDateTime');
+  // const appointmentType = props.navigation.getParam('appointmentType');
+  // const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  // const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
+  // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  // const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  // const coupon = props.navigation.getParam('coupon');
+  // const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
-  const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();

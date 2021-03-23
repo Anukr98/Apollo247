@@ -65,7 +65,7 @@ const { width } = Dimensions.get('window');
 import { useApolloClient } from 'react-apollo-hooks';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import moment from 'moment';
-import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   saveSearchDoctor,
   saveSearchSpeciality,
@@ -74,6 +74,7 @@ import {
 import {
   bookAppointment,
   bookAppointmentVariables,
+  bookAppointment_bookAppointment_appointment,
 } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
   BOOK_APPOINTMENT,
@@ -600,7 +601,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           apptmt?.id!,
           Number(amountToPay),
           apptmt?.appointmentDateTime,
-          apptmt?.displayId!
+          `${apptmt?.displayId!}`
         );
       } else {
         const data = await createOrderInternal(apptmt?.id!);
@@ -610,11 +611,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: data?.data?.createOrderInternal?.payment_order_id!,
             amount: amountToPay,
-            orderId: apptmt?.id!,
+            orderDetails: getOrderDetails(apptmt),
+            businessLine: 'consult',
           });
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      handleError(error);
+    }
     setLoading!(false);
 
     return;
@@ -633,7 +637,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             storeAppointmentId(g(apptmt, 'id')!);
           }
           // If amount is zero don't redirect to PG
-
           try {
             if (callSaveSearch !== 'true') {
               saveSearchDoctor(client, doctor?.id || '', patientId);
@@ -693,6 +696,65 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         planSelected: circlePlanSelected,
         circleDiscount,
       });
+    }
+  };
+
+  const getOrderDetails = (
+    apptmt: bookAppointment_bookAppointment_appointment | null | undefined
+  ) => {
+    const orderDetails = {
+      consultedWithDoctorBefore: consultedWithDoctorBefore,
+      doctorName: doctor?.fullName,
+      doctorID: doctor?.id,
+      doctor: doctor,
+      orderId: apptmt?.id,
+      price: price,
+      appointmentInput: appointmentInput,
+      appointmentDateTime: appointmentInput.appointmentDateTime,
+      appointmentType: appointmentInput.appointmentType,
+      coupon: appointmentInput.couponCode,
+      webEngageEventAttributes: getConsultationBookedEventAttributes(
+        apptmt?.appointmentDateTime,
+        apptmt?.id!
+      ),
+      appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+        apptmt?.id!,
+        `${apptmt?.displayId!}`
+      ),
+      fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
+        apptmt?.appointmentDateTime,
+        apptmt?.id!
+      ),
+      planSelected: circlePlanSelected,
+      isCircleDoctor: isCircleDoctorOnSelectedConsultMode,
+      isDoctorsOfTheHourStatus,
+      selectedTab,
+    };
+    return orderDetails;
+  };
+
+  const handleError = (error: any) => {
+    CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
+    setLoading!(false);
+    let message = '';
+    message = error?.message?.split(':')?.[1]?.trim();
+    switch (message) {
+      case 'APPOINTMENT_EXIST_ERROR':
+        renderErrorPopup(`Oops ! The selected slot is unavailable. Please choose a different one`);
+        break;
+      case 'BOOKING_LIMIT_EXCEEDED':
+        renderErrorPopup(
+          `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+        );
+        break;
+      case ('OUT_OF_CONSULT_HOURS', 'DOCTOR_SLOT_BLOCKED', 'APPOINTMENT_BOOK_DATE_ERROR'):
+        renderErrorPopup(
+          `Slot you are trying to book is no longer available. Please try a different slot.`
+        );
+        break;
+      default:
+        renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+        break;
     }
   };
 
@@ -803,6 +865,43 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'consult id': id,
       displayId: displayId,
       'coupon applied': coupon ? true : false,
+      'Circle discount': circleDiscount,
+    };
+    return eventAttributes;
+  };
+
+  const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
+
+    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
+      name: g(doctor, 'fullName')!,
+      specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
+      category: g(doctor, 'doctorType')!, // send doctorType
+      time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
+      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
+      clinic_name: g(doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
+      clinic_address:
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
+      Patient_Name: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      Patient_UHID: g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      Mobile_Number: g(currentPatient, 'mobileNumber'),
+      Customer_ID: g(currentPatient, 'id'),
+      Consult_ID: id,
+      af_revenue: price,
+      af_currency: 'INR',
       'Circle discount': circleDiscount,
     };
     return eventAttributes;

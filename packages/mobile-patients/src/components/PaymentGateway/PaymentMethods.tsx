@@ -69,7 +69,7 @@ import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helper
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
-  businessLine: string;
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
@@ -78,6 +78,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
+  const businessLine = props.navigation.getParam('businessLine');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -101,6 +102,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     return () => eventListener.remove();
   }, []);
 
+  console.log('businessLine >>>', businessLine);
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
       return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();
@@ -115,18 +117,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
-        let status = payload?.payload?.status;
-        if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
+        const status = payload?.payload?.status;
+        const action = payload?.payload?.action;
+        if (action == 'getPaymentMethods' && !payload?.error) {
           const banks = payload?.payload?.paymentMethods?.filter(
             (item: any) => item?.paymentMethodType == 'NB'
           );
           setBanks(banks);
           setloading(false);
-        } else if (paymentActions.indexOf(payload?.payload?.action) != -1 && status) {
+        } else if (paymentActions.indexOf(action) != -1 && status) {
           status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
           status == 'PENDING_VBV' && !payload?.error && navigatetoOrderStatus(false, 'pending');
-          FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
-        } else if (payload?.payload?.action == 'upiTxn' && !payload?.error && !status) {
+          FailedStatuses.includes(status) && showTxnFailurePopUP();
+        } else if (action == 'upiTxn' && !payload?.error && !status) {
           setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (payload?.error) {
           handleError(payload?.errorMessage);
@@ -186,7 +189,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const initiateOrderPayment = async () => {
     // Api is called to update the order status from Quote to Payment Pending
     const input: initiateDiagonsticHCOrderPaymentVariables = {
-      diagnosticInitiateOrderPaymentInput: { orderId: orderId },
+      diagnosticInitiateOrderPaymentInput: { orderId: orderDetails?.orderId },
     };
     const res = await client.mutate<
       initiateDiagonsticHCOrderPayment,
@@ -200,7 +203,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const processCODOrder = () => {
     const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
-      orderID: orderId,
+      orderID: orderDetails?.orderId,
       paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
       amount: amount,
     };
@@ -308,7 +311,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       paymentId: paymentId,
       amount: amount,
       banks: otherBanks,
-      orderId: orderId,
+      orderId: orderDetails?.orderId,
     });
   };
 
@@ -336,12 +339,22 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
-    props.navigation.navigate(AppRoutes.OrderStatus, {
-      orderDetails: orderDetails,
-      isCOD: isCOD,
-      eventAttributes,
-      paymentStatus: paymentStatus,
-    });
+    switch (businessLine) {
+      case 'diagnostics':
+        props.navigation.navigate(AppRoutes.OrderStatus, {
+          orderDetails: orderDetails,
+          isCOD: isCOD,
+          eventAttributes,
+          paymentStatus: paymentStatus,
+        });
+        break;
+      case 'consult':
+        props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
+          orderDetails: orderDetails,
+          paymentStatus: paymentStatus,
+        });
+        break;
+    }
   };
 
   const renderErrorPopup = () =>
