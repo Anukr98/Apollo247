@@ -524,9 +524,8 @@
     "rateYourExperience":"RATE YOUR DELIVERY EXPERIENCE",
     "valueFeedbackTxt":"We value your feedback! :)",
     "howWasExpTxt":"How was your overall experience -",
-    "feedbackSubTxt":"Your feedback has been submitted. Thanks for your time."
-
-
+    "feedbackSubTxt":"Your feedback has been submitted. Thanks for your time.",
+    "homeHomeCollectionDisclaimerTxt":"Home collection charges of upto ₹100 would be levied in case of order value less than ₹500"
   },
   "orders": {
     "urOrders": "MY ORDERS",
