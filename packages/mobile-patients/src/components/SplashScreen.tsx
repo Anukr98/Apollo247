@@ -1182,6 +1182,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_CART_BANK_OFFER_TEXT',
       PROD: 'CART_BANK_OFFER_TEXT',
     },
+    followUp_Chat: {
+      QA: 'QA_FollowUp_Chat_Limit',
+      PROD: 'FollowUp_Chat_Limit',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1218,7 +1222,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const checkForVersionUpdate = async () => {
     try {
       // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
-      const minimumFetchIntervalMillis = __DEV__ ? 43200000 : 0;
+      const minimumFetchIntervalMillis = __DEV__ ? 0 : 0;
       await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
       await remoteConfig().fetchAndActivate();
       const config = remoteConfig();
@@ -1313,6 +1317,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
         config.getNumber(key)
       );
+      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

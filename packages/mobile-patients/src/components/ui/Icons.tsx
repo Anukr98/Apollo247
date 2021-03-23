@@ -1814,3 +1814,23 @@ export const Truecaller: React.FC<IconProps> = (props) => (
 export const DisabledTickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tick_disabled.png')} />
 );
+
+export const Msgs: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 27, height: 28 }} {...props} source={require('./icons/3msgs.png')} />
+);
+
+export const Wait: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 30.03, height: 29.12 }}
+    {...props}
+    source={require('./icons/wait.png')}
+  />
+);
+
+export const Emergency: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 21, height: 29 }}
+    {...props}
+    source={require('./icons/emergency.png')}
+  />
+);
