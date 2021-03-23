@@ -1114,7 +1114,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         showPopUp={showPopUp}
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
-        type={'cartOrMedicineFlow'}
+        type={'Cart'}
         onUpload={() =>
           !hasUnserviceableproduct() &&
           props.navigation.navigate(AppRoutes.CartSummary, {
