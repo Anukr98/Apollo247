@@ -72,6 +72,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { truecallerWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 
 let TRUECALLER: any;
 
@@ -246,6 +247,10 @@ export const Login: React.FC<LoginProps> = (props) => {
     TRUECALLER.on('profileErrorReponse', (error: any) => {
       setLoading?.(false);
       if (error && error.errorCode) {
+        let errorAttributes: any = {
+          'Error Code': error?.errorCode,
+        };
+
         oneTimeApiCall.current = true;
         switch (error.errorCode) {
           case 1: {
@@ -253,6 +258,27 @@ export const Login: React.FC<LoginProps> = (props) => {
               title: 'Uh oh.. :(',
               description: string.truecaller.networkProblem,
             });
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Network Failure',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 2: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'User pressed back button',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 3: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Incorrect Partner Key',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
             break;
           }
           case 4:
@@ -261,6 +287,19 @@ export const Login: React.FC<LoginProps> = (props) => {
               title: 'Uh oh.. :(',
               description: string.truecaller.userNotVerified,
             });
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': string.truecaller.userNotVerified,
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 5: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Truecaller App Internal Error',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
             break;
           }
           case 11: {
@@ -268,13 +307,35 @@ export const Login: React.FC<LoginProps> = (props) => {
               title: 'Uh oh.. :(',
               description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
             });
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': string.truecaller.appNotInstalledOrUserNotLoggedIn,
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 13: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'User pressed back while verification in process',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 14: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'User pressed SKIP or USE ANOTHER NUMBER',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
             break;
           }
           default:
-            showAphAlert!({
-              title: 'Uh oh.. :(',
-              description: string.truecaller.tryAgainLater,
-            });
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Unknown Error',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
             break;
         }
       }
@@ -300,23 +361,28 @@ export const Login: React.FC<LoginProps> = (props) => {
             getAuthToken();
           })
           .catch((e) => {
-            showLoginError();
+            showLoginError('signInWithCustomToken', e);
             CommonBugFender('OTPVerification_sendOtp', e);
           });
       }
     } catch (error) {
-      showLoginError();
+      showLoginError('verifyTrueCallerProfile', error);
       CommonBugFender('Login_verifyTrueCallerProfile', error);
     }
   };
 
-  const showLoginError = () => {
+  const showLoginError = (apiName: string, error: any) => {
     oneTimeApiCall.current = true;
     setOpenFillerView(false);
     showAphAlert!({
       title: 'Uh oh.. :(',
       description: string.truecaller.tryAgainLater,
     });
+    const errorAttributes = {
+      'Api Name': apiName,
+      Error: error,
+    };
+    truecallerWEBEngage(null, 'login error', errorAttributes);
   };
 
   const getAuthToken = async () => {
@@ -327,7 +393,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('Login_getFirebaseToken', error);
-      showLoginError();
+      showLoginError('getFirebaseToken', error);
     }
   };
 
@@ -339,7 +405,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       dataFetchFromMobileNumber(res);
     } catch (error) {
       CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
-      showLoginError();
+      showLoginError('getPatientByMobileNumber', error);
     }
   };
 
@@ -357,7 +423,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           moveScreenForward(mePatient);
         }
       } catch (error) {
-        showLoginError();
+        showLoginError('GetCurrentPatients', error);
       }
     } else {
       const mePatient =
@@ -385,7 +451,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           AsyncStorage.setItem('userLoggedIn', 'true');
           deviceTokenAPI(mePatient?.id);
           callPhrNotificationApi(mePatient?.id);
-          // fireUserLoggedInEvent(mePatient, 'Login');
+          truecallerWEBEngage(mePatient, 'login');
           props.navigation.dispatch(
             StackActions.reset({
               index: 0,
