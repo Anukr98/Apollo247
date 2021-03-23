@@ -23,7 +23,7 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
       <Header
         container={styles.headerContainerStyle}
         leftIcon={'backArrow'}
-        title={'MY PAYMENTS'}
+        title={'MY ORDERS'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MyOrdersScreen, 'Go back clicked');
           props.navigation.goBack();
