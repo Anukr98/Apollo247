@@ -49,7 +49,7 @@ import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
-import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
+import SignUp from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';

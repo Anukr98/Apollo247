@@ -959,6 +959,7 @@
   "truecaller": {
     "networkProblem": "There is a problem with network connection.",
     "userNotVerified": "User is not verified on truecaller.",
-    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in."
+    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in.",
+    "tryAgainLater": "Something went wrong, please try again after sometime"
   }
 }
