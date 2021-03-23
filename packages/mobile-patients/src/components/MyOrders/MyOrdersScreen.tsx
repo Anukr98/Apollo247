@@ -10,8 +10,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { YourOrdersScene } from '../YourOrdersScene';
-import { YourOrdersTest } from '../Tests/PostOrderJourney/YourOrdersTests';
+import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
 
 interface MyOrdersScreenProps extends NavigationScreenProps<{}> {}
 const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
