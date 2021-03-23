@@ -633,7 +633,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Delivery Attempted';
       break;
     case MEDICINE_ORDER_STATUS.RVP_ASSIGNED:
-      statusString = 'Pick-up Assigned';
+      statusString = 'Return Pickup Assigned';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
       statusString = 'Return Successful';
