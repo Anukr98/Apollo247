@@ -60,7 +60,9 @@ const styles = StyleSheet.create({
 
 type AppSection = { buyAgainSection: true };
 export type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
-export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {}
+export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {
+  showHeader?: boolean;
+}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
@@ -278,13 +280,15 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          leftIcon="backArrow"
-          title={props.navigation.getParam('header') || string.orders.urOrders}
-          container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
-          rightComponent={renderHeaderRightComponent()}
-        />
+        {props?.showHeader == false ? null : (
+          <Header
+            leftIcon="backArrow"
+            title={props.navigation.getParam('header') || string.orders.urOrders}
+            container={{ borderBottomWidth: 0 }}
+            onPressLeftIcon={() => props.navigation.goBack()}
+            rightComponent={renderHeaderRightComponent()}
+          />
+        )}
         {renderError()}
         {renderOrders()}
       </SafeAreaView>

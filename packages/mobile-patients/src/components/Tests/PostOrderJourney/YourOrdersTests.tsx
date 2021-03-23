@@ -99,7 +99,9 @@ export interface DiagnosticsOrderList
 const width = Dimensions.get('window').width;
 const isSmallDevice = width < 380;
 
-export interface YourOrdersTestProps extends NavigationScreenProps {}
+export interface YourOrdersTestProps extends NavigationScreenProps {
+  showHeader?: boolean;
+}
 
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
@@ -1075,25 +1077,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
-
+  console.log({ props });
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
 
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          leftIcon="backArrow"
-          title={string.orders.urOrders}
-          container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
-        />
+        { props?.showHeader == false ? null : (
+          <Header
+            leftIcon="backArrow"
+            title={string.orders.urOrders}
+            container={{ borderBottomWidth: 0 }}
+            onPressLeftIcon={() => props.navigation.goBack()}
+          />
+        )}
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
           {showBottomOverlay && renderBottomPopUp()}
         </ScrollView>
       </SafeAreaView>
-      {loading && <Spinner />}
+      {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
   );
 };
