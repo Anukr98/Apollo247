@@ -211,20 +211,14 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       .then((result) => {
         const shipmentDetails = result.map(({ data: { productdp } }, index) => {
           const medicineDetails = (productdp && productdp[0]) || {};
-          const qty =
-            (itemDetails[index]?.issuedQty * itemDetails[index]?.mou) / medicineDetails?.mou;
-          console.log(medicineDetails?.name);
-          console.log('itemDetails[index]?.issuedQty >>> ', itemDetails[index]?.issuedQty);
-          console.log('itemDetails[index]?.mrp >>> ', itemDetails[index]?.mrp);
-          console.log('medicineDetails?.mou >>> ', medicineDetails?.mou);
-          console.log('itemDetails[index]?.mou >>> ', itemDetails[index]?.mou);
+          const mou = medicineDetails?.mou || itemDetails[index]?.mou;
+          const qty = (itemDetails[index]?.issuedQty * itemDetails[index]?.mou) / mou;
           return {
-            itemId: medicineDetails?.sku,
-            medicineName: medicineDetails?.name,
+            itemId: medicineDetails?.sku || itemDetails[index]?.itemId,
+            medicineName: medicineDetails?.name || itemDetails[index]?.itemName,
             quantity: Math.ceil(qty),
-            mrp:
-              (itemDetails[index]?.issuedQty * itemDetails[index]?.mrp * medicineDetails?.mou) /
-              itemDetails[index]?.mou,
+            mrp: (itemDetails[index]?.mrp * mou) / itemDetails[index]?.mou,
+            total: itemDetails[index]?.mrp * itemDetails[index]?.issuedQty || 0,
           };
         });
         setShipmentItems(shipmentDetails);
@@ -460,6 +454,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     }`;
     const quantity = Math.ceil(item?.issuedQty);
     const mrp = (item?.mrp * item?.issuedQty || 0).toFixed(2);
+    const billedTotal = (mrp * quantity).toFixed(2);
     return (
       <View
         key={item?.itemId!}
@@ -472,8 +467,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text numberOfLines={2} style={styles.medicineText1}>
-            {item?.medicineName || medicineName}
+          <Text style={styles.medicineText1}>{item?.medicineName || medicineName}</Text>
+          <Text style={theme.viewStyles.text('SB', 12, '#01475b', 0.7, 24, 0)}>
+            (MRP. {string.common.Rs} {item?.mrp?.toFixed(2) || mrp})
           </Text>
         </View>
         <View
@@ -492,7 +488,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            {string.common.Rs} {item?.mrp?.toFixed(2) || mrp}
+            {string.common.Rs} {item?.total?.toFixed(2) || billedTotal}
           </Text>
         </View>
       </View>
