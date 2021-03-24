@@ -43,14 +43,16 @@ interface PatientDetailsOverlayProps {
 
 export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (props) => {
   const { onPressDone, onPressClose, selectedPatient } = props;
-  const [date, setDate] = useState<Date>(new Date(selectedPatient?.dateOfBirth) || undefined);
+  const [date, setDate] = useState<Date | undefined>(
+    selectedPatient?.dateOfBirth ? new Date(selectedPatient?.dateOfBirth) : undefined
+  );
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [gender, setGender] = useState<Gender>(selectedPatient?.gender || undefined);
   const patientDetailsText = `Details for ${selectedPatient?.firstName ||
     selectedPatient?.lastName ||
     ''}`;
   const patientFullName = `${selectedPatient?.firstName || ''} ${selectedPatient?.lastName}`;
-  const dateOfBirth = moment(selectedPatient?.dateOfBirth).format('DD/MM/YYYY');
+  const dateOfBirth = moment(date).format('DD/MM/YYYY');
 
   const renderDatePicker = () => {
     const dateTextStyle = [
@@ -67,7 +69,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
               style={styles.placeholderViewStyle}
               onPress={() => {
                 Keyboard.dismiss();
-                !date && setIsDateTimePickerVisible(true);
+                !selectedPatient?.dateOfBirth && setIsDateTimePickerVisible(true);
               }}
             >
               <Text style={dateTextStyle}>{date !== undefined ? dateOfBirth : 'dd/mm/yyyy'}</Text>
@@ -149,7 +151,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
               {renderGender()}
               <Button
                 title={'DONE'}
-                disabled={!date && !gender}
+                disabled={!date || !gender}
                 onPress={() => onPressDone(date, gender, selectedPatient)}
                 style={styles.doneButtonViewStyle}
               />
