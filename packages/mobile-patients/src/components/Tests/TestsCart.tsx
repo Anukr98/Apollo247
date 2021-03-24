@@ -3021,48 +3021,37 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }`;
     return (
       <View style={styles.patientDetailsViewStyle}>
-        <View style={styles.patientNameViewStyle}>
-          <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
-          <Text
-            style={[styles.patientNameTextStyle, styles.changeTextStyle]}
-            onPress={() => setShowPatientListOverlay(true)}
-          >
-            {string.diagnostics.changeText}
-          </Text>
+        <View style={styles.patientNameMainViewStyle}>
+          <View style={styles.patientNameViewStyle}>
+            <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
+            <Text style={styles.changeTextStyle} onPress={() => setShowPatientListOverlay(true)}>
+              {string.diagnostics.changeText}
+            </Text>
+          </View>
+          <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
+          <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
         </View>
-        <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
-        <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
         {addressText ? (
-          <>
+          <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
-              <Text
-                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
-                onPress={() => showAddressPopup()}
-              >
+              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
                 {string.diagnostics.changeText}
               </Text>
             </View>
-            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
-              {addressText}
-            </Text>
-          </>
+            <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
+          </View>
         ) : null}
         {showAreaSelection && !isEmptyObject(areaSelected) ? (
-          <>
+          <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
-              <Text
-                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
-                onPress={() => setShowSelectAreaOverlay(true)}
-              >
+              <Text style={styles.changeTextStyle} onPress={() => setShowSelectAreaOverlay(true)}>
                 {string.diagnostics.changeText}
               </Text>
             </View>
-            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
-              {(areaSelected as any)?.value || ''}
-            </Text>
-          </>
+            <Text style={styles.patientDetailsTextStyle}>{(areaSelected as any)?.value || ''}</Text>
+          </View>
         ) : null}
       </View>
     );
@@ -3307,7 +3296,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         {renderSelectAreaOverlay()}
         {renderPatientDetailsOverlay()}
         <ScrollView bounces={false}>
-          <View style={{ marginVertical: 24 }}>
+          <View style={{ marginVertical: 16 }}>
             {renderPatientDetails()}
             {renderItemsInCart()}
             {renderTotalCharges()}
@@ -3321,7 +3310,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   );
 };
 const { text, cardViewStyle } = theme.viewStyles;
-const { SHERPA_BLUE, APP_YELLOW } = theme.colors;
+const { SHERPA_BLUE, APP_YELLOW, WHITE } = theme.colors;
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -3400,7 +3389,14 @@ const styles = StyleSheet.create({
   },
   patientDetailsViewStyle: {
     flex: 1,
-    marginHorizontal: 20,
+    marginBottom: 6,
+  },
+  patientNameMainViewStyle: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: WHITE,
+    paddingVertical: 8,
+    marginBottom: 8,
   },
   patientNameViewStyle: {
     flexDirection: 'row',
@@ -3410,17 +3406,17 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   patientNameTextStyle: {
-    ...text('B', 13, SHERPA_BLUE, 1, 20),
+    ...text('R', 12, SHERPA_BLUE, 1, 20),
   },
   changeTextStyle: {
-    color: APP_YELLOW,
+    ...text('B', 13, APP_YELLOW, 1, 20),
   },
   patientDetailsTextStyle: {
-    ...text('R', 12, SHERPA_BLUE, 1, 18),
+    ...text('SB', 14, SHERPA_BLUE, 1, 18),
   },
   testReportMsgStyle: {
     ...text('R', 10, SHERPA_BLUE, 0.7, 14),
-    marginBottom: 24,
+    marginTop: 4,
   },
   phelboTextView: {
     backgroundColor: '#FCFDDA',
