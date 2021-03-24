@@ -600,6 +600,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
+          source={'Tests'}        
           heading="Schedule Appointment"
           date={date}
           areaId={String(selectedOrder?.areaId)}

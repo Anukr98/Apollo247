@@ -3001,6 +3001,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     <View style={{ flex: 1 }}>
       {displaySchedule && (
         <TestSlotSelectionOverlay
+          source={'Tests'}
           heading="Schedule Appointment"
           date={date}
           areaId={(areaSelected as any)?.key!}
