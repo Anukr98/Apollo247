@@ -468,7 +468,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>{item?.medicineName || medicineName}</Text>
-          <Text style={[styles.medicineText1, { marginTop: 3 }]}>
+          <Text style={styles.medicineText1}>
             (MRP. {string.common.Rs} {item?.mrp?.toFixed(2) || mrp})
           </Text>
         </View>
