@@ -1145,6 +1145,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
         onPressTatCard={() => {
+          /*
           if (hasUnserviceableproduct()) {
             return;
           } else if (uploadPrescriptionRequired) {
@@ -1157,6 +1158,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               shopId: shopId,
             });
           }
+          */
         }}
         screen={'MedicineCart'}
         onPressReviewOrder={onPressReviewOrder}
