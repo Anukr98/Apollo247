@@ -5090,8 +5090,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     index: number
   ) => {
-    //console.log('check renderChatRow ---', rowData);
-
     if (
       rowData.message === typingMsg ||
       rowData.message === endCallMsg ||
@@ -5374,13 +5372,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onMeetingLinkClicked = (rowData: any) => {
-    Linking.openURL(rowData.url);
+    try {
+      Linking.openURL(rowData.url);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onMeetingLinkClickedd', error);
+    }
   };
 
   const onLinkCopyClicked = (rowData: any) => {
-    Clipboard.setString(rowData.url);
-    setHandlerMessage(strings.externalMeetingLink.copied_to_clipboard + ' ' + rowData.url);
-    setSnackbarState(true);
+    try {
+      Clipboard.setString(rowData.url);
+      setHandlerMessage(strings.externalMeetingLink.copied_to_clipboard + ' ' + rowData.url);
+      setSnackbarState(true);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onLinkCopyClicked', error);
+    }
   };
 
   const convertChatTime = (timeStamp: any) => {
