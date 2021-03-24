@@ -604,7 +604,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderError = () => {
     if (
-      refundStatusArr?.length > 0
+      refundStatusArr?.length > 0 && showError
         ? orderStatusList?.length == 0
         : showError && _.isEmpty(orderLevelStatus)
     ) {
