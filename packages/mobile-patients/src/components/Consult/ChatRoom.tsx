@@ -1318,7 +1318,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     const lastDocMsgIndex = messages
       .reverse()
-      .findIndex((item: any) => item?.id == doctorId && item?.sentBy == 'DOCTOR');
+      .findIndex((item: any) => item?.id == doctorId && !item?.automatedText);
     messages.reverse();
     let msgsByPatient = 0;
     if (lastDocMsgIndex && lastDocMsgIndex < prescUploadIndex) {
