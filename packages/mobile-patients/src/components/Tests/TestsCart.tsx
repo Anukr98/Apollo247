@@ -2567,6 +2567,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 orderId: orderId,
                 orderDetails: orderInfo,
                 eventAttributes,
+                businessLine: 'diagnostics',
               });
             }
           }

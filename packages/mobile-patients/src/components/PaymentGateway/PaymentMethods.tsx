@@ -88,6 +88,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
   const [isCardValid, setisCardValid] = useState<boolean>(true);
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
+  const [authToken, setauthToken] = useState<string>('');
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -242,17 +243,22 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const getClientToken = async () => {
-    setisTxnProcessing(true);
-    try {
-      initiateOrderPayment();
-      const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
-      const { data } = response;
-      const { createOrder } = data;
-      const token = createOrder?.juspay?.client_auth_token;
-      return token;
-    } catch (e) {
-      setisTxnProcessing(false);
-      renderErrorPopup();
+    if (authToken) {
+      return authToken;
+    } else {
+      setisTxnProcessing(true);
+      try {
+        businessLine == 'diagnostics' && initiateOrderPayment();
+        const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
+        const { data } = response;
+        const { createOrder } = data;
+        const token = createOrder?.juspay?.client_auth_token;
+        setauthToken(token);
+        return token;
+      } catch (e) {
+        setisTxnProcessing(false);
+        renderErrorPopup();
+      }
     }
   };
 
@@ -362,6 +368,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     } else {
       return [];
     }
+  };
+  const onPressRetryBooking = () => {
+    hideAphAlert?.();
+    businessLine == 'diagnostics' && props.navigation.goBack();
   };
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
@@ -474,16 +484,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const showTxnFailurePopUP = () => {
     setisTxnProcessing(false);
     showAphAlert?.({
-      unDismissable: true,
+      unDismissable: businessLine == 'diagnostics' ? true : false,
       removeTopIcon: true,
-      children: (
-        <TxnFailed
-          onPressRetry={() => {
-            hideAphAlert?.();
-            props.navigation.goBack();
-          }}
-        />
-      ),
+      children: <TxnFailed onPressRetry={onPressRetryBooking} />,
     });
   };
 

@@ -1361,8 +1361,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     arrayHistory = arrayHistory.filter((item) => {
       return item.status == 'COMPLETED';
     });
-
-    console.log('arrayHistory-----------', arrayHistory);
     if (arrayHistory.length > 0) {
       return (
         <View style={styles.cardView}>
