@@ -7,6 +7,7 @@ import {
   Text,
   Alert,
   Linking,
+  TouchableOpacity,
   Dimensions,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -29,6 +30,7 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -142,13 +144,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const isOnlineConsult = selectedTab === 'Consult Online';
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
   const { showAphAlert, setLoading } = useUIElements();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(false);
+  const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
+  const [gender, setGender] = useState<string>(currentPatient?.gender);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -342,6 +347,119 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         }
       />
     );
+  };
+
+  const renderPatient = () => {
+    return (
+      <View style={styles.subViewPopup}>
+        <View style={{ paddingHorizontal: 6 }}>
+          <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
+        </View>
+        <View style={styles.seperatorLine} />
+        {renderProfileListView()}
+      </View>
+    );
+  };
+  const renderProfileListView = () => {
+    return (
+      <View>
+        <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
+        <Text style={styles.popDescriptionStyle}>Prescription to be generated in the name of?</Text>
+        {renderCTAs()}
+      </View>
+    );
+  };
+
+  const renderCTAs = () => (
+    <View style={styles.aphAlertCtaViewStyle}>
+      {moveSelectedToTop()?.map((item: any, index: any, array: any) =>
+        item.firstName !== '+ADD MEMBER' ? (
+          <TouchableOpacity
+            onPress={() => {
+              setLoading && setLoading(true);
+              onSelectedProfile(item);
+              setIsSelectedOnce(true);
+              setShowErrorSelect(false);
+            }}
+            style={
+              currentPatient?.id === item.id && isSelectedOnce
+                ? styles.ctaSelectButtonViewStyle
+                : styles.ctaWhiteButtonViewStyle
+            }
+          >
+            <Text
+              style={
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectTextStyle
+                  : styles.ctaOrangeTextStyle
+              }
+            >
+              {item.firstName}
+            </Text>
+            <Text
+              style={
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectText2Style
+                  : styles.ctaOrangeText2Style
+              }
+            >
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+            </Text>
+          </TouchableOpacity>
+        ) : null
+      )}
+      <View style={[styles.textViewStyle]}>
+        <Text
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.EditProfile, {
+              isEdit: false,
+              isPoptype: true,
+              mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              onNewProfileAdded: onNewProfileAdded,
+            });
+          }}
+          style={[styles.ctaOrangeTextStyle]}
+        >
+          {'+ADD MEMBER'}
+        </Text>
+      </View>
+      {showErrorSelect ? (
+        <Text style={styles.errorSelectMessage}>
+          *Please select the patient before proceeding to pay!
+        </Text>
+      ) : null}
+    </View>
+  );
+
+  const onNewProfileAdded = (onAdd: any) => {
+    finalAppointmentInput['patientId'] = onAdd?.id;
+    setIsSelectedOnce(onAdd?.added);
+    setShowErrorSelect(!onAdd?.added);
+  };
+
+  const onSelectedProfile = (item: any) => {
+    selectUser(item);
+    setLoading && setLoading(false);
+  };
+  const selectUser = (selectedUser: any) => {
+    setGender(selectedUser?.gender);
+    setCurrentPatientId(selectedUser?.id);
+    AsyncStorage.setItem('selectUserId', selectedUser!.id);
+    AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+    AsyncStorage.setItem('isNewProfile', 'yes');
+    moveSelectedToTop();
+    finalAppointmentInput['patientId'] = selectedUser?.id;
+  };
+
+  const moveSelectedToTop = () => {
+    if (currentPatient !== undefined) {
+      const patientLinkedProfiles = [
+        allCurrentPatients?.find((item: any) => item?.uhid === currentPatient.uhid),
+        ...allCurrentPatients.filter((item: any) => item?.uhid !== currentPatient.uhid),
+      ];
+      return patientLinkedProfiles;
+    }
+    return [];
   };
 
   const renderCircleSubscriptionPlans = () => {
@@ -540,22 +658,26 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const onPressPay = () => {
-    // Pay Button Clicked	event
-    postWebEngagePayButtonClickedEvent();
-    whatsappAPICalled();
-    CommonLogEvent(AppRoutes.PaymentCheckout, 'Book Appointment clicked');
-    CommonLogEvent(AppRoutes.PaymentCheckout, `PAY ${string.common.Rs} ${amountToPay}`);
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          onSubmitBookAppointment();
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
-      });
+    if (isSelectedOnce) {
+      // Pay Button Clicked	event
+      postWebEngagePayButtonClickedEvent();
+      whatsappAPICalled();
+      CommonLogEvent(AppRoutes.PaymentCheckout, 'Book Appointment clicked');
+      CommonLogEvent(AppRoutes.PaymentCheckout, `PAY ${string.common.Rs} ${amountToPay}`);
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            onSubmitBookAppointment();
+          } else {
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
+        });
+    } else {
+      setShowErrorSelect(true);
+    }
   };
 
   const verifyCoupon = async (fromPayment?: boolean) => {
@@ -788,6 +910,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
+        eventAttributes['User_Type'] = getUserType(currentPatient);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -797,6 +920,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           )
         );
         setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
@@ -948,6 +1072,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
+      User_Type: getUserType(currentPatient),
     };
     return eventAttributes;
   };
@@ -1031,6 +1156,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
+      User_Type: getUserType(currentPatient),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
@@ -1075,6 +1201,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
+          {renderPatient()}
           {isCircleDoctorOnSelectedConsultMode && !!circleSubscriptionId
             ? renderCareMembershipAddedCard()
             : null}
@@ -1109,8 +1236,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   priceBreakupTitle: {
-    ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE),
-    marginHorizontal: 20,
+    ...theme.viewStyles.text('B', 13, theme.colors.SHERPA_BLUE),
+    marginHorizontal: 16,
     marginTop: 15,
   },
   seperatorLine: {
@@ -1174,5 +1301,92 @@ const styles = StyleSheet.create({
   careSelectContainer: {
     marginTop: 20,
     marginHorizontal: 20,
+  },
+  aphAlertCtaViewStyle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 18,
+    marginVertical: 8,
+  },
+  ctaWhiteButtonViewStyle: {
+    padding: 2,
+    borderRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    marginRight: 15,
+    marginVertical: 5,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  ctaSelectButtonViewStyle: {
+    padding: 2,
+    borderRadius: 10,
+    backgroundColor: '#fc9916',
+    marginRight: 15,
+    marginVertical: 5,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  ctaSelectTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaSelectText2Style: {
+    ...theme.viewStyles.text('R', 10, '#ffffff', 1, 20),
+    textAlign: 'center',
+    marginHorizontal: 5,
+  },
+  errorSelectMessage: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
+    marginHorizontal: 5,
+    marginBottom: 5,
+  },
+  textViewStyle: {
+    marginTop: 8,
+    paddingVertical: 8,
+  },
+  ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
+  ctaOrangeTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaOrangeText2Style: {
+    ...theme.viewStyles.text('R', 10, '#fc9916', 1, 20),
+    textAlign: 'center',
+    marginHorizontal: 5,
+  },
+  subViewPopup: {
+    backgroundColor: 'white',
+    width: '90%',
+    alignSelf: 'center',
+    borderRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 15,
+    marginVertical: 10,
+  },
+  congratulationsDescriptionStyle: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  popDescriptionStyle: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
   },
 });

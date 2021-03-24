@@ -2089,6 +2089,18 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        paymentOrderId
+        diagnosticOrderReschedule{
+          rescheduleDate
+          rescheduleReason
+          comments
+        }
+        diagnosticOrderCancellation{
+          cancellationReason
+          cancelType
+          cancelByName
+          comments
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2217,6 +2229,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         collectionCharges
         slotDateTimeInUTC
         paymentType
+        visitNo
         diagnosticOrderLineItems {
           id
           itemId
@@ -3950,6 +3963,7 @@ export const GET_PATIENTS_MOBILE = gql`
         firstName
         lastName
         mobileNumber
+        isConsulted
         dateOfBirth
         emailAddress
         gender
@@ -4728,6 +4742,28 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
   }
 `;
 
+export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
+  query getDiagnosticOrderDetailsByDisplayID($displayId: Int!) {
+    getDiagnosticOrderDetailsByDisplayID(displayId: $displayId) {
+      ordersList {
+        patientId
+        patientAddressId
+        orderStatus
+        totalPrice
+        createdDate
+        slotDateTimeInUTC
+        visitNo
+        isRescheduled
+        preBookingId
+        id
+        diagnosticOrdersStatus {
+          orderStatus
+        }
+      }
+    }
+  }
+`;
+
 export const GET_OTP_ON_CALL = gql`
   query getOTPOnCall($mobileNumber: String, $loginType: LOGIN_TYPE, $id: String!) {
     getOTPOnCall(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
@@ -4746,6 +4782,33 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
       diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
     ) {
       status
+    }
+  }
+`;
+
+export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
+  query getHCOrderFormattedTrackingHistory($diagnosticOrderID: String) {
+    getHCOrderFormattedTrackingHistory(diagnosticOrderID: $diagnosticOrderID) {
+      statusHistory{
+        statusDate
+        orderStatus
+      }
+      statusInclusions{
+        statusDate
+        orderStatus
+        itemId
+        packageId
+        itemName
+        packageName
+      }
+    }
+  }
+  `;
+
+export const VERIFY_TRUECALLER_PROFILE = gql`
+  mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
+    verifyTrueCallerProfile(profile: $profile) {
+      authToken
     }
   }
 `;

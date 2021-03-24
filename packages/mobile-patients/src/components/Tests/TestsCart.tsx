@@ -56,7 +56,6 @@ import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
   GET_DIAGNOSTIC_AREAS,
-  GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
   GET_DIAGNOSTICS_HC_CHARGES,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   VALIDATE_DIAGNOSTIC_COUPON,
@@ -99,7 +98,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { differenceInYears, parse } from 'date-fns';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -113,18 +112,11 @@ import {
   View,
   Keyboard,
   Dimensions,
-  Linking,
   Platform,
 } from 'react-native';
-import {
-  FlatList,
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from 'react-native-geolocation-service';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -146,7 +138,6 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
@@ -188,7 +179,6 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 const { width: screenWidth } = Dimensions.get('window');
-const screenHeight = Dimensions.get('window').height;
 
 type clinicHoursData = {
   week: string;
@@ -323,11 +313,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
-  const itemWithId = itemsWithHC?.map((item) => parseInt(item.id!));
+  const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const cartItemsWithId = cartItems?.map((item) => parseInt(item?.id!));
+  const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var pricesForItemArray;
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
@@ -371,10 +361,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const checkPatientAge = () => {
     let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
-
-    if (age! <= 10 || age == null) {
+    let gender = currentPatient?.gender;
+    if (age! <= 10 || age == null || gender == null) {
       renderAlert(
-        age == null ? string.common.contactCustomerCare : string.diagnostics.minorAgeText
+        age == null
+          ? string.common.contactCustomerCare1
+          : gender == null
+          ? string.common.contactCustomerCare2
+          : string.diagnostics.minorAgeText
       );
       setIsMinor(true);
       setDeliveryAddressId!('');
@@ -630,12 +624,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             showAreaSelection
           )
         : getAreas();
-      DiagnosticRemoveFromCartClicked(id, name, addresses?.[selectedAddressIndex]?.zipcode!);
+      DiagnosticRemoveFromCartClicked(
+        id,
+        name,
+        addresses?.[selectedAddressIndex]?.zipcode!,
+        'Customer'
+      );
     } else {
       DiagnosticRemoveFromCartClicked(
         id,
         name,
-        diagnosticLocation?.pincode! || locationDetails?.pincode!
+        diagnosticLocation?.pincode! || locationDetails?.pincode!,
+        'Customer'
       );
     }
   };
@@ -751,7 +751,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
       setAreaSelected?.(obj);
       checkSlotSelection(obj);
-      setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       console.log({ e });
       CommonBugFender('TestsCart_', e);
@@ -1924,28 +1923,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const renderTotalCharges = () => {
-    const isPPEKitChargesApplicable = cartItems.map((item) =>
-      COVID_NOTIFICATION_ITEMID.includes(item.id)
+  const renderHomeCollectionDisclaimer = () => {
+    return (
+      <View style={styles.homeCollectionContainer}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.phleboText}>{string.diagnostics.homeHomeCollectionDisclaimerTxt}</Text>
+      </View>
     );
-    const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
+  };
+
+  const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
 
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
         {/* {renderCouponView()} */}
+        {renderHomeCollectionDisclaimer()}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            // marginTop: 4,
-            marginBottom: 12,
-            padding: 16,
-            marginTop: 16,
-          }}
-        >
+        <View style={styles.totalChargesContainer}>
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
             <Text style={styles.blueTextStyle}>
@@ -2722,7 +2718,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const higherPricesName = formattedHigherPriceItemName?.join(', ');
 
           //clear cart
-          onChangeCartItems(updatedCartItems);
+          onChangeCartItems(updatedCartItems, duplicateTests, finalRemovalId);
 
           //show inclusions
           let array = [] as any;
@@ -2794,7 +2790,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const duplicateTests = array?.[0]?.removalName;
 
       let arrayToSet = [...duplicateNameArray, array]?.flat(1);
-      onChangeCartItems(updatedCartItems);
+      onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove);
       setShowInclusions(true);
       setDuplicateNameArray(arrayToSet);
 
@@ -2817,7 +2813,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
-  function onChangeCartItems(updatedCartItems: any) {
+  function onChangeCartItems(updatedCartItems: any, removedTest: string, removedTestItemId: any) {
     setDiagnosticSlot?.(null);
     setAreaSelected?.({});
     setDiagnosticAreas?.([]);
@@ -2834,6 +2830,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             showAreaSelection
           )
         : getAreas();
+      DiagnosticRemoveFromCartClicked(
+        removedTestItemId,
+        removedTest,
+        addresses?.[selectedAddressIndex]?.zipcode!,
+        'Automated'
+      );
     }
   }
 
@@ -2985,6 +2987,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
   const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
+  const isCovidItem = cartItemsWithId?.map((item) =>
+    AppConfig.Configuration.Covid_Items.includes(item)
+  );
+
+  const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
+
+  const maxDaysToShow = !!isCartHasCovidItem
+    ? AppConfig.Configuration.Covid_Max_Slot_Days
+    : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
   return (
     <View style={{ flex: 1 }}>
       {displaySchedule && (
@@ -2993,7 +3005,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           date={date}
           areaId={(areaSelected as any)?.key!}
           maxDate={moment()
-            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .add(maxDaysToShow, 'day')
             .toDate()}
           isVisible={displaySchedule}
           isTodaySlotUnavailable={todaySlotNotAvailable}
@@ -3133,6 +3145,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flexDirection: 'row',
     marginVertical: '2%',
+    paddingRight: 15,
   },
   phleboText: {
     ...theme.fonts.IBMPlexSansMedium(10),
@@ -3143,4 +3156,19 @@ const styles = StyleSheet.create({
     marginHorizontal: '2%',
   },
   infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
+  homeCollectionContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 12,
+    margin: 16,
+    flexDirection: 'row',
+    backgroundColor: '#FCFDDA',
+  },
+  totalChargesContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    // marginTop: 4,
+    marginBottom: 12,
+    padding: 16,
+    marginTop: 6,
+  },
 });

@@ -140,6 +140,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
+  PARTIAL_ORDER_COMPLETED = "PARTIAL_ORDER_COMPLETED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
@@ -153,6 +154,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   SAMPLE_NOT_COLLECTED_IN_LAB = "SAMPLE_NOT_COLLECTED_IN_LAB",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
   SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_SUBMITTED = "SAMPLE_SUBMITTED",
   SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
@@ -264,6 +266,48 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   CANCELLED = "CANCELLED",
   CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_COMPLETED = "CONSULT_COMPLETED",
+  CONSULT_PENDING = "CONSULT_PENDING",
+  DELIVERED = "DELIVERED",
+  DELIVERY_ATTEMPTED = "DELIVERY_ATTEMPTED",
+  ITEMS_RETURNED = "ITEMS_RETURNED",
+  ON_HOLD = "ON_HOLD",
+  ORDER_BILLED = "ORDER_BILLED",
+  ORDER_CONFIRMED = "ORDER_CONFIRMED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_PLACED = "ORDER_PLACED",
+  ORDER_VERIFIED = "ORDER_VERIFIED",
+  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
+  PICKEDUP = "PICKEDUP",
+  PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
+  PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
+  QUOTE = "QUOTE",
+  READY_AT_STORE = "READY_AT_STORE",
+  READY_FOR_VERIFICATION = "READY_FOR_VERIFICATION",
+  READY_TO_SHIP = "READY_TO_SHIP",
+  RETURN_ACCEPTED = "RETURN_ACCEPTED",
+  RETURN_INITIATED = "RETURN_INITIATED",
+  RETURN_PENDING = "RETURN_PENDING",
+  RETURN_PICKUP = "RETURN_PICKUP",
+  RETURN_REQUESTED = "RETURN_REQUESTED",
+  RETURN_REQUEST_CREATED = "RETURN_REQUEST_CREATED",
+  RETURN_RTO = "RETURN_RTO",
+  RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
+  RVP_ASSIGNED = "RVP_ASSIGNED",
+  SHIPPED = "SHIPPED",
+  VERIFICATION_DONE = "VERIFICATION_DONE",
+}
+
+export enum MEDICINE_ORDER_STATUS_CONSULT {
+  CANCELLED = "CANCELLED",
+  CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_CANCELLED = "CONSULT_CANCELLED",
   CONSULT_COMPLETED = "CONSULT_COMPLETED",
   CONSULT_PENDING = "CONSULT_PENDING",
   DELIVERED = "DELIVERED",
@@ -921,7 +965,8 @@ export interface CouponInput {
 
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
-  plan_id: string;
+  plan_id?: string | null;
+  group_plan_id?: string | null;
   payment_reference?: PaymentReference | null;
   coupon_availed?: string | null;
   mobile_number: string;
@@ -1325,7 +1370,8 @@ export interface MessageInput {
 export interface OrderCreate {
   orders: OrderVerticals;
   total_amount: number;
-  patient_id: any;
+  patient_id?: any | null;
+  customer_id?: any | null;
 }
 
 export interface OrderInput {
@@ -1337,8 +1383,9 @@ export interface OrderInput {
 }
 
 export interface OrderInputEntity {
-  order_id?: string | null;
-  amount?: number | null;
+  order_id: string;
+  amount: number;
+  patient_id?: any | null;
 }
 
 export interface OrderLineItems {
@@ -1575,6 +1622,7 @@ export interface SaveBookHomeCollectionOrderInput {
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
   attachmentData?: (Attachments | null)[] | null;
+  caseSheets?: (string | null)[] | null;
 }
 
 export interface SaveDeviceTokenInput {
@@ -1638,6 +1686,32 @@ export interface SourceMetaData {
   purchase_type?: PlanPurchaseType | null;
 }
 
+export interface TrueCallerProfile {
+  avatarUrl?: string | null;
+  city?: string | null;
+  companyName?: string | null;
+  countryCode?: string | null;
+  email?: string | null;
+  facebookId?: string | null;
+  firstName?: string | null;
+  gender?: string | null;
+  isAmbassador?: boolean | null;
+  isSimChanged?: boolean | null;
+  isTrueName?: boolean | null;
+  jobTitle?: string | null;
+  lastName?: string | null;
+  payload?: string | null;
+  phoneNumber?: string | null;
+  requestNonce?: string | null;
+  signature?: string | null;
+  signatureAlgorithm?: string | null;
+  street?: string | null;
+  twitterId?: string | null;
+  url?: string | null;
+  verificationMode?: string | null;
+  zipcode?: string | null;
+}
+
 export interface UpdateAppointmentInput {
   appointmentId: string;
   patientLocation?: PatientLocation | null;
@@ -1683,6 +1757,7 @@ export interface UpdatePatientInput {
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;
+  isConsulted?: boolean | null;
 }
 
 export interface UploadDocumentInput {

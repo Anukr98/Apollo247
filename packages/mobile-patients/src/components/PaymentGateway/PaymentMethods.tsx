@@ -127,8 +127,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           setloading(false);
         } else if (paymentActions.indexOf(action) != -1 && status) {
           status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
-          status == 'PENDING_VBV' && !payload?.error && navigatetoOrderStatus(false, 'pending');
-          FailedStatuses.includes(status) && showTxnFailurePopUP();
+          status == 'PENDING_VBV' && handlePaymentPending(payload?.errorCode);
+          FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
         } else if (action == 'upiTxn' && !payload?.error && !status) {
           setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (payload?.error) {
@@ -147,6 +147,21 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       default:
         renderErrorPopup();
+    }
+  };
+
+  const handlePaymentPending = (errorCode: string) => {
+    switch (errorCode) {
+      case ('JP_002', 'JP_005', 'JP_009', 'JP_012'):
+        // User aborted txn or no Internet or user had exceeded the limit of incorrect OTP submissions or txn failed at PG end
+        showTxnFailurePopUP();
+        break;
+      case 'JP_006':
+        // txn status is awaited
+        navigatetoOrderStatus(false, 'pending');
+        break;
+      default:
+        showTxnFailurePopUP();
     }
   };
 
@@ -241,17 +256,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
+  function triggerWebengege(mode: 'Prepaid' | 'Cash', type: string) {
+    DiagnosticPaymentInitiated(mode, amount, 'Diagnostic', 'Diagnostic', type);
+  }
+
   async function onPressBank(bankCode: string) {
+    triggerWebengege('Prepaid', 'Net Banking');
     const token = await getClientToken();
     InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode);
   }
 
   async function onPressWallet(wallet: string) {
+    triggerWebengege('Prepaid', wallet);
     const token = await getClientToken();
     InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
   }
 
   async function onPressUPIApp(app: any) {
+    triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
     // const sdkPresent =
     //   app?.payment_method_code == 'PHONEPE'
@@ -264,6 +286,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressVPAPay(VPA: string) {
+    triggerWebengege('Prepaid', VPA);
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -280,11 +303,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressCardPay(cardInfo: any) {
+    triggerWebengege('Prepaid', 'Card');
     const token = await getClientToken();
     InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo);
   }
 
   async function onPressPayByCash() {
+    triggerWebengege('Cash', 'Cash');
     setisTxnProcessing(true);
     try {
       const response = await createJusPayOrder(PAYMENT_MODE.COD);
@@ -307,6 +332,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
     const methods = topBanks?.payment_methods?.map((item: any) => item?.payment_method_code) || [];
     const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    triggerWebengege('Prepaid', 'Other Banks');
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,

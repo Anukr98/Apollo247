@@ -618,7 +618,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Dispatched';
+      statusString = 'Out for Delivery';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -629,20 +629,11 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       statusString = 'Order Ready at Store';
       break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
-      statusString = 'Return In-Process';
-      break;
     case MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED:
       statusString = 'Delivery Attempted';
       break;
     case MEDICINE_ORDER_STATUS.RVP_ASSIGNED:
-      statusString = 'Pick-up Assigned';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Order Delivered';
+      statusString = 'Return Pickup Assigned';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
       statusString = 'Return Successful';
@@ -1174,6 +1165,17 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
+export const getUserType = (currentPatient: any) => {
+  const user: string =
+    currentPatient?.isConsulted === undefined
+      ? 'undefined'
+      : currentPatient?.isConsulted
+      ? 'Repeat'
+      : 'New';
+
+  return user;
+};
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
@@ -1399,61 +1401,6 @@ export const formatTestSlotWithBuffer = (slotTime: string) => {
 
   const newSlot = [startTime, endTime];
   return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
-};
-
-export const isValidTestSlot = (
-  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
-  date: Date
-) => {
-  return (
-    slot.status != 'booked' &&
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
-      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
-    )
-  );
-};
-
-export const isValidTestSlotWithArea = (
-  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
-  date: Date,
-  customSlot?: boolean
-) => {
-  return (
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
-      moment(
-        customSlot
-          ? AppConfig.Configuration.DIAGNOSTIC_COVID_MAX_SLOT_TIME.trim()
-          : AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(),
-        'HH:mm'
-      )
-    )
-  );
 };
 
 export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
@@ -2573,7 +2520,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST:
       statusString = 'Order rescheduled';
       break;
+    //first status has been added
     //last two status => report awaited (need not show in ui, so showing previous)
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
@@ -2609,6 +2558,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
     case REFUND_STATUSES.MANUAL_REVIEW:
       statusString = 'Refund initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
+      statusString = 'Partial Order Completed';
       break;
     default:
       statusString = status || '';

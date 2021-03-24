@@ -19,6 +19,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import CovidButton from './Components/CovidStyles';
+
 import {
   ApolloHealthProIcon,
   CartIcon,
@@ -121,6 +122,7 @@ import {
   setWebEngageScreenNames,
   timeDiffDaysFromNow,
   setCircleMembershipType,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -128,7 +130,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -716,6 +718,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
+  const { getPatientApiCall } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1075,6 +1078,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(currentPatient),
     };
     if (
       source &&
@@ -1732,6 +1736,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const storePatientDetailsTOBugsnag = async () => {
     try {
+      if (currentPatient?.isConsulted === undefined) getPatientApiCall();
+
       let allPatients: any;
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
@@ -2600,14 +2606,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderCircle = () => {
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
-    const expired = circlePlanValidity
-      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
-      : '';
+
     const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
     renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
     const darktheme = circleStatus === 'disabled' ? true : false;
-
     const cardlist = dataBannerCards(darktheme);
+
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
 
     {
       /**
@@ -3188,7 +3195,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         </>
       )}
-      {showSpinner && <Spinner />}
+      {showSpinner && (
+        <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+      )}
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {

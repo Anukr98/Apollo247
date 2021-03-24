@@ -2,7 +2,6 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { GET_PRISM_AUTH_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -33,10 +32,6 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
-import {
-  getPrismAuthToken,
-  getPrismAuthTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { DiagnosticViewReportClicked } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -69,7 +64,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
-  const [prismAuthToken, setPrismAuthToken] = useState('');
   const [labResults, setLabResults] = useState<
     | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
     | null
@@ -91,34 +85,15 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     createTestCardObject(individualItemStatus);
   }, []);
 
-  const getAuthToken = async () => {
-    setLoading!(true);
-    client
-      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
-        query: GET_PRISM_AUTH_TOKEN,
-        fetchPolicy: 'no-cache',
-        variables: {
-          uhid: currentPatient?.uhid || '',
-        },
-      })
-      .then(({ data }) => {
-        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
-        if (prism_auth_token) {
-          setPrismAuthToken(prism_auth_token);
-          fetchTestReportResult();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
-        setLoading!(false);
-      });
-  };
-
-  const fetchTestReportResult = useCallback(() => {
+  const fetchTestReportResult = useCallback((order: any) => {
+    setLoading?.(true);
     const getVisitId = orderSelected?.visitNo;
-    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.TEST_REPORT])
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
       .then((data: any) => {
         const labResultsData = g(
           data,
@@ -127,10 +102,16 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           'response'
         );
         setLabResults(labResultsData);
-        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
-        !!resultForVisitNo
+        let resultForVisitNo = labResultsData?.filter(
+          (item: any) => item?.identifier == getVisitId
+        );
+        let itemNameResult =
+          resultForVisitNo?.length > 0 &&
+          resultForVisitNo?.find((item: any) => item?.labTestName == order?.itemName);
+
+        !!itemNameResult
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-              data: resultForVisitNo,
+              data: itemNameResult,
               labResults: true,
             })
           : renderReportError(string.diagnostics.responseUnavailableForReport);
@@ -268,7 +249,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
         showTestPreparation={order?.testPreparationData != ''} //call the service
         onOptionPress={() => {
           props.navigation.navigate(AppRoutes.TestOrderDetails, {
-            orderId: orderSelected!.id,
+            orderId: orderSelected?.id,
             selectedTest: order,
             selectedOrder: orderSelected,
             individualTestStatus: individualItemStatus,
@@ -276,16 +257,16 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
             refundStatusArr: refundStatusArr,
           });
         }}
-        onPressViewReport={() => _navigateToPHR()}
+        onPressViewReport={() => _navigateToPHR(order)}
       />
     );
   };
 
-  function _navigateToPHR() {
+  function _navigateToPHR(order: any) {
     const visitId = orderSelected?.visitNo;
     DiagnosticViewReportClicked();
     if (visitId) {
-      getAuthToken();
+      fetchTestReportResult(order);
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
