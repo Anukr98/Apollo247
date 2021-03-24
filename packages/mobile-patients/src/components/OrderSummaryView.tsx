@@ -468,7 +468,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>{item?.medicineName || medicineName}</Text>
-          <Text style={theme.viewStyles.text('SB', 12, '#01475b', 0.7, 24, 0)}>
+          <Text style={[styles.medicineText1, { marginTop: 3 }]}>
             (MRP. {string.common.Rs} {item?.mrp?.toFixed(2) || mrp})
           </Text>
         </View>
@@ -712,7 +712,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 alignItems: 'flex-end',
               }}
             >
-              <Text style={styles.medicineText}>{'MRP VALUE'}</Text>
+              <Text style={styles.medicineText}>{'MRP TOTAL'}</Text>
             </View>
           </View>
           {orderBilledAndPacked && newOrders && itemDetails
