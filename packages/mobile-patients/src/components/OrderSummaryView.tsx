@@ -8,7 +8,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
@@ -205,28 +205,32 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     '0' as any,
     'itemDetails'
   );
-  const itemDetails = item_details ? JSON.parse(item_details) : null;
-  if (itemDetails.length) {
-    Promise.all(itemDetails.map((item) => getMedicineDetailsApi(item?.itemId)))
-      .then((result) => {
-        const shipmentDetails = result.map(({ data: { productdp } }, index) => {
-          const medicineDetails = (productdp && productdp[0]) || {};
-          const mou = medicineDetails?.mou || itemDetails[index]?.mou;
-          const qty = (itemDetails[index]?.issuedQty * itemDetails[index]?.mou) / mou;
-          return {
-            itemId: medicineDetails?.sku || itemDetails[index]?.itemId,
-            medicineName: medicineDetails?.name || itemDetails[index]?.itemName,
-            quantity: Math.ceil(qty),
-            mrp: (itemDetails[index]?.mrp * mou) / itemDetails[index]?.mou,
-            total: itemDetails[index]?.mrp * itemDetails[index]?.issuedQty || 0,
-          };
+  const [itemDetails, setItemDetails] = useState(item_details ? JSON.parse(item_details) : []);
+
+  useEffect(() => {
+    if (itemDetails?.length) {
+      Promise.all(itemDetails?.map((item) => getMedicineDetailsApi(item?.itemId)))
+        .then((result) => {
+          const shipmentDetails = result.map(({ data: { productdp } }, index) => {
+            const medicineDetails = (productdp && productdp[0]) || {};
+            const mou = medicineDetails?.mou || itemDetails?.[index]?.mou;
+            const qty = (itemDetails?.[index]?.issuedQty * itemDetails?.[index]?.mou) / mou;
+            return {
+              itemId: medicineDetails?.sku || itemDetails?.[index]?.itemId,
+              medicineName: medicineDetails?.name || itemDetails?.[index]?.itemName,
+              quantity: Math.ceil(qty),
+              mrp: (itemDetails?.[index]?.mrp * mou) / itemDetails?.[index]?.mou,
+              total: itemDetails?.[index]?.mrp * itemDetails?.[index]?.issuedQty || 0,
+            };
+          });
+          setShipmentItems(shipmentDetails);
+        })
+        .catch((e) => {
+          console.log({ e });
         });
-        setShipmentItems(shipmentDetails);
-      })
-      .catch((e) => {
-        console.log({ e });
-      });
-  }
+    }
+  }, [itemDetails]);
+
   const billDetails = g(
     orderDetails,
     'medicineOrderShipments',
@@ -250,17 +254,17 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     item_quantity =
       item_details_from_shipments?.length +
       (item_details_from_shipments?.length > 1 ? ' item(s) ' : ' items ');
-  } else if (!orderBilledAndPacked && medicineOrderLineItems.length == 1) {
-    item_quantity = medicineOrderLineItems.length + ' item ';
-  } else if (orderBilledAndPacked && itemDetails && itemDetails.length == 1) {
-    item_quantity = itemDetails.length + ' item ';
+  } else if (!orderBilledAndPacked && medicineOrderLineItems?.length == 1) {
+    item_quantity = medicineOrderLineItems?.length + ' item ';
+  } else if (orderBilledAndPacked && itemDetails && itemDetails?.length == 1) {
+    item_quantity = itemDetails?.length + ' item ';
   } else {
     item_quantity =
       orderBilledAndPacked && itemDetails
-        ? orderBilledAndPacked && itemDetails.length + ' item(s) '
-        : medicineOrderLineItems.length + ' item(s) ';
+        ? orderBilledAndPacked && itemDetails?.length + ' item(s) '
+        : medicineOrderLineItems?.length + ' item(s) ';
   }
-  const mrpTotal = medicineOrderLineItems.reduce(
+  const mrpTotal = medicineOrderLineItems?.reduce(
     (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
@@ -273,7 +277,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const billedMrpTotal =
     orderBilledAndPacked &&
     itemDetails &&
-    itemDetails.reduce((acc, currentVal) => acc + currentVal!.mrp! * currentVal!.issuedQty!, 0);
+    itemDetails?.reduce((acc, currentVal) => acc + currentVal?.mrp * currentVal?.issuedQty, 0);
 
   const product_discount = orderDetails.productDiscount || 0;
   const coupon_discount = orderDetails.couponDiscount || 0;
@@ -719,7 +723,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             ? shipmentItems?.map((item) => renderOrderBilledMedicineRow(item!))
             : isCartItemsUpdated
             ? item_details_from_shipments?.map((item) => renderMedicineRow(item!))
-            : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
+            : medicineOrderLineItems?.map((item) => renderMedicineRow(item!))}
         </View>
 
         {orderDetails?.totalCashBack! > 0 && renderCircleSaving()}
