@@ -271,7 +271,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const consRejectedString = isPresent && props.additonalRejectedInfo?.join(', ');
     let textToShow =
       props.isCancelled && props.cancelledReason != null
-        ? `Order was cancelled because of ${
+        ? `Order was cancelled - ${
             !!props.cancelledReason?.comments && props.cancelledReason?.comments != ''
               ? props.cancelledReason?.comments
               : props.cancelledReason?.cancellationReason

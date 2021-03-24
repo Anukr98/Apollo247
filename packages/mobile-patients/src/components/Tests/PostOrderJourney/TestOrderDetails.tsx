@@ -597,14 +597,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const renderOrderSummary = () => {
     return (
       !!g(orderDetails, 'totalPrice') && (
-        <TestOrderSummaryView orderDetails={orderDetails} onPressViewReport={() => onPressButton} />
+        <TestOrderSummaryView
+          orderDetails={orderDetails}
+          onPressViewReport={() => onPressButton}
+          refundDetails={refundStatusArr}
+        />
       )
     );
   };
 
   const renderError = () => {
     if (
-      refundStatusArr?.length > 0
+      refundStatusArr?.length > 0 && showError
         ? orderStatusList?.length == 0
         : showError && _.isEmpty(orderLevelStatus)
     ) {
