@@ -20,6 +20,7 @@ import { CircleLogo, DiscountIcon, OneApollo } from '@aph/mobile-patients/src/co
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -211,7 +212,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     if (itemDetails?.length) {
       Promise.all(itemDetails?.map((item) => getMedicineDetailsApi(item?.itemId)))
         .then((result) => {
-          const shipmentDetails = result.map(({ data: { productdp } }, index) => {
+          const shipmentDetails = result?.map(({ data: { productdp } }, index) => {
             const medicineDetails = (productdp && productdp[0]) || {};
             const mou = medicineDetails?.mou || itemDetails?.[index]?.mou;
             const qty = (itemDetails?.[index]?.issuedQty * itemDetails?.[index]?.mou) / mou;
@@ -226,7 +227,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           setShipmentItems(shipmentDetails);
         })
         .catch((e) => {
-          console.log({ e });
+          CommonBugFender('OrderSummaryView_getMedicineDetailsApi', e);
         });
     }
   }, [itemDetails]);
