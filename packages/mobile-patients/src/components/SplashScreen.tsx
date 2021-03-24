@@ -75,6 +75,8 @@ import {
   getAllSpecialties_getAllSpecialties,
 } from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
 import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+
 (function() {
   /**
    * Praktice.ai
@@ -298,11 +300,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.getInitialURL()
         .then((url) => {
           setBugFenderLog('DEEP_LINK_URL', url);
-
           if (url) {
             try {
-              handleOpenURL(url);
+              const data = handleOpenURL(url, props.navigation);
+              getData(...data);
               fireAppOpenedEvent(url);
+              console.log('linking', url);
             } catch (e) {}
           } else {
             settakeToConsultRoom(true);
@@ -315,263 +318,48 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         try {
+          console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          handleOpenURL(event.url);
+          const data = handleOpenURL(event.url, props.navigation);
+          const { routeName, id, isCall, timeout, mediaSource } = data;
+          if (routeName === 'ChatRoom_AppointmentData') {
+            getAppointmentDataAndNavigate(id, isCall);
+          } else if (routeName === 'DoctorCall_AppointmentData') {
+            const params = id?.split('+');
+            voipCallType.current = params[1];
+            callPermissions();
+          } else if (routeName === 'DoctorCallRejected') {
+            setLoading!(true);
+            const appointmentId = id?.split('+')?.[0];
+            const config: Pubnub.PubnubConfig = {
+              origin: 'apollo.pubnubapi.com',
+              subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+              publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+              ssl: true,
+              restore: true,
+            };
+            const pubnub = new Pubnub(config);
+            pubnub.publish(
+              {
+                message: { message: '^^#PATIENT_REJECTED_CALL' },
+                channel: appointmentId,
+                storeInHistory: true,
+                sendByPost: true,
+              },
+              (status, response) => {
+                setLoading!(false);
+              }
+            );
+          } else {
+            getData(routeName, id, isCall, timeout, mediaSource);
+          }
+
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
-    }
-  };
-
-  const handleOpenURL = (event: any) => {
-    try {
-      if (Platform.OS === 'ios') {
-        // for ios universal links
-        InitiateAppsFlyer(props.navigation);
-      }
-      let route;
-
-      const a = event.indexOf('https://www.apollo247.com');
-      if (a == 0) {
-        handleDeeplinkFormatTwo(event);
-      } else {
-        route = event.replace('apollopatients://', '');
-        const data = route.split('?');
-        setBugFenderLog('DEEP_LINK_DATA', data);
-        route = data[0];
-
-        let linkId = '';
-        let attributes = {
-          media_source: 'not set',
-        };
-        try {
-          if (data?.length >= 2) {
-            linkId = data[1]?.split('&');
-            const params = data[1]?.split('&');
-            const utmParams = params?.map((item: any) => item.split('='));
-            utmParams?.forEach(
-              (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
-            );
-            if (linkId.length > 0) {
-              linkId = linkId[0];
-              setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
-            }
-          }
-        } catch (error) {}
-
-        switch (route) {
-          case 'consult':
-          case 'Consult':
-            getData('Consult', data.length === 2 ? linkId : undefined);
-            break;
-          case 'medicine':
-          case 'Medicine':
-            getData('Medicine', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'uploadprescription':
-          case 'UploadPrescription':
-            getData('UploadPrescription', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'medicinerecommendedsection':
-          case 'MedicineRecommendedSection':
-            getData('MedicineRecommendedSection');
-            break;
-
-          case 'test':
-          case 'Test':
-            getData('Test');
-            break;
-
-          case 'speciality':
-          case 'Speciality':
-            if (data.length === 2) getData('Speciality', linkId);
-            else getData('DoctorSearch');
-            break;
-
-          case 'doctor':
-          case 'Doctor':
-            if (data.length === 2)
-              getData('Doctor', linkId, undefined, undefined, attributes?.media_source);
-            break;
-
-          case 'doctorsearch':
-          case 'DoctorSearch':
-            getData('DoctorSearch');
-            break;
-
-          case 'medicinesearch':
-          case 'MedicineSearch':
-            getData('MedicineSearch', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'medicinedetail':
-          case 'MedicineDetail':
-            getData('MedicineDetail', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'medicinecart':
-          case 'MedicineCart':
-            getData('MedicineCart', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'chatroom':
-          case 'ChatRoom':
-            if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
-            break;
-
-          case 'doctorcall':
-          case 'DoctorCall':
-            if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
-              const params = linkId.split('+');
-              voipCallType.current = params[1];
-              callPermissions();
-              getAppointmentDataAndNavigate(params[0], true);
-            }
-            break;
-
-          case 'doctorcallrejected':
-          case 'DoctorCallRejected':
-            {
-              setLoading!(true);
-              const appointmentId = linkId?.split('+')?.[0];
-              const config: Pubnub.PubnubConfig = {
-                origin: 'apollo.pubnubapi.com',
-                subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-                publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-                ssl: true,
-                restore: true,
-              };
-              const pubnub = new Pubnub(config);
-              pubnub.publish(
-                {
-                  message: { message: '^^#PATIENT_REJECTED_CALL' },
-                  channel: appointmentId,
-                  storeInHistory: true,
-                  sendByPost: true,
-                },
-                (status, response) => {
-                  setLoading!(false);
-                }
-              );
-            }
-            break;
-
-          case 'order':
-          case 'Order':
-            if (data.length === 2) getData('Order', linkId);
-            break;
-
-          case 'myorders':
-          case 'MyOrders':
-            getData('MyOrders');
-            break;
-
-          case 'webview':
-            if (data.length >= 1) {
-              let url = data[1].replace('param=', '');
-              getData('webview', url);
-            }
-            break;
-
-          case 'finddoctors':
-          case 'FindDoctors':
-            if (data.length === 2) getData('FindDoctors', linkId);
-            break;
-
-          case 'healthrecordshome':
-          case 'HealthRecordsHome':
-            getData('HealthRecordsHome');
-            break;
-
-          case 'manageprofile':
-          case 'ManageProfile':
-            getData('ManageProfile');
-            break;
-
-          case 'oneapollomembership':
-          case 'OneApolloMembership':
-            getData('OneApolloMembership');
-            break;
-
-          case 'testdetails':
-          case 'TestDetails':
-            getData('TestDetails', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'consultdetails':
-          case 'ConsultDetails':
-            getData('ConsultDetails', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'circlemembershipdetails':
-          case 'CircleMembershipDetails':
-            getData('CircleMembershipDetails');
-            break;
-
-          case 'testlisting':
-          case 'TestListing':
-            getData('TestListing', data?.length === 2 ? linkId : undefined);
-            break;
-
-          case 'testreport':
-          case 'TestReport':
-            getData('TestReport', data?.length === 2 ? linkId : undefined);
-            break;
-
-          default:
-            getData('ConsultRoom', undefined, true);
-            // webengage event
-            const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-              source: 'deeplink',
-            };
-            postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-            break;
-        }
-      }
-    } catch (error) {}
-  };
-
-  const handleDeeplinkFormatTwo = (event: any) => {
-    const url = event.replace('https://www.apollo247.com/', '');
-    const data = url.split('/');
-    const route = data[0];
-    let linkId = '';
-    try {
-      if (data.length >= 2) {
-        linkId = data[1].split('&');
-        if (linkId.length > 0) {
-          linkId = linkId[0];
-        }
-      }
-    } catch (error) {}
-    switch (route) {
-      case 'medicines':
-        getData('Medicine');
-        break;
-      case 'prescription-review':
-        getData('UploadPrescription');
-        break;
-      case 'specialties':
-        linkId == '' ? getData('DoctorSearch') : getData('SpecialityByName', linkId);
-        break;
-      case 'doctors':
-        linkId == '' ? getData('DoctorSearch') : getData('DoctorByNameId', linkId);
-        break;
-      case 'medicine':
-        linkId == '' ? getData('Medicine') : getData('MedicineByName', linkId);
-        break;
-      default:
-        getData('ConsultRoom', undefined, true);
-        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-          source: 'deeplink',
-        };
-        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-        break;
     }
   };
 
@@ -683,11 +471,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
                 pushTheView(
+                  props.navigation,
                   routeName,
                   id ? id : undefined,
                   isCall,
                   isCircleMember === 'yes',
-                  mediaSource
+                  mediaSource,
+                  voipCallType.current,
+                  voipAppointmentId
                 );
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
@@ -723,15 +514,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setUserLoggedIn(userLoggedIn);
   };
 
-  const handleEncodedURI = (encodedString: string) => {
-    const decodedString = decodeURIComponent(encodedString);
-    const splittedString = decodedString.split('+');
-    if (splittedString.length > 1) {
-      return splittedString;
-    } else {
-      return encodedString.split('%20');
-    }
-  };
   const getAppointmentDataAndNavigate = async (appointmentId: string, isCall: boolean) => {
     try {
       setLoading!(true);
@@ -765,237 +547,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         ],
       });
       CommonBugFender('SplashFetchingAppointmentData', error);
-    }
-  };
-
-  const pushTheView = (
-    routeName: string,
-    id?: any,
-    isCall?: boolean,
-    isCircleMember?: boolean,
-    mediaSource?: string
-  ) => {
-    setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
-    switch (routeName) {
-      case 'Consult':
-        props.navigation.navigate('APPOINTMENTS');
-        break;
-
-      case 'Medicine':
-        props.navigation.navigate('MEDICINES');
-        break;
-
-      case 'UploadPrescription':
-        props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
-        break;
-
-      case 'MedicineRecommendedSection':
-        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
-        break;
-
-      case 'MedicineDetail':
-        props.navigation.navigate(AppRoutes.ProductDetailPage, {
-          sku: id,
-          movedFrom: ProductPageViewedSource.DEEP_LINK,
-        });
-        break;
-
-      case 'Test':
-        props.navigation.navigate('TESTS');
-        break;
-
-      case 'ConsultRoom':
-        props.navigation.replace(AppRoutes.ConsultRoom);
-        break;
-
-      case 'Speciality':
-        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-        const filtersData = id ? handleEncodedURI(id) : '';
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: filtersData[0] ? filtersData[0] : '',
-          typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
-          doctorType: filtersData.length > 2 ? filtersData[2] : '',
-        });
-        break;
-      case 'FindDoctors':
-        const cityBrandFilter = id ? handleEncodedURI(id) : '';
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-          city:
-            cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
-              ? cityBrandFilter[1]
-              : null,
-          brand:
-            cityBrandFilter.length > 2
-              ? cityBrandFilter[2]
-              : isUpperCase(cityBrandFilter[1])
-              ? cityBrandFilter[1]
-              : null,
-        });
-        break;
-      case 'Doctor':
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: id,
-          fromDeeplink: true,
-          mediaSource: mediaSource,
-        });
-        break;
-
-      case 'DoctorSearch':
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        break;
-
-      case 'MedicineSearch':
-        if (id) {
-          const [itemId, name] = id.split(',');
-
-          props.navigation.navigate(AppRoutes.MedicineListing, {
-            category_id: itemId,
-            title: `${name ? name : 'Products'}`.toUpperCase(),
-            movedFrom: 'deeplink',
-          });
-        }
-        break;
-
-      case 'MedicineCart':
-        props.navigation.navigate(AppRoutes.MedicineCart, {
-          movedFrom: 'splashscreen',
-        });
-        break;
-      case 'ChatRoom':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
-          data: id,
-          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
-          prescription: '',
-          isCall: isCall,
-          isVoipCall: voipAppointmentId.current ? true : false,
-        });
-        break;
-      case 'Order':
-        props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-          goToHomeOnBack: true,
-          orderAutoId: isNaN(id) ? '' : id,
-          billNumber: isNaN(id) ? id : '',
-        });
-        break;
-      case 'MyOrders':
-        props.navigation.navigate(AppRoutes.YourOrdersScene);
-        break;
-      case 'webview':
-        props.navigation.navigate(AppRoutes.CommonWebView, {
-          url: id,
-        });
-        break;
-
-      case 'HealthRecordsHome':
-        props.navigation.navigate('HEALTH RECORDS');
-        break;
-
-      case 'ManageProfile':
-        props.navigation.navigate(AppRoutes.ManageProfile);
-        break;
-
-      case 'OneApolloMembership':
-        props.navigation.navigate(AppRoutes.OneApolloMembership);
-        break;
-
-      case 'TestDetails':
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          itemId: id,
-        });
-        break;
-
-      case 'ConsultDetails':
-        props.navigation.navigate(AppRoutes.ConsultDetails, {
-          CaseSheet: id,
-        });
-        break;
-      case 'DoctorCall':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
-          data: id,
-          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
-          prescription: '',
-          isCall: true,
-          isVoipCall: false,
-        });
-        break;
-      case 'SpecialityByName':
-        fetchSpecialities(id);
-        break;
-      case 'DoctorByNameId':
-        const docId = id.slice(-36);
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: docId,
-        });
-        break;
-      case 'MedicineByName':
-        getMedicineSKU(id);
-        break;
-      case 'CircleMembershipDetails':
-        if (isCircleMember) {
-          props.navigation.navigate(AppRoutes.MembershipDetails, {
-            membershipType: string.Circle.planName,
-            isActive: true,
-          });
-        }
-        break;
-
-      case 'TestListing':
-        props.navigation.navigate(AppRoutes.TestListing, {
-          movedFrom: 'deeplink',
-          widgetName: id,
-        });
-        break;
-
-      case 'TestReport':
-        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          movedFrom: 'deeplink',
-          id: id,
-        });
-
-      default:
-        break;
-    }
-  };
-
-  const fetchSpecialities = async (specialityName: string) => {
-    setshowSpinner(true);
-    try {
-      const response = await client.query<getAllSpecialties>({
-        query: GET_ALL_SPECIALTIES,
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      if (data?.getAllSpecialties && data?.getAllSpecialties.length) {
-        const specialityId = getSpecialityId(specialityName, data?.getAllSpecialties);
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: specialityId,
-        });
-      }
-    } catch (error) {
-      CommonBugFender('DoctorSearch_fetchSpecialities', error);
-      props.navigation.navigate(AppRoutes.ConsultRoom);
-    }
-  };
-
-  const getSpecialityId = (name: string, specialities: getAllSpecialties_getAllSpecialties[]) => {
-    const specialityObject = specialities.filter((item) => name == readableParam(item?.name));
-    return specialityObject[0].id ? specialityObject[0].id : '';
-  };
-
-  const getMedicineSKU = async (skuKey: string) => {
-    try {
-      const response = await getMedicineSku(skuKey);
-      const { data } = response;
-      data?.Message == 'Product available'
-        ? props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            sku: data?.sku,
-            movedFrom: ProductPageViewedSource.DEEP_LINK,
-          })
-        : props.navigation.navigate('MEDICINES');
-    } catch (error) {
-      CommonBugFender('getMedicineSku', error);
-      props.navigation.navigate('MEDICINES');
     }
   };
 
