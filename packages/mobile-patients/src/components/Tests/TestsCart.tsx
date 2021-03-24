@@ -325,7 +325,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
-  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
+  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(true);
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
@@ -727,6 +727,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   selectedAddressIndex,
                   serviceableData?.areaSelectionEnabled!
                 );
+                cartItems?.length == 0 && setLoading?.(false);
               })
               .catch((e) => {
                 CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
@@ -3077,23 +3078,27 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDoctorJoinedChat?.(false);
   };
 
+  const changeCurrentProfile = (_selectedPatient: any, _showPatientDetailsOverlay: boolean) => {
+    if (currentPatient?.id === _selectedPatient?.id) {
+      return;
+    } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
+      setSelectedPatient(_selectedPatient);
+      setShowPatientDetailsOverlay(_showPatientDetailsOverlay);
+      return;
+    }
+    setCurrentPatientId?.(_selectedPatient?.id);
+    AsyncStorage.setItem('selectUserId', _selectedPatient?.id);
+    AsyncStorage.setItem('selectUserUHId', _selectedPatient?.uhid || '');
+    setAddressList(_selectedPatient?.id);
+  };
+
   const renderPatientListOverlay = () => {
     return showPatientListOverlay ? (
       <PatientListOverlay
         onPressClose={() => setShowPatientListOverlay(false)}
         onPressDone={(_selectedPatient: any) => {
           setShowPatientListOverlay(false);
-          if (currentPatient?.id === _selectedPatient?.id) {
-            return;
-          } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
-            setSelectedPatient(_selectedPatient);
-            setShowPatientDetailsOverlay(true);
-            return;
-          }
-          setCurrentPatientId?.(_selectedPatient?.id);
-          AsyncStorage.setItem('selectUserId', _selectedPatient?.id);
-          AsyncStorage.setItem('selectUserUHId', _selectedPatient?.uhid);
-          setAddressList(_selectedPatient?.id);
+          changeCurrentProfile(_selectedPatient, true);
         }}
         onPressAddNewProfile={() => {
           setShowPatientListOverlay(false);
@@ -3131,9 +3136,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 },
               },
             })
-            .then((data) => {
+            .then(({ data }) => {
+              const profileData = g(data, 'editProfile', 'patient');
               setLoading?.(false);
               getPatientApiCall();
+              changeCurrentProfile(profileData, false);
             })
             .catch((e) => {
               setLoading?.(false);
