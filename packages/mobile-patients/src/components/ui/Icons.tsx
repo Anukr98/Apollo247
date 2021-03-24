@@ -511,7 +511,7 @@ export const RxPrescriptionCallIc: React.FC<IconProps> = (props) => (
   <IconBase size="sm" source={require('./icons/rx_prescription_call_ic.png')} {...props} />
 );
 export const RxPrescriptionIc: React.FC<IconProps> = (props) => (
-<IconBase size="sm" source={require('./icons/rx_prescription_ic.png')} {...props} />
+  <IconBase size="sm" source={require('./icons/rx_prescription_ic.png')} {...props} />
 );
 export const RxPrescriptionLaterIc: React.FC<IconProps> = (props) => (
   <IconBase size="sm" source={require('./icons/rx_prescription_later_ic.png')} {...props} />
@@ -1875,5 +1875,22 @@ export const Emergency: React.FC<IconProps> = (props) => (
     style={{ width: 21, height: 29 }}
     {...props}
     source={require('./icons/emergency.png')}
+  />
+);
+
+export const ExternalMeetingVideoCall: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/external_meeting_link.png')}
+  />
+);
+
+export const CopyIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 15, height: 16.7, margin: 16 }}
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/copy_white.png')}
   />
 );

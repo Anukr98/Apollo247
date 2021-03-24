@@ -1004,5 +1004,11 @@
     "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in.",
     "tryAgainLater": "Something went wrong, please try again after sometime",
     "errorTitle": "Uh oh.. :("
+  },
+  "externalMeetingLink":{
+    "click_to_open":"Click on the link given below to Open in Google Chrome",
+    "wait_for_doctor":"Wait for the doctor to join",
+    "tnc":"By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
+    "copied_to_clipboard":"Copied "
   }
 }
