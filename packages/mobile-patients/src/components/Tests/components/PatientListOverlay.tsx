@@ -162,9 +162,11 @@ const styles = StyleSheet.create({
     padding: 12,
     marginHorizontal: 16,
     marginTop: 8,
+    minHeight: 45,
   },
   patientNameTextStyle: {
     ...text('M', 16, APP_GREEN, 1, 20.8, -0.36),
+    width: '75%',
   },
   genderAgeTextStyle: {
     ...text('M', 12, APP_GREEN, 1, 15.6, -0.36),

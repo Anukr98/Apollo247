@@ -322,10 +322,6 @@ export const SearchAreaIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_search_area_icon.png')} />
 );
 
-export const CircleTestLogoIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_circle_test_logo.png')} />
-);
-
 export const TestTimeIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_test_time.png')} />
 );
