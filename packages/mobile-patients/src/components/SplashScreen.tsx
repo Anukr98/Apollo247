@@ -8,10 +8,8 @@ import {
   Linking,
   AppStateStatus,
   AppState,
-  Text,
   DeviceEventEmitter,
   NativeModules,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -40,7 +38,6 @@ import {
   callPermissions,
   UnInstallAppsFlyer,
   postFirebaseEvent,
-  readableParam,
   setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -50,12 +47,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  GET_APPOINTMENT_DATA,
-  GET_ALL_SPECIALTIES,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -70,11 +63,6 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
-import {
-  getAllSpecialties,
-  getAllSpecialties_getAllSpecialties,
-} from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
-import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 
 (function() {
@@ -302,8 +290,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
-              const data = handleOpenURL(url, props.navigation);
-              getData(...data);
+              if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
+              const data = handleOpenURL(url);
+              const { routeName, id, isCall, timeout, mediaSource } = data;
+              getData(routeName, id, isCall, timeout, mediaSource);
               fireAppOpenedEvent(url);
               console.log('linking', url);
             } catch (e) {}
@@ -318,9 +308,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         try {
-          console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          const data = handleOpenURL(event.url, props.navigation);
+          const data = handleOpenURL(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
           if (routeName === 'ChatRoom_AppointmentData') {
             getAppointmentDataAndNavigate(id, isCall);

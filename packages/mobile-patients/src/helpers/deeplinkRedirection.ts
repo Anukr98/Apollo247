@@ -1,11 +1,9 @@
-import { Platform } from 'react-native';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import {
   setBugFenderLog,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  InitiateAppsFlyer,
   postWebEngageEvent,
   readableParam,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -26,51 +24,44 @@ import { GET_ALL_SPECIALTIES } from '@aph/mobile-patients/src/graphql/profiles';
 import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
-export const handleOpenURL = (
-  event: any,
-  navigation: NavigationScreenProp<NavigationRoute<object>, object>
-) => {
+export const handleOpenURL = (event: any) => {
   try {
-    if (Platform.OS === 'ios') {
-      // for ios universal links
-      InitiateAppsFlyer(navigation);
-    }
     let route;
-
     const a = event.indexOf('https://www.apollo247.com');
     if (a == 0) {
       handleDeeplinkFormatTwo(event);
     } else {
-      route = event.replace('apollopatients://', '');
-      const data = route.split('?');
+      route = event?.replace('apollopatients://', '');
+      const data = route?.split('?');
       setBugFenderLog('DEEP_LINK_DATA', data);
-      route = data[0];
+      route = data?.[0];
 
       let linkId = '';
       let attributes = {
         media_source: 'not set',
       };
+
       try {
         if (data?.length >= 2) {
-          linkId = data[1]?.split('&');
+          linkId = data?.[1]?.split('&');
           const params = data[1]?.split('&');
           const utmParams = params?.map((item: any) => item.split('='));
           utmParams?.forEach(
             (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
           );
-          if (linkId.length > 0) {
-            linkId = linkId[0];
+          if (linkId?.length > 0) {
+            linkId = linkId?.[0];
             setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
           }
         }
       } catch (error) {}
-      console.log(linkId, 'linkId');
+
+      console.log('route ========= ', route);
+      console.log('data.length ========== ', data.length);
 
       switch (route) {
         case 'consult':
         case 'Consult':
-          console.log('Consult');
-          // getData(navigation, 'Consult', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'Consult',
             id: data.length === 2 ? linkId : undefined,
@@ -79,8 +70,6 @@ export const handleOpenURL = (
 
         case 'medicine':
         case 'Medicine':
-          console.log('Medicine');
-          // getData(navigation, 'Medicine', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'Medicine',
             id: data.length === 2 ? linkId : undefined,
@@ -89,7 +78,6 @@ export const handleOpenURL = (
 
         case 'uploadprescription':
         case 'UploadPrescription':
-          // getData(navigation, 'UploadPrescription', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'UploadPrescription',
             id: data.length === 2 ? linkId : undefined,
@@ -98,7 +86,6 @@ export const handleOpenURL = (
 
         case 'medicinerecommendedsection':
         case 'MedicineRecommendedSection':
-          // getData(navigation, 'MedicineRecommendedSection');
           return {
             routeName: 'MedicineRecommendedSection',
           };
@@ -106,7 +93,6 @@ export const handleOpenURL = (
 
         case 'test':
         case 'Test':
-          // getData(navigation, 'Test');
           return {
             routeName: 'Test',
           };
@@ -114,15 +100,12 @@ export const handleOpenURL = (
 
         case 'speciality':
         case 'Speciality':
-          console.log('Speciality handleopen');
           if (data.length === 2) {
-            // getData(navigation, 'Speciality', linkId);
             return {
               routeName: 'Speciality',
               id: linkId,
             };
           } else {
-            // getData(navigation, 'DoctorSearch');
             return {
               routeName: 'Test',
             };
@@ -131,9 +114,7 @@ export const handleOpenURL = (
 
         case 'doctor':
         case 'Doctor':
-          console.log('Doctor handleopen');
           if (data.length === 2)
-            // getData(navigation, 'Doctor', linkId, undefined, undefined, attributes?.media_source);
             return {
               routeName: 'Doctor',
               id: linkId,
@@ -145,8 +126,6 @@ export const handleOpenURL = (
 
         case 'doctorsearch':
         case 'DoctorSearch':
-          console.log('DoctorSearch handleopen');
-          // getData(navigation, 'DoctorSearch');
           return {
             routeName: 'DoctorSearch',
           };
@@ -154,8 +133,6 @@ export const handleOpenURL = (
 
         case 'medicinesearch':
         case 'MedicineSearch':
-          console.log('MedicineSearch handleopen');
-          // getData(navigation, 'MedicineSearch', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'MedicineSearch',
             id: data.length === 2 ? linkId : undefined,
@@ -164,8 +141,6 @@ export const handleOpenURL = (
 
         case 'medicinedetail':
         case 'MedicineDetail':
-          console.log('MedicineDetail handleopen');
-          // getData(navigation, 'MedicineDetail', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'MedicineDetail',
             id: data.length === 2 ? linkId : undefined,
@@ -174,8 +149,6 @@ export const handleOpenURL = (
 
         case 'medicinecart':
         case 'MedicineCart':
-          console.log('MedicineCart handleopen');
-          // getData(navigation, 'MedicineCart', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'MedicineCart',
             id: data.length === 2 ? linkId : undefined,
@@ -185,7 +158,6 @@ export const handleOpenURL = (
         case 'chatroom':
         case 'ChatRoom':
           if (data.length === 2) {
-            // getAppointmentDataAndNavigate(navigation, linkId, false);
             return {
               routeName: 'ChatRoom_AppointmentData',
               id: linkId,
@@ -202,48 +174,20 @@ export const handleOpenURL = (
               id: linkId,
               isCall: false,
             };
-            // const params = linkId.split('+');
-            // voipCallType.current = params[1];
-            // callPermissions();
-            // getAppointmentDataAndNavigate(navigation, params[0], true);
           }
           break;
 
         case 'doctorcallrejected':
         case 'DoctorCallRejected':
-          {
-            return {
-              routeName: 'DoctorCallRejected',
-              id: linkId,
-            };
-            // setLoading!(true);
-            // const appointmentId = linkId?.split('+')?.[0];
-            // const config: Pubnub.PubnubConfig = {
-            //   origin: 'apollo.pubnubapi.com',
-            //   subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-            //   publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-            //   ssl: true,
-            //   restore: true,
-            // };
-            // const pubnub = new Pubnub(config);
-            // pubnub.publish(
-            //   {
-            //     message: { message: '^^#PATIENT_REJECTED_CALL' },
-            //     channel: appointmentId,
-            //     storeInHistory: true,
-            //     sendByPost: true,
-            //   },
-            //   (status, response) => {
-            //     // setLoading!(false);
-            //   }
-            // );
-          }
+          return {
+            routeName: 'DoctorCallRejected',
+            id: linkId,
+          };
           break;
 
         case 'order':
         case 'Order':
           if (data.length === 2) {
-            // getData(navigation, 'Order', linkId);
             return {
               routeName: 'Order',
               id: linkId,
@@ -253,7 +197,6 @@ export const handleOpenURL = (
 
         case 'myorders':
         case 'MyOrders':
-          // getData(navigation, 'MyOrders');
           return {
             routeName: 'MyOrders',
           };
@@ -262,7 +205,6 @@ export const handleOpenURL = (
         case 'webview':
           if (data.length >= 1) {
             let url = data[1].replace('param=', '');
-            // getData(navigation, 'webview', url);
             return {
               routeName: 'webview',
               id: url,
@@ -273,7 +215,6 @@ export const handleOpenURL = (
         case 'finddoctors':
         case 'FindDoctors':
           if (data.length === 2) {
-            // getData(navigation, 'FindDoctors', linkId);
             return {
               routeName: 'FindDoctors',
               id: linkId,
@@ -283,8 +224,6 @@ export const handleOpenURL = (
 
         case 'healthrecordshome':
         case 'HealthRecordsHome':
-          console.log('HealthRecordsHome handleopen');
-          // getData(navigation, 'HealthRecordsHome');
           return {
             routeName: 'HealthRecordsHome',
           };
@@ -292,8 +231,6 @@ export const handleOpenURL = (
 
         case 'manageprofile':
         case 'ManageProfile':
-          console.log('ManageProfile handleopen');
-          // getData(navigation, 'ManageProfile');
           return {
             routeName: 'ManageProfile',
           };
@@ -301,7 +238,6 @@ export const handleOpenURL = (
 
         case 'oneapollomembership':
         case 'OneApolloMembership':
-          // getData(navigation, 'OneApolloMembership');
           return {
             routeName: 'OneApolloMembership',
           };
@@ -309,7 +245,6 @@ export const handleOpenURL = (
 
         case 'testdetails':
         case 'TestDetails':
-          // getData(navigation, 'TestDetails', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'TestDetails',
             id: data.length === 2 ? linkId : undefined,
@@ -318,7 +253,6 @@ export const handleOpenURL = (
 
         case 'consultdetails':
         case 'ConsultDetails':
-          // getData(navigation, 'ConsultDetails', data.length === 2 ? linkId : undefined);
           return {
             routeName: 'ConsultDetails',
             id: data.length === 2 ? linkId : undefined,
@@ -327,7 +261,6 @@ export const handleOpenURL = (
 
         case 'circlemembershipdetails':
         case 'CircleMembershipDetails':
-          // getData(navigation, 'CircleMembershipDetails');
           return {
             routeName: 'CircleMembershipDetails',
           };
@@ -335,7 +268,6 @@ export const handleOpenURL = (
 
         case 'testlisting':
         case 'TestListing':
-          // getData(navigation, 'TestListing', data?.length === 2 ? linkId : undefined);
           return {
             routeName: 'TestListing',
             id: data?.length === 2 ? linkId : undefined,
@@ -344,7 +276,6 @@ export const handleOpenURL = (
 
         case 'testreport':
         case 'TestReport':
-          // getData(navigation, 'TestReport', data?.length === 2 ? linkId : undefined);
           return {
             routeName: 'TestReport',
             id: data?.length === 2 ? linkId : undefined,
@@ -353,14 +284,12 @@ export const handleOpenURL = (
 
         case 'mytestorders':
         case 'MyTestOrders':
-          // getData(navigation, 'MyTestOrders');
           return {
             routeName: 'MyTestOrders',
           };
           break;
 
         default:
-          // getData(navigation, 'ConsultRoom', undefined, true);
           const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
             source: 'deeplink',
           };
@@ -372,7 +301,6 @@ export const handleOpenURL = (
           };
           break;
       }
-      console.log('route', route);
     }
   } catch (error) {}
 };
@@ -474,7 +402,6 @@ export const pushTheView = (
       break;
 
     case 'Medicine':
-      console.log('Medicine');
       navigation.navigate('MEDICINES');
       break;
 
@@ -487,7 +414,6 @@ export const pushTheView = (
       break;
 
     case 'MedicineDetail':
-      console.log('MedicineDetail');
       navigation.navigate(AppRoutes.ProductDetailPage, {
         sku: id,
         movedFrom: ProductPageViewedSource.DEEP_LINK,
@@ -495,12 +421,10 @@ export const pushTheView = (
       break;
 
     case 'Test':
-      console.log('Test');
       navigation.navigate('TESTS');
       break;
 
     case 'ConsultRoom':
-      console.log('ConsultRoom');
       navigation.replace(AppRoutes.ConsultRoom);
       break;
 
@@ -544,7 +468,6 @@ export const pushTheView = (
     case 'MedicineSearch':
       if (id) {
         const [itemId, name] = id.split(',');
-        console.log(itemId, name);
 
         navigation.navigate(AppRoutes.MedicineListing, {
           category_id: itemId,
@@ -555,7 +478,6 @@ export const pushTheView = (
       break;
 
     case 'MedicineCart':
-      console.log('MedicineCart handleopen');
       navigation.navigate(AppRoutes.MedicineCart, {
         movedFrom: 'splashscreen',
       });
@@ -647,7 +569,6 @@ export const pushTheView = (
       break;
 
     case 'TestReport':
-      console.log('TestReport');
       navigation.navigate(AppRoutes.HealthRecordDetails, {
         movedFrom: 'deeplink',
         id: id,
@@ -678,7 +599,6 @@ const fetchSpecialities = async (
   specialityName: string
 ) => {
   const client = useApolloClient();
-  // setshowSpinner(true);
   try {
     const response = await client.query<getAllSpecialties>({
       query: GET_ALL_SPECIALTIES,
