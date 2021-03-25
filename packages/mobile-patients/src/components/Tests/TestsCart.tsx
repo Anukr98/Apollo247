@@ -168,6 +168,7 @@ import {
   editProfile,
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
+import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -260,6 +261,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     diagnosticServiceabilityData,
     diagnosticLocation,
     setDoctorJoinedChat,
+    isDiagnosticLocationServiceable,
   } = useAppCommonData();
 
   const shopCart = useShoppingCart();
@@ -284,6 +286,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
+  const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
@@ -345,7 +348,46 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       );
       if (res?.data?.success) {
         const result = g(res, 'data', 'data');
+        const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
+        const _itemIds = widgetsData?.map((item) => Number(item?.itemId));
+        console.log('diagnosticWidgetData', widgetsData, res, _itemIds);
+        client
+          .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+            query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+            context: {
+              sourceHeaders,
+            },
+            variables: { cityID: Number(addressCityId) || 9, itemIDs: _itemIds },
+            fetchPolicy: 'no-cache',
+          })
+          .then(({ data }) => {
+            const diagnosticItems =
+              g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+            let _diagnosticWidgetData: any = [];
+            const sss = widgetsData?.forEach((_widget) => {
+              diagnosticItems?.forEach((_diagItems) => {
+                if (_widget?.itemId == _diagItems?.itemId) {
+                  _diagnosticWidgetData?.push({
+                    ..._widget,
+                    diagnosticPricing: _diagItems?.diagnosticPricing,
+                    packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
+                  });
+                }
+                // console.log('_widget', _widget, _diagItems);
+              });
+            });
+            setAlsoAddListData(_diagnosticWidgetData);
+            console.log('diagnosticWidgetData', _diagnosticWidgetData, diagnosticItems, sss);
+          })
+          .catch((error) => {
+            setAlsoAddListData([]);
+            console.log('error', error);
+            CommonBugFender(
+              'TestsCart_fetchTestReportGenDetails_getDiagnosticsAvailability',
+              error
+            );
+          });
       } else {
         setReportGenDetails([]);
       }
@@ -637,6 +679,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 else {
                   setShowAreaSelection(false);
                 }
+                console.log('diagnosticItems', diagnosticItems);
                 updatePricesInCart(
                   diagnosticItems,
                   selectedAddressIndex,
@@ -2593,6 +2636,41 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) : null;
   };
 
+  const renderAlsoAddItems = () => {
+    return (
+      <View>
+        {renderAlsoAddListHeader()}
+        <ItemCard
+          data={alsoAddListData}
+          isCircleSubscribed={isDiagnosticCircleSubscription}
+          isServiceable={isDiagnosticLocationServiceable}
+          isVertical={false}
+          navigation={props.navigation}
+          source={'Cart Page'}
+          sourceScreen={AppRoutes.Tests}
+        />
+      </View>
+    );
+  };
+
+  const renderAlsoAddListHeader = () => {
+    return <Text style={styles.alsoAddListHeaderTextStyle}>{'YOU SHOULD ALSO ADD'}</Text>;
+  };
+
+  const renderAlsoAddList = () => {
+    // console.log(alsoAddListData, 'alsoAddLsi');
+    return (
+      <FlatList
+        style={{ margin: 20, marginTop: 24 }}
+        ListHeaderComponent={renderAlsoAddListHeader}
+        bounces={false}
+        extraData={alsoAddListData}
+        renderItem={renderAlsoAddItems}
+        data={alsoAddListData}
+      />
+    );
+  };
+
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
@@ -2651,27 +2729,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 16 }}>
             {renderPatientDetails()}
             {renderItemsInCart()}
-            {/* {renderProfiles()} */}
-            {/* <MedicineUploadPrescriptionView
-              isTest={true}
-              navigation={props.navigation}
-              isMandatory={false}
-              listOfTest={[]}
-            /> */}
-            {/* {renderDelivery()} */}
             {renderTotalCharges()}
-            {/* {renderTestSuggestions()} */}
+            {renderAlsoAddItems()}
           </View>
-          <View style={{ height: 120 }} />
+          <View style={{ height: 160 }} />
         </ScrollView>
-        {/* <StickyBottomComponent defaultBG>
-          <Button
-            disabled={disableProceedToPay}
-            title={'MAKE PAYMENT'}
-            onPress={() => onPressProceedToPay()}
-            style={{ flex: 1, marginHorizontal: 40 }}
-          />
-        </StickyBottomComponent> */}
         {renderTestProceedBar()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
@@ -2830,5 +2892,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 5,
     borderStyle: 'dashed',
+  },
+  alsoAddListHeaderTextStyle: {
+    ...text('B', 13, SHERPA_BLUE, 1, 16.9),
+    marginHorizontal: 20,
+    marginTop: 24,
   },
 });
