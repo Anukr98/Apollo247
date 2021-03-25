@@ -320,21 +320,16 @@ const handleDeeplinkFormatTwo = (event: any) => {
   } catch (error) {}
   switch (route) {
     case 'medicines':
-      // getData(navigation, 'Medicine');
       return {
         routeName: 'Medicine',
       };
       break;
     case 'prescription-review':
-      // getData(navigation, 'UploadPrescription');
       return {
         routeName: 'UploadPrescription',
       };
       break;
     case 'specialties':
-      // linkId == ''
-      //   ? getData(navigation, 'DoctorSearch')
-      //   : getData(navigation, 'SpecialityByName', linkId);
       if (linkId == '') {
         return { routeName: 'DoctorSearch' };
       } else {
@@ -345,9 +340,6 @@ const handleDeeplinkFormatTwo = (event: any) => {
       }
       break;
     case 'doctors':
-      // linkId == ''
-      //   ? getData(navigation, 'DoctorSearch')
-      //   : getData(navigation, 'DoctorByNameId', linkId);
       if (linkId == '') {
         return { routeName: 'DoctorSearch' };
       } else {
@@ -358,9 +350,6 @@ const handleDeeplinkFormatTwo = (event: any) => {
       }
       break;
     case 'medicine':
-      // linkId == ''
-      //   ? getData(navigation, 'Medicine')
-      //   : getData(navigation, 'MedicineByName', linkId);
       if (linkId == '') {
         return { routeName: 'Medicine' };
       } else {
@@ -371,7 +360,6 @@ const handleDeeplinkFormatTwo = (event: any) => {
       }
       break;
     default:
-      // getData(navigation, 'ConsultRoom', undefined, true);
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
       };
