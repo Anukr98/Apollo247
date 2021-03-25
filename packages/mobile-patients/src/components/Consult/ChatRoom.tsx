@@ -676,8 +676,7 @@ const styles = StyleSheet.create({
   externalMeetingLinkContainer: {
     backgroundColor: 'transparent',
     borderRadius: 10,
-    maxWidth: '90%',
-    marginLeft: 38,
+    maxWidth: '85%',
   },
 
   externalMeetingLinkImage: {
@@ -5349,11 +5348,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View style={styles.externalMeetingLinkTextContainer}>
           <ExternalMeetingVideoCall style={styles.externalMeetingLinkImage} />
           <Text style={styles.externalMeetingLinkText}>
-            {strings.externalMeetingLink.click_to_open}
+            {strings.externalMeetingLink.click_to_open.replace(
+              'XYZ',
+              g(appointmentData, 'doctorInfo', 'fullName')
+            )}
           </Text>
-          <Text style={styles.externalMeetingLinkSubText}>
-            {strings.externalMeetingLink.wait_for_doctor}
-          </Text>
+
           <View style={styles.externalMeetingLinkCTAWrapper}>
             <TouchableOpacity
               style={styles.externalMeetingLinkMeetingCTAContainer}
@@ -5374,6 +5374,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const onMeetingLinkClicked = (rowData: any) => {
     try {
       Linking.openURL(rowData.url);
+
+      postWebEngageEvent(WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED, {
+        'Doctor name': appointmentData?.doctorInfo?.fullName,
+        'Patient name': `${appointmentData?.patientInfo?.firstName} ${appointmentData?.patientInfo?.lastName}`,
+        'Patient ID': appointmentData?.patientInfo?.id,
+        'Doctor ID': appointmentData?.doctorInfo?.id,
+        'Appointment ID': appointmentData?.id,
+        'Link URL': rowData.url || '',
+        'Doctor number':appointmentData?.doctorInfo?.mobileNumber,
+        'Patient number': appointmentData?.patientInfo?.mobileNumber,
+        'Solution Used': 'Zoom',
+      } as WebEngageEvents[WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]);
     } catch (error) {
       CommonBugFender('ChatRoom_rederExternalMeetingLink_onMeetingLinkClickedd', error);
     }
