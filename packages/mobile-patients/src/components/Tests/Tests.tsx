@@ -75,6 +75,7 @@ import {
   ViewStyle,
   Image as ImageNative,
   ImageBackground,
+  FlatList
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -134,6 +135,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
+import { WidgetCard } from './components/WidgetCard';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
@@ -1357,6 +1359,117 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderBottomViews = () => {
+    // console.log('object :>> ', widgetsData);
+    const no = [
+      {
+        diagnosticWidgetData: [
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+        ],
+        diagnosticWidgetTitle: 'Browse Packages',
+        diagnosticWidgetType: 'Package',
+        diagnosticwidgetsRankOrder: '1',
+        id: '13567',
+      },
+      {
+        diagnosticWidgetData: [
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+        ],
+        diagnosticWidgetTitle: 'Top Popular Tests',
+        diagnosticWidgetType: 'Item',
+        diagnosticwidgetsRankOrder: '2',
+        id: '14520',
+      },
+      {
+        diagnosticWidgetData: [
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+        ],
+        diagnosticWidgetTitle: 'Full Body Packages',
+        diagnosticWidgetType: 'Package',
+        diagnosticwidgetsRankOrder: '3',
+        id: '14519',
+      },
+      {
+        diagnosticWidgetData: [
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+        ],
+        diagnosticWidgetTitle: 'Diabetes wellness',
+        diagnosticWidgetType: 'Item',
+        diagnosticwidgetsRankOrder: '4',
+        id: '14596',
+      },
+      {
+        diagnosticWidgetData: [
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+          [Object],
+        ],
+        diagnosticWidgetTitle: 'COVID CARE',
+        diagnosticWidgetType: 'Item',
+        diagnosticwidgetsRankOrder: '5',
+        id: '14597',
+      },
+    ];
     const isWidget = widgetsData?.length > 0;
     const isWidget1 =
       isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '1');
@@ -1811,6 +1924,127 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+  const topWidgetSection = (heading:string) => {
+    const array = [
+      {
+        image:require('../../images/home/ic_family_doctor.png'),
+        text:'Kidney'
+      },
+      {
+        image:require('../../images/home/doctor.png'),
+        text:'Heart'
+      },
+      {
+        image:require('../../images/home/ic_family_doctor.png'),
+        text:'Liver'
+      },
+      {
+        image:require('../../images/home/doctor.png'),
+        text:'Covid'
+      },
+    ]
+    return (
+      <View style={styles.container}>
+        <SectionHeader
+          leftText={nameFormater(heading, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={'VIEW ALL'}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+                  props.navigation.navigate(AppRoutes.TestWidgetListing, {
+                    movedFrom: AppRoutes.Tests,
+                    data: array,
+                    cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                  });
+                }
+          }
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
+        {array.map((item,index) => (
+          <WidgetCard
+            data={item}
+            isCircleSubscribed={isDiagnosticCircleSubscription}
+            isServiceable={isDiagnosticLocationServiceable}
+            isVertical={false}
+            navigation={props.navigation}
+            source={'Home Page'}
+            sourceScreen={AppRoutes.Tests}
+          />
+        ))}
+        </ScrollView>
+      </View>
+    );
+  }
+  const gridWidgetSection = (heading : string) => {
+    const array = [
+      {
+        image:require('../../images/home/ic_family_doctor.png'),
+        text:'Kidney'
+      },
+      {
+        image:require('../../images/home/doctor.png'),
+        text:'Heart'
+      },
+      {
+        image:require('../../images/home/ic_family_doctor.png'),
+        text:'Liver'
+      },
+      {
+        image:require('../../images/home/doctor.png'),
+        text:'Covid'
+      },
+      {
+        image:require('../../images/home/doctor.png'),
+        text:'Covid-19'
+      },
+      {
+        image:require('../../images/home/doctor.png'),
+        text:'Aparan'
+      },
+    ]
+    return (
+      <View style={{ marginTop: 10 }}>
+        <SectionHeader
+          leftText={nameFormater(heading, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={'VIEW ALL'}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: array,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }
+    }
+        />
+        <View style={styles.gridConatiner}>
+          <FlatList
+            data={array}
+            numColumns={3}
+            renderItem={({ item }) => (
+              <View style={styles.gridPart}>
+                <View style={styles.circleImg}>
+                  <Image style={styles.image} source={item?.image} />
+                </View>
+                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{item?.text}</Text>
+              </View>
+            )}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -1830,6 +2064,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           >
             {renderSections()}
             {renderOverlay()}
+            {topWidgetSection('Women Wellness')}
+            {gridWidgetSection('Women Wellness')}
+            {topWidgetSection('Women Wellness')}
           </ScrollView>
           {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
         </View>
@@ -1854,6 +2091,18 @@ const styles = StyleSheet.create({
   labelText: {
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
+  },
+  sectionView: {
+    margin:10,
+    flexDirection:'row',
+  },
+  container:{
+    marginTop:20
+  },
+  gridConatiner: {
+    width: '100%',
+    backgroundColor:'white',
+    marginVertical: 20
   },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
@@ -2051,5 +2300,31 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white'
+  },
+  circleImg: {
+    width: 70,
+    height: 70,
+    backgroundColor: '#ededed',
+    justifyContent:'center',
+    alignItems:'center',
+    // margin:5,
+    borderRadius: 50,
+  },
+  image: {
+    width: 65,
+    height: 65,
+    borderRadius: 50,
+  },
+  gridPart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '33%',
+    borderColor:'#E8E8E8',
+    borderWidth: 0.5,
+    padding:15
+  },
+  textStyle: {
+    ...theme.viewStyles.text('SB', 14, '#000000', 1, 20, 0),
+    padding: 5
   },
 });
