@@ -105,7 +105,7 @@ export const SelectAreaOverlay: React.FC<SelectAreaOverlayProps> = (props) => {
   return (
     <Overlay
       isVisible
-      onBackdropPress={onPressClose}
+      onRequestClose={onPressClose}
       windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
       containerStyle={{ marginBottom: 0 }}
       fullScreen
