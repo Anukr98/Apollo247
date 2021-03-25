@@ -3028,22 +3028,26 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderPatientDetails = () => {
-    const patientDetailsText = `${currentPatient?.firstName || ''} ${currentPatient?.lastName ||
-      ''}, ${currentPatient?.gender || ''}, ${
-      currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
-    }`;
+    const patientDetailsText = selectedPatient
+      ? `${selectedPatient?.firstName || ''} ${selectedPatient?.lastName ||
+          ''}, ${selectedPatient?.gender || ''}, ${
+          selectedPatient?.dateOfBirth ? getAge(selectedPatient.dateOfBirth) || '' : ''
+        }`
+      : '';
     return (
       <View style={styles.patientDetailsViewStyle}>
-        <View style={styles.patientNameMainViewStyle}>
-          <View style={styles.patientNameViewStyle}>
-            <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
-            <Text style={styles.changeTextStyle} onPress={() => setShowPatientListOverlay(true)}>
-              {string.diagnostics.changeText}
-            </Text>
+        {selectedPatient ? (
+          <View style={styles.patientNameMainViewStyle}>
+            <View style={styles.patientNameViewStyle}>
+              <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
+              <Text style={styles.changeTextStyle} onPress={() => setShowPatientListOverlay(true)}>
+                {string.diagnostics.changeText}
+              </Text>
+            </View>
+            <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
+            <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
           </View>
-          <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
-          <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
-        </View>
+        ) : null}
         {addressText ? (
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
@@ -3097,6 +3101,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <PatientListOverlay
         onPressClose={() => setShowPatientListOverlay(false)}
         onPressDone={(_selectedPatient: any) => {
+          setSelectedPatient(_selectedPatient);
           setShowPatientListOverlay(false);
           changeCurrentProfile(_selectedPatient, true);
         }}
@@ -3107,6 +3112,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             isPoptype: true,
             mobileNumber: currentPatient?.mobileNumber,
           });
+        }}
+        patientSelected={selectedPatient}
+        onPressAndroidBack={() => {
+          setShowPatientListOverlay(false);
+          handleBack();
         }}
       />
     ) : null;
@@ -3265,7 +3275,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
-  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
+  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
+
   const isCovidItem = cartItemsWithId?.map((item) =>
     AppConfig.Configuration.Covid_Items.includes(item)
   );
@@ -3331,7 +3342,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {renderTotalCharges()}
             {/* {renderTestSuggestions()} */}
           </View>
-          <View style={{ height: 70 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
         {/* <StickyBottomComponent defaultBG>
           <Button
@@ -3491,7 +3502,7 @@ const styles = StyleSheet.create({
   dashedBannerViewStyle: {
     ...cardViewStyle,
     marginHorizontal: 20,
-    marginBottom: 50,
+    marginBottom: 0,
     padding: 16,
     marginTop: 10,
     flexDirection: 'row',
