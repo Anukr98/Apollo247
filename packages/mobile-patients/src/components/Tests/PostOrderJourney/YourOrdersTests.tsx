@@ -788,7 +788,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 <DisabledTickIcon style={styles.checkIconStyle} />
               )}
             </View>
-            {selectRescheduleOption ? (
+            {selectRescheduleOption && (
               <View style={{ marginVertical: '2%' }}>
                 <Text style={styles.optionSubHeadingText}>
                   {selectedOrderRescheduleCount == 3
@@ -803,7 +803,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   title={'PROCEED TO RESCHEDULE'}
                 />
               </View>
-            ) : null}
+            )}
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => _onPressCancelOption()} style={styles.optionsTouch}>
@@ -816,12 +816,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 <DisabledTickIcon style={styles.checkIconStyle} />
               )}
             </View>
-            {selectCancelOption ? (
+            {selectCancelOption && (
               <View style={{ marginVertical: '2%' }}>
                 <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
                 <Button onPress={() => _onPressProceedToCancel()} title={'PROCEED TO CANCEL'} />
               </View>
-            ) : null}
+            )}
           </View>
         </TouchableOpacity>
       </View>
