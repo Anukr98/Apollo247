@@ -52,8 +52,10 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
 
   const actualItemsToShow =
-    data?.diagnosticWidgetData?.length > 0 &&
-    data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+    source === 'Cart Page'
+      ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+      : data?.diagnosticWidgetData?.length > 0 &&
+        data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
 
   const renderItemCard = (item: any) => {
     const getItem = item?.item;
