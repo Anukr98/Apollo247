@@ -34,6 +34,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     removeEPrescription,
     removePhysicalPrescription,
     prescriptionType,
+    consultProfile,
   } = useShoppingCart();
   const { onPressUploadMore, style, hideHeader, showSelectedOption, isPlainStyle } = props;
   const { currentPatient } = useAllCurrentPatients();
@@ -125,9 +126,10 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 
   const renderPrescriptionInfo = () => {
     const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
+    const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
-      : `Doctor Consult Option Selected for ${currentPatient?.firstName}`;
+      : `Doctor Consult Option Selected for ${name}`;
     const description = isPrescriptionLater
       ? 'You have to share prescription later for order to be verified successfully.'
       : 'An Apollo doctor will call you soon as they are available!';
