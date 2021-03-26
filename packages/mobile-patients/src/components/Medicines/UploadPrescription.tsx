@@ -58,6 +58,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   uploadDocument,
@@ -175,6 +176,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     ePrescriptions,
     setEPrescriptions,
     physicalPrescriptions,
+    setPrescriptionType,
     setPhysicalPrescriptions,
     newAddressAdded,
     setNewAddressAdded,
@@ -1015,16 +1017,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const onPressProceed = () => {
     if (isPhysicalPresciptionProps) {
       setPhysicalPrescriptionsProps([...phyPrescriptionsProp]);
-      setPhysicalPrescriptions && setPhysicalPrescriptions([...phyPrescriptionsProp]);
-    } else {
-      setPhysicalPrescriptions && setPhysicalPrescriptions([...physicalPrescriptions]);
+      setPhysicalPrescriptions?.([...phyPrescriptionsProp]);
     }
     if (isEPresciptionProps) {
       setEPrescriptionsProps([...EPrescriptionsProps]);
-      setEPrescriptions && setEPrescriptions([...EPrescriptionsProps]);
-    } else {
-      setEPrescriptions && setEPrescriptions([...ePrescriptions]);
+      setEPrescriptions?.([...EPrescriptionsProps]);
     }
+    setPrescriptionType?.(PrescriptionType.UPLOADED);
     props.navigation.navigate(AppRoutes.MedicineSearch, {
       showButton: true,
       isReUpload: isComingFromReUpload,

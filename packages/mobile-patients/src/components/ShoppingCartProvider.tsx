@@ -11,6 +11,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   validatePharmaCoupon_validatePharmaCoupon,
   validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice,
@@ -182,6 +183,8 @@ export interface ShoppingCartContextProps {
     | null;
   removePhysicalPrescription: ((base64: string) => void) | null;
   physicalPrescriptions: PhysicalPrescription[];
+  consultProfile: GetCurrentPatients_getCurrentPatients_patients | null;
+  setConsultProfile: (profile: GetCurrentPatients_getCurrentPatients_patients | null) => void;
 
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
@@ -273,6 +276,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   updatePhysicalPrescription: null,
   removePhysicalPrescription: null,
   physicalPrescriptions: [],
+  consultProfile: null,
+  setConsultProfile: () => {},
 
   stores: [],
   setStores: null,
@@ -455,6 +460,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [pdpBreadCrumbs, setPdpBreadCrumbs] = useState<
     ShoppingCartContextProps['pdpBreadCrumbs']
   >();
+
+  const [consultProfile, setConsultProfile] = useState<ShoppingCartContextProps['consultProfile']>(
+    null
+  );
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -742,6 +751,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setHdfcPlanName('');
     setdeliveryTime('');
     setPrescriptionType(null);
+    setConsultProfile(null);
   };
 
   useEffect(() => {
@@ -1108,6 +1118,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         addMultipleEPrescriptions,
         removeEPrescription,
         setEPrescriptions,
+        consultProfile,
+        setConsultProfile,
 
         physicalPrescriptions,
         setPhysicalPrescriptions,
