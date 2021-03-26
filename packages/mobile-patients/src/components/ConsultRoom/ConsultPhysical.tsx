@@ -185,7 +185,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       .catch((e: any) => {
         CommonBugFender('ConsultPhysical_checkAvailabilitySlot', e);
         props.setshowSpinner && props.setshowSpinner(false);
-        console.log('error', e);
       });
   };
 
@@ -233,7 +232,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       .catch((e: any) => {
         CommonBugFender('ConsultPhysical_fetchPhysicalSlots', e);
         props.setshowSpinner(false);
-        console.log('error', e);
       });
   };
 
@@ -243,7 +241,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     }
     const selectedTabSlots = (timeArray || []).find((item) => item.label == selectedtiming);
     if (selectedTabSlots && selectedTabSlots.time.length == 0) {
-      console.log('NO_SLOTS_FOUND - ConsultPhysical', selectedtiming);
       const data: getDoctorDetailsById_getDoctorDetailsById = props.doctor!;
       const eventAttributes: WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND] = {
         'Doctor Name': g(data, 'fullName')!,
@@ -254,7 +251,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         'Consult Mode': 'Physical',
         'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
         'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
-        // 'Consult ID': g(data, 'id')!,
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),

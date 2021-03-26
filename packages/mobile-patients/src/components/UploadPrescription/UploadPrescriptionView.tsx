@@ -215,12 +215,7 @@ const MAX_FILE_SIZE = 2000000; // 2MB
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const {
-    ePrescriptions,
-    setEPrescriptions,
-    physicalPrescriptions,
-    setPhysicalPrescriptions,
-  } = useShoppingCart();
+  const { ePrescriptions } = useShoppingCart();
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -282,7 +277,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
                 setIsCameraAccessGranted(false);
               }
             })
-            .catch((e) => console.log(e, 'dsvunacimkl'));
+            .catch((e) => {});
         }}
       >
         <View style={styles.permissionBox}>
@@ -602,7 +597,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       })
       .catch((e: Error) => {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
-        console.log({ e });
         setShowSpinner(false);
       });
   };

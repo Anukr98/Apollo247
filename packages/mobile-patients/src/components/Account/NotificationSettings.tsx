@@ -1,16 +1,8 @@
 import React, { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react';
-import {
-  StyleSheet,
-  SafeAreaView,
-  View,
-  TouchableOpacity,
-  Text,
-  Switch,
-  BackHandler,
-} from 'react-native';
+import { StyleSheet, SafeAreaView, View, TouchableOpacity, Text, BackHandler } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More, ToggleOn, ToggleOff } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ToggleOn, ToggleOff } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   GET_NOTIFICATION_SETTINGS,
@@ -127,30 +119,12 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
       value: messageFromDoctorNotification,
       setValue: setmessageFromDoctorNotification,
     },
-    // {
-    //   id: 6,
-    //   title: 'Chats from Patients',
-    //   value: upcomingAppointmentReminders,
-    // setValue: setupcomingAppointmentReminders
-    // },
     {
       id: 7,
       title: 'Play sounds for notifications',
       value: playNotificationSound,
       setValue: setplayNotificationSound,
     },
-    // {
-    //   id: 8,
-    //   title: 'Vibrate on notifications',
-    //   value: playNotificationSound,
-    //   setValue: setplayNotificationSound,
-    // },
-    // {
-    //   id: 9,
-    //   title: 'Do Not Disturb Mode',
-    //   value: upcomingAppointmentReminders,
-    // setValue: setupcomingAppointmentReminders
-    // },
   ];
 
   const { data, error } = useQuery<getPatientNotificationSettings>(GET_NOTIFICATION_SETTINGS, {
@@ -160,7 +134,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
     },
   });
   if (error) {
-    console.log('error', error);
   } else {
     if (
       data &&
@@ -206,13 +179,11 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        console.log(data, 'result');
         props.navigation.goBack();
       })
       .catch((error) => {
         setshowSpinner(false);
         CommonBugFender('NotificationSettings_saveData', error);
-        console.log('Error occured', { error });
       });
   }, [
     client,
@@ -243,36 +214,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
     };
   }, [backPressCount, saveData]);
 
-  // useEffect(() => {
-  //   saveData();
-  // }, [saveData, upcomingAppointmentReminders]);
-
-  const renderRow = (
-    label: string,
-    value: boolean,
-    setValue: Dispatch<SetStateAction<boolean>>
-  ) => {
-    return (
-      <View>
-        <View style={styles.viewRowStyle}>
-          <Text style={styles.textStyle}>{label}</Text>
-          {/* <Switch value={value} onValueChange={(value) => setValue(value)} /> */}
-          {value && (
-            <TouchableOpacity onPress={() => setValue(!value)}>
-              <ToggleOn />
-            </TouchableOpacity>
-          )}
-          {!value && (
-            <TouchableOpacity onPress={() => setValue(!value)}>
-              <ToggleOff />
-            </TouchableOpacity>
-          )}
-        </View>
-        <View style={styles.separatorStyles} />
-      </View>
-    );
-  };
-
   const renderNotificationView = () => {
     return (
       <View style={styles.containerStyle}>
@@ -295,33 +236,8 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
             </View>
           );
         })}
-        {/* <View>
-          <View style={styles.viewRowStyle}>
-            <Text style={styles.textStyle}></Text>
-            <Switch value={false} onValueChange={(value) => {}} />
-          </View>
-          <View style={styles.separatorStyles} />
-        </View> */}
       </View>
     );
-
-    // return (
-    //   <View style={styles.containerStyle}>
-    //     {NotificationArray.map((serviceTitle, i) => (
-    //       <View key={i} style={{}}>
-    //         <View>
-    //           <>
-    //             <View style={styles.viewRowStyle}>
-    //               <Text style={styles.textStyle}>{serviceTitle.title}</Text>
-    //               <Switch value={false} onValueChange={(value) => {}} />
-    //             </View>
-    //             <View style={styles.separatorStyles} />
-    //           </>
-    //         </View>
-    //       </View>
-    //     ))}
-    //   </View>
-    // );
   };
   return (
     <View style={{ flex: 1 }}>
@@ -333,11 +249,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
           }}
           leftIcon="backArrow"
           title="NOTIFICATION SETTINGS"
-          // rightComponent={
-          //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          //     <More />
-          //   </TouchableOpacity>
-          // }
           onPressLeftIcon={onPressBack}
         />
         <ScrollView bounces={false}>{renderNotificationView()}</ScrollView>

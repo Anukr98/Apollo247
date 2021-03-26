@@ -418,9 +418,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
         return null;
       }
     };
-    // console.log(tomorrow, 'tomorrow');
     let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
-    // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
     const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
     const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
     const followUpAfterInDays =
@@ -450,8 +448,6 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
       g(item, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! ||
       'Physical Consultation';
     const day1 = moment(appointmentDateTime)
-      // .set('hour', 0)
-      // .set('minute', 0)
       .startOf('day')
       .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
     const day2 = moment(new Date());
@@ -815,7 +811,6 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
               </View>
             ) : null}
             {item.status == STATUS.PENDING ||
-            // dateIsAfterconsult ||
             item.status == STATUS.IN_PROGRESS ||
             item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
             item.status == STATUS.NO_SHOW ||
@@ -852,7 +847,6 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
           marginTop: 20,
         }}
         ListFooterComponent={() => <View style={{ height: 20 }} />}
-        // horizontal={true}
         data={searchText?.length > 2 ? searchAppointments : []}
         bounces={false}
         removeClippedSubviews={true}

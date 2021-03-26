@@ -18,10 +18,6 @@ import React, { FC, useEffect } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import StatusCard from './components/StatusCard';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
@@ -68,7 +64,6 @@ const PaymentStatusScreen: FC<PaymentStatusScreenProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
   const textComponent = (

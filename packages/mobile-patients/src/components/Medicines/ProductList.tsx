@@ -62,6 +62,7 @@ export const ProductList: React.FC<Props> = ({
     updateCartItem,
     removeCartItem,
     pharmacyCircleAttributes,
+    cartItems,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
@@ -106,6 +107,7 @@ export const ProductList: React.FC<Props> = ({
         categoryName: productPageViewedEventProps?.CategoryName,
         section: productPageViewedEventProps?.SectionName,
       },
+      JSON.stringify(cartItems),
       () => {},
       pharmacyCircleAttributes!,
       onAddedSuccessfully ? onAddedSuccessfully : () => {}

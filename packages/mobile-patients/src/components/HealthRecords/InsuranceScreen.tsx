@@ -203,9 +203,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        CommonBugFender('InsuranceScreen_GET_PRISM_AUTH_TOKEN', e);
       });
   };
 
@@ -239,7 +237,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('searchPHRApiWithAuthToken Error', error);
+        CommonBugFender('InsuranceScreen_searchPHRApiWithAuthToken', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -254,7 +252,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };
@@ -297,9 +295,9 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('InsuranceScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -382,6 +380,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('InsuranceScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });

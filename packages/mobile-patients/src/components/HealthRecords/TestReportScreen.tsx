@@ -252,8 +252,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         setCallPhrMainApi(true);
       })
       .catch((error) => {
+        CommonBugFender('TestReportScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -287,9 +287,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        CommonBugFender('TestReportScreen_GET_PRISM_AUTH_TOKEN', e);
       });
   };
 
@@ -323,7 +321,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('searchPHRApiWithAuthToken Error', error);
+        CommonBugFender('TestReportScreen_searchPHRApiWithAuthToken', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -477,7 +475,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };
@@ -658,9 +656,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           }
         })
         .catch((e) => {
-          CommonBugFender('AddRecord_ADD_PATIENT_LAB_TEST_RECORD', e);
+          CommonBugFender('TestReportScreen_DeleteParameter_ADD_PATIENT_LAB_TEST_RECORD', e);
           setShowSpinner(false);
-          console.log(JSON.stringify(e), 'eeeee');
           currentPatient && handleGraphQlError(e);
         });
     } else {
@@ -679,6 +676,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           }
         })
         .catch((error) => {
+          CommonBugFender('TestReportScreen_deletePatientPrismMedicalRecords', error);
           setShowSpinner(false);
           currentPatient && handleGraphQlError(error);
         });

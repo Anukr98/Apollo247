@@ -9,7 +9,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { at } from 'lodash';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 

@@ -11,7 +11,6 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   CheckBoxFilled,
-  CircleBannerNonMember,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -42,7 +41,6 @@ import {
   g,
   getDiscountPercentage,
   getCareCashback,
-  addPharmaItemToCart,
   savePastSearch,
   postAppsFlyerEvent,
   postFirebaseEvent,
@@ -64,7 +62,6 @@ import {
   View,
   FlatList,
   ScrollView,
-  BackHandler,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -84,7 +81,7 @@ import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medici
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   GetSubscriptionsOfUserByStatusVariables,
@@ -194,8 +191,6 @@ const styles = StyleSheet.create({
   textStyle: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(16),
-    // paddingVertical: 8,
-    // borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     textTransform: 'capitalize',
   },
   textViewStyle: {
@@ -341,7 +336,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     locationDetails,
     pharmacyLocation,
     isPharmacyLocationServiceable,
-    circleSubscription,
     setAxdcCode,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
@@ -374,7 +368,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     cartItems,
     updateCartItem,
     removeCartItem,
-    isCircleSubscription,
     setCircleSubscriptionId,
     setIsCircleSubscription,
     setHdfcSubscriptionId,
@@ -913,7 +906,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <Text style={styles.noteText}>This medicine requires doctor’s prescription</Text>
             <MedicineRxIcon />
           </View>
-          {/* <View style={styles.separator} /> */}
         </>
       );
     } else {
@@ -985,59 +977,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
         {isCircleSubscribed && renderCircleSubscribeSuccess()}
-        {/* {!!cashback && renderCircleBanners()} */}
       </View>
     );
-  };
-
-  const getUserSubscriptionsByStatus = async () => {
-    try {
-      const query: GetSubscriptionsOfUserByStatusVariables = {
-        mobile_number: g(currentPatient, 'mobileNumber'),
-        status: ['active', 'deferred_inactive'],
-      };
-      const res = await client.query<GetSubscriptionsOfUserByStatus>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
-      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          setIsCircleSubscribed(true);
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
-          const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-          };
-          setCirclePlanValidity && setCirclePlanValidity(planValidity);
-        } else {
-          setIsCircleSubscribed(false);
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCirclePlanValidity && setCirclePlanValidity(null);
-        }
-
-        if (data?.HDFC?.[0]._id) {
-          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
-
-          const planName = data?.HDFC?.[0].name;
-          setHdfcPlanName && setHdfcPlanName(planName);
-
-          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
-            setIsFreeDelivery && setIsFreeDelivery(true);
-          }
-        } else {
-          setHdfcSubscriptionId && setHdfcSubscriptionId('');
-          setHdfcPlanName && setHdfcPlanName('');
-        }
-      }
-    } catch (error) {
-      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
-    }
   };
 
   const renderCircleSubscribeSuccess = () => {
@@ -1347,9 +1288,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       const basicDetails: [string, string | number][] = [
         ['Manufacturer', manufacturer],
         ['Composition', composition],
-        // ['Dose Form', doseForm],
-        // ['Description', description],
-        // ['Price', price],
         ['Pack Of', `${pack} ${doseForm}${Number(pack) !== 1 ? 'S' : ''}`],
       ];
 

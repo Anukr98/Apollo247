@@ -1,8 +1,7 @@
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -13,7 +12,6 @@ import {
 import {
   GET_PATIENT_PAST_MEDICINE_SEARCHES,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientPastMedicineSearches,
@@ -24,18 +22,12 @@ import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
   aphConsole,
   g,
-  getDiscountPercentage,
   isValidSearch,
   postWebEngageEvent,
-  postWEGNeedHelpEvent,
   postFirebaseEvent,
   postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -55,7 +47,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  ListRenderItemInfo
+  ListRenderItemInfo,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
@@ -64,9 +56,8 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   DIAGNOSTIC_GROUP_PLAN,
-  getDiagnosticsSearchResults,
-  PackageInclusion,
   getDiagnosticsPopularResults,
+  getDiagnosticsSearchResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -81,7 +72,7 @@ import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
     flex: 1,
-    backgroundColor: 'white' //theme.colors.DEFAULT_BACKGROUND_COLOR,
+    backgroundColor: 'white', //theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   headerStyle: {},
   headerSearchInputShadow: {
@@ -115,7 +106,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.1)',
     borderRadius: 5,
-    width:'100%',
+    width: '100%',
     height: 48,
     paddingHorizontal: 10,
   },
@@ -164,7 +155,7 @@ const styles = StyleSheet.create({
     padding: 12,
     ...theme.fonts.IBMPlexSansSemiBold(14),
   },
-  headingSections: { ...theme.viewStyles.text('B', 14, '#01475B', 1, 22)},
+  headingSections: { ...theme.viewStyles.text('B', 14, '#01475B', 1, 22) },
   viewDefaultContainer: {
     paddingVertical: 10,
     paddingHorizontal: 10,
@@ -174,10 +165,10 @@ const styles = StyleSheet.create({
   },
   defaultContainer: {
     width: '100%',
-    justifyContent:'space-between',
+    justifyContent: 'space-between',
     marginVertical: 10,
     paddingVertical: 0,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
 });
 
@@ -220,9 +211,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);
   useEffect(() => {
-    setIsLoading(true)
+    setIsLoading(true);
     if (!popularArray?.length) {
-      fetchPopularDetails()
+      fetchPopularDetails();
     }
   }, []);
 
@@ -281,8 +272,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       const res: any = await getDiagnosticsPopularResults('diagnostic');
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
-        setPopularArray(product)
-        setIsLoading(false)
+        setPopularArray(product);
+        setIsLoading(false);
       } else {
         errorAlert();
       }
@@ -347,7 +338,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       );
 
       if (res?.data?.success) {
-        console.log({ res });
         const products = g(res, 'data', 'data') || [];
         setDiagnosticResults(
           products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
@@ -355,7 +345,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         setSearchResult(products?.length == 0);
         setWebEngageEventOnSearchItem(_searchText, products);
       } else {
-        console.log('po');
         setDiagnosticResults([]);
         setSearchResult(true);
       }
@@ -440,7 +429,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
-    // postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate);
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
 
     addCartItem!({
@@ -484,7 +472,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              // style={{ marginRight: 24 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.MedAndTestCart);
@@ -493,14 +480,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity
-              style={{ marginLeft: 10 }}
-              disabled={true}
-              activeOpacity={1}
-              onPress={() => console.log('filter press')}
-            >
-              <Filter />
-            </TouchableOpacity> */}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -630,13 +609,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               renderPastSearchItem(pastSearch!, i == array?.length - 1 ? { marginRight: 0 } : {})
             )}
         </View>
-        {/* <NeedHelpAssistant
-          navigation={props.navigation}
-          containerStyle={{ marginTop: 84, marginBottom: 50 }}
-          onNeedHelpPress={() => {
-            postWEGNeedHelpEvent(currentPatient, 'Tests');
-          }}
-        /> */}
       </ScrollView>
     );
   };
@@ -646,8 +618,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     index: number,
     array: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
-    const foundMedicineInCart = cartItems.find((item) => item.id == `${product.itemId}`);
-
     return (
       <DiagnosticsSearchSuggestionItem
         onPress={() => {
@@ -674,11 +644,11 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderMatchingTests = () => {
-    let popularTests: never[] = []
-    let popularPackages: never[] = []
+    let popularTests: never[] = [];
+    let popularPackages: never[] = [];
     if (popularArray?.length) {
-      popularPackages = popularArray.filter(item => item?.diagnostic_inclusions?.length > 1)
-      popularTests = popularArray.filter(item => item?.diagnostic_inclusions?.length == 1)
+      popularPackages = popularArray.filter((item) => item?.diagnostic_inclusions?.length > 1);
+      popularTests = popularArray.filter((item) => item?.diagnostic_inclusions?.length == 1);
     }
 
     return (
@@ -690,45 +660,42 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             size="large"
             color="green"
           />
+        ) : !!searchText && searchText?.length > 2 ? (
+          <FlatList
+            onScroll={() => Keyboard.dismiss()}
+            data={diagnosticResults}
+            renderItem={({ item, index }) => renderTestCard(item, index, diagnosticResults)}
+            keyExtractor={(_, index) => `${index}`}
+            bounces={false}
+            ListHeaderComponent={
+              (diagnosticResults?.length > 0 && (
+                <SectionHeaderComponent
+                  sectionTitle={`Showing search results (${diagnosticResults?.length})`}
+                  style={{ marginBottom: 5 }}
+                />
+              )) ||
+              null
+            }
+          />
         ) : (
-          !!searchText &&
-          searchText?.length > 2 ? (
-            <FlatList
-              onScroll={() => Keyboard.dismiss()}
-              data={diagnosticResults}
-              renderItem={({ item, index }) => renderTestCard(item, index, diagnosticResults)}
-              keyExtractor={(_, index) => `${index}`}
-              bounces={false}
-              ListHeaderComponent={
-                (diagnosticResults?.length > 0 && (
-                  <SectionHeaderComponent
-                    sectionTitle={`Showing search results (${diagnosticResults?.length})`}
-                    style={{ marginBottom: 5 }}
-                  />
-                )) ||
-                null
-              }
-            />
-          ) : (
-            <View style={styles.viewDefaultContainer}>
-                  <Text style={styles.headingSections}>Popular Tests</Text>
-                  <View style={styles.defaultContainer}>
-                    <FlatList
-                      keyExtractor={(_, index) => `${index}`}
-                      data={popularTests}
-                      renderItem={renderPopularDiagnostic}
-                    />
-                  </View>
-                  <Text style={styles.headingSections}>Popular Packages</Text>
-                  <View style={styles.defaultContainer}>
-                    <FlatList
-                      keyExtractor={(_, index) => `${index}`}
-                      data={popularPackages}
-                      renderItem={renderPopularDiagnostic}
-                    />
-                  </View>
-                </View>
-          )
+          <View style={styles.viewDefaultContainer}>
+            <Text style={styles.headingSections}>Popular Tests</Text>
+            <View style={styles.defaultContainer}>
+              <FlatList
+                keyExtractor={(_, index) => `${index}`}
+                data={popularTests}
+                renderItem={renderPopularDiagnostic}
+              />
+            </View>
+            <Text style={styles.headingSections}>Popular Packages</Text>
+            <View style={styles.defaultContainer}>
+              <FlatList
+                keyExtractor={(_, index) => `${index}`}
+                data={popularPackages}
+                renderItem={renderPopularDiagnostic}
+              />
+            </View>
+          </View>
         )}
       </>
     );
@@ -736,30 +703,30 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const renderPopularDiagnostic = (data: ListRenderItemInfo<any>) => {
     const { index, item } = data;
     return (
-    <DiagnosticsNewSearch
-    onPress={() => {
-      CommonLogEvent(AppRoutes.Tests, 'Search suggestion Item');
-      props.navigation.navigate(AppRoutes.TestDetails, {
-        itemId: item?.diagnostic_item_id,
-        itemName: item?.diagnostic_item_name,
-        source: 'Partial Search',
-        comingFrom: AppRoutes.Tests,
-      });
-    }}
-    onPressAddToCart={() => {
-      onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name);
-    }}
-    data={item}
-    loading={true}
-    showSeparator={index !== diagnosticResults?.length - 1}
-    style={{
-      marginHorizontal: 5,
-      paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
-    }}
-    onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
-    />
-    )
-  }
+      <DiagnosticsNewSearch
+        onPress={() => {
+          CommonLogEvent(AppRoutes.Tests, 'Search suggestion Item');
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: item?.diagnostic_item_id,
+            itemName: item?.diagnostic_item_name,
+            source: 'Partial Search',
+            comingFrom: AppRoutes.Tests,
+          });
+        }}
+        onPressAddToCart={() => {
+          onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name);
+        }}
+        data={item}
+        loading={true}
+        showSeparator={index !== diagnosticResults?.length - 1}
+        style={{
+          marginHorizontal: 5,
+          paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
+        }}
+        onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeAreaViewStyle}>
