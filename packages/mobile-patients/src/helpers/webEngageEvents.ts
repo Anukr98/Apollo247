@@ -363,6 +363,7 @@ export enum WebEngageEventName {
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
   ORDER_MEDICINES_IN_CONSULT_ROOM = 'Order meds in Consult room',
   BOOK_TESTS_IN_CONSULT_ROOM = 'Book tests in consult room',
+  PATIENT_EXTERNAL_MEETING_LINK_CLICKED = 'Patient Clicked on Video Link',
   // Symptom Tracker Events
   SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
@@ -1447,6 +1448,17 @@ export interface WebEngageEvents {
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
   };
+  [WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]: {
+    'Doctor name': string;
+    'Patient name': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    'Appointment ID': string;
+    'Link URL': string;
+    'Doctor number': string;
+    'Patient number': string;
+    'Solution Used': string;
+  };
   [WebEngageEventName.CHAT_WITH_DOCTOR]: {
     'Doctor Name': string;
     'Speciality Name': string;
@@ -2036,7 +2048,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED]: {
-    'Option selected': 'Prescription Now' | 'Prescription Later' | 'Doctor Consult'| 'NA';
+    'Option selected': 'Prescription Now' | 'Prescription Later' | 'Doctor Consult' | 'NA';
   };
   [WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;

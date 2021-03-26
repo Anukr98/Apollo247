@@ -29,6 +29,8 @@ import {
   VideoInactiveIcon,
   WhiteCallIcon,
   UserThumbnailIcon,
+  CopyIcon,
+  ExternalMeetingVideoCall,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -136,6 +138,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Clipboard,
 } from 'react-native';
 import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
@@ -669,6 +672,55 @@ const styles = StyleSheet.create({
     flex: 1,
     flexWrap: 'wrap',
   },
+
+  externalMeetingLinkContainer: {
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+    maxWidth: '85%',
+  },
+
+  externalMeetingLinkImage: {
+    alignSelf: 'center',
+    width: 78,
+    height: 58,
+    marginTop: 15,
+    marginBottom: 11,
+  },
+  externalMeetingLinkTextContainer: {
+    backgroundColor: '#0087ba',
+    marginLeft: 38,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+
+  externalMeetingLinkText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
+    textAlign: 'center',
+  },
+  externalMeetingLinkSubText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
+    textAlign: 'center',
+    marginVertical: 12,
+  },
+  externalMeetingLinkCTAWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  externalMeetingLinkMeetingCTAContainer: {
+    backgroundColor: theme.colors.WHITE,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  exeternalMeetingLinkMeetingCTAText: {
+    ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
+    textTransform: 'uppercase',
+  },
+  externalMeetingLinkTnC: {
+    ...theme.viewStyles.text('M', 8, theme.colors.WHITE),
+    marginVertical: 9,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -890,6 +942,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const appointmentStartsInTenMin = '^^#appointmentStartsInTenMin';
   const sectionHeader = '^^#sectionHeader';
   const followUpChatGuideLines = '^^#followUpChatGuideLines';
+  const externalMeetingLink = '^^#externalMeetingLink';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -5096,6 +5149,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     <>
                       <FollowUpChatGuideLines followChatLimit={followChatLimit} />
                     </>
+                  ) : rowData.message === externalMeetingLink ? (
+                    renderExternalMeetingLink(rowData)
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
@@ -5284,6 +5339,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           )}
         </View>
       );
+    }
+  };
+
+  const renderExternalMeetingLink = (rowData: any) => {
+    return (
+      <View style={styles.externalMeetingLinkContainer}>
+        <View style={styles.externalMeetingLinkTextContainer}>
+          <ExternalMeetingVideoCall style={styles.externalMeetingLinkImage} />
+          <Text style={styles.externalMeetingLinkText}>
+            {strings.externalMeetingLink.click_to_open.replace(
+              'XYZ',
+              g(appointmentData, 'doctorInfo', 'fullName')
+            )}
+          </Text>
+
+          <View style={styles.externalMeetingLinkCTAWrapper}>
+            <TouchableOpacity
+              style={styles.externalMeetingLinkMeetingCTAContainer}
+              onPress={() => onMeetingLinkClicked(rowData)}
+            >
+              <Text style={styles.exeternalMeetingLinkMeetingCTAText}>{rowData.url}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => onLinkCopyClicked(rowData)}>
+              <CopyIcon />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.externalMeetingLinkTnC}>{strings.externalMeetingLink.tnc}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const onMeetingLinkClicked = (rowData: any) => {
+    try {
+      Linking.openURL(rowData.url);
+
+      postWebEngageEvent(WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED, {
+        'Doctor name': appointmentData?.doctorInfo?.fullName,
+        'Patient name': `${appointmentData?.patientInfo?.firstName} ${appointmentData?.patientInfo?.lastName}`,
+        'Patient ID': appointmentData?.patientInfo?.id,
+        'Doctor ID': appointmentData?.doctorInfo?.id,
+        'Appointment ID': appointmentData?.id,
+        'Link URL': rowData.url || '',
+        'Doctor number':appointmentData?.doctorInfo?.mobileNumber,
+        'Patient number': appointmentData?.patientInfo?.mobileNumber,
+        'Solution Used': 'Zoom',
+      } as WebEngageEvents[WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onMeetingLinkClickedd', error);
+    }
+  };
+
+  const onLinkCopyClicked = (rowData: any) => {
+    try {
+      Clipboard.setString(rowData.url);
+      setHandlerMessage(strings.externalMeetingLink.copied_to_clipboard + ' ' + rowData.url);
+      setSnackbarState(true);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onLinkCopyClicked', error);
     }
   };
 
