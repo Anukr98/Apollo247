@@ -55,7 +55,6 @@ import {
   getFormattedLocation,
   nameFormater,
   isSmallDevice,
-  formatAddressToLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -393,15 +392,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const getHomePageWidgets = async (cityId: string) => {
     setSectionLoading(true);
-    const result: any = await getDiagnosticHomePageWidgets('diagnostic');
-    if (result?.data?.success && result?.data?.data?.length > 0) {
-      const sortWidgets = result?.data?.data?.sort(
-        (a: any, b: any) =>
-          Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
-      );
-      //call here the prices.
-      fetchWidgetsPrices(sortWidgets, cityId);
-    } else {
+    try {
+      const result: any = await getDiagnosticHomePageWidgets('diagnostic');
+      if (result?.data?.success && result?.data?.data?.length > 0) {
+        const sortWidgets = result?.data?.data?.sort(
+          (a: any, b: any) =>
+            Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
+        );
+        //call here the prices.
+        fetchWidgetsPrices(sortWidgets, cityId);
+      } else {
+        setWidgetsData([]);
+        setLoading!(false);
+      }
+    } catch (error) {
+      CommonBugFender('getHomePageWidgets_Tests', error);
       setWidgetsData([]);
       setLoading?.(false);
       setReloadWidget(true);
@@ -433,7 +438,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const res = Promise.all(
         !!itemIds &&
-          itemIds?.length > 0 &&
           itemIds?.map((item: any) =>
             fetchPricesForCityId(
               Number(cityId!) || 9,
@@ -981,14 +985,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
-      <TouchableOpacity onPress={()=>{
-        setSearchFocused(true);
-            props.navigation.navigate(AppRoutes.SearchTestScene, {
-              searchText: searchText,
-            });
-            setSearchText('');
-            setDiagnosticResults([]);
-      }}>
+      <TouchableOpacity
+        onPress={() => {
+          setSearchFocused(true);
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
+            searchText: searchText,
+          });
+          setSearchText('');
+          setDiagnosticResults([]);
+        }}
+      >
         <SearchInput
           _isSearchFocused={isSearchFocused}
           editable={false}
@@ -2037,7 +2043,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   whyBookUsImage: { width: '100%', height: 200 },
-  headingSections: { ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 22)},
+  headingSections: { ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 22) },
   viewDefaultContainer: {
     paddingVertical: 10,
     paddingHorizontal: 10,
@@ -2047,9 +2053,9 @@ const styles = StyleSheet.create({
   },
   defaultContainer: {
     width: '100%',
-    justifyContent:'space-between',
+    justifyContent: 'space-between',
     marginVertical: 10,
     paddingVertical: 0,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
 });

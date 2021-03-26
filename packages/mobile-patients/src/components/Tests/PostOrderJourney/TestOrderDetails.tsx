@@ -16,7 +16,7 @@ import _ from 'lodash';
 import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
-  DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -46,7 +46,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -74,7 +74,6 @@ import {
   getHCOrderFormattedTrackingHistory,
   getHCOrderFormattedTrackingHistoryVariables,
 } from '@aph/mobile-patients/src/graphql/types/getHCOrderFormattedTrackingHistory';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
@@ -152,6 +151,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       if (!!response && response?.data && !response?.errors) {
         let getOrderLevelStatus = g(response, 'data', 'getHCOrderFormattedTrackingHistory');
         setOrderLevelStatus(getOrderLevelStatus);
+        getOrderLevelStatus?.statusHistory?.length == 0 && setError(true);
         setError(false);
       } else {
         setOrderLevelStatus([]);
@@ -425,7 +425,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           })}
         </View>
         {renderRefund()}
-        <View style={{ height: 30 }} />
+        <View style={{ height: 60 }} />
       </View>
     );
   };
@@ -437,7 +437,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       !!orderLevelStatus?.statusInclusions &&
       totalInclusions > 0 &&
       orderLevelStatus?.statusInclusions?.filter(
-        (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+        (item: any) => !DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)
       );
 
     const isReportText = orderLevelStatus?.statusHistory?.find(
@@ -460,13 +460,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
     return (
       <>
-        {hasDiffStatusLevelInclusion?.length !== 0 ? null : (
+        {hasDiffStatusLevelInclusion?.length === 0 ? null : (
           <View>
             {!showInclusionStatus ? <View style={styles.lineSeparator} /> : null}
 
             <View style={styles.inclusionContainer}>
               <TouchableOpacity
                 onPress={() => setShowInclusionStatus(!showInclusionStatus)}
+                activeOpacity={1}
                 style={styles.viewRowStyle}
               >
                 <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
@@ -508,11 +509,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <TouchableOpacity
           onPress={() => setShowFeedbackPopup(true)}
           activeOpacity={1}
-          style={{ marginBottom: 2 }}
+          style={styles.feedbackTouch}
         >
-          <Text style={{ ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) }}>
-            {string.diagnostics.rateYourExperience}
-          </Text>
+          <Text style={styles.rateYourExpText}>{string.diagnostics.rateYourExperience}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -598,16 +597,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const renderOrderSummary = () => {
     return (
       !!g(orderDetails, 'totalPrice') && (
-        <TestOrderSummaryView orderDetails={orderDetails} onPressViewReport={() => onPressButton} />
+        <TestOrderSummaryView
+          orderDetails={orderDetails}
+          onPressViewReport={() => onPressButton}
+          refundDetails={refundStatusArr}
+        />
       )
     );
   };
 
   const renderError = () => {
     if (
-      refundStatusArr?.length > 0
+      refundStatusArr?.length > 0 && showError
         ? orderStatusList?.length == 0
-        : showError && orderLevelStatus?.length == 0
+        : showError && _.isEmpty(orderLevelStatus)
     ) {
       return (
         <Card
@@ -720,6 +723,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    zIndex: 1000,
+    height: 30,
   },
   dateTimeStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -798,4 +803,6 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     textAlign: 'right',
   },
+  rateYourExpText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) },
+  feedbackTouch: { marginBottom: 2, width: '100%' },
 });

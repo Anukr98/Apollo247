@@ -2126,7 +2126,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox
-                    ? undefined
+                    ? ConsultMode.BOTH
                     : ConsultMode.ONLINE
                   : physicalCheckBox
                   ? ConsultMode.PHYSICAL

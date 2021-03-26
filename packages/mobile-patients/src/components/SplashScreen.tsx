@@ -524,6 +524,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('CircleMembershipDetails');
             break;
 
+          case 'symptomtracker':
+          case 'SymptomTracker':
+            getData('SymptomTracker');
+            break;
+
           case 'testlisting':
           case 'TestListing':
             getData('TestListing', data?.length === 2 ? linkId : undefined);
@@ -977,7 +982,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'TestReport':
-        console.log('TestReport');
         props.navigation.navigate(AppRoutes.HealthRecordDetails, {
           movedFrom: 'deeplink',
           id: id,
@@ -1042,6 +1046,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setCovidVaccineCta,
     setLoginSection,
     setCovidVaccineCtaV2,
+    setCartBankOffer,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1151,6 +1156,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Covid_Vaccine_CTA_QA',
       PROD: 'Covid_Vaccine_CTA',
     },
+    Cart_Prescription_Options: {
+      QA: 'QA_Cart_Prescription_Options',
+      PROD: 'Cart_Prescription_Options',
+    },
     Login_Section_Key: {
       QA: 'Login_Section_QA',
       PROD: 'Login_Section',
@@ -1158,10 +1167,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Covid_Vaccine_Cta_Key_V2: {
       QA: 'Covid_Vaccine_CTA_V2_QA',
       PROD: 'Covid_Vaccine_CTA_V2',
-    },
-    followUp_Chat: {
-      QA: 'QA_FollowUp_Chat_Limit',
-      PROD: 'FollowUp_Chat_Limit',
     },
     Covid_Items: {
       QA: 'QA_Covid_Items',
@@ -1174,6 +1179,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Non_Covid_Max_Slot_Days: {
       QA: 'QA_Non_Covid_Max_Slot_Days',
       PROD: 'Non_Covid_Max_Slot_Days',
+    },
+    Cart_Bank_Offer_Text: {
+      QA: 'QA_CART_BANK_OFFER_TEXT',
+      PROD: 'CART_BANK_OFFER_TEXT',
+    },
+    followUp_Chat: {
+      QA: 'QA_FollowUp_Chat_Limit',
+      PROD: 'FollowUp_Chat_Limit',
     },
   };
 
@@ -1245,6 +1258,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       needHelpReturnPharmaOrderSuccessMessage &&
         setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
 
+      const bankOfferText = getRemoteConfigValue('Cart_Bank_Offer_Text', (key) =>
+        config.getString(key)
+      );
+      bankOfferText && setCartBankOffer!(bankOfferText);
+
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
         'MIN_CART_VALUE_FOR_FREE_DELIVERY',
@@ -1287,6 +1305,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig(
+        'Cart_Prescription_Options',
+        'CART_PRESCRIPTION_OPTIONS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS
+      );
+
+      setAppConfig(
         'Need_Help_Return_Order_Sub_Reason',
         'RETURN_ORDER_SUB_REASON',
         (key) =>
@@ -1297,13 +1323,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getBoolean(key)
       );
 
-      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
-
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
       setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
       setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
         config.getNumber(key)
       );
+      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

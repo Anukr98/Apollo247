@@ -99,7 +99,9 @@ export interface DiagnosticsOrderList
 const width = Dimensions.get('window').width;
 const isSmallDevice = width < 380;
 
-export interface YourOrdersTestProps extends NavigationScreenProps {}
+export interface YourOrdersTestProps extends NavigationScreenProps {
+  showHeader?: boolean;
+}
 
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
@@ -336,6 +338,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             description: cancelResponse?.message,
           });
         }
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
         //refetch the orders
       })
       .catch((error) => {
@@ -343,6 +348,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
         setLoading!(false);
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
       });
   };
 
@@ -550,9 +558,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 : string.common.tryAgainLater,
           });
         }
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
       })
       .catch((error) => {
         console.log('error' + error);
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         setLoading!(false);
         if (
@@ -588,6 +602,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
+          source={'Tests'}
           heading="Schedule Appointment"
           date={date}
           areaId={String(selectedOrder?.areaId)}
@@ -655,11 +670,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             <View style={styles.overlayTouch}>
               <TouchableOpacity>
                 <SafeAreaView style={styles.overlaySafeArea}>
-                  <>
-                    {showRescheduleOptions ? renderRescheduleCancelOptions() : null}
-                    {showRescheduleReasons ? renderRescheduleReasons() : null}
-                    {showCancelReasons ? renderCancelReasons() : null}
-                  </>
+                  <View style={styles.overlayContainer}>
+                    <View>
+                      {showRescheduleOptions && renderRescheduleCancelOptions()}
+                      {showRescheduleReasons && renderRescheduleReasons()}
+                      {showCancelReasons && renderCancelReasons()}
+                    </View>
+                  </View>
                 </SafeAreaView>
               </TouchableOpacity>
             </View>
@@ -671,7 +688,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderRescheduleReasons = () => {
     return (
-      <View style={[styles.overlayContainer]}>
+      <View>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForReschedulingText}
         </Text>
@@ -711,7 +728,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderCancelReasons = () => {
     return (
-      <View style={[styles.overlayContainer]}>
+      <View>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
@@ -772,7 +789,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? 2 - selectedOrderRescheduleCount
       : 2;
     return (
-      <View style={styles.overlayContainer}>
+      <View>
         <Text style={styles.overlayHeadingText}>{string.diagnostics.whatWudLikeText}</Text>
         <TouchableOpacity onPress={() => _onPressReschduleOption()} style={styles.optionsTouch}>
           <View>
@@ -829,7 +846,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowBottomOverlay(false);
     setShowRescheduleOptions(false);
     setShowRescheduleReasons(false);
-    setSelectRescheduleReason('');
+    setSelectCancelReason('');
     checkSlotSelection();
   }
 
@@ -840,8 +857,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleReasons(false);
     setShowCancelReasons(false);
     onSubmitCancelOrder(selectCancelReason, cancelReasonComment);
-    setSelectCancelReason('');
-    setCancelReasonComment('');
     setSelectRescheduleReason('');
   }
 
@@ -1073,25 +1088,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
-
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
 
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          leftIcon="backArrow"
-          title={string.orders.urOrders}
-          container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
-        />
+        {props?.showHeader == false ? null : (
+          <Header
+            leftIcon="backArrow"
+            title={string.orders.urOrders}
+            container={{ borderBottomWidth: 0 }}
+            onPressLeftIcon={() => props.navigation.goBack()}
+          />
+        )}
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
           {showBottomOverlay && renderBottomPopUp()}
         </ScrollView>
       </SafeAreaView>
-      {loading && <Spinner />}
+      {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
   );
 };
@@ -1116,7 +1132,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: colors.CLEAR,
-    zIndex: 3000,
     overflow: 'hidden',
     elevation: 0,
     bottom: 0,

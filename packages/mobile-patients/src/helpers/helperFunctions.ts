@@ -631,7 +631,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Dispatched';
+      statusString = 'Out for Delivery';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -642,20 +642,11 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       statusString = 'Order Ready at Store';
       break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
-      statusString = 'Return In-Process';
-      break;
     case MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED:
       statusString = 'Delivery Attempted';
       break;
     case MEDICINE_ORDER_STATUS.RVP_ASSIGNED:
-      statusString = 'Pick-up Assigned';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Order Delivered';
+      statusString = 'Return Pickup Assigned';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
       statusString = 'Return Successful';
@@ -1185,6 +1176,17 @@ export const isValidPhoneNumber = (value: string) => {
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
   return (text.match(urlRegex) || [])[0];
+};
+
+export const getUserType = (currentPatient: any) => {
+  const user: string =
+    currentPatient?.isConsulted === undefined
+      ? 'undefined'
+      : currentPatient?.isConsulted
+      ? 'Repeat'
+      : 'New';
+
+  return user;
 };
 
 export const reOrderMedicines = async (
@@ -2099,6 +2101,7 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
+  itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
   onAddedSuccessfully?: () => void
@@ -2188,6 +2191,7 @@ export const addPharmaItemToCart = (
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
         onAddedSuccessfully?.();

@@ -14,7 +14,7 @@ export const SpecialDiscountText: React.FC<SpecialTextProps> = (props) => {
   return (
     <>
       {props.isImage ? (
-        <View>
+        <View style={props.styleObj ? props.styleObj : {}}>
           <SpecialDiscountImage style={styles.imageStyle} />
         </View>
       ) : (

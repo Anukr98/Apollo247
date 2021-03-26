@@ -517,7 +517,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Invoice />}
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
-            props.navigation.navigate(AppRoutes.YourOrdersScene);
+            props.navigation.navigate(AppRoutes.MyOrdersScreen, {
+              patientId: currentPatient.id,
+              fromNotification: false,
+            });
             fireProfileAccessedEvent('My Orders');
           }}
         />

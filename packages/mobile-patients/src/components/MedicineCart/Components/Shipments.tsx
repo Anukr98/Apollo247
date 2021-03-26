@@ -47,7 +47,7 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
   };
 
   const renderCartItems = (items: any) => {
-    const sku = items.map((item: any) => item?.sku);
+    const sku = items.map((item: any) => item?.sku || item?.id);
     const products = cartItems.filter((item) => sku.includes(item?.id));
     return (
       <View style={{}}>
@@ -70,20 +70,29 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
   };
 
   const renderOrders = () => {
-    return orders?.map((order: any, index: any) => {
+    if (orders?.length) {
+      return orders?.map((order: any, index: any) => {
+        return (
+          <View>
+            {renderCartItemsHeader(index, order?.items || cartItems)}
+            {isSplitCart && (
+              <TatCardwithoutAddress
+                style={{ marginTop: 13, marginBottom: 10 }}
+                deliveryDate={order?.tat}
+              />
+            )}
+            {renderCartItems(order?.items)}
+          </View>
+        );
+      });
+    } else {
       return (
         <View>
-          {renderCartItemsHeader(index, order?.items || [])}
-          {isSplitCart && (
-            <TatCardwithoutAddress
-              style={{ marginTop: 13, marginBottom: 10 }}
-              deliveryDate={order?.tat}
-            />
-          )}
-          {renderCartItems(order?.items)}
+          {renderCartItemsHeader(0, cartItems)}
+          {renderCartItems(cartItems)}
         </View>
       );
-    });
+    }
   };
 
   return <View>{renderOrders()}</View>;

@@ -192,8 +192,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       const trimmedValue = (email || '').trim();
       setEmail(trimmedValue);
       setEmailValidation(isSatisfyEmailRegex(trimmedValue));
-
-      setGender(_.capitalize(patient?.gender || parsedPatient?.gender));
+      const patientGender = patient?.gender || parsedPatient?.gender || '';
+      patientGender?.toUpperCase() !== Gender.OTHER?.toUpperCase() &&
+        setGender(_.capitalize(patientGender));
       if (patient?.dateOfBirth || parsedPatient?.dateOfBirth) {
         const formatDate = Moment(patient?.dateOfBirth || parsedPatient?.dateOfBirth).format(
           'DD/MM/YYYY'

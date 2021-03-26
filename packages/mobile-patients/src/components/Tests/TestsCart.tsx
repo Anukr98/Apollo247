@@ -95,6 +95,7 @@ import {
   searchClinicApi,
   getDiagnosticCartItemReportGenDetails,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { differenceInYears, parse } from 'date-fns';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -110,7 +111,6 @@ import {
   View,
   Keyboard,
   Dimensions,
-  Linking,
   Platform,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -137,7 +137,6 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
@@ -190,7 +189,6 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 const { width: screenWidth } = Dimensions.get('window');
-const screenHeight = Dimensions.get('window').height;
 
 type clinicHoursData = {
   week: string;
@@ -327,7 +325,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
-  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
+  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(true);
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
@@ -398,10 +396,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const checkPatientAge = () => {
     let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
-
-    if (age! <= 10 || age == null) {
+    let gender = currentPatient?.gender;
+    if (age! <= 10 || age == null || gender == null) {
       renderAlert(
-        age == null ? string.common.contactCustomerCare : string.diagnostics.minorAgeText
+        age == null
+          ? string.common.contactCustomerCare1
+          : gender == null
+          ? string.common.contactCustomerCare2
+          : string.diagnostics.minorAgeText
       );
       setIsMinor(true);
       setDeliveryAddressId!('');
@@ -714,6 +716,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   selectedAddressIndex,
                   serviceableData?.areaSelectionEnabled!
                 );
+                cartItems?.length == 0 && setLoading?.(false);
               })
               .catch((e) => {
                 CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
@@ -785,7 +788,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
       setAreaSelected?.(obj);
       checkSlotSelection(obj);
-      setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       console.log({ e });
       CommonBugFender('TestsCart_', e);
@@ -1951,6 +1953,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const renderHomeCollectionDisclaimer = () => {
+    return (
+      <View style={styles.homeCollectionContainer}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.phleboText}>{string.diagnostics.homeHomeCollectionDisclaimerTxt}</Text>
+      </View>
+    );
+  };
+
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
 
@@ -1958,17 +1969,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         {renderLabel('TOTAL CHARGES')}
         {/* {renderCouponView()} */}
+        {renderHomeCollectionDisclaimer()}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            // marginTop: 4,
-            marginBottom: 12,
-            padding: 16,
-            marginTop: 16,
-          }}
-        >
+        <View style={styles.totalChargesContainer}>
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
             <Text style={styles.blueTextStyle}>
@@ -3010,54 +3013,47 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderPatientDetails = () => {
-    const patientDetailsText = `${currentPatient?.firstName || ''} ${currentPatient?.lastName ||
-      ''}, ${currentPatient?.gender || ''}, ${
-      currentPatient.dateOfBirth ? getAge(currentPatient.dateOfBirth) || '' : ''
-    }`;
+    const patientDetailsText = selectedPatient
+      ? `${selectedPatient?.firstName || ''} ${selectedPatient?.lastName ||
+          ''}, ${selectedPatient?.gender || ''}, ${
+          selectedPatient?.dateOfBirth ? getAge(selectedPatient.dateOfBirth) || '' : ''
+        }`
+      : '';
     return (
       <View style={styles.patientDetailsViewStyle}>
-        <View style={styles.patientNameViewStyle}>
-          <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
-          <Text
-            style={[styles.patientNameTextStyle, styles.changeTextStyle]}
-            onPress={() => setShowPatientListOverlay(true)}
-          >
-            {string.diagnostics.changeText}
-          </Text>
-        </View>
-        <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
-        <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
+        {selectedPatient ? (
+          <View style={styles.patientNameMainViewStyle}>
+            <View style={styles.patientNameViewStyle}>
+              <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
+              <Text style={styles.changeTextStyle} onPress={() => setShowPatientListOverlay(true)}>
+                {string.diagnostics.changeText}
+              </Text>
+            </View>
+            <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
+            <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
+          </View>
+        ) : null}
         {addressText ? (
-          <>
+          <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
-              <Text
-                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
-                onPress={() => showAddressPopup()}
-              >
+              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
                 {string.diagnostics.changeText}
               </Text>
             </View>
-            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
-              {addressText}
-            </Text>
-          </>
+            <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
+          </View>
         ) : null}
         {showAreaSelection && !isEmptyObject(areaSelected) ? (
-          <>
+          <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
-              <Text
-                style={[styles.patientNameTextStyle, styles.changeTextStyle]}
-                onPress={() => setShowSelectAreaOverlay(true)}
-              >
+              <Text style={styles.changeTextStyle} onPress={() => setShowSelectAreaOverlay(true)}>
                 {string.diagnostics.changeText}
               </Text>
             </View>
-            <Text style={[styles.patientDetailsTextStyle, { marginBottom: 24 }]}>
-              {(areaSelected as any)?.value || ''}
-            </Text>
-          </>
+            <Text style={styles.patientDetailsTextStyle}>{(areaSelected as any)?.value || ''}</Text>
+          </View>
         ) : null}
       </View>
     );
@@ -3071,23 +3067,28 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDoctorJoinedChat?.(false);
   };
 
+  const changeCurrentProfile = (_selectedPatient: any, _showPatientDetailsOverlay: boolean) => {
+    if (currentPatient?.id === _selectedPatient?.id) {
+      return;
+    } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
+      setSelectedPatient(_selectedPatient);
+      setShowPatientDetailsOverlay(_showPatientDetailsOverlay);
+      return;
+    }
+    setCurrentPatientId?.(_selectedPatient?.id);
+    AsyncStorage.setItem('selectUserId', _selectedPatient?.id);
+    AsyncStorage.setItem('selectUserUHId', _selectedPatient?.uhid || '');
+    setAddressList(_selectedPatient?.id);
+  };
+
   const renderPatientListOverlay = () => {
     return showPatientListOverlay ? (
       <PatientListOverlay
         onPressClose={() => setShowPatientListOverlay(false)}
         onPressDone={(_selectedPatient: any) => {
+          setSelectedPatient(_selectedPatient);
           setShowPatientListOverlay(false);
-          if (currentPatient?.id === _selectedPatient?.id) {
-            return;
-          } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
-            setSelectedPatient(_selectedPatient);
-            setShowPatientDetailsOverlay(true);
-            return;
-          }
-          setCurrentPatientId?.(_selectedPatient?.id);
-          AsyncStorage.setItem('selectUserId', _selectedPatient?.id);
-          AsyncStorage.setItem('selectUserUHId', _selectedPatient?.uhid);
-          setAddressList(_selectedPatient?.id);
+          changeCurrentProfile(_selectedPatient, true);
         }}
         onPressAddNewProfile={() => {
           setShowPatientListOverlay(false);
@@ -3096,6 +3097,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             isPoptype: true,
             mobileNumber: currentPatient?.mobileNumber,
           });
+        }}
+        patientSelected={selectedPatient}
+        onPressAndroidBack={() => {
+          setShowPatientListOverlay(false);
+          handleBack();
         }}
       />
     ) : null;
@@ -3125,9 +3131,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 },
               },
             })
-            .then((data) => {
+            .then(({ data }) => {
+              const profileData = g(data, 'editProfile', 'patient');
               setLoading?.(false);
               getPatientApiCall();
+              changeCurrentProfile(profileData, false);
             })
             .catch((e) => {
               setLoading?.(false);
@@ -3252,7 +3260,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
-  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
+  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
 
   const isCovidItem = cartItemsWithId?.map((item) =>
     AppConfig.Configuration.Covid_Items.includes(item)
@@ -3266,6 +3274,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     <View style={{ flex: 1 }}>
       {displaySchedule && (
         <TestSlotSelectionOverlay
+          source={'Tests'}
           heading="Schedule Appointment"
           date={date}
           areaId={(areaSelected as any)?.key!}
@@ -3302,12 +3311,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         {renderSelectAreaOverlay()}
         {renderPatientDetailsOverlay()}
         <ScrollView bounces={false}>
-          <View style={{ marginVertical: 24 }}>
+          <View style={{ marginVertical: 16 }}>
             {renderPatientDetails()}
             {renderItemsInCart()}
             {renderTotalCharges()}
           </View>
-          <View style={{ height: 70 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
         {renderTestProceedBar()}
       </SafeAreaView>
@@ -3316,7 +3325,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   );
 };
 const { text, cardViewStyle } = theme.viewStyles;
-const { SHERPA_BLUE, APP_YELLOW } = theme.colors;
+const { SHERPA_BLUE, APP_YELLOW, WHITE } = theme.colors;
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -3395,7 +3404,14 @@ const styles = StyleSheet.create({
   },
   patientDetailsViewStyle: {
     flex: 1,
-    marginHorizontal: 20,
+    marginBottom: 6,
+  },
+  patientNameMainViewStyle: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: WHITE,
+    paddingVertical: 8,
+    marginBottom: 8,
   },
   patientNameViewStyle: {
     flexDirection: 'row',
@@ -3405,17 +3421,17 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   patientNameTextStyle: {
-    ...text('B', 13, SHERPA_BLUE, 1, 20),
+    ...text('R', 12, SHERPA_BLUE, 1, 20),
   },
   changeTextStyle: {
-    color: APP_YELLOW,
+    ...text('B', 13, APP_YELLOW, 1, 20),
   },
   patientDetailsTextStyle: {
-    ...text('R', 12, SHERPA_BLUE, 1, 18),
+    ...text('SB', 14, SHERPA_BLUE, 1, 18),
   },
   testReportMsgStyle: {
     ...text('R', 10, SHERPA_BLUE, 0.7, 14),
-    marginBottom: 24,
+    marginTop: 4,
   },
   phelboTextView: {
     backgroundColor: '#FCFDDA',
@@ -3423,6 +3439,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flexDirection: 'row',
     marginVertical: '2%',
+    paddingRight: 15,
   },
   phleboText: {
     ...theme.fonts.IBMPlexSansMedium(10),
@@ -3436,7 +3453,7 @@ const styles = StyleSheet.create({
   dashedBannerViewStyle: {
     ...cardViewStyle,
     marginHorizontal: 20,
-    marginBottom: 50,
+    marginBottom: 0,
     padding: 16,
     marginTop: 10,
     flexDirection: 'row',
@@ -3444,5 +3461,20 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 5,
     borderStyle: 'dashed',
+  },
+  homeCollectionContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 12,
+    margin: 16,
+    flexDirection: 'row',
+    backgroundColor: '#FCFDDA',
+  },
+  totalChargesContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    // marginTop: 4,
+    marginBottom: 12,
+    padding: 16,
+    marginTop: 6,
   },
 });

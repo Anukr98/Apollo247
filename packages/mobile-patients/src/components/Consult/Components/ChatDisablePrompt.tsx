@@ -11,7 +11,7 @@ export const ChatDisablePrompt: React.FC<ChatDisablePromptProps> = (props) => {
   return (
     <View style={styles.container}>
       <Text style={styles.alertMsg}>
-        {`We request you to wait for the doctor’s response, this may take a few hours. You can send ${followChatLimit} more messages once the doctor has responded to your previous queries.`}
+        {`We request you to wait for the doctor’s response to your previous queries, this may take a few hours. You can send ${followChatLimit} more text messages after the doctor replies. If you are required to share medical reports, please use the upload option.`}
       </Text>
     </View>
   );

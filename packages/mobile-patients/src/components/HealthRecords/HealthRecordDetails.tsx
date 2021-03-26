@@ -290,6 +290,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
         if (!!resultForVisitNo) {
           setData(resultForVisitNo);
+          setLoading?.(false);
         } else {
           setLoading?.(false);
           renderError(string.diagnostics.responseUnavailableForReport, false);
@@ -297,7 +298,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsResult', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading?.(false));
@@ -534,7 +534,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : prescriptions
       ? data?.source !== '247selfConsultation'
         ? 'PRESCRIPTION'
-        : 'FILE'
+        : 'MEDICAL FILE'
       : medicalBill
       ? 'BILLS'
       : medicalInsurance

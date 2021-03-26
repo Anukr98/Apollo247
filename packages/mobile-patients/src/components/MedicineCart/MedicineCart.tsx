@@ -67,7 +67,6 @@ import {
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
 import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
@@ -120,6 +119,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressId,
     addMultipleCartItems,
+    uploadPrescriptionRequired,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     setPhysicalPrescriptions,
@@ -166,7 +167,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [storeType, setStoreType] = useState<string | undefined>('');
   const [storeDistance, setStoreDistance] = useState(0);
   const [shopId, setShopId] = useState<string | undefined>('');
-  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isfocused, setisfocused] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
@@ -456,20 +456,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            addressChange && NavigateToCartSummary();
-            updatePricesAfterTat(inventoryData, updatedCartItems);
-          } else {
-            addressChange && NavigateToCartSummary();
-            handleTatApiFailure(selectedAddress, {});
-          }
-        } catch (error) {
-          handleTatApiFailure(selectedAddress, error);
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
           addressChange && NavigateToCartSummary();
+          updatePricesAfterTat(inventoryData, updatedCartItems);
+        } catch (error) {
+          setloading!(false);
+          handleTatApiFailure(selectedAddress, error);
         }
       } catch (error) {
-        handleTatApiFailure(selectedAddress, error);
+        setloading!(false);
       }
     } else if (!deliveryAddressId) {
       setlastCartItems(newCartItems);
@@ -539,6 +534,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orderSelected?.length > 1,
       splitOrderDetails
     );
@@ -609,9 +605,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return !!cartItems.find(
       ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
     );
-  }
-  function NavigateToCartSummary() {
-    !hasUnserviceableproduct() && isfocused && props.navigation.navigate(AppRoutes.CartSummary);
   }
 
   async function validatePharmaCoupon() {
@@ -890,6 +883,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       deliveryTime,
       pharmacyCircleAttributes!,
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orders?.length > 1,
       splitOrderDetails,
       isPrescriptionUploaded
@@ -950,7 +944,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     } else {
       props.navigation.navigate(AppRoutes.ApplyCouponScene);
       setCoupon!(null);
-      applyCouponClickedEvent(g(currentPatient, 'id'));
+      applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }
   }
 
@@ -1105,30 +1099,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const renderOneApollo = () => <OneApolloCard availableHC={availableHC} />;
 
-  const renderuploadPrescriptionPopup = () => {
-    return (
-      <UploadPrescription
-        showPopUp={showPopUp}
-        onClickClose={() => setshowPopUp(false)}
-        navigation={props.navigation}
-        type={'Cart'}
-        onUpload={() =>
-          !hasUnserviceableproduct() &&
-          props.navigation.navigate(AppRoutes.CartSummary, {
-            deliveryTime: deliveryTime,
-            storeDistance: storeDistance,
-            tatType: storeType,
-            shopId: shopId,
-          })
-        }
-      />
-    );
-  };
-
   const renderPrescriptions = () => {
     return (
       <Prescriptions
-        onPressUploadMore={() => setshowPopUp(true)}
+        onPressUploadMore={() => {
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }}
         style={{ marginTop: suggestedProducts?.length ? 0 : 20 }}
       />
     );
@@ -1156,12 +1132,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           postPharmacyAddNewAddressClick('Cart');
         }}
         onPressSelectDeliveryAddress={() => {
-          selectDeliveryAddressClickedEvent(currentPatient?.id);
+          selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
           showAddressPopup();
         }}
         onPressUploadPrescription={() => {
           uploadPrescriptionClickedEvent(currentPatient?.id);
-          setshowPopUp(true);
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
         }}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
@@ -1170,13 +1146,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressChangeAddress={showAddressPopup}
         onPressTatCard={() => {
           /*
-          !hasUnserviceableproduct() &&
-          props.navigation.navigate(AppRoutes.CartSummary, {
-            deliveryTime: deliveryTime,
-            storeDistance: storeDistance,
-            tatType: storeType,
-            shopId: shopId,
-          })
+          if (hasUnserviceableproduct()) {
+            return;
+          } else if (uploadPrescriptionRequired) {
+            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+          } else {
+            props.navigation.navigate(AppRoutes.CartSummary, {
+              deliveryTime: deliveryTime,
+              storeDistance: storeDistance,
+              tatType: storeType,
+              shopId: shopId,
+            });
+          }
           */
         }}
         screen={'MedicineCart'}
@@ -1248,7 +1229,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderPrescriptions()}
           {renderKerbSidePickup()}
         </ScrollView>
-        {renderuploadPrescriptionPopup()}
         {renderProceedBar()}
         {loading && <Spinner />}
       </SafeAreaView>

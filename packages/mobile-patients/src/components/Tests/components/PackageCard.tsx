@@ -128,7 +128,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
               <View>
                 <Text style={styles.inclusionsText}>
                   {getMandatoryParameterCount > 0
-                    ? `TOTAL PARAMETERS ${getMandatoryParameterCount}`
+                    ? `TOTAL PARAMETERS : ${getMandatoryParameterCount}`
                     : `TOTAL INCLUSIONS : ${inclusions?.length}`}{' '}
                 </Text>
 

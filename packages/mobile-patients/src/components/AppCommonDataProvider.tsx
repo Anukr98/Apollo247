@@ -137,6 +137,8 @@ export interface TotalCircleSavings {
 export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
 export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
 
+export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
+
 export interface PharmacyUserTypeEvent {
   User_Type: PharmaUserStatus;
 }
@@ -242,6 +244,8 @@ export interface AppCommonDataContextProps {
   pharmacyUserType: PharmaUserStatus;
   setPharmacyUserType: ((type: PharmaUserStatus) => void) | null;
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
+  cartBankOffer: string;
+  setCartBankOffer: ((id: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -333,6 +337,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyUserType: '',
   setPharmacyUserType: null,
   pharmacyUserTypeAttribute: null,
+  cartBankOffer: '',
+  setCartBankOffer: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -406,6 +412,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [savePatientDetailsWithHistory, setSavePatientDetailsWithHistory] = useState<
     AppCommonDataContextProps['savePatientDetailsWithHistory']
   >([]);
+  const [cartBankOffer, setCartBankOffer] = useState<AppCommonDataContextProps['cartBankOffer']>(
+    ''
+  );
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
@@ -662,6 +671,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         pharmacyUserType,
         setPharmacyUserType,
         pharmacyUserTypeAttribute,
+        cartBankOffer,
+        setCartBankOffer,
       }}
     >
       {props.children}

@@ -322,10 +322,6 @@ export const SearchAreaIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_search_area_icon.png')} />
 );
 
-export const CircleTestLogoIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_circle_test_logo.png')} />
-);
-
 export const TestTimeIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_test_time.png')} />
 );
@@ -500,6 +496,25 @@ export const FilterGreenIcon: React.FC<IconProps> = (props) => (
 
 export const PreviousPrescriptionIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" source={require('./icons/previous_prescription_icon.png')} {...props} />
+);
+
+export const CameraIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/camera_ic.png')} {...props} />
+);
+export const GalleryIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/gallery_ic.png')} {...props} />
+);
+export const RxIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/rx_ic.png')} {...props} />
+);
+export const RxPrescriptionCallIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_call_ic.png')} {...props} />
+);
+export const RxPrescriptionIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_ic.png')} {...props} />
+);
+export const RxPrescriptionLaterIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_later_ic.png')} {...props} />
 );
 
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
@@ -1860,5 +1875,22 @@ export const Emergency: React.FC<IconProps> = (props) => (
     style={{ width: 21, height: 29 }}
     {...props}
     source={require('./icons/emergency.png')}
+  />
+);
+
+export const ExternalMeetingVideoCall: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/external_meeting_link.png')}
+  />
+);
+
+export const CopyIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 15, height: 16.7, margin: 16 }}
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/copy_white.png')}
   />
 );
