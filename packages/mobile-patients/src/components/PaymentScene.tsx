@@ -228,7 +228,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       );
       firePurchaseEvent(orderId);
       if (!!isSuccess) {
-        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+          ...checkoutEventAttributes,
+          'Cart Items': JSON.stringify(cartItems),
+        });
       }
     }
   };

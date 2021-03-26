@@ -390,6 +390,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Full Search', categoryId: category_id },
+      JSON.stringify(cartItems),
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
       pharmacyCircleAttributes!
     );

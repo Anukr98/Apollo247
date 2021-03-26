@@ -45,6 +45,7 @@ export enum WebEngageEventName {
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
+  OTP_ON_CALL_CLICK = 'OTP on call clicked',
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
@@ -110,6 +111,10 @@ export enum WebEngageEventName {
   HOME_VIEWED = 'Home page viewed',
   MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
   SEARCH_SUGGESTIONS_CLICKED = 'Search suggestion clicked',
+  USER_LOGGED_IN_WITH_TRUECALLER = 'User logged in with truecaller',
+  TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
+  TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
+  LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -458,6 +463,7 @@ export interface PatientInfo {
   'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
+  User_Type: string;
 }
 
 export interface UserInfo {
@@ -626,6 +632,7 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
 export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
   'Speciality ID': string;
+  User_Type: string;
 }
 
 export interface ReorderMedicines extends PatientInfo {
@@ -724,6 +731,9 @@ export interface WebEngageEvents {
   [WebEngageEventName.OTP_VERIFICATION_SUCCESS]: {
     'Mobile Number': string;
   };
+  [WebEngageEventName.OTP_ON_CALL_CLICK]: {
+    'Mobile Number': string;
+  };
   [WebEngageEventName.REGISTRATION_DONE]: {
     'Customer ID': string;
     'Customer First Name': string;
@@ -793,6 +803,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    User_Type: string;
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -956,6 +967,7 @@ export interface WebEngageEvents {
     af_currency: string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    'Cart Items'?: string;
   };
   [WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
     'product name': string;
@@ -993,6 +1005,7 @@ export interface WebEngageEvents {
     pincode: string | number;
     lookUp: { sku: string; qty: number }[];
     error: object;
+    'Cart Items'?: string;
   };
   [WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
@@ -1011,6 +1024,7 @@ export interface WebEngageEvents {
     'No. of out of stock items'?: number;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    'Cart Items'?: string;
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
@@ -1023,6 +1037,8 @@ export interface WebEngageEvents {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Cart Items': string;
+    Coupon: string;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
@@ -1039,11 +1055,13 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.CART_APPLY_COUPON_CLCIKED]: {
     'Customer ID': string;
+    'Cart Items'?: string;
   };
   [WebEngageEventName.CART_COUPON_APPLIED]: {
     'Coupon Code': string;
     'Discounted amount': string | number;
     'Customer ID': string;
+    'Cart Items': string;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
     OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
@@ -1101,6 +1119,7 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
+    'Cart Items': string;
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
@@ -1288,6 +1307,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
+    User_Type: string;
   };
   [WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD]: {
     'Payment failed order id': string;
@@ -1303,6 +1323,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    User_Type: string;
   };
   [WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
   [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
@@ -1538,6 +1559,7 @@ export interface WebEngageEvents {
     'Hospital Name': string;
     'Hospital City': string;
     'Consult Date Time': Date;
+    User_Type: string;
   };
   [WebEngageEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;
@@ -1564,6 +1586,7 @@ export interface WebEngageEvents {
     af_currency: string;
     'Dr of hour appointment'?: YesOrNo;
     'Circle discount': number;
+    User_Type: string;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
@@ -1636,6 +1659,7 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
     'Split Cart': YesOrNo;
+    'Cart Items': string;
     Shipment_1_TAT?: Date;
     Shipment_2_TAT?: Date;
     Shipment_1_Value?: number; // amount after discount
@@ -1662,6 +1686,7 @@ export interface WebEngageEvents {
     Response_Exist: YesOrNo;
     Response_MRP: number;
     Response_Qty: number;
+    'Cart Items'?: string;
   };
 
   [WebEngageEventName.PHARMACY_TAT_API_CALLED]: {
@@ -1688,6 +1713,7 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {
     'Customer ID': string;
+    'Cart Items'?: string;
   };
 
   [WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED]: {
@@ -2461,4 +2487,14 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.USER_LOCATION_CONSULT]: consultLocation;
   [WebEngageEventName.USER_CHANGED_LOCATION]: consultLocation;
+  [WebEngageEventName.USER_LOGGED_IN_WITH_TRUECALLER]: PatientInfo;
+  [WebEngageEventName.TRUECALLER_EVENT_ERRORS]: {
+    'Error Code': number;
+    'Error Message': string;
+  };
+  [WebEngageEventName.TRUECALLER_APOLLO247_LOGIN_ERRORS]: {
+    'Api Name': string;
+    Error: any;
+  };
+  [WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED]: {};
 }

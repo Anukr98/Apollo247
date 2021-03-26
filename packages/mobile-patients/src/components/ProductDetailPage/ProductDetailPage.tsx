@@ -115,6 +115,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
     addresses,
+    productDiscount,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -436,6 +437,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(cartItems),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
       } catch (error) {}
@@ -663,7 +665,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
               string.common.Rs
-            }${convertNumberToDecimal(total)}`}
+            }${convertNumberToDecimal(cartTotal - productDiscount)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -935,6 +937,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               isBanned={medicineDetails?.banned === 'Yes'}
               cashback={cashback}
               deliveryError={deliveryError}
+              name={medicineDetails?.name}
             />
           )}
         {!loading &&

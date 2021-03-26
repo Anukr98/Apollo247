@@ -27,6 +27,7 @@ export function postwebEngageProceedToPayEvent(
   deliveryTime: string,
   pharmacyCircleEvent: PharmacyCircleEvent,
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent,
+  itemsInCart?: string,
   isSplitCart?: boolean,
   splitCartDetails?: any,
   isPrescriptionUploaded?: boolean
@@ -61,6 +62,7 @@ export function postwebEngageProceedToPayEvent(
     'Prescription Option selected': !!isPrescriptionUploaded
       ? 'Prescription Upload'
       : 'Not Applicable',
+    'Cart Items': itemsInCart,
     ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
     ...splitCartDetails,
@@ -158,6 +160,7 @@ export function postTatResponseFailureEvent(
     pincode,
     lookUp,
     error,
+    'Cart Items': JSON.stringify(cartItems),
   };
   postWebEngageEvent(WebEngageEventName.TAT_API_FAILURE, eventAttributes);
 }
@@ -181,16 +184,18 @@ export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id:
   postFirebaseEvent(FirebaseEventName.ITEMS_REMOVED_FROM_CART, firebaseAttributes);
 }
 
-export function applyCouponClickedEvent(id: string) {
+export function applyCouponClickedEvent(id: string, itemsInCart?: string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.CART_APPLY_COUPON_CLCIKED] = {
     'Customer ID': id,
+    'Cart Items': itemsInCart || '',
   };
   postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
 }
 
-export function selectDeliveryAddressClickedEvent(id: string) {
+export function selectDeliveryAddressClickedEvent(id: string, itemsInCart:? string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED] = {
     'Customer ID': id,
+    'Cart Items': itemsInCart || ''
   };
   postWebEngageEvent(
     WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED,

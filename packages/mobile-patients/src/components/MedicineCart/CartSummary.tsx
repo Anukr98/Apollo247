@@ -72,7 +72,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     uploadPrescriptionRequired,
     prescriptionType,
     physicalPrescriptions,
-    ePrescriptions,
     setCartItems,
     setPhysicalPrescriptions,
     deliveryTime,
@@ -84,20 +83,20 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setOrders,
     coupon,
     setCoupon,
-    hdfcSubscriptionId,
     cartTotal,
+    hdfcSubscriptionId,
     productDiscount,
-    setCouponProducts,
     pinCode,
+    setCouponProducts,
   } = useShoppingCart();
   const {
-    pharmacyLocation,
-    locationDetails,
     pharmacyUserTypeAttribute,
-    hdfcPlanId,
     hdfcStatus,
+    hdfcPlanId,
     circleStatus,
     circlePlanId,
+    pharmacyLocation,
+    locationDetails,
   } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -174,7 +173,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           unserviceable: unserviceableSkus.indexOf(item.id) != -1,
         }));
         setCartItems!(updatedCartItems);
-
         const serviceableItems = updatedCartItems
           .filter((item) => !item.unserviceable)
           .map((item) => {
@@ -197,21 +195,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            updatePricesAfterTat(inventoryData, updatedCartItems);
-            if (unserviceableSkus.length) {
-              props.navigation.goBack();
-            }
-          } else {
-            handleTatApiFailure(selectedAddress, {});
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+          updatePricesAfterTat(inventoryData, updatedCartItems);
+          if (unserviceableSkus.length) {
+            props.navigation.goBack();
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
         }
-      } catch (error) {
-        handleTatApiFailure(selectedAddress, error);
-      }
+      } catch (error) {}
     }
   }
 
@@ -269,6 +261,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orderSelected?.length > 1,
       splitOrderDetails
     );
@@ -293,7 +286,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       Items.push(object);
     });
     setCartItems!(Items);
-    console.log(loading);
   }
   const onFinishUpload = () => {
     if (isPhysicalUploadComplete) {
@@ -400,18 +392,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) +
+          getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
       });
     }
+    props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
+      deliveryTime,
+      storeDistance: storeDistance,
+      tatType: storeType,
+      shopId: shopId,
+    });
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orders?.length > 1,
       splitOrderDetails
     );
@@ -475,8 +474,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
 
   const renderButton = () => {
-    return uploadPrescriptionRequired &&
-    !prescriptionType ? (
+    return uploadPrescriptionRequired && !prescriptionType ? (
       <View style={styles.buttonContainer}>
         <Button
           disabled={false}

@@ -95,6 +95,7 @@ import {
   searchClinicApi,
   getDiagnosticCartItemReportGenDetails,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { differenceInYears, parse } from 'date-fns';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -110,7 +111,6 @@ import {
   View,
   Keyboard,
   Dimensions,
-  Linking,
   Platform,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -137,7 +137,6 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
@@ -190,7 +189,6 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 const { width: screenWidth } = Dimensions.get('window');
-const screenHeight = Dimensions.get('window').height;
 
 type clinicHoursData = {
   week: string;
@@ -790,7 +788,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
       setAreaSelected?.(obj);
       checkSlotSelection(obj);
-      setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       console.log({ e });
       CommonBugFender('TestsCart_', e);
@@ -3277,6 +3274,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     <View style={{ flex: 1 }}>
       {displaySchedule && (
         <TestSlotSelectionOverlay
+          source={'Tests'}
           heading="Schedule Appointment"
           date={date}
           areaId={(areaSelected as any)?.key!}
