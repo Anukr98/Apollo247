@@ -9,6 +9,7 @@ import {
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
   availabilityApi247,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -35,6 +36,7 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
@@ -73,6 +75,8 @@ import {
   EPrescription,
   useShoppingCart,
   PharmacyCircleEvent,
+  PharmaCoupon,
+  CouponProducts,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -451,10 +455,12 @@ export const getSourceName = (
   if (
     labTestSource === 'self' ||
     labTestSource === '247self' ||
+    labTestSource === '247selfConsultation' ||
     siteDisplayName === 'self' ||
     siteDisplayName === '247self' ||
     healthCheckSource === 'self' ||
-    healthCheckSource === '247self'
+    healthCheckSource === '247self' ||
+    healthCheckSource === '247selfConsultation'
   ) {
     return string.common.clicnical_document_text;
   }
@@ -607,7 +613,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Dispatched';
+      statusString = 'Out for Delivery';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -618,20 +624,11 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       statusString = 'Order Ready at Store';
       break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
-      statusString = 'Return In-Process';
-      break;
     case MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED:
       statusString = 'Delivery Attempted';
       break;
     case MEDICINE_ORDER_STATUS.RVP_ASSIGNED:
-      statusString = 'Pick-up Assigned';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Order Delivered';
+      statusString = 'Return Pickup Assigned';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
       statusString = 'Return Successful';
@@ -1155,6 +1152,17 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
+export const getUserType = (currentPatient: any) => {
+  const user: string =
+    currentPatient?.isConsulted === undefined
+      ? 'undefined'
+      : currentPatient?.isConsulted
+      ? 'Repeat'
+      : 'New';
+
+  return user;
+};
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
@@ -1375,61 +1383,6 @@ export const formatTestSlotWithBuffer = (slotTime: string) => {
 
   const newSlot = [startTime, endTime];
   return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
-};
-
-export const isValidTestSlot = (
-  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
-  date: Date
-) => {
-  return (
-    slot.status != 'booked' &&
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
-      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
-    )
-  );
-};
-
-export const isValidTestSlotWithArea = (
-  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
-  date: Date,
-  customSlot?: boolean
-) => {
-  return (
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
-      moment(
-        customSlot
-          ? AppConfig.Configuration.DIAGNOSTIC_COVID_MAX_SLOT_TIME.trim()
-          : AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(),
-        'HH:mm'
-      )
-    )
-  );
 };
 
 export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
@@ -2058,6 +2011,7 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
+  itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
   onAddedSuccessfully?: () => void
@@ -2145,6 +2099,7 @@ export const addPharmaItemToCart = (
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
         onAddedSuccessfully?.();
@@ -2523,7 +2478,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST:
       statusString = 'Order rescheduled';
       break;
+    //first status has been added
     //last two status => report awaited (need not show in ui, so showing previous)
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
@@ -2560,6 +2517,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case REFUND_STATUSES.MANUAL_REVIEW:
       statusString = 'Refund initiated';
       break;
+    case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
+      statusString = 'Partial Order Completed';
+      break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
@@ -2593,4 +2553,89 @@ export const paymentModeVersionCheck = (minSupportedVersion: string) => {
     isLessThan(appVersion, minSupportedVersion)
   );
   return versionSupports;
+};
+
+const setCouponFreeProducts = (
+  products: any,
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  cartItems: ShoppingCartItem[]
+) => {
+  const freeProducts = products.filter((product) => {
+    return product.couponFree === 1;
+  });
+  freeProducts.forEach((item, index) => {
+    const filteredProduct = cartItems.filter((product) => {
+      return product.id === item.sku;
+    });
+    if (filteredProduct.length) {
+      item.quantity = filteredProduct[0].quantity;
+    }
+  });
+  setCouponProducts!(freeProducts);
+};
+
+export const validateCoupon = async (
+  coupon: string,
+  message: string | undefined,
+  pharmacyPincode: any,
+  mobileNumber: string,
+  hdfcSubscriptionId: string,
+  circleSubscriptionId: string,
+  setCoupon: ((coupon: PharmaCoupon | null) => void) | null,
+  cartTotal: number,
+  productDiscount: number,
+  cartItems: ShoppingCartItem[],
+  hdfcStatus: string,
+  hdfcPlanId: string,
+  circleStatus: string,
+  circlePlanId: string,
+  setCouponProducts: ((items: CouponProducts[]) => void) | null
+) => {
+  CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
+  }
+  const data = {
+    mobile: mobileNumber,
+    billAmount: (cartTotal - productDiscount).toFixed(2),
+    coupon: coupon,
+    pinCode: pharmacyPincode,
+    products: cartItems.map((item) => ({
+      sku: item.id,
+      categoryId: item.productType,
+      mrp: item.price,
+      quantity: item.quantity,
+      specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+    })),
+    packageIds: packageId,
+  };
+  return new Promise(async (res, rej) => {
+    try {
+      const response = await validateConsultCoupon(data);
+      if (response.data.errorCode == 0) {
+        if (response.data.response.valid) {
+          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
+          res('success');
+        } else {
+          rej(response.data.response.reason);
+        }
+
+        // set coupon free products again (in case when price of sku is changed)
+        const products = response?.data?.response?.products;
+        if (products && products.length) {
+          setCouponFreeProducts(products, setCouponProducts, cartItems);
+        }
+      } else {
+        CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
+        rej(response.data.errorMsg);
+      }
+    } catch (error) {
+      CommonBugFender('validatingPharmaCoupon', error);
+      rej('Sorry, unable to validate coupon right now.');
+    }
+  });
 };

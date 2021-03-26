@@ -118,6 +118,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -336,6 +337,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Prescription Option selected': uploadPrescriptionRequired
         ? 'Prescription Upload'
         : 'Not Applicable',
+      'Cart Items': JSON.stringify(cartItems),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -597,6 +599,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         devliveryCharges: deliveryCharges,
         packagingCharges: packagingCharges,
         estimatedAmount,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -647,7 +650,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack: isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
@@ -670,6 +673,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         coupon: coupon ? coupon.coupon : '',
         patientAddressId: deliveryAddressId,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -692,6 +696,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
       'Service Area': 'Pharmacy',
+      'Cart Items': JSON.stringify(cartItems),
+      Coupon: coupon ? coupon.coupon : '',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 

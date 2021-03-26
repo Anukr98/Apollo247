@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image, Text, Dimensions, FlatList } from 'react-native';
+import { StyleSheet, View, Image, Text, Dimensions, FlatList, ScrollView } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 const { width, height } = Dimensions.get('window');
@@ -24,8 +24,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   container: {
-    paddingLeft: 20,
-    paddingRight: 20,
+    flex: 1,
     marginTop: 20,
   },
   iconStyle: {
@@ -37,6 +36,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    marginHorizontal: 20,
   },
   bannerUrl: {
     marginTop: 3,
@@ -65,7 +65,7 @@ const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
 
   const renderHeaderComponent = () => {
     return (
-      <View>
+      <View style={{ marginHorizontal: 20 }}>
         <Image
           source={{ uri: loginSection?.bannerUrl }}
           style={[
@@ -82,13 +82,15 @@ const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
   };
 
   return (
-    <FlatList
-      style={styles.container}
-      data={loginSection?.data}
-      keyExtractor={(_, index: Number) => `${index}`}
-      renderItem={({ item, index }) => renderItem(item, index)}
-      ListHeaderComponent={renderHeaderComponent}
-    />
+    <ScrollView style={styles.container}>
+      {renderHeaderComponent()}
+      <FlatList
+        data={loginSection?.data}
+        keyExtractor={(_, index: Number) => `${index}`}
+        removeClippedSubviews={true}
+        renderItem={({ item, index }) => renderItem(item, index)}
+      />
+    </ScrollView>
   );
 };
 

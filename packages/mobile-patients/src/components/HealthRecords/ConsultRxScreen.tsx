@@ -387,7 +387,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        CommonBugFender('DoctorConsultation_GET_PRISM_AUTH_TOKEN', e);
       });
   };
 
@@ -493,6 +493,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('DoctorConsultation__searchPHRApiWithAuthToken', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -507,7 +508,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };
@@ -759,7 +760,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             }
           })
           .catch((e) => {
-            CommonBugFender('HealthConsultView_getMedicineDetailsApi', e);
+            CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);
             handleGraphQlError(e);
           })
           .finally(() => {
@@ -796,7 +797,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         });
       })
       .catch((error) => {
-        CommonBugFender('HealthRecordsHome_onFollowUpClick', error);
+        CommonBugFender('DoctorConsultation_onFollowUpClick', error);
       });
   };
 

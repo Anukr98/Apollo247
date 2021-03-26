@@ -1748,6 +1748,17 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        diagnosticOrderReschedule {
+          rescheduleDate
+          rescheduleReason
+          comments
+        }
+        diagnosticOrderCancellation {
+          cancellationReason
+          cancelType
+          cancelByName
+          comments
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2043,6 +2054,10 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         tatType
         shopId
         totalCashBack
+        consultInfo {
+          doctorName
+          appointmentDateTime
+        }
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -2211,6 +2226,60 @@ export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
 export const SEND_HELP_EMAIL = gql`
   query SendHelpEmail($helpEmailInput: HelpEmailInput) {
     sendHelpEmail(helpEmailInput: $helpEmailInput)
+  }
+`;
+
+export const GET_HELP_SECTION_QUERIES = gql`
+  query GetHelpSectionQueries {
+    getHelpSectionQueries {
+      needHelpQueries {
+        id
+        title
+        nonOrderQueries
+        queriesByOrderStatus
+        queries {
+          id
+          title
+          nonOrderQueries
+          queriesByOrderStatus
+          queries {
+            id
+            title
+            nonOrderQueries
+            queriesByOrderStatus
+            queries {
+              id
+              title
+              nonOrderQueries
+              queriesByOrderStatus
+              queries {
+                id
+                title
+                nonOrderQueries
+                queriesByOrderStatus
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_COUPONS = gql`
+  query getCoupons {
+    getCoupons {
+      coupons {
+        id
+        code
+        description
+        discountType
+        discount
+        minimumOrderAmount
+        expirationDate
+        isActive
+      }
+    }
   }
 `;
 
@@ -3490,6 +3559,7 @@ export const GET_PATIENTS_MOBILE = gql`
         firstName
         lastName
         mobileNumber
+        isConsulted
         dateOfBirth
         emailAddress
         gender
@@ -4246,24 +4316,23 @@ export const INITIATE_DOC_ON_CALL = gql`
   }
 `;
 
-export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
-  mutation initiateDiagonsticHCOrderPayment(
-    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPayment!
-  ) {
-    initiateDiagonsticHCOrderPayment(
-      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
-    ) {
-      status
-    }
-  }
-`;
-
 export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
   query getNearestArea($patientAddressId: String!) {
     getNearestArea(patientAddressId: $patientAddressId) {
       area {
         id
         area
+      }
+    }
+  }
+`;
+
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
+    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
+      slots {
+        Timeslot
+        TimeslotID
       }
     }
   }
@@ -4291,13 +4360,51 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
   }
 `;
 
-export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
-    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
-      slots {
-        Timeslot
-        TimeslotID
+export const GET_OTP_ON_CALL = gql`
+  query getOTPOnCall($mobileNumber: String, $loginType: LOGIN_TYPE, $id: String!) {
+    getOTPOnCall(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      loginId
+      message
+    }
+  }
+`;
+
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
+  mutation initiateDiagonsticHCOrderPayment(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPayment!
+  ) {
+    initiateDiagonsticHCOrderPayment(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
+  query getHCOrderFormattedTrackingHistory($diagnosticOrderID: String) {
+    getHCOrderFormattedTrackingHistory(diagnosticOrderID: $diagnosticOrderID) {
+      statusHistory {
+        statusDate
+        orderStatus
       }
+      statusInclusions {
+        statusDate
+        orderStatus
+        itemId
+        packageId
+        itemName
+        packageName
+      }
+    }
+  }
+`;
+
+export const VERIFY_TRUECALLER_PROFILE = gql`
+  mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
+    verifyTrueCallerProfile(profile: $profile) {
+      authToken
     }
   }
 `;

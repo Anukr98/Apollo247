@@ -2,6 +2,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MedicineOrderShipmentInput,
   MedicineCartOMSItem,
+  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -142,6 +143,8 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
+  prescriptionType: PrescriptionType | null;
+  setPrescriptionType: (type: PrescriptionType | null) => void;
   isFreeDelivery: boolean;
   setIsFreeDelivery: ((value: boolean) => void) | null;
   circleCashback: CircleCashbackData | null;
@@ -240,6 +243,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
+  prescriptionType: null,
+  setPrescriptionType: () => {},
   couponProducts: [],
   setCouponProducts: null,
   ePrescriptions: [],
@@ -333,6 +338,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
+  const [prescriptionType, setPrescriptionType] = useState<
+    ShoppingCartContextProps['prescriptionType']
+  >(null);
   const [productDiscount, setProductDiscount] = useState<
     ShoppingCartContextProps['productDiscount']
   >(0);
@@ -428,19 +436,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
-    AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
-      showGenericAlert('Failed to save E-Prescriptions in local storage.');
-    });
   };
 
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
   ) => {
-    AsyncStorage.setItem(AsyncStorageKeys.physicalPrescriptions, JSON.stringify(items)).catch(
-      () => {
-        showGenericAlert('Failed to save Physical Prescriptions in local storage.');
-      }
-    );
     _setPhysicalPrescriptions(items);
   };
 
@@ -605,6 +605,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isFreeDelivery ||
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
     isCircleSubscription ||
+    circleMembershipCharges ||
     hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : cartTotal > 0 &&
@@ -624,6 +625,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const getGrandTotalFromShipments = () => {
     let total = 0;
     shipments.forEach((item: any) => (total = total + item.estimatedAmount));
+    if (circleMembershipCharges) {
+      total += circleMembershipCharges;
+    }
     return total;
   };
 
@@ -709,10 +713,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCouponProducts([]);
     setHdfcPlanName('');
     setdeliveryTime('');
+    setPrescriptionType(null);
   };
 
   useEffect(() => {
-    updateShipments();
+    orders?.length ? updateShipments() : setDefaultShipment();
   }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
 
   function updateShipments() {
@@ -766,11 +771,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
         shipmentProductDiscount;
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
-      shipment['estimatedAmount'] = estimatedAmount;
+      shipment['estimatedAmount'] = formatNumber(estimatedAmount);
       shipment['deliveryCharges'] = shipmentDeliveryfee;
       shipment['orderTat'] = order['tat'];
-      shipment['couponDiscount'] = shipmentCouponDiscount;
-      shipment['productDiscount'] = shipmentProductDiscount;
+      shipment['couponDiscount'] = formatNumber(shipmentCouponDiscount);
+      shipment['productDiscount'] = formatNumber(shipmentProductDiscount);
       shipment['packagingCharges'] = shipmentPackagingfee;
       shipment['storeDistanceKm'] = order['distance'];
       shipment['items'] = items;
@@ -779,10 +784,77 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['allocationProfileName'] = order['allocationProfileName'];
       shipment['clusterId'] = order['clusterId'];
       shipment['totalCashBack'] =
-        isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+        !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+          ? Number(shipmentCashback) || 0
+          : 0;
       shipmentsArray.push(shipment);
+      shipment['coupon'] = coupon ? coupon.coupon : '';
     });
     setShipments(shipmentsArray);
+  }
+
+  function setDefaultShipment() {
+    let shipment: MedicineOrderShipmentInput | null = {};
+    let shipmentCouponDiscount = 0;
+    let shipmentProductDiscount = 0;
+    let shipmentTotal = 0;
+    let shipmentCashback = 0;
+    const items: (MedicineCartOMSItem | null)[] = cartItems
+      ?.map((item) => {
+        const discountedPrice = formatNumber(
+          coupon && item.couponPrice == 0
+            ? 0
+            : (coupon && item.couponPrice) || item.specialPrice || item.price
+        );
+
+        shipmentCouponDiscount = shipmentCouponDiscount + getShipmentCouponDiscount(item);
+        shipmentProductDiscount = shipmentProductDiscount + getShipmentProductDiscount(item);
+        shipmentTotal = shipmentTotal + formatNumber(item?.price * item?.quantity);
+        shipmentCashback += item?.circleCashbackAmt;
+        return {
+          medicineSKU: item?.id,
+          medicineName: item?.name,
+          quantity: item?.quantity,
+          mrp: formatNumber(item?.price),
+          price: discountedPrice,
+          specialPrice: Number(item?.specialPrice || item?.price),
+          itemValue: formatNumber(item?.price * item?.quantity), // (multiply MRP with quantity)
+          itemDiscount: formatNumber(
+            item?.price * item?.quantity - discountedPrice * item?.quantity
+          ), // (diff of (MRP - discountedPrice) * quantity)
+          isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
+          mou: Number(item?.mou),
+          isMedicine: item?.isMedicine ? '1' : '0',
+          couponFree: item?.isFreeCouponProduct ? 1 : 0,
+        } as MedicineCartOMSItem;
+      })
+      .filter((item) => item);
+    let estimatedAmount =
+      shipmentTotal +
+      deliveryCharges +
+      packagingCharges -
+      shipmentCouponDiscount -
+      shipmentProductDiscount;
+    shipment['estimatedAmount'] = formatNumber(estimatedAmount);
+    shipment['deliveryCharges'] = deliveryCharges;
+    shipment['couponDiscount'] = formatNumber(shipmentCouponDiscount);
+    shipment['productDiscount'] = formatNumber(shipmentProductDiscount);
+    shipment['packagingCharges'] = packagingCharges;
+    shipment['items'] = items;
+    shipment['orderTat'] = null;
+    shipment['shopId'] = null;
+    shipment['tatType'] = null;
+    shipment['storeDistanceKm'] = 0;
+    shipment['tatCity'] = null;
+    shipment['tatHours'] = null;
+    shipment['allocationProfileName'] = null;
+    shipment['clusterId'] = null;
+    shipment['totalCashBack'] =
+      !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+        ? Number(shipmentCashback) || 0
+        : 0;
+    shipment['coupon'] = coupon ? coupon.coupon : '';
+    setShipments([shipment]);
   }
 
   const getShipmentProductDiscount = (item: ShoppingCartItem) => {
@@ -803,7 +875,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ? 0
       : formatNumber(
           item?.quantity *
-            (item?.couponPrice || item?.couponPrice == 0 ? item?.price - item?.couponPrice : 0)
+            (item?.couponPrice || item?.couponPrice == 0
+              ? (item?.specialPrice || item?.price) - item?.couponPrice
+              : 0)
         );
     return discount;
   };
@@ -814,18 +888,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
       try {
         const cartItemsFromStorage = await AsyncStorage.multiGet([
           AsyncStorageKeys.cartItems,
-          AsyncStorageKeys.physicalPrescriptions,
-          AsyncStorageKeys.ePrescriptions,
           AsyncStorageKeys.onHoldOptionOrder,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
-        const physicalPrescriptions = cartItemsFromStorage[1][1];
-        const ePrescriptions = cartItemsFromStorage[2][1];
-        const showOnHoldOptions = cartItemsFromStorage[3][1];
+        const showOnHoldOptions = cartItemsFromStorage[1][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
-        _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
-        _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
         _setOnHoldOptionOrder(JSON.parse(showOnHoldOptions || 'null') || []);
       } catch (error) {
         CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
@@ -1000,6 +1068,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
         deliveryCharges,
         packagingCharges,
         uploadPrescriptionRequired,
+        prescriptionType,
+        setPrescriptionType,
+
         couponProducts,
         setCouponProducts,
         ePrescriptions,

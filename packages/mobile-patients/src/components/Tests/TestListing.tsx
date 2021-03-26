@@ -30,6 +30,7 @@ import {
   navigateToHome,
   navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -80,11 +81,17 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const fetchWidgets = async (title: string) => {
     const createTitle = title?.replace(/ /g, '-')?.toLowerCase();
     const widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
-    const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
-    if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
-      const getWidgetsData = result?.data?.data;
-      fetchWidgetsPrices(getWidgetsData);
-    } else {
+    try {
+      const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
+      if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
+        const getWidgetsData = result?.data?.data;
+        fetchWidgetsPrices(getWidgetsData);
+      } else {
+        setWidgetsData([]);
+        setLoading?.(false);
+      }
+    } catch (error) {
+      CommonBugFender('fetchWidgets_TestListing', error);
       setWidgetsData([]);
       setLoading?.(false);
     }
@@ -111,26 +118,31 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       itemIds?.map((item: any) => fetchPricesForCityId(Number(cityId) || 9, item))
     );
 
-    const response = (await res).map((item: any) =>
-      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-    );
-
-    let newWidgetsData = widgetsData;
-
-    for (let i = 0; i < newWidgetsData?.diagnosticWidgetData?.length; i++) {
-      const findIndex = newWidgetsData?.diagnosticWidgetData?.findIndex(
-        (item: any) => Number(item?.itemId) === Number(response?.[i]?.[0]?.itemId)
+    try {
+      const response = (await res).map((item: any) =>
+        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
       );
-      if (findIndex !== -1) {
-        (newWidgetsData.diagnosticWidgetData[findIndex].packageCalculatedMrp =
-          response?.[i]?.[0]?.packageCalculatedMrp),
-          (newWidgetsData.diagnosticWidgetData[findIndex].diagnosticPricing =
-            response?.[i]?.[0]?.diagnosticPricing);
-      }
-    }
 
-    setWidgetsData(newWidgetsData);
-    setLoading?.(false);
+      let newWidgetsData = widgetsData;
+
+      for (let i = 0; i < newWidgetsData?.diagnosticWidgetData?.length; i++) {
+        const findIndex = newWidgetsData?.diagnosticWidgetData?.findIndex(
+          (item: any) => Number(item?.itemId) === Number(response?.[i]?.[0]?.itemId)
+        );
+        if (findIndex !== -1) {
+          (newWidgetsData.diagnosticWidgetData[findIndex].packageCalculatedMrp =
+            response?.[i]?.[0]?.packageCalculatedMrp),
+            (newWidgetsData.diagnosticWidgetData[findIndex].diagnosticPricing =
+              response?.[i]?.[0]?.diagnosticPricing);
+        }
+      }
+
+      setWidgetsData(newWidgetsData);
+      setLoading?.(false);
+    } catch (error) {
+      CommonBugFender('errorInFetchPricing api__Tests', error);
+      setLoading?.(false);
+    }
   };
 
   const homeBreadCrumb: TestBreadcrumbLink = {

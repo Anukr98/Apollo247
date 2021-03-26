@@ -123,7 +123,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log(`CustomNotificationType:: ${type}`);
     showAphAlert!({
       title: `Hi,`,
-      description: data.content,
+      description: data?.content,
       CTAs: [
         {
           text: 'DISMISS',
@@ -136,7 +136,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             hideAphAlert!();
             props.navigation.navigate(AppRoutes.OrderDetailsScene, {
               goToHomeOnBack: true,
-              orderAutoId: data.orderAutoId,
+              orderAutoId: data?.orderAutoId || data?.orderId,
             });
           },
         },

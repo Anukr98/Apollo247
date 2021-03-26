@@ -24,8 +24,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     grandTotal,
     deliveryAddressId,
     uploadPrescriptionRequired,
-    physicalPrescriptions,
-    ePrescriptions,
+    prescriptionType,
     addresses,
     cartItems,
     orders,
@@ -45,7 +44,6 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   const unServiceable = !!cartItems.find(
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
-  const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   function getTitle() {
     return !deliveryAddressId
@@ -53,15 +51,15 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         ? string.selectDeliveryAddress
         : string.addDeliveryAddress
       : isPrescriptionRequired()
-      ? string.uploadPrescription
-      : isSplitCart && screen == 'MedicineCart'
+      ? string.proceed
+      : screen == 'MedicineCart'
       ? string.reviewOrder
       : string.proceedToPay;
   }
 
   function isPrescriptionRequired() {
     if (uploadPrescriptionRequired) {
-      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
+      return screen === 'MedicineCart' ? true : !prescriptionType;
     } else {
       return false;
     }
@@ -74,7 +72,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         : onPressAddDeliveryAddress?.()
       : isPrescriptionRequired()
       ? onPressUploadPrescription?.()
-      : isSplitCart && screen == 'MedicineCart'
+      : screen == 'MedicineCart'
       ? onPressReviewOrder?.()
       : onPressProceedtoPay?.();
   }

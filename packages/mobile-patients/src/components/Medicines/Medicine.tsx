@@ -292,7 +292,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
   const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
@@ -517,7 +517,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     // set cart items again to set item cashbacks and total cashback
-    if (cartItems.length) {
+    if (cartItems?.length) {
       setCartItems && setCartItems(cartItems);
     }
   }, [cartItems]);
@@ -572,7 +572,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderCarouselBanners = () => {
-    const showBanner = bannerData && bannerData.length > 0;
+    const showBanner = bannerData && bannerData?.length > 0;
     if (showBanner) {
       return (
         <CarouselBanners
@@ -603,7 +603,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   async function fetchAddress() {
     try {
-      if (addresses.length) {
+      if (addresses?.length) {
         const deliveryAddress = addresses.find((item) => item.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
@@ -729,7 +729,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!loading && banners.length) {
+    if (!loading && banners?.length) {
       ImageNative.getSize(
         productsThumbnailUrl(g(banners, '0' as any, 'image')!),
         (width, height) => {
@@ -811,7 +811,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               sell_online: 1,
             } as MedicineProduct)
         );
-      if (formattedRecommendedProducts.length >= 5) {
+      if (formattedRecommendedProducts?.length >= 5) {
         setRecommendedProducts(formattedRecommendedProducts);
         showRecommendedSection &&
           props.navigation.navigate(AppRoutes.MedicineListing, {
@@ -875,7 +875,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          if (data.results.length) {
+          if (data?.results?.length) {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
@@ -954,7 +954,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderDeliverToLocationCTA = () => {
       let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
       const location = !deliveryAddress
-        ? pharmacyLocation
+        ? pharmacyLocation?.pincode
           ? `${formatText(
               g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '',
               18
@@ -1009,7 +1009,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           activeOpacity={1}
           onPress={() =>
             props.navigation.navigate(
-              diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+              diagnosticCartItems?.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
             )
           }
         >
@@ -1035,7 +1035,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
-          if (selectedEPres.length == 0) {
+          if (selectedEPres?.length == 0) {
             return;
           }
           setEPrescriptions && setEPrescriptions(selectedEPres);
@@ -1089,7 +1089,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderBanners = () => {
     if (loading || bannerLoading) {
       return renderMedicineBannerShimmer();
-    } else if (banners.length && !isSelectPrescriptionVisible) {
+    } else if (banners?.length && !isSelectPrescriptionVisible) {
       return (
         <View style={{ marginBottom: 10 }}>
           <Carousel
@@ -1163,7 +1163,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             marginTop: 10,
             marginBottom: 16,
           },
-          medicineList.length > 0 && searchText
+          medicineList?.length > 0 && searchText
             ? {
                 elevation: 0,
               }
@@ -1198,7 +1198,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
     };
     return (
-      !!buyAgainSkuList.length && (
+      !!buyAgainSkuList?.length && (
         <BuyAgainSection
           products={buyAgainProducts}
           onPress={onPress}
@@ -1309,8 +1309,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderCategories = (title: string, categories: MedicinePageSection[]) => {
-    if (categories.length == 0) return null;
-    return (
+    return !!categories.length ? (
       <View>
         <SectionHeader leftText={title} />
         <FlatList
@@ -1340,7 +1339,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
         />
       </View>
-    );
+    ) : null;
   };
 
   const getUserSubscriptionsByStatus = async () => {
@@ -1395,8 +1394,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
-    if (dealsOfTheDay.length == 0) return null;
-    return (
+    return !!dealsOfTheDay?.length ? (
       <View>
         <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
@@ -1444,12 +1442,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
         />
       </View>
-    );
+    ) : null;
   };
 
   const renderHotSellers = (title: string, products: MedicineProduct[], categoryId?: number) => {
-    if (products.length == 0) return null;
-    return (
+    return !!products?.length ? (
       <View>
         <SectionHeader
           leftText={title}
@@ -1491,12 +1488,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           productPageViewedEventProps={{ 'Section Name': title } as ProductPageViewedEventProps}
         />
       </View>
-    );
+    ) : null;
   };
 
   const renderShopByBrand = (title: string, shopByBrand: MedicinePageSection[]) => {
-    if (shopByBrand.length == 0) return null;
-    return (
+    return !!shopByBrand?.length ? (
       <View>
         <SectionHeader
           leftText={title}
@@ -1542,7 +1538,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
         />
       </View>
-    );
+    ) : null;
   };
 
   const [searchText, setSearchText] = useState<string>('');
@@ -1602,7 +1598,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
 
     const itemsNotFound =
-      searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
+      searchSate == 'success' && searchText.length > 2 && medicineList?.length == 0;
 
     return (
       <>
@@ -1703,13 +1699,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
+      JSON.stringify(cartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),
       pharmacyCircleAttributes!
     );
   };
 
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems.find((item) => item.id == id);
+    const foundItem = cartItems?.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -1757,10 +1754,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         quantity={getItemQuantity(item.sku)}
         data={item}
         loading={itemsLoading[item.sku]}
-        showSeparator={index !== medicineList.length - 1}
+        showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
-          paddingBottom: index == medicineList.length - 1 ? 20 : 0,
+          paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
         maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
         removeCartItem={() => onRemoveCartItem(item.sku)}
@@ -1769,7 +1766,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderSearchResults = () => {
-    const showResults = !!searchText && searchText.length > 2 && medicineList.length > 0;
+    const showResults = !!searchText && searchText.length > 2 && medicineList?.length > 0;
     const isLoading = searchSate == 'load';
     return (
       <>
@@ -1897,16 +1894,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderOverlay = () => {
     const isNoResultsFound =
-      searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
+      searchSate != 'load' && searchText.length > 2 && medicineList?.length == 0;
 
     return (
-      (!!medicineList.length || searchSate == 'load' || isNoResultsFound) && (
+      (!!medicineList?.length || searchSate == 'load' || isNoResultsFound) && (
         <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}
             style={theme.viewStyles.overlayStyle}
             onPress={() => {
-              if (medicineList.length == 0 && !searchText) return;
+              if (medicineList?.length == 0 && !searchText) return;
               setSearchText('');
               setMedicineList([]);
               setSearchFocused(false);
@@ -1995,7 +1992,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {!!circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
             </Text>
             <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
-              {cartItems.length}
+              {cartItems?.length}
             </Text>
           </View>
           {!!circleSubscriptionId || isCircleSubscription ? (
@@ -2161,10 +2158,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         {pageLoading ? (
           renderMedicinesShimmer()
         ) : (
-          <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 80 : 0 }}>
+          <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
             {renderSections()}
             {renderOverlay()}
-            {!!cartItems.length && renderCircleCartDetails()}
+            {!!cartItems?.length && renderCircleCartDetails()}
             {renderCategoryTree()}
           </View>
         )}
