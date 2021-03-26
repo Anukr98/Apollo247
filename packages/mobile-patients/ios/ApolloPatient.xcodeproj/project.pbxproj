@@ -1479,7 +1479,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1532,7 +1532,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1688,7 +1688,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1721,7 +1721,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1752,7 +1752,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationViewController/NotificationViewController.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1785,7 +1785,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
