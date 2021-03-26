@@ -30,7 +30,6 @@ import {
 
 const styles = StyleSheet.create({
   container: {
-    // ...theme.viewStyles.container,
     flex: 1,
     backgroundColor: theme.colors.WHITE,
     position: 'absolute',
@@ -41,18 +40,18 @@ const styles = StyleSheet.create({
     zIndex: 5,
     elevation: 5,
   },
+  applyFilterButton: {
+    flex: 1,
+    marginHorizontal: 40,
+    marginTop: 15,
+  },
   cardContainer: {
     padding: 20,
     paddingBottom: 0,
-    // paddingTop: 16,
     marginVertical: 4,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     backgroundColor: '#f7f8f5',
-    // shadowColor: '#4c808080',
-    // shadowOffset: { width: 0, height: 5 },
-    // shadowOpacity: 0.2,
-    // elevation: 2,
   },
   labelView: {
     flexDirection: 'row',
@@ -150,7 +149,6 @@ const styles = StyleSheet.create({
     paddingLeft: 30,
     justifyContent: 'space-between',
     alignItems: 'center',
-    // backgroundColor: theme.colors.CARD_BG,
     borderBottomWidth: 0.2,
     borderBottomColor: theme.colors.LIGHT_GRAY_2,
     flexDirection: 'row',
@@ -220,7 +218,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           ...dataCopy[id],
           selectedOptions: selectedData,
         };
-        console.log('dataCopy==>', dataCopy);
         setData(dataCopy);
       }}
       activeOpacity={1}
@@ -445,8 +442,10 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                   } else {
                     selectedData.push(name);
                   }
+
                   dataCopy[id] = {
                     ...dataCopy[id],
+                    label: menuItems[id].name,
                     selectedOptions: selectedData,
                   };
                   setData(dataCopy);
@@ -596,7 +595,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              console.log(data, 'data1111111111');
               const filterData = data.map((obj) => {
                 if (obj) obj.selectedOptions = [];
                 return obj;
@@ -618,7 +616,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     data.forEach((item) => {
       if (item.selectedOptions) length += item.selectedOptions.length;
     });
-    console.log(length, 'length');
     if (length == 0) {
       props.filterLength();
     }
@@ -628,7 +625,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
       >
         <Button
           title={'APPLY FILTERS'}
-          style={{ flex: 1, marginHorizontal: 40, marginTop: 15 }}
+          style={styles.applyFilterButton}
           onPress={() => {
             props.setData(data);
             props.onClickClose(data);

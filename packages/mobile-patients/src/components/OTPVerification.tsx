@@ -6,6 +6,7 @@ import {
   Loader,
   ArrowDisabled,
   ArrowYellow,
+  WhiteCallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -50,8 +51,8 @@ import firebaseAuth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import Hyperlink from 'react-native-hyperlink';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { BottomPopUp } from './ui/BottomPopUp';
-import { verifyOTP, resendOTP } from '../helpers/loginCalls';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { verifyOTP, resendOTP, getOtpOnCall } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -61,8 +62,8 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Relation } from '../graphql/types/globalTypes';
-import { ApolloLogo } from './ApolloLogo';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
 import SmsRetriever from 'react-native-sms-retriever';
 import {
@@ -71,8 +72,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
 
 const { height, width } = Dimensions.get('window');
 
@@ -154,6 +156,36 @@ const styles = StyleSheet.create({
     ...fonts.IBMPlexSansBold(10),
     textDecorationLine: 'underline',
   },
+  otpOnCallContainer: {
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  otpOnCallButton: {
+    ...theme.viewStyles.cardViewStyle,
+    flexDirection: 'row',
+    backgroundColor: '#FCB716',
+    paddingVertical: 9,
+    marginTop: 10,
+    justifyContent: 'center',
+  },
+  otpOnCallIcon: {
+    resizeMode: 'contain',
+    width: 25,
+    height: 25,
+    transform: [{ rotate: '230deg' }],
+    marginRight: 10,
+  },
+  otpOnCallText: {
+    ...theme.viewStyles.text('B', 16, '#FFFFFF', 1, 25, 0.35),
+    textAlign: 'center',
+  },
+  horizontalLine: {
+    borderBottomColor: 'black',
+    opacity: 0.35,
+    borderBottomWidth: 0.5,
+    width: '45%',
+    marginVertical: 10,
+  },
 });
 
 let timer = 120;
@@ -185,6 +217,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
+  const [disableOtpOnCallCta, setDisableOtpOnCallCta] = useState<boolean>(false);
+  const [showOtpOnCallCta, setShowOtpOnCallCta] = useState<boolean>(false);
 
   const {
     sendOtp,
@@ -285,6 +319,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [_removeFromStore, props.navigation.state.params]);
 
   useEffect(() => {
+    setTimeout(() => {
+      setShowOtpOnCallCta(true);
+    }, 10000);
     getTimerData();
   }, [props.navigation, getTimerData]);
 
@@ -761,6 +798,60 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     } catch (error) {}
   };
 
+  const onGetOtpOnCall = () => {
+    try {
+      setDisableOtpOnCallCta(true);
+      CommonLogEvent(AppRoutes.OTPVerification, 'Get OTP On Call Clicked');
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            setOtp('');
+            Keyboard.dismiss();
+            const { phoneNumber } = props.navigation.state.params!;
+            const { loginId } = props.navigation.state.params!;
+
+            getOtpOnCall('+91' + phoneNumber, loginId)
+              .then((otpOnCallResult: any) => {
+                const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
+                const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ON_CALL_CLICK] = {
+                  'Mobile Number': phoneNumberFromParams,
+                };
+                postWebEngageEvent(WebEngageEventName.OTP_ON_CALL_CLICK, eventAttributes);
+                if (otpOnCallResult?.status) {
+                  CommonBugFender('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
+                  setBugFenderLog('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
+                  props.navigation.setParams({ loginId: otpOnCallResult?.loginId });
+                  setTimeout(() => {
+                    setDisableOtpOnCallCta(false);
+                  }, 10000);
+                } else {
+                  CommonBugFender('GET_OTP_ON_CALL_FAIL', otpOnCallResult);
+                  setBugFenderLog('GET_OTP_ON_CALL_FAIL', otpOnCallResult);
+                  setDisableOtpOnCallCta(false);
+                  Alert.alert('Error', 'Something went wrong, please try again after sometime');
+                }
+              })
+              .catch((error: Error) => {
+                setDisableOtpOnCallCta(false);
+                CommonBugFender('GET_OTP_ON_CALL_FAIL', error);
+                setBugFenderLog('GET_OTP_ON_CALL_FAIL', error);
+                Alert.alert('Error', 'The interaction was cancelled by the user.');
+              });
+          } else {
+            setDisableOtpOnCallCta(false);
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          setDisableOtpOnCallCta(false);
+          CommonBugFender('onGetOtpOnCall_getNetStatus', e);
+          setBugFenderLog('onGetOtpOnCall_getNetStatus', e);
+        });
+    } catch (error) {
+      setDisableOtpOnCallCta(false);
+    }
+  };
+
   const openWebView = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
@@ -800,46 +891,34 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
-  const fillerView = () => {
-    return (
-      <View style={styles.viewAbsoluteStyles}>
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ApolloLogo />
-          <Loader style={{ marginTop: 12, height: 26, width: 76 }} />
-          <Text
-            style={{
-              marginTop: 22,
-              color: '#02475b',
-              ...theme.fonts.IBMPlexSansBold(17),
-              lineHeight: 24,
-              textAlign: 'center',
-            }}
-          >
-            Please Wait!
-          </Text>
-          <Text
-            style={{
-              marginTop: 4,
-              color: '#02475b',
-              ...theme.fonts.IBMPlexSansRegular(17),
-              lineHeight: 24,
-              textAlign: 'center',
-            }}
-          >
-            {`While we're fetching\nyour details`}
-          </Text>
-        </View>
+  const renderOtpOnCall = () => (
+    <View style={styles.otpOnCallContainer}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={styles.horizontalLine} />
+        <Text style={{ textAlign: 'center' }}>Or</Text>
+        <View style={styles.horizontalLine} />
       </View>
-    );
-  };
+      <TouchableOpacity
+        disabled={disableOtpOnCallCta}
+        onPress={onGetOtpOnCall}
+        activeOpacity={0.5}
+        style={[
+          styles.otpOnCallButton,
+          { backgroundColor: disableOtpOnCallCta ? '#A9A9A9' : '#FCB716' },
+        ]}
+      >
+        <WhiteCallIcon style={styles.otpOnCallIcon} />
+        <Text
+          style={[
+            styles.otpOnCallText,
+            { color: disableOtpOnCallCta ? theme.colors.DEFAULT_BACKGROUND_COLOR : '#FFFFFF' },
+          ]}
+        >
+          GET OTP ON CALL
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   const { phoneNumber } = props.navigation.state.params!;
   const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
@@ -993,8 +1072,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {renderHyperLink()}
           </LoginCard>
         )}
+        {showOtpOnCallCta && renderOtpOnCall()}
         <LandingDataView />
-        {openFillerView && fillerView()}
+        {openFillerView && <FetchingDetails />}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

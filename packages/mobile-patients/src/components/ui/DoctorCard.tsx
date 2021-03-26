@@ -217,7 +217,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const isOnlineConsultSelected = selectedConsultMode === ConsultMode.ONLINE;
+  const isOnlineConsultSelected =
+    selectedConsultMode === ConsultMode.ONLINE || selectedConsultMode === ConsultMode.BOTH;
   const isPhysicalConsultSelected = selectedConsultMode === ConsultMode.PHYSICAL;
   const circleDoctorDetails = calculateCircleDoctorPricing(
     rowData,

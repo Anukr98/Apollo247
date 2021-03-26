@@ -217,7 +217,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         if (productDetails) {
           setMedicineDetails(productDetails || {});
           setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
-          postProductPageViewedEvent(productDetails, zipcode || pincode);
           trackTagalysViewEvent(productDetails);
           savePastSearch(client, {
             typeId: productDetails?.sku,
@@ -351,16 +350,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const postProductPageViewedEvent = (
-    { sku, name, is_in_stock }: MedicineProductDetails,
-    pincode?: string
-  ) => {
+  const postProductPageViewedEvent = (pincode?: string, isOutOfStock?: boolean) => {
     if (movedFrom) {
+      const { sku, name, is_in_stock, sell_online } = medicineDetails;
+      const stock_availability = sell_online == 0 ? 'Not for Sale' : !!isOutOfStock ? 'No' : 'Yes';
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
         ProductId: sku,
         ProductName: name,
-        Stockavailability: !!is_in_stock ? 'Yes' : 'No',
+        Stockavailability: stock_availability,
         ...productPageViewedEventProps,
         ...pharmacyCircleAttributes,
         ...pharmacyUserTypeAttribute,
@@ -429,6 +427,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setIsInStock(!outOfStock);
       try {
         const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
+        !checkButtonClicked && postProductPageViewedEvent(currentPincode, outOfStock);
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
           Source: 'PDP',
           Input_SKU: sku,
@@ -438,6 +437,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(cartItems),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
       } catch (error) {}

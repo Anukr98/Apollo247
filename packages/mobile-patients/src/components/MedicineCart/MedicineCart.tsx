@@ -517,6 +517,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orderSelected?.length > 1,
       splitOrderDetails
     );
@@ -891,6 +892,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       deliveryTime,
       pharmacyCircleAttributes!,
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orders?.length > 1,
       splitOrderDetails,
       isPrescriptionUploaded
@@ -951,7 +953,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     } else {
       props.navigation.navigate(AppRoutes.ApplyCouponScene);
       setCoupon!(null);
-      applyCouponClickedEvent(g(currentPatient, 'id'));
+      applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }
   }
 
@@ -1112,7 +1114,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         showPopUp={showPopUp}
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
-        type={'cartOrMedicineFlow'}
+        type={'Cart'}
         onUpload={() =>
           !hasUnserviceableproduct() &&
           props.navigation.navigate(AppRoutes.CartSummary, {
@@ -1157,7 +1159,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           postPharmacyAddNewAddressClick('Cart');
         }}
         onPressSelectDeliveryAddress={() => {
-          selectDeliveryAddressClickedEvent(currentPatient?.id);
+          selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
           showAddressPopup();
         }}
         onPressUploadPrescription={() => {

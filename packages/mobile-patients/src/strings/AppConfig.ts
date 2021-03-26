@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -114,6 +114,11 @@ const covidVaccineSection = {
   ],
 };
 
+const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
+const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
+const covidMaxSlotDays = 7;
+const nonCovidMaxSlotDays = 4;
+
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
@@ -124,11 +129,6 @@ const appStaticVariables = {
   TAT_API_RESPONSE_DATE_FORMAT: 'DD-MMM-YYYY HH:mm',
   CASESHEET_PRESCRIPTION_DATE_FORMAT: 'DD MMM YYYY',
   CASESHEET_PRESCRIPTION_TIME_FORMAT: 'hh:mm A',
-  DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 120, // slots visible after this period for current date (APP-7687)
-  DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
-  DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
-  DIAGNOSTIC_COVID_MAX_SLOT_TIME: '15:00',
-  DIAGNOSTIC_COVID_MIN_SLOT_TIME: '10:00',
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
@@ -173,6 +173,10 @@ const appStaticVariables = {
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
+  Covid_Items: QA_covid_items,
+  Covid_Max_Slot_Days: covidMaxSlotDays,
+  Non_Covid_Max_Slot_Days: nonCovidMaxSlotDays,
+  FollowUp_Chat_Limit: 4,
 };
 
 const DEV_top_specialties = [
@@ -641,20 +645,7 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
+  Covid_Items: QA_covid_items,
 };
 
 // QA
@@ -709,20 +700,6 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // QA2
@@ -777,20 +754,6 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
 };
 
 // QA3
@@ -839,20 +802,7 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
+  Covid_Items: QA_covid_items,
 };
 
 // VAPT
@@ -907,20 +857,7 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
+  Covid_Items: QA_covid_items,
 };
 //Production
 const ConfigurationProd = {
@@ -974,7 +911,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [],
+  Covid_Items: Prod_covid_items,
 };
 
 //PERFORMANCE
@@ -1030,20 +967,7 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
+  Covid_Items: QA_covid_items,
 };
 
 //DevelopmentReplica
@@ -1099,20 +1023,7 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  DIAGNOSTIC_COVID_SLOT_ITEMID: [
-    2596,
-    2598,
-    2462,
-    2388,
-    2419,
-    2411,
-    2410,
-    2539,
-    2446,
-    2614,
-    2462,
-    2613,
-  ],
+  Covid_Items: QA_covid_items,
 };
 
 const Configuration =
@@ -1299,6 +1210,8 @@ export const DIAGNOSTIC_LAB_TESTING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
 ];
 export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
@@ -1321,6 +1234,8 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   REFUND_STATUSES.PENDING,
   REFUND_STATUSES.SUCCESS,
 ];
@@ -1342,7 +1257,44 @@ export const DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
 ];
 
-export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
+export const DIAGNOSTIC_FAILURE_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+];
+
+export const DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+];
+
+export const DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
+];
+
+export const DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
+
+export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+];
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1406,23 +1358,21 @@ export const TestsFeedBackData = {
 export const TestCancelReasons = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.chargesTooHigh,
     string.diagnostics.reasonForCancel_TestOrder.editOrder,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.noSlot,
-    string.diagnostics.reasonForCancel_TestOrder.changePaymentMode,
-    string.diagnostics.reasonForCancel_TestOrder.highPrice,
+    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 
 export const TestReschedulingReasons = {
   reasons: [
+    string.diagnostics.reasonForReschedule_TestOrder.latePhelbo,
     string.diagnostics.reasonForReschedule_TestOrder.unavailable,
     string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
     string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
     string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
-    string.diagnostics.reasonForReschedule_TestOrder.otherReasons,
   ],
 };
 
@@ -1472,7 +1422,6 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED',
 ];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
@@ -1493,7 +1442,12 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  'SAMPLE_REJECTED',
+];
+
+export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
 ];
 
 type SpecialitiesType = {

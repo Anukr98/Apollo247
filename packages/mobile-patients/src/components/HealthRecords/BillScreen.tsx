@@ -204,7 +204,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        CommonBugFender('BillScreen_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
@@ -240,6 +240,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('BillScreen_searchPHRApiWithAuthToken', error);
         console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
@@ -255,7 +256,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };
@@ -296,6 +297,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('BillScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
         console.log('error getPatientPrismMedicalRecordsApi', error);
@@ -374,6 +376,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('BillScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });

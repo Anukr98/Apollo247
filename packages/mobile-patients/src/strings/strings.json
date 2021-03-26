@@ -119,7 +119,8 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
-    "contactCustomerCare": "Something went wrong, please contact customer support",
+    "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
+    "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong."
   },
   "components": {
@@ -390,7 +391,7 @@
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": ["Hindi", "English", "Telugu", "Punjabi" ,"Bengali" ,"Marathi" ,"Urdu","Gujarati","Tamil","Kannada","Oriya","Persian"]
       }
     ]
   },
@@ -443,21 +444,19 @@
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
-      "latePhelbo": "Phlebo didn't arrive on time",
-      "chargesTooHigh": "Home Collection charges are too high",
-      "editOrder": "Need to edit order details",
-      "userUnavailable": "I am not available",
-      "noSlot": "Required slot is not available",
-      "changePaymentMode": "Need to change payment mode",
-      "highPrice": "High price issue",
+      "latePhelbo": "Phlebo did not arrive on time",
+      "editOrder": "Need to Modify Order Details",
+      "userUnavailable": "I am not available right now",
+      "bookedByMistake":"Booked by Mistake",
+      "urgentReport" : "Need Report Urgently",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "unavailable": "Not present at home",
-      "guidelinesNotFollowed": "Did not follow preparation guidelines (Fasting etc.)",
-      "unableToProvideSample": "Not in a condition to provide sample",
-      "slotMistake": "Slot picked by mistake",
-      "otherReasons": "Others (Please specify)"
+      "latePhelbo" : "Phlebo did not arrive on time",
+      "unavailable": "I am not available right now",
+      "guidelinesNotFollowed": "I did not follow fasting requirement",
+      "unableToProvideSample": "Not feeling well to provide sample",
+      "slotMistake": "I picked a wrong slot"
     },
     "minorAgeText": "Lab tests cannot be booked for below 10 years",
     "sameSlotError": "Cannot book same slot",
@@ -480,7 +479,20 @@
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
     "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
-    "cartPhelboTxt": "The phlebotomist will reach within 30 mins"
+    "cartPhelboTxt": "Sample collection executive to reach your home within 30 mins of your appointment time",
+    "incorrectUserReport": "This report does not belongs to this user.",
+    "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
+    "reasonForReschedulingText" : "Reason for Rescheduling",
+    "reasonForCancellationText": "Reason for Cancellation",
+    "whatWudLikeText":"What would you like to do?",
+    "rescheduleBookingText":"Reschedule Booking",
+    "cancelBookingText": "Cancel Booking",
+    "sureCancelText":"Are you sure you want to Cancel the booking?",
+    "rateYourExperience":"RATE YOUR DELIVERY EXPERIENCE",
+    "valueFeedbackTxt":"We value your feedback! :)",
+    "howWasExpTxt":"How was your overall experience -",
+    "feedbackSubTxt":"Your feedback has been submitted. Thanks for your time.",
+    "homeHomeCollectionDisclaimerTxt":"Home collection charges of upto ₹100 would be levied in case of order value less than ₹500"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -956,6 +968,7 @@
   "truecaller": {
     "networkProblem": "There is a problem with network connection.",
     "userNotVerified": "User is not verified on truecaller.",
-    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in."
+    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in.",
+    "tryAgainLater": "Something went wrong, please try again after sometime"
   }
 }

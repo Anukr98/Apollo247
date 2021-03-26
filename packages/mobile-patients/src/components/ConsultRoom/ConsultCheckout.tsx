@@ -18,7 +18,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { g, postFirebaseEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postFirebaseEvent,
+  getUserType,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
@@ -183,6 +187,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscountedPrice,
+      User_Type: getUserType(currentPatient),
     };
     return eventAttributes;
   };
@@ -274,6 +279,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
+            User_Type: getUserType(currentPatient),
           };
           postWebEngageEvent(
             WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,

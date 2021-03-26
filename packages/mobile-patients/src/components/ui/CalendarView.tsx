@@ -31,6 +31,7 @@ export interface CalendarViewProps {
   showWeekView?: boolean;
   maxDate?: Date;
   styles?: StyleProp<ViewStyle>;
+  source?: string;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = (props) => {
@@ -191,44 +192,50 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       dayDate.getMonth() == props.date.getMonth() &&
       dayDate.getFullYear() == props.date.getFullYear();
 
+    const isDisabled = props.minDate
+      ? moment(props.minDate).format('YYYY-MM-DD') > moment(dayDate).format('YYYY-MM-DD') ||
+        moment(props.maxDate).format('YYYY-MM-DD') < moment(dayDate).format('YYYY-MM-DD')
+      : false;
+
+    const disabledCheck =
+      !!props.source && props.source == 'Tests' ? isDisabled : day.state === 'disabled';
+
     const dayViewStyle: StyleProp<ViewStyle> = {
       marginTop: -11,
       height: 32,
       width: 32,
       borderRadius: 18,
-      backgroundColor:
-        day.state === 'disabled'
-          ? theme.colors.CLEAR
-          : isHighlightedDate
-          ? theme.colors.APP_GREEN
-          : theme.colors.CLEAR,
+      backgroundColor: disabledCheck
+        ? theme.colors.CLEAR
+        : isHighlightedDate
+        ? theme.colors.APP_GREEN
+        : theme.colors.CLEAR,
       alignItems: 'center',
       justifyContent: 'center',
     };
-    const dayTextStyle: StyleProp<TextStyle> =
-      day.state === 'disabled'
-        ? {
-            backgroundColor: theme.colors.CLEAR,
-            ...theme.fonts.IBMPlexSansSemiBold(14),
-            color: 'rgba(128,128,128, 0.3)',
-          }
-        : isHighlightedDate
-        ? {
-            backgroundColor: theme.colors.APP_GREEN,
-            ...theme.fonts.IBMPlexSansSemiBold(14),
-            letterSpacing: 0.35,
-            color: theme.colors.WHITE,
-          }
-        : {
-            ...theme.fonts.IBMPlexSansSemiBold(14),
-            color: theme.colors.APP_GREEN,
-            backgroundColor: theme.colors.CLEAR,
-          };
+    const dayTextStyle: StyleProp<TextStyle> = disabledCheck
+      ? {
+          backgroundColor: theme.colors.CLEAR,
+          ...theme.fonts.IBMPlexSansSemiBold(14),
+          color: 'rgba(128,128,128, 0.3)',
+        }
+      : isHighlightedDate
+      ? {
+          backgroundColor: theme.colors.APP_GREEN,
+          ...theme.fonts.IBMPlexSansSemiBold(14),
+          letterSpacing: 0.35,
+          color: theme.colors.WHITE,
+        }
+      : {
+          ...theme.fonts.IBMPlexSansSemiBold(14),
+          color: theme.colors.APP_GREEN,
+          backgroundColor: theme.colors.CLEAR,
+        };
     return (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          if (day.state !== 'disabled') {
+          if (!disabledCheck) {
             props.onPressDate(dayDate);
             setCalendarDate(dayDate);
           }
