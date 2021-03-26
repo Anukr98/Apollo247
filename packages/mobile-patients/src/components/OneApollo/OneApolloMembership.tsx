@@ -74,7 +74,6 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
       })
       .then((res) => {
         setLoading(false);
-        console.log(res.data.getOneApolloUser);
         setName(res.data.getOneApolloUser.name);
         setCredits(res.data.getOneApolloUser.availableHC);
         settier(res.data.getOneApolloUser.tier);
@@ -88,7 +87,6 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         setLoading(false);
         setFetchFailed(true);
         CommonBugFender('fetchingOneApolloUser', error);
-        console.log(error);
         renderErrorPopup(string.common.tryAgainLater);
       });
   };
@@ -242,7 +240,6 @@ const styles = StyleSheet.create({
   },
   creditsCard: {
     height: 0.14 * windowWidth,
-    // width: 0.7 * windowWidth,
     marginTop: 0.12 * windowWidth,
     flexDirection: 'row',
     borderRadius: 10,

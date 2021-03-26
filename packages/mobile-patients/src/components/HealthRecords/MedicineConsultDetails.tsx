@@ -45,7 +45,6 @@ export interface RecordDetailsProps
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
-  console.log('a', data);
   const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
   const blobURL: string = props.navigation.state.params
@@ -59,14 +58,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  // console.log('prismPrescriptionFileId', prismFile.split(','));
   const [pdfUri, setPDFUri] = useState<string>('');
   const [pdfView, setPDFView] = useState<boolean>(false);
 
   useEffect(() => {
-    // if (prismFile == null || prismFile == '') {
-    //   Alert.alert('There is no prism filed ');
-    // } else {
     const blobUrls = blobURL && blobURL.split(',');
     if (prismFile) {
       client
@@ -81,18 +76,15 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           },
         })
         .then(({ data }) => {
-          console.log(data, 'DOWNLOAD_DOCUMENT');
           let uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
             (item, index) =>
               item || (blobUrls && blobUrls.length <= index + 1 ? blobUrls[index] : '')
           );
-          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
 
           uploadUrlscheck && setUrls(uploadUrlscheck);
         })
         .catch((e) => {
           CommonBugFender('MedicineConsultDetails_downloadDocuments', e);
-          console.log('Error occured', e);
         })
         .finally(() => {});
     } else if (blobUrls) {
@@ -147,7 +139,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       .catch((err) => {
         CommonBugFender('MedicineConsultDetails_addToCart', err);
         setLoading && setLoading(false);
-        console.log(err, 'MedicineDetailsScene err');
         Alert.alert('Alert', 'No medicines found.');
       });
   };
@@ -163,7 +154,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         description: 'Downloaded : ' + files[0].name,
         onPressOk: () => {
           hideAphAlert!();
-          console.log('this file is opened', files);
           Platform.OS === 'ios'
             ? RNFetchBlob.ios.previewDocument(files[0].path)
             : RNFetchBlob.android.actionViewIntent(files[0].path, mimeType(files[0].path));
@@ -193,7 +183,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('MedicineConsultDetails_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
   return (
@@ -209,9 +198,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           rightComponent={
             prismFile && (
               <View style={{ flexDirection: 'row' }}>
-                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
-                <ShareGreen />
-              </TouchableOpacity> */}
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
@@ -219,7 +205,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                       if (!url || url === '[object Object]') {
                         Alert.alert('No Image');
                       } else {
-                        console.log('download data', arr);
                         let dirs = RNFetchBlob.fs.dirs;
                         let fileDownloaded: { path: string; name: string }[] = [];
                         arr.forEach((item) => {
@@ -258,11 +243,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                             })
                             .catch((err) => {
                               CommonBugFender('MedicineConsultDetails_DOWNLOAD', err);
-                              console.log('error ', err);
                               setLoading && setLoading(false);
                             });
                         });
-                        console.log(fileDownloaded, 'files download');
                       }
                     } catch (error) {
                       CommonBugFender('MedicineConsultDetails_DOWNLOAD_try', error);

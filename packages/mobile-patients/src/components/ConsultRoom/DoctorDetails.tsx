@@ -32,7 +32,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  callPermissions,
   g,
   getNetStatus,
   postAppsFlyerEvent,
@@ -66,7 +65,7 @@ import {
   View,
   Platform,
 } from 'react-native';
-import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
@@ -76,7 +75,6 @@ import {
   ApolloPartnerIcon,
   DoctorPlaceholderImage,
   RectangularIcon,
-  VideoPlayIcon,
   FamilyDoctorIcon,
   CTGrayChat,
   InfoBlue,
@@ -86,7 +84,6 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import moment from 'moment';
-// import { NotificationListener } from '../NotificationListener';
 import {
   calculateCircleDoctorPricing,
   convertNumberToDecimal,
@@ -97,6 +94,7 @@ import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/Ci
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height, width } = Dimensions.get('window');
 
@@ -367,7 +365,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const mediaSource = props.navigation.getParam('mediaSource');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
-  const [doctorShareData, setDoctorShareData] = useState<any>();
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const {
     isCircleDoctor,
@@ -381,7 +378,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     selectDefaultPlan,
     circlePlanSelected,
     defaultCirclePlan,
-    autoCirlcePlanAdded,
     showCircleSubscribed,
   } = useShoppingCart();
 
@@ -422,7 +418,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -502,7 +497,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           CommonBugFender('DoctorDetails_getNetStatus', e);
         });
     }
-    // callPermissions();
   }, [isFocused]);
 
   useEffect(() => {
@@ -517,14 +511,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorId)
       .then((apiResponse: any) => {
-        console.log('apiResponse', apiResponse);
         const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
         setSecretaryData(secretaryDetails);
-        console.log('apiResponse');
       })
-      .catch((error) => {
-        console.log('error', error);
-      });
+      .catch((error) => {});
   };
 
   const fetchAppointmentHistory = () => {
@@ -540,7 +530,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('appointmentHistory--------', data.getAppointmentHistory.appointmentsHistory);
         try {
           if (
             data &&
@@ -555,14 +544,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('DoctorDetails_fetchAppointmentHistory', e);
-        console.log('Error occured', e);
       });
   };
 
   const todayDate = new Date().toISOString().slice(0, 10);
 
   const fetchNextAvailableSlots = (doctorIds: string[]) => {
-    // const doctorIds = doctorDetails ? [doctorDetails.id] : [];
     getNextAvailableSlots(client, doctorIds, todayDate)
       .then(({ data }: any) => {
         try {
@@ -587,7 +574,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_fetchNextAvailableSlots', e);
         setshowSpinner(false);
-        console.log('Error occured ', e);
       });
   };
 
@@ -625,7 +611,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         props.navigation.goBack();
         CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
         setshowSpinner(false);
-        console.log('Error occured', e);
       });
   };
 
@@ -648,8 +633,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const setAvailableModes = (availabilityMode: any) => {
-    console.log(availabilityMode, 'availabilityMode');
-
     const modeOfConsult = availabilityMode.availableModes;
 
     try {
@@ -669,17 +652,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const navigateToSpecialitySearch = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.DoctorSearch,
-          }),
-        ],
-      })
-    );
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.DoctorSearch);
   };
 
   const formatTime = (time: string) => {
@@ -709,7 +682,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const openConsultPopup = (consultType: ConsultMode) => {
     postBookAppointmentWEGEvent();
-    // callPermissions();
     getNetStatus()
       .then((status) => {
         if (status) {
@@ -1281,12 +1253,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       });
       if (result.action === Share.sharedAction) {
         postDoctorShareWEGEvents(WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_PROFILE);
-      } else if (result.action === Share.dismissedAction) {
-        console.log('Share.dismissedAction');
       }
-    } catch (error) {
-      console.log('onPressShareProfileButton Error', error.message);
-    }
+    } catch (error) {}
   };
 
   const onPressGoBackShareDoctor = () => {
@@ -1362,7 +1330,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       return item.status == 'COMPLETED';
     });
 
-    console.log('arrayHistory-----------', arrayHistory);
     if (arrayHistory.length > 0) {
       return (
         <View style={styles.cardView}>
@@ -1382,7 +1349,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  console.log('itemdoc', item, doctorDetails);
                   props.navigation.navigate(AppRoutes.ConsultDetails, {
                     CaseSheet: item.id,
                     DoctorInfo: doctorDetails,
@@ -1458,30 +1424,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   };
 
-  const handleScroll = () => {
-    // console.log(e, 'jvjhvhm');
-  };
-
-  const onShare = async () => {
-    try {
-      const result = await Share.share({
-        message: doctorDetails ? `${doctorDetails.fullName}` : '',
-      });
-
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          // shared with activity type of result.activityType
-        } else {
-          // shared
-        }
-      } else if (result.action === Share.dismissedAction) {
-        // dismissed
-      }
-    } catch (error) {
-      CommonBugFender('DoctorDetails_onShare_try', error);
-      // Alert(error.message);
-    }
-  };
+  const handleScroll = () => {};
 
   const postBookAppointmentWEGEvent = () => {
     const doctorClinics = ((doctorDetails && doctorDetails.doctorHospital) || []).filter((item) => {
@@ -1593,14 +1536,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             { listener: handleScroll }
           )}
         >
-          {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {doctorDetails && renderDoctorDetails()}
           {doctorDetails && renderConsultType()}
           {doctorDetails && renderDoctorClinic()}
           {doctorDetails && renderDoctorTeam()}
           {appointmentHistory && renderAppointmentHistory()}
           <View style={{ height: 92 }} />
-          {/* </ScrollView> */}
         </Animated.ScrollView>
         {doctorDetails && renderConsultNow()}
         {renderDoctorShareComponent()}

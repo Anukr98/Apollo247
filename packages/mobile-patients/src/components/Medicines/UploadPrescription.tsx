@@ -10,7 +10,6 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CrossYellow, FileBig, GreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -259,16 +258,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       if (deliveryAddress && !deliveryAddressId) {
         setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 
   async function checkServicability(
     address: savePatientAddress_savePatientAddress_patientAddress,
     forceCheck?: boolean
   ) {
-    console.log('inside serviceability check >>>>>>');
     if (deliveryAddressId && deliveryAddressId == address.id && !forceCheck) {
       return;
     }
@@ -276,7 +272,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       setLoading?.(true);
       const response = await pinCodeServiceabilityApi247(address.zipcode!);
       const { data } = response;
-      console.log('data >>>>>', data);
       if (data?.response?.servicable) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
@@ -288,7 +283,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
       }
     } catch (error) {
-      console.log(error);
       setLoading?.(false);
     }
   }
@@ -345,7 +339,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       const e_Prescription = isEPresciptionProps ? EPrescriptionsProps : ePrescriptions;
       // Physical Prescription Upload
       const uploadedPhyPrescriptionsData = await uploadMultipleFiles(phyPrescription);
-      console.log('upload of prescriptions done');
 
       const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
         ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
@@ -438,7 +431,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         ...addresses.filter((item) => item.id != address.id),
       ];
       setAddresses!(newAddrList);
-      // setTestAddresses!(newAddrList);
       onComplete();
     } catch (error) {
       // Let the user order journey continue, even if no lat-lang.
@@ -455,7 +447,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         variables,
       })
       .then(({ data }) => {
-        console.log({ data });
         const { errorCode, orderAutoId } = g(data, 'savePrescriptionMedicineOrderOMS') || {};
         postwebEngageSubmitPrescriptionEvent(orderAutoId);
         if (errorCode) {
@@ -466,7 +457,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       })
       .catch((e) => {
         CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
-        console.log({ e });
         renderErrorAlert(`Something went wrong, please try later.`);
       })
       .finally(() => {
@@ -508,7 +498,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             patientId: g(currentPatient, 'id')!,
           },
         };
-        console.log(JSON.stringify(variables));
         return client.mutate<uploadDocument, uploadDocumentVariables>({
           mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
@@ -564,7 +553,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const submitReuploadPrescription = (variables: ReUploadPrescriptionVariables) => {
-    console.log({ variables });
     setLoading!(true);
     client
       .mutate({
@@ -572,7 +560,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         variables,
       })
       .then(({ data }) => {
-        console.log({ data });
         if (!data.reUploadPrescription.success) {
           renderErrorAlert(`Something went wrong, please try later.`);
           return;
@@ -589,7 +576,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       .catch((e) => {
         setLoading!(false);
         CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
-        console.log({ e });
         renderErrorAlert(`Something went wrong, please try later.`);
       })
       .finally(() => {
@@ -739,7 +725,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         <SelectEPrescriptionModal
           displayPrismRecords={true}
           navigation={props.navigation}
-          // showConsultPrescriptionsOnly={true} // not showing e-prescriptions for non-cart flow
           onSubmit={(selectedEPres) => {
             setSelectPrescriptionVisible(false);
             if (selectedEPres.length == 0) {

@@ -48,7 +48,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.04,
     color: theme.colors.LIGHT_BLUE,
-    // textTransform: 'capitalize',
     flex: 1,
   },
   dateTimeStyle: {
@@ -101,7 +100,6 @@ const styles = StyleSheet.create({
   },
   badgeOuterView: {
     alignSelf: 'center',
-    // height: '80%',
   },
   badgeText: {
     textAlign: 'center',
@@ -302,7 +300,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           : {},
       ]}
     >
-      {/* <MedicineIcon /> */}
       {renderDetails()}
     </TouchableOpacity>
   );

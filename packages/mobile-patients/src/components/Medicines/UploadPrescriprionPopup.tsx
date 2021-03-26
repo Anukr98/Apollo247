@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.35,
   },
   cardViewStyle: {
-    // width: 136,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(2, 71, 91, 0.2)',
@@ -285,8 +284,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
 
       setshowSpinner(true);
       ImagePicker.openCamera({
-        // width: 400,
-        // height: 400,
         cropping: props.isProfileImage ? true : false,
         hideBottomControls: true,
         width: props.isProfileImage ? 2096 : undefined,
@@ -308,7 +305,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
         })
         .catch((e: Error) => {
           CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
-          // aphConsole.log({ e });
           setshowSpinner(false);
         });
     } else {
@@ -325,7 +321,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       uri = Platform.OS === 'ios' ? decodeURI(uri.replace('file://', '')) : uri;
       let compressedImageUri = '';
       if (!isPdf) {
-        // Image Quality 0-100
         compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
           .uri;
         compressedImageUri =
@@ -436,7 +431,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       })
       .catch((e: Error) => {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
-        //aphConsole.log({ e });
         setshowSpinner(false);
       });
   };
@@ -473,7 +467,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
         <View
           style={{
             flexDirection: 'row',
-            // justifyContent: 'space-between',
             justifyContent: 'center',
           }}
         >
@@ -482,7 +475,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
           </View>
           <View
             style={{
-              // alignItems: 'center',
               justifyContent: 'center',
             }}
           >

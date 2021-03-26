@@ -29,11 +29,9 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
-  Text,
   TouchableOpacity,
   FlatList,
   ScrollView,
-  Dimensions,
   BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
@@ -89,15 +87,12 @@ import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpe
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-const screenHeight = Dimensions.get('window').height;
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   maxStatus: string;
   maxTime?: string | undefined | null;
 }
-const width = Dimensions.get('window').width;
-const isSmallDevice = width < 380;
 
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
@@ -111,9 +106,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
-
   const [date, setDate] = useState<Date>(new Date());
-
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [pincode, setPincode] = useState<string>('');
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
@@ -317,10 +310,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       patientId: g(currentPatient, 'id'),
       reason: reason,
     };
-    console.log({ orderCancellationInput });
     cancelOrder(orderCancellationInput)
       .then((data: any) => {
-        console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticsOrder', 'status');
         if (cancelResponse == 'true') {
           setLoading!(true);
@@ -432,7 +423,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
-        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt
@@ -471,7 +461,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('TestsCart_checkServicability', e);
-        console.log('Error occured', { e });
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
@@ -514,7 +503,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       '0';
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
     const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
-    console.log({ dateTimeInUTC });
     const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
       comment: commentForReschedule,
       date: formattedDate,
@@ -530,11 +518,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       formattedDate,
       String(selectedOrderId)
     );
-    console.log({ rescheduleDiagnosticsInput });
     rescheduleOrder(rescheduleDiagnosticsInput)
       .then((data) => {
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
-        console.log({ rescheduleResponse });
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
           setTimeout(() => refetchOrders(), 2000);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
@@ -563,7 +549,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectRescheduleReason('');
       })
       .catch((error) => {
-        console.log('error' + error);
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
@@ -642,7 +627,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               diagnosticEmployeeCode: slotInfo?.employeeCode,
               city: '', // not using city from this in order place API
             });
-            console.log({ diagnosticSlot });
             setDisplaySchedule(false);
             //call rechedule api
             setTimeout(() => onReschduleDoneSelected(), 100);
@@ -957,7 +941,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     //show the reschedule option :-
 
     const showPreTesting = showReschedule && checkIfPreTestingExists(order);
-    const showRescheduleOption = showReschedule && order?.rescheduleCount! <= 3;
 
     //show view report option => inclusion level as report generated.
     const showReportInclusionLevel = order?.diagnosticOrdersStatus?.find(

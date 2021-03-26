@@ -1,11 +1,7 @@
-import {
-  LocationData,
-  useAppCommonData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
-  getPackageData,
   getPlaceInfoByLatLng,
   GooglePlacesType,
   MedicineProduct,
@@ -43,10 +39,7 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
-import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
-} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
   getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet,
   getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
@@ -57,10 +50,8 @@ import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphq
 import {
   searchDiagnosticsByCityID,
   searchDiagnosticsByCityIDVariables,
-  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
-  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -92,28 +83,19 @@ import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
-import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
-import {
-  getPincodeServiceability,
-  getPincodeServiceabilityVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { NavigationActions, StackActions } from 'react-navigation';
 import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
 
-const isRegExp = require('lodash/isRegExp');
-const escapeRegExp = require('lodash/escapeRegExp');
-const isString = require('lodash/isString');
 const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
-const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
 let onAppOpenAttributionCanceller: any;
 
@@ -694,7 +676,6 @@ type TimeArray = {
 }[];
 
 export const divideSlots = (availableSlots: string[], date: Date) => {
-  // const todayDate = new Date().toDateString().split('T')[0];
   const todayDate = moment(new Date()).format('YYYY-MM-DD');
 
   const array: TimeArray = [
@@ -725,7 +706,6 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
       todayDate === moment(date).format('YYYY-MM-DD') && //date.toDateString().split('T')[0] &&
       todayDate !== moment(IOSFormat).format('YYYY-MM-DD') //new Date(IOSFormat).toDateString().split('T')[0])
     ) {
-      // console.log('today past');
     } else {
       if (new Date() < new Date(IOSFormat)) {
         if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
@@ -763,7 +743,6 @@ export const handleGraphQlError = (
   error: any,
   message: string = 'Oops! seems like we are having an issue. Please try again.'
 ) => {
-  console.log({ error });
   Alert.alert('Uh oh.. :(', message);
 };
 
@@ -861,7 +840,6 @@ export function g(obj: any, ...props: string[]) {
 export const getNetStatus = async () => {
   const status = await NetInfo.fetch()
     .then((connectionInfo) => {
-      // console.log(connectionInfo, 'connectionInfo');
       return connectionInfo.isConnected;
     })
     .catch((e) => {
@@ -984,7 +962,6 @@ export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lo
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in km
-  console.log(`Distance in km(s): ${d}`);
   return d;
 };
 
@@ -1016,7 +993,6 @@ const getlocationData = (
           const addrComponents =
             g(response, 'data', 'results', '0' as any, 'address_components') || [];
           if (addrComponents.length == 0) {
-            console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
             resolve(
@@ -1035,8 +1011,6 @@ const getlocationData = (
         });
     },
     (error) => {
-      console.log('err5', error);
-
       reject('Unable to get location.');
     },
     { enableHighAccuracy: true, timeout: 10000 }
@@ -1196,8 +1170,6 @@ export const reOrderMedicines = async (
   currentPatient: any,
   source: ReorderMedicines['source']
 ) => {
-  // Medicines
-  // use billedItems for delivered orders
   const billedItems = g(
     order,
     'medicineOrderShipments',
@@ -1313,8 +1285,6 @@ export const addTestsToCart = async (
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
 
-    console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
-
     const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
     const searchQueriesData = (await searchQueries)
       .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
@@ -1343,7 +1313,6 @@ export const addTestsToCart = async (
       } as DiagnosticsCartItem;
     });
 
-    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
     return finalArray;
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
@@ -1468,12 +1437,8 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage Event] ${eventName}`;
-    console.log(logContent);
     webengage.track(eventName, attributes);
-  } catch (error) {
-    console.log('********* Unable to post WebEngageEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const postwebEngageAddToCartEvent = (
@@ -1644,12 +1609,10 @@ export const postWEGNeedHelpEvent = (
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
-  console.log(whatsAppAllow, 'whatsAppAllow');
   webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
 };
 
 export const postWEGReferralCodeEvent = (ReferralCode: string) => {
-  console.log(ReferralCode, 'Referral Code');
   webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
 };
 
@@ -1682,8 +1645,6 @@ export const permissionHandler = (
 ) => {
   Permissions.request(permission)
     .then((message) => {
-      console.log(message, 'sdhu');
-
       if (message === 'authorized') {
         doRequest();
       } else if (message === 'denied' || message === 'restricted') {
@@ -1702,7 +1663,7 @@ export const permissionHandler = (
         ]);
       }
     })
-    .catch((e) => console.log(e, 'dsvunacimkl'));
+    .catch((e) => {});
 };
 
 export const callPermissions = (doRequest?: () => void) => {
@@ -1730,11 +1691,8 @@ export const storagePermissions = (doRequest?: () => void) => {
 export const InitiateAppsFlyer = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>
 ) => {
-  console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
-      console.log('res.data', res.data);
-      // if (res.data.af_dp !== undefined) {
       try {
         if (res.data.af_dp !== undefined) {
           AsyncStorage.setItem('deeplink', res.data.af_dp);
@@ -1743,35 +1701,18 @@ export const InitiateAppsFlyer = (
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
 
-        console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
-        // setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
-
-      // } else {
-      //   setBugFenderLog('APPS_FLYER_DEEP_LINK_decode_else');
-      // }
 
       if (res.data.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
         const campaign = res.data.campaign;
-        console.log('media_source', media_source);
-        console.log('campaign', campaign);
-
-        // Alert.alert(
-        //   'This is first launch and a Non-Organic install. Media source: ' +
-        //     media_source +
-        //     ' Campaign: ' +
-        //     campaign
-        // );
       } else if (res.data.af_status === 'Organic') {
-        // Alert.alert('This is first launch and a Organic Install');
       }
     } else {
-      // Alert.alert('This is not first launch');
     }
   });
 
@@ -1781,12 +1722,8 @@ export const InitiateAppsFlyer = (
       isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : '',
     },
-    (result) => {
-      console.log('result', result);
-    },
-    (error) => {
-      console.error('error', error);
-    }
+    (result) => {},
+    (error) => {}
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
@@ -1800,7 +1737,6 @@ export const InitiateAppsFlyer = (
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
 
-        console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
         setBugFenderLog(
           'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
@@ -1819,23 +1755,16 @@ export const InitiateAppsFlyer = (
 };
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  // console.log('UnInstallAppsFlyer', newFirebaseToken);
-  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {
-    // console.log('UnInstallAppsFlyersuccess', success);
-  });
+  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
 export const APPStateInActive = () => {
   if (Platform.OS === 'ios') {
-    console.log('APPStateInActive');
-
     appsFlyer.trackAppLaunch();
   }
 };
 
 export const APPStateActive = () => {
-  console.log('APPStateActive');
-
   if (onInstallConversionDataCanceller) {
     onInstallConversionDataCanceller();
     onInstallConversionDataCanceller = null;
@@ -1849,34 +1778,19 @@ export const APPStateActive = () => {
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
-    console.log(logContent);
     appsFlyer.trackEvent(
       eventName,
       attributes,
-      (res) => {
-        console.log('AppsFlyerEventSuccess', res);
-      },
-      (err) => {
-        console.error('AppsFlyerEventError', err);
-      }
+      (res) => {},
+      (err) => {}
     );
-  } catch (error) {
-    console.log('********* Unable to post AppsFlyerEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const SetAppsFlyerCustID = (patientId: string) => {
   try {
-    console.log('\n********* SetAppsFlyerCustID Start *********\n');
-    console.log(`SetAppsFlyerCustID ${patientId}`);
-    console.log('\n********* SetAppsFlyerCustID End *********\n');
-
-    appsFlyer.setCustomerUserId(patientId, (res) => {
-      console.log('AppsFlyerEventSuccess', res);
-    });
-  } catch (error) {
-    console.log('********* Unable to post AppsFlyerEvent *********', { error });
-  }
+    appsFlyer.setCustomerUserId(patientId, (res) => {});
+  } catch (error) {}
 };
 
 export const postAppsFlyerAddToCartEvent = (
@@ -1922,12 +1836,8 @@ export const setCrashlyticsAttributes = async (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase Event] ${eventName}`;
-    console.log(logContent);
     analytics().logEvent(eventName, attributes);
-  } catch (error) {
-    console.log('********* Unable to post FirebaseEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const postFirebaseAddToCartEvent = (
@@ -2117,8 +2027,6 @@ export const addPharmaItemToCart = (
 
   const addToCart = () => {
     addCartItem!(cartItem);
-    console.log('>>>otherInfo?.categoryName', otherInfo?.categoryName);
-
     postwebEngageAddToCartEvent(
       {
         sku: cartItem.id,
@@ -2270,7 +2178,6 @@ export const overlyCallPermissions = (
     };
     Permissions.checkMultiple(['camera', 'microphone'])
       .then((response) => {
-        console.log('Response===>', response);
         const { camera, microphone } = response;
         const cameraNo = camera === 'denied' || camera === 'undetermined';
         const microphoneNo = microphone === 'denied' || microphone === 'undetermined';
@@ -2425,29 +2332,6 @@ export const readableParam = (param: string) => {
     .replace(/-+$/, ''); // Trim - from end of text
 };
 
-const replaceString = (str: string, match: any, fn: any) => {
-  var curCharStart = 0;
-  var curCharLen = 0;
-  if (str === '') {
-    return str;
-  } else if (!str || !isString(str)) {
-    throw new TypeError('First argument to react-string-replace#replaceString must be a string');
-  }
-  var re = match;
-  if (!isRegExp(re)) {
-    re = new RegExp('(' + escapeRegExp(re) + ')', 'gi');
-  }
-  var result = str.split(re);
-  // Apply fn to all odd elements
-  for (var i = 1, length = result.length; i < length; i += 2) {
-    curCharLen = result[i].length;
-    curCharStart += result[i - 1].length;
-    result[i] = fn(result[i], i, curCharStart);
-    curCharStart += curCharLen;
-  }
-  return result;
-};
-
 export const monthDiff = (dateFrom: Date, dateTo: Date) => {
   return (
     dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
@@ -2502,6 +2386,67 @@ export const takeToHomePage = (props: any) => {
     })
   );
 };
+
+export const navigateToHome = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any
+) => {
+  const navigate = navigation.popToTop();
+  if (!navigate) {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+            params,
+          }),
+        ],
+      })
+    );
+  }
+};
+
+export const navigateToScreenWithEmptyStack = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string,
+  params?: any
+) => {
+  const navigate = navigation.popToTop({ immediate: true });
+  if (navigate) {
+    setTimeout(() => {
+      navigation.navigate(screenName, params);
+    }, 0);
+  } else {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: screenName,
+            params,
+          }),
+        ],
+      })
+    );
+  }
+};
+
+export const apiCallEnums = {
+  circleSavings: 'GetCircleSavingsOfUserByMobile',
+  getAllBanners: 'GetAllGroupBannersOfUser',
+  getUserSubscriptions: 'GetSubscriptionsOfUserByStatus',
+  getUserSubscriptionsV2: 'GetAllUserSubscriptionsWithPlanBenefitsV2',
+  oneApollo: 'getOneApolloUser',
+  pharmacyUserType: 'getUserProfileType',
+  getPlans: 'GetPlanDetailsByPlanId',
+  plansCashback: 'GetCashbackDetailsOfPlanById',
+  patientAppointments: 'getPatientPersonalizedAppointments',
+  patientAppointmentsCount: 'getPatientFutureAppointmentCount',
+};
+
 export const isSmallDevice = width < 370;
 
 //customText needs to be shown for itemId = 8
