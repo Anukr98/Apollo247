@@ -351,7 +351,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
         const _itemIds = widgetsData?.map((item) => Number(item?.itemId));
-        console.log('diagnosticWidgetData', widgetsData, res, _itemIds);
         client
           .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
             query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
@@ -365,7 +364,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             const diagnosticItems =
               g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
             let _diagnosticWidgetData: any = [];
-            const sss = widgetsData?.forEach((_widget) => {
+            widgetsData?.forEach((_widget) => {
               diagnosticItems?.forEach((_diagItems) => {
                 if (_widget?.itemId == _diagItems?.itemId) {
                   _diagnosticWidgetData?.push({
@@ -374,25 +373,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
                   });
                 }
-                // console.log('_widget', _widget, _diagItems);
               });
             });
             setAlsoAddListData(_diagnosticWidgetData);
-            console.log('diagnosticWidgetData', _diagnosticWidgetData, diagnosticItems, sss);
           })
           .catch((error) => {
             setAlsoAddListData([]);
-            console.log('error', error);
             CommonBugFender(
               'TestsCart_fetchTestReportGenDetails_getDiagnosticsAvailability',
               error
             );
           });
       } else {
+        setAlsoAddListData([]);
         setReportGenDetails([]);
       }
     } catch (e) {
       CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
+      setAlsoAddListData([]);
       setReportGenDetails([]);
     }
   };
@@ -422,13 +420,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const handleBack = () => {
+    console.log('handleBack');
     props.navigation.goBack();
   };
 
   useEffect(() => {
     if (cartItemsWithId?.length > 0) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
-      fetchTestReportGenDetails(cartItemsWithId);
     }
   }, [diagnosticServiceabilityData]);
 
@@ -521,6 +519,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   useEffect(() => {
+    if (cartItems?.length > 0) {
+      if (cartItemsWithId?.length > 0) {
+        fetchTestReportGenDetails(cartItemsWithId);
+      }
+    }
+  }, [cartItems?.length]);
+
+  useEffect(() => {
     setPatientId!(currentPatientId!);
   }, [currentPatientId]);
 
@@ -533,6 +539,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setHcCharges?.(0);
       setLoading?.(false);
     }
+    console.log('cartItems', cartItems);
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot?.date));
@@ -679,7 +686,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 else {
                   setShowAreaSelection(false);
                 }
-                console.log('diagnosticItems', diagnosticItems);
                 updatePricesInCart(
                   diagnosticItems,
                   selectedAddressIndex,
@@ -746,7 +752,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return res;
   };
 
-  const getAreas = async () => {
+  const getAreas = async (_itemIds?: number[]) => {
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
@@ -756,7 +762,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const getAreaObject = g(data, 'getNearestArea', 'area');
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
       setAreaSelected?.(obj);
-      checkSlotSelection(obj);
+      checkSlotSelection(obj, undefined, undefined, _itemIds);
+      setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       console.log({ e });
       CommonBugFender('TestsCart_', e);
@@ -1052,7 +1059,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
    * fetching the areas
    */
 
-  const fetchAreasForAddress = (id: string, pincode: string, shouldCallApi?: boolean) => {
+  const fetchAreasForAddress = (
+    id: string,
+    pincode: string,
+    shouldCallApi?: boolean,
+    _itemIds?: number[]
+  ) => {
     setLoading?.(true);
 
     //wrt to address
@@ -1069,7 +1081,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           pincode: parseInt(pincode!),
-          itemIDs: cartItemsWithId,
+          itemIDs: _itemIds || cartItemsWithId,
         },
       })
       .then(({ data }) => {
@@ -1245,7 +1257,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const checkSlotSelection = (
     item: areaObject | DiagnosticArea | any,
     changedDate?: Date,
-    comingFrom?: string
+    comingFrom?: string,
+    _itemIds?: number[]
   ) => {
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
     setLoading?.(true);
@@ -1263,7 +1276,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: Number((item as any).key!),
-          itemIds: cartItemsWithId,
+          itemIds: _itemIds || cartItemsWithId,
         },
       })
       .then(({ data }) => {
@@ -2636,18 +2649,38 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) : null;
   };
 
+  const _fetchAreasAndReportGenDetails = (_item: any, callReportGen?: boolean) => {
+    const _cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
+    _cartItemsWithId?.push(Number(_item?.itemId));
+    if (deliveryAddressId != '') {
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
+      );
+      showAreaSelection
+        ? fetchAreasForAddress(
+            addresses?.[selectedAddressIndex]?.id,
+            addresses?.[selectedAddressIndex]?.zipcode!,
+            showAreaSelection,
+            callReportGen ? _cartItemsWithId : undefined
+          )
+        : getAreas(callReportGen ? _cartItemsWithId : undefined);
+    }
+  };
+
   const renderAlsoAddItems = () => {
     return (
       <View>
-        {renderAlsoAddListHeader()}
+        {alsoAddListData?.length > 0 ? renderAlsoAddListHeader() : null}
         <ItemCard
+          onPressAddToCartFromCart={(item) => _fetchAreasAndReportGenDetails(item, true)}
+          onPressRemoveItemFromCart={(item) => _fetchAreasAndReportGenDetails(item)}
           data={alsoAddListData}
           isCircleSubscribed={isDiagnosticCircleSubscription}
           isServiceable={isDiagnosticLocationServiceable}
           isVertical={false}
           navigation={props.navigation}
           source={'Cart Page'}
-          sourceScreen={AppRoutes.Tests}
+          sourceScreen={AppRoutes.TestsCart}
         />
       </View>
     );
@@ -2655,20 +2688,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const renderAlsoAddListHeader = () => {
     return <Text style={styles.alsoAddListHeaderTextStyle}>{'YOU SHOULD ALSO ADD'}</Text>;
-  };
-
-  const renderAlsoAddList = () => {
-    // console.log(alsoAddListData, 'alsoAddLsi');
-    return (
-      <FlatList
-        style={{ margin: 20, marginTop: 24 }}
-        ListHeaderComponent={renderAlsoAddListHeader}
-        bounces={false}
-        extraData={alsoAddListData}
-        renderItem={renderAlsoAddItems}
-        data={alsoAddListData}
-      />
-    );
   };
 
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
@@ -2730,9 +2749,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {renderPatientDetails()}
             {renderItemsInCart()}
             {renderTotalCharges()}
-            {renderAlsoAddItems()}
+            {cartItems?.length > 0 ? renderAlsoAddItems() : null}
           </View>
-          <View style={{ height: 160 }} />
+          <View style={{ height: cartItems?.length > 0 ? 120 : 70 }} />
         </ScrollView>
         {renderTestProceedBar()}
       </SafeAreaView>
