@@ -420,7 +420,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const handleBack = () => {
-    console.log('handleBack');
     props.navigation.goBack();
   };
 
