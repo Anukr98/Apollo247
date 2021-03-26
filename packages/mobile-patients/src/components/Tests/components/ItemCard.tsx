@@ -45,11 +45,21 @@ export interface ItemCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: string;
   sourceScreen: string;
+  onPressAddToCartFromCart?: (item: any) => void;
+  onPressRemoveItemFromCart?: (item: any) => void;
 }
 
 export const ItemCard: React.FC<ItemCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
+  const {
+    data,
+    isCircleSubscribed,
+    navigation,
+    source,
+    sourceScreen,
+    onPressAddToCartFromCart,
+    onPressRemoveItemFromCart,
+  } = props;
 
   const actualItemsToShow =
     source === 'Cart Page'
@@ -300,10 +310,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       packageMrp: packageCalculatedMrp,
       inclusions: [Number(item?.itemId)], // since it's a test
     });
+    onPressAddToCartFromCart?.(item);
   }
 
   function onPressRemoveFromCart(item: any) {
     removeCartItem!(`${item?.itemId}`);
+    onPressRemoveItemFromCart?.(item);
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
