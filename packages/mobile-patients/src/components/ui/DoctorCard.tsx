@@ -238,13 +238,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { availableModes } = props;
   const { showCircleSubscribed } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
-  const isPhysical = selectedConsultMode
-    ? ConsultMode.PHYSICAL === selectedConsultMode || ConsultMode.BOTH === selectedConsultMode
+  const isPhysical = availableModes
+    ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(availableModes)
     : false;
-  const isOnline = selectedConsultMode
-    ? ConsultMode.ONLINE === selectedConsultMode || ConsultMode.BOTH === selectedConsultMode
+  const isOnline = availableModes
+    ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(availableModes)
     : false;
-  const isBoth = selectedConsultMode ? ConsultMode.BOTH === selectedConsultMode : false;
+  const isBoth = availableModes ? [ConsultMode.BOTH].includes(availableModes) : false;
 
   let nonCircleDoctorFees = rowData?.onlineConsultationFees || rowData?.fee; // default fee
   if (isPhysicalConsultSelected) {
