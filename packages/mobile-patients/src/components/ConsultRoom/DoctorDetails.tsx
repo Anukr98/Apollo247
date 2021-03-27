@@ -540,7 +540,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('appointmentHistory--------', data.getAppointmentHistory.appointmentsHistory);
         try {
           if (
             data &&

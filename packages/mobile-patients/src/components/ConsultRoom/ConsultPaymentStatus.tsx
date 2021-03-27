@@ -108,7 +108,6 @@ export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
-  const [refNo, setrefNo] = useState<string>('');
   const [displayId, setdisplayId] = useState<String>('');
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const orderDetails = props.navigation.getParam('orderDetails');
@@ -253,6 +252,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     fireLocationEvent.current = false;
   };
 
+  const getOrderInfo = () => {};
+
   useEffect(() => {
     // getTxnStatus(orderId)
     console.log(webEngageEventAttributes['Consult Mode']);
@@ -316,7 +317,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } else {
           fireOrderFailedEvent();
         }
-        setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
         setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
         setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
         setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);

@@ -9,6 +9,7 @@ import {
   Linking,
   TouchableOpacity,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -80,6 +81,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
   BOOK_APPOINTMENT,
+  BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+  CREATE_USER_SUBSCRIPTION,
   CREATE_INTERNAL_ORDER,
   MAKE_APPOINTMENT_PAYMENT,
   GET_APPOINTMENT_DATA,
@@ -106,6 +109,16 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  CreateUserSubscription,
+  CreateUserSubscriptionVariables,
+} from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
+import {
+  one_apollo_store_code,
+  PaymentStatus,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -129,6 +142,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     hdfcStatus,
     circleStatus,
   } = useAppCommonData();
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -176,7 +190,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
     : physicalConsultDiscountedPrice;
-
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
@@ -188,9 +203,15 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           couponDiscountFees +
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
+  const consultAmounttoPay =
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice - couponDiscountFees
+        : physicalConsultSlashedPrice - couponDiscountFees
+      : amount;
   const notSubscriberUserForCareDoctor =
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
-
+  console.log('isCircleDoctorOnSelectedConsultMode >>>>', isCircleDoctorOnSelectedConsultMode);
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
@@ -200,12 +221,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ? onlineConsultSlashedPrice
         : physicalConsultSlashedPrice
       : Number(price);
-  const planPurchaseDetails = {
-    TYPE: PLAN.CARE_PLAN,
-    PlanAmount: circlePlanSelected?.currentSellingPrice,
-  };
-  finalAppointmentInput['planPurchaseDetails'] =
-    circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
+  // const planPurchaseDetails = {
+  //   TYPE: PLAN.CARE_PLAN,
+  //   PlanAmount: circlePlanSelected?.currentSellingPrice,
+  // };
+  // finalAppointmentInput['planPurchaseDetails'] =
+  //   circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
 
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
@@ -221,6 +242,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   useEffect(() => {
     verifyCoupon();
+    console.log('circlePlanSelected >>>>', circlePlanSelected);
   }, [circlePlanSelected]);
 
   useEffect(() => {
@@ -238,15 +260,52 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     });
   };
 
-  const createOrderInternal = (orderId: string) => {
-    const orders: OrderVerticals = {
-      consult: [{ order_id: orderId, amount: amountToPay, patient_id: currentPatient?.id }],
+  const bookAppointmentwithSubscription = () => {
+    const appointmentSubscriptionInput = {
+      bookAppointment: finalAppointmentInput,
+      userSubscription: {
+        mobile_number: currentPatient?.mobileNumber,
+        plan_id: planId,
+        sub_plan_id: circlePlanSelected?.subPlanId,
+        storeCode,
+        FirstName: currentPatient?.firstName,
+        LastName: currentPatient?.lastName,
+        payment_reference: {
+          amount_paid: Number(circlePlanSelected?.currentSellingPrice),
+          payment_status: PaymentStatus.PENDING,
+          purchase_via_HC: false,
+          HC_used: 0,
+        },
+        transaction_date_time: new Date().toISOString(),
+      },
     };
+    console.log('appointmentSubscriptionInput >>>>', appointmentSubscriptionInput);
+    return client.mutate({
+      mutation: BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+      variables: appointmentSubscriptionInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const createOrderInternal = (orderId: string, subscriptionId?: string) => {
+    const orders: OrderVerticals = {
+      consult: [{ order_id: orderId, amount: consultAmounttoPay, patient_id: currentPatient?.id }],
+    };
+    if (subscriptionId) {
+      orders['subscription'] = [
+        {
+          order_id: subscriptionId,
+          amount: Number(circlePlanSelected?.currentSellingPrice),
+          patient_id: currentPatient?.id,
+        },
+      ];
+    }
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: amountToPay,
       customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
+    console.log('orderInput >>>>', JSON.stringify(orderInput));
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
       variables: { order: orderInput },
@@ -708,8 +767,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     // again check coupon is valid or not
     verifyCoupon(true);
     try {
-      const response = await bookAppointment();
+      const response =
+        circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+          ? await bookAppointmentwithSubscription()
+          : await bookAppointment();
+      console.log('response >>>', JSON.stringify(response));
       const apptmt = g(response, 'data', 'bookAppointment', 'appointment');
+      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
       console.log('apptmt >>>', apptmt);
       consultedWithDoctorBefore && storeAppointmentId(g(apptmt, 'id')!);
       try {
@@ -726,7 +790,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           `${apptmt?.displayId!}`
         );
       } else {
-        const data = await createOrderInternal(apptmt?.id!);
+        const data = await createOrderInternal(apptmt?.id!, subscriptionId);
         if (data?.data?.createOrderInternal?.success) {
           const isInitiated: boolean = await isSDKInitialised();
           !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
@@ -869,7 +933,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
         );
         break;
-      case ('OUT_OF_CONSULT_HOURS', 'DOCTOR_SLOT_BLOCKED', 'APPOINTMENT_BOOK_DATE_ERROR'):
+      case 'OUT_OF_CONSULT_HOURS':
+      case 'DOCTOR_SLOT_BLOCKED':
+      case 'APPOINTMENT_BOOK_DATE_ERROR':
         renderErrorPopup(
           `Slot you are trying to book is no longer available. Please try a different slot.`
         );

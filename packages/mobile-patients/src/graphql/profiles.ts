@@ -212,6 +212,42 @@ export const BOOK_APPOINTMENT = gql`
   }
 `;
 
+export const BOOK_APPOINTMENT_WITH_SUBSCRIPTION = gql`
+  mutation bookAppointmentwithSubscription(
+    $bookAppointment: BookAppointmentInput!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    bookAppointment(appointmentInput: $bookAppointment) {
+      appointment {
+        id
+        doctorId
+        appointmentDateTime
+        status
+        appointmentType
+        patientId
+        displayId
+        paymentOrderId
+      }
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
+        }
+      }
+    }
+  }
+`;
+
 export const MAKE_APPOINTMENT_PAYMENT = gql`
   mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
     makeAppointmentPayment(paymentInput: $paymentInput) {
@@ -2090,12 +2126,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         paymentType
         paymentOrderId
         paymentOrderId
-        diagnosticOrderReschedule{
+        diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason
           comments
         }
-        diagnosticOrderCancellation{
+        diagnosticOrderCancellation {
           cancellationReason
           cancelType
           cancelByName
@@ -4663,6 +4699,7 @@ export const GET_INTERNAL_ORDER = gql`
       txn_id
       status_id
       payment_order_id
+      payment_status
       refunds {
         status
         unique_request_id
@@ -4671,6 +4708,15 @@ export const GET_INTERNAL_ORDER = gql`
         created_at
         updated_at
         amount
+      }
+      internal_orders {
+        AppointmentDetails {
+          displayId
+          amountBreakup {
+            actual_price
+            slashed_price
+          }
+        }
       }
     }
   }
@@ -4789,11 +4835,11 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
 export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
   query getHCOrderFormattedTrackingHistory($diagnosticOrderID: String) {
     getHCOrderFormattedTrackingHistory(diagnosticOrderID: $diagnosticOrderID) {
-      statusHistory{
+      statusHistory {
         statusDate
         orderStatus
       }
-      statusInclusions{
+      statusInclusions {
         statusDate
         orderStatus
         itemId
@@ -4803,7 +4849,7 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
       }
     }
   }
-  `;
+`;
 
 export const VERIFY_TRUECALLER_PROFILE = gql`
   mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
