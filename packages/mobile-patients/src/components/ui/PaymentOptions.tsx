@@ -57,7 +57,6 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
     setLoading && setLoading(true);
     fetchPaymentOptions()
       .then((res: any) => {
-        console.log(JSON.stringify(res), 'objobj');
         let options: paymentOptions[] = [];
         res?.data?.forEach((item: any) => {
           if (item?.enabled && item?.paymentMode != 'NB') {
@@ -89,7 +88,6 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
-        console.log(error);
         setLoading && setLoading(false);
         renderErrorPopup(string.common.tryAgainLater);
       });

@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  BackHandler,
-  SafeAreaView,
-  StyleSheet,
-  View,
-  PixelRatio,
-  Dimensions,
-  Image,
-} from 'react-native';
+import { BackHandler, SafeAreaView, StyleSheet, View, Dimensions, Image } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
@@ -30,7 +22,7 @@ const styles = StyleSheet.create({
   instructionText: {
     ...fonts.IBMPlexSansMedium(9),
     color: theme.colors.LIGHT_BLUE,
-  }
+  },
 });
 
 const readMoreImagePart1 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part1.png');
@@ -38,11 +30,10 @@ const readMoreImagePart2 = require('@aph/mobile-patients/src/components/ui/icons
 const readMoreImagePart3 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part3.png');
 const readMoreImagePart4 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part4.png');
 
-export interface ReadMoreLinkUHIDProps extends NavigationScreenProps { }
+export interface ReadMoreLinkUHIDProps extends NavigationScreenProps {}
 
 export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
-
-  const { width } = Dimensions.get("window");
+  const { width } = Dimensions.get('window');
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -74,7 +65,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
         <View style={styles.cardContainer}>
           <Image
             source={readMoreImagePart1}
-            resizeMode='contain'
+            resizeMode="contain"
             style={{
               width: width - 40,
               height: width - 80,
@@ -82,7 +73,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
           />
           <Image
             source={readMoreImagePart2}
-            resizeMode='contain'
+            resizeMode="contain"
             style={{
               width: width - 40,
               height: width * 1.6,
@@ -90,7 +81,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
           />
           <Image
             source={readMoreImagePart3}
-            resizeMode='contain'
+            resizeMode="contain"
             style={{
               width: width - 40,
               height: width - 60,
@@ -98,7 +89,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
           />
           <Image
             source={readMoreImagePart4}
-            resizeMode='contain'
+            resizeMode="contain"
             style={{
               width: width - 40,
               height: width * 1.7,
@@ -113,14 +104,16 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             paddingRight: 15,
             marginBottom: 30,
             marginTop: 30,
-            alignSelf: 'center'
+            alignSelf: 'center',
           }}
           titleTextStyle={{
-            ...fonts.IBMPlexSansSemiBold(16)
+            ...fonts.IBMPlexSansSemiBold(16),
           }}
-          onPress={() => { props.navigation.goBack(); }}
+          onPress={() => {
+            props.navigation.goBack();
+          }}
         />
       </ScrollView>
-    </SafeAreaView >
-  )
+    </SafeAreaView>
+  );
 };

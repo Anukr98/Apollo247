@@ -357,24 +357,6 @@ export enum MedicRecordType {
   HEALTHCHECK = 'HEALTHCHECK',
   HOSPITALIZATION = 'HOSPITALIZATION',
 }
-const RecordType: RecordTypeType[] = [
-  {
-    value: MedicRecordType.TEST_REPORT.toLowerCase().replace('_', ' '),
-    key: MedicRecordType.TEST_REPORT,
-  },
-  {
-    value: MedicRecordType.PRESCRIPTION.toLowerCase().replace('_', ' '),
-    key: MedicRecordType.PRESCRIPTION,
-  },
-  {
-    value: 'Health Check',
-    key: MedicRecordType.HEALTHCHECK,
-  },
-  {
-    value: 'Discharge Summary',
-    key: MedicRecordType.HOSPITALIZATION,
-  },
-];
 
 interface SeverityType {
   key: string;
@@ -512,8 +494,6 @@ export interface AddRecordProps
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
-  const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
-  const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const [displayAllergyPopup, setdisplayAllergyPopup] = useState<boolean>(false);
   const [displayFamilyHistoryPopup, setdisplayFamilyHistoryPopup] = useState<boolean>(false);
@@ -524,7 +504,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [testName, settestName] = useState<string>('');
   const [docName, setDocName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
-  const [typeofRecord, settypeofRecord] = useState<MedicRecordType>(MedicRecordType.PRESCRIPTION);
   const [
     selectedRestrictionType,
     setSelectedRestrictionType,
@@ -536,7 +515,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [selectedSeverityType, setSelectedSeverityType] = useState<AllergySeverity | null>(null);
   const [dateOfTest, setdateOfTest] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-  const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([]);
@@ -617,9 +595,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [callDeleteAttachmentApi, setCallDeleteAttachmentApi] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<PickerImage>(null);
   const [openCamera, setOpenCamera] = useState<boolean>(false);
-  const navigatedFrom = props.navigation.state.params!.navigatedFrom
-    ? props.navigation.state.params!.navigatedFrom
-    : '';
   const recordType = props.navigation.state.params
     ? props.navigation.state.params.recordType
     : false;
@@ -1158,7 +1133,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1237,7 +1211,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_ALLERGY_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1313,9 +1286,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICATION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1388,9 +1360,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_HEALTH_RESTRICTION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1462,9 +1433,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_CONDITION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1527,7 +1497,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_FAMILY_HISTORY_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1595,7 +1564,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_LAB_TEST_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1662,7 +1630,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_HOSPITALIZATION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1711,7 +1678,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_BILL_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1783,7 +1749,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_INSURANCE_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1829,7 +1794,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -2203,8 +2167,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           keyExtractor={(_, index) => index.toString()}
           ListFooterComponent={() => (imagesArray?.length > 0 ? null : renderAddMorePagesCard())}
         />
-        {/* UI for multiple images */}
-        {/* {Images?.length > 3 ? renderAddMorePagesCard() : null} */}
       </View>
     );
   };
@@ -3947,15 +3909,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               style={styles.bottomWhiteButtonStyle}
               titleTextStyle={styles.bottomWhiteButtonTextStyle}
             />
-            {/* UI for multiple images */}
-            {/* <View style={styles.buttonSeperatorStyle} />
-            <View style={styles.bottomButtonStyle}>
-              <Button
-                onPress={onPressClickMorePhoto}
-                title={'CLICK MORE PHOTO'}
-                style={styles.bottomButtonStyle}
-              />
-            </View> */}
           </View>
         </View>
       </ScrollView>
@@ -4006,8 +3959,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setDisplayReviewPhotoPopup(true);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setImages(response);
           setdisplayOrderPopup(false);
@@ -4021,8 +3972,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(2);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setAllergyImage(response);
           setdisplayAllergyPopup(false);
@@ -4036,8 +3985,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(3);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setMedicalConditionImage(response);
           setdisplayMedicalConditionPopup(false);
@@ -4051,8 +3998,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(4);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setFamilyHistoryImage(response);
           setdisplayFamilyHistoryPopup(false);
@@ -4077,7 +4022,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         openCamera={openCamera}
         phrUpload={true}
         disabledOption="NONE"
-        //type=""
         heading={'Upload File'}
         instructionHeading={'Instructions For Uploading Prescriptions'}
         instructions={[

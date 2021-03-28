@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, Image, TouchableOpacity } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import React from 'react';
+import { SafeAreaView, View, Image, TouchableOpacity } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AccountCircleDarkIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 

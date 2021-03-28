@@ -104,7 +104,6 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
             })
             .catch((error) => {
               CommonBugFender('LocationSearchPopup_autoSearch', error);
-              console.log(error);
             });
         }
       })
@@ -149,7 +148,6 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
       })
       .catch((error) => {
         CommonBugFender('LocationSearchPopup_saveLatlong', error);
-        console.log('saveLatlong error\n', error);
       });
   };
 

@@ -8,22 +8,23 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  Text,
   DeviceEventEmitter,
   NativeModules,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
-import { AppConfig, updateAppConfig, PharmacyHomepageInfo, AppEnv } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
-import { apiRoutes } from '../helpers/apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
@@ -83,11 +84,7 @@ import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
    * [ Update ] => In the next version it will part of SDK, user will not be required to add this code-block
    */
   let globalObject;
-  // if (typeof global !== 'undefined') {
   globalObject = global;
-  // } else if (typeof window !== 'undefined' && window.document) {
-  // globalObject = window;
-  // }
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
@@ -112,6 +109,7 @@ const styles = StyleSheet.create({
   mainView: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: '#fff',
     alignSelf: 'center',
     justifyContent: 'center',
   },
@@ -132,6 +130,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipCallType = useRef<string>('');
   const voipDoctorName = useRef<string>('');
 
+  const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
+
   const config: Pubnub.PubnubConfig = {
     origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -149,6 +149,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, [takeToConsultRoom]);
 
   useEffect(() => {
+    prefetchUserMetadata();
+
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
@@ -169,7 +171,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PrefetchAPIReuqest({
         clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
       })
-        .then((res: any) => console.log(res, 'PrefetchAPIReuqest'))
+        .then((res: any) => {})
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
@@ -208,7 +210,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       messaging()
         .getToken()
         .then((token) => {
-          console.log('token', token);
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
           UnInstallAppsFlyer(token);
         })
@@ -297,11 +298,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.getInitialURL()
         .then((url) => {
           setBugFenderLog('DEEP_LINK_URL', url);
+
           if (url) {
             try {
               handleOpenURL(url);
               fireAppOpenedEvent(url);
-              console.log('linking', url);
             } catch (e) {}
           } else {
             settakeToConsultRoom(true);
@@ -314,7 +315,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         try {
-          console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           handleOpenURL(event.url);
           fireAppOpenedEvent(event.url);
@@ -325,6 +325,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
   };
+
   const handleOpenURL = (event: any) => {
     try {
       if (Platform.OS === 'ios') {
@@ -360,18 +361,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
           }
         } catch (error) {}
-        console.log(linkId, 'linkId');
 
         switch (route) {
           case 'consult':
           case 'Consult':
-            console.log('Consult');
             getData('Consult', data.length === 2 ? linkId : undefined);
             break;
-
           case 'medicine':
           case 'Medicine':
-            console.log('Medicine');
             getData('Medicine', data.length === 2 ? linkId : undefined);
             break;
 
@@ -392,39 +389,33 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'speciality':
           case 'Speciality':
-            console.log('Speciality handleopen');
             if (data.length === 2) getData('Speciality', linkId);
             else getData('DoctorSearch');
             break;
 
           case 'doctor':
           case 'Doctor':
-            console.log('Doctor handleopen');
             if (data.length === 2)
               getData('Doctor', linkId, undefined, undefined, attributes?.media_source);
             break;
 
           case 'doctorsearch':
           case 'DoctorSearch':
-            console.log('DoctorSearch handleopen');
             getData('DoctorSearch');
             break;
 
           case 'medicinesearch':
           case 'MedicineSearch':
-            console.log('MedicineSearch handleopen');
             getData('MedicineSearch', data.length === 2 ? linkId : undefined);
             break;
 
           case 'medicinedetail':
           case 'MedicineDetail':
-            console.log('MedicineDetail handleopen');
             getData('MedicineDetail', data.length === 2 ? linkId : undefined);
             break;
 
           case 'medicinecart':
           case 'MedicineCart':
-            console.log('MedicineCart handleopen');
             getData('MedicineCart', data.length === 2 ? linkId : undefined);
             break;
 
@@ -494,13 +485,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           case 'healthrecordshome':
           case 'HealthRecordsHome':
-            console.log('HealthRecordsHome handleopen');
             getData('HealthRecordsHome');
             break;
 
           case 'manageprofile':
           case 'ManageProfile':
-            console.log('ManageProfile handleopen');
             getData('ManageProfile');
             break;
 
@@ -522,6 +511,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           case 'circlemembershipdetails':
           case 'CircleMembershipDetails':
             getData('CircleMembershipDetails');
+            break;
+
+          case 'symptomtracker':
+          case 'SymptomTracker':
+            getData('SymptomTracker');
             break;
 
           case 'testlisting':
@@ -548,7 +542,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
             break;
         }
-        console.log('route', route);
       }
     } catch (error) {}
   };
@@ -625,7 +618,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const params = data[1].split('&');
         const utmParams = params.map((item: any) => item.split('='));
         utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
     } else if (b == 0) {
@@ -635,16 +627,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const params = data[1].split('&');
         const utmParams = params.map((item: any) => item.split('='));
         utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       } else {
         const referrer = await NativeModules.GetReferrer.referrer();
         attributes['referrer'] = referrer;
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
     } else {
-      console.log('attributes >>>', attributes);
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }
   }
@@ -656,21 +645,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     mediaSource?: string
   ) => {
     async function fetchData() {
-      // const onboarding = await AsyncStorage.getItem('onboarding');
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      const signUp = await AsyncStorage.getItem('signUp');
-      const multiSignUp = await AsyncStorage.getItem('multiSignUp');
+      //we are prefetching the userLoggedIn because reading it from async storage was taking 400-500 ms
+      let userLoggedInState = userLoggedIn;
+      if (userLoggedInState == null) {
+        // if uninitilized then only read from Async Storage
+        userLoggedInState = await AsyncStorage.getItem('userLoggedIn');
+      }
+
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
       const item = JSON.parse(retrievedItem || 'null');
+
       const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
-
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
       let allPatients;
-
-      const isCircleMember: string | null = await AsyncStorage.getItem('isCircleMember');
-
       if (callByPrism === 'false') {
         allPatients =
           item && item.data && item.data.getPatientByMobileNumber
@@ -696,14 +686,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAllPatients(allPatients);
 
       setTimeout(
-        () => {
-          if (userLoggedIn == 'true') {
+        async () => {
+          if (userLoggedInState == 'true') {
             setshowSpinner(false);
-
             if (mePatient) {
               if (mePatient.firstName !== '') {
-                callPhrNotificationApi(currentPatient);
-                setCrashlyticsAttributes(mePatient);
+                const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
                 pushTheView(
                   routeName,
                   id ? id : undefined,
@@ -711,13 +699,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   isCircleMember === 'yes',
                   mediaSource
                 );
+                callPhrNotificationApi(currentPatient);
+                setCrashlyticsAttributes(mePatient);
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
             }
           } else {
+            const signUp: any = await AsyncStorage.getItem('signUp');
+            const multiSignUp: any = await AsyncStorage.getItem('multiSignUp');
             setshowSpinner(false);
-
             if (signUp == 'true') {
               props.navigation.replace(AppRoutes.SignUp);
             } else if (multiSignUp == 'true') {
@@ -733,8 +724,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         timeout ? 2000 : 0
       );
     }
+
     fetchData();
   };
+
+  const prefetchUserMetadata = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    setUserLoggedIn(userLoggedIn);
+  };
+
   const handleEncodedURI = (encodedString: string) => {
     const decodedString = decodeURIComponent(encodedString);
     const splittedString = decodedString.split('+');
@@ -787,19 +785,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     isCircleMember?: boolean,
     mediaSource?: string
   ) => {
-    console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
       case 'Consult':
-        console.log('Consult');
-        // if (id) {
-        //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
-        // } else
         props.navigation.navigate('APPOINTMENTS');
         break;
 
       case 'Medicine':
-        console.log('Medicine');
         props.navigation.navigate('MEDICINES');
         break;
 
@@ -812,7 +804,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'MedicineDetail':
-        console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: id,
           movedFrom: ProductPageViewedSource.DEEP_LINK,
@@ -820,31 +811,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'Test':
-        console.log('Test');
         props.navigation.navigate('TESTS');
         break;
 
       case 'ConsultRoom':
-        console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
         break;
 
       case 'Speciality':
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
         const filtersData = id ? handleEncodedURI(id) : '';
-        console.log('filtersData============', filtersData);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: filtersData[0] ? filtersData[0] : '',
           typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
           doctorType: filtersData.length > 2 ? filtersData[2] : '',
         });
-        // props.navigation.replace(AppRoutes.DoctorSearchListing, {
-        //   specialityId: id ? id : '',
-        // });
         break;
       case 'FindDoctors':
         const cityBrandFilter = id ? handleEncodedURI(id) : '';
-        console.log('cityBrandFilter', cityBrandFilter);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
           city:
@@ -874,7 +858,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'MedicineSearch':
         if (id) {
           const [itemId, name] = id.split(',');
-          console.log(itemId, name);
 
           props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: itemId,
@@ -885,7 +868,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'MedicineCart':
-        console.log('MedicineCart handleopen');
         props.navigation.navigate(AppRoutes.MedicineCart, {
           movedFrom: 'splashscreen',
         });
@@ -977,7 +959,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'TestReport':
-        console.log('TestReport');
         props.navigation.navigate(AppRoutes.HealthRecordDetails, {
           movedFrom: 'deeplink',
           id: id,
@@ -1042,12 +1023,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setCovidVaccineCta,
     setLoginSection,
     setCovidVaccineCtaV2,
+    setCartBankOffer,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
         const settingsCalled: string | null = await AsyncStorage.getItem('settingsCalled');
-        console.log(settingsCalled, 'redolocartions');
         if (settingsCalled && settingsCalled === 'true') {
           doRequestAndAccessLocation()
             .then((response) => {
@@ -1163,10 +1144,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Covid_Vaccine_CTA_V2_QA',
       PROD: 'Covid_Vaccine_CTA_V2',
     },
-    followUp_Chat: {
-      QA: 'QA_FollowUp_Chat_Limit',
-      PROD: 'FollowUp_Chat_Limit',
-    },
     Covid_Items: {
       QA: 'QA_Covid_Items',
       PROD: 'Covid_Items',
@@ -1178,6 +1155,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Non_Covid_Max_Slot_Days: {
       QA: 'QA_Non_Covid_Max_Slot_Days',
       PROD: 'Non_Covid_Max_Slot_Days',
+    },
+    Cart_Bank_Offer_Text: {
+      QA: 'QA_CART_BANK_OFFER_TEXT',
+      PROD: 'CART_BANK_OFFER_TEXT',
+    },
+    followUp_Chat: {
+      QA: 'QA_FollowUp_Chat_Limit',
+      PROD: 'FollowUp_Chat_Limit',
     },
   };
 
@@ -1249,6 +1234,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       needHelpReturnPharmaOrderSuccessMessage &&
         setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
 
+      const bankOfferText = getRemoteConfigValue('Cart_Bank_Offer_Text', (key) =>
+        config.getString(key)
+      );
+      bankOfferText && setCartBankOffer!(bankOfferText);
+
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
         'MIN_CART_VALUE_FOR_FREE_DELIVERY',
@@ -1309,13 +1299,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getBoolean(key)
       );
 
-      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
-
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
       setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
       setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
         config.getNumber(key)
       );
+      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
@@ -1376,7 +1365,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => console.log('An error occurred', err));
+              ).catch((err) => {});
             }}
           />
         </View>
@@ -1392,7 +1381,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           height: 117,
           ...Platform.select({
             android: {
-              top: 12,
+              top: -2,
             },
           }),
         }}

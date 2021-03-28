@@ -33,3 +33,7 @@ export interface getPaymentMethods {
 export interface getPaymentMethodsVariables {
   is_mobile?: boolean | null;
 }
+
+export interface getPaymentMethodsVariables {
+  is_mobile?: boolean | null;
+}

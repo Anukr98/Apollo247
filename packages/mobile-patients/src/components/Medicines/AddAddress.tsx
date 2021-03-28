@@ -20,7 +20,6 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DELETE_PATIENT_ADDRESS,
-  SAVE_PATIENT_ADDRESS,
   UPDATE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -28,28 +27,18 @@ import {
   deletePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/deletePatientAddress';
 import {
-  PatientAddressInput,
   PATIENT_ADDRESS_TYPE,
   UpdatePatientAddressInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  savePatientAddress,
-  savePatientAddressVariables,
-  savePatientAddress_savePatientAddress_patientAddress,
-} from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import { getPlaceInfoByPincode } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
-  getPlaceInfoByPincode,
-  pinCodeServiceabilityApi247,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  g,
   handleGraphQlError,
   doRequestAndAccessLocationModified,
-  formatAddress,
   getFormattedLocation,
   isValidPhoneNumber,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -70,14 +59,10 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { useFirstInstallTime } from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
 const setCharLen = width < 380 ? 25 : 30; //smaller devices like se, nexus 5
-const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
 const styles = StyleSheet.create({
@@ -226,7 +211,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     setDeliveryAddressId: setDiagnosticAddressId,
     setAddresses: setTestAddresses,
   } = useDiagnosticsCart();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
 
   const isChanged =
@@ -244,11 +229,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const areFieldsSame =
     isChanged && phoneNumber === addressData?.mobileNumber && userName === addressData?.name;
 
-  const formatCityStateDisplay = (city: string, state: string) => [city, state].join(', ');
-
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
-      console.log('DataAddress', addressData);
       // to avoid duplicate state name & backward compatability of address issue
       const cityState = [addressData.city, addressData.state]
         .filter((item) => item)
@@ -296,7 +278,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             ? diagnosticLocation
             : locationDetails;
         setstate(_locationDetails.state || '');
-        // setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state)); //[city,state] format
         setcity(_locationDetails.city || '');
         setpincode(_locationDetails.pincode || '');
         setLatitude(_locationDetails.latitude || 0);
@@ -308,12 +289,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const client = useApolloClient();
   const isAddressValid =
     userName &&
-    // userName.length > 1 &&
     phoneNumber &&
     phoneNumber.length >= 10 &&
     addressLine1 &&
     areaDetails &&
-    // addressLine1.length > 1 &&
     pincode &&
     pincode.length === 6 &&
     city &&
@@ -323,12 +302,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressType !== undefined &&
     (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
       (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
-
-  const saveAddress = (addressInput: PatientAddressInput) =>
-    client.mutate<savePatientAddress, savePatientAddressVariables>({
-      mutation: SAVE_PATIENT_ADDRESS,
-      variables: { PatientAddressInput: addressInput },
-    });
 
   const onSavePress = async () => {
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
@@ -430,8 +403,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
               onPress={() => {
-                // console.log(addressData.id);
-                // setdisplayoverlay(true);
                 setDeleteProfile(true);
               }}
             >
@@ -475,7 +446,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
             ] || stateCode;
 
-          // setcity(formatCityStateDisplay(city, state)); //[city,state] format
           setcity(city || '');
           setstate(state || '');
           setStateCode(finalStateCode);
@@ -568,7 +538,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           stateCode: finalStateCode,
           name: userName,
         };
-        console.log(updateaddressInputForEdit, 'updateaddressInputForEdit');
         setshowSpinner(true);
         client
           .mutate<updatePatientAddress, updatePatientAddressVariables>({
@@ -578,7 +547,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           .then((_data: any) => {
             try {
               setshowSpinner(false);
-              console.log('updateapicalled', _data);
               _navigateToScreen(_data.data.updatePatientAddress.patientAddress, 'fromUpdate');
             } catch (error) {
               CommonBugFender('AddAddress_onSavePress_try', error);
@@ -589,7 +557,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             setshowSpinner(false);
             handleGraphQlError(e);
           });
-        //props.navigation.goBack();
       } else {
         props.navigation.goBack();
       }
@@ -756,18 +723,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const renderAddress = () => {
     return (
       <View style={styles.userDetailsOuterView}>
-        {/* <TouchableOpacity
-          activeOpacity={1}
-          // onPress={() => {
-          //   setShowPopup(true);
-          // }}
-          style={{ marginBottom: 8 }}
-        >
-          <View style={styles.placeholderViewStyle}>
-            <Text style={[styles.placeholderTextStyle]}>{userName}</Text>
-            <DropdownGreen size="sm" />
-          </View>
-        </TouchableOpacity> */}
         {showPopup && (
           <DropDown
             cardContainer={styles.dropDownContainer}
@@ -785,68 +740,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             )}
           />
         )}
-        {/* <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Full Name</Text>
-        <TextInputComponent
-          value={userName}
-          onChangeText={(text) =>
-            text.startsWith(' ') || text.startsWith('.')
-              ? null
-              : (text == '' || /^([a-zA-Z.\s])+$/.test(text)) && setuserName(text)
-          }
-          placeholder={'Enter full name'}
-          inputStyle={{ marginBottom: 10 }}
-        />
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Mobile Number</Text>
-        <View
-          style={[
-            { paddingTop: Platform.OS === 'ios' ? 8 : 8 },
-            phoneNumber == '' ? styles.inputValidView : styles.inputView,
-          ]}
-        >
-          <Text style={styles.inputTextStyle}>+91</Text>
-          <TextInput
-            autoFocus
-            style={styles.inputStyle}
-            keyboardType="numeric"
-            maxLength={10}
-            value={phoneNumber}
-            placeholder={'Enter mobile number'}
-            onChangeText={(phoneNumber) =>
-              (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
-              setphoneNumber(phoneNumber)
-            }
-          />
-        </View> */}
-        {/* <View style={{ flexDirection: 'row' }}>
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(18),
-              color: theme.colors.INPUT_TEXT,
-              paddingRight: 6,
-              lineHeight: 28,
-              paddingTop: Platform.OS === 'ios' ? 0 : 6,
-              paddingBottom: Platform.OS === 'ios' ? 5 : 0,
-            }}
-          >
-            +91
-          </Text>
-          <TextInputComponent
-            value={phoneNumber}
-            onChangeText={(phoneNumber) =>
-              (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
-              setphoneNumber(phoneNumber)
-            }
-            placeholder={'Phone Number'}
-            maxLength={10}
-          />
-        </View> */}
-        {/**
-         * 1. code commented for APP-3922 from here
-         */}
-        {/* <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginTop: 20 }}>
-          Address
-        </Text> */}
-        {/** 1. House # */}
         <Text style={styles.addressLabel}>*House Number & Apartment/Society</Text>
         <TextInputComponent
           value={addressLine1}
@@ -854,16 +747,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             if (addressLine1 == '') {
               setaddressLine1(addressLine1);
             }
-            // if (
-            //   addressLine1.startsWith(' ') ||
-            //   addressLine1.startsWith('.') ||
-            //   addressLine1.startsWith(',') ||
-            //   addressLine1.startsWith('/') ||
-            //   addressLine1.startsWith('-')
-            // ) {
-            //   return;
-            // }!/^[A-Za-z0-9]/
-
             if (!/^[A-Za-z0-9]/.test(addressLine1)) {
               return;
             }
@@ -881,15 +764,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             if (areaDetails == '') {
               setareaDetails(areaDetails);
             }
-            // if (
-            //   areaDetails.startsWith(' ') ||
-            //   areaDetails.startsWith('.') ||
-            //   areaDetails.startsWith(',') ||
-            //   areaDetails.startsWith('/') ||
-            //   areaDetails.startsWith('-')
-            // ) {
-            //   return;
-            // }
             if (!/^[A-Za-z0-9]/.test(addressLine1)) {
               return;
             }
@@ -913,20 +787,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
             <TextInputComponent
               value={pincode}
-              onChangeText={
-                (pincode) => validateAndSetPincode(pincode)
-                // (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
-              }
+              onChangeText={(pincode) => validateAndSetPincode(pincode)}
               placeholder={'Enter pin code'}
               maxLength={6}
-              // textInputprops={{
-              //   onSubmitEditing: () => {
-              //     if (isAddressValid) {
-              //       onSavePress();
-              //     }
-              //   },
-              //   returnKeyType: 'done',
-              // }}
             />
           </View>
           <View style={{ flex: 0.55 }}>
@@ -945,7 +808,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             />
           </View>
         </View>
-        {/* state*/}
         <Text style={[styles.addressLabel, { marginTop: 12 }]}>*State</Text>
         <TextInputComponent
           value={(state || '').startsWith(',') ? state.replace(', ', '') : state}
@@ -976,23 +838,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             multiline={false}
           />
         )}
-        {/* <TextInputComponent
-          value={state}
-          onChangeText={(state) =>
-            state.startsWith(' ') || state.startsWith('.')
-              ? null
-              : (state == '' || /^([a-zA-Z0-9.\s])+$/.test(state)) && setstate(state)
-          }
-          placeholder={'State'}
-          textInputprops={{
-            onSubmitEditing: () => {
-              if (isAddressValid) {
-                onSavePress();
-              }
-            },
-            returnKeyType: 'done',
-          }}
-        /> */}
       </View>
     );
   };
@@ -1038,7 +883,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                     fetchPolicy: 'no-cache',
                   })
                   .then((_data: any) => {
-                    console.log(('dat', _data));
                     setDeliveryAddressId!('');
                     setNewAddressAdded!('');
                     setDiagnosticAddressId!('');
@@ -1046,7 +890,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   })
                   .catch((e) => {
                     CommonBugFender('AddAddress_DELETE_PATIENT_ADDRESS', e);
-                    console.log('Error occured while render Delete MedicalOrder', { e });
                     handleGraphQlError(e);
                   })
                   .finally(() => setshowSpinner(false));
@@ -1126,7 +969,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               disabled={!isAddressValid}
             ></Button>
           </View>
-          {/* </StickyBottomComponent> */}
         </KeyboardAvoidingView>
       </SafeAreaView>
       {showSpinner && <Spinner />}

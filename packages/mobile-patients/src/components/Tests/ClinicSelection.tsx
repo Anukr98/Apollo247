@@ -93,7 +93,6 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
   const filterClinics = (key: string, isId?: boolean) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
-      console.log('iid filer=', data);
       setPinCode && setPinCode(pinCode);
       setClinicDetails(data);
     } else {
@@ -108,7 +107,6 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
                   (item: any) => item.types.indexOf('locality') > -1
                 ) || { long_name: '' }
               ).long_name;
-              console.log('cityName', city);
               let filterArray;
               city &&
                 (filterArray = clinics.filter((item) =>
@@ -134,7 +132,6 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
     searchClinicApi()
       .then((data) => {
         setStorePickUpLoading(false);
-        console.log('clinic response', data.data.data, data);
         setClinics && setClinics(data.data.data);
       })
       .catch((e) => {
@@ -224,8 +221,6 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
             isSelected={selectedClinic === item.CentreCode}
             onPress={() => {
               setSelectedClinic(item.CentreCode);
-              // setDiagnosticClinic!({ ...item, date: new Date().getTime() });
-              // setClinicId && setClinicId(item.CentreCode);
             }}
             containerStyle={{ marginTop: 16 }}
             hideSeparator={index == clinicDetails!.length - 1}

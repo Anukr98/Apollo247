@@ -1,7 +1,5 @@
 import {
   AddIcon,
-  CheckedIcon,
-  CheckUnselectedIcon,
   DropdownGreen,
   InfoIconRed,
   MedicineIcon,
@@ -12,7 +10,7 @@ import {
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Dimensions,
   StyleProp,
@@ -74,7 +72,6 @@ export interface MedicineCardProps {
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
-  const [dropDownVisible, setDropDownVisible] = useState(false);
   const {
     isTest,
     isCardExpanded,
@@ -84,20 +81,15 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     specialPrice,
     price,
     imageUrl,
-    type,
     unit,
     isInStock,
     unserviceable,
     containerStyle,
-    subscriptionStatus,
     isPrescriptionRequired,
     onChangeUnit,
     onPressRemove,
     onPressAdd,
     onPress,
-    onChangeSubscription,
-    onEditPress,
-    onAddSubscriptionPress,
     maxQty,
     testId,
   } = props;
@@ -169,37 +161,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
               )}
           {renderOutOfStock()}
         </View>
-      </View>
-    );
-  };
-
-  const renderSubscription = () => {
-    if (subscriptionStatus == 'already-subscribed') {
-      return (
-        <View style={[styles.takeRegularView, styles.alreadySubscribedView]}>
-          <Text style={styles.subscriptionTextStyle}>{'You have subscribed to this already'}</Text>
-          <View style={styles.editAndSubscriptionViewStyle}>
-            {renderTouchable(<Text style={theme.viewStyles.yellowTextStyle}>{'EDIT'}</Text>, () =>
-              onEditPress()
-            )}
-            {renderTouchable(
-              <Text style={theme.viewStyles.yellowTextStyle}>{'ADD NEW SUBSCRIPTION'}</Text>,
-              () => onAddSubscriptionPress()
-            )}
-          </View>
-        </View>
-      );
-    }
-    return (
-      <View style={styles.takeRegularView}>
-        <Text style={styles.subscriptionTextStyle}>{'Need to take this regularly ?'}</Text>
-        {renderTouchable(
-          subscriptionStatus == 'subscribed-now' ? <CheckedIcon /> : <CheckUnselectedIcon />,
-          () =>
-            onChangeSubscription(
-              subscriptionStatus == 'subscribed-now' ? 'unsubscribed' : 'subscribed-now'
-            )
-        )}
       </View>
     );
   };
@@ -351,7 +312,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderSearchPriceView = () => {
-    console.log({ props });
     return (
       <>
         {/**
@@ -749,7 +709,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // alignItems: 'center',
   },
   flexStyle: {
     flex: 1,

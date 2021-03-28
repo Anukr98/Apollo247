@@ -10,7 +10,7 @@ import { TrueCallerProfile } from "./globalTypes";
 // ====================================================
 
 export interface verifyTrueCallerProfile_verifyTrueCallerProfile {
-  __typename: "Patient";
+  __typename: "AuthTokenTrueCaller";
   authToken: string | null;
 }
 

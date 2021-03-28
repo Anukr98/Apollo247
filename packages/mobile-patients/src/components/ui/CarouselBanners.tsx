@@ -155,17 +155,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_BANNER_CLICKED, eventAttributes);
   };
 
-  // const fireHCActivatedEvent = (from: string) => {
-  //   const eventAttributes: WebEngageEvents[WebEngageEventName.HC_1CLICK_ACTIVATION] = {
-  //     'Patient UHID': currentPatient?.uhid,
-  //     'Mobile Number': currentPatient?.mobileNumber,
-  //     'Customer ID': currentPatient?.id,
-  //     'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
-  //     from: from || 'HomePage',
-  //   };
-  //   postWebEngageEvent(WebEngageEventName.HC_1CLICK_ACTIVATION, eventAttributes);
-  // };
-
   const fireBannerCovidClickedWebengageEvent = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.COVID_BANNER_CLICKED] = {
       'Patient UHID': currentPatient?.uhid,
@@ -219,9 +208,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         (width, height) => {
           imageHeight = height;
         },
-        (error) => {
-          console.log(error);
-        }
+        (error) => {}
       );
     } else {
       imageHeight = 180;
@@ -514,7 +501,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         setShowCircleActivation(false);
         if (planActivated) {
           planActivationCallback && planActivationCallback();
-          // fireHCActivatedEvent(from);
         }
       }}
       defaultCirclePlan={defaultCirclePlan}

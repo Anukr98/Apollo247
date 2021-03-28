@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, Dimensions, View, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, Text, Dimensions, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { GpsIcon, EditAddressIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { EditAddressIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';

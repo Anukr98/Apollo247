@@ -111,11 +111,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                   {name}
                 </Text>
               </View>
-              {/* <Image
-              placeholderStyle={styles.imagePlaceholderStyle}
-              source={{ uri: imageUrl }}
-              style={styles.imageStyle}
-            /> */}
               {renderPercentageDiscount(
                 promoteCircle && isCircleSubscribed
                   ? circleDiscount
