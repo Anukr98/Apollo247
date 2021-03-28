@@ -1003,28 +1003,6 @@ export interface DeletePatientPrismMedicalRecordInput {
   recordType: MedicalRecordType;
 }
 
-export interface DiagnosticBookHomeCollectionInput {
-  patientId: string;
-  patientAddressId: string;
-  slotTimings: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId: number;
-  homeCollectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
-}
-
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
 }

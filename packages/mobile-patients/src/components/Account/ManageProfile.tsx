@@ -8,28 +8,19 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
   BackHandler,
   Image,
   ImageSourcePropType,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  PixelRatio,
   Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { GET_PATIENTS_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getPatientByMobileNumber,
-  getPatientByMobileNumberVariables,
-  getPatientByMobileNumber_getPatientByMobileNumber_patients,
-} from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
@@ -38,7 +29,6 @@ import {
   PrimaryUHIDIconBlue,
   SecondaryUHIDIconBlue,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 
@@ -81,7 +71,6 @@ const styles = StyleSheet.create({
   },
   readMoreText: {
     color: colors.LIGHT_BLUE,
-    // ...fonts.IBMPlexSansMedium(11),
     padding: 6,
     paddingLeft: 20,
     paddingRight: 20,
@@ -116,7 +105,6 @@ type profile = {
   lastName: string;
   relation: Relation | undefined;
   gender: Gender | undefined;
-  //  descripiton: string;
   uhid?: string;
   dateOfBirth?: Date;
   photoUrl?: string;
@@ -126,9 +114,7 @@ type profile = {
 export interface ManageProfileProps extends NavigationScreenProps {}
 
 export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
-  const client = useApolloClient();
   const { loading, setLoading } = useUIElements();
-  const pixelRatio = PixelRatio.get();
   const { height } = Dimensions.get('window');
   const heightPercent = Math.round((5 * height) / 100);
 
@@ -318,7 +304,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 padding: 16,
                 flexDirection: 'row',
                 minHeight: 145,
-                //  marginTop: i === 0 ? 16 : 8,
               },
               isPrimaryUHID
                 ? { backgroundColor: theme.colors.APP_YELLOW_COLOR }
@@ -345,7 +330,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     source={{
                       uri: profile!.photoUrl,
                     }}
-                    // resizeMode={'contain'}
                   />
                 ) : (
                   <PatientDefaultImage
@@ -354,10 +338,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     }
                   />
                 )}
-                {/* {profile.photoUrl &&
-        profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
-                {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
-                {/* )} */}
               </View>
               {isPrimaryUHID && (
                 <TouchableOpacity onPress={() => setShowSecondaryUHIDs(!showSecondaryUhids)}>
@@ -646,8 +626,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
             flexDirection: 'column',
           }}
         >
-          {
-            showLinkUhid &&
+          {showLinkUhid && (
             <Button
               title="LINK UHID"
               style={{
@@ -664,7 +643,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 });
               }}
             />
-          }
+          )}
           <Button
             title="ADD NEW PROFILE"
             style={{

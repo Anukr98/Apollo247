@@ -72,7 +72,6 @@ export interface StorePickupSceneProps
 
 export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   const fetchStores = props.navigation.getParam('fetchStores');
-  // const pincodeFromProp = props.navigation.getParam('pincode');
   const storesFromProp = props.navigation.getParam('stores');
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
@@ -111,7 +110,6 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
       const storeItems = g(item, 'itemDetails');
       return storeItems && areItemsAvailableInStore(storeItems, cartItems);
     });
-    console.log({ storeItemsInventory, storesWithInventory });
     const storeIdsWithInventory = storesWithInventory.map((item) => item.shopId);
     const storesWithFullInventory = stores.filter((item) =>
       storeIdsWithInventory.includes(item.storeid)
@@ -261,7 +259,6 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
             onPress={() => {
               CommonLogEvent('STORE_PICKUP_SCENE', `Selected store Id is ${item.storeid}`);
               setSelectedStore(item.storeid);
-              // setShowDriveWayPopup(true);
             }}
             containerStyle={{
               marginTop: 16,

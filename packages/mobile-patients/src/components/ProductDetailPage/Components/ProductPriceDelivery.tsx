@@ -33,7 +33,6 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const {
     price,
     specialPrice,
-    isExpress,
     isInStock,
     manufacturer,
     showPincodePopup,

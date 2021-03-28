@@ -41,8 +41,6 @@ const paymentGatewayBaseUrl: string =
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
-const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
-const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
 const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
@@ -1093,8 +1091,6 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
-  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,

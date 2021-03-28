@@ -130,7 +130,6 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             <View
               style={{
                 borderRightWidth: 0.5,
-                // borderBottomColor: 'rgba(2, 71, 91, 0.2)',
                 borderBottomColor: '#02475b',
                 opacity: 0.2,
                 marginHorizontal: 12,

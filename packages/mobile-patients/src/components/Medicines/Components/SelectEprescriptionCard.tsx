@@ -67,14 +67,7 @@ export const SelectEprescriptionCard: React.FC<SelectEprescriptionCardProps> = (
       style={styles.healthRecord}
     >
       {isPdf ? (
-        <Pdf
-          key={url}
-          onError={(error) => {
-            console.log(error);
-          }}
-          source={{ uri: url }}
-          style={styles.pdfThumbnail}
-        />
+        <Pdf key={url} source={{ uri: url }} style={styles.pdfThumbnail} />
       ) : (
         <Image source={{ uri: url }} style={styles.hrImage} />
       )}

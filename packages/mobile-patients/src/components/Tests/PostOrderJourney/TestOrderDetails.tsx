@@ -56,7 +56,6 @@ import {
   MedicalRecordType,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-
 import { getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
 
 import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -107,7 +106,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
@@ -184,12 +183,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }, [selectedTab]);
 
-  const { data, loading, refetch } = useQuery<
-    getDiagnosticOrderDetails,
-    getDiagnosticOrderDetailsVariables
-  >(GET_DIAGNOSTIC_ORDER_LIST_DETAILS, {
-    variables: { diagnosticOrderId: orderId },
-  });
+  const { data, loading } = useQuery<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>(
+    GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+    {
+      variables: { diagnosticOrderId: orderId },
+    }
+  );
   const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
 
   const orderDetails = ((!loading && order) ||
@@ -256,7 +255,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsResult', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading?.(false));
@@ -587,7 +585,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               description: string.diagnostics.feedbackSubTxt,
             });
             setShowRateDiagnosticBtn(false);
-            // updateRateDeliveryBtnVisibility();
           }}
         />
       </>

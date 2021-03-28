@@ -81,7 +81,6 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     dateText,
     selfUpload,
     sourceName,
-    index,
     onOrderTestAndMedicinePress,
     onFollowUpPress,
     showFollowUp,

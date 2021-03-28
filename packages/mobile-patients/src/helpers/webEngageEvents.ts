@@ -3,7 +3,6 @@ import {
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { SymptomsSpecialities } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { UserEvent } from 'pubnub';
 import {
   PharmaUserStatus,
   UploadPrescSource,

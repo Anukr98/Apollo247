@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,7 +14,6 @@ import {
   PhysicalPrescription,
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { PrescriptionIcon, GreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
 export interface PrescriptionsProps {
