@@ -573,6 +573,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setDiagnosticAreas?.([]);
       setAreaSelected?.({});
       setDeliveryAddressId?.('');
+      setHcCharges?.(0);
+      setLoading?.(false);
     }
     if (deliveryAddressId) {
       if (diagnosticSlot) {
