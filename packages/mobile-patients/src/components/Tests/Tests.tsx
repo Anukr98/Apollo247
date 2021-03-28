@@ -397,12 +397,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         setWidgetsData([]);
         setLoading!(false);
+        setPageLoading?.(false);
       }
     } catch (error) {
       CommonBugFender('getHomePageWidgets_Tests', error);
       setWidgetsData([]);
       setLoading?.(false);
       setReloadWidget(true);
+      setPageLoading?.(false);
     }
   };
 
@@ -461,11 +463,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setWidgetsData(newWidgetsData);
       setSectionLoading(false);
       setLoading?.(false);
+      setPageLoading?.(false);
     } catch (error) {
       CommonBugFender('errorInFetchPricing api__Tests', error);
       setSectionLoading(false);
       setReloadWidget(true);
       setLoading?.(false);
+      setPageLoading?.(false);
       showAphAlert?.({
         title: string.common.uhOh,
         description: string.common.tryAgainLater,
@@ -728,11 +732,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           CommonBugFender('getDiagnosticsPincodeServiceabilityError_Tests', e);
           setLoadingContext!(false);
           setReloadWidget(true);
-          showAphAlert?.({
-            unDismissable: true,
-            title: string.common.uhOh,
-            description: string.diagnostics.serviceabilityFailureText,
-          });
         });
     }
   };
@@ -1086,6 +1085,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         hideAphAlert!();
         //if this needs to be done, if location permission is denied or anywhere.
         if (!defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation) {
+          setDeliveryAddressId!('');
           checkIsPinCodeServiceable('500034', undefined, 'noLocation');
         }
       },
@@ -1125,7 +1125,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <PincodeInput
           onPressApply={(pincode) => {
             if (pincode?.length == 6) {
-              hideAphAlert!();
+              hideAphAlert?.();
+              setDeliveryAddressId?.('');
               checkIsPinCodeServiceable(pincode, 'Manually', 'pincodeManualApply');
             }
           }}
@@ -1153,6 +1154,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       : `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
           deliveryAddress?.zipcode
         }`;
+
     return (
       <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
         {hasLocation ? (
