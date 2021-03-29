@@ -18,6 +18,7 @@ import {
   GET_TRANSACTION_STATUS,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   UPDATE_APPOINTMENT,
+  GET_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   postAppsFlyerEvent,
@@ -102,7 +103,10 @@ import {
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
-
+import {
+  getOrderInternal,
+  getOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
@@ -110,6 +114,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [displayId, setdisplayId] = useState<String>('');
   const [paymentRefId, setpaymentRefId] = useState<string>('');
+  const paymentId = props.navigation.getParam('paymentId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const {
     price,
@@ -252,83 +257,153 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     fireLocationEvent.current = false;
   };
 
-  const getOrderInfo = () => {};
+  const getOrderInfo = () => {
+    return client.query<getOrderInternal, getOrderInternalVariables>({
+      query: GET_INTERNAL_ORDER,
+      variables: {
+        order_id: paymentId,
+      },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const fetchOrderStatus = async () => {
+    const response = await getOrderInfo();
+    const txnStatus = response?.data?.getOrderInternal?.payment_status;
+    const displayId =
+      response?.data?.getOrderInternal?.internal_orders?.[0]?.AppointmentDetails?.displayId;
+    firePaymentStatusEvent(txnStatus);
+    if (txnStatus == success) {
+      locationDetails && saveLocationWithConsultation(locationDetails);
+      const amountBreakup =
+        response?.data?.getOrderInternal?.internal_orders?.[0]?.AppointmentDetails?.amountBreakup;
+      if (isCircleDoctor && amountBreakup?.slashed_price) {
+        setAmountBreakup(amountBreakup);
+      }
+      fireBaseFCM();
+      fireConsultBookedEvent(displayId);
+      PermissionsCheck();
+    } else {
+      fireOrderFailedEvent();
+    }
+    setStatus(txnStatus);
+    setdisplayId(displayId);
+    setShowSpinner?.(false);
+  };
+
+  const PermissionsCheck = () => {
+    checkPermissions(['camera', 'microphone']).then((response: any) => {
+      const { camera, microphone } = response;
+      if (camera === 'authorized' && microphone === 'authorized') {
+        !locationDetails && askLocationPermission();
+      } else {
+        overlyCallPermissions(
+          currentPatient.firstName,
+          doctorName,
+          showAphAlert,
+          hideAphAlert,
+          true,
+          () => {
+            !locationDetails && askLocationPermission();
+          }
+        );
+      }
+    });
+  };
+
+  const firePaymentStatusEvent = (status: string) => {
+    try {
+      const paymentEventAttributes = {
+        Payment_Status: status,
+        LOB: 'Consultation',
+        Appointment_Id: orderId,
+      };
+      postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+    } catch (error) {}
+  };
+
+  const fireConsultBookedEvent = (displayId: any) => {
+    try {
+      let eventAttributes = webEngageEventAttributes;
+      eventAttributes['Display ID'] = displayId;
+      eventAttributes['User_Type'] = getUserType(currentPatient);
+      postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+      firePurchaseEvent(amountBreakup);
+      eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+      postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+      if (!currentPatient?.isConsulted) getPatientApiCall();
+    } catch (error) {}
+  };
 
   useEffect(() => {
     // getTxnStatus(orderId)
     console.log(webEngageEventAttributes['Consult Mode']);
+    fetchOrderStatus();
+    return;
+    // client
+    //   .query({
+    //     query: GET_TRANSACTION_STATUS,
+    //     variables: {
+    //       appointmentId: orderId,
+    //     },
+    //     fetchPolicy: 'no-cache',
+    //   })
+    //   .then((res) => {
+    //     console.log(res.data);
+    //     if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+    //       locationDetails && saveLocationWithConsultation(locationDetails);
 
-    client
-      .query({
-        query: GET_TRANSACTION_STATUS,
-        variables: {
-          appointmentId: orderId,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((res) => {
-        try {
-          const paymentEventAttributes = {
-            Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
-            LOB: 'Consultation',
-            Appointment_Id: orderId,
-          };
-          postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
-          postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
-          postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
-        } catch (error) {}
-        console.log(res.data);
-        if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
-          locationDetails && saveLocationWithConsultation(locationDetails);
-
-          const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
-          if (isCircleDoctor && amountBreakup?.slashed_price) {
-            setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
-          }
-          fireBaseFCM();
-          try {
-            let eventAttributes = webEngageEventAttributes;
-            eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
-            eventAttributes['User_Type'] = getUserType(currentPatient);
-            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
-            postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
-            firePurchaseEvent(amountBreakup);
-            eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
-            if (!currentPatient?.isConsulted) getPatientApiCall();
-          } catch (error) {}
-          checkPermissions(['camera', 'microphone']).then((response: any) => {
-            const { camera, microphone } = response;
-            if (camera === 'authorized' && microphone === 'authorized') {
-              !locationDetails && askLocationPermission();
-            } else {
-              overlyCallPermissions(
-                currentPatient.firstName,
-                doctorName,
-                showAphAlert,
-                hideAphAlert,
-                true,
-                () => {
-                  !locationDetails && askLocationPermission();
-                }
-              );
-            }
-          });
-        } else {
-          fireOrderFailedEvent();
-        }
-        setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
-        setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
-        setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
-        setShowSpinner?.(false);
-      })
-      .catch((error) => {
-        setShowSpinner?.(false);
-        CommonBugFender('fetchingTxnStutus', error);
-        console.log(error);
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(string.common.tryAgainLater);
-      });
+    //       const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
+    //       if (isCircleDoctor && amountBreakup?.slashed_price) {
+    //         setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
+    //       }
+    //       fireBaseFCM();
+    //       try {
+    //         let eventAttributes = webEngageEventAttributes;
+    //         eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
+    //         eventAttributes['User_Type'] = getUserType(currentPatient);
+    //         postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
+    //         postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+    //         firePurchaseEvent(amountBreakup);
+    //         eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+    //         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+    //         if (!currentPatient?.isConsulted) getPatientApiCall();
+    //       } catch (error) {}
+    //       checkPermissions(['camera', 'microphone']).then((response: any) => {
+    //         const { camera, microphone } = response;
+    //         if (camera === 'authorized' && microphone === 'authorized') {
+    //           !locationDetails && askLocationPermission();
+    //         } else {
+    //           overlyCallPermissions(
+    //             currentPatient.firstName,
+    //             doctorName,
+    //             showAphAlert,
+    //             hideAphAlert,
+    //             true,
+    //             () => {
+    //               !locationDetails && askLocationPermission();
+    //             }
+    //           );
+    //         }
+    //       });
+    //     } else {
+    //       fireOrderFailedEvent();
+    //     }
+    //     setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
+    //     setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
+    //     setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
+    //     setShowSpinner?.(false);
+    //   })
+    //   .catch((error) => {
+    //     setShowSpinner?.(false);
+    //     CommonBugFender('fetchingTxnStutus', error);
+    //     console.log(error);
+    //     props.navigation.navigate(AppRoutes.DoctorSearch);
+    //     renderErrorPopup(string.common.tryAgainLater);
+    //   });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -687,7 +762,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       });
   };
   const renderStatusCard = () => {
-    const refNumberText = String(paymentRefId != '' && paymentRefId != null ? paymentRefId : '--');
+    const refNumberText = String(paymentId != '' && paymentId != null ? paymentId : '--');
     const orderIdText = 'Order ID: ' + String(displayId);
     const priceText = `${string.common.Rs} ` + String(price);
     return (

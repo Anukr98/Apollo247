@@ -391,7 +391,20 @@
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu", "Punjabi" ,"Bengali" ,"Marathi" ,"Urdu","Gujarati","Tamil","Kannada","Oriya","Persian"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu",
+          "Punjabi",
+          "Bengali",
+          "Marathi",
+          "Urdu",
+          "Gujarati",
+          "Tamil",
+          "Kannada",
+          "Oriya",
+          "Persian"
+        ]
       }
     ]
   },
@@ -447,12 +460,12 @@
       "latePhelbo": "Phlebo did not arrive on time",
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available right now",
-      "bookedByMistake":"Booked by Mistake",
-      "urgentReport" : "Need Report Urgently",
+      "bookedByMistake": "Booked by Mistake",
+      "urgentReport": "Need Report Urgently",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "latePhelbo" : "Phlebo did not arrive on time",
+      "latePhelbo": "Phlebo did not arrive on time",
       "unavailable": "I am not available right now",
       "guidelinesNotFollowed": "I did not follow fasting requirement",
       "unableToProvideSample": "Not feeling well to provide sample",
@@ -482,17 +495,17 @@
     "cartPhelboTxt": "Sample collection executive to reach your home within 30 mins of your appointment time",
     "incorrectUserReport": "This report does not belongs to this user.",
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
-    "reasonForReschedulingText" : "Reason for Rescheduling",
+    "reasonForReschedulingText": "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
-    "whatWudLikeText":"What would you like to do?",
-    "rescheduleBookingText":"Reschedule Booking",
+    "whatWudLikeText": "What would you like to do?",
+    "rescheduleBookingText": "Reschedule Booking",
     "cancelBookingText": "Cancel Booking",
-    "sureCancelText":"Are you sure you want to Cancel the booking?",
-    "rateYourExperience":"RATE YOUR DELIVERY EXPERIENCE",
-    "valueFeedbackTxt":"We value your feedback! :)",
-    "howWasExpTxt":"How was your overall experience -",
-    "feedbackSubTxt":"Your feedback has been submitted. Thanks for your time.",
-    "homeHomeCollectionDisclaimerTxt":"Home collection charges of upto ₹100 would be levied in case of order value less than ₹500"
+    "sureCancelText": "Are you sure you want to Cancel the booking?",
+    "rateYourExperience": "RATE YOUR DELIVERY EXPERIENCE",
+    "valueFeedbackTxt": "We value your feedback! :)",
+    "howWasExpTxt": "How was your overall experience -",
+    "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
+    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -561,7 +574,7 @@
     ]
   },
   "Payment": {
-    "success": "PAYMENT_SUCCESS",
+    "success": "TXN_SUCCESS",
     "failure": "PAYMENT_FAILED",
     "pending": "PAYMENT_PENDING_PG",
     "refund": "PAYMENT_REFUND",

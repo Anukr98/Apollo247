@@ -388,6 +388,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
           orderDetails: orderDetails,
           paymentStatus: paymentStatus,
+          paymentId: paymentId,
         });
         break;
     }
@@ -411,7 +412,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderBookingInfo = () => {
-    return <BookingInfo LOB={'Diag'} />;
+    return <BookingInfo LOB={businessLine} orderDetails={orderDetails} />;
   };
 
   const showPaymentOptions = () => {
