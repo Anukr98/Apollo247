@@ -1,4 +1,9 @@
-import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import {
+  NavigationScreenProp,
+  NavigationRoute,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
 import {
   setBugFenderLog,
   CommonBugFender,
@@ -388,38 +393,31 @@ export const pushTheView = (
     case 'Consult':
       navigation.navigate('APPOINTMENTS');
       break;
-
     case 'Medicine':
       navigation.navigate('MEDICINES');
       break;
-
     case 'UploadPrescription':
       navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
       break;
-
     case 'MedicineRecommendedSection':
       navigation.navigate('MEDICINES', { showRecommendedSection: true });
       break;
-
     case 'MedicineDetail':
-      navigation.navigate(AppRoutes.ProductDetailPage, {
+      navigateToView(navigation, AppRoutes.ProductDetailPage, {
         sku: id,
         movedFrom: ProductPageViewedSource.DEEP_LINK,
       });
       break;
-
     case 'Test':
       navigation.navigate('TESTS');
       break;
-
     case 'ConsultRoom':
       navigation.replace(AppRoutes.ConsultRoom);
       break;
-
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
       const filtersData = id ? handleEncodedURI(id) : '';
-      navigation.navigate(AppRoutes.DoctorSearchListing, {
+      navigateToView(navigation, AppRoutes.DoctorSearchListing, {
         specialityId: filtersData[0] ? filtersData[0] : '',
         typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
         doctorType: filtersData.length > 2 ? filtersData[2] : '',
@@ -427,7 +425,7 @@ export const pushTheView = (
       break;
     case 'FindDoctors':
       const cityBrandFilter = id ? handleEncodedURI(id) : '';
-      navigation.navigate(AppRoutes.DoctorSearchListing, {
+      navigateToView(navigation, AppRoutes.DoctorSearchListing, {
         specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
         city:
           cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
@@ -442,36 +440,32 @@ export const pushTheView = (
       });
       break;
     case 'Doctor':
-      navigation.navigate(AppRoutes.DoctorDetails, {
+      navigateToView(navigation, AppRoutes.DoctorDetails, {
         doctorId: id,
         fromDeeplink: true,
         mediaSource: mediaSource,
       });
       break;
-
     case 'DoctorSearch':
-      navigation.navigate(AppRoutes.DoctorSearch);
+      navigateToView(navigation, AppRoutes.DoctorSearch);
       break;
-
     case 'MedicineSearch':
       if (id) {
         const [itemId, name] = id.split(',');
-
-        navigation.navigate(AppRoutes.MedicineListing, {
+        navigateToView(navigation, AppRoutes.MedicineListing, {
           category_id: itemId,
           title: `${name ? name : 'Products'}`.toUpperCase(),
           movedFrom: 'deeplink',
         });
       }
       break;
-
     case 'MedicineCart':
-      navigation.navigate(AppRoutes.MedicineCart, {
+      navigateToView(navigation, AppRoutes.MedicineCart, {
         movedFrom: 'splashscreen',
       });
       break;
     case 'ChatRoom':
-      navigation.navigate(AppRoutes.ChatRoom, {
+      navigateToView(navigation, AppRoutes.ChatRoom, {
         id: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',
         prescription: '',
@@ -480,46 +474,39 @@ export const pushTheView = (
       });
       break;
     case 'Order':
-      navigation.navigate(AppRoutes.OrderDetailsScene, {
+      navigateToView(navigation, AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
         orderAutoId: isNaN(id) ? '' : id,
         billNumber: isNaN(id) ? id : '',
       });
       break;
     case 'MyOrders':
-      navigation.navigate(AppRoutes.YourOrdersScene);
+      navigateToView(navigation, AppRoutes.YourOrdersScene);
       break;
     case 'webview':
-      navigation.navigate(AppRoutes.CommonWebView, {
-        url: id,
-      });
+      navigateToView(navigation, AppRoutes.CommonWebView, { url: id });
       break;
-
     case 'HealthRecordsHome':
       navigation.navigate('HEALTH RECORDS');
       break;
-
     case 'ManageProfile':
-      navigation.navigate(AppRoutes.ManageProfile);
+      navigateToView(navigation, AppRoutes.ManageProfile);
       break;
-
     case 'OneApolloMembership':
-      navigation.navigate(AppRoutes.OneApolloMembership);
+      navigateToView(navigation, AppRoutes.OneApolloMembership);
       break;
-
     case 'TestDetails':
-      navigation.navigate(AppRoutes.TestDetails, {
+      navigateToView(navigation, AppRoutes.TestDetails, {
         itemId: id,
       });
       break;
-
     case 'ConsultDetails':
-      navigation.navigate(AppRoutes.ConsultDetails, {
+      navigateToView(navigation, AppRoutes.ConsultDetails, {
         CaseSheet: id,
       });
       break;
     case 'DoctorCall':
-      navigation.navigate(AppRoutes.ChatRoom, {
+      navigateToView(navigation, AppRoutes.ChatRoom, {
         id: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',
         prescription: '',
@@ -532,7 +519,7 @@ export const pushTheView = (
       break;
     case 'DoctorByNameId':
       const docId = id.slice(-36);
-      navigation.navigate(AppRoutes.DoctorDetails, {
+      navigateToView(navigation, AppRoutes.DoctorDetails, {
         doctorId: docId,
       });
       break;
@@ -541,35 +528,55 @@ export const pushTheView = (
       break;
     case 'CircleMembershipDetails':
       if (isCircleMember) {
-        navigation.navigate(AppRoutes.MembershipDetails, {
+        navigateToView(navigation, AppRoutes.MembershipDetails, {
           membershipType: string.Circle.planName,
           isActive: true,
           comingFrom: 'Deeplink',
         });
+      } else {
+        navigation.navigate(AppRoutes.ConsultRoom);
       }
       break;
-
     case 'TestListing':
-      navigation.navigate(AppRoutes.TestListing, {
+      navigateToView(navigation, AppRoutes.TestListing, {
         movedFrom: 'deeplink',
         widgetName: id,
       });
       break;
-
     case 'TestReport':
-      navigation.navigate(AppRoutes.HealthRecordDetails, {
+      navigateToView(navigation, AppRoutes.HealthRecordDetails, {
         movedFrom: 'deeplink',
         id: id,
       });
       break;
-
     case 'MyTestOrders':
-      navigation.navigate(AppRoutes.YourOrdersTest);
+      navigateToView(navigation, AppRoutes.YourOrdersTest);
       break;
-
     default:
+      const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+        source: 'deeplink',
+      };
+      postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+      navigation.navigate(AppRoutes.ConsultRoom);
       break;
   }
+};
+
+const navigateToView = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  routeName: AppRoutes,
+  routeParams?: any
+) => {
+  navigation.dispatch(
+    StackActions.reset({
+      index: 1,
+      key: null,
+      actions: [
+        NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+        NavigationActions.navigate({ routeName: routeName, params: routeParams || {} }),
+      ],
+    })
+  );
 };
 
 const handleEncodedURI = (encodedString: string) => {
@@ -595,7 +602,7 @@ const fetchSpecialities = async (
     const { data } = response;
     if (data?.getAllSpecialties && data?.getAllSpecialties.length) {
       const specialityId = getSpecialityId(specialityName, data?.getAllSpecialties);
-      navigation.navigate(AppRoutes.DoctorSearchListing, {
+      navigateToView(navigation, AppRoutes.DoctorSearchListing, {
         specialityId: specialityId,
       });
     }
@@ -618,7 +625,7 @@ const getMedicineSKU = async (
     const response = await getMedicineSku(skuKey);
     const { data } = response;
     data?.Message == 'Product available'
-      ? navigation.navigate(AppRoutes.ProductDetailPage, {
+      ? navigateToView(navigation, AppRoutes.ProductDetailPage, {
           sku: data?.sku,
           movedFrom: ProductPageViewedSource.DEEP_LINK,
         })
