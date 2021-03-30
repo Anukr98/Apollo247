@@ -400,13 +400,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       validateDiagnosticCoupon();
       fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
-  }, [diagnosticSlot, deliveryAddressId, cartItems]);
+  }, [diagnosticSlot, deliveryAddressId, cartItems, addresses]);
 
   useEffect(() => {
     if (deliveryAddressId != '') {
       getPinCodeServiceability();
     }
-  }, [deliveryAddressId]);
+  }, [deliveryAddressId, addresses]);
 
   useEffect(() => {
     if (cartItems?.length) {
@@ -512,7 +512,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setAreaSelected!({});
       }
     }
-  }, [deliveryAddressId, diagnosticSlot, cartItems]);
+  }, [deliveryAddressId, diagnosticSlot, cartItems, addresses]);
 
   useEffect(() => {
     if (testCentresLoaded) {
@@ -1316,6 +1316,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             diagnosticEmployeeCode: slotDetails?.employeeCode,
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
+          if (slotDetails == undefined) {
+            setDisplaySchedule(true);
+          }
           setLoading?.(false);
         }
 
@@ -1691,8 +1694,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.dateTextStyle}>Time</Text>
               <Text style={styles.dateTextStyle}>
-                {selectedTimeSlot
-                  ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)}`
+                {selectedTimeSlot && !!selectedTimeSlot?.slotInfo?.startTime
+                  ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
                   : 'No slot selected'}
               </Text>
             </View>
@@ -2195,7 +2198,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const disableProceedToPay = !(
     cartItems?.length > 0 &&
     forPatientId &&
-    !!((deliveryAddressId && selectedTimeSlot) || clinicId) &&
+    !!(
+      (deliveryAddressId && selectedTimeSlot && selectedTimeSlot?.slotInfo?.startTime) ||
+      clinicId
+    ) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
