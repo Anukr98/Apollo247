@@ -6,9 +6,8 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 
 const styles = StyleSheet.create({
   titleStyle: {
@@ -239,124 +238,22 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
       <Text
         onPress={() => {
           updateSelectedView(index);
-          handleOpenURL(actionLink);
+          const data = handleOpenURL(actionLink);
+          const { routeName, id, isCall, timeout, mediaSource } = data;
+          pushTheView(
+            props.navigation,
+            routeName,
+            id ? id : undefined,
+            isCall,
+            undefined,
+            mediaSource
+          );
         }}
         style={styles.btnStyle}
       >
         {`GO TO ${CTAName}`}
       </Text>
     );
-  };
-
-  const handleOpenURL = (event: any) => {
-    try {
-      let route;
-
-      const actionLink = decodeURIComponent(event);
-
-      route = actionLink.replace('apollopatients://', '');
-      route = route.replace('w://p/open_url_in_browser/', '');
-      const data = route.split('?');
-      route = data[0];
-
-      switch (route) {
-        case 'Consult':
-          pushTheView('Consult', data.length === 2 ? data[1] : undefined);
-          break;
-        case 'Medicine':
-          pushTheView('Medicine', data.length === 2 ? data[1] : undefined);
-          break;
-        case 'Test':
-          pushTheView('Test');
-          break;
-        case 'Speciality':
-          if (data.length === 2) pushTheView('Speciality', data[1]);
-          break;
-        case 'Doctor':
-          if (data.length === 2) pushTheView('Doctor', data[1]);
-          break;
-        case 'DoctorSearch':
-          pushTheView('DoctorSearch');
-          break;
-
-        case 'MedicineSearch':
-          pushTheView('MedicineSearch', data.length === 2 ? data[1] : undefined);
-          break;
-
-        case 'MedicineDetail':
-          pushTheView('MedicineDetail', data.length === 2 ? data[1] : undefined);
-          break;
-
-        case 'MedicineCart':
-          pushTheView('MedicineCart');
-          break;
-
-        default:
-          break;
-      }
-    } catch (error) {}
-  };
-
-  const pushTheView = (routeName: String, id?: String) => {
-    switch (routeName) {
-      case 'Consult':
-        props.navigation.navigate('APPOINTMENTS');
-        break;
-
-      case 'Medicine':
-        props.navigation.navigate('MEDICINES');
-        break;
-
-      case 'MedicineDetail':
-        props.navigation.navigate(AppRoutes.ProductDetailPage, {
-          sku: id,
-          movedFrom: ProductPageViewedSource.NOTIFICATION,
-        });
-        break;
-
-      case 'Test':
-        props.navigation.navigate('TESTS');
-        break;
-
-      case 'ConsultRoom':
-        props.navigation.replace(AppRoutes.ConsultRoom);
-        break;
-      case 'Speciality':
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: id ? id : '',
-        });
-
-        break;
-
-      case 'Doctor':
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: id,
-        });
-        break;
-
-      case 'DoctorSearch':
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        break;
-
-      case 'MedicineSearch':
-        if (id) {
-          const [itemId, name] = id.split(',');
-          props.navigation.navigate(AppRoutes.MedicineListing, {
-            category_id: itemId,
-            title: `${name ? name : 'Products'}`.toUpperCase(),
-          });
-        }
-        break;
-
-      case 'MedicineCart':
-        props.navigation.navigate(AppRoutes.MedicineCart, {
-          movedFrom: 'splashscreen',
-        });
-        break;
-
-      default:
-        break;
-    }
   };
 
   const renderNotificationView = () => {
