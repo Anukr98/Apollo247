@@ -15,7 +15,7 @@ import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOr
 
 interface MyOrdersScreenProps extends NavigationScreenProps<{}> {}
 const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
-  const tabs = [{ title: 'Medicine' }, { title: 'Lab Tests' }];
+  const tabs = [{ title: 'Pharmacy Orders' }, { title: 'Diagnostic Orders' }];
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
 
   const renderHeader = () => {
@@ -52,7 +52,7 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
   };
 
   const getPaymentsList = () => {
-    if (selectedTab == 'Medicine') {
+    if (selectedTab == 'Pharmacy Orders') {
       return <YourOrdersScene navigation={props.navigation} showHeader={false} />;
     } else {
       return <YourOrdersTest navigation={props.navigation} showHeader={false} />;

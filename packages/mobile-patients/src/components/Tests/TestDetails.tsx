@@ -79,7 +79,7 @@ const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search';
+  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search' | 'Deeplink';
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
@@ -129,6 +129,7 @@ export interface TestDetailsProps
     source?: string;
     comingFrom?: string;
     itemName?: string;
+    movedFrom?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -150,6 +151,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const { setLoading: setLoadingContext } = useUIElements();
 
   const movedFrom = props.navigation.getParam('comingFrom');
+  const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
 
@@ -376,7 +378,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     DiagnosticDetailsViewed(
-      testInfo?.source,
+      isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
       testInfo?.ItemName,
       testInfo?.type,
       testInfo?.ItemID,
