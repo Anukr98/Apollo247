@@ -299,7 +299,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         externalConnect: null,
         showBookAppointment: false,
         callSaveSearch: props.callSaveSearch,
-        ...params,
       });
     } else {
       props.navigation.navigate(AppRoutes.DoctorDetails, {
