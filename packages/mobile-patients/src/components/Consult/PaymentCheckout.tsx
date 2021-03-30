@@ -211,7 +211,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       : amount;
   const notSubscriberUserForCareDoctor =
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
-  console.log('isCircleDoctorOnSelectedConsultMode >>>>', isCircleDoctorOnSelectedConsultMode);
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
@@ -242,7 +241,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   useEffect(() => {
     verifyCoupon();
-    console.log('circlePlanSelected >>>>', circlePlanSelected);
   }, [circlePlanSelected]);
 
   useEffect(() => {
