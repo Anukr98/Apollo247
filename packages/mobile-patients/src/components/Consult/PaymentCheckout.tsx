@@ -757,7 +757,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     verifyCoupon(true);
     try {
       const response =
-        circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+        !circleSubscriptionId && circlePlanSelected && isCircleDoctorOnSelectedConsultMode
           ? await bookAppointmentwithSubscription()
           : await bookAppointment();
       const apptmt = g(response, 'data', 'bookAppointment', 'appointment');
