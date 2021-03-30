@@ -293,16 +293,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
 
     if (isBoth) {
-      props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
-        DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
-        DoctorId: id,
-        nextSlot: rowData ? rowData.slot : null,
-        ConsultType: props.availableModes,
+      props.navigation.navigate(AppRoutes.DoctorDetails, {
+        doctorId: id,
         callSaveSearch: props.callSaveSearch,
-        params: params,
-        availNowText: ctaBannerText?.AVAILABLE_NOW || '',
-        consultNowText: ctaBannerText?.CONSULT_NOW || '',
-        doctorType: rowData?.doctorType,
+        consultModeSelected: ConsultMode.BOTH,
+        externalConnect: null,
+        showBookAppointment: false,
       });
     } else {
       props.navigation.navigate(AppRoutes.DoctorDetails, {
