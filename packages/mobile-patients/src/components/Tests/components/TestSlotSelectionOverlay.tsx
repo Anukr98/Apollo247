@@ -36,6 +36,7 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   isTodaySlotUnavailable?: boolean;
   onSchedule: (date: Date, slotInfo: TestSlot) => void;
   itemId?: any[];
+  source?: string;
 }
 
 export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> = (props) => {
@@ -212,6 +213,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
     return (
       <CalendarView
+        source={props.source}
         styles={{ marginBottom: 16 }}
         date={dateToHighlight}
         // minDate={new Date()}
