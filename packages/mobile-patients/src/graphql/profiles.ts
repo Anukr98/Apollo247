@@ -4690,7 +4690,6 @@ export const CREATE_ORDER = gql`
     }
   }
 `;
-
 export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
@@ -4699,7 +4698,6 @@ export const GET_INTERNAL_ORDER = gql`
       txn_id
       status_id
       payment_order_id
-      payment_status
       refunds {
         status
         unique_request_id
@@ -4709,6 +4707,15 @@ export const GET_INTERNAL_ORDER = gql`
         updated_at
         amount
       }
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_INFO = gql`
+  query getAppointmentInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      payment_order_id
+      payment_status
       internal_orders {
         AppointmentDetails {
           displayId
@@ -4721,6 +4728,7 @@ export const GET_INTERNAL_ORDER = gql`
     }
   }
 `;
+
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
     processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {

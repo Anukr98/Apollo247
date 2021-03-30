@@ -221,12 +221,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ? onlineConsultSlashedPrice
         : physicalConsultSlashedPrice
       : Number(price);
-  // const planPurchaseDetails = {
-  //   TYPE: PLAN.CARE_PLAN,
-  //   PlanAmount: circlePlanSelected?.currentSellingPrice,
-  // };
-  // finalAppointmentInput['planPurchaseDetails'] =
-  //   circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
+  const planPurchaseDetails = {
+    TYPE: PLAN.CARE_PLAN,
+    PlanAmount: circlePlanSelected?.currentSellingPrice,
+  };
+  finalAppointmentInput['planPurchaseDetails'] =
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
 
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
@@ -279,7 +279,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         transaction_date_time: new Date().toISOString(),
       },
     };
-    console.log('appointmentSubscriptionInput >>>>', appointmentSubscriptionInput);
     return client.mutate({
       mutation: BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
       variables: appointmentSubscriptionInput,
@@ -305,7 +304,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       total_amount: amountToPay,
       customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
-    console.log('orderInput >>>>', JSON.stringify(orderInput));
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
       variables: { order: orderInput },
@@ -771,10 +769,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         circlePlanSelected && isCircleDoctorOnSelectedConsultMode
           ? await bookAppointmentwithSubscription()
           : await bookAppointment();
-      console.log('response >>>', JSON.stringify(response));
       const apptmt = g(response, 'data', 'bookAppointment', 'appointment');
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
-      console.log('apptmt >>>', apptmt);
       consultedWithDoctorBefore && storeAppointmentId(g(apptmt, 'id')!);
       try {
         if (callSaveSearch !== 'true') {
@@ -806,82 +802,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       handleError(error);
     }
     setLoading!(false);
-    // return;
-    // if (amountToPay == 0) {
-    //   client
-    //     .mutate<bookAppointment>({
-    //       mutation: BOOK_APPOINTMENT,
-    //       variables: {
-    //         bookAppointment: finalAppointmentInput,
-    //       },
-    //       fetchPolicy: 'no-cache',
-    //     })
-    //     .then((data) => {
-    //       const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-    //       if (consultedWithDoctorBefore) {
-    //         storeAppointmentId(g(apptmt, 'id')!);
-    //       }
-    //       // If amount is zero don't redirect to PG
-    //       try {
-    //         if (callSaveSearch !== 'true') {
-    //           saveSearchDoctor(client, doctor?.id || '', patientId);
-
-    //           saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
-    //         }
-    //       } catch (error) {}
-    //       makePayment(
-    //         g(apptmt, 'id')!,
-    //         Number(amountToPay),
-    //         g(apptmt, 'appointmentDateTime'),
-    //         g(apptmt, 'displayId')!
-    //       );
-    //     })
-    //     .catch((error) => {
-    //       CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-    //       setLoading!(false);
-    //       let message = '';
-    //       try {
-    //         message = error?.message?.split(':')?.[1]?.trim();
-    //       } catch (error) {
-    //         CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
-    //       }
-    //       if (message == 'APPOINTMENT_EXIST_ERROR') {
-    //         renderErrorPopup(
-    //           `Oops ! The selected slot is unavailable. Please choose a different one`
-    //         );
-    //       } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
-    //         renderErrorPopup(
-    //           `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
-    //         );
-    //       } else if (
-    //         message === 'OUT_OF_CONSULT_HOURS' ||
-    //         message === 'DOCTOR_SLOT_BLOCKED' ||
-    //         message === 'APPOINTMENT_BOOK_DATE_ERROR'
-    //       ) {
-    //         renderErrorPopup(
-    //           `Slot you are trying to book is no longer available. Please try a different slot.`
-    //         );
-    //       } else {
-    //         renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-    //       }
-    //     });
-    // } else {
-    //   setLoading!(false);
-    //   props.navigation.navigate(AppRoutes.ConsultCheckout, {
-    //     doctor: doctor,
-    //     tabs: tabs,
-    //     selectedTab: selectedTab,
-    //     doctorName: `${g(doctor, 'fullName')}`,
-    //     price: amountToPay,
-    //     appointmentInput: finalAppointmentInput,
-    //     couponApplied: coupon == '' ? false : true,
-    //     consultedWithDoctorBefore: consultedWithDoctorBefore,
-    //     patientId: patientId,
-    //     callSaveSearch: callSaveSearch,
-    //     planSelected: circlePlanSelected,
-    //     circleDiscount,
-    //   });
-    // }
   };
 
   const getOrderDetails = (
