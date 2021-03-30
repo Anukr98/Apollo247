@@ -295,7 +295,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               const { routeName, id, isCall, timeout, mediaSource } = data;
               getData(routeName, id, isCall, timeout, mediaSource);
               fireAppOpenedEvent(url);
-              console.log('linking', url);
             } catch (e) {}
           } else {
             settakeToConsultRoom(true);

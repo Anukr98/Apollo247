@@ -61,9 +61,6 @@ export const handleOpenURL = (event: any) => {
         }
       } catch (error) {}
 
-      console.log('route ========= ', route);
-      console.log('data.length ========== ', data.length);
-
       switch (route) {
         case 'consult':
         case 'Consult':
