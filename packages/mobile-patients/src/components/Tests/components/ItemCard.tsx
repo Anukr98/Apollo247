@@ -84,13 +84,25 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const imageUrl =
       getItem?.itemImageUrl || 'https://apolloaphstorage.blob.core.windows.net/organs/ic_liver.png';
     const name = getItem?.itemTitle;
-    const parameters = getItem?.itemParameter;
+    const inclusions = getItem?.inclusionData;
 
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
     const circleDiscount = pricesForItem?.circleDiscount;
     const specialDiscount = pricesForItem?.specialDiscount;
     const discount = pricesForItem?.discount;
+
+    const getMandatoryParamter =
+      !!inclusions &&
+      inclusions?.length > 0 &&
+      inclusions?.map((inclusion: any) =>
+        inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+      );
+
+    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
+      (prevVal: any, curr: any) => prevVal + curr?.length,
+      0
+    );
 
     const isAddedToCart = !!cartItems?.find(
       (items) => Number(items?.id) == Number(getItem?.itemId)
@@ -129,8 +141,11 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
               {name}
             </Text>
           </View>
-          {parameters ? (
-            <Text style={styles.parameterText}>{parameters} Parameters included</Text>
+          {getMandatoryParameterCount > 0 ? (
+            <Text style={styles.parameterText}>
+              {getMandatoryParameterCount}{' '}
+              {getMandatoryParameterCount == 1 ? 'Parameter' : 'Parameters'} included
+            </Text>
           ) : null}
           <Spearator style={styles.horizontalSeparator} />
           {renderPricesView(pricesForItem, packageMrpForItem)}
@@ -458,8 +473,7 @@ const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
-    height: 210,
-    // width: 180,
+    height: 230, //210
     width: Dimensions.get('window').width * 0.45,
     marginHorizontal: 4,
     marginRight: 10,

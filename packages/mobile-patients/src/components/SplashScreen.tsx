@@ -811,7 +811,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'Test':
-        props.navigation.navigate('TESTS');
+        props.navigation.navigate('TESTS', {
+          movedFrom: 'deeplink',
+        });
         break;
 
       case 'ConsultRoom':
@@ -912,6 +914,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'TestDetails':
         props.navigation.navigate(AppRoutes.TestDetails, {
           itemId: id,
+          movedFrom: 'deeplink',
         });
         break;
 
