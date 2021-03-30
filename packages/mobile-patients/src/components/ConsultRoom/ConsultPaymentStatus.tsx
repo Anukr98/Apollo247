@@ -166,7 +166,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
   const { setLocationDetails, locationDetails, locationForDiagnostics } = useAppCommonData();
   const { clearDiagnoticCartInfo } = useDiagnosticsCart();
-
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -261,13 +260,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     try {
       const response = await getOrderInfo();
       const txnStatus = response?.data?.getOrderInternal?.payment_status || PAYMENT_STATUS.PENDING;
-      const displayId =
-        response?.data?.getOrderInternal?.internal_orders?.[0]?.AppointmentDetails?.displayId || '';
+      const appmtDetails = response?.data?.getOrderInternal?.internal_orders?.find(
+        (item: any) => item?.AppointmentDetails
+      )?.AppointmentDetails;
+      const displayId = appmtDetails?.displayId || '';
       firePaymentStatusEvent(txnStatus);
       if (txnStatus == success) {
         locationDetails && saveLocationWithConsultation(locationDetails);
-        const amountBreakup =
-          response?.data?.getOrderInternal?.internal_orders?.[0]?.AppointmentDetails?.amountBreakup;
+        const amountBreakup = appmtDetails?.amountBreakup;
         if (isCircleDoctor && amountBreakup?.slashed_price) {
           setAmountBreakup(amountBreakup);
         }
