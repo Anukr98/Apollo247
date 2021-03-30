@@ -103,7 +103,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     return () => eventListener.remove();
   }, []);
 
-  console.log('businessLine >>>', businessLine);
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
       return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();

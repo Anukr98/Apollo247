@@ -56,7 +56,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import firebase from 'react-native-firebase';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -109,10 +108,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import {
-  CreateUserSubscription,
-  CreateUserSubscriptionVariables,
-} from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
 import {
   one_apollo_store_code,
   PaymentStatus,
@@ -629,7 +624,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
-    console.log('datadata', data);
     return new Promise((res, rej) => {
       validateConsultCoupon(data)
         .then((resp: any) => {
@@ -671,7 +665,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('validatingConsultCoupon', error);
-          console.log(error);
           rej();
           renderErrorPopup(string.common.tryAgainLater);
         });
@@ -887,7 +880,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
         let eventAttributes = getConsultationBookedEventAttributes(
           paymentDateTime,
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
@@ -955,7 +947,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         }
       })
       .catch((e) => {
-        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setLoading && setLoading(false);
         props.navigation.navigate('APPOINTMENTS');
       });
@@ -979,8 +970,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
-
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -1086,12 +1075,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
     whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
-        console.log(data, 'whatsAppUpdateAPICall');
         getPatientApiCall();
       })
       .catch((e: any) => {
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
-        console.log('error', e);
       });
   };
 
