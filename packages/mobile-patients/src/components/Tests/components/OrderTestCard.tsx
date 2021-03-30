@@ -20,8 +20,8 @@ import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
 
-const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
 interface OrderTestCardProps {
@@ -302,8 +302,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderMidView()}
         {!!props.ordersData && props.ordersData?.length > 0 ? renderTestListView() : null}
         {!!props.ordersData && props.ordersData?.length > 0 ? renderPreparationData() : null}
-        {!!props.orderLevelStatus &&
-        props.orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+        {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)
           ? null
           : renderBottomView()}
         {renderCTAsView()}

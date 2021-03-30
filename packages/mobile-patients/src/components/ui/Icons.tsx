@@ -1375,6 +1375,10 @@ export const BlueTick: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.png')} />
 );
 
+export const HdfcBankLogo: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/HDFC_logo.png')} />
+);
+
 export const CircleLogo: React.FC<IconProps> = (props) => (
   <IconBase resizeMode="contain" size="sm" {...props} source={require('./icons/circleLogo.png')} />
 );

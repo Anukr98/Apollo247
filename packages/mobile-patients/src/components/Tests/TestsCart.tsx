@@ -112,8 +112,10 @@ import {
   Keyboard,
   Dimensions,
   Platform,
+  FlatList,
+  ScrollView,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import Geolocation from 'react-native-geolocation-service';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
 import {
@@ -179,6 +181,7 @@ import {
   editProfile,
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
+import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   getNearestArea,
@@ -301,6 +304,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     diagnosticServiceabilityData,
     diagnosticLocation,
     setDoctorJoinedChat,
+    isDiagnosticLocationServiceable,
   } = useAppCommonData();
 
   const shopCart = useShoppingCart();
@@ -331,6 +335,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
+  const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
@@ -384,12 +389,49 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       );
       if (res?.data?.success) {
         const result = g(res, 'data', 'data');
+        const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
+        const _itemIds = widgetsData?.map((item) => Number(item?.itemId));
+        client
+          .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+            query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+            context: {
+              sourceHeaders,
+            },
+            variables: { cityID: Number(addressCityId) || 9, itemIDs: _itemIds },
+            fetchPolicy: 'no-cache',
+          })
+          .then(({ data }) => {
+            const diagnosticItems =
+              g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+            let _diagnosticWidgetData: any = [];
+            widgetsData?.forEach((_widget) => {
+              diagnosticItems?.forEach((_diagItems) => {
+                if (_widget?.itemId == _diagItems?.itemId) {
+                  _diagnosticWidgetData?.push({
+                    ..._widget,
+                    diagnosticPricing: _diagItems?.diagnosticPricing,
+                    packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
+                  });
+                }
+              });
+            });
+            setAlsoAddListData(_diagnosticWidgetData);
+          })
+          .catch((error) => {
+            setAlsoAddListData([]);
+            CommonBugFender(
+              'TestsCart_fetchTestReportGenDetails_getDiagnosticsAvailability',
+              error
+            );
+          });
       } else {
+        setAlsoAddListData([]);
         setReportGenDetails([]);
       }
     } catch (e) {
       CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
+      setAlsoAddListData([]);
       setReportGenDetails([]);
     }
   };
@@ -422,7 +464,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItemsWithId?.length > 0) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
-      fetchTestReportGenDetails(cartItemsWithId);
     }
   }, [diagnosticServiceabilityData]);
 
@@ -515,6 +556,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   useEffect(() => {
+    if (cartItems?.length > 0) {
+      if (cartItemsWithId?.length > 0) {
+        fetchTestReportGenDetails(cartItemsWithId);
+      }
+    }
+  }, [cartItems?.length]);
+
+  useEffect(() => {
     setPatientId!(currentPatientId!);
   }, [currentPatientId]);
 
@@ -524,6 +573,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setDiagnosticAreas?.([]);
       setAreaSelected?.({});
       setDeliveryAddressId?.('');
+      setHcCharges?.(0);
+      setLoading?.(false);
     }
     if (deliveryAddressId) {
       if (diagnosticSlot) {
@@ -774,7 +825,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return res;
   };
 
-  const getAreas = async () => {
+  const getAreas = async (_itemIds?: number[]) => {
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
@@ -784,7 +835,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const getAreaObject = g(data, 'getNearestArea', 'area');
       let obj = { key: getAreaObject?.id!, value: getAreaObject?.area! };
       setAreaSelected?.(obj);
-      checkSlotSelection(obj);
+      checkSlotSelection(obj, undefined, undefined, _itemIds);
+      setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       CommonBugFender('TestsCart_', e);
 
@@ -1076,7 +1128,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
    * fetching the areas
    */
 
-  const fetchAreasForAddress = (id: string, pincode: string, shouldCallApi?: boolean) => {
+  const fetchAreasForAddress = (
+    id: string,
+    pincode: string,
+    shouldCallApi?: boolean,
+    _itemIds?: number[]
+  ) => {
     setLoading?.(true);
 
     //wrt to address
@@ -1093,7 +1150,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           pincode: parseInt(pincode!),
-          itemIDs: cartItemsWithId,
+          itemIDs: _itemIds || cartItemsWithId,
         },
       })
       .then(({ data }) => {
@@ -1268,7 +1325,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const checkSlotSelection = (
     item: areaObject | DiagnosticArea | any,
     changedDate?: Date,
-    comingFrom?: string
+    comingFrom?: string,
+    _itemIds?: number[]
   ) => {
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
     setLoading?.(true);
@@ -1286,7 +1344,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: Number((item as any).key!),
-          itemIds: cartItemsWithId,
+          itemIds: _itemIds || cartItemsWithId,
         },
       })
       .then(({ data }) => {
@@ -2913,10 +2971,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
-    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
-    const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
-    setPinCode!(pinCode);
-    setLoading!(true);
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
+    setPinCode?.(pinCode);
+    setLoading?.(true);
+    let newGrandTotal = grandTotal - hcCharges;
     try {
       const HomeCollectionChargesApi = await client.query<
         getDiagnosticsHCCharges,
@@ -2928,20 +2989,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         variables: {
           itemIDs: itemWithId,
-          totalCharges: grandTotal, //removed cartTotal due APP-7386
+          totalCharges: newGrandTotal, //removed cartTotal due APP-7386
           slotID: slotVal!,
-          pincode: parseInt(pinCodeFromAddress, 10),
+          pincode: Number(pinCodeFromAddress),
         },
         fetchPolicy: 'no-cache',
       });
 
       let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
       if (getCharges != null) {
-        setHcCharges!(getCharges);
+        setHcCharges?.(getCharges);
       }
-      setLoading!(false);
+      setLoading?.(false);
     } catch (error) {
-      setLoading!(false);
+      setLoading?.(false);
       // renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
     }
   };
@@ -3229,6 +3290,47 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) : null;
   };
 
+  const _fetchAreasAndReportGenDetails = (_item: any, callReportGen?: boolean) => {
+    const _cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
+    _cartItemsWithId?.push(Number(_item?.itemId));
+    if (deliveryAddressId != '') {
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
+      );
+      showAreaSelection
+        ? fetchAreasForAddress(
+            addresses?.[selectedAddressIndex]?.id,
+            addresses?.[selectedAddressIndex]?.zipcode!,
+            showAreaSelection,
+            callReportGen ? _cartItemsWithId : undefined
+          )
+        : getAreas(callReportGen ? _cartItemsWithId : undefined);
+    }
+  };
+
+  const renderAlsoAddItems = () => {
+    return (
+      <View>
+        {alsoAddListData?.length > 0 ? renderAlsoAddListHeader() : null}
+        <ItemCard
+          onPressAddToCartFromCart={(item) => _fetchAreasAndReportGenDetails(item, true)}
+          onPressRemoveItemFromCart={(item) => _fetchAreasAndReportGenDetails(item)}
+          data={alsoAddListData}
+          isCircleSubscribed={isDiagnosticCircleSubscription}
+          isServiceable={isDiagnosticLocationServiceable}
+          isVertical={false}
+          navigation={props.navigation}
+          source={'Cart Page'}
+          sourceScreen={AppRoutes.TestsCart}
+        />
+      </View>
+    );
+  };
+
+  const renderAlsoAddListHeader = () => {
+    return <Text style={styles.alsoAddListHeaderTextStyle}>{'YOU SHOULD ALSO ADD'}</Text>;
+  };
+
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
@@ -3286,8 +3388,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {renderPatientDetails()}
             {renderItemsInCart()}
             {renderTotalCharges()}
+            {cartItems?.length > 0 ? renderAlsoAddItems() : null}
           </View>
-          <View style={{ height: 120 }} />
+          <View style={{ height: cartItems?.length > 0 ? 120 : 70 }} />
         </ScrollView>
         {renderTestProceedBar()}
       </SafeAreaView>
@@ -3447,5 +3550,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 16,
     marginTop: 6,
+  },
+  alsoAddListHeaderTextStyle: {
+    ...text('B', 13, SHERPA_BLUE, 1, 16.9),
+    marginHorizontal: 20,
+    marginTop: 24,
   },
 });

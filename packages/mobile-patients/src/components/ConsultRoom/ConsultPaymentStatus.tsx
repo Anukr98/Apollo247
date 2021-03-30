@@ -64,7 +64,7 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   getAppointmentData,
@@ -824,7 +824,27 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           if (appointmentData) {
             try {
               if (appointmentData[0]!.doctorInfo !== null) {
-                moveToHome(navigateToChatRoom, appointmentData);
+                if (!navigateToChatRoom) {
+                  moveToHome(navigateToChatRoom, appointmentData);
+                } else {
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [
+                        NavigationActions.navigate({
+                          routeName: AppRoutes.ConsultRoom,
+                          params: {
+                            isFreeConsult: navigateToChatRoom ? false : true,
+                            doctorName: doctorName,
+                            appointmentData: appointmentData[0],
+                            skipAutoQuestions: doctor?.skipAutoQuestions,
+                          },
+                        }),
+                      ],
+                    })
+                  );
+                }
                 if (navigateToChatRoom) {
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],

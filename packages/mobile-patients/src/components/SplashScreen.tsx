@@ -8,8 +8,10 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  Text,
   DeviceEventEmitter,
   NativeModules,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -288,6 +290,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.getInitialURL()
         .then((url) => {
           setBugFenderLog('DEEP_LINK_URL', url);
+
           if (url) {
             try {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
