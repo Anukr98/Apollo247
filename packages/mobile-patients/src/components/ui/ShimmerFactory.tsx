@@ -222,6 +222,21 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     paddingTop: 0,
   },
+
+  oneApolloMemebershipCard: {
+    height: 175,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  oneApolloMemebershipCardFooter: {
+    height: 50,
+    borderRadius: 10,
+    width: '70%',
+    marginTop: -35,
+    marginHorizontal: 50,
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -473,6 +488,23 @@ export const renderAppointmentShimmer = () => {
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
         shimmerStyle={styles.appointMentBlock}
+      />
+    </View>
+  );
+};
+
+export const renderOneApolloMembershipShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.oneApolloMemebershipCard}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.WHITE]}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.oneApolloMemebershipCardFooter}
       />
     </View>
   );

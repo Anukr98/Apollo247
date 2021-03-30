@@ -23,6 +23,7 @@ import { dataSavedUserID, g } from '../../helpers/helperFunctions';
 import { MyMembership } from './MyMembership';
 import { MyTransactions } from './MyTransactions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { renderOneApolloMembershipShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -138,6 +139,9 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   };
 
   const renderMembershipCard = () => {
+    if (loading) {
+      return renderOneApolloMembershipShimmer();
+    }
     return (
       <View style={styles.membership}>
         <ImageBackground
@@ -216,7 +220,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         {renderOneApolloHeader()}
         {renderScreen()}
       </ScrollView>
-      {loading && <Spinner />}
+
     </SafeAreaView>
   );
 };

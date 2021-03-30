@@ -388,21 +388,25 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
       CalltheNearestPharmacyEvent();
       globalLoading!(true);
+      setPageLoading!(true);
+
       callToExotelApi(param)
         .then((response) => {
           hideAphAlert!();
           globalLoading!(false);
+          setPageLoading!(false);
         })
         .catch((error) => {
           hideAphAlert!();
           globalLoading!(false);
+          setPageLoading!(false);
           showAphAlert!({
             title: string.common.uhOh,
             description: 'We could not connect to the pharmacy now. Please try later.',
           });
         });
     };
-    setPageLoading!(true);
+
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
         const { servicable, axdcCode } = response;
@@ -500,6 +504,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .catch((e) => {
         CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
         setServiceabilityMsg('Sorry, unable to check serviceability.');
+        setPageLoading!(false);
       });
   };
 
