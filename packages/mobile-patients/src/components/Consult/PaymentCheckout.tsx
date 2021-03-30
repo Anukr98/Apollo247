@@ -9,6 +9,7 @@ import {
   Linking,
   TouchableOpacity,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -37,6 +38,8 @@ import {
   BookAppointmentInput,
   DoctorType,
   PLAN,
+  OrderCreate,
+  OrderVerticals,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -53,7 +56,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import firebase from 'react-native-firebase';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -65,15 +67,22 @@ const { width } = Dimensions.get('window');
 import { useApolloClient } from 'react-apollo-hooks';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import moment from 'moment';
-import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   saveSearchDoctor,
   saveSearchSpeciality,
   whatsAppUpdateAPICall,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  bookAppointment,
+  bookAppointmentVariables,
+  bookAppointment_bookAppointment_appointment,
+} from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
   BOOK_APPOINTMENT,
+  BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+  CREATE_USER_SUBSCRIPTION,
+  CREATE_INTERNAL_ORDER,
   MAKE_APPOINTMENT_PAYMENT,
   GET_APPOINTMENT_DATA,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -93,6 +102,17 @@ import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  one_apollo_store_code,
+  PaymentStatus,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -117,6 +137,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     hdfcStatus,
     circleStatus,
   } = useAppCommonData();
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
@@ -164,7 +185,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
     : physicalConsultDiscountedPrice;
-
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
@@ -176,9 +198,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           couponDiscountFees +
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
+  const consultAmounttoPay =
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice - couponDiscountFees
+        : physicalConsultSlashedPrice - couponDiscountFees
+      : amount;
   const notSubscriberUserForCareDoctor =
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
-
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
@@ -214,6 +241,67 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   useEffect(() => {
     fetchUserSpecificCoupon();
   }, []);
+
+  const bookAppointment = () => {
+    const appointmentInput: bookAppointmentVariables = {
+      bookAppointment: finalAppointmentInput,
+    };
+    return client.mutate<bookAppointment, bookAppointmentVariables>({
+      mutation: BOOK_APPOINTMENT,
+      variables: appointmentInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const bookAppointmentwithSubscription = () => {
+    const appointmentSubscriptionInput = {
+      bookAppointment: finalAppointmentInput,
+      userSubscription: {
+        mobile_number: currentPatient?.mobileNumber,
+        plan_id: planId,
+        sub_plan_id: circlePlanSelected?.subPlanId,
+        storeCode,
+        FirstName: currentPatient?.firstName,
+        LastName: currentPatient?.lastName,
+        payment_reference: {
+          amount_paid: Number(circlePlanSelected?.currentSellingPrice),
+          payment_status: PaymentStatus.PENDING,
+          purchase_via_HC: false,
+          HC_used: 0,
+        },
+        transaction_date_time: new Date().toISOString(),
+      },
+    };
+    return client.mutate({
+      mutation: BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+      variables: appointmentSubscriptionInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const createOrderInternal = (orderId: string, subscriptionId?: string) => {
+    const orders: OrderVerticals = {
+      consult: [{ order_id: orderId, amount: consultAmounttoPay, patient_id: currentPatient?.id }],
+    };
+    if (subscriptionId) {
+      orders['subscription'] = [
+        {
+          order_id: subscriptionId,
+          amount: Number(circlePlanSelected?.currentSellingPrice),
+          patient_id: currentPatient?.id,
+        },
+      ];
+    }
+    const orderInput: OrderCreate = {
+      orders: orders,
+      total_amount: amountToPay,
+      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
+    };
+    return client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      variables: { order: orderInput },
+    });
+  };
 
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Consult')
@@ -536,7 +624,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
-    console.log('datadata', data);
     return new Promise((res, rej) => {
       validateConsultCoupon(data)
         .then((resp: any) => {
@@ -578,7 +665,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('validatingConsultCoupon', error);
-          console.log(error);
           rej();
           renderErrorPopup(string.common.tryAgainLater);
         });
@@ -666,85 +752,107 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.PaymentCheckout, 'ConsultOverlay onSubmitBookAppointment clicked');
+    setLoading!(true);
     // again check coupon is valid or not
     verifyCoupon(true);
-    console.log('finalAppointmentInput', finalAppointmentInput);
-    if (amountToPay == 0) {
-      setLoading!(true);
-      client
-        .mutate<bookAppointment>({
-          mutation: BOOK_APPOINTMENT,
-          variables: {
-            bookAppointment: finalAppointmentInput,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-          if (consultedWithDoctorBefore) {
-            storeAppointmentId(g(apptmt, 'id')!);
-          }
-          // If amount is zero don't redirect to PG
+    try {
+      const response =
+        !circleSubscriptionId && circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+          ? await bookAppointmentwithSubscription()
+          : await bookAppointment();
+      const apptmt = g(response, 'data', 'bookAppointment', 'appointment');
+      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
+      consultedWithDoctorBefore && storeAppointmentId(g(apptmt, 'id')!);
+      try {
+        if (callSaveSearch !== 'true') {
+          saveSearchDoctor(client, doctor?.id || '', patientId);
+          saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
+        }
+      } catch (error) {}
+      if (amountToPay == 0) {
+        makePayment(
+          apptmt?.id!,
+          Number(amountToPay),
+          apptmt?.appointmentDateTime,
+          `${apptmt?.displayId!}`
+        );
+      } else {
+        const data = await createOrderInternal(apptmt?.id!, subscriptionId);
+        if (data?.data?.createOrderInternal?.success) {
+          const isInitiated: boolean = await isSDKInitialised();
+          !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+          props.navigation.navigate(AppRoutes.PaymentMethods, {
+            paymentId: data?.data?.createOrderInternal?.payment_order_id!,
+            amount: amountToPay,
+            orderDetails: getOrderDetails(apptmt),
+            businessLine: 'consult',
+          });
+        }
+      }
+    } catch (error) {
+      handleError(error);
+    }
+    setLoading!(false);
+  };
 
-          try {
-            if (callSaveSearch !== 'true') {
-              saveSearchDoctor(client, doctor?.id || '', patientId);
+  const getOrderDetails = (
+    apptmt: bookAppointment_bookAppointment_appointment | null | undefined
+  ) => {
+    const orderDetails = {
+      consultedWithDoctorBefore: consultedWithDoctorBefore,
+      doctorName: doctor?.fullName,
+      doctorID: doctor?.id,
+      doctor: doctor,
+      orderId: apptmt?.id,
+      price: amountToPay,
+      appointmentInput: appointmentInput,
+      appointmentDateTime: appointmentInput.appointmentDateTime,
+      appointmentType: appointmentInput.appointmentType,
+      coupon: appointmentInput.couponCode,
+      webEngageEventAttributes: getConsultationBookedEventAttributes(
+        apptmt?.appointmentDateTime,
+        apptmt?.id!
+      ),
+      appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+        apptmt?.id!,
+        `${apptmt?.displayId!}`
+      ),
+      fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
+        apptmt?.appointmentDateTime,
+        apptmt?.id!
+      ),
+      planSelected: circlePlanSelected,
+      isCircleDoctor: isCircleDoctorOnSelectedConsultMode,
+      isDoctorsOfTheHourStatus,
+      selectedTab,
+    };
+    return orderDetails;
+  };
 
-              saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
-            }
-          } catch (error) {}
-          makePayment(
-            g(apptmt, 'id')!,
-            Number(amountToPay),
-            g(apptmt, 'appointmentDateTime'),
-            g(apptmt, 'displayId')!
-          );
-        })
-        .catch((error) => {
-          CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-          setLoading!(false);
-          let message = '';
-          try {
-            message = error?.message?.split(':')?.[1]?.trim();
-          } catch (error) {
-            CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
-          }
-          if (message == 'APPOINTMENT_EXIST_ERROR') {
-            renderErrorPopup(
-              `Oops ! The selected slot is unavailable. Please choose a different one`
-            );
-          } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
-            renderErrorPopup(
-              `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
-            );
-          } else if (
-            message === 'OUT_OF_CONSULT_HOURS' ||
-            message === 'DOCTOR_SLOT_BLOCKED' ||
-            message === 'APPOINTMENT_BOOK_DATE_ERROR'
-          ) {
-            renderErrorPopup(
-              `Slot you are trying to book is no longer available. Please try a different slot.`
-            );
-          } else {
-            renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-          }
-        });
-    } else {
-      setLoading!(false);
-      props.navigation.navigate(AppRoutes.ConsultCheckout, {
-        doctor: doctor,
-        tabs: tabs,
-        selectedTab: selectedTab,
-        doctorName: `${g(doctor, 'fullName')}`,
-        price: amountToPay,
-        appointmentInput: finalAppointmentInput,
-        couponApplied: coupon == '' ? false : true,
-        consultedWithDoctorBefore: consultedWithDoctorBefore,
-        patientId: patientId,
-        callSaveSearch: callSaveSearch,
-        planSelected: circlePlanSelected,
-        circleDiscount,
-      });
+  const handleError = (error: any) => {
+    CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
+    setLoading!(false);
+    let message = '';
+    message = error?.message?.split(':')?.[1]?.trim();
+    switch (message) {
+      case 'APPOINTMENT_EXIST_ERROR':
+        renderErrorPopup(`Oops ! The selected slot is unavailable. Please choose a different one`);
+        break;
+      case 'BOOKING_LIMIT_EXCEEDED':
+        renderErrorPopup(
+          `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+        );
+        break;
+      case 'OUT_OF_CONSULT_HOURS':
+      case 'DOCTOR_SLOT_BLOCKED':
+      case 'APPOINTMENT_BOOK_DATE_ERROR':
+        renderErrorPopup(
+          `Slot you are trying to book is no longer available. Please try a different slot.`
+        );
+        break;
+      default:
+        renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+        break;
     }
   };
 
@@ -772,7 +880,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
         let eventAttributes = getConsultationBookedEventAttributes(
           paymentDateTime,
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
@@ -840,7 +947,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         }
       })
       .catch((e) => {
-        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setLoading && setLoading(false);
         props.navigation.navigate('APPOINTMENTS');
       });
@@ -857,6 +963,41 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'consult id': id,
       displayId: displayId,
       'coupon applied': coupon ? true : false,
+      'Circle discount': circleDiscount,
+    };
+    return eventAttributes;
+  };
+
+  const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
+      name: g(doctor, 'fullName')!,
+      specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
+      category: g(doctor, 'doctorType')!, // send doctorType
+      time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
+      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
+      clinic_name: g(doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
+      clinic_address:
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
+      Patient_Name: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      Patient_UHID: g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      Mobile_Number: g(currentPatient, 'mobileNumber'),
+      Customer_ID: g(currentPatient, 'id'),
+      Consult_ID: id,
+      af_revenue: price,
+      af_currency: 'INR',
       'Circle discount': circleDiscount,
     };
     return eventAttributes;
@@ -934,12 +1075,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
     whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
-        console.log(data, 'whatsAppUpdateAPICall');
         getPatientApiCall();
       })
       .catch((e: any) => {
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
-        console.log('error', e);
       });
   };
 
