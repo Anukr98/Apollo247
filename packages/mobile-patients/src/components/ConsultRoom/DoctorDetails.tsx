@@ -95,7 +95,6 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import AsyncStorage from '@react-native-community/async-storage';
 
 const { height, width } = Dimensions.get('window');
 
@@ -367,7 +366,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
-  const [isCircleMember, setIsCircleMember] = useState<boolean>(false);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -422,15 +420,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     if (!currentPatient) {
       getPatientApiCall();
     }
-    async function fetchData() {
-      const circleMember = await AsyncStorage.getItem('isCircleMember');
-      if (circleMember == 'yes') {
-        setIsCircleMember(true);
-      } else {
-        setIsCircleMember(false);
-      }
-    }
-    fetchData();
   }, [currentPatient]);
 
   useEffect(() => {
@@ -1029,11 +1018,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </View>
             </View>
           )}
-          {isCircleDoctor &&
-            !showCircleSubscribed &&
-            defaultCirclePlan &&
-            !isCircleMember &&
-            renderUpgradeToCircle()}
+          {isCircleDoctor && !showCircleSubscribed && defaultCirclePlan && renderUpgradeToCircle()}
           {isCircleDoctor &&
             !defaultCirclePlan &&
             circlePlanSelected &&
