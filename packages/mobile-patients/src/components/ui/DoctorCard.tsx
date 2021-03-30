@@ -295,10 +295,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     if (isBoth) {
       props.navigation.navigate(AppRoutes.DoctorDetails, {
         doctorId: id,
+        callSaveSearch: props.callSaveSearch,
         consultModeSelected: ConsultMode.BOTH,
         externalConnect: null,
         showBookAppointment: false,
-        callSaveSearch: props.callSaveSearch,
       });
     } else {
       props.navigation.navigate(AppRoutes.DoctorDetails, {

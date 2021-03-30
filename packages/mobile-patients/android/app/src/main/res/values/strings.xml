@@ -15,5 +15,5 @@
     <string name="truecaller_appkey">IZ1oT03fb161e4b594117ab8b7220fd9aed97</string>
 
     <!-- play store key -->
-    <!-- <string name="truecaller_appkey">ZI9TSf24b50579dfd4a39bfd1156b07189ac2</string> -->
+    <string name="truecaller_appkey">ZI9TSf24b50579dfd4a39bfd1156b07189ac2</string>
 </resources>
