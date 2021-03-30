@@ -29,6 +29,8 @@ import {
   VideoInactiveIcon,
   WhiteCallIcon,
   UserThumbnailIcon,
+  CopyIcon,
+  ExternalMeetingVideoCall,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -135,6 +137,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Clipboard,
 } from 'react-native';
 import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
@@ -187,6 +190,8 @@ import { CancelAppointmentPopup } from '@aph/mobile-patients/src/components/Cons
 import { CancelReasonPopup } from '@aph/mobile-patients/src/components/Consult/CancelReasonPopup';
 import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consult/CheckReschedulePopup';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
+import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
 interface OpentokStreamObject {
   connection: {
     connectionId: string;
@@ -653,6 +658,64 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 2,
   },
+  headerText: {
+    marginHorizontal: 5,
+    ...theme.fonts.IBMPlexSansMedium(13),
+    lineHeight: 17,
+    color: '#01475B',
+    marginBottom: 10,
+    textAlign: 'center',
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  externalMeetingLinkContainer: {
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+    maxWidth: '85%',
+  },
+
+  externalMeetingLinkImage: {
+    alignSelf: 'center',
+    width: 78,
+    height: 58,
+    marginTop: 15,
+    marginBottom: 11,
+  },
+  externalMeetingLinkTextContainer: {
+    backgroundColor: '#0087ba',
+    marginLeft: 38,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+
+  externalMeetingLinkText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
+    textAlign: 'center',
+  },
+  externalMeetingLinkSubText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
+    textAlign: 'center',
+    marginVertical: 12,
+  },
+  externalMeetingLinkCTAWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  externalMeetingLinkMeetingCTAContainer: {
+    backgroundColor: theme.colors.WHITE,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  exeternalMeetingLinkMeetingCTAText: {
+    ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
+    textTransform: 'uppercase',
+  },
+  externalMeetingLinkTnC: {
+    ...theme.viewStyles.text('M', 8, theme.colors.WHITE),
+    marginVertical: 9,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -664,6 +727,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
   const [callMinimize, setCallMinimize] = useState<boolean>(false);
+  const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 4;
+  const [availableMessages, setavailableMessages] = useState(followChatLimit);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
@@ -681,7 +746,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
-
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -871,6 +935,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const rescheduleOrCancelAppointment = '^^#RescheduleOrCancelAppointment';
   const appointmentStartsInFifteenMin = '^^#appointmentStartsInFifteenMin';
   const appointmentStartsInTenMin = '^^#appointmentStartsInTenMin';
+  const sectionHeader = '^^#sectionHeader';
+  const followUpChatGuideLines = '^^#followUpChatGuideLines';
+  const externalMeetingLink = '^^#externalMeetingLink';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -1275,6 +1342,51 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     isProgressBarVisible.current = appointmentData.status !== STATUS.COMPLETED;
   }, []);
 
+  useEffect(() => {
+    messages?.length && analyzeMessages(messages);
+  }, [messages]);
+  const [guidelinesAdded, setguidelinesAdded] = useState<boolean>(false);
+
+  function analyzeMessages(messages: any) {
+    const prescUploadIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult);
+    messages.reverse();
+    const guideLinesIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
+    messages.reverse();
+    if (prescUploadIndex == -1) {
+      return;
+    } else if (prescUploadIndex != -1 && guideLinesIndex == -1) {
+      sendFollowUpChatGuideLines();
+      return;
+    }
+    const lastDocMsgIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && !item?.automatedText);
+    messages.reverse();
+    let msgsByPatient = 0;
+    if (lastDocMsgIndex && lastDocMsgIndex < prescUploadIndex) {
+      const latestFollowUpChat = messages.slice(-lastDocMsgIndex);
+      msgsByPatient = latestFollowUpChat.filter(
+        (item: any) => item?.id == patientId && item?.message != imageconsult
+      )?.length;
+    } else if (lastDocMsgIndex == 0 || guideLinesIndex == 0) {
+      msgsByPatient = 0;
+    } else {
+      const latestFollowUpChat = messages.slice(-guideLinesIndex);
+      msgsByPatient = latestFollowUpChat.filter(
+        (item: any) => item?.id == patientId && item?.message != imageconsult
+      )?.length;
+    }
+    msgsByPatient >= 0 && msgsByPatient <= followChatLimit
+      ? setavailableMessages(followChatLimit - msgsByPatient)
+      : msgsByPatient > followChatLimit
+      ? setavailableMessages(0)
+      : setavailableMessages(followChatLimit);
+  }
+
   const fetchDoctorDetails = async () => {
     const input = {
       id: doctorId,
@@ -1542,8 +1654,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           sendDate: new Date(),
         },
       ];
+
       const storedAppointmentData = (await AsyncStorage.getItem('saveAppointment')) || '';
       const saveAppointmentData = storedAppointmentData ? JSON.parse(storedAppointmentData) : '';
+
       if (saveAppointmentData) {
         const result = saveAppointmentData.filter((obj: any) => {
           return obj.appointmentId === appointmentData.id;
@@ -1558,10 +1672,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               moment(saveAppointmentData[index].sendDate).diff(new Date())
             );
             const diffInMins = diff.asMinutes();
-            if (diffInMins <= -10) {
+            if (diffInMins <= -30) {
               sendDcotorChatMessage();
               saveAppointmentData[index].sendDate = new Date();
               saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
+            } else {
+              sendAutoMsg();
             }
 
             AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
@@ -1578,22 +1694,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } catch (error) {}
   };
 
+  const sendAutoMsg = () => {
+    const prescUploadIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult);
+    messages.reverse();
+    const guideLinesIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
+    messages.reverse();
+    if (prescUploadIndex == -1) {
+      return;
+    }
+    const lastDocMsgIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.sentBy == 'DOCTOR');
+    messages.reverse();
+    if (guideLinesIndex && prescUploadIndex && lastDocMsgIndex == 0) {
+      sendDcotorChatMessage();
+    }
+  };
+
   const sendDcotorChatMessage = () => {
-    pubnub.publish(
-      {
-        channel: channel,
-        message: {
-          message: doctorAutoResponse,
-          automatedText: `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of any emergency, it is advisable to contact a nearby hospital!`,
-          id: doctorId,
-          isTyping: true,
-          messageDate: new Date(),
-        },
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {}
-    );
+    const automatedText = `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. You will get a response from the doctor at the earliest.`;
+    sendMessage(sectionHeader, doctorId, automatedText);
   };
 
   const setSendAnswers = (val: number) => {
@@ -1875,7 +1999,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setTimeout(
       () => {
         const successSteps = [
-          'Please describe your medical condition and upload pictures if required ',
+          'Please describe your medical condition and upload pictures/reports if required. The same will be available for your reference in the health records section',
         ];
         pubnub.publish(
           {
@@ -2276,7 +2400,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (!JSON.parse(data || 'false')) {
             setSnackbarState(true);
             callEndWebengageEvent('Network');
-            setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
           }
         });
       }, 2000);
@@ -2433,6 +2556,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         if (messageType == followupconsult) {
           // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
+          sendFollowUpChatGuideLines();
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
         } else if (messageType == stopConsultJr) {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
@@ -2472,6 +2596,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     };
   }, []);
+
+  const sendFollowUpChatGuideLines = () => {
+    if (guidelinesAdded) {
+      return;
+    }
+    setguidelinesAdded(true);
+    const headerText = `If you have further queries related to your consultation, you may reach out to ${appointmentData.doctorInfo.displayName} via texts for the next 7 days.`;
+    sendMessage(sectionHeader, doctorId, headerText);
+    setTimeout(() => {
+      sendMessage(followUpChatGuideLines, doctorId);
+    }, 1000);
+  };
+
+  const sendMessage = (message: string, id: string, automatedText?: string) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: {
+          message: message,
+          automatedText: automatedText,
+          id: id,
+          isTyping: true,
+          messageDate: new Date(),
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {}
+    );
+  };
 
   const HereNowPubnub = (message: string) => {
     if (status.current !== STATUS.COMPLETED) return;
@@ -4025,6 +4179,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const sectionHeaderView = (rowData: any) => {
+    return (
+      <View>
+        <Text style={styles.headerText}>{rowData.automatedText}</Text>
+      </View>
+    );
+  };
+
   const messageView = (rowData: any, index: number) => {
     return (
       <View
@@ -4804,6 +4966,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     rowData.message === appointmentStartsInFifteenMin ||
                     rowData.message === appointmentStartsInTenMin ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === sectionHeader ? (
+                    <>{sectionHeaderView(rowData)}</>
+                  ) : rowData.message === followUpChatGuideLines ? (
+                    <>
+                      <FollowUpChatGuideLines followChatLimit={followChatLimit} />
+                    </>
+                  ) : rowData.message === externalMeetingLink ? (
+                    renderExternalMeetingLink(rowData)
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
@@ -4990,6 +5160,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           )}
         </View>
       );
+    }
+  };
+
+  const renderExternalMeetingLink = (rowData: any) => {
+    return (
+      <View style={styles.externalMeetingLinkContainer}>
+        <View style={styles.externalMeetingLinkTextContainer}>
+          <ExternalMeetingVideoCall style={styles.externalMeetingLinkImage} />
+          <Text style={styles.externalMeetingLinkText}>
+            {strings.externalMeetingLink.click_to_open.replace(
+              'XYZ',
+              g(appointmentData, 'doctorInfo', 'fullName')
+            )}
+          </Text>
+
+          <View style={styles.externalMeetingLinkCTAWrapper}>
+            <TouchableOpacity
+              style={styles.externalMeetingLinkMeetingCTAContainer}
+              onPress={() => onMeetingLinkClicked(rowData)}
+            >
+              <Text style={styles.exeternalMeetingLinkMeetingCTAText}>{rowData.url}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => onLinkCopyClicked(rowData)}>
+              <CopyIcon />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.externalMeetingLinkTnC}>{strings.externalMeetingLink.tnc}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const onMeetingLinkClicked = (rowData: any) => {
+    try {
+      Linking.openURL(rowData.url);
+
+      postWebEngageEvent(WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED, {
+        'Doctor name': appointmentData?.doctorInfo?.fullName,
+        'Patient name': `${appointmentData?.patientInfo?.firstName} ${appointmentData?.patientInfo?.lastName}`,
+        'Patient ID': appointmentData?.patientInfo?.id,
+        'Doctor ID': appointmentData?.doctorInfo?.id,
+        'Appointment ID': appointmentData?.id,
+        'Link URL': rowData.url || '',
+        'Doctor number': appointmentData?.doctorInfo?.mobileNumber,
+        'Patient number': appointmentData?.patientInfo?.mobileNumber,
+        'Solution Used': 'Zoom',
+      } as WebEngageEvents[WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onMeetingLinkClickedd', error);
+    }
+  };
+
+  const onLinkCopyClicked = (rowData: any) => {
+    try {
+      Clipboard.setString(rowData.url);
+      setHandlerMessage(strings.externalMeetingLink.copied_to_clipboard + ' ' + rowData.url);
+      setSnackbarState(true);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onLinkCopyClicked', error);
     }
   };
 
@@ -5363,14 +5592,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
-          style={{
-            flex: 1,
-            marginBottom: 80,
-          }}
-          // ListHeaderComponent={renderChatHeader()}
+          style={{ flex: 1, marginBottom: 65 }}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
-          // stickyHeaderIndices={[0]}
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
@@ -5389,7 +5613,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (disableChat) {
               return chatDisabled();
             } else {
-              return null;
+              return <View style={{ height: 150 }}></View>;
             }
           }}
         />
@@ -5929,6 +6153,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isTyping: true,
           message: !patientJoinedCall.current ? acceptedCallMsg : patientJoinedMeetingRoom,
           messageDate: new Date(),
+          platform: 'mobile',
         },
         channel: channel,
         storeInHistory: false,
@@ -6043,6 +6268,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const uploadPrescriptionPopup = () => {
     return (
       <UploadPrescriprionPopup
+        type={'Consult Flow'}
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
@@ -6653,7 +6879,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </Text>
               </TouchableOpacity>
             ) : null}
-            <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
+            {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
+            <View
+              style={[
+                styles.inputMainContainer,
+                { opacity: disableChat || availableMessages == 0 ? 0.5 : 1 },
+              ]}
+            >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
@@ -6672,7 +6904,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  editable={!disableChat}
+                  editable={!disableChat && availableMessages != 0}
                 />
                 <View
                   style={{
@@ -6723,6 +6955,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </>
         ) : (
           <>
+            {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
             <TouchableOpacity
               activeOpacity={1}
               style={[styles.uploadButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
@@ -6748,7 +6981,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </Text>
             </TouchableOpacity>
             <View
-              style={[styles.inputMainContainer, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
+              style={[
+                styles.inputMainContainer,
+                { bottom: 0, opacity: disableChat || availableMessages == 0 ? 0.5 : 1 },
+              ]}
             >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
@@ -6768,7 +7004,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  editable={!disableChat}
+                  editable={!disableChat && availableMessages != 0}
                 />
                 <View
                   style={{
@@ -6787,7 +7023,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               onPress={async () => {
                 if (!disableChat) {
                   const textMessage = messageText.trim();
-
                   if (textMessage.length == 0) {
                     Alert.alert('Apollo', 'Please write something to send message.');
                     CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');

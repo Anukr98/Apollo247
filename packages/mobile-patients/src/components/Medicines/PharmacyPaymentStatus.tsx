@@ -77,6 +77,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderPaymentMqV2';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -354,17 +355,20 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const fireOrderSuccessEvent = (orderAutoId: string, orderId: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+    let eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
       'Payment failed order id': transId,
       'Payment Success Order Id': orderAutoId,
       status: true,
     };
     postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
-    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
     postAppsFlyerEvent(
       AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
       getPrepaidCheckoutCompletedAppsFlyerEventAttributes(orderAutoId, orderId)
     );
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...checkoutEventAttributes,
+      'Cart Items': JSON.stringify(cartItems),
+    });
     firePurchaseEvent(orderAutoId);
   };
 
@@ -729,13 +733,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 14),
               marginTop: 3,
               left: -5,
+              width: '92%',
             }}
           >
             {' '}
             You{' '}
             <Text style={theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {totalCashBack?.toFixed(2)}{' '}
+              {convertNumberToDecimal(totalCashBack)}{' '}
             </Text>
             on your purchase
           </Text>

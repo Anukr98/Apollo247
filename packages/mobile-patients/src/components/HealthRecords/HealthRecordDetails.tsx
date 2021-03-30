@@ -291,6 +291,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
         if (!!resultForVisitNo) {
           setData(resultForVisitNo);
+          setLoading?.(false);
         } else {
           setLoading?.(false);
           renderError(string.diagnostics.responseUnavailableForReport, false);
@@ -529,7 +530,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'DISCHARGE SUMMARY'
       : prescriptions
-      ? 'PRESCRIPTION'
+      ? data?.source !== '247selfConsultation'
+        ? 'PRESCRIPTION'
+        : 'MEDICAL FILE'
       : medicalBill
       ? 'BILLS'
       : medicalInsurance

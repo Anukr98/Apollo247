@@ -69,6 +69,7 @@ import {
 } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 
 const { width } = Dimensions.get('window');
 
@@ -287,6 +288,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
       AsyncStorage.removeItem('isCircleMember');
+      AsyncStorage.removeItem(LOGIN_PROFILE);
       AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
@@ -498,7 +500,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Invoice />}
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
-            props.navigation.navigate(AppRoutes.YourOrdersScene);
+            props.navigation.navigate(AppRoutes.MyOrdersScreen, {
+              patientId: currentPatient.id,
+              fromNotification: false,
+            });
             fireProfileAccessedEvent('My Orders');
           }}
         />

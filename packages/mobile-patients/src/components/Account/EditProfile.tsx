@@ -729,6 +729,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const renderUploadSelection = () => {
     return (
       <UploadPrescriprionPopup
+        type={'Non-cart'}
         isVisible={uploadVisible}
         isProfileImage={true}
         heading="Upload Profile Picture"

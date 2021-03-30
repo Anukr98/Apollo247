@@ -135,6 +135,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     setIsFreeDelivery,
+    productDiscount,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
@@ -187,7 +188,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     setLoading(true);
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
       coupon: coupon,
       pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
@@ -226,6 +227,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
               ? g(resp.data, 'response', 'discount')
               : 'Not Applicable',
             'Customer ID': g(currentPatient, 'id'),
+            'Cart Items': JSON.stringify(cartItems),
           };
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {

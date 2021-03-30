@@ -793,6 +793,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           }, 1800);
         })
         .catch((e) => {
+          CommonBugFender('HealthRecordsHome_UPDATE_PATIENT_MEDICAL_PARAMETERS', e);
           setShowUpdateProfilePopup(false);
           setOverlaySpinner(false);
           loading && setLoading!(false);
@@ -1532,6 +1533,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_searchPHRApiWithAuthToken', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -1556,7 +1558,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };

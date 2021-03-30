@@ -29,6 +29,7 @@ import {
   ONE_APOLLO_STORE_CODE,
   PLAN_PURCHASE_DETAILS_PHARMA,
   PLAN,
+  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveMedicineOrderOMS,
@@ -110,6 +111,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [showPaymentOptions, setShowPaymentOptions] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
+    consultProfile,
     deliveryAddressId,
     storeId,
     showPrescriptionAtStore,
@@ -118,6 +120,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -336,6 +339,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Prescription Option selected': uploadPrescriptionRequired
         ? 'Prescription Upload'
         : 'Not Applicable',
+      'Cart Items': JSON.stringify(cartItems),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -577,7 +581,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
         quoteId: null,
-        patientId: (currentPatient && currentPatient.id) || '',
+        patientId:
+          (prescriptionType === PrescriptionType.CONSULT && consultProfile?.id) ||
+          currentPatient?.id ||
+          '',
         shopId: isStorePickup ? storeId : paramShopId || null,
         shopAddress: selectedStore
           ? {
@@ -597,6 +604,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         devliveryCharges: deliveryCharges,
         packagingCharges: packagingCharges,
         estimatedAmount,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -647,7 +655,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack: isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
@@ -662,7 +670,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     };
     const OrderInfoV2: saveMedicineOrderV2Variables = {
       medicineOrderInput: {
-        patientId: currentPatient?.id || '',
+        patientId:
+          (prescriptionType === PrescriptionType.CONSULT && consultProfile?.id) ||
+          currentPatient?.id ||
+          '',
         medicineDeliveryType: deliveryType!,
         estimatedAmount,
         bookingSource: BOOKINGSOURCE.MOBILE,
@@ -670,6 +681,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         coupon: coupon ? coupon.coupon : '',
         patientAddressId: deliveryAddressId,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -692,6 +704,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
       'Service Area': 'Pharmacy',
+      'Cart Items': JSON.stringify(cartItems),
+      Coupon: coupon ? coupon.coupon : '',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 

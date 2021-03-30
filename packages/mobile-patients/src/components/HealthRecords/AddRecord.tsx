@@ -1286,7 +1286,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICATION_RECORD', e);
         setshowSpinner(false);
         currentPatient && handleGraphQlError(e);
       });
@@ -1360,7 +1360,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_HEALTH_RESTRICTION_RECORD', e);
         setshowSpinner(false);
         currentPatient && handleGraphQlError(e);
       });
@@ -1433,7 +1433,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_CONDITION_RECORD', e);
         setshowSpinner(false);
         currentPatient && handleGraphQlError(e);
       });
@@ -4017,6 +4017,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     return (
       <UploadPrescriprionPopup
+        type={'Consult Flow'}
         isVisible={displayPopup}
         openCamera={openCamera}
         phrUpload={true}

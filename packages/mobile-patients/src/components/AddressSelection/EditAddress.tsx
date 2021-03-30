@@ -161,6 +161,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     setAddresses: setTestAddresses,
     setNewAddressAddedHomePage,
     setNewAddressAddedCartPage,
+    setDiagnosticAreas,
+    setAreaSelected,
+    setDiagnosticSlot,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
@@ -357,6 +360,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             if (source == 'Tests') {
               setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
               setNewAddressAddedCartPage?.('');
+              setDiagnosticAreas?.([]);
+              setAreaSelected?.({});
+              setDiagnosticSlot?.(null);
             } else if (source == 'Diagnostics Cart') {
               setNewAddressAddedCartPage?.(String(address?.zipcode!) || '');
               setNewAddressAddedHomePage?.('');

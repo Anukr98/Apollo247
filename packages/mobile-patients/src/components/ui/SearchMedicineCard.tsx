@@ -212,6 +212,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     ) : (
       <View style={{ flexDirection: 'row', marginBottom: 5 }}>
         <Text style={styles.priceTextCollapseStyle}>
+          {!discount && `MRP `}
           {string.common.Rs}
           {convertNumberToDecimal(discount ? special_price : price)}
         </Text>
@@ -219,7 +220,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
           <>
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>{`${
+              <Text style={{ textDecorationLine: 'line-through' }}>{`MRP ${
                 string.common.Rs
               }${convertNumberToDecimal(price)}`}</Text>
               {')'}

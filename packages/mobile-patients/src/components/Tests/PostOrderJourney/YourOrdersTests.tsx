@@ -8,7 +8,6 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
   GET_DIAGNOSTIC_ORDER_LIST,
-  GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
@@ -51,6 +50,8 @@ import {
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
+  TestCancelReasons,
+  TestReschedulingReasons,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -69,11 +70,6 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
-import {
-  getDiagnosticOrderDetails,
-  getDiagnosticOrderDetailsVariables,
-  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   getOrderInternal,
   getOrderInternalVariables,
@@ -98,9 +94,14 @@ export interface DiagnosticsOrderList
   maxTime?: string | undefined | null;
 }
 
-export interface YourOrdersTestProps extends NavigationScreenProps {}
+export interface YourOrdersTestProps extends NavigationScreenProps {
+  showHeader?: boolean;
+}
 
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
+  const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
+  const CANCELLATION_REASONS = TestCancelReasons.reasons;
+
   const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
 
   const { currentPatient } = useAllCurrentPatients();
@@ -114,30 +115,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showSummaryPopup, setSummaryPopup] = useState<boolean>(false);
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const showSummaryPopupRef = useRef<boolean>(false);
-  const [orderDetails, setOrderDetails] = useState<
-    getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList
-  >();
   const [rescheduleCount, setRescheduleCount] = useState<any>(null);
   const [rescheduledTime, setRescheduledTime] = useState<any>('');
   const [selectedReasonForCancel, setSelectedReasonForCancel] = useState('');
   const [commentForCancel, setCommentForCancel] = useState('');
-
-  const RESCHEDULE_REASONS = [
-    'Phlebo did not arrive on time',
-    'I am not available right now',
-    'I did not follow fasting requirement',
-    'I picked a wrong slot',
-    'Not feeling well to provide sample',
-  ];
-
-  const CANCELLATION_REASONS = [
-    'Phlebo didn’t Arrive on Time',
-    'Need to Modify Order Details',
-    'I am not Available Right Now',
-    'Booked by Mistake',
-    'Need Report Urgently',
-    'Others (Please specify)',
-  ];
 
   //new reschedule.
   const [showBottomOverlay, setShowBottomOverlay] = useState<boolean>(false);
@@ -257,38 +238,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const fetchOrderDetails = async (order: any) => {
-    try {
-      setLoading!(true);
-      client
-        .query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
-          query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-          context: {
-            sourceHeaders,
-          },
-          variables: { diagnosticOrderId: order?.id },
-          fetchPolicy: 'no-cache',
-        })
-
-        .then((data) => {
-          const getOrderDetails =
-            g(data, 'data', 'getDiagnosticOrderDetails', 'ordersList') ||
-            ({} as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList);
-          setSelectedOrder(order);
-          setOrderDetails(getOrderDetails);
-          setLoading!(false);
-          setSummaryPopup(true);
-        })
-        .catch((error) => {
-          setLoading!(false);
-          CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrderDetails`, error);
-        });
-    } catch (error) {
-      setLoading!(false);
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrderDetails`, error);
-    }
-  };
-
   const getAddressDatails = async () => {
     try {
       setLoading!(true);
@@ -323,7 +272,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const fetchRefundForOrder = async (orderSelected: any, itemNameExist: any, itemIdObject: any) => {
+  const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
     setRefundStatusArr(null);
     setLoading?.(true);
     client
@@ -342,7 +291,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         if (refundData?.length! > 0) {
           setRefundStatusArr(refundData);
         }
-        performNavigation(itemNameExist, orderSelected, itemIdObject, refundData);
+        performNavigation(orderSelected, tab, refundData);
       })
       .catch((e) => {
         CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
@@ -373,13 +322,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             description: string.diagnostics.orderCancelledSuccessText,
           });
         } else {
-          setLoading!(false);
+          setLoading?.(false);
           showAphAlert!({
             unDismissable: true,
             title: string.common.uhOh,
             description: cancelResponse?.message,
           });
         }
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
         //refetch the orders
       })
       .catch((error) => {
@@ -387,6 +339,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
         setLoading!(false);
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
       });
   };
 
@@ -409,7 +364,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           let resultForVisitNo = labResultsData?.find(
             (item: any) => item?.identifier == getVisitId
           );
-          console.log({ resultForVisitNo });
 
           !!resultForVisitNo && resultForVisitNo?.length > 0
             ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
@@ -555,7 +509,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       dateTimeInUTC: dateTimeInUTC,
       orderId: String(selectedOrderId),
       patientId: g(currentPatient, 'id'),
-      // reason: selectedReasonForReschedule,
       reason: selectRescheduleReason,
       slotId: employeeSlot,
     };
@@ -591,8 +544,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 : string.common.tryAgainLater,
           });
         }
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
       })
       .catch((error) => {
+        setSelectCancelReason('');
+        setCancelReasonComment('');
+        setSelectRescheduleReason('');
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         setLoading!(false);
         if (
@@ -614,16 +573,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderRescheduleOrderOverlay = () => {
-    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
+      Number(item?.itemId)
+    );
+    const isCovidItem = orderItemId?.map((item: number) =>
+      AppConfig.Configuration.Covid_Items.includes(item)
+    );
+    const isOrderHasCovidItem = isCovidItem?.find((item) => item === true);
+    const maxDaysToShow = !!isOrderHasCovidItem
+      ? AppConfig.Configuration.Covid_Max_Slot_Days
+      : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
+          source={'Tests'}
           heading="Schedule Appointment"
           date={date}
           areaId={String(selectedOrder?.areaId)}
           isTodaySlotUnavailable={todaySlotNotAvailable}
           maxDate={moment()
-            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .add(maxDaysToShow, 'day')
             .toDate()}
           isVisible={showDisplaySchedule}
           onClose={() => setDisplaySchedule(false)}
@@ -684,11 +654,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             <View style={styles.overlayTouch}>
               <TouchableOpacity>
                 <SafeAreaView style={styles.overlaySafeArea}>
-                  <>
-                    {showRescheduleOptions ? renderRescheduleCancelOptions() : null}
-                    {showRescheduleReasons ? renderRescheduleReasons() : null}
-                    {showCancelReasons ? renderCancelReasons() : null}
-                  </>
+                  <View style={styles.overlayContainer}>
+                    <View>
+                      {showRescheduleOptions && renderRescheduleCancelOptions()}
+                      {showRescheduleReasons && renderRescheduleReasons()}
+                      {showCancelReasons && renderCancelReasons()}
+                    </View>
+                  </View>
                 </SafeAreaView>
               </TouchableOpacity>
             </View>
@@ -700,8 +672,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderRescheduleReasons = () => {
     return (
-      <View style={[styles.overlayContainer]}>
-        <Text style={styles.overlayHeadingText}>Reason for Rescheduling</Text>
+      <View>
+        <Text style={styles.overlayHeadingText}>
+          {string.diagnostics.reasonForReschedulingText}
+        </Text>
         <View style={styles.reasonsContainer}>
           {RESCHEDULE_REASONS?.map((item: string, index: number) => {
             return (
@@ -710,7 +684,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   onPress={() => setSelectRescheduleReason(item)}
                   style={styles.reasonsTouch}
                 >
-                  <View style={styles.rowStyle}>
+                  <View style={[styles.rowStyle]}>
                     <Text style={styles.reasonsText}>{item}</Text>
                     {selectRescheduleReason === item ? (
                       <TickIcon style={styles.checkIconStyle} />
@@ -738,8 +712,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderCancelReasons = () => {
     return (
-      <View style={[styles.overlayContainer]}>
-        <Text style={styles.overlayHeadingText}>Reason for Cancellation</Text>
+      <View>
+        <Text style={styles.overlayHeadingText}>
+          {string.diagnostics.reasonForCancellationText}
+        </Text>
         <View style={styles.reasonsContainer}>
           {CANCELLATION_REASONS?.map((item: string, index: number) => {
             return (
@@ -748,7 +724,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   onPress={() => setSelectCancelReason(item)}
                   style={styles.reasonsTouch}
                 >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={styles.rowStyle}>
                     <Text style={styles.reasonsText}>{item}</Text>
                     {selectCancelReason === item ? (
                       <TickIcon style={styles.checkIconStyle} />
@@ -759,14 +735,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   {index === CANCELLATION_REASONS?.length - 1 ? null : (
                     <Spearator style={{ marginTop: 6 }} />
                   )}
-                  {selectCancelReason === 'Others (Please specify)' &&
-                  item === 'Others (Please specify)' ? (
+                  {selectCancelReason ===
+                    string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
+                  item === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
                     <TextInputComponent
                       value={cancelReasonComment}
                       onChangeText={(text) => {
                         setCancelReasonComment(text);
                       }}
-                      placeholder={'Enter your comments here'}
+                      placeholder={string.common.return_order_comment_text}
                     />
                   ) : null}
                 </TouchableOpacity>
@@ -779,7 +756,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             title={'CANCEL NOW'}
             style={styles.buttonStyle}
             disabled={
-              selectCancelReason == 'Others (Please specify)'
+              selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
                 ? cancelReasonComment == ''
                 : selectCancelReason == ''
             }
@@ -796,12 +773,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? 2 - selectedOrderRescheduleCount
       : 2;
     return (
-      <View style={styles.overlayContainer}>
-        <Text style={styles.overlayHeadingText}>What would you like to do?</Text>
+      <View>
+        <Text style={styles.overlayHeadingText}>{string.diagnostics.whatWudLikeText}</Text>
         <TouchableOpacity onPress={() => _onPressReschduleOption()} style={styles.optionsTouch}>
           <View>
             <View style={styles.rowStyle}>
-              <Text style={styles.optionText}>Reschedule Booking</Text>
+              <Text style={styles.optionText}>{string.diagnostics.rescheduleBookingText}</Text>
               {selectRescheduleOption ? (
                 <TickIcon style={styles.checkIconStyle} />
               ) : (
@@ -829,7 +806,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <TouchableOpacity onPress={() => _onPressCancelOption()} style={styles.optionsTouch}>
           <View>
             <View style={styles.rowStyle}>
-              <Text style={styles.optionText}>Cancel Booking</Text>
+              <Text style={styles.optionText}>{string.diagnostics.cancelBookingText}</Text>
               {selectCancelOption ? (
                 <TickIcon style={styles.checkIconStyle} />
               ) : (
@@ -838,9 +815,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             </View>
             {selectCancelOption ? (
               <View style={{ marginVertical: '2%' }}>
-                <Text style={styles.optionSubHeadingText}>
-                  Are you sure you want to Cancel the booking?
-                </Text>
+                <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
                 <Button onPress={() => _onPressProceedToCancel()} title={'PROCEED TO CANCEL'} />
               </View>
             ) : null}
@@ -855,7 +830,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowBottomOverlay(false);
     setShowRescheduleOptions(false);
     setShowRescheduleReasons(false);
-    setSelectRescheduleReason('');
+    setSelectCancelReason('');
     checkSlotSelection();
   }
 
@@ -866,8 +841,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleReasons(false);
     setShowCancelReasons(false);
     onSubmitCancelOrder(selectCancelReason, cancelReasonComment);
-    setSelectCancelReason('');
-    setCancelReasonComment('');
     setSelectRescheduleReason('');
   }
 
@@ -909,97 +882,30 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectRescheduleOption(false);
   }
 
-  const _navigateToYourTestDetails = (order: any) => {
+  function _navigateToYourTestDetails(
+    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+    tab: boolean
+  ) {
     const isPrepaid = order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
     setLoading?.(true);
-    showSummaryPopup && setSummaryPopup(!showSummaryPopup);
-
-    const itemLevelStatus = order?.diagnosticOrdersStatus?.map(
-      (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus) =>
-        item
-    );
-    /**
-     * if itemName == null , then directly show vertical tracking.
-     */
-    const itemNameExist = itemLevelStatus?.find(
-      (order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus) =>
-        order?.itemName != null && order?.itemId != null
-    );
-
-    const itemIdObject = _.groupBy(itemLevelStatus, 'itemId') as any;
-
-    //call refund api only if prepaid order + order level status is failed/cancelled
-
     if (isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)) {
-      fetchRefundForOrder(order, itemNameExist, itemIdObject);
+      fetchRefundForOrder(order, tab);
     } else {
-      performNavigation(itemNameExist, order, itemIdObject);
-    }
-  };
-
-  function performNavigation(itemNameExist: any, order: any, itemIdObject: any, refundArray?: any) {
-    if (!!itemNameExist) {
-      _navigateToHorizontalTracking(order, itemIdObject, refundArray);
-    } else {
-      _navigateToVerticalTracking(order, itemIdObject, refundArray);
+      performNavigation(order, tab);
     }
   }
 
-  function _navigateToVerticalTracking(order: any, itemIdObject: any, refundArray?: any) {
-    const getUTCDateTime = order?.slotDateTimeInUTC;
-    const dt = moment(getUTCDateTime != null ? getUTCDateTime : order?.diagnosticDate!).format(
-      `D MMM YYYY`
-    );
-    const tm =
-      getUTCDateTime != null ? moment(getUTCDateTime).format('hh:mm A') : order?.slotTimings;
-
-    const updatedItemLevelStatus = itemIdObject?.['null']?.map((item: any) => ({
-      ...item,
-    }));
-
-    let selectedTestStatus = [];
-    const resultToShow = updatedItemLevelStatus?.[updatedItemLevelStatus?.length - 1];
-    selectedTestStatus.push({
-      id: resultToShow?.id,
-      displayId: order?.displayId,
-      slotTimings: tm,
-      patientName: currentPatient?.firstName,
-      showDateTime: dt,
-      itemId: resultToShow?.itemId,
-      currentStatus:
-        order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
-          ? DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
-          : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-
-      statusDate: resultToShow?.statusDate,
-    });
+  function performNavigation(order: any, tab: boolean, refundArray?: any) {
     setLoading?.(false);
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
         setOrders(orders),
-      selectedTest: selectedTestStatus,
       selectedOrder: order,
-      individualTestStatus: updatedItemLevelStatus,
+      refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
-      refundStatusArr: refundArray || refundStatusArr,
+      showOrderSummaryTab: tab,
     });
-  }
-
-  function _navigateToHorizontalTracking(order: any, itemIdObject: any, refundArray?: any) {
-    setLoading?.(false);
-    props.navigation.navigate(AppRoutes.OrderedTestStatus, {
-      orderId: order?.id,
-      selectedOrder: order,
-      itemLevelStatus: itemIdObject,
-      setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
-        setOrders(orders),
-      refundStatusArr: refundArray || refundStatusArr,
-    });
-  }
-
-  function _openOrderSummary(order: any) {
-    fetchOrderDetails(order);
   }
 
   const renderOrder = (order: DiagnosticsOrderList, index: number) => {
@@ -1078,6 +984,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.slotTimings}
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
+        cancelledReason={
+          currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED &&
+          order?.diagnosticOrderCancellation != null
+            ? order?.diagnosticOrderCancellation
+            : null
+        }
         showRescheduleCancel={
           showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
@@ -1085,10 +997,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         showAdditonalView={!!showExtraInfo && showExtraInfo?.length > 0}
         additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
-        onPressCard={() => _navigateToYourTestDetails(order)}
+        onPressCard={() => _navigateToYourTestDetails(order, false)}
         onPressAddTest={() => _onPressAddTest()}
         onPressReschedule={() => _onPressTestReschedule(order)}
-        onPressViewDetails={() => _navigateToYourTestDetails(order)}
+        onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReport(order)}
         style={[
           { marginHorizontal: 20 },
@@ -1152,32 +1064,33 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <Card
           cardContainer={[styles.noDataCard]}
           heading={string.common.uhOh}
-          description={'Something went wrong.'}
+          description={string.common.somethingWentWrong}
           descriptionTextStyle={{ fontSize: 14 }}
           headingTextStyle={{ fontSize: 14 }}
         />
       );
     }
   };
-
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
 
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          leftIcon="backArrow"
-          title={string.orders.urOrders}
-          container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
-        />
+        {props?.showHeader == false ? null : (
+          <Header
+            leftIcon="backArrow"
+            title={string.orders.urOrders}
+            container={{ borderBottomWidth: 0 }}
+            onPressLeftIcon={() => props.navigation.goBack()}
+          />
+        )}
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
           {showBottomOverlay && renderBottomPopUp()}
         </ScrollView>
       </SafeAreaView>
-      {loading && <Spinner />}
+      {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
   );
 };
@@ -1202,7 +1115,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: colors.CLEAR,
-    zIndex: 3000,
     overflow: 'hidden',
     elevation: 0,
     bottom: 0,
@@ -1261,12 +1173,19 @@ const styles = StyleSheet.create({
     flex: 1,
     borderColor: 'transparent',
   },
-  reasonsTouch: { flex: 1, margin: 16, marginBottom: 10 },
+  reasonsTouch: {
+    flex: 1,
+    marginLeft: 16,
+    marginRight: 16,
+    marginBottom: 8,
+    height: 40,
+    justifyContent: 'center',
+  },
   buttonView: { margin: 16, marginTop: 4 },
   reasonsText: {
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SHERPA_BLUE,
-    textAlign: 'left',
+    textAlign: 'center',
     lineHeight: 18,
   },
   buttonStyle: { width: '85%', alignSelf: 'center' },

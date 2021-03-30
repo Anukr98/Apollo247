@@ -38,6 +38,11 @@ const styles = StyleSheet.create({
     zIndex: 5,
     elevation: 5,
   },
+  applyFilterButton: {
+    flex: 1,
+    marginHorizontal: 40,
+    marginTop: 15,
+  },
   cardContainer: {
     padding: 20,
     paddingBottom: 0,
@@ -603,7 +608,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
       >
         <Button
           title={'APPLY FILTERS'}
-          style={{ flex: 1, marginHorizontal: 40, marginTop: 15 }}
+          style={styles.applyFilterButton}
           onPress={() => {
             props.setData(data);
             props.onClickClose(data);
