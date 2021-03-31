@@ -453,8 +453,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkPatientAge = () => {
-    let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
-    let gender = currentPatient?.gender;
+    let age =
+      !!currentPatient?.dateOfBirth || !!selectedPatient?.dateOfBirth
+        ? getAge(currentPatient?.dateOfBirth || selectedPatient?.dateOfBirth)
+        : null;
+    let gender = currentPatient?.gender || selectedPatient?.gender;
     if (age! <= 10 || age == null || gender == null) {
       renderAlert(
         age == null
@@ -3130,6 +3133,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAddressList(_selectedPatient?.id);
   };
 
+  const onNewProfileAdded = (newPatient: any) => {
+    if (newPatient?.profileData) {
+      setSelectedPatient(newPatient?.profileData);
+      setShowPatientListOverlay(false);
+      changeCurrentProfile(newPatient?.profileData, false);
+    }
+  };
+
+  const _onPressBackButton = () => {
+    if (!selectedPatient) {
+      setShowPatientListOverlay(true);
+    }
+  };
+
   const renderPatientListOverlay = () => {
     return showPatientListOverlay ? (
       <PatientListOverlay
@@ -3145,6 +3162,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             isEdit: false,
             isPoptype: true,
             mobileNumber: currentPatient?.mobileNumber,
+            onNewProfileAdded: onNewProfileAdded,
+            onPressBackButton: _onPressBackButton,
           });
         }}
         patientSelected={selectedPatient}
