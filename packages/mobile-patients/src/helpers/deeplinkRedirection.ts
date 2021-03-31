@@ -406,7 +406,7 @@ export const pushTheView = (
       });
       break;
     case 'Test':
-      navigation.navigate('TESTS');
+      navigation.navigate('TESTS', {movedFrom:'deeplink'});
       break;
     case 'ConsultRoom':
       navigation.replace(AppRoutes.ConsultRoom);
@@ -495,6 +495,7 @@ export const pushTheView = (
     case 'TestDetails':
       navigateToView(navigation, AppRoutes.TestDetails, {
         itemId: id,
+        movedFrom: 'deeplink'
       });
       break;
     case 'ConsultDetails':
