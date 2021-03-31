@@ -760,8 +760,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                 ? renderCircleSavingsOnPurchase()
                 : null}
               {renderCODNote()}
-              {appointmentHeader()}
-              {appointmentCard()}
+              {status != failure && status != aborted && appointmentHeader()}
+              {status != failure && status != aborted && appointmentCard()}
               {renderNote()}
               {status == failure || status == aborted ? renderRetryPayment() : renderButton()}
             </ScrollView>
