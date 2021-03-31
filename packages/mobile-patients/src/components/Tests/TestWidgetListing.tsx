@@ -21,7 +21,9 @@ import {
   Text,
   View,
   FlatList,
+  TouchableOpacity,
   Image as ImageNative,
+  Image,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -36,7 +38,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { Image, Input } from 'react-native-elements';
 export interface TestWidgetListingProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -60,7 +61,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
   const dataFromHomePage = props.navigation.getParam('data');
   const widgetName = props.navigation.getParam('widgetName');
   const cityId = props.navigation.getParam('cityId');
-  const title = dataFromHomePage?.diagnosticWidgetTitle;
+  const title =  dataFromHomePage?.diagnosticWidgetTitle;
   const client = useApolloClient();
 
   const [widgetsData, setWidgetsData] = useState([] as any);
@@ -77,55 +78,25 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
     );
   };
 
+  const renderItems = (item: any, index: number) => {
+    return (
+      <TouchableOpacity style={styles.gridPart}>
+                <View style={styles.circleImg}>
+                  <Image style={styles.image} source={{ uri: item.itemIcon }} />
+                </View>
+                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{item?.itemTitle}</Text>
+              </TouchableOpacity>
+    )
+  }
   const renderList = () => {
-    const array = [
-        {
-          image:require('../../images/home/ic_family_doctor.png'),
-          text:'Kidney'
-        },
-        {
-          image:require('../../images/home/doctor.png'),
-          text:'Heart'
-        },
-        {
-          image:require('../../images/home/ic_family_doctor.png'),
-          text:'Liver'
-        },
-        {
-          image:require('../../images/home/doctor.png'),
-          text:'Covid'
-        },
-        {
-          image:require('../../images/home/doctor.png'),
-          text:'Covid-19'
-        },
-        {
-          image:require('../../images/home/doctor.png'),
-          text:'Aparan'
-        },
-        {
-          image:require('../../images/home/doctor.png'),
-          text:'Covid'
-        },
-        {
-          image:require('../../images/home/doctor.png'),
-          text:'Covid-19'
-        },
-      ]
     return (
       <>
         <View style={styles.gridConatiner}>
           <FlatList
-            data={array}
+            data={dataFromHomePage?.diagnosticWidgetData}
             numColumns={3}
-            renderItem={({ item }) => (
-              <View style={styles.gridPart}>
-                <View style={styles.circleImg}>
-                  <Image style={styles.image} source={item?.image} />
-                </View>
-                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{item?.text}</Text>
-              </View>
-            )}
+            keyExtractor={(_, index) => `${index}`}
+            renderItem={({item, index}) => renderItems(item,index)}
           />
         </View>
       </>

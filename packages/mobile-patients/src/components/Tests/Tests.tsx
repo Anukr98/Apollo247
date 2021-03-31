@@ -74,10 +74,9 @@ import {
   View,
   ViewStyle,
   Image as ImageNative,
+  Image,
   ImageBackground,
-  FlatList
 } from 'react-native';
-import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   SEARCH_TYPE,
@@ -1359,117 +1358,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderBottomViews = () => {
-    // console.log('object :>> ', widgetsData);
-    const no = [
-      {
-        diagnosticWidgetData: [
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-        ],
-        diagnosticWidgetTitle: 'Browse Packages',
-        diagnosticWidgetType: 'Package',
-        diagnosticwidgetsRankOrder: '1',
-        id: '13567',
-      },
-      {
-        diagnosticWidgetData: [
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-        ],
-        diagnosticWidgetTitle: 'Top Popular Tests',
-        diagnosticWidgetType: 'Item',
-        diagnosticwidgetsRankOrder: '2',
-        id: '14520',
-      },
-      {
-        diagnosticWidgetData: [
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-        ],
-        diagnosticWidgetTitle: 'Full Body Packages',
-        diagnosticWidgetType: 'Package',
-        diagnosticwidgetsRankOrder: '3',
-        id: '14519',
-      },
-      {
-        diagnosticWidgetData: [
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-        ],
-        diagnosticWidgetTitle: 'Diabetes wellness',
-        diagnosticWidgetType: 'Item',
-        diagnosticwidgetsRankOrder: '4',
-        id: '14596',
-      },
-      {
-        diagnosticWidgetData: [
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-          [Object],
-        ],
-        diagnosticWidgetTitle: 'COVID CARE',
-        diagnosticWidgetType: 'Item',
-        diagnosticwidgetsRankOrder: '5',
-        id: '14597',
-      },
-    ];
     const isWidget = widgetsData?.length > 0;
     const isWidget1 =
       isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '1');
@@ -1496,6 +1384,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderWidgets = (data: any) => {
     if (data?.diagnosticWidgetType == 'Package') {
       return renderPackageWidget(data);
+    } else if (data?.diagnosticWidgetType == 'Category_Scroll') {
+      return scrollWidgetSection(data)
+    } else if (data?.diagnosticWidgetType == 'Category') {
+      return gridWidgetSection(data)
     } else {
       return renderTestWidgets(data);
     }
@@ -1924,29 +1816,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
-  const topWidgetSection = (heading:string) => {
-    const array = [
-      {
-        image:require('../../images/home/ic_family_doctor.png'),
-        text:'Kidney'
-      },
-      {
-        image:require('../../images/home/doctor.png'),
-        text:'Heart'
-      },
-      {
-        image:require('../../images/home/ic_family_doctor.png'),
-        text:'Liver'
-      },
-      {
-        image:require('../../images/home/doctor.png'),
-        text:'Covid'
-      },
-    ]
+  const scrollWidgetSection = (data: any) => {
+    // console.log('data scroll:>> ', data);
     return (
       <View style={styles.container}>
         <SectionHeader
-          leftText={nameFormater(heading, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
           leftTextStyle={[
             styles.widgetHeading,
             {
@@ -1958,14 +1833,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           onPressRightText={() => {
                   props.navigation.navigate(AppRoutes.TestWidgetListing, {
                     movedFrom: AppRoutes.Tests,
-                    data: array,
+                    data: data,
                     cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                   });
                 }
           }
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
-        {array.map((item,index) => (
+        {data?.diagnosticWidgetData.map((item:any) => (
           <WidgetCard
             data={item}
             isCircleSubscribed={isDiagnosticCircleSubscription}
@@ -1980,37 +1855,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   }
-  const gridWidgetSection = (heading : string) => {
-    const array = [
-      {
-        image:require('../../images/home/ic_family_doctor.png'),
-        text:'Kidney'
-      },
-      {
-        image:require('../../images/home/doctor.png'),
-        text:'Heart'
-      },
-      {
-        image:require('../../images/home/ic_family_doctor.png'),
-        text:'Liver'
-      },
-      {
-        image:require('../../images/home/doctor.png'),
-        text:'Covid'
-      },
-      {
-        image:require('../../images/home/doctor.png'),
-        text:'Covid-19'
-      },
-      {
-        image:require('../../images/home/doctor.png'),
-        text:'Aparan'
-      },
-    ]
+  const renderGridComponent = (item: any, index: number) => {
+    return (
+      <TouchableOpacity style={styles.gridPart}>
+        <Image source={{ uri: item.itemIcon }} style={styles.image} />
+        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+          {item?.itemTitle}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+  const gridWidgetSection = (data : any) => {
+    // console.log('data grid :>> ', data);
+    const obj = {"diagnosticWidgetBannerImage": "https://newassets.apollo247.com/uatcms/2021-03/top_deals_app.jpg", "diagnosticWidgetBannerText": "", "diagnosticWidgetBannerUrl": "https://www.apollo247.com/blog", "diagnosticWidgetData": [{"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/junk food.png", "itemTitle": "JUNK FOOD"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/smoking.png", "itemTitle": "SMOKING"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/alcohol.png", "itemTitle": "ALCOHOL"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/Mask Group.png", "itemTitle": "STRESS"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/liver.png", "itemTitle": "LIVER"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/heart_2.png", "itemTitle": "HEART"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/bone.png", "itemTitle": "BONE"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/malnutrition 1.png", "itemTitle": "POOR NUTRITION"}], "diagnosticWidgetTitle": "Life Cycle Disorder", "diagnosticWidgetType": "Category", "diagnosticwidgetsRankOrder": "7", "id": "16199"}
     return (
       <View style={{ marginTop: 10 }}>
         <SectionHeader
-          leftText={nameFormater(heading, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
           leftTextStyle={[
             styles.widgetHeading,
             {
@@ -2022,24 +1883,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
               movedFrom: AppRoutes.Tests,
-              data: array,
+              data: data,
               cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
             });
-          }
-    }
+          }}
         />
         <View style={styles.gridConatiner}>
           <FlatList
-            data={array}
+            data={data?.diagnosticWidgetData}
             numColumns={3}
-            renderItem={({ item }) => (
-              <View style={styles.gridPart}>
-                <View style={styles.circleImg}>
-                  <Image style={styles.image} source={item?.image} />
-                </View>
-                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{item?.text}</Text>
-              </View>
-            )}
+            keyExtractor={(_, index) => `${index}`}
+            renderItem={({ item, index}) => renderGridComponent(item, index)}
           />
         </View>
       </View>
@@ -2064,9 +1918,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           >
             {renderSections()}
             {renderOverlay()}
-            {topWidgetSection('Women Wellness')}
-            {gridWidgetSection('Women Wellness')}
-            {topWidgetSection('Women Wellness')}
           </ScrollView>
           {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
         </View>
@@ -2304,15 +2155,14 @@ const styles = StyleSheet.create({
   circleImg: {
     width: 70,
     height: 70,
-    backgroundColor: '#ededed',
-    justifyContent:'center',
-    alignItems:'center',
-    // margin:5,
-    borderRadius: 50,
+    // backgroundColor: '#E8E8E8',
+    margin:5,
+    // opacity: 0.2,
+    borderRadius: 70/2,
   },
   image: {
-    width: 65,
-    height: 65,
+    width: 70,
+    height: 70,
     borderRadius: 50,
   },
   gridPart: {
