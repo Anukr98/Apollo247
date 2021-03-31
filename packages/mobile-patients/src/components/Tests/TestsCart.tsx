@@ -3096,6 +3096,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAddressList(_selectedPatient?.id);
   };
 
+  const onNewProfileAdded = (newPatient: any) => {
+    console.log('newPatient', newPatient);
+    if (newPatient) {
+      setSelectedPatient(newPatient);
+      setShowPatientListOverlay(false);
+      changeCurrentProfile(newPatient, false);
+    }
+  };
+
   const renderPatientListOverlay = () => {
     return showPatientListOverlay ? (
       <PatientListOverlay
@@ -3111,6 +3120,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             isEdit: false,
             isPoptype: true,
             mobileNumber: currentPatient?.mobileNumber,
+            onNewProfileAdded: onNewProfileAdded,
           });
         }}
         patientSelected={selectedPatient}
