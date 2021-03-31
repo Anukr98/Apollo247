@@ -336,11 +336,18 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     fetchOrderStatus();
+    clearCirclePlanInfo();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const clearCirclePlanInfo = () => {
+    if (circleSavings > 0 && !circleSubscriptionId) {
+      AsyncStorage.removeItem('circlePlanSelected');
+    }
+  };
 
   const getUserSubscriptionsByStatus = async () => {
     try {
