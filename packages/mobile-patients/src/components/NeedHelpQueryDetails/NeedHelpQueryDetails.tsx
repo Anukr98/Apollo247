@@ -325,14 +325,15 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
 
     return (
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(_, i) => `${i}`}
-        bounces={false}
-        ItemSeparatorComponent={renderDivider}
-        contentContainerStyle={styles.flatListContainer}
-      />
+      <View style={styles.flatListContainer}>
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={(_, i) => `${i}`}
+          bounces={false}
+          ItemSeparatorComponent={renderDivider}
+        />
+      </View>
     );
   };
 
@@ -384,6 +385,7 @@ const styles = StyleSheet.create({
   flatListContainer: {
     ...card(),
     marginTop: 10,
+    marginBottom: 150,
   },
   flatListItem: {
     ...text('M', 14, LIGHT_BLUE),
@@ -395,7 +397,6 @@ const styles = StyleSheet.create({
   heading: {
     ...text('M', 12, LIGHT_BLUE),
     marginHorizontal: 20,
-    marginTop: 5,
   },
   subHeading: {
     ...text('R', 11, LIGHT_BLUE, 1),
@@ -410,7 +411,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   submit: {
-    ...text('B', 13, APP_YELLOW),
+    ...text('B', 14, APP_YELLOW),
     textAlign: 'right',
     marginTop: 5,
     marginBottom: 12,
