@@ -410,13 +410,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       validateDiagnosticCoupon();
       fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
-  }, [diagnosticSlot, deliveryAddressId, cartItems]);
+  }, [diagnosticSlot, deliveryAddressId, cartItems, addresses]);
 
   useEffect(() => {
     if (deliveryAddressId != '') {
       getPinCodeServiceability();
     }
-  }, [deliveryAddressId]);
+  }, [deliveryAddressId, addresses]);
 
   useEffect(() => {
     if (cartItems?.length) {
@@ -498,6 +498,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setDiagnosticAreas?.([]);
       setAreaSelected?.({});
       setDeliveryAddressId?.('');
+      setHcCharges?.(0);
+      setLoading?.(false);
     }
     if (deliveryAddressId) {
       if (diagnosticSlot) {
@@ -522,7 +524,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setAreaSelected!({});
       }
     }
-  }, [deliveryAddressId, diagnosticSlot, cartItems]);
+  }, [deliveryAddressId, diagnosticSlot, cartItems, addresses]);
 
   useEffect(() => {
     if (testCentresLoaded) {
@@ -1326,6 +1328,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             diagnosticEmployeeCode: slotDetails?.employeeCode,
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
+          if (slotDetails == undefined) {
+            setDisplaySchedule(true);
+          }
           setLoading?.(false);
         }
 
@@ -1701,8 +1706,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.dateTextStyle}>Time</Text>
               <Text style={styles.dateTextStyle}>
-                {selectedTimeSlot
-                  ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)}`
+                {selectedTimeSlot && !!selectedTimeSlot?.slotInfo?.startTime
+                  ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
                   : 'No slot selected'}
               </Text>
             </View>
@@ -2205,7 +2210,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const disableProceedToPay = !(
     cartItems?.length > 0 &&
     forPatientId &&
-    !!((deliveryAddressId && selectedTimeSlot) || clinicId) &&
+    !!(
+      (deliveryAddressId && selectedTimeSlot && selectedTimeSlot?.slotInfo?.startTime) ||
+      clinicId
+    ) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
@@ -2924,10 +2932,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
-    const selectedAddressIndex = addresses.findIndex((address) => address?.id == deliveryAddressId);
-    const pinCodeFromAddress = addresses[selectedAddressIndex]!.zipcode!;
-    setPinCode!(pinCode);
-    setLoading!(true);
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
+    setPinCode?.(pinCode);
+    setLoading?.(true);
+    let newGrandTotal = grandTotal - hcCharges;
     try {
       const HomeCollectionChargesApi = await client.query<
         getDiagnosticsHCCharges,
@@ -2939,20 +2950,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         variables: {
           itemIDs: itemWithId,
-          totalCharges: grandTotal, //removed cartTotal due APP-7386
+          totalCharges: newGrandTotal, //removed cartTotal due APP-7386
           slotID: slotVal!,
-          pincode: parseInt(pinCodeFromAddress, 10),
+          pincode: Number(pinCodeFromAddress),
         },
         fetchPolicy: 'no-cache',
       });
 
       let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
       if (getCharges != null) {
-        setHcCharges!(getCharges);
+        setHcCharges?.(getCharges);
       }
-      setLoading!(false);
+      setLoading?.(false);
     } catch (error) {
-      setLoading!(false);
+      setLoading?.(false);
       // renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
     }
   };
