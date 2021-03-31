@@ -1,20 +1,10 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
 import { Helpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  CrossPopup,
-  CrossYellow,
-  DropdownGreen,
-  FileBig,
-  Up,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -34,8 +24,7 @@ import {
   SendHelpEmail,
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import { g, navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -44,7 +33,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { Divider, Overlay } from 'react-native-elements';
+import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 
 export interface Props
@@ -292,6 +281,14 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         });
         setSelectedQueryId('');
         setComments('');
+      } else if (item?.content?.text) {
+        navigation.navigate(AppRoutes.NeedHelpContentView, {
+          queryIdLevel1,
+          queryIdLevel2: item?.id,
+          queries,
+          email,
+          orderId,
+        });
       } else if (isReturnQuery) {
         navigation.navigate(AppRoutes.ReturnMedicineOrder, {
           orderId: orderId,

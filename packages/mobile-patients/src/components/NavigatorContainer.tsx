@@ -72,6 +72,7 @@ import { NeedHelp } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
 import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import { NeedHelpContentView } from '@aph/mobile-patients/src/components/NeedHelpContentView';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -149,6 +150,7 @@ export enum AppRoutes {
   NeedHelpPharmacyOrder = 'NeedHelpPharmacyOrder',
   NeedHelpConsultOrder = 'NeedHelpConsultOrder',
   NeedHelpQueryDetails = 'NeedHelpQueryDetails',
+  NeedHelpContentView = 'NeedHelpContentView',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
@@ -327,6 +329,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpQueryDetails]: {
     screen: NeedHelpQueryDetails,
+  },
+  [AppRoutes.NeedHelpContentView]: {
+    screen: NeedHelpContentView,
   },
   [AppRoutes.Consult]: {
     screen: Consult,
