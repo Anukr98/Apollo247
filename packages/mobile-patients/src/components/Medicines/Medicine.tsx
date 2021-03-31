@@ -102,6 +102,7 @@ import {
   postWebEngageEvent,
   productsThumbnailUrl,
   setWebEngageScreenNames,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -702,13 +703,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <AccessLocation
           addresses={addressList}
           onPressSelectAddress={(address) => {
-            const saveAddress = {
-              pincode: address?.zipcode,
-              id: address?.id,
-              city: address?.city,
-              state: address?.state,
-            };
-            AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+            setAsyncPharmaLocation(address);
             setAsyncPincode(saveAddress);
             setDefaultAddress(address);
           }}
@@ -908,7 +903,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               city: response?.city,
               state: response?.state,
             };
-            AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+            setAsyncPharmaLocation(saveAddress);
             setAsyncPincode(saveAddress);
             setPharmacyLocation!(response);
             setDeliveryAddressId!('');

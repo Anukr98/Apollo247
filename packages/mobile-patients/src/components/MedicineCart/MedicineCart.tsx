@@ -52,6 +52,7 @@ import {
   formatAddressToLocation,
   getShipmentPrice,
   validateCoupon,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -817,13 +818,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           }}
           onPressSelectAddress={(address) => {
             checkServicability(address);
-            const saveAddress = {
-              pincode: address?.zipcode,
-              id: address?.id,
-              city: address?.city,
-              state: address?.state,
-            };
-            AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+            setAsyncPharmaLocation(address);
             hideAphAlert!();
           }}
         />
