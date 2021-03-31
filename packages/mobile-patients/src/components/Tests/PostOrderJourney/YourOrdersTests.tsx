@@ -366,7 +366,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             (item: any) => item?.identifier == getVisitId
           );
 
-          !!resultForVisitNo && resultForVisitNo?.length > 0
+          !!resultForVisitNo
             ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
                 data: resultForVisitNo,
                 labResults: true,
