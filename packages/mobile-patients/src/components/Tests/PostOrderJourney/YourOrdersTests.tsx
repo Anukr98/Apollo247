@@ -348,6 +348,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const fetchTestReportResult = useCallback(
     (order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) => {
+      setLoading?.(true);
       const getVisitId = order?.visitNo;
       getPatientPrismMedicalRecordsApi(
         client,
@@ -365,7 +366,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           let resultForVisitNo = labResultsData?.find(
             (item: any) => item?.identifier == getVisitId
           );
-
+          setLoading?.(false);
           !!resultForVisitNo
             ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
                 data: resultForVisitNo,
