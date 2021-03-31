@@ -33,6 +33,7 @@ import {
   FlatList,
   ScrollView,
   BackHandler,
+  Text,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
