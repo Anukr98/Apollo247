@@ -959,7 +959,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchSpecialities(id);
         break;
       case 'DoctorByNameId':
-        const docId = id.slice(-36);
+        const docId = (id?.split('?')?.[0] || id)?.slice(-36);
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: docId,
         });
