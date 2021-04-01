@@ -240,7 +240,17 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   useEffect(() => {
     fetchUserSpecificCoupon();
+    initiateHyperSDK();
   }, []);
+
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
 
   const bookAppointment = () => {
     const appointmentInput: bookAppointmentVariables = {
@@ -779,8 +789,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       } else {
         const data = await createOrderInternal(apptmt?.id!, subscriptionId);
         if (data?.data?.createOrderInternal?.success) {
-          const isInitiated: boolean = await isSDKInitialised();
-          !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: data?.data?.createOrderInternal?.payment_order_id!,
             amount: amountToPay,
