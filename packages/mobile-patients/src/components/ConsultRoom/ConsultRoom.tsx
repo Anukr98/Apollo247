@@ -3580,6 +3580,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
+              {/**added prohealth banner */}
+              {renderProhealthBanner()}
               {renderCovidMainView()}
             </View>
           </View>
