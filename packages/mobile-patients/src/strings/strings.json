@@ -121,7 +121,8 @@
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
     "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
     "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
-    "somethingWentWrong": "Something went wrong."
+    "somethingWentWrong": "Something went wrong.",
+    "settingProfileTxt": "We’re setting up your profile. Please check back soon!"
   },
   "components": {
     "medicineDetails": {

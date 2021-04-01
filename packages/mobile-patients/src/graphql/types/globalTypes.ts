@@ -266,6 +266,7 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   CANCELLED = "CANCELLED",
   CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_CANCELLED = "CONSULT_CANCELLED",
   CONSULT_COMPLETED = "CONSULT_COMPLETED",
   CONSULT_PENDING = "CONSULT_PENDING",
   DELIVERED = "DELIVERED",
@@ -664,6 +665,11 @@ export enum USER_STATUS {
 export enum USER_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+}
+
+export enum UnitTypes {
+  CLINIC = "CLINIC",
+  HOSPITAL = "HOSPITAL",
 }
 
 export enum UserState {
@@ -1274,6 +1280,7 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
+  subCategory?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {

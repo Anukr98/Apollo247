@@ -18,7 +18,8 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import CovidButton from './Components/CovidStyles';
+import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
+import firebaseAuth from '@react-native-firebase/auth';
 
 import {
   ApolloHealthProIcon,
@@ -44,15 +45,14 @@ import {
   NotificationIcon,
   Person,
   PrescriptionMenu,
-  Scan,
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
   WhiteArrowRightIcon,
-  FaqsArticles,
-  PhoneDoctor,
   VaccineTracker,
-  ChatBot,
+  CrossPopup,
+  ProHealthIcon,
+  BackArrow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { BannerDisplayType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -81,6 +81,8 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_PROHEALTH_CITY_LIST,
+  GET_PROHEALTH_HOSPITAL_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -99,6 +101,8 @@ import {
   GenerateTokenforCM,
   notifcationsApi,
   pinCodeServiceabilityApi247,
+  GenrateVitalsToken_CM,
+  GetAllUHIDSForNumber_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
@@ -141,7 +145,6 @@ import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
   Dimensions,
   Image,
   ImageBackground,
@@ -163,9 +166,12 @@ import { ScrollView } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps, FlatList } from 'react-navigation';
-import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
-import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
-import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
+import {
+  addVoipPushToken,
+  addVoipPushTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '@aph/mobile-patients/src/graphql/types/getPatientPersonalizedAppointments';
+import { ConsultPersonalizedCard } from '@aph/mobile-patients/src/components/ui/ConsultPersonalizedCard';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import {
   preFetchSDK,
@@ -181,6 +187,12 @@ import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTy
 import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import {
+  getProHealthHospitalByCityId,
+  getProHealthHospitalByCityIdVariables,
+} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalByCityId';
+import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 
 const { Vitals } = NativeModules;
 
@@ -242,12 +254,10 @@ const styles = StyleSheet.create({
     marginLeft: 7,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(26),
-    // textTransform: 'capitalize',
   },
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
   },
@@ -628,6 +638,33 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: 'white',
   },
+  proHealthOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    flex: 1,
+    left: 0,
+    right: 0,
+    zIndex: 3000,
+  },
+  proHealthContainer: { marginHorizontal: 30, flexDirection: 'row', marginTop: 80 },
+  proHealthInnerContainer: {
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    padding: 16,
+    width: width - 90,
+    maxHeight: height - 300,
+  },
+  proHealthPopUpHeading: { ...theme.viewStyles.text('SB', 16, theme.colors.SHERPA_BLUE, 1, 24) },
+  crossIconTouch: { alignSelf: 'flex-start', marginLeft: 20 },
+  listContainer: { padding: 10, paddingLeft: 0 },
+  listName: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20) },
+  hospitalHeadingView: { marginBottom: 10, flexDirection: 'row' },
 });
 
 type menuOptions = {
@@ -677,12 +714,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const {
     setLocationDetails,
     locationDetails,
-    isCurrentLocationFetched,
     setCurrentLocationFetched,
     notificationCount,
     setNotificationCount,
     setAllNotifications,
-    setisSelected,
     appointmentsPersonalized,
     setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
@@ -695,13 +730,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCircleSubscription,
     hdfcUpgradeUserSubscriptions,
     setHdfcUpgradeUserSubscriptions,
-    circleSubscription,
     setAxdcCode,
     circlePlanId,
     setCirclePlanId,
     healthCredits,
     setHealthCredits,
-    isRenew,
     setIsRenew,
     setHdfcPlanId,
     setCircleStatus,
@@ -724,11 +757,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
 
-  const {
-    cartItems,
-    setIsDiagnosticCircleSubscription,
-    isDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
+  const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const {
     cartItems: shopCartItems,
@@ -776,6 +805,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
 
+  //prohealth
+  const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
+  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
+  const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
+  const [authToken, setAuthToken] = useState<string>('');
+  const auth = firebaseAuth();
+
   const planValiditycr = useRef<string>('');
   const planPurchasedcr = useRef<boolean | undefined>(false);
   const circlePlanStatus = props.navigation.getParam('circleStatus');
@@ -801,6 +837,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
     }
   }, []);
+
+  //for prohealth option
+  useEffect(() => {
+    checkIsProhealthActive();
+  }, [currentPatient]);
 
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
@@ -1184,7 +1225,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     ) : null;
   };
 
-  const listValues: menuOptions[] = [
+  const listOptions: menuOptions[] = [
     {
       id: 1,
       title: 'Book Apollo Doctor Appointment',
@@ -1193,7 +1234,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        // showProfileSelectionAlert();
       },
     },
     {
@@ -1256,6 +1296,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
+  ];
+
+  const listValues: menuOptions[] = [
+    ...listOptions,
     {
       id: 6,
       title: 'Manage Diabetes',
@@ -1268,7 +1312,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
   ];
 
-  // const [listValues, setListValues] = useState<menuOptions[]>(menuOptions);
+  const listValuesForProHealth: menuOptions[] = [
+    ...listOptions,
+    {
+      id: 6,
+      title: 'ProHealth',
+      image: <ProHealthIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.PROHEALTH);
+        getTokenForProhealthCM();
+      },
+    },
+  ];
 
   useEffect(() => {
     if (enableCM) {
@@ -2027,8 +2083,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
       )
         .then((token: any) => {
-          console.log(token, 'getTokenforCM');
-
           async function fetchTokenData() {
             setshowSpinner(false);
 
@@ -2036,9 +2090,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const buildSpecify = buildName();
             let keyHash;
             if (buildSpecify === 'QA' || buildSpecify === 'DEV' || buildSpecify === 'DEVReplica') {
-              keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
+              keyHash = AppConfig.Configuration.QA_DIABETES_MGMT_HashKey;
             } else {
-              keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
+              keyHash = AppConfig.Configuration.Prod_DIABETES_MGMT_HashKey;
             }
             console.log('tokenValue', tokenValue, keyHash);
 
@@ -2062,7 +2116,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   fullName,
                   keyHash,
                   buildSpecify,
-                  currentDeviceToken
+                  currentDeviceToken,
+                  AppConfig.Configuration.DIABETES_MGMT_CM_PROGRAM_ID
                 );
             }
           }
@@ -2077,28 +2132,140 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setshowSpinner(false);
       showAphAlert &&
         showAphAlert({
-          title: 'Hi :)',
-          description: 'We’re setting up your profile. Please check back soon!',
+          title: string.common.hiWithSmiley,
+          description: string.common.settingProfileTxt,
+        });
+    }
+  };
+
+  //token for prohealth - CM
+  const getTokenForProhealthCM = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    try {
+      setshowSpinner(true);
+      let vitaTokenResponse = await GenrateVitalsToken_CM('ask_apollo', currentPatient?.uhid);
+      if (vitaTokenResponse?.data && vitaTokenResponse?.data?.message.includes('Successfully')) {
+        let vitaToken = vitaTokenResponse?.data?.vitaToken;
+        const buildSpecify = buildName();
+        let keyHash;
+        if (
+          buildSpecify === 'QA' ||
+          buildSpecify === 'DEV' ||
+          buildSpecify === 'DEVReplica' ||
+          buildSpecify === 'VAPT'
+        ) {
+          keyHash = AppConfig.Configuration.QA_PROHEALTH_MGMT_HashKey;
+        } else {
+          keyHash = AppConfig.Configuration.Prod_PROHEALTH_MGMT_HashKey;
+        }
+        setshowSpinner(false);
+        //call the sdk.
+        if (Platform.OS === 'ios') {
+          if (vitaToken) {
+            Vitals.vitalsToExport(vitaToken, buildSpecify);
+            setTimeout(() => {
+              Vitals.goToReactNative(vitaToken);
+            }, 500);
+          }
+        } else {
+          const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(
+            currentPatient,
+            'lastName'
+          ) || ''}`;
+          const UHID = `${g(currentPatient, 'uhid') || ''}`;
+          vitaToken &&
+            KotlinBridge.show(
+              vitaToken,
+              UHID,
+              fullName,
+              keyHash,
+              buildSpecify,
+              currentDeviceToken,
+              AppConfig.Configuration.PROHEALTH_MGMT_CM_PROGRAM_ID
+            );
+        }
+      } else {
+        setshowSpinner(false);
+        setProHealthActive(false);
+        showAphAlert &&
+          showAphAlert({
+            title: string.common.hiWithSmiley,
+            description: string.common.settingProfileTxt,
+          });
+      }
+    } catch (error) {
+      CommonBugFender('getTokenForProhealthCM_error_ConsultRoom', error);
+      setProHealthActive(false);
+      setshowSpinner(false);
+      console.log({ error });
+    }
+  };
+
+  //check if user has any prohealth bookings
+  const checkIsProhealthActive = async () => {
+    const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+    const item = JSON.parse(retrievedItem || 'null');
+    const callByPrism: any = await AsyncStorage.getItem('callByPrism'); //why?
+    let allPatients;
+    if (callByPrism === 'false') {
+      allPatients =
+        !!item && item?.data?.getPatientByMobileNumber
+          ? item?.data?.getPatientByMobileNumber?.patients
+          : null;
+    } else {
+      allPatients =
+        !!item && item?.data?.getCurrentPatients ? item?.data?.getCurrentPatients?.patients : null;
+    }
+    const patientDetails = allPatients
+      ? allPatients?.find((patient: any) => patient?.relation === Relation.ME) || allPatients?.[0]
+      : null;
+    const patientUHID = patientDetails ? (patientDetails?.uhid ? patientDetails?.uhid : '') : '';
+    if (patientUHID) {
+      setshowSpinner(true);
+      try {
+        const getPhoneNumber =
+          patientDetails?.mobileNumber?.length > 10
+            ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
+            : patientDetails?.mobileNumber;
+        const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
+        if (res?.data?.response && res?.data?.errorCode === 0) {
+          let resultData = res?.data?.response?.signUpUserData;
+          if (resultData?.length > 0) {
+            let getCurrentProfile = resultData?.find(
+              (item: any) => item?.uhid == currentPatient?.uhid
+            );
+            //get status for active chron.
+            let isActive = getCurrentProfile?.isChronActive;
+            isActive ? setProHealthActive(true) : setProHealthActive(false);
+          }
+        } //error code
+        setshowSpinner(false);
+      } catch (error) {
+        CommonBugFender('ProHealth_checkIsProhealthActive_error_ConsultRoom', error);
+        setProHealthActive(false);
+        setshowSpinner(false);
+        console.log({ error });
+      }
+    } else {
+      setshowSpinner(false);
+      setProHealthActive(false);
+      showAphAlert &&
+        showAphAlert({
+          title: string.common.hiWithSmiley,
+          description: string.common.settingProfileTxt,
         });
     }
   };
 
   const getPersonalizesAppointments = async () => {
-    // const uhid = g(details, 'uhid');
-
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
-
     const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
-
     const uhidSelected = await AsyncStorage.getItem('UHIDused');
-    // console.log('selectedUHID', selectedUHID);
-    // console.log('selectUserId', selectUserId);
 
     if (uhidSelected !== null) {
       if (uhidSelected === selectedUHID) {
-        if (Object.keys(appointmentsPersonalized).length != 0) {
-          // console.log('appointmentsPersonalized', appointmentsPersonalized);
-
+        if (Object.keys(appointmentsPersonalized)?.length != 0) {
           setPersonalizedData(appointmentsPersonalized as any);
           setisPersonalizedCard(true);
         }
@@ -2297,6 +2464,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderMenuOptions = () => {
+    let arrayList =
+      isProHealthActive && Platform.OS == 'android' ? listValuesForProHealth : listValues;
     return (
       <View
         style={{
@@ -2307,7 +2476,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           marginBottom: 8,
         }}
       >
-        {listValues.map((item) => {
+        {arrayList.map((item) => {
           if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
             if (item?.id < 3) {
               return (
@@ -3144,8 +3313,254 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderProhealthBanner = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => _navigateProHealth()}
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          ...theme.viewStyles.shadowStyle,
+          padding: 16,
+          height: 56,
+          marginHorizontal: 20,
+          marginTop: 4,
+          marginBottom: 4,
+          justifyContent: 'center',
+          backgroundColor: 'red',
+        }}
+      >
+        <View style={{}}>
+          <Text>Prohealth</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  const [showCities, setShowCitites] = useState<boolean>(false);
+  const [showHospitals, setShowHospitals] = useState<boolean>(false);
+  const [prohealthCityList, setProHealthCityList] = useState([] as any);
+  const [prohealthHospitalList, setProHealthHospitalList] = useState([] as any);
+  const [selectedProHealthCity, setSelectedProHealthCity] = useState<string>('');
+  const [selectedProHealthHospital, setSelectedProHealthHospital] = useState<string>('');
+  const getProHealthCities = () =>
+    client.query({
+      query: GET_PROHEALTH_CITY_LIST,
+    });
+  async function _navigateProHealth() {
+    //call cities api.
+    try {
+      setLoading?.(true);
+      let response = await getProHealthCities();
+      if (
+        response?.data?.getProHealthCities &&
+        response?.data?.getProHealthCities?.cityList?.length > 0
+      ) {
+        let cityList = response?.data?.getProHealthCities?.cityList;
+        setProHealthCityList(cityList);
+        setShowCitites(true);
+        showHospitals && setShowHospitals(false);
+      }
+      setLoading?.(false);
+    } catch (error) {
+      console.log({ error });
+      setLoading?.(false);
+      CommonBugFender('_navigateProHealth_ConsultPage', error);
+    }
+  }
+  const renderCitiesOverlay = () => {
+    return (
+      <View style={styles.proHealthOverlay}>
+        <View style={styles.proHealthContainer}>
+          <View style={styles.proHealthInnerContainer}>
+            <View style={{ marginBottom: 10 }}>
+              <Text style={styles.proHealthPopUpHeading}>SELECT YOUR CITY</Text>
+            </View>
+            <FlatList
+              data={prohealthCityList}
+              renderItem={renderCity}
+              keyExtractor={(_, index) => `${index}`}
+              style={{ flexGrow: 0 }}
+              contentContainerStyle={{}}
+              keyboardShouldPersistTaps="handled"
+              onScrollBeginDrag={() => Keyboard.dismiss()}
+            />
+          </View>
+          <TouchableOpacity style={styles.crossIconTouch} onPress={() => _onCloseCitiesPopUp()}>
+            <CrossPopup />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+  function _onCloseCitiesPopUp() {
+    setShowCitites(false);
+    setSelectedProHealthHospital('');
+    setSelectedProHealthCity('');
+  }
+  const renderCity = (item: any) => {
+    return (
+      <TouchableOpacity onPress={() => _onPressCity(item)}>
+        <View style={styles.listContainer} key={item?.item?.id}>
+          <Text style={styles.listName}>{item?.item?.cityName}</Text>
+          {item?.index === prohealthCityList?.length - 1 ? null : (
+            <Spearator style={{ marginTop: 10 }} />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  function _onPressCity(item: any) {
+    let selectedCityId = item?.item?.id;
+    setShowCitites(false);
+    setSelectedProHealthCity(selectedCityId);
+    fetchProHealthHospitalList(item);
+  }
+  const getProHealthHospitals = (id: string) =>
+    client.query<getProHealthHospitalByCityId, getProHealthHospitalByCityIdVariables>({
+      query: GET_PROHEALTH_HOSPITAL_LIST,
+      variables: { cityId: id },
+    });
+  async function fetchProHealthHospitalList(item: any) {
+    try {
+      setLoading?.(true);
+      let response = await getProHealthHospitals(item?.item?.id);
+      if (
+        response?.data?.getProHealthHospitalByCityId &&
+        response?.data?.getProHealthHospitalByCityId?.hospitals?.length! > 0
+      ) {
+        let hospitalList = response?.data?.getProHealthHospitalByCityId?.hospitals || [];
+        setProHealthHospitalList(hospitalList);
+        setShowHospitals(true);
+      } else {
+        //list is empty.. then show some prompt?
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('_fetchProHealthHospitalList_ConsultPage', error);
+    }
+  }
+  function _onPressHospitalBack() {
+    setShowHospitals(false);
+    setProHealthHospitalList([]);
+    setSelectedProHealthHospital('');
+    setSelectedProHealthCity('');
+    setShowCitites(true);
+  }
+  const renderHospitalOverlay = () => {
+    return (
+      <View style={styles.proHealthOverlay}>
+        <View style={styles.proHealthContainer}>
+          <View style={styles.proHealthInnerContainer}>
+            <View style={styles.hospitalHeadingView}>
+              <TouchableOpacity
+                onPress={() => _onPressHospitalBack()}
+                style={{ alignSelf: 'center' }}
+              >
+                <BackArrow />
+              </TouchableOpacity>
+              <Text style={[styles.proHealthPopUpHeading, { marginHorizontal: 20 }]}>
+                SELECT YOUR HOSPITAL
+              </Text>
+            </View>
+            <FlatList
+              data={prohealthHospitalList}
+              renderItem={renderHospitals}
+              keyExtractor={(_, index) => `${index}`}
+              style={{ flexGrow: 0 }}
+              contentContainerStyle={{}}
+              keyboardShouldPersistTaps="handled"
+              onScrollBeginDrag={() => Keyboard.dismiss()}
+            />
+          </View>
+          <TouchableOpacity
+            style={{ alignSelf: 'flex-start', marginLeft: 20 }}
+            onPress={() => _onCloseHospitalPopUp()}
+          >
+            <CrossPopup />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+  function _onCloseHospitalPopUp() {
+    setShowCitites(false);
+    setShowHospitals(false);
+    setSelectedProHealthHospital('');
+    setSelectedProHealthCity('');
+  }
+  const renderHospitals = (item: any) => {
+    return (
+      <TouchableOpacity onPress={() => _onPressHospital(item)}>
+        <View style={styles.listContainer} key={item?.item?.id}>
+          <Text style={styles.listName}>{item?.item?.unitName}</Text>
+          {item?.index === prohealthHospitalList?.length - 1 ? null : (
+            <Spearator style={{ marginTop: 10 }} />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  function _onPressHospital(item: any) {
+    let selectedHospitalId = item?.item?.id;
+    setShowHospitals(false);
+    setSelectedProHealthHospital(selectedHospitalId);
+    //call the jwt token again.
+    regenerateJWTToken(selectedHospitalId);
+  }
+  const regenerateJWTToken = async (hospitalId: string) => {
+    let deviceType = Platform.OS == 'android' ? 'Apollo247_Android' : 'Apollo247_Ios';
+    setLoading?.(true);
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    if (userLoggedIn == 'true') {
+      // no need to refresh jwt token on login
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwt = await user.getIdToken(true).catch((error) => {
+              setIsSigningIn(false);
+              setSignInError(true);
+              setAuthToken('');
+              throw error;
+            });
+            setAuthToken(jwt);
+            //open the webview
+            try {
+              const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+              let finalUrl = openUrl.concat(
+                '/',
+                selectedProHealthCity,
+                '/',
+                hospitalId,
+                '?utm_token=',
+                jwt,
+                '&utm_mobile_number=',
+                currentPatient && g(currentPatient, 'mobileNumber')
+                  ? currentPatient.mobileNumber
+                  : '',
+                '&deviceType=',
+                deviceType
+              );
+              console.log(finalUrl);
+              setLoading?.(false);
+              props.navigation.navigate(AppRoutes.ProHealthWebView, {
+                covidUrl: finalUrl,
+              });
+            } catch (e) {
+              setLoading?.(false);
+            }
+          }
+        });
+      } catch (e) {
+        setLoading?.(false);
+      }
+    }
+    setLoading?.(false);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
+      {showCities && renderCitiesOverlay()}
+      {showHospitals && renderHospitalOverlay()}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View style={{ width: '100%' }}>

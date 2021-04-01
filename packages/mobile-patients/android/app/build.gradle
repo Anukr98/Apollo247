@@ -309,7 +309,7 @@ dependencies {
     kapt("com.github.bumptech.glide:compiler:4.9.0")
 
 // Room components
-    implementation("androidx.room:room-runtime:2.1.0")
+    implementation("androidx.room:room-runtime:2.2.0") //2.1.0 => 2.2.0
     kapt("androidx.room:room-compiler:2.2.0")
     implementation("androidx.room:room-ktx:2.2.0")
     implementation("androidx.room:room-rxjava2:2.2.0")
@@ -351,7 +351,7 @@ dependencies {
     implementation("joda-time:joda-time:2.9.7")
     implementation("com.opencsv:opencsv:4.1")
 // Twilio
-    implementation("com.twilio:chat-android:4.0.2")
+    implementation("com.twilio:chat-android:4.2.3") //4.0.2 => 4.2.3
 // ToolTip
     implementation("com.github.sephiroth74:android-target-tooltip:2.0.4")
 // Work Manager

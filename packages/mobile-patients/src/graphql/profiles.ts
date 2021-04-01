@@ -4812,3 +4812,28 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
     }
   }
 `;
+
+export const GET_PROHEALTH_CITY_LIST = gql`
+query getProHealthCities{
+  getProHealthCities{
+    cityList{
+      regionId
+      cityName
+      id
+    }
+  }
+}
+`;
+
+export const GET_PROHEALTH_HOSPITAL_LIST = gql`
+query getProHealthHospitalByCityId($cityId: ID!){
+  getProHealthHospitalByCityId(cityId:$cityId){
+    hospitals{
+      unitName
+      unitType
+      unitLocationId
+      id
+    }
+  }
+}
+`;
