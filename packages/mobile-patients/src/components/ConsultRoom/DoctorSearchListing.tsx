@@ -389,13 +389,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
-    console.log(
-      'csk platinum api before call',
-      partnerDoctor,
-      props.navigation.getParam('specialityId'),
-      ZoneType.STATE,
-      locationDetails?.state
-    );
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
@@ -408,10 +401,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         },
       })
       .then(({ data }) => {
-        console.log('csk data', data);
         const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
         if (platinum_doctor) {
-          console.log('csk platinum api', partnerDoctor, platinum_doctor?.displayName);
           setPlatinumDoctor(platinum_doctor);
           postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
         } else {
@@ -419,7 +410,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
       })
       .catch((e) => {
-        console.log('csk api error', e);
         setPlatinumDoctor(null);
         CommonBugFender('GET_PLATINUM_DOCTOR', e);
       });
@@ -442,7 +432,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        console.log('csk in fetchaddress', partnerDoctor, from);
         await getDoctorOfTheHour(partnerDoctor, state);
       }
     } catch (error) {
@@ -1616,6 +1605,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
           <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
         </View>
+        {console.log('csk doh render', JSON.stringify(platinumDoctor))}
         <DoctorCard
           rowData={platinumDoctor}
           navigation={props.navigation}
@@ -1989,7 +1979,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const onPressDoctorPartnersTab = () => {
     if (doctorsType != 'PARTNERS') {
-      console.log('csk partner pressed');
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
       setFilteredDoctorsList([]);
