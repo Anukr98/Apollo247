@@ -3,7 +3,10 @@ import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
-import { Helpers as NeedHelpQueryDetailsHelpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import {
+  Events,
+  Helpers as NeedHelpQueryDetailsHelpers,
+} from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight, Down } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -16,6 +19,10 @@ import {
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -42,9 +49,11 @@ export interface Props
     queries?: NeedHelpHelpers.HelpSectionQuery[];
     email?: string;
     orderId?: string;
+    sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
   }> {}
 
 export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
+  const sourcePage = navigation.getParam('sourcePage') || 'My Account';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
   const queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || helpSectionQueryId.pharmacy;
@@ -195,6 +204,11 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
       }
+      Events.helpTicketSubmitted({
+        BU: parentQuery?.title!,
+        Reason: issueNotResolvedText,
+        Source_Page: sourcePage,
+      });
     } catch (error) {
       setLoading!(false);
       onError();
