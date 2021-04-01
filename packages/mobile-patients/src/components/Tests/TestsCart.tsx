@@ -538,7 +538,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setHcCharges?.(0);
       setLoading?.(false);
     }
-    console.log('cartItems', cartItems);
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot?.date));
@@ -994,9 +993,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          console.log('findDiagnosticsItemsForCityId\n', { data });
           const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics');
-          console.log({ product });
 
           if (product) {
             func && func(product[0]!);
@@ -1280,7 +1277,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
-        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
         const diagnosticSlotsToShow = diagnosticSlots;
 
@@ -1300,8 +1296,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           } as TestSlot);
         });
 
-        console.log('ARRAY OF SLOTS', { slotsArray });
-
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
         if (isSameDate && slotsArray?.length == 0) {
@@ -1315,7 +1309,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
           const slotDetails = slotsArray?.[0];
-          console.log({ slotDetails });
           slotsArray?.length && setselectedTimeSlot(slotDetails);
 
           setDiagnosticSlot!({
@@ -1675,7 +1668,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const prescriptions = physicalPrescriptions;
     setLoading!(true);
     const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-    console.log('unUploadedPres', unUploadedPres);
     if (unUploadedPres.length > 0) {
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
@@ -1696,7 +1688,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 prismPrescriptionFileId: uploadUrls![index]!.fileId,
               } as PhysicalPrescription)
           );
-          console.log('precp:di', newuploadedPrescriptions);
 
           setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
           setisPhysicalUploadComplete(true);
@@ -1794,7 +1785,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ? `${slotStartTime}-${slotEndTime}`
       : ''
     ).replace(' ', '');
-    console.log(physicalPrescriptions, 'physical prescriptions');
 
     const orderInfo: DiagnosticOrderInput = {
       // <- for home collection order
