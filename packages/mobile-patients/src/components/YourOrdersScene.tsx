@@ -56,11 +56,14 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
+  customHelpContainer: { alignItems: 'flex-end', marginRight: 16, marginTop: 10 },
 });
 
 type AppSection = { buyAgainSection: true };
 export type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
-export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {}
+export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {
+  showHeader?: boolean;
+}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
@@ -120,14 +123,14 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const renderOrder = (order: MedOrder, index: number) => {
     const orderNumber = order?.billNumber || order?.orderAutoId;
     const ordersOnHold =
-      order?.medicineOrdersStatus!.filter(
+      order?.medicineOrdersStatus?.filter(
         (item) => item?.orderStatus! == MEDICINE_ORDER_STATUS.ON_HOLD //PRESCRIPTION_UPLOADED
       ) || [];
     const isNonCart = order?.medicineOrdersStatus!.find(
-      (item) => item?.orderStatus! == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+      (item) => item?.orderStatus === MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
     );
 
-    const latestOrdersOnHold = ordersOnHold.sort((a: any, b: any) => {
+    const latestOrdersOnHold = ordersOnHold?.sort((a: any, b: any) => {
       (new Date(b?.statusDate) as any) - (new Date(a?.statusDate) as any);
     });
 
@@ -167,7 +170,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         isOnHold={
           order?.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
           isOnHold &&
-          !order?.medicineOrdersStatus!.find(
+          !order?.medicineOrdersStatus?.find(
             (item) =>
               item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
               item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
@@ -178,7 +181,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         isItemsUpdated={
           statusToShowNewItems.includes(order?.currentStatus!) &&
           isNonCart && //check
-          order?.medicineOrderLineItems?.length > 0
+          order?.medicineOrderLineItems?.length! > 0
             ? true
             : false
         }
@@ -283,13 +286,18 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          leftIcon="backArrow"
-          title={props.navigation.getParam('header') || string.orders.urOrders}
-          container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
-          rightComponent={renderHeaderRightComponent()}
-        />
+        {props?.showHeader == false ? null : (
+          <Header
+            leftIcon="backArrow"
+            title={props.navigation.getParam('header') || string.orders.urOrders}
+            container={{ borderBottomWidth: 0 }}
+            onPressLeftIcon={() => props.navigation.goBack()}
+            rightComponent={renderHeaderRightComponent()}
+          />
+        )}
+        {props?.showHeader == false && (
+          <View style={styles.customHelpContainer}>{renderHeaderRightComponent()}</View>
+        )}
         {renderError()}
         {renderOrders()}
       </SafeAreaView>

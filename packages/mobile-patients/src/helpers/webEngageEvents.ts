@@ -493,6 +493,7 @@ export interface DiagnosticUserInfo {
 
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Serviceability: 'Yes' | 'No';
+  Source?: string;
 }
 
 export interface DiagnosticServiceble {
@@ -1163,7 +1164,7 @@ export interface WebEngageEvents {
     'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink';
     'Item Name': string;
     'Item Type': string;
     'Item Code': string;
