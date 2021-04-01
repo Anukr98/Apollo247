@@ -181,6 +181,7 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 
 const { Vitals } = NativeModules;
 
@@ -2989,19 +2990,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     try {
       if (item?.url?.includes('apollopatients://')) {
         // handling speciality deeplink only on this phase
-        if (item?.url?.includes('apollopatients://Speciality')) {
-          const id = item?.url?.split?.('Speciality?');
-          if (id?.[1]) {
-            const filtersData = handleEncodedURI(id?.[1]) || '';
-            props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-              specialityId: filtersData?.[0] || '',
-              typeOfConsult: filtersData?.[1] || '',
-              doctorType: filtersData?.[2] || '',
-            });
-          } else {
-            props.navigation.navigate(AppRoutes.DoctorSearch);
-          }
-        }
+        const data = handleOpenURL(item?.url);
+        const { routeName, id, isCall, mediaSource } = data;
+        const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+        pushTheView(
+          props.navigation,
+          routeName,
+          id ? id : undefined,
+          isCall,
+          isCircleMember === 'yes',
+          mediaSource
+        );
+        // if (item?.url?.includes('apollopatients://Speciality')) {
+        //   const id = item?.url?.split?.('Speciality?');
+        //   if (id?.[1]) {
+        //     const filtersData = handleEncodedURI(id?.[1]) || '';
+        //     props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+        //       specialityId: filtersData?.[0] || '',
+        //       typeOfConsult: filtersData?.[1] || '',
+        //       doctorType: filtersData?.[2] || '',
+        //     });
+        //   } else {
+        //     props.navigation.navigate(AppRoutes.DoctorSearch);
+        //   }
+        // }
         return;
       }
       const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
