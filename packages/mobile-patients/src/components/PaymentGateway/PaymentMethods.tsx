@@ -478,7 +478,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return <PayByCash onPressPlaceOrder={onPressPayByCash} />;
+    return businessLine != 'consult' ? <PayByCash onPressPlaceOrder={onPressPayByCash} /> : null;
   };
 
   const showTxnFailurePopUP = () => {

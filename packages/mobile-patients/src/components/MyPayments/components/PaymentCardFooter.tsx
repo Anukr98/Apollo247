@@ -45,6 +45,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       const {
         appointmentDateTime,
         appointmentPayments,
+        appointmentPaymentOrders,
         doctor,
         appointmentType,
         appointmentRefunds,
@@ -52,7 +53,10 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       leftHeaderText = 'Dr. ' + doctor.name;
       type = appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit';
       aptType = appointmentType;
-      if (!appointmentPayments || !appointmentPayments.length) {
+      const paymentInfo = Object.keys(appointmentPaymentOrders).length
+        ? appointmentPaymentOrders
+        : appointmentPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
         return {
           leftHeaderText: leftHeaderText,
@@ -71,7 +75,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        status = appointmentPayments[0].paymentStatus;
+        status = paymentInfo?.paymentStatus;
         return {
           leftHeaderText: leftHeaderText,
           dateAndTime: getDate(appointmentDateTime),

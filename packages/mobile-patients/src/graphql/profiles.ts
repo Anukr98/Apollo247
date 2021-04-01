@@ -3372,7 +3372,7 @@ export const ADD_FAMILY_HISTORY_RECORD = gql`
 
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
-    cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
+    cancelAppointmentV2(cancelAppointmentInput: $cancelAppointmentInput) {
       status
     }
   }
@@ -4190,6 +4190,11 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
           refundStatus
         }
         appointmentPayments {
+          paymentRefId
+          paymentStatus
+          amountPaid
+        }
+        appointmentPaymentOrders {
           paymentRefId
           paymentStatus
           amountPaid

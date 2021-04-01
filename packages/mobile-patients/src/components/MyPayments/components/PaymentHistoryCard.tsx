@@ -60,11 +60,14 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
 
   const getAmountPaid = () => {
     if (paymentFor === 'consult') {
-      const { appointmentPayments } = item;
-      if (!appointmentPayments || !appointmentPayments.length) {
+      const { appointmentPayments, appointmentPaymentOrders } = item;
+      const paymentInfo = Object.keys(appointmentPaymentOrders).length
+        ? appointmentPaymentOrders
+        : appointmentPayments[0];
+      if (!paymentInfo) {
         return 0;
       } else {
-        const { amountPaid } = appointmentPayments[0];
+        const { amountPaid } = paymentInfo;
         return amountPaid;
       }
     } else if (paymentFor === 'pharmacy') {
