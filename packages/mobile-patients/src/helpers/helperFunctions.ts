@@ -266,6 +266,16 @@ export const getAge = (dob: string) => {
   return differenceInYears(now, age);
 };
 
+export function isAddressLatLngInValid(address: any) {
+  let isInvalid =
+    address?.latitude == null ||
+    address?.longitude == null ||
+    address?.latitude == 0 ||
+    address?.longitude == 0;
+
+  return isInvalid;
+}
+
 export const formatAddressBookAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
