@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -41,8 +41,6 @@ const paymentGatewayBaseUrl: string =
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
-const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
-const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
 const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
@@ -114,10 +112,10 @@ const covidVaccineSection = {
   ],
 };
 
-const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613 ]; 
+const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
 const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
-const covidMaxSlotDays = 6;
-const nonCovidMaxSlotDays = 3;
+const covidMaxSlotDays = 7;
+const nonCovidMaxSlotDays = 4;
 
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
@@ -129,7 +127,6 @@ const appStaticVariables = {
   TAT_API_RESPONSE_DATE_FORMAT: 'DD-MMM-YYYY HH:mm',
   CASESHEET_PRESCRIPTION_DATE_FORMAT: 'DD MMM YYYY',
   CASESHEET_PRESCRIPTION_TIME_FORMAT: 'hh:mm A',
-  DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
@@ -155,7 +152,6 @@ const appStaticVariables = {
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
-  PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   CIRCLE_PLAN_ID: 'CIRCLEPlan',
   CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,
@@ -203,9 +199,9 @@ const appStaticVariables = {
     },
   ],
   FollowUp_Chat_Limit: 4,
-  Covid_Items : QA_covid_items,
-  Covid_Max_Slot_Days : covidMaxSlotDays,
-  Non_Covid_Max_Slot_Days : nonCovidMaxSlotDays
+  Covid_Items: QA_covid_items,
+  Covid_Max_Slot_Days: covidMaxSlotDays,
+  Non_Covid_Max_Slot_Days: nonCovidMaxSlotDays,
 };
 
 const DEV_top_specialties = [
@@ -529,6 +525,7 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
 };
 
 // QA
@@ -679,6 +676,7 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
 };
 
 // VAPT
@@ -731,6 +729,7 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
 };
 //Production
 const ConfigurationProd = {
@@ -782,7 +781,7 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  Covid_Items : Prod_covid_items,
+  Covid_Items: Prod_covid_items,
 };
 
 //PERFORMANCE
@@ -836,6 +835,7 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
 };
 
 //DevelopmentReplica
@@ -889,6 +889,7 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
 };
 
 const Configuration =
@@ -1090,8 +1091,6 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
-  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
@@ -1146,8 +1145,8 @@ export const DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED
-]
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
 
 export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
@@ -1159,7 +1158,7 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
-]
+];
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1238,7 +1237,6 @@ export const TestReschedulingReasons = {
     string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
     string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
     string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
-
   ],
 };
 
@@ -1313,8 +1311,8 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
 export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL
-]
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+];
 
 type SpecialitiesType = {
   [key: string]: string[];

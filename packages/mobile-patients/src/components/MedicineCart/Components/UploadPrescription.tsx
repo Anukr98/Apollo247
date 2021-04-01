@@ -55,7 +55,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         onClickClose={onClickClose}
         onResponse={(selectedType, response) => {
           onClickClose();
-          console.log(selectedType);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             updatePhysicalPrescriptions(response);
           } else {

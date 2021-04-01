@@ -1,7 +1,7 @@
 // import HyperSdkReact from '​hyper-sdk-react​';
 import { NativeModules } from 'react-native';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import Axios, { AxiosResponse } from 'axios';
+import Axios from 'axios';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -38,34 +38,6 @@ export const initiateSDK = (customerId: string, requestId: string) => {
   HyperSdkReact.initiate(JSON.stringify(initiatePayload));
 };
 
-// export const handleEventListener = (resp: any) => {
-//   var data = JSON.parse(resp);
-//   var event: string = data.event || '';
-//   console.log('data >>>>', data);
-//   switch (event) {
-//     case 'show_loader':
-//       // show some loader here
-//       console.log('show_loader');
-//       break;
-//     case 'hide_loader':
-//       // hide the loader
-//       console.log('hide_loader');
-//       break;
-//     case 'initiate_result':
-//       var payload = data.payload || {};
-//       console.log('initiate_result: ', payload);
-//       // merchant code
-//       break;
-//     case 'process_result':
-//       var payload = data.payload || {};
-//       console.log('process_result: ', payload);
-//       // merchant code
-//       break;
-//     default:
-//       console.log('Unknown Event', data);
-//   }
-// };
-
 export const isSDKInitialised = () => {
   return HyperSdkReact.isInitialised();
 };
@@ -98,7 +70,6 @@ export const InitiateNetBankingTxn = (
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('netBankingPayload >>>', netBankingPayload);
   HyperSdkReact.process(JSON.stringify(netBankingPayload));
 };
 
@@ -144,7 +115,6 @@ export const InitiateWalletTxn = (
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('walletPayload >>', walletPayload);
   HyperSdkReact.process(JSON.stringify(walletPayload));
 };
 
@@ -175,7 +145,6 @@ export const InitiateUPISDKTxn = (
   if (paymentMethod == 'GOOGLEPAY') {
     IntentPayload['payload']['allowedMethods'] = ['UPI'];
   }
-  console.log('IntentPayload >>', IntentPayload);
   HyperSdkReact.process(JSON.stringify(IntentPayload));
 };
 
@@ -198,7 +167,6 @@ export const InitiateVPATxn = (
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('VPAPayload >>', VPAPayload);
   HyperSdkReact.process(JSON.stringify(VPAPayload));
 };
 

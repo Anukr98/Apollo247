@@ -3,32 +3,25 @@ import {
   Alert,
   SafeAreaView,
   StyleSheet,
-  Text,
   Platform,
-  TouchableOpacity,
   View,
   KeyboardAvoidingView,
   BackHandler,
   NavState,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
-  getParameterByName,
-  g,
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import moment from 'moment';
 import { WebView } from 'react-native-webview';
 import {
   WebEngageEvents,
@@ -40,14 +33,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { saveMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
-import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import AsyncStorage from '@react-native-community/async-storage';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   container: {
@@ -76,9 +63,7 @@ export interface PaymentSceneProps
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const {
-    clearCartInfo,
     circleMembershipCharges,
-    setCircleMembershipCharges,
     isCircleSubscription,
     circleSubscriptionId,
     pharmacyCircleAttributes,
@@ -101,12 +86,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const subPlanId = props.navigation.getParam('subPlanId');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
-  const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
-  const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isfocused, setisfocused] = useState<boolean>(false);
-  const { circleSubscription } = useAppCommonData();
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Are you sure you want to change your payment mode?', [
@@ -138,19 +120,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
-
-  // const navigateToOrderDetails = (showOrderSummaryTab: boolean) => {
-  //   hideAphAlert!();
-  //   props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-  //     goToHomeOnBack: true,
-  //     showOrderSummaryTab,
-  //     orderAutoId,
-  //   });
-  // };
 
   const firePurchaseEvent = (orderId: string) => {
     let items: any = [];
@@ -228,7 +200,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       );
       firePurchaseEvent(orderId);
       if (!!isSuccess) {
-        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+          ...checkoutEventAttributes,
+          'Cart Items': JSON.stringify(cartItems),
+        });
       }
     }
   };
@@ -249,7 +224,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const onWebViewStateChange = (data: NavState, WebViewRef: any) => {
     const redirectedUrl = data.url;
     const loading = data.loading;
-    console.log('redirectedUrl >>>>>>', redirectedUrl);
     if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1 &&
@@ -292,8 +266,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         subPlanId ? '&subPlanId=' + subPlanId : ''
       }${'&storeCode=' + storeCode}`;
     }
-    console.log({ totalAmount, transactionId, url });
-    console.log(`%cMEDICINE_PG_URL:\t${url}`, 'color: #bada55');
 
     let WebViewRef: any;
     return (

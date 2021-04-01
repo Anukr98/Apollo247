@@ -11,7 +11,6 @@ import {
   DeleteBoldIcon,
   DeleteIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 export interface CartItemCard2Props {
@@ -22,7 +21,6 @@ export interface CartItemCard2Props {
 }
 
 export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
-  const { coupon } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -89,7 +87,7 @@ export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
           {discountedPrice || discountedPrice == 0
             ? renderPrice(discountedPrice)
             : renderPrice(mrp)}
-          {renderDelete()}
+          {/* {renderDelete()} */}
         </View>
       </View>
     );
@@ -105,6 +103,12 @@ export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
+    return (
+      <View style={styles.quantityContainer}>
+        <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
+      </View>
+    );
+    /*
     return !item?.isFreeCouponProduct || item?.quantity > 1 ? (
       <View style={{ ...styles.quantityContainer, opacity: itemAvailable ? 1 : 0.3 }}>
         <MaterialMenu
@@ -128,6 +132,7 @@ export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
         <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
       </View>
     );
+    */
   };
 
   function getDiscountPercent() {

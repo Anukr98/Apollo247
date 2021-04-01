@@ -30,11 +30,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  Relation,
-  UpdatePatientInput,
-  DEVICE_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Relation, UpdatePatientInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updatePatientVariables,
   updatePatient,
@@ -49,7 +45,6 @@ import { NavigationActions } from 'react-navigation';
 import {
   CommonLogEvent,
   CommonBugFender,
-  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getRelations,
@@ -79,6 +74,7 @@ import {
   createOneApolloUser,
   createOneApolloUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOneApolloUser';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 
 const { width, height } = Dimensions.get('window');
 
@@ -232,10 +228,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   const getPrefillReferralCode = async () => {
     const deeplinkReferalCode: any = await AsyncStorage.getItem('deeplinkReferalCode');
-    // console.log('deeplinkReferalCode', deeplinkReferalCode);
-
     if (deeplinkReferalCode !== null && deeplinkReferalCode !== undefined) {
-      // setBugFenderLog('MultiSignup_Referral_Code', deeplinkReferalCode);
       setReferral(deeplinkReferalCode);
     }
   };
@@ -255,7 +248,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           variables: { patientId: patientId },
         });
       } catch (error) {
-        console.log(error);
         CommonBugFender('oneApollo Registration', error);
       }
     }
@@ -264,13 +256,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const getDeviceCountAPICall = async () => {
     const uniqueId = await DeviceInfo.getUniqueId();
     setDeviceToken(uniqueId);
-    console.log(uniqueId, 'uniqueId');
 
     getDeviceTokenCount(client, uniqueId.trim())
       .then(({ data }: any) => {
-        // console.log(data, 'data getDeviceTokenCount');
-        console.log(data.data.getDeviceCodeCount.deviceCount, 'data getDeviceTokenCount');
-
         if (parseInt(data.data.getDeviceCodeCount.deviceCount, 10) < 2) {
           setShowReferralCode(true);
         } else {
@@ -278,9 +266,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           setReferral('');
         }
       })
-      .catch((e) => {
-        console.log('Error getDeviceTokenCount ', e);
-      });
+      .catch((e) => {});
   };
 
   const renderUserForm = (
@@ -331,7 +317,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               <View style={{ paddingTop: 5, paddingBottom: 10 }}>
                 <TouchableOpacity
                   activeOpacity={1}
-                  // style={styles.placeholderViewStyle}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.MultiSignup, 'show popup for relation checking');
                     setShowPopup(true);
@@ -463,8 +448,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         'Me is already choosen for another profile.'
                       );
                     }
-                    console.log('result', result);
-                    console.log('result length', result.length);
 
                     setProfiles(profiles);
                     setShowPopup(false);
@@ -540,267 +523,15 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
       postFirebaseEvent(FirebaseEventName.SIGN_UP, eventFirebaseAttributes);
       setSignupEventFired(true);
-    } catch (error) {
-      console.log({ error });
-    }
-  };
-
-  const handleOpenURL = async () => {
-    try {
-      const event: any = await AsyncStorage.getItem('deeplink');
-      console.log(event, 'eventhandleOpenURL');
-      // setBugFenderLog('multi_handleOpenURL', event);
-
-      // const id = data[1];
-
-      // if (event) {
-      //   setBugFenderLog('nulti_check_if_null', event);
-      // } else {
-      //   setBugFenderLog('nulti_check_if_else_null', event);
-      // }
-
-      if (event !== null) {
-        let route = event.replace('apollopatients://', '');
-
-        const data = route.split('?');
-        route = data[0];
-
-        console.log(data, 'handleOpenURL');
-        // setBugFenderLog('nulti_handleOpenURL_route', route);
-
-        switch (route) {
-          case 'Consult':
-            console.log('Consult');
-            pushTheView('Consult', data.length === 2 ? data[1] : undefined);
-            break;
-          case 'Medicine':
-            console.log('Medicine');
-            pushTheView('Medicine', data.length === 2 ? data[1] : undefined);
-            break;
-          case 'Test':
-            console.log('Test');
-            pushTheView('Test');
-            break;
-          case 'Speciality':
-            console.log('Speciality handleopen');
-            if (data.length === 2) {
-              pushTheView('Speciality', data[1]);
-            } else {
-              pushTheView('ConsultRoom');
-            }
-            break;
-          case 'Doctor':
-            console.log('Doctor handleopen');
-            if (data.length === 2) {
-              pushTheView('Doctor', data[1]);
-            } else {
-              pushTheView('ConsultRoom');
-            }
-            break;
-          case 'DoctorSearch':
-            console.log('DoctorSearch handleopen');
-            pushTheView('DoctorSearch');
-            break;
-
-          case 'MedicineSearch':
-            console.log('MedicineSearch handleopen');
-            pushTheView('MedicineSearch', data.length === 2 ? data[1] : undefined);
-            break;
-
-          case 'MedicineDetail':
-            console.log('MedicineDetail handleopen');
-            pushTheView('MedicineDetail', data.length === 2 ? data[1] : undefined);
-            break;
-
-          case 'MedicineCart':
-            console.log('MedicineCart handleopen');
-            pushTheView('MedicineCart');
-            break;
-
-          default:
-            // setBugFenderLog('multi_handleOpenURL', 'not_worked');
-            pushTheView('ConsultRoom');
-            break;
-        }
-        console.log('route', route);
-      } else {
-        // setBugFenderLog('multi_handleOpenURL_ConsultRoom');
-        pushTheView('ConsultRoom');
-      }
     } catch (error) {}
   };
 
-  const pushTheView = (routeName: String, id?: String) => {
+  const handleOpenURLs = async () => {
     try {
-      console.log('pushTheView', routeName, id);
-      // setBugFenderLog('multi_pushTheView', routeName);
-
-      setTimeout(() => {
-        setVerifyingPhoneNumber(false);
-
-        switch (routeName) {
-          case 'Consult':
-            console.log('Consult');
-            props.navigation.navigate('APPOINTMENTS');
-            break;
-
-          case 'Medicine':
-            console.log('Medicine');
-            props.navigation.navigate('MEDICINES');
-            break;
-
-          case 'MedicineDetail':
-            console.log('MedicineDetail');
-
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ProductDetailPage,
-                    params: {
-                      sku: id,
-                      movedFrom: ProductPageViewedSource.REGISTRATION,
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'Test':
-            console.log('Test');
-            props.navigation.navigate('TESTS');
-            break;
-
-          case 'ConsultRoom':
-            console.log('ConsultRoom');
-
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ConsultRoom,
-                  }),
-                ],
-              })
-            );
-            break;
-          case 'Speciality':
-            console.log('Speciality id', id);
-
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorSearchListing,
-                    params: {
-                      specialityId: id ? id : '',
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'Doctor':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorDetails,
-                    params: {
-                      doctorId: id,
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'DoctorSearch':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorSearch,
-                    params: {
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'MedicineSearch':
-            if (id) {
-              const [itemId, name] = id.split(',');
-              console.log(itemId, name);
-
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.MedicineListing,
-                      params: {
-                        category_id: itemId,
-                        title: `${name ? name : 'Products'}`.toUpperCase(),
-                        movedFrom: 'registration',
-                      },
-                    }),
-                  ],
-                })
-              );
-            } else {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.ConsultRoom,
-                    }),
-                  ],
-                })
-              );
-            }
-            break;
-
-          case 'MedicineCart':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.MedicineCart,
-                    params: {
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          default:
-            break;
-        }
-      }, 500);
+      const event: any = await AsyncStorage.getItem('deeplink');
+      const data = handleOpenURL(event);
+      const { routeName, id, isCall, timeout, mediaSource } = data;
+      pushTheView(props.navigation, routeName, id ? id : undefined, isCall, undefined, mediaSource);
     } catch (error) {}
   };
 
@@ -829,7 +560,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       referralCode: (profile.relation == Relation.ME && trimReferral) || null,
                       deviceCode: deviceToken,
                     };
-                    console.log('patientsDetails', { patientsDetails });
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
                     mutate({
                       variables: {
@@ -857,23 +587,19 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               }}
             >
               {data
-                ? (console.log('data', data.updatePatient.patient),
-                  getPatientApiCall(),
+                ? (getPatientApiCall(),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
                   createOneApolloUser(data?.updatePatient?.patient?.id!),
-                  handleOpenURL())
+                  handleOpenURLs())
                 : null}
               {error
                 ? (signOut(),
-                  // handleGraphQlError(error),
-                  console.log('updatePatient error', error),
                   AsyncStorage.setItem('userLoggedIn', 'false'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('signUp', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating back to Login'),
-                  // setBugFenderLog('multi_error', error),
                   setTimeout(() => {
                     setVerifyingPhoneNumber(false),
                       props.navigation.dispatch(
@@ -911,12 +637,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           <Gift style={{ marginRight: 20, marginTop: 12 }} />
           <TextInputComponent
             maxLength={25}
-            label={
-              'Do You Have A Referral Code? (Optional)'
-              // referredBy
-              //   ? `${referredBy} Has Sent You A Referral Code!`
-              //   : 'Do You Have A Referral Code? (Optional)'
-            }
+            label={'Do You Have A Referral Code? (Optional)'}
             labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff'), marginBottom: 12 }}
             placeholder={'Enter referral code'}
             placeholderTextColor={'rgba(255,255,255,0.6)'}

@@ -23,7 +23,6 @@ interface CalendarRefType extends Calendar {
 export interface CalendarViewProps {
   date: Date;
   onPressDate: (date: Date) => void;
-  // onWeekChanged?: (date: Date) => void;
   onMonthChanged?: (date: Date) => void;
   calendarType?: CALENDAR_TYPE;
   onCalendarTypeChanged?: (type: CALENDAR_TYPE) => void;
@@ -31,6 +30,7 @@ export interface CalendarViewProps {
   showWeekView?: boolean;
   maxDate?: Date;
   styles?: StyleProp<ViewStyle>;
+  source?: string;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = (props) => {
@@ -156,7 +156,6 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         minDate={props.minDate}
         maxDate={props.maxDate}
         onTapDate={(selectedDate: Date) => {
-          console.log(selectedDate, 'onTapDate');
           const isDiabled = props.minDate
             ? moment(props.minDate).format('YYYY-MM-DD') > moment(selectedDate).format('YYYY-MM-DD')
             : false;
@@ -173,13 +172,6 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
             );
           }
         }}
-        // onWeekChanged={(date) => {
-        //   const weekDate = moment(date)
-        //     .clone()
-        //     .toDate();
-        //   setCalendarDate(weekDate);
-        //   props.onWeekChanged && props.onWeekChanged(weekDate);
-        // }}
       />
     );
   };
@@ -191,17 +183,20 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       dayDate.getMonth() == props.date.getMonth() &&
       dayDate.getFullYear() == props.date.getFullYear();
 
-    const isDiabled = props.minDate
+    const isDisabled = props.minDate
       ? moment(props.minDate).format('YYYY-MM-DD') > moment(dayDate).format('YYYY-MM-DD') ||
         moment(props.maxDate).format('YYYY-MM-DD') < moment(dayDate).format('YYYY-MM-DD')
       : false;
+
+    const disabledCheck =
+      !!props.source && props.source == 'Tests' ? isDisabled : day.state === 'disabled';
 
     const dayViewStyle: StyleProp<ViewStyle> = {
       marginTop: -11,
       height: 32,
       width: 32,
       borderRadius: 18,
-      backgroundColor: isDiabled
+      backgroundColor: disabledCheck
         ? theme.colors.CLEAR
         : isHighlightedDate
         ? theme.colors.APP_GREEN
@@ -209,7 +204,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       alignItems: 'center',
       justifyContent: 'center',
     };
-    const dayTextStyle: StyleProp<TextStyle> = isDiabled
+    const dayTextStyle: StyleProp<TextStyle> = disabledCheck
       ? {
           backgroundColor: theme.colors.CLEAR,
           ...theme.fonts.IBMPlexSansSemiBold(14),
@@ -231,12 +226,11 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          if (!isDiabled) {
+          if (!disabledCheck) {
             props.onPressDate(dayDate);
             setCalendarDate(dayDate);
           }
         }}
-        // activeOpacity={day.state === 'disabled' ? 1 : 0}
         style={dayViewStyle}
       >
         <Text style={dayTextStyle}>{dayDate.getDate()}</Text>
@@ -274,8 +268,6 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           style={{
             paddingBottom: 5,
             backgroundColor: theme.colors.CARD_BG,
-            // marginHorizontal: 0
-            // ...theme.viewStyles.cardContainer,
           }}
           theme={{
             'stylesheet.calendar.header': {

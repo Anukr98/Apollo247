@@ -20,7 +20,13 @@ export interface TestProceedBarProps {
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
-  const { grandTotal, deliveryAddressId, addresses, areaSelected } = useDiagnosticsCart();
+  const {
+    grandTotal,
+    deliveryAddressId,
+    addresses,
+    areaSelected,
+    diagnosticAreas,
+  } = useDiagnosticsCart();
   const {
     onPressAddDeliveryAddress,
     onPressSelectDeliveryAddress,
@@ -91,7 +97,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
 
   const renderButton = () => {
     const disableProceedToPayButton =
-      getButtonTitle() === string.proceedToPay && disableProceedToPay;
+      (getButtonTitle() === string.proceedToPay && disableProceedToPay) ||
+      (getButtonTitle() === string.diagnostics.selectAreaText && diagnosticAreas?.length == 0);
     return (
       <Button
         disabled={disableProceedToPayButton}

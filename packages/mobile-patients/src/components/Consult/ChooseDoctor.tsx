@@ -37,7 +37,6 @@ import {
   bookTransferAppointment,
   bookTransferAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -103,8 +102,6 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const appointmentData = props.navigation.state.params!.data;
-  // console.log(appointmentData, 'appointmentData');
-  // console.log(props.navigation.state.params!.patientId, 'pppp');
   useEffect(() => {
     getNetStatus()
       .then((status) => {
@@ -127,7 +124,6 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
       slotDateTime: appointmentData.transferDateTime,
       specialityId: appointmentData.specialtyId,
     };
-    // console.log(appointmentTransferInput, 'appointmentTransferInput');
     if (!deviceTokenApICalled) {
       setDeviceTokenApICalled(true);
 
@@ -140,7 +136,6 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((data: any) => {
-          // console.log('getAvailableDoctors', data);
           setshowSpinner(false);
           data &&
             data.data &&
@@ -151,7 +146,6 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
         .catch((e) => {
           CommonBugFender('ChooseDoctor_chooseDoctor', e);
           setshowSpinner(false);
-          console.log('Error occured while adding Doctor', e);
         });
     }
   };
@@ -164,8 +158,6 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
       existingAppointmentId: appointmentData.appointmentId,
       transferId: appointmentData.transferId,
     };
-    // console.log(appointmentTransferInput, 'transferAppointmentAPI');
-
     client
       .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
         mutation: BOOK_APPOINTMENT_TRANSFER,
@@ -175,12 +167,10 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log('transfersppointment', data);
         props.navigation.push(AppRoutes.TabBar);
       })
       .catch((e) => {
         CommonBugFender('ChooseDoctor_transferAppointmentAPI', e);
-        console.log('Error occured while adding Doctor', e);
       });
   };
 

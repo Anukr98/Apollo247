@@ -4,7 +4,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
 
 export interface ProceedBarProps {

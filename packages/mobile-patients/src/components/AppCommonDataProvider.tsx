@@ -1,8 +1,6 @@
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -137,6 +135,8 @@ export interface TotalCircleSavings {
 export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
 export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
 
+export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
+
 export interface PharmacyUserTypeEvent {
   User_Type: PharmaUserStatus;
 }
@@ -242,6 +242,10 @@ export interface AppCommonDataContextProps {
   pharmacyUserType: PharmaUserStatus;
   setPharmacyUserType: ((type: PharmaUserStatus) => void) | null;
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
+  apisToCall: any;
+  homeScreenParamsOnPop: any;
+  cartBankOffer: string;
+  setCartBankOffer: ((id: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -333,12 +337,19 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyUserType: '',
   setPharmacyUserType: null,
   pharmacyUserTypeAttribute: null,
+  apisToCall: [],
+  homeScreenParamsOnPop: null,
+  cartBankOffer: '',
+  setCartBankOffer: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
   const [isCurrentLocationFetched, setCurrentLocationFetched] = useState<
     AppCommonDataContextProps['isCurrentLocationFetched']
   >(false);
+
+  const apisToCall = useRef<AppCommonDataContextProps['apisToCall']>([]);
+  const homeScreenParamsOnPop = useRef<AppCommonDataContextProps['homeScreenParamsOnPop']>([]);
 
   const [locationDetails, _setLocationDetails] = useState<
     AppCommonDataContextProps['locationDetails']
@@ -406,6 +417,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [savePatientDetailsWithHistory, setSavePatientDetailsWithHistory] = useState<
     AppCommonDataContextProps['savePatientDetailsWithHistory']
   >([]);
+  const [cartBankOffer, setCartBankOffer] = useState<AppCommonDataContextProps['cartBankOffer']>(
+    ''
+  );
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
@@ -450,9 +464,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
-    AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
-      console.log('Failed to save location in local storage.');
-    });
+    AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {});
   };
 
   const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (
@@ -490,31 +502,15 @@ export const AppCommonDataProvider: React.FC = (props) => {
     pharmacyLocation
   ) => {
     _setPharmacyLocation(pharmacyLocation);
-    AsyncStorage.setItem('pharmacyLocation', JSON.stringify(pharmacyLocation)).catch(() => {
-      console.log('Failed to save pharmacy location in local storage.');
-    });
+    AsyncStorage.setItem('pharmacyLocation', JSON.stringify(pharmacyLocation)).catch(() => {});
   };
 
   const setDiagnosticLocation: AppCommonDataContextProps['setDiagnosticLocation'] = (
     diagnosticLocation
   ) => {
     _setDiagnosticLocation(diagnosticLocation);
-    AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {
-      console.log('Failed to save diagnostic location in local storage.');
-    });
+    AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {});
   };
-
-  // const setDiagnosticLocationServiceable: AppCommonDataContextProps['setDiagnosticLocationServiceable'] = (
-  //   diagnosticLocation
-  // ) => {
-  //   // _setDiagnosticLocationServiceable(diagnosticLocation);
-  //   AsyncStorage.setItem(
-  //     'diagnosticPinCodeServiceability',
-  //     JSON.stringify(diagnosticLocation)
-  //   ).catch(() => {
-  //     console.log('Failed to save diagnostic pincode serviceablity in local storage.');
-  //   });
-  // };
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
@@ -563,10 +559,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
-        // _setDiagnosticLocationServiceable(JSON.parse(diagnosticPinCodeServiceability || 'null'));
-      } catch (error) {
-        console.log('Failed to get location from local storage.');
-      }
+      } catch (error) {}
     };
     updateLocationFromStorage();
   }, []);
@@ -662,6 +655,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         pharmacyUserType,
         setPharmacyUserType,
         pharmacyUserTypeAttribute,
+        apisToCall,
+        homeScreenParamsOnPop,
+        cartBankOffer,
+        setCartBankOffer,
       }}
     >
       {props.children}

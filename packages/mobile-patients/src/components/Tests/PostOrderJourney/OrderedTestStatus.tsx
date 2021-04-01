@@ -118,7 +118,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsResult', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading!(false));
@@ -371,7 +370,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           {renderError()}
           {renderOrders()}
           {renderRefund()}
-          {/* {!loading && !error && renderChatWithUs()} */}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}

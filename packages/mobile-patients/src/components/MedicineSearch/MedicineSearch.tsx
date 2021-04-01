@@ -308,6 +308,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         currentPatient,
         !!isPharmacyLocationServiceable,
         { source: 'Pharmacy Partial Search', categoryId: item.category_id },
+        JSON.stringify(cartItems),
         () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
         pharmacyCircleAttributes!
       );

@@ -24,8 +24,6 @@ import {
   g,
   isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postShowPrescriptionAtStoreSelected } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -83,7 +81,6 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const { currentPatient } = useAllCurrentPatients();
   const { pharmacyUserType } = useAppCommonData();
 
-  const { showAphAlert } = useUIElements();
   const {
     uploadPrescriptionRequired,
     setPhysicalPrescriptions,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -54,11 +54,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
           style={{ marginTop: 12 }}
           horizontal={true}
           data={upiApps}
-          renderItem={(item: any) => {
-            return paymentModeVersionCheck(item?.item?.minimum_supported_version)
-              ? upiApp(item)
-              : null;
-          }}
+          renderItem={(item: any) => upiApp(item)}
         />
         <Text style={styles.or}>OR</Text>
       </View>

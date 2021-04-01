@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
-  CircleTestLogoIcon,
+  CircleLogo,
   RemoveIcon,
   TestInfoIcon,
   TestTimeIcon,
@@ -63,7 +63,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
   } = props;
 
   const renderSpecialDiscountText = (styleObj?: any) => {
-    return <SpecialDiscountText isImage={true} text={'TEST 247'} />;
+    return <SpecialDiscountText isImage={true} text={'TEST 247'} styleObj={styleObj} />;
   };
 
   const renderTitleAndIcon = () => {
@@ -94,7 +94,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
     const savingAmount = Number(props.packageMrp || props.mrpToDisplay) - Number(props.circlePrice);
     return (
       <View style={styles.flexRow}>
-        <CircleTestLogoIcon style={styles.circleLogoIcon} />
+        <CircleLogo style={styles.circleLogoIcon} />
         <Text style={styles.savingTextStyle}>
           {'Savings'} {string.common.Rs} {savingAmount}
         </Text>
@@ -106,7 +106,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
     return (
       <View style={styles.flexRow}>
         <Text style={[styles.circleText, { marginRight: isSmallDevice ? 2 : 1 }]}>For</Text>
-        <CircleTestLogoIcon style={styles.circleLogoIcon} />
+        <CircleLogo style={styles.circleLogoIcon} />
         <Text style={[styles.circleText, { marginLeft: isSmallDevice ? 0 : -3 }]}>Members </Text>
         <Text style={styles.circleText}>
           {string.common.Rs} {props.circlePrice}
@@ -133,29 +133,31 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
          */}
 
         {props.circlePrice == undefined ? (
-          <View style={styles.priceViewStyle}>
-            {props.isSpecialDiscount ? renderSpecialDiscountText({}) : null}
-            <View style={styles.circleHeadingView}>
-              {props.specialPrice! && props.discount! > 0 ? (
-                <Text style={styles.percentageDiscountText}>
-                  {Number(props.discount!).toFixed(0)}%off
-                </Text>
-              ) : null}
-              {!!price || !!specialPrice ? (
-                <Text style={styles.circlePriceTextSub}>
-                  {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
-                </Text>
+          <>
+            {props.isSpecialDiscount ? renderSpecialDiscountText({ alignSelf: 'flex-end' }) : null}
+            <View style={[styles.priceViewStyle]}>
+              <View style={styles.circleHeadingView}>
+                {props.specialPrice! && props.discount! > 0 ? (
+                  <Text style={styles.percentageDiscountText}>
+                    {Number(props.discount!).toFixed(0)}%off
+                  </Text>
+                ) : null}
+                {!!price || !!specialPrice ? (
+                  <Text style={styles.circlePriceTextSub}>
+                    {strings.common.Rs} {(specialPrice! || price!).toFixed(2)}
+                  </Text>
+                ) : null}
+              </View>
+              {renderCartPagePackageMrp()}
+              {props.specialPrice! && props.packageMrp! < price! ? (
+                <View style={styles.rightView}>
+                  <Text style={[styles.packageSlashedPrice]}>
+                    ({strings.common.Rs} {price!.toFixed(2)})
+                  </Text>
+                </View>
               ) : null}
             </View>
-            {renderCartPagePackageMrp()}
-            {props.specialPrice! && props.packageMrp! < price! ? (
-              <View style={styles.rightView}>
-                <Text style={[styles.packageSlashedPrice]}>
-                  ({strings.common.Rs} {price!.toFixed(2)})
-                </Text>
-              </View>
-            ) : null}
-          </View>
+          </>
         ) : null}
 
         {/**
@@ -310,7 +312,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   circleLogoIcon: {
-    height: 17,
+    height: 18,
     width: isSmallDevice ? 30 : 34,
     resizeMode: 'contain',
   },

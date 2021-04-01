@@ -1,5 +1,4 @@
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -53,6 +52,7 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
+  BackHandler,
 } from 'react-native';
 import { Text, Overlay } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -261,10 +261,6 @@ const GenderOptions: genderOptions[] = [
     name: Gender.FEMALE,
     title: 'Female',
   },
-  // {
-  //   name: Gender.OTHER,
-  //   title: 'Other',
-  // },
 ];
 
 type RelationArray = {
@@ -323,7 +319,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const relationArray: RelationArray[] = getRelations() || selectedGenderRelationArray;
   const isEdit = props.navigation.getParam('isEdit');
   const screenName = props.navigation.getParam('screenName');
-  const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -562,6 +557,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     }
   }, [gender]);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', _onPressLeftIcon);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', _onPressLeftIcon);
+    };
+  }, []);
+
   const deleteConfirmation = () => {
     showAphAlert!({
       title: 'Hi!',
@@ -715,10 +717,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           navigation.state.params!.goBackCallback(data.data!.addNewProfile.patient);
         } else {
           props.navigation.goBack();
-          props.navigation.state.params!.onNewProfileAdded({
-            added: true,
-            id: data.data!.addNewProfile?.patient?.id,
-          });
+          props.navigation.state.params?.onNewProfileAdded &&
+            props.navigation.state.params?.onNewProfileAdded({
+              added: true,
+              id: data.data!.addNewProfile?.patient?.id,
+              profileData: data?.data?.addNewProfile?.patient,
+            });
         }
         selectUser(data.data!.addNewProfile.patient);
       })
@@ -748,7 +752,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           setUploadVisible(false);
         }}
         onResponse={(type, response) => {
-          console.log('profile data', type, response);
           response.forEach((item) =>
             client
               .mutate<uploadFile, uploadFileVariables>({
@@ -760,7 +763,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 },
               })
               .then((data) => {
-                console.log(data);
                 data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
                 setUploadVisible(false);
               })
@@ -774,6 +776,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     );
   };
 
+  const _onPressLeftIcon = () => {
+    props.navigation.goBack();
+    props.navigation.state.params?.onPressBackButton &&
+      props.navigation.state.params?.onPressBackButton();
+    return true;
+  };
+
   const renderHeader = () => {
     return (
       <Header
@@ -784,7 +793,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEditProfile ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={_onPressLeftIcon}
       />
     );
   };
@@ -1060,7 +1069,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       allCurrentPatients!.map((item) => {
         return item.relation === Relation.ME;
       });
-    console.log(presentRelation, 'presentRelation');
 
     const isValid = isSelfRelation!.find((i) => i === true) === undefined;
 
@@ -1181,9 +1189,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => {
-              props.navigation.goBack();
-            }}
+            onPress={_onPressLeftIcon}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}

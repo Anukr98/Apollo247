@@ -4,10 +4,6 @@
  */
 import React, { FC, useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '../../../theme/colors';

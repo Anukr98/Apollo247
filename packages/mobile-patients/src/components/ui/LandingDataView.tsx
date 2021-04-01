@@ -24,8 +24,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   container: {
-    paddingLeft: 20,
-    paddingRight: 20,
+    flex: 1,
     marginTop: 20,
   },
   iconStyle: {
@@ -37,6 +36,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    marginHorizontal: 20,
   },
   bannerUrl: {
     marginTop: 3,
@@ -65,7 +65,7 @@ const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
 
   const renderHeaderComponent = () => {
     return (
-      <View>
+      <View style={{ marginHorizontal: 20 }}>
         <Image
           source={{ uri: loginSection?.bannerUrl }}
           style={[

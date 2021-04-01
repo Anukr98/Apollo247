@@ -22,17 +22,12 @@ export const NotificationPermissionAlert: React.FC<NotificationPermissionAlertPr
   return (
     <TouchableWithoutFeedback
       onPress={() => {
-        console.log('Touched Outside');
         props.onPressOutside();
       }}
       style={{}}
     >
       <View style={styles.container}>
-        <TouchableWithoutFeedback
-          onPress={() => {
-            console.log('inside');
-          }}
-        >
+        <TouchableWithoutFeedback>
           <View style={styles.alertCard}>
             <View style={styles.headerCont}>
               <Text style={styles.headerText}>Allow Notifications</Text>

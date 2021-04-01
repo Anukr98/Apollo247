@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native';
+import { StyleSheet, Image } from 'react-native';
 
 export interface WalletIconProps {
   imageUrl: string;

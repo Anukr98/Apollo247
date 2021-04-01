@@ -36,15 +36,12 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log(res.data.getOneApolloUserTransactions);
         settxns(res.data.getOneApolloUserTransactions);
         setLoading(false);
       })
       .catch((error) => {
         setLoading(false);
         CommonBugFender('fetchingOneApolloUserTxns', error);
-        console.log(error);
-        // renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
   }, []);
 
