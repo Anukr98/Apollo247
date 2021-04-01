@@ -376,6 +376,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     fetchAddresses();
     checkPatientAge();
+    initiateHyperSDK();
   }, [currentPatient]);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
@@ -436,9 +437,27 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
+
+  const getAge = (dob: string) => {
+    const now = new Date();
+    let age = parse(dob);
+    return differenceInYears(now, age);
+  };
+
   const checkPatientAge = () => {
-    let age = !!currentPatient?.dateOfBirth ? getAge(currentPatient?.dateOfBirth) : null;
-    let gender = currentPatient?.gender;
+    let age =
+      !!currentPatient?.dateOfBirth || !!selectedPatient?.dateOfBirth
+        ? getAge(currentPatient?.dateOfBirth || selectedPatient?.dateOfBirth)
+        : null;
+    let gender = currentPatient?.gender || selectedPatient?.gender;
     if (age! <= 10 || age == null || gender == null) {
       renderAlert(
         age == null
@@ -477,13 +496,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       validateDiagnosticCoupon();
       fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
-  }, [diagnosticSlot, deliveryAddressId, cartItems]);
+  }, [diagnosticSlot, deliveryAddressId, cartItems, addresses]);
 
   useEffect(() => {
     if (deliveryAddressId != '') {
       getPinCodeServiceability();
     }
-  }, [deliveryAddressId]);
+  }, [deliveryAddressId, addresses]);
 
   useEffect(() => {
     if (cartItems?.length) {
@@ -599,7 +618,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setAreaSelected!({});
       }
     }
-  }, [deliveryAddressId, diagnosticSlot, cartItems]);
+  }, [deliveryAddressId, diagnosticSlot, cartItems, addresses]);
 
   useEffect(() => {
     if (testCentresLoaded) {
@@ -1392,6 +1411,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             diagnosticEmployeeCode: slotDetails?.employeeCode,
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
+          if (slotDetails == undefined) {
+            setDisplaySchedule(true);
+          }
           setLoading?.(false);
         }
 
@@ -1766,8 +1788,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.dateTextStyle}>Time</Text>
               <Text style={styles.dateTextStyle}>
-                {selectedTimeSlot
-                  ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)}`
+                {selectedTimeSlot && !!selectedTimeSlot?.slotInfo?.startTime
+                  ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
                   : 'No slot selected'}
               </Text>
             </View>
@@ -2598,8 +2620,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             };
             const response = await createOrderInternal(orderInput);
             if (response?.data?.createOrderInternal?.success) {
-              const isInitiated: boolean = await isSDKInitialised();
-              !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
               const orderInfo = {
                 orderId: orderId,
                 displayId: displayId,
@@ -3113,6 +3133,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAddressList(_selectedPatient?.id);
   };
 
+  const onNewProfileAdded = (newPatient: any) => {
+    if (newPatient?.profileData) {
+      setSelectedPatient(newPatient?.profileData);
+      setShowPatientListOverlay(false);
+      changeCurrentProfile(newPatient?.profileData, false);
+    }
+  };
+
+  const _onPressBackButton = () => {
+    if (!selectedPatient) {
+      setShowPatientListOverlay(true);
+    }
+  };
+
   const renderPatientListOverlay = () => {
     return showPatientListOverlay ? (
       <PatientListOverlay
@@ -3128,6 +3162,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             isEdit: false,
             isPoptype: true,
             mobileNumber: currentPatient?.mobileNumber,
+            onNewProfileAdded: onNewProfileAdded,
+            onPressBackButton: _onPressBackButton,
           });
         }}
         patientSelected={selectedPatient}

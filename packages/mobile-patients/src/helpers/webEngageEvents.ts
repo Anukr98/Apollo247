@@ -148,6 +148,7 @@ export enum WebEngageEventName {
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
+  HELP_TICKET_SUBMITTED = 'Help_Ticket_Submitted',
   MY_ACCOUNT = 'My Account',
   BOOK_DOCTOR_APPOINTMENT = 'Book Doctor Appointment clicked on homescreen',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
@@ -792,6 +793,12 @@ export interface WebEngageEvents {
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
+  [WebEngageEventName.HELP_TICKET_SUBMITTED]: {
+    Source_Page: 'My Account' | 'My Orders' | 'Order Details';
+    Reason: string;
+    BU: string; //  Pharmacy / Consult / Diagnostics / ..........
+    Order_Status?: string;
+  };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: {
     'Patient Name': string;

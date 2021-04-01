@@ -3,7 +3,7 @@ import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
-import { Helpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import { Events, Helpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -25,6 +25,10 @@ import {
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -47,9 +51,11 @@ export interface Props
     medicineOrderStatus?: MEDICINE_ORDER_STATUS;
     isConsult?: boolean;
     medicineOrderStatusDate?: any;
+    sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
+  const sourcePage = navigation.getParam('sourcePage') || 'My Account';
   const _queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
@@ -157,10 +163,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.consult
           ? ORDER_TYPE.CONSULT
           : null;
+      const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason: subQueries?.find(({ id }) => id === selectedQueryId)?.title,
+          reason,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
@@ -178,6 +185,12 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
       }
+      Events.helpTicketSubmitted({
+        BU: parentQuery?.title!,
+        Order_Status: medicineOrderStatus,
+        Reason: reason!,
+        Source_Page: sourcePage,
+      });
     } catch (error) {
       setLoading!(false);
       onError();
