@@ -54,6 +54,7 @@ import {
   isSmallDevice,
   formatAddressToLocation,
   navigateToHome,
+  isAddressLatLngInValid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -1032,34 +1033,59 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderAlert = (message: string, source?: string, address?: any) => {
+    if (!!source && !!address) {
+      showAphAlert?.({
+        unDismissable: true,
+        title: string.common.uhOh,
+        description: message,
+        onPressOk: () => {
+          hideAphAlert?.();
+          props.navigation.push(AppRoutes.AddAddressNew, {
+            KeyName: 'Update',
+            addressDetails: address,
+            ComingFrom: AppRoutes.TestsCart,
+            updateLatLng: true,
+            source: 'Tests' as AddressSource,
+          });
+        },
+      });
+    }
+  };
+
   async function setDefaultAddress(address: Address) {
     try {
-      setPageLoading!(true);
-      hideAphAlert?.();
-      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
-        query: SET_DEFAULT_ADDRESS,
-        variables: { patientAddressId: address?.id },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
-      const updatedAddresses = addresses.map((item) => ({
-        ...item,
-        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
-      }));
-      setAddresses?.(updatedAddresses);
-      setTestAddress?.(updatedAddresses);
-      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
-      setDiagnosticAreas?.([]);
-      setAreaSelected?.({});
-      setDiagnosticSlot?.(null);
-      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
-      // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
-      setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
-      checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
-      setPageLoading!(false);
+      const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
+      if (isSelectedAddressWithNoLatLng) {
+        //show the error
+        renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
+      } else {
+        setPageLoading(true);
+        hideAphAlert?.();
+        const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+          query: SET_DEFAULT_ADDRESS,
+          variables: { patientAddressId: address?.id },
+          fetchPolicy: 'no-cache',
+        });
+        const { data } = response;
+        const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+        const updatedAddresses = addresses.map((item) => ({
+          ...item,
+          defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        }));
+        setAddresses?.(updatedAddresses);
+        setTestAddress?.(updatedAddresses);
+        patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
+        setDiagnosticSlot?.(null);
+        const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+        setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
+        checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
+        setPageLoading(false);
+      }
     } catch (error) {
-      setPageLoading!(false);
+      setPageLoading(false);
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
