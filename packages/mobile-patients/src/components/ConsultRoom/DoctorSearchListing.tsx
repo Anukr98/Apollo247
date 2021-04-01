@@ -402,11 +402,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [showCarePlanNotification]);
 
   useEffect(() => {
-    getDoctorOfTheHour();
-    fetchAddress();
+    if (doctorsType != 'PARTNERS') {
+      getDoctorOfTheHour(false);
+      fetchAddress(false, 'from effect');
+    }
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
+    console.log(
+      'csk platinum api before call',
+      partnerDoctor,
+      props.navigation.getParam('specialityId'),
+      ZoneType.STATE,
+      locationDetails?.state
+    );
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
@@ -415,25 +424,28 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           specialtyId: props.navigation.getParam('specialityId') || '',
           zoneType: ZoneType.STATE,
           zone: state || locationDetails?.state,
-          partnerDoctor,
+          partnerDoctor: true,
         },
       })
       .then(({ data }) => {
+        console.log('csk data', data);
         const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
         console.log('data', data);
         if (platinum_doctor) {
+          console.log('csk platinum api', partnerDoctor, platinum_doctor?.displayName);
           setPlatinumDoctor(platinum_doctor);
         } else {
           setPlatinumDoctor(null);
         }
       })
       .catch((e) => {
+        console.log('csk api error', e);
         setPlatinumDoctor(null);
         CommonBugFender('GET_PLATINUM_DOCTOR', e);
       });
   };
 
-  async function fetchAddress() {
+  async function fetchAddress(partnerDoctor: boolean = false, from?: string) {
     try {
       if (locationDetails?.state) {
         return;
@@ -450,7 +462,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        getDoctorOfTheHour(false, state);
+        console.log('csk in fetchaddress', partnerDoctor, from);
+        await getDoctorOfTheHour(partnerDoctor, state);
       }
     } catch (error) {
       console.log(error);
@@ -1997,12 +2010,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour();
-      fetchAddress(); // this will get called when locationDetails?.state is null
+      fetchAddress(false, 'from apollo button press'); // this will get called when locationDetails?.state is null
     }
   };
 
   const onPressDoctorPartnersTab = () => {
     if (doctorsType != 'PARTNERS') {
+      console.log('csk partner pressed');
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
       // onPressNearByRadioButton(true);
@@ -2011,7 +2025,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour(true);
-      fetchAddress();
+      fetchAddress(true, 'from partner button press');
     }
   };
 
