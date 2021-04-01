@@ -3568,11 +3568,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               });
             } catch (e) {
               setLoading?.(false);
+              CommonBugFender('opening_ProHealthwebView_ConsultRoom', e)
             }
           }
         });
       } catch (e) {
         setLoading?.(false);
+        CommonBugFender('regenerateJWTToken_ConsultRoom', e)
       }
     }
     setLoading?.(false);
