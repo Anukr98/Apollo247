@@ -4837,3 +4837,35 @@ query getProHealthHospitalByCityId($cityId: ID!){
   }
 }
 `;
+
+export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql `
+query getAllProhealthAppointments($patientId: ID!){
+  getAllProhealthAppointments(patientId:$patientId){
+    appointments{
+      appointmentStartDateTimeUTC
+      appointmentEndDateTimeUTC
+      status
+      displayId
+      packageCategoryId
+      price
+      bookingSource
+      patientObj{
+        firstName
+        lastName
+        emailAddress
+        gender
+        mobileNumber
+        dateOfBirth,
+      }
+      prohealthPackage{
+        packageName
+        id
+      }
+      prohealthHospital{
+        unitType
+        unitName
+      }
+    }
+  }
+}
+`;

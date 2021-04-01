@@ -665,6 +665,21 @@ const styles = StyleSheet.create({
   listContainer: { padding: 10, paddingLeft: 0 },
   listName: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20) },
   hospitalHeadingView: { marginBottom: 10, flexDirection: 'row' },
+  proHealthBannerTouch: {
+    backgroundColor: theme.colors.CLEAR,
+    borderRadius: 12,
+    marginTop: 10,
+    marginHorizontal: 28,
+    marginBottom: 15,
+    padding: 0,
+    width: width - 40,
+    alignSelf: 'center',
+    height: 180,
+  },
+  proHealthBannerImage: {
+    height: 180,
+    width: '100%',
+  },
 });
 
 type menuOptions = {
@@ -3316,22 +3331,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity
+        activeOpacity={1}
         onPress={() => _navigateProHealth()}
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          ...theme.viewStyles.shadowStyle,
-          padding: 16,
-          height: 56,
-          marginHorizontal: 20,
-          marginTop: 4,
-          marginBottom: 4,
-          justifyContent: 'center',
-          backgroundColor: 'red',
-        }}
+        style={styles.proHealthBannerTouch}
       >
-        <View style={{}}>
-          <Text>Prohealth</Text>
-        </View>
+        <ImageBackground
+          style={styles.proHealthBannerImage}
+          source={require('@aph/mobile-patients/src/components/ui/icons/proHealthbanner.png')}
+          resizeMode={'stretch'}
+        ></ImageBackground>
       </TouchableOpacity>
     );
   };
@@ -3341,6 +3349,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [prohealthHospitalList, setProHealthHospitalList] = useState([] as any);
   const [selectedProHealthCity, setSelectedProHealthCity] = useState<string>('');
   const [selectedProHealthHospital, setSelectedProHealthHospital] = useState<string>('');
+
   const getProHealthCities = () =>
     client.query({
       query: GET_PROHEALTH_CITY_LIST,
@@ -3371,9 +3380,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.proHealthOverlay}>
         <View style={styles.proHealthContainer}>
           <View style={styles.proHealthInnerContainer}>
-            <View style={{ marginBottom: 10 }}>
-              <Text style={styles.proHealthPopUpHeading}>SELECT YOUR CITY</Text>
-            </View>
+            {prohealthCityList?.length > 0 ? (
+              <View style={{ marginBottom: 10 }}>
+                <Text style={styles.proHealthPopUpHeading}>SELECT YOUR CITY</Text>
+              </View>
+            ) : null}
             <FlatList
               data={prohealthCityList}
               renderItem={renderCity}
@@ -3382,6 +3393,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               contentContainerStyle={{}}
               keyboardShouldPersistTaps="handled"
               onScrollBeginDrag={() => Keyboard.dismiss()}
+              ListEmptyComponent={renderNoResults('No Cities found. Please try again later')}
             />
           </View>
           <TouchableOpacity style={styles.crossIconTouch} onPress={() => _onCloseCitiesPopUp()}>
@@ -3391,6 +3403,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
+  const renderNoResults = (text: string) => {
+    return (
+      <View style={{ marginTop: 10 }}>
+        <Text style={styles.listName}>{text}</Text>
+      </View>
+    );
+  };
+
   function _onCloseCitiesPopUp() {
     setShowCitites(false);
     setSelectedProHealthHospital('');
@@ -3430,8 +3450,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         let hospitalList = response?.data?.getProHealthHospitalByCityId?.hospitals || [];
         setProHealthHospitalList(hospitalList);
         setShowHospitals(true);
-      } else {
-        //list is empty.. then show some prompt?
       }
       setLoading?.(false);
     } catch (error) {
@@ -3451,17 +3469,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.proHealthOverlay}>
         <View style={styles.proHealthContainer}>
           <View style={styles.proHealthInnerContainer}>
-            <View style={styles.hospitalHeadingView}>
-              <TouchableOpacity
-                onPress={() => _onPressHospitalBack()}
-                style={{ alignSelf: 'center' }}
-              >
-                <BackArrow />
-              </TouchableOpacity>
-              <Text style={[styles.proHealthPopUpHeading, { marginHorizontal: 20 }]}>
-                SELECT YOUR HOSPITAL
-              </Text>
-            </View>
+            {renderHospitals?.length > 0 ? (
+              <View style={styles.hospitalHeadingView}>
+                <TouchableOpacity
+                  onPress={() => _onPressHospitalBack()}
+                  style={{ alignSelf: 'center' }}
+                >
+                  <BackArrow />
+                </TouchableOpacity>
+                <Text style={[styles.proHealthPopUpHeading, { marginHorizontal: 20 }]}>
+                  SELECT YOUR HOSPITAL
+                </Text>
+              </View>
+            ) : null}
             <FlatList
               data={prohealthHospitalList}
               renderItem={renderHospitals}
@@ -3470,6 +3490,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               contentContainerStyle={{}}
               keyboardShouldPersistTaps="handled"
               onScrollBeginDrag={() => Keyboard.dismiss()}
+              ListEmptyComponent={renderNoResults('No Hospitals found. Please try again later.')}
             />
           </View>
           <TouchableOpacity
@@ -3579,9 +3600,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
               </View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {/**added prohealth banner */}
-              {renderProhealthBanner()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
             </View>
           </View>

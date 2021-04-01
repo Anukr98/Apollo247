@@ -74,6 +74,18 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
+export enum BookingSource {
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
+}
+
+export enum BookingStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -196,6 +208,12 @@ export enum FEEDBACKTYPE {
   CONSULT = "CONSULT",
   DIAGNOSTICS = "DIAGNOSTICS",
   PHARMACY = "PHARMACY",
+}
+
+export enum GENDER {
+  ALL = "ALL",
+  FEMALE = "FEMALE",
+  MALE = "MALE",
 }
 
 export enum Gender {
