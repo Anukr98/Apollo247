@@ -82,7 +82,11 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { fetchPaymentOptions, trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  fetchPaymentOptions,
+  trackTagalysEvent,
+  validateConsultCoupon,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   AppsFlyerEventName,
   AppsFlyerEvents,
@@ -154,8 +158,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     shipments,
     orders,
     setIsFreeDelivery,
+    hdfcSubscriptionId,
   } = useShoppingCart();
-  const { pharmacyUserTypeAttribute } = useAppCommonData();
+  const {
+    pharmacyUserTypeAttribute,
+    pharmacyLocation,
+    locationDetails,
+    hdfcStatus,
+    circleStatus,
+    hdfcPlanId,
+  } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -609,6 +621,69 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       subPlanId: circleSubPlanId || '',
       isStorePickup,
     });
+  };
+
+  const validateCouponAndInitiateOrder = (
+    paymentMode: string,
+    bankCode: string,
+    isCOD: boolean,
+    hcOrder: boolean
+  ) => {
+    if (!coupon?.coupon) {
+      initiateOrder(paymentMode, bankCode, isCOD, hcOrder);
+      return;
+    }
+    const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+    const pharmacyPincode =
+      selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+    let packageId: string[] = [];
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleStatus === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`);
+    }
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
+      coupon: coupon?.coupon,
+      pinCode: pharmacyPincode,
+      products: cartItems.map((item) => ({
+        sku: item.id,
+        categoryId: item.productType,
+        mrp: item.price,
+        quantity: item.quantity,
+        specialPrice: item.specialPrice || item.price,
+      })),
+      packageIds: packageId,
+      email: g(currentPatient, 'emailAddress'),
+    };
+    setLoading(true);
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        if (resp.data.errorCode == 0) {
+          if (resp.data.response.valid) {
+            initiateOrder(paymentMode, bankCode, isCOD, hcOrder);
+          } else {
+            showAphAlert!({
+              title: `Uh oh.. :(`,
+              description: resp.data.response.reason,
+            });
+            props.navigation.navigate(AppRoutes.MedicineCart);
+          }
+        } else {
+          CommonBugFender('validatingPharmaCoupon', g(resp.data, 'errorMsg'));
+          showAphAlert!({
+            title: `Uh oh.. :(`,
+            description: 'Coupon validation failed',
+          });
+          props.navigation.navigate(AppRoutes.MedicineCart);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('validatingPharmaCoupon', error);
+        console.log(error);
+      });
   };
 
   const initiateOrder = async (
@@ -1301,7 +1376,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               onPress={() => {
                 if (!HCorder) {
                   setCashOnDelivery(false);
-                  initiateOrder(item.paymentMode, '', false, false);
+                  validateCouponAndInitiateOrder(item.paymentMode, '', false, false);
                 }
               }}
               style={styles.paymentModeCard}
@@ -1372,7 +1447,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     setCashOnDelivery(false);
-                    initiateOrder(item.paymentMode, item.bankCode, false, false);
+                    validateCouponAndInitiateOrder(item.paymentMode, item.bankCode, false, false);
                   }}
                   style={{ width: 0.225 * windowWidth, flex: 1 }}
                 >
@@ -1415,7 +1490,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               }}
               onPress={() => {
                 setCashOnDelivery(false);
-                initiateOrder('NB', '', false, false);
+                validateCouponAndInitiateOrder('NB', '', false, false);
               }}
             >
               <Text
@@ -1438,7 +1513,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           disabled={isOneApolloSelected || !!circleMembershipCharges}
           style={styles.CODoption}
           title={'CASH ON DELIVERY'}
-          onPress={() => initiateOrder('', '', true, false)}
+          onPress={() => validateCouponAndInitiateOrder('', '', true, false)}
         />
         {!!circleMembershipCharges ? (
           <Text style={styles.codAlertMsg}>
@@ -1475,9 +1550,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           title={'PLACE ORDER'}
           onPress={() => {
             if (isCashOnDelivery) {
-              initiateOrder('', '', true, false);
+              validateCouponAndInitiateOrder('', '', true, false);
             } else if (HCorder) {
-              initiateOrder('', '', false, true);
+              validateCouponAndInitiateOrder('', '', false, true);
             }
           }}
         />
