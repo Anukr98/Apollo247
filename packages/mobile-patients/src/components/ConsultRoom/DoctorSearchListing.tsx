@@ -404,7 +404,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           specialtyId: props.navigation.getParam('specialityId') || '',
           zoneType: ZoneType.STATE,
           zone: state || locationDetails?.state,
-          partnerDoctor: true,
+          partnerDoctor,
         },
       })
       .then(({ data }) => {
