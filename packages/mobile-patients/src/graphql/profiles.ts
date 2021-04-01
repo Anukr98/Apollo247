@@ -2237,21 +2237,121 @@ export const GET_HELP_SECTION_QUERIES = gql`
         title
         nonOrderQueries
         queriesByOrderStatus
+        content {
+          title
+          text
+          cta {
+            title
+            appRoute
+            webRoute
+            appRouteParams
+            webRouteParams
+          }
+          ctaNonCircle {
+            title
+            appRoute
+            webRoute
+            appRouteParams
+            webRouteParams
+          }
+          ctaCircle {
+            title
+            appRoute
+            webRoute
+            appRouteParams
+            webRouteParams
+          }
+        }
         queries {
           id
           title
           nonOrderQueries
           queriesByOrderStatus
+          content {
+            title
+            text
+            cta {
+              title
+              appRoute
+              webRoute
+              appRouteParams
+              webRouteParams
+            }
+            ctaNonCircle {
+              title
+              appRoute
+              webRoute
+              appRouteParams
+              webRouteParams
+            }
+            ctaCircle {
+              title
+              appRoute
+              webRoute
+              appRouteParams
+              webRouteParams
+            }
+          }
           queries {
             id
             title
             nonOrderQueries
             queriesByOrderStatus
+            content {
+              title
+              text
+              cta {
+                title
+                appRoute
+                webRoute
+                appRouteParams
+                webRouteParams
+              }
+              ctaNonCircle {
+                title
+                appRoute
+                webRoute
+                appRouteParams
+                webRouteParams
+              }
+              ctaCircle {
+                title
+                appRoute
+                webRoute
+                appRouteParams
+                webRouteParams
+              }
+            }
             queries {
               id
               title
               nonOrderQueries
               queriesByOrderStatus
+              content {
+                title
+                text
+                cta {
+                  title
+                  appRoute
+                  webRoute
+                  appRouteParams
+                  webRouteParams
+                }
+                ctaNonCircle {
+                  title
+                  appRoute
+                  webRoute
+                  appRouteParams
+                  webRouteParams
+                }
+                ctaCircle {
+                  title
+                  appRoute
+                  webRoute
+                  appRouteParams
+                  webRouteParams
+                }
+              }
               queries {
                 id
                 title
