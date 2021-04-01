@@ -160,6 +160,7 @@ export interface TestsProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
     comingFrom?: string;
+    movedFrom?: string;
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
@@ -207,7 +208,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
   const focusSearch = props.navigation.getParam('focusSearch');
-  const comingFrom = props.navigation.getParam('comingFrom');
+  const movedFrom = props.navigation.getParam('movedFrom');
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -320,7 +321,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     // );
     getDiagnosticBanner();
     setBannerData && setBannerData([]);
-    DiagnosticLandingPageViewedEvent(currentPatient, isDiagnosticLocationServiceable);
+    DiagnosticLandingPageViewedEvent(
+      currentPatient,
+      isDiagnosticLocationServiceable,
+      movedFrom == 'deeplink' ? 'Deeplink' : undefined
+    );
   }, []);
 
   useEffect(() => {
