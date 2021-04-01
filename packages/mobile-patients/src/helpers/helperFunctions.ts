@@ -885,7 +885,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
     const current = moment(new Date());
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
-    const diffDays = Math.ceil(difference.asDays());
+    const diffDays = Math.floor(difference.asDays());
     const isTomorrow = moment(nextSlot).isAfter(
       current
         .add(1, 'd')
@@ -901,7 +901,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && diffDays < 2) {
+    } else if (isTomorrow && differenceMinute<1440) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
