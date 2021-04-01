@@ -855,7 +855,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //for prohealth option
   useEffect(() => {
-    checkIsProhealthActive();
+    if (currentPatient?.id) {
+      checkIsProhealthActive();
+    }
   }, [currentPatient]);
 
   //to be called only when the user lands via app launch
@@ -3568,13 +3570,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               });
             } catch (e) {
               setLoading?.(false);
-              CommonBugFender('opening_ProHealthwebView_ConsultRoom', e)
+              CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
             }
           }
         });
       } catch (e) {
         setLoading?.(false);
-        CommonBugFender('regenerateJWTToken_ConsultRoom', e)
+        CommonBugFender('regenerateJWTToken_ConsultRoom', e);
       }
     }
     setLoading?.(false);
