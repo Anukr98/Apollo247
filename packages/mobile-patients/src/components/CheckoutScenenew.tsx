@@ -1376,7 +1376,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               onPress={() => {
                 if (!HCorder) {
                   setCashOnDelivery(false);
-                  validateCouponAndInitiateOrder(item.paymentMode, '', false, false);
+                  validateCouponAndInitiateOrder(item?.paymentMode, '', false, false);
                 }
               }}
               style={styles.paymentModeCard}
@@ -1447,7 +1447,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     setCashOnDelivery(false);
-                    validateCouponAndInitiateOrder(item.paymentMode, item.bankCode, false, false);
+                    validateCouponAndInitiateOrder(item?.paymentMode, item?.bankCode, false, false);
                   }}
                   style={{ width: 0.225 * windowWidth, flex: 1 }}
                 >
