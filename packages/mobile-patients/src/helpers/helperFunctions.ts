@@ -2633,3 +2633,15 @@ export const validateCoupon = async (
     }
   });
 };
+
+export const setAsyncPharmaLocation = (address: any) => {
+  if (address) {
+    const saveAddress = {
+      pincode: address?.zipcode,
+      id: address?.id,
+      city: address?.city,
+      state: address?.state,
+    };
+    AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+  }
+};
