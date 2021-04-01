@@ -136,6 +136,7 @@ export enum WebEngageEventName {
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
   MANAGE_DIABETES = 'Manage Diabetes',
+  PROHEALTH = 'Prohealth',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'PHR Click Health records - app',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',

@@ -1834,3 +1834,10 @@ export const Emergency: React.FC<IconProps> = (props) => (
     source={require('./icons/emergency.png')}
   />
 );
+export const ProHealthIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_icon.png')}
+  />
+);

@@ -29,19 +29,19 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
     }
 
     @ReactMethod
-    fun show(vitaToken: String, UHID: String, userName: String, consultSource: String,buildSpecify:String, fcmToken: String) {
+    fun show(vitaToken: String, UHID: String, userName: String, consultSource: String,buildSpecify:String, fcmToken: String, programId : String) {
         try {
 
         System.out.println("In SHOW......" + vitaToken+" "+buildSpecify);
         System.out.println("In UHID......" + UHID + " "+userName+ " "+consultSource);
-        val T2DiabetesAndHypertensionProgram = "diabetes_24_7"
+        // val T2DiabetesAndHypertensionProgram = "diabetes_24_7"
 //            Timber.plant(Timber.DebugTree())
         if(buildSpecify=="QA"||buildSpecify=="DEV"){
             System.out.println("buildSpecify......" + buildSpecify);
             VitaInit.setupApp(reactApplicationContext,
                     VitaEnvironment.SANDBOX,/* staging */
                     vitaToken,/* staging */
-                    T2DiabetesAndHypertensionProgram,
+                    programId,
                     consultSource)
         }else{
             System.out.println("In_UHID_Production......" + UHID + " "+userName+ " "+consultSource);
@@ -49,14 +49,17 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
             VitaInit.setupApp(reactApplicationContext,
                     VitaEnvironment.PRODUCTION,/* production */
                     vitaToken,/* production */
-                    T2DiabetesAndHypertensionProgram,
+                    programId,
                     consultSource)
         }
 
 
         VitaInit.setUpPushToken(reactApplicationContext, fcmToken)
 
-        val intent = Intent(reactApplicationContext, ConditionalMGMTActivity::class.java)
+        var intent = Intent(reactApplicationContext, ConditionalMGMTActivity::class.java)
+        if(programId == "prohealth"){
+            intent =  Intent(reactApplicationContext, VitaNavigationActivity::class.java)
+        }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         reactApplicationContext.startActivity(intent)
         } catch (e: Exception) {
