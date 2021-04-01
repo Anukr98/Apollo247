@@ -67,11 +67,8 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(false);
 
-
-
-
-
-
+  const [serviceableObject, setServiceableObject] = useState({} as any);
+  Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
   const renderHeader = () => {
     return (
       <TestListingHeader navigation={props.navigation} headerText={nameFormater(title, 'upper')} />
@@ -80,7 +77,16 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
 
   const renderItems = (item: any, index: number) => {
     return (
-      <TouchableOpacity style={styles.gridPart}>
+      <TouchableOpacity style={styles.gridPart} onPress={()=>{
+        {
+          props.navigation.navigate(AppRoutes.TestListing, {
+            widgetName: item?.itemTitle,
+            movedFrom: AppRoutes.Tests,
+            data: dataFromHomePage,
+            cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+          });
+        }
+      }}>
                 <View style={styles.circleImg}>
                   <Image style={styles.image} source={{ uri: item.itemIcon }} />
                 </View>
@@ -155,8 +161,8 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   image: {
-    width: 65,
-    height: 65,
+    width: 70,
+    height: 70,
     borderRadius: 50,
   },
   gridPart: {

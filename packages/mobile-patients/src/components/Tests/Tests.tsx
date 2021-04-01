@@ -1847,6 +1847,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
             isServiceable={isDiagnosticLocationServiceable}
             isVertical={false}
             navigation={props.navigation}
+            onPressWidget={()=>{
+              {
+                props.navigation.navigate(AppRoutes.TestListing, {
+                  widgetName: item?.itemTitle,
+                  movedFrom: AppRoutes.Tests,
+                  data: data,
+                  cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                });
+              }
+            }}
             source={'Home Page'}
             sourceScreen={AppRoutes.Tests}
           />
@@ -1855,19 +1865,44 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   }
-  const renderGridComponent = (item: any, index: number) => {
-    return (
-      <TouchableOpacity style={styles.gridPart}>
-        <Image source={{ uri: item.itemIcon }} style={styles.image} />
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {item?.itemTitle}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
+ 
+ const renderGridComponent = (data: any, item: any, index: number) => {
+   return (
+     <TouchableOpacity
+       style={styles.gridPart}
+       onPress={() => {
+         {
+           props.navigation.navigate(AppRoutes.TestListing, {
+             widgetName: item?.itemTitle,
+             movedFrom: AppRoutes.Tests,
+             data: data,
+             cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+           });
+         }
+       }}
+     >
+       <View style={styles.circleImg}>
+         <Image source={{ uri: item.itemIcon }} style={styles.image} />
+       </View>
+       <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+         {item?.itemTitle}
+       </Text>
+     </TouchableOpacity>
+   );
+ };
   const gridWidgetSection = (data : any) => {
-    // console.log('data grid :>> ', data);
-    const obj = {"diagnosticWidgetBannerImage": "https://newassets.apollo247.com/uatcms/2021-03/top_deals_app.jpg", "diagnosticWidgetBannerText": "", "diagnosticWidgetBannerUrl": "https://www.apollo247.com/blog", "diagnosticWidgetData": [{"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/junk food.png", "itemTitle": "JUNK FOOD"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/smoking.png", "itemTitle": "SMOKING"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/alcohol.png", "itemTitle": "ALCOHOL"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/Mask Group.png", "itemTitle": "STRESS"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/liver.png", "itemTitle": "LIVER"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/heart_2.png", "itemTitle": "HEART"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/bone.png", "itemTitle": "BONE"}, {"itemIcon": "https://newassets.apollo247.com/uatcms/2021-03/malnutrition 1.png", "itemTitle": "POOR NUTRITION"}], "diagnosticWidgetTitle": "Life Cycle Disorder", "diagnosticWidgetType": "Category", "diagnosticwidgetsRankOrder": "7", "id": "16199"}
+    const numColumns = 3;
+    let newGridData: any[] = [];
+    if (
+      data?.diagnosticWidgetData?.length >= numColumns &&
+      data?.diagnosticWidgetData?.length % numColumns != 0
+    ) {
+      let sortedItemsIndex =
+        data?.diagnosticWidgetData?.length - (data?.diagnosticWidgetData?.length % numColumns);
+      newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
+    } else {
+      newGridData = data?.diagnosticWidgetData;
+    }
     return (
       <View style={{ marginTop: 10 }}>
         <SectionHeader
@@ -1890,10 +1925,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         />
         <View style={styles.gridConatiner}>
           <FlatList
-            data={data?.diagnosticWidgetData}
-            numColumns={3}
+            data={newGridData}
+            numColumns={numColumns}
             keyExtractor={(_, index) => `${index}`}
-            renderItem={({ item, index}) => renderGridComponent(item, index)}
+            renderItem={({ item, index}) => renderGridComponent(data, item, index)}
           />
         </View>
       </View>
@@ -2155,15 +2190,16 @@ const styles = StyleSheet.create({
   circleImg: {
     width: 70,
     height: 70,
-    // backgroundColor: '#E8E8E8',
-    margin:5,
-    // opacity: 0.2,
+    backgroundColor: '#E8E8E8',
     borderRadius: 70/2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   image: {
     width: 70,
     height: 70,
     borderRadius: 50,
+    backgroundColor:'#E8E8E8',
   },
   gridPart: {
     alignItems: 'center',
@@ -2171,7 +2207,7 @@ const styles = StyleSheet.create({
     width: '33%',
     borderColor:'#E8E8E8',
     borderWidth: 0.5,
-    padding:15
+    padding:15,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 14, '#000000', 1, 20, 0),

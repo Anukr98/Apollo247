@@ -5,11 +5,11 @@ import {
   Text,
   View,
   ViewStyle,
-  Image
+  Image,
+  TouchableOpacity
 } from 'react-native';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export interface WidgetCardProps {
   onPress?: () => void;
@@ -24,15 +24,16 @@ export interface WidgetCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: string;
   sourceScreen: string;
+  onPressWidget: any
 }
 
 export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
+  const { data, isCircleSubscribed, source, navigation, sourceScreen, onPressWidget } = props;
 
     return (
       <TouchableOpacity style={styles.container} onPress={()=>{
-        console.log('object on Press');
+        onPressWidget()
       }}>
           <Image source={{uri: data.itemIcon}} style={styles.circleImg}/>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{data?.itemTitle}</Text>
