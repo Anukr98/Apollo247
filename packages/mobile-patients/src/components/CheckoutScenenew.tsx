@@ -633,7 +633,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       initiateOrder(paymentMode, bankCode, isCOD, hcOrder);
       return;
     }
-    const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+    const selectedAddress = addresses?.find((item) => item?.id == deliveryAddressId);
     const pharmacyPincode =
       selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
     let packageId: string[] = [];
@@ -648,12 +648,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       billAmount: (cartTotal - productDiscount).toFixed(2),
       coupon: coupon?.coupon,
       pinCode: pharmacyPincode,
-      products: cartItems.map((item) => ({
-        sku: item.id,
-        categoryId: item.productType,
-        mrp: item.price,
-        quantity: item.quantity,
-        specialPrice: item.specialPrice || item.price,
+      products: cartItems?.map((item) => ({
+        sku: item?.id,
+        categoryId: item?.productType,
+        mrp: item?.price,
+        quantity: item?.quantity,
+        specialPrice: item?.specialPrice || item?.price,
       })),
       packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
@@ -661,18 +661,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     setLoading(true);
     validateConsultCoupon(data)
       .then((resp: any) => {
-        if (resp.data.errorCode == 0) {
-          if (resp.data.response.valid) {
+        if (resp?.data?.errorCode == 0) {
+          if (resp?.data?.response?.valid) {
             initiateOrder(paymentMode, bankCode, isCOD, hcOrder);
           } else {
             showAphAlert!({
               title: `Uh oh.. :(`,
-              description: resp.data.response.reason,
+              description: resp?.data?.response?.reason,
             });
             props.navigation.navigate(AppRoutes.MedicineCart);
           }
         } else {
-          CommonBugFender('validatingPharmaCoupon', g(resp.data, 'errorMsg'));
+          CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
           showAphAlert!({
             title: `Uh oh.. :(`,
             description: 'Coupon validation failed',
