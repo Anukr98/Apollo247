@@ -325,6 +325,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     fetchAddresses();
     checkPatientAge();
+    initiateHyperSDK();
   }, [currentPatient]);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
@@ -382,6 +383,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
       setAlsoAddListData([]);
       setReportGenDetails([]);
+    }
+  };
+
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
   };
 
@@ -1941,8 +1951,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             };
             const response = await createOrderInternal(orderInput);
             if (response?.data?.createOrderInternal?.success) {
-              const isInitiated: boolean = await isSDKInitialised();
-              !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
               const orderInfo = {
                 orderId: orderId,
                 displayId: displayId,
