@@ -1010,6 +1010,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       imageObj.fileType = item?.mimeType;
       imageObj.base64 = item?.file_Url;
       imageObj.id = item?.id;
+      imageObj.index = item?.index;
       imagesArray.push(imageObj);
     });
     return imagesArray;
@@ -1063,6 +1064,30 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return imagesArray;
   };
 
+  const getUpdatedImageArray = () => {
+    let imagesArray = [] as any;
+    const ImagesArrayList =
+      recordType === MedicalRecordType.FAMILY_HISTORY
+        ? familyHistoryImage
+        : recordType === MedicalRecordType.MEDICALCONDITION
+        ? medicalConditionImage
+        : recordType === MedicalRecordType.ALLERGY
+        ? allergyImage
+        : Images;
+    ImagesArrayList?.forEach((_itemImage) => {
+      updatedImageArray?.forEach((item: any) => {
+        if (_itemImage?.title == item?.title) {
+          let imageObj = {} as any;
+          imageObj.fileName = item?.title + '.' + item?.fileType;
+          imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
+          imageObj.content = item?.base64;
+          imagesArray.push(imageObj);
+        }
+      });
+    });
+    return imagesArray;
+  };
+
   const gotoHealthRecordsHomeScreen = () => {
     props.navigation.state.params?.onRecordAdded();
     props.navigation.goBack();
@@ -1082,7 +1107,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
           : '',
       recordType: MedicalRecordType.PRESCRIPTION,
-      prescriptionFiles: imageUpdate ? [] : getAddedImages(),
+      prescriptionFiles: selectedRecordID ? getUpdatedImageArray() : getAddedImages(),
     };
     client
       .mutate<addPatientPrescriptionRecord>({
@@ -1153,7 +1178,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         showAllergyDetails && allergyEndDate !== ''
           ? moment(allergyEndDate, string.common.date_placeholder_text).format('YYYY-MM-DD')
           : null,
-      attachmentList: imageUpdate ? [] : getAddedAllergyImage(),
+      attachmentList: selectedRecordID ? getUpdatedImageArray() : getAddedAllergyImage(),
     };
     client
       .mutate<addPatientAllergyRecord>({
@@ -1383,7 +1408,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             )
           : null,
       recordType: MedicalRecordType.MEDICALCONDITION,
-      medicationFiles: imageUpdate ? [] : getAddedMedicalConditionImage(),
+      medicationFiles: selectedRecordID ? getUpdatedImageArray() : getAddedMedicalConditionImage(),
     };
     client
       .mutate<addPatientMedicalConditionRecord>({
@@ -1449,7 +1474,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
           : '',
       age: age ? parseInt(age) : null,
-      attachmentList: imageUpdate ? [] : getAddedFamilyHistoryImage(),
+      attachmentList: selectedRecordID ? getUpdatedImageArray() : getAddedFamilyHistoryImage(),
     };
     client
       .mutate<savePatientFamilyHistoryToPRISM>({
@@ -1513,7 +1538,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       observations: observations,
       additionalNotes: additionalNotes,
       labTestResults: isTestRecordParameterFilled(),
-      testResultFiles: imageUpdate ? [] : getAddedImages(),
+      testResultFiles: selectedRecordID ? getUpdatedImageArray() : getAddedImages(),
     };
     client
       .mutate<addPatientLabTestRecord>({
@@ -1577,7 +1602,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : '',
       recordType: recordType,
       hospitalName: testName,
-      hospitalizationFiles: imageUpdate ? [] : getAddedImages(),
+      hospitalizationFiles: selectedRecordID ? getUpdatedImageArray() : getAddedImages(),
       diagnosisNotes: additionalNotes,
     };
 
@@ -1643,7 +1668,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : '',
       recordType: recordType,
       bill_no: testName,
-      billFiles: imageUpdate ? [] : getAddedImages(),
+      billFiles: selectedRecordID ? getUpdatedImageArray() : getAddedImages(),
     };
 
     client
@@ -1696,7 +1721,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       recordType: recordType,
       policyNumber: docName,
       sumInsured: locationName,
-      insuranceFiles: imageUpdate ? [] : getAddedImages(),
+      insuranceFiles: selectedRecordID ? getUpdatedImageArray() : getAddedImages(),
       notes: additionalNotes,
     };
 
@@ -1750,54 +1775,61 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       });
   };
 
-  const callDeleteHealthRecordFileApi = () => {
+  const callDeleteHealthRecordFileApi = async () => {
     setshowSpinner(true);
-    deleteFileArray?.forEach((_item) => {
-      console.log('_item', _item);
-      if (_item) {
-        const inputData: DeleteHealthRecordFilesInput = {
-          patientId: currentPatient?.id || '',
-          recordType: recordType,
-          recordId: selectedRecordID,
-          fileIndex: _item,
-        };
-        client
-          .mutate<deleteHealthRecordFiles>({
-            mutation: DELETE_HEALTH_RECORD_FILES,
-            variables: {
-              deleteHealthRecordFilesInput: inputData,
-            },
-          })
-          .then(({ data }) => {
-            setshowSpinner(false);
-            const status = g(data, 'deleteHealthRecordFiles', 'status');
-            if (status) {
-              if (recordType === MedicalRecordType.PRESCRIPTION) {
-                addMedicalRecord();
-              } else if (recordType === MedicalRecordType.TEST_REPORT) {
-                addPatientLabTestRecords();
-              } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
-                addPatientHospitalizationRecords();
-              } else if (recordType === MedicalRecordType.MEDICALBILL) {
-                addPatientBillRecords();
-              } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
-                addPatientInsuranceRecords();
-              } else if (
-                recordType === MedicalRecordType.ALLERGY ||
-                recordType === MedicalRecordType.MEDICALCONDITION ||
-                recordType === MedicalRecordType.FAMILY_HISTORY
-              ) {
-                callHealthConditionApis();
+    const _deleteRes = await Promise.all(
+      deleteFileArray?.map((_item) => {
+        if (_item?.index) {
+          const inputData: DeleteHealthRecordFilesInput = {
+            patientId: currentPatient?.id || '',
+            recordType: recordType,
+            recordId: selectedRecordID,
+            fileIndex: _item?.index,
+          };
+          client
+            .mutate<deleteHealthRecordFiles>({
+              mutation: DELETE_HEALTH_RECORD_FILES,
+              variables: {
+                deleteHealthRecordFilesInput: inputData,
+              },
+            })
+            .then(({ data }) => {
+              const status = g(data, 'deleteHealthRecordFiles', 'status');
+              if (status) {
+                return data;
               }
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
-            setshowSpinner(false);
-            currentPatient && handleGraphQlError(e);
-          });
+            })
+            .catch((e) => {
+              CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
+              setshowSpinner(false);
+              currentPatient && handleGraphQlError(e);
+            });
+        }
+      })
+    );
+    if (_deleteRes) {
+      setshowSpinner(false);
+      if (recordType === MedicalRecordType.PRESCRIPTION) {
+        addMedicalRecord();
+      } else if (recordType === MedicalRecordType.TEST_REPORT) {
+        addPatientLabTestRecords();
+      } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+        addPatientHospitalizationRecords();
+      } else if (recordType === MedicalRecordType.MEDICALBILL) {
+        addPatientBillRecords();
+      } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
+        addPatientInsuranceRecords();
+      } else if (
+        recordType === MedicalRecordType.ALLERGY ||
+        recordType === MedicalRecordType.MEDICALCONDITION ||
+        recordType === MedicalRecordType.FAMILY_HISTORY
+      ) {
+        callHealthConditionApis();
       }
-    });
+    } else {
+      setshowSpinner(false);
+      currentPatient && handleGraphQlError(e);
+    }
   };
 
   const onSavePress = () => {
@@ -2059,7 +2091,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data?.base64);
     const fileType = data?.fileType;
-    console.log('renderImagesRow', data, deleteFileArray);
     const deleteImage = () => {
       const imageCOPY =
         id === 1
@@ -2069,7 +2100,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : id === 3
           ? [...medicalConditionImage]
           : [...familyHistoryImage];
-      setDeleteFileArray([...deleteFileArray, data?.id]);
+      if (data?.id) {
+        setDeleteFileArray([...deleteFileArray, { index: data?.index }]);
+      }
       imageCOPY.splice(i, 1);
       id === 1
         ? setImages(imageCOPY)
@@ -3986,7 +4019,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           // Logic for multiple images
           setImages([...Images, ...response]);
           _setUpdatedImageArray(response);
-          setImageUpdate(false);
           setdisplayOrderPopup(false);
         }
       } else if (id === 2) {
@@ -4001,7 +4033,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           // Logic for multiple images
           setAllergyImage([...allergyImage, ...response]);
           _setUpdatedImageArray(response);
-          setImageUpdate(false);
           setdisplayAllergyPopup(false);
         }
       } else if (id === 3) {
@@ -4016,7 +4047,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           // Logic for multiple images
           setMedicalConditionImage([...medicalConditionImage, ...response]);
           _setUpdatedImageArray(response);
-          setImageUpdate(false);
           setdisplayMedicalConditionPopup(false);
         }
       } else {
@@ -4031,7 +4061,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           // Logic for multiple images
           setFamilyHistoryImage([...familyHistoryImage, ...response]);
           _setUpdatedImageArray(response);
-          setImageUpdate(false);
           setdisplayFamilyHistoryPopup(false);
         }
       }
