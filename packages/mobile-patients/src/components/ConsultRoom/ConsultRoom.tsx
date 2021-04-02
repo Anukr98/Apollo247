@@ -3571,6 +3571,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setSelectedProHealthHospital('');
     setSelectedProHealthCity('');
   }
+
   const renderHospitals = (item: any) => {
     return (
       <TouchableOpacity onPress={() => _onPressHospital(item)}>
@@ -3583,6 +3584,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </TouchableOpacity>
     );
   };
+
   function _onPressHospital(item: any) {
     let selectedHospitalId = item?.item?.id;
     setShowHospitals(false);
@@ -3590,6 +3592,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     //call the jwt token again.
     regenerateJWTToken('bookings', selectedHospitalId);
   }
+
   const regenerateJWTToken = async (source: string, id: string) => {
     let deviceType =
       Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
@@ -3635,7 +3638,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         '&deviceType=',
         deviceType
       );
-      console.log(finalUrl);
       props.navigation.navigate(AppRoutes.ProHealthWebView, {
         covidUrl: finalUrl,
         goBackCallback: webViewGoBack,
