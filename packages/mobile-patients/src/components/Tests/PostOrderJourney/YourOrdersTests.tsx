@@ -376,7 +376,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
-          console.log('Error occured fetchTestReportsResult', { error });
           currentPatient && handleGraphQlError(error);
         })
         .finally(() => setLoading?.(false));
@@ -713,6 +712,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderCancelReasons = () => {
+    const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
     return (
       <View>
         <Text style={styles.overlayHeadingText}>
@@ -724,7 +724,20 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               <>
                 <TouchableOpacity
                   onPress={() => setSelectCancelReason(item)}
-                  style={styles.reasonsTouch}
+                  style={[
+                    styles.reasonsTouch,
+                    {
+                      height:
+                        selectCancelReason === item &&
+                        selectedOrderRescheduleCount! < 3 &&
+                        (selectCancelReason ===
+                          string.diagnostics.reasonForCancel_TestOrder.latePhelbo ||
+                          selectCancelReason ===
+                            string.diagnostics.reasonForCancel_TestOrder.userUnavailable)
+                          ? 100
+                          : 40,
+                    },
+                  ]}
                 >
                   <View style={styles.rowStyle}>
                     <Text style={styles.reasonsText}>{item}</Text>
@@ -734,6 +747,25 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       <DisabledTickIcon style={styles.checkIconStyle} />
                     )}
                   </View>
+
+                  {selectCancelReason === item &&
+                  selectedOrderRescheduleCount! < 3 &&
+                  (selectCancelReason === string.diagnostics.reasonForCancel_TestOrder.latePhelbo ||
+                    selectCancelReason ===
+                      string.diagnostics.reasonForCancel_TestOrder.userUnavailable) ? (
+                    <View style={{ marginTop: 10, marginBottom: 5 }}>
+                      <Text style={styles.wantToReschedule}>
+                        {string.diagnostics.wantToReschedule}
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => _onPressProceedToReschedule(selectedOrderRescheduleCount!)}
+                      >
+                        <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+
                   {index === CANCELLATION_REASONS?.length - 1 ? null : (
                     <Spearator style={{ marginTop: 6 }} />
                   )}
@@ -833,6 +865,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleOptions(false);
     setShowRescheduleReasons(false);
     setSelectCancelReason('');
+    setShowCancelReasons(false);
     checkSlotSelection();
   }
 
@@ -867,6 +900,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleOptions(false); //hide the options view
     setShowRescheduleReasons(true);
     showCancelReasons && setShowCancelReasons(false);
+    setSelectRescheduleOption(true);
+    setShowCancelReasons(false);
+    selectCancelOption && setSelectCancelOption(false);
   }
 
   function _onPressProceedToCancel() {
@@ -874,6 +910,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowCancelReasons(true);
     showRescheduleReasons && setShowRescheduleReasons(false);
   }
+
   function _onPressReschduleOption() {
     setSelectRescheduleOption(true);
     setSelectCancelOption(false);
@@ -1180,8 +1217,8 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 16,
     marginBottom: 8,
-    height: 40,
     justifyContent: 'center',
+    height: 40,
   },
   buttonView: { margin: 16, marginTop: 4 },
   reasonsText: {
@@ -1191,4 +1228,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   buttonStyle: { width: '85%', alignSelf: 'center' },
+  wantToReschedule: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'left',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: 14, textAlign: 'left' },
 });
