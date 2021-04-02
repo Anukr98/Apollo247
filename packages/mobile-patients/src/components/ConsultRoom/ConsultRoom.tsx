@@ -54,7 +54,11 @@ import {
   ProHealthIcon,
   BackArrow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { BannerDisplayType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  BannerDisplayType,
+  BookingSource,
+  BookingStatus,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -106,6 +110,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
+  getAllProHealthAppointments,
   getPatientPersonalizedAppointmentList,
   getUserBannersList,
   saveTokenDevice,
@@ -856,7 +861,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //for prohealth option
   useEffect(() => {
     if (currentPatient?.id) {
-      checkIsProhealthActive();
+      checkIsProhealthActive(currentPatient); //to show prohealth option
+      getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }, [currentPatient]);
 
@@ -2220,10 +2226,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   //check if user has any prohealth bookings
-  const checkIsProhealthActive = async () => {
+  const checkIsProhealthActive = async (currentPatientDetails: any) => {
+    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
+    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
+
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
     const item = JSON.parse(retrievedItem || 'null');
-    const callByPrism: any = await AsyncStorage.getItem('callByPrism'); //why?
+    const callByPrism: any = await AsyncStorage.getItem('callByPrism');
     let allPatients;
     if (callByPrism === 'false') {
       allPatients =
@@ -2250,7 +2259,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           let resultData = res?.data?.response?.signUpUserData;
           if (resultData?.length > 0) {
             let getCurrentProfile = resultData?.find(
-              (item: any) => item?.uhid == currentPatient?.uhid
+              (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
             );
             //get status for active chron.
             let isActive = getCurrentProfile?.isChronActive;
@@ -2267,12 +2276,47 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       setshowSpinner(false);
       setProHealthActive(false);
-      showAphAlert &&
-        showAphAlert({
-          title: string.common.hiWithSmiley,
-          description: string.common.settingProfileTxt,
-        });
+      showAphAlert?.({
+        title: string.common.hiWithSmiley,
+        description: string.common.settingProfileTxt,
+      });
     }
+  };
+
+  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
+    string | number
+  >('' || 0);
+
+  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
+
+  const getActiveProHealthAppointments = async (currentDetails: any) => {
+    //or can use storeUhid, and then call api getPatientsByUhid.
+    getAllProHealthAppointments(client, currentDetails?.id)
+      .then((data: any) => {
+        if (data?.data?.data?.getAllProhealthAppointments) {
+          let getAllAppointments = data?.data?.data?.getAllProhealthAppointments?.appointments;
+          if (getAllAppointments?.length > 0) {
+            let getUpcomingAppointments = getAllAppointments?.filter(
+              (item: any) =>
+                (item?.status === BookingStatus.COMPLETED ||
+                  item?.status === BookingStatus?.INPROGRESS) &&
+                moment(item?.appointmentStartDateTimeUTC).diff(moment(), 'minutes') > 0
+            );
+            if (getUpcomingAppointments?.length > 0) {
+              setProHealthActiveAppointmentCount(getUpcomingAppointments?.length);
+              setProHealthActiveAppointment(getUpcomingAppointments);
+            }
+          } else {
+            setProHealthActiveAppointmentCount('0');
+            setProHealthActiveAppointment([]);
+          }
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('inside the getProHealthAppointemnt', e);
+        setProHealthActiveAppointmentCount('0');
+        setProHealthActiveAppointment([]);
+      });
   };
 
   const getPersonalizesAppointments = async () => {
@@ -2435,29 +2479,45 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderListView = () => {
+  const renderListView = (text: string, source: string) => {
+    let counts = source == 'prohealth' ? proHealthActiveAppointmentCount : currentAppointments;
+    let sortedActiveAppointments = [...proActiveAppointments];
+    let getRecentUpcomingBooking =
+      sortedActiveAppointments?.length > 0 &&
+      (sortedActiveAppointments?.sort(
+        (a: any, b: any) => a?.appointmentStartDateTimeUTC - b?.appointmentStartDateTimeUTC
+      ) as any);
+    const orderIdToShow = getRecentUpcomingBooking?.[0]?.displayId;
     return (
       <View>
         <ListCard
-          container={styles.activeAppointmentsContainer}
-          title={'Active Appointments'}
-          leftIcon={renderListCount(currentAppointments)}
+          container={[
+            styles.activeAppointmentsContainer,
+            {
+              marginTop: source == 'prohealth' ? 0 : 20,
+              marginBottom: source == 'prohealth' ? 0 : 20,
+            },
+          ]}
+          title={text}
+          leftIcon={renderListCount(counts)}
           onPress={() => {
-            postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
-            props.navigation.navigate('APPOINTMENTS');
+            if (source == 'prohealth') {
+              if (proActiveAppointments?.length > 0) {
+                postHomeWEGEvent(WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS);
+                //call the jwt token again.
+                regenerateJWTToken('orders', orderIdToShow);
+              } else {
+                postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
+                props.navigation.navigate('APPOINTMENTS');
+              }
+            }
           }}
         />
-        {/* <ListCard
-          container={{ marginTop: 14 }}
-          title={'Active Orders'}
-          leftIcon={renderListCount(2)}
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
-        /> */}
       </View>
     );
   };
 
-  const renderListCount = (count: string) => {
+  const renderListCount = (count: string | number) => {
     return (
       <View
         style={{
@@ -3511,6 +3571,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setSelectedProHealthHospital('');
     setSelectedProHealthCity('');
   }
+
   const renderHospitals = (item: any) => {
     return (
       <TouchableOpacity onPress={() => _onPressHospital(item)}>
@@ -3523,15 +3584,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </TouchableOpacity>
     );
   };
+
   function _onPressHospital(item: any) {
     let selectedHospitalId = item?.item?.id;
     setShowHospitals(false);
     setSelectedProHealthHospital(selectedHospitalId);
     //call the jwt token again.
-    regenerateJWTToken(selectedHospitalId);
+    regenerateJWTToken('bookings', selectedHospitalId);
   }
-  const regenerateJWTToken = async (hospitalId: string) => {
-    let deviceType = Platform.OS == 'android' ? 'Apollo247_Android' : 'Apollo247_Ios';
+
+  const regenerateJWTToken = async (source: string, id: string) => {
+    let deviceType =
+      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
     setLoading?.(true);
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     if (userLoggedIn == 'true') {
@@ -3546,32 +3610,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               throw error;
             });
             setAuthToken(jwt);
-            //open the webview
-            try {
-              const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
-              let finalUrl = openUrl.concat(
-                '/',
-                selectedProHealthCity,
-                '/',
-                hospitalId,
-                '?utm_token=',
-                jwt,
-                '&utm_mobile_number=',
-                currentPatient && g(currentPatient, 'mobileNumber')
-                  ? currentPatient.mobileNumber
-                  : '',
-                '&deviceType=',
-                deviceType
-              );
-              console.log(finalUrl);
-              setLoading?.(false);
-              props.navigation.navigate(AppRoutes.ProHealthWebView, {
-                covidUrl: finalUrl,
-              });
-            } catch (e) {
-              setLoading?.(false);
-              CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
-            }
+            source === 'bookings'
+              ? initiateProHealthWebView(id, jwt, deviceType)
+              : initiateOrdersProHealthWebView(id, jwt, deviceType);
           }
         });
       } catch (e) {
@@ -3581,6 +3622,63 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     setLoading?.(false);
   };
+
+  function initiateProHealthWebView(hospitalId: string, jwtToken: string, deviceType: string) {
+    try {
+      const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+      let finalUrl = openUrl.concat(
+        '/',
+        selectedProHealthCity,
+        '/',
+        hospitalId,
+        '?utm_token=',
+        jwtToken,
+        '&utm_mobile_number=',
+        currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : '',
+        '&deviceType=',
+        deviceType
+      );
+      props.navigation.navigate(AppRoutes.ProHealthWebView, {
+        covidUrl: finalUrl,
+        goBackCallback: webViewGoBack,
+      });
+      setLoading?.(false);
+    } catch (e) {
+      setLoading?.(false);
+      CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
+    }
+  }
+
+  function webViewGoBack() {
+    //call the api.
+    checkIsProhealthActive(currentPatient); //to show prohealth option
+    getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
+  }
+
+  function initiateOrdersProHealthWebView(displayId: string, jwtToken: string, deviceType: string) {
+    try {
+      const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+      let finalUrl = openUrl.concat(
+        '-success',
+        '/',
+        displayId,
+        '?utm_token=',
+        jwtToken,
+        '&utm_mobile_number=',
+        currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : '',
+        '&deviceType=',
+        deviceType
+      );
+      props.navigation.navigate(AppRoutes.ProHealthWebView, {
+        covidUrl: finalUrl,
+        goBackCallback: webViewGoBack,
+      });
+      setLoading?.(false);
+    } catch (e) {
+      setLoading?.(false);
+      CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
+    }
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -3605,8 +3703,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               {/**added prohealth banner */}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
+              {proActiveAppointments?.length == 0 && (
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
+              )}
+              {proActiveAppointments?.length > 0 && (
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {renderListView('Prohealth Appointments', 'prohealth')}
+                </View>
+              )}
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {renderListView('Active Appointments', 'normal')}
+              </View>
               {renderCovidMainView()}
             </View>
           </View>

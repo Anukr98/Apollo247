@@ -144,6 +144,7 @@ export enum WebEngageEventName {
   APOLLO_PRO_HEALTH = 'Apollo pro health',
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
+  ACTIVE_PROHEALTH_APPOINTMENTS = 'PROHEALTH_ACTIVE_APPOINTMENTS',
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
@@ -770,6 +771,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS] : {clicked: true};
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
