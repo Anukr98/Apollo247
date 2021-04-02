@@ -552,5 +552,6 @@ export interface AppsFlyerEvents {
     items: any;
     transaction_id: string;
     af_revenue: number;
+    af_currency: string;
   };
 }
