@@ -395,12 +395,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const getAge = (dob: string) => {
-    const now = new Date();
-    let age = parse(dob);
-    return differenceInYears(now, age);
-  };
-
   const checkPatientAge = () => {
     let age =
       !!currentPatient?.dateOfBirth || !!selectedPatient?.dateOfBirth
