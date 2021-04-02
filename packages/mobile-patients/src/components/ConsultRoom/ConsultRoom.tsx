@@ -3641,10 +3641,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         '&deviceType=',
         deviceType
       );
-      props.navigation.navigate(AppRoutes.ProHealthWebView, {
-        covidUrl: finalUrl,
-        goBackCallback: webViewGoBack,
-      });
+      !!hospitalId && hospitalId != ''
+        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
+            covidUrl: finalUrl,
+            goBackCallback: webViewGoBack,
+          })
+        : null;
       setLoading?.(false);
     } catch (e) {
       setLoading?.(false);
@@ -3672,10 +3674,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         '&deviceType=',
         deviceType
       );
-      props.navigation.navigate(AppRoutes.ProHealthWebView, {
+      !!displayId && displayId!= "" ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
         covidUrl: finalUrl,
         goBackCallback: webViewGoBack,
-      });
+      }) : null;
       setLoading?.(false);
     } catch (e) {
       setLoading?.(false);
