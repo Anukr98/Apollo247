@@ -139,14 +139,13 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
     value: Number(grandTotal),
     LOB: 'Diagnostics',
   };
-  console.log('eventAttributes >>', eventAttributes);
   const appsFlyerAttributes: AppsFlyerEvents[AppsFlyerEventName.PURCHASE] = {
     currency: 'INR',
     items: items,
     transaction_id: orderId,
     af_revenue: Number(grandTotal),
+    af_currency: 'INR',
   };
-  console.log('appsFlyerAttributes >>', appsFlyerAttributes);
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
