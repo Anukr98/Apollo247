@@ -21,7 +21,7 @@ export interface ProHealthWebViewProps
   }> {}
 
 export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
-  console.log({ props });
+  const { navigation } = props;
   let WebViewRef: any;
   const microPhonePermission = props.navigation.getParam('requestMicroPhonePermission');
   const [loading, setLoading] = useState<boolean>(true);
@@ -70,17 +70,25 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
-        // onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         source={{ uri: props.navigation.getParam('covidUrl') }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
+        onMessage={(event) => {
+          const { data } = event.nativeEvent;
+          const callBackData = data && JSON.parse(data);
+          const action = callBackData?.action;
+          if (callBackData === 'back') {
+            navigation.goBack();
+          }
+        }}
       />
     );
   };
 
   const handleBack = async () => {
     props.navigation.goBack();
+    navigation.state.params?.goBackCallback();
   };
 
   const renderError = (WebViewRef: any) => {
