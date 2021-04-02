@@ -11,6 +11,10 @@ import {
   getMedicineOrdersOMSList,
   getMedicineOrdersOMSListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -27,9 +31,11 @@ export interface Props
     queryIdLevel1: string;
     email: string;
     queries: NeedHelpHelpers.HelpSectionQuery[];
+    sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
   }> {}
 
 export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
+  const sourcePage = navigation.getParam('sourcePage');
   const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const email = navigation.getParam('email') || '';
@@ -81,6 +87,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         queryIdLevel1,
         queries,
         email,
+        sourcePage,
       });
     };
     const onPress = (isCancelOrder?: boolean) => {
@@ -144,6 +151,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         queryIdLevel1,
         queries,
         email,
+        sourcePage,
       });
     };
     return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />;

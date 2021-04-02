@@ -102,6 +102,7 @@ import {
   postWebEngageEvent,
   productsThumbnailUrl,
   setWebEngageScreenNames,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -146,6 +147,7 @@ import {
   renderMedicineBannerShimmer,
   renderMedicinesShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -314,6 +316,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const [asyncPincode, setAsyncPincode] = useState({});
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -518,6 +521,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       updateServiceability(pharmacyPincode);
       setPinCode && setPinCode(pharmacyPincode);
     }
+
+    const getAsyncLocationPincode = async () => {
+      const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+      if (asyncLocationPincode) {
+        setAsyncPincode(JSON.parse(asyncLocationPincode));
+      }
+    };
+    getAsyncLocationPincode();
   }, []);
 
   useEffect(() => {
@@ -692,6 +703,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <AccessLocation
           addresses={addressList}
           onPressSelectAddress={(address) => {
+            setAsyncPharmaLocation(address);
+            setAsyncPincode(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -884,6 +897,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncPincode(saveAddress);
             setPharmacyLocation!(response);
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
@@ -958,16 +979,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
-      const location = !deliveryAddress
+      const location = asyncPincode?.pincode
+        ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
+            asyncPincode?.pincode
+          }`
+        : !deliveryAddress
         ? pharmacyLocation?.pincode
           ? `${formatText(
               g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '',
               18
             )} ${g(pharmacyLocation, 'pincode')}`
-          : `${formatText(
-              g(locationDetails, 'city') || g(pharmacyLocation, 'state') || '',
-              18
-            )} ${g(locationDetails, 'pincode')}`
+          : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
+              locationDetails,
+              'pincode'
+            )}`
         : `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
           }`;
