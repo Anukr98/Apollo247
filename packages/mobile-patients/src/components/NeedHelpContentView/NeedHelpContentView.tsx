@@ -238,6 +238,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
     return showEmailPopup ? (
       <NeedHelpEmailPopup
         onRequestClose={() => setShowEmailPopup(false)}
+        onBackdropPress={() => setShowEmailPopup(false)}
         onPressSendORConfirm={(textEmail) => {
           setEmail(textEmail);
           setShowEmailPopup(false);
