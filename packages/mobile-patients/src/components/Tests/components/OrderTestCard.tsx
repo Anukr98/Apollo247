@@ -271,9 +271,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const consRejectedString = isPresent && props.additonalRejectedInfo?.join(', ');
     let textToShow =
       props.isCancelled && props.cancelledReason != null
-        ? `Order was cancelled - ${
+        ? `${string.diagnostics.orderCancelledReasonText} ${
             !!props.cancelledReason?.comments && props.cancelledReason?.comments != ''
               ? props.cancelledReason?.comments
+              : props.cancelledReason.cancellationReason === 'DIAGNOSTIC_STATUS_UPDATED_FROM_ITDOSE'
+              ? string.diagnostics.itDoseCancelledText
               : props.cancelledReason?.cancellationReason
           }`
         : `Sample for ${consRejectedString} ${
