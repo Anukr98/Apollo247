@@ -2305,6 +2305,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (getUpcomingAppointments?.length > 0) {
               setProHealthActiveAppointmentCount(getUpcomingAppointments?.length);
               setProHealthActiveAppointment(getUpcomingAppointments);
+            } else {
+              setProHealthActiveAppointmentCount('0');
+              setProHealthActiveAppointment([]);
             }
           } else {
             setProHealthActiveAppointmentCount('0');
