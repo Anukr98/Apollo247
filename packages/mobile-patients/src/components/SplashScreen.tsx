@@ -61,7 +61,6 @@ import VoipPushNotification from 'react-native-voip-push-notification';
 import { string as localStrings } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
-import LottieView from 'lottie-react-native';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
@@ -106,14 +105,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
   },
-  lottieAnimation: {
-    width: '100%',
-    height: '80%',
-    alignSelf: 'center',
-    justifyContent: 'center',
+  splashLogo: {
+    width: 152,
+    height: 117,
     ...Platform.select({
       android: {
-        top: -20,
+        top: -2,
       },
     }),
   },
@@ -913,12 +910,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   return (
     <View style={styles.mainView}>
-      <LottieView
-        style={styles.lottieAnimation}
-        source={require('@aph/mobile-patients/src/components/ui/animations/splash_animation.json')}
-        autoPlay
-        loop
-      />
+      <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+
+      {showSpinner ? (
+        <ActivityIndicator
+          animating={showSpinner}
+          size="large"
+          color="green"
+          style={{ bottom: 60, position: 'absolute' }}
+        />
+      ) : null}
     </View>
   );
 };
