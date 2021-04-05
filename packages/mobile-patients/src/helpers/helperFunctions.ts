@@ -2383,23 +2383,35 @@ export const takeToHomePage = (props: any) => {
 
 export const navigateToHome = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any,
+  forceRedirect?: boolean
+) => {
+  if (forceRedirect) {
+    goToConsultRoom(navigation, params);
+  } else {
+    const navigate = navigation.popToTop();
+    if (!navigate) {
+      goToConsultRoom(navigation, params);
+    }
+  }
+};
+
+const goToConsultRoom = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   params?: any
 ) => {
-  const navigate = navigation.popToTop();
-  if (!navigate) {
-    navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-            params,
-          }),
-        ],
-      })
-    );
-  }
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+          params,
+        }),
+      ],
+    })
+  );
 };
 
 export const navigateToScreenWithEmptyStack = (

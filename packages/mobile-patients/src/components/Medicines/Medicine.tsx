@@ -133,6 +133,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  BackHandler,
 } from 'react-native';
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
@@ -241,6 +242,7 @@ type Address = savePatientAddress_savePatientAddress_patientAddress;
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     locationDetails,
     pharmacyLocation,
@@ -337,6 +339,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       SectionName: sectionName,
     };
     postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, comingFrom === 'deeplink');
+    return true;
   };
 
   const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {

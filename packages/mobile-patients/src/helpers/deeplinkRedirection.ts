@@ -334,16 +334,19 @@ export const pushTheView = (
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
     case 'Consult':
-      navigation.navigate('APPOINTMENTS');
+      navigation.navigate('APPOINTMENTS', { movedFrom: 'deeplink' });
       break;
     case 'Medicine':
-      navigation.navigate('MEDICINES');
+      navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
       break;
     case 'UploadPrescription':
-      navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
+      navigation.navigate('MEDICINES', {
+        showUploadPrescriptionPopup: true,
+        comingFrom: 'deeplink',
+      });
       break;
     case 'MedicineRecommendedSection':
-      navigation.navigate('MEDICINES', { showRecommendedSection: true });
+      navigation.navigate('MEDICINES', { showRecommendedSection: true, comingFrom: 'deeplink' });
       break;
     case 'MedicineDetail':
       navigateToView(navigation, AppRoutes.ProductDetailPage, {
@@ -352,7 +355,7 @@ export const pushTheView = (
       });
       break;
     case 'Test':
-      navigation.navigate('TESTS');
+      navigation.navigate('TESTS', { movedFrom: 'deeplink' });
       break;
     case 'ConsultRoom':
       navigation.replace(AppRoutes.ConsultRoom);
@@ -431,7 +434,7 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.CommonWebView, { url: id });
       break;
     case 'HealthRecordsHome':
-      navigation.navigate('HEALTH RECORDS');
+      navigation.navigate('HEALTH RECORDS', { movedFrom: 'deeplink' });
       break;
     case 'ManageProfile':
       navigateToView(navigation, AppRoutes.ManageProfile);
@@ -478,7 +481,7 @@ export const pushTheView = (
           comingFrom: 'Deeplink',
         });
       } else {
-        navigation.navigate(AppRoutes.ConsultRoom);
+        navigation.replace(AppRoutes.ConsultRoom);
       }
       break;
     case 'TestListing':
@@ -501,7 +504,7 @@ export const pushTheView = (
         source: 'deeplink',
       };
       postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-      navigation.navigate(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.ConsultRoom);
       break;
   }
 };
@@ -552,7 +555,7 @@ const fetchSpecialities = async (
     }
   } catch (error) {
     CommonBugFender('DoctorSearch_fetchSpecialities', error);
-    navigation.navigate(AppRoutes.ConsultRoom);
+    navigation.replace(AppRoutes.ConsultRoom);
   }
 };
 
@@ -573,9 +576,9 @@ const getMedicineSKU = async (
           sku: data?.sku,
           movedFrom: ProductPageViewedSource.DEEP_LINK,
         })
-      : navigation.navigate('MEDICINES');
+      : navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
   } catch (error) {
     CommonBugFender('getMedicineSku', error);
-    navigation.navigate('MEDICINES');
+    navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
   }
 };
