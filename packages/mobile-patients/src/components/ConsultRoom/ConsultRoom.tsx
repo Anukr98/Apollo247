@@ -3155,11 +3155,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           {string.common.covidYouCanText}
         </Text>
 
-        {renderCovidBlueButtons(
+        {/* {renderCovidBlueButtons(
           onPressHealthPro,
           <ApolloHealthProIcon style={{ width: 28, height: 28 }} resizeMode="stretch" />,
           'Explore Apollo ProHealth'
-        )}
+        )} */}
         {renderCovidBlueButtons(
           onPressRiskLevel,
           <CovidRiskLevel style={{ width: 24, height: 24 }} />,
@@ -3403,7 +3403,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/proHealthbanner.png')}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.jpg')}
           resizeMode={'stretch'}
         ></ImageBackground>
       </TouchableOpacity>

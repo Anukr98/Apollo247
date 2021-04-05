@@ -21,6 +21,7 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import { CANCEL_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
@@ -391,7 +392,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const fetchTestReportResult = useCallback(
-    (order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) => {
+    (order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList) => {
       setLoading?.(true);
       const getVisitId = order?.visitNo;
       getPatientPrismMedicalRecordsApi(
@@ -435,7 +436,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const checkIfPreTestingExists = (
-    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
+    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
   ) => {
     if (order != null) {
       const filterPreTestingData = order?.diagnosticOrderLineItems?.filter((items) =>
@@ -509,7 +510,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
-
+        setLoading?.(false);
         if (noHubSlots) {
           showAphAlert!({
             title: string.common.uhOh,
@@ -522,6 +523,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             },
           });
         } else {
+          setLoading?.(false);
           //not trigger
           showAphAlert?.({
             title: string.common.uhOh,
@@ -998,8 +1000,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setLoading?.(false);
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
-      setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
-        setOrders(orders),
+      setOrders: (
+        orders: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList[]
+      ) => setOrders(orders),
       selectedOrder: order,
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
@@ -1045,7 +1048,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const showReportInclusionLevel = order?.diagnosticOrdersStatus?.find(
       (
         item:
-          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus
           | any
       ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
     );
@@ -1055,7 +1058,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const showExtraInfo = order?.diagnosticOrdersStatus?.filter(
       (
         item:
-          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus
           | any
       ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
     );
@@ -1063,7 +1066,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const sampleRejectedString = showExtraInfo?.map(
       (
         item:
-          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus
           | any
       ) => item?.itemName
     );

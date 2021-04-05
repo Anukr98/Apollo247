@@ -214,6 +214,7 @@ export enum GENDER {
   ALL = "ALL",
   FEMALE = "FEMALE",
   MALE = "MALE",
+  OTHER = "OTHER",
 }
 
 export enum Gender {

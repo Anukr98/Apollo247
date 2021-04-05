@@ -2089,7 +2089,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
-        paymentOrderId
         diagnosticOrderReschedule{
           rescheduleDate
           rescheduleReason
@@ -2619,20 +2618,14 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         isRescheduled
         rescheduleCount
         areaId
-        attachmentData {
-          fileName
-          documentName
-          documentBase64String
-        }
-        addressType
         addressLine1
         addressLine2
         patientId
         displayId
-        deviceType
         diagnosticDate
         diagnosticBranchCode
         diagnosticEmployeeCode
+        visitNo
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2645,29 +2638,41 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           statusMessage
         }
         diagnosticOrderLineItems {
+          id
+          itemId
           quantity
           itemName
           groupPlan
+          price
+          itemType
+          itemObj {
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
           diagnostics {
-            rate
-            state
+            id 
+            itemId
             itemName
-            itemRemarks
+            itemType
             toAgeInDays
             canonicalTag
             fromAgeInDays
+            testDescription
+            inclusions
+            testPreparationData
             diagnosticPricing {
               status
               endDate
               groupPlan
               startDate
             }
-            packageCalculatedMrp
-            testPreparationData
           }
           testPreparationData
           packageCalculatedMrp
         }
+        orderType
         totalPrice
         centerName
         centerState
@@ -2682,27 +2687,24 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         phleboDetailsObj {
           PhelboOTP
         }
+        slotTimings
         slotDateTimeInUTC
         collectionCharges
         diagnosticBranchCode
         diagnosticEmployeeCode
         diagnosticOrderReschedule {
-          patientId
-          createdDate
-          updatedDate
           rescheduleDate
           rescheduleReason
-          diagnosticOrdersId
+          comments
+          rescheduleDate
+          rescheduleReason
           rescheduleDateTimeInUTC
         }
         diagnosticOrderCancellation {
-          patientId
-          cancelType
-          createdDate
-          updatedDate
-          cancelByName
-          diagnosticOrdersId
           cancellationReason
+          cancelType
+          cancelByName
+          comments
         }
       }
       ordersCount
