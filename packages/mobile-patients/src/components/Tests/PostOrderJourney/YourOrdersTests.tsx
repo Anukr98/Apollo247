@@ -1269,6 +1269,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
+  wantToReschedule: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'left',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: 14, textAlign: 'left' },
   noDataCard: {
     height: 'auto',
     shadowRadius: 0,
