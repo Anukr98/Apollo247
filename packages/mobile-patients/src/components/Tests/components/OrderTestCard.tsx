@@ -19,7 +19,7 @@ import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOr
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const screenWidth = Dimensions.get('window').width;
@@ -50,11 +50,11 @@ interface OrderTestCardProps {
   onPressViewDetails: () => void;
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
+  phlobe: any;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const [moreTests, setMoreTests] = useState<boolean>(false);
-
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const renderTopView = () => {
     return (
@@ -292,6 +292,27 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
+  const otpData = (otpString: number) => {};
+
+  const showOTPContainer = () => {
+    const orderStatus = props.orderLevelStatus;
+    const orderId = props.orderId;
+    const phleboOTP = props.phlobe;
+    let otpToShow = !!phleboOTP && phleboOTP?.find((item: any) => console.log(item));
+    console.log({ otpToShow });
+
+    // phleboOTP && phleboOTP.map((item)=> {
+    return (
+      <>
+        <View style={styles.otpContainer}>
+          <Text style={styles.otpTextStyle}>{'OTP :'}</Text>
+          <Text style={styles.otpTextStyle}>{String(23)}</Text>
+        </View>
+      </>
+    );
+    //  })
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -310,6 +331,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
+      {showOTPContainer()}
     </TouchableOpacity>
   );
 };
@@ -318,6 +340,21 @@ const styles = StyleSheet.create({
   containerStyle: {
     ...theme.viewStyles.cardViewStyle,
     margin: 16,
+  },
+  otpTextStyle: {
+    top: 10,
+    left: 20,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  otpContainer: {
+    backgroundColor: '#FCFDDA',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    height: 40,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    borderRadius: 10,
   },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,

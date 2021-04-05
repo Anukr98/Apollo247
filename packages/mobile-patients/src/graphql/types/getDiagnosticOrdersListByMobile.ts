@@ -93,9 +93,11 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   id: string;
   isRescheduled: boolean | null;
   rescheduleCount: number | null;
-  slotTimings: string;
   areaId: number | null;
   attachmentData: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_attachmentData | null)[] | null;
+  addressType: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
   patientId: string;
   displayId: number;
   deviceType: DEVICETYPE | null;
@@ -105,9 +107,12 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   diagnosticOrdersStatus: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems | null)[] | null;
   totalPrice: number;
+  centerName: string;
+  centerState: string;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   createdDate: any;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  centerLocality: string;
   paymentOrderId: string | null;
   patientAddressId: string;
   phleboDetailsObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj | null;
