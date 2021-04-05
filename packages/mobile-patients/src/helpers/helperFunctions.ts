@@ -882,10 +882,14 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
-    const current = moment(new Date());
+    const d=new Date();
+    const current = moment(d);
+    const hoursPassedToday=d.getHours();
+    const minPassedToday=hoursPassedToday*60 + d.getMinutes();
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
     const diffDays = Math.ceil(difference.asDays());
+
     const isTomorrow = moment(nextSlot).isAfter(
       current
         .add(1, 'd')
@@ -901,7 +905,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && diffDays < 2) {
+    } else if (isTomorrow && differenceMinute<(2880-minPassedToday)) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
