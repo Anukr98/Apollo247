@@ -1208,7 +1208,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (loading || bannerLoading) {
       return (
         <View
-          style={[styles.sliderPlaceHolderStyle, { height: 180, backgroundColor: '#e3e1e1' }]}
+          style={[styles.sliderPlaceHolderStyle, { height: imgHeight, backgroundColor: '#e3e1e1' }]}
         ></View>
       );
     } else if (banners?.length > 0) {
