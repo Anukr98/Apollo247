@@ -198,6 +198,7 @@ import {
   getProHealthHospitalByCityIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalByCityId';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
+import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 
 const { Vitals } = NativeModules;
 
@@ -1407,13 +1408,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
-              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription);
+              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription!);
 
               const subscriptionName = g(hdfcSubscription, 'name')
                 ? g(hdfcSubscription, 'name')
                 : '';
               if (g(hdfcSubscription, 'isActive')) {
-                setHdfcPlanName && setHdfcPlanName(subscriptionName);
+                setHdfcPlanName && setHdfcPlanName(subscriptionName!);
               }
               if (
                 subscriptionName === hdfc_values.PLATINUM_PLAN &&
@@ -1442,7 +1443,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const planSummary: CirclePlanSummary[] = [];
     const summary = plan?.plan_summary;
     if (summary && summary.length) {
-      summary.forEach((value) => {
+      summary.forEach((value: any) => {
         const plan_summary: CirclePlanSummary = {
           price: value?.price,
           renewMode: value?.renew_mode,
@@ -1469,7 +1470,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const benefits = plan.benefits;
     const circleBenefits: PlanBenefits[] = [];
     if (benefits && benefits.length) {
-      benefits.forEach((item) => {
+      benefits.forEach((item: any) => {
         const ctaAction = item?.cta_action;
         const benefitCtaAction: BenefitCtaAction = {
           type: ctaAction?.type,
@@ -1527,7 +1528,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const benefits = plan.benefits;
       const planBenefits: PlanBenefits[] = [];
       if (benefits && benefits.length) {
-        benefits.forEach((item) => {
+        benefits.forEach((item: any) => {
           const ctaAction = g(item, 'cta_action');
           const benefitCtaAction: BenefitCtaAction = {
             type: g(ctaAction, 'type'),
@@ -2622,11 +2623,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const dataBannerCards = (darktheme) => {
-    const datatoadd = bannerDataHome?.filter((item) => item?.banner_display_type === 'card');
+  const dataBannerCards = (darktheme: any) => {
+    const datatoadd = bannerDataHome?.filter((item: any) => item?.banner_display_type === 'card');
 
-    let datatosend = [];
-    datatosend = datatoadd?.map((item) => ({
+    let datatosend = [] as any;
+    datatosend = datatoadd?.map((item: any) => ({
       imageUrl: { uri: darktheme ? getMobileURL(item?.banner) : item?.banner },
       title: item?.banner_template_info?.headerText1,
       value: item?.banner_template_info?.headerText2,
@@ -2639,7 +2640,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return datatosend;
   };
 
-  const navigateCTAActions = (action, url: string) => {
+  const navigateCTAActions = (action: any, url: string) => {
     if (action?.type == 'REDIRECT') {
       if (action.cta_action == 'SPECIALITY_LISTING') {
         props.navigation.navigate(AppRoutes.DoctorSearch);
@@ -2684,7 +2685,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
-  const openWebView = (url) => {
+  const openWebView = (url: any) => {
     Keyboard.dismiss();
     return (
       <View style={styles.viewWebStyles}>
@@ -2720,7 +2721,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderCircleCards = (item, darktheme: boolean, renew: boolean) => {
+  const renderCircleCards = (item: any, darktheme: boolean, renew: boolean) => {
     /**
      * darktheme -> expired case
      * renew -> expiring in x days
@@ -2825,8 +2826,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }}
       defaultCirclePlan={{}}
       navigation={props.navigation}
-      circlePaymentDone={planPurchasedcr.current}
-      circlePlanValidity={{ endDate: planValiditycr.current }}
+      circlePaymentDone={planPurchasedcr?.current}
+      circlePlanValidity={{ endDate: planValiditycr?.current }}
       source={'Consult'}
       from={string.banner_context.MEMBERSHIP_DETAILS}
     />
@@ -3674,10 +3675,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         '&deviceType=',
         deviceType
       );
-      !!displayId && displayId!= "" ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
-        covidUrl: finalUrl,
-        goBackCallback: webViewGoBack,
-      }) : null;
+      !!displayId && displayId != ''
+        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
+            covidUrl: finalUrl,
+            goBackCallback: webViewGoBack,
+          })
+        : null;
       setLoading?.(false);
     } catch (e) {
       setLoading?.(false);
@@ -3786,3 +3789,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     </View>
   );
 };
+function setDefaultCirclePlan(arg0: any) {
+  throw new Error('Function not implemented.');
+}
