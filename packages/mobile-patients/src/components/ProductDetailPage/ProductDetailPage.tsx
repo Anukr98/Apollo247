@@ -357,10 +357,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const postProductPageViewedEvent = (pincode?: string, isOutOfStock?: boolean) => {
+  const postProductPageViewedEvent = (pincode?: string, isProductInStock?: boolean) => {
     if (movedFrom) {
       const { sku, name, is_in_stock, sell_online } = medicineDetails;
-      const stock_availability = sell_online == 0 ? 'Not for Sale' : !!isOutOfStock ? 'No' : 'Yes';
+      const stock_availability =
+        sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
         ProductId: sku,
