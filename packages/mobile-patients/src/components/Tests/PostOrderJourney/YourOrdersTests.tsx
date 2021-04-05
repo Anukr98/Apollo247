@@ -159,12 +159,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
   const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
-
-  const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
-
-    []
-
-  );
+  const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>([]);
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
@@ -255,12 +250,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
-          console.log('ordersList :>> ', ordersList);
           const filteredOrderList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [] ?.filter(
 
             (item: orderListByMobile) => {
 
-              if (item.diagnosticOrderLineItems && item.diagnosticOrderLineItems.length > 0) {
+              if (item?.diagnosticOrderLineItems?.length && item?.diagnosticOrderLineItems?.length > 0) {
 
                 return item;
 
@@ -1075,9 +1069,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
     const getPatientName = (patientId: string): string => {
 
-      const patientSelected = allCurrentPatients.find((patient: { id: string; }) => patient.id === patientId);
+      const patientSelected = allCurrentPatients?.find((patient: { id: string; }) => patient?.id === patientId);
   
-      return patientSelected ? `${patientSelected.firstName} ${patientSelected.lastName}` : '';
+      return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
   
     };
     return (
@@ -1092,7 +1086,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
-        slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : ''}
+        slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.slotTimings}
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={
