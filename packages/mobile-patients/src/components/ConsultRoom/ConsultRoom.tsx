@@ -3013,16 +3013,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {}
   };
 
-  const handleEncodedURI = (encodedString: string) => {
-    const decodedString = decodeURIComponent(encodedString);
-    const splittedString = decodedString.split('+');
-    if (splittedString.length > 1) {
-      return splittedString;
-    } else {
-      return encodedString.split('%20');
-    }
-  };
-
   const onPressHealthPro = async () => {
     const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
