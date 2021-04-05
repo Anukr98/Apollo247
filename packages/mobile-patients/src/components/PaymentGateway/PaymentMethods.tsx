@@ -113,7 +113,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
     var event: string = data.event || '';
-    setisTxnProcessing(false);
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
@@ -129,6 +128,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
           status == 'PENDING_VBV' && handlePaymentPending(payload?.errorCode);
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
+          setisTxnProcessing(false);
         } else if (action == 'upiTxn' && !payload?.error && !status) {
           setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (payload?.error) {
@@ -242,10 +242,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const getClientToken = async () => {
+    setisTxnProcessing(true);
     if (authToken) {
       return authToken;
     } else {
-      setisTxnProcessing(true);
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
         const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
@@ -390,6 +390,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           paymentId: paymentId,
         });
         break;
+      case 'subscription':
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+                params: orderDetails?.circleParams,
+              }),
+            ],
+          })
+        );
+        break;
     }
   };
 
@@ -411,7 +425,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderBookingInfo = () => {
-    return <BookingInfo LOB={businessLine} orderDetails={orderDetails} />;
+    return businessLine == 'diagnostics' || businessLine == 'consult' ? (
+      <BookingInfo LOB={businessLine} orderDetails={orderDetails} />
+    ) : null;
   };
 
   const showPaymentOptions = () => {

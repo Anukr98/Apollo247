@@ -18,6 +18,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_PLAN_DETAILS_BY_PLAN_ID,
   CREATE_USER_SUBSCRIPTION,
+  CREATE_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -44,12 +45,20 @@ import {
 import {
   one_apollo_store_code,
   PaymentStatus,
+  OrderCreate,
+  OrderVerticals,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -141,7 +150,17 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       // selectDefaultPlan && selectDefaultPlan(props.membershipPlans);
       // setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
     }
+    initiateHyperSDK();
   }, []);
+
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
 
   const fireMembershipPlanSelected = () => {
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PLAN_SELECTED] = {
@@ -267,6 +286,79 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         CircleEventAttributes
       );
     isConsultJourney && circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_REMOVES_CART);
+  };
+
+  const createOrderInternal = (subscriptionId: string) => {
+    const orders: OrderVerticals = {
+      subscription: [
+        {
+          order_id: subscriptionId,
+          amount: amountToPay,
+          patient_id: currentPatient?.id,
+        },
+      ],
+    };
+    const orderInput: OrderCreate = {
+      orders: orders,
+      total_amount: amountToPay,
+      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
+    };
+    return client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      variables: { order: orderInput },
+    });
+  };
+
+  const initiateCirclePurchase = async () => {
+    try {
+      setSpinning(true);
+      const purchaseInput = {
+        userSubscription: {
+          mobile_number: currentPatient?.mobileNumber,
+          plan_id: planId,
+          sub_plan_id: defaultCirclePlan
+            ? defaultCirclePlan?.subPlanId
+            : circlePlanSelected?.subPlanId,
+          storeCode,
+          FirstName: currentPatient?.firstName,
+          LastName: currentPatient?.lastName,
+          payment_reference: {
+            amount_paid: amountToPay,
+            payment_status: PaymentStatus.PENDING,
+            purchase_via_HC: false,
+            HC_used: 0,
+          },
+          transaction_date_time: new Date().toISOString(),
+        },
+      };
+      const response = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>(
+        {
+          mutation: CREATE_USER_SUBSCRIPTION,
+          variables: purchaseInput,
+          fetchPolicy: 'no-cache',
+        }
+      );
+      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
+      const data = await createOrderInternal(subscriptionId);
+      const orderInfo = {
+        orderId: subscriptionId,
+        circleParams: {
+          circleActivated: true,
+          circlePlanValidity: g(response, 'data', 'CreateUserSubscription', 'response', 'end_date'),
+        },
+      };
+      setSpinning(false);
+      if (data?.data?.createOrderInternal?.success) {
+        props.navigation.navigate(AppRoutes.PaymentMethods, {
+          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
+          amount: amountToPay,
+          orderDetails: orderInfo,
+          businessLine: 'subscription',
+        });
+      }
+    } catch (error) {
+      CommonBugFender('Circle_Purchase_Initiation_Failed', error);
+    }
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {
@@ -703,11 +795,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             if (purchaseWithHC) {
               onPurchasePlanThroughHC();
             } else {
-              props.navigation.navigate(AppRoutes.CircleSubscription, {
-                from: from,
-                soruce: source,
-                screenName: screenName,
-              });
+              // props.navigation.navigate(AppRoutes.CircleSubscription, {
+              //   from: from,
+              //   soruce: source,
+              //   screenName: screenName,
+              // });
+              initiateCirclePurchase();
             }
           } else {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
