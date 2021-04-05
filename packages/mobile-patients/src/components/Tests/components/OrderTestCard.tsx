@@ -74,9 +74,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View style={styles.midViewContainer}>
         {!!props.patientName && (
           <View>
-            <Text style={styles.testForText}>
-              Tests for {props.gender} {props.patientName}
-            </Text>
+            <Text style={styles.testForText}>Tests for {props.patientName}</Text>
           </View>
         )}
         {props.showAddTest ? (
