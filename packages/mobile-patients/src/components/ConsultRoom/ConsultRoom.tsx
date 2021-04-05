@@ -3001,19 +3001,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           isCircleMember === 'yes',
           mediaSource
         );
-        // if (item?.url?.includes('apollopatients://Speciality')) {
-        //   const id = item?.url?.split?.('Speciality?');
-        //   if (id?.[1]) {
-        //     const filtersData = handleEncodedURI(id?.[1]) || '';
-        //     props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-        //       specialityId: filtersData?.[0] || '',
-        //       typeOfConsult: filtersData?.[1] || '',
-        //       doctorType: filtersData?.[2] || '',
-        //     });
-        //   } else {
-        //     props.navigation.navigate(AppRoutes.DoctorSearch);
-        //   }
-        // }
         return;
       }
       const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
