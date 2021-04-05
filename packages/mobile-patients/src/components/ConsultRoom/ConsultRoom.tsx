@@ -2498,8 +2498,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           container={[
             styles.activeAppointmentsContainer,
             {
-              marginTop: source == 'prohealth' ? 0 : 20,
-              marginBottom: source == 'prohealth' ? 0 : 20,
+              marginTop: source == 'prohealth' ? 3 : 20,
+              marginBottom: source == 'prohealth' ? 3 : 20,
             },
           ]}
           title={text}
