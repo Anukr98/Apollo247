@@ -122,7 +122,9 @@
     "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
     "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong.",
-    "settingProfileTxt": "We’re setting up your profile. Please check back soon!"
+    "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
+    "couldNotLoadText": "Uh oh.. could't load!",
+    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
   },
   "components": {
     "medicineDetails": {
