@@ -1781,7 +1781,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <TouchableOpacity
           style={{ alignItems: 'flex-end' }}
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
+          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
         >
           <CartIcon />
           {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
