@@ -3657,6 +3657,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   function webViewGoBack() {
     //call the api.
+    // getPatientApiCall();
     checkIsProhealthActive(currentPatient); //to show prohealth option
     getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
   }
@@ -3716,7 +3717,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               )}
               {proActiveAppointments?.length > 0 && (
                 <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {renderListView('Prohealth Appointments', 'prohealth')}
+                  {renderListView(
+                    proActiveAppointments?.length == 1
+                      ? 'ProHealth Appointment'
+                      : 'ProHealth Appointments',
+                    'prohealth'
+                  )}
                 </View>
               )}
               <View style={{ backgroundColor: '#f0f1ec' }}>
