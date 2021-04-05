@@ -820,7 +820,10 @@ const ConfigurationQA3 = {
   jusPayenvironment: 'sandbox',
   Covid_Items: QA_covid_items,
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth'
+  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  APOLLO_PRO_HEALTH_URL:
+  'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  
 };
 
 // VAPT
