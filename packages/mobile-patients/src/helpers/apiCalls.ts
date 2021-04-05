@@ -659,10 +659,10 @@ export const getStoreInventoryApi = (
 export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/v2/serviceable?pincode=${pincode}`;
+  const url = `${config.SERVICEABLE_CONFIG[0]}/${pincode}`;
   return Axios.get(url, {
     headers: {
-      Authorization: config.UATTAT_CONFIG[1],
+      Authorization: config.SERVICEABLE_CONFIG[1],
     },
   });
 };

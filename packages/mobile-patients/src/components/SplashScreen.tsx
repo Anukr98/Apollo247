@@ -61,7 +61,6 @@ import VoipPushNotification from 'react-native-voip-push-notification';
 import { string as localStrings } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
-import LottieView from 'lottie-react-native';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
@@ -106,14 +105,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
   },
-  lottieAnimation: {
-    width: '100%',
-    height: '80%',
-    alignSelf: 'center',
-    justifyContent: 'center',
+  splashLogo: {
+    width: 152,
+    height: 117,
     ...Platform.select({
       android: {
-        top: -20,
+        top: -2,
       },
     }),
   },
@@ -308,7 +305,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
               const data = handleOpenURL(url);
               const { routeName, id, isCall, timeout, mediaSource } = data;
-              getData(routeName, id, isCall, timeout, mediaSource);
+              redirectRoute(routeName, id, isCall, timeout, mediaSource);
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -325,44 +322,53 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data = handleOpenURL(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
-          if (routeName === 'ChatRoom_AppointmentData') {
-            getAppointmentDataAndNavigate(id, isCall);
-          } else if (routeName === 'DoctorCall_AppointmentData') {
-            const params = id?.split('+');
-            voipCallType.current = params[1];
-            callPermissions();
-          } else if (routeName === 'DoctorCallRejected') {
-            setLoading!(true);
-            const appointmentId = id?.split('+')?.[0];
-            const config: Pubnub.PubnubConfig = {
-              origin: 'apollo.pubnubapi.com',
-              subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-              publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-              ssl: true,
-              restore: true,
-            };
-            const pubnub = new Pubnub(config);
-            pubnub.publish(
-              {
-                message: { message: '^^#PATIENT_REJECTED_CALL' },
-                channel: appointmentId,
-                storeInHistory: true,
-                sendByPost: true,
-              },
-              (status, response) => {
-                setLoading!(false);
-              }
-            );
-          } else {
-            getData(routeName, id, isCall, timeout, mediaSource);
-          }
-
+          redirectRoute(routeName, id, isCall, timeout, mediaSource);
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
+    }
+  };
+
+  const redirectRoute = (
+    routeName: string,
+    id?: string,
+    timeout?: boolean,
+    isCall?: boolean,
+    mediaSource?: string
+  ) => {
+    if (routeName === 'ChatRoom_AppointmentData') {
+      getAppointmentDataAndNavigate(id || '', !!isCall);
+    } else if (routeName === 'DoctorCall_AppointmentData') {
+      const params = id?.split('+');
+      voipCallType.current = params[1];
+      callPermissions();
+    } else if (routeName === 'DoctorCallRejected') {
+      setLoading!(true);
+      const appointmentId = id?.split('+')?.[0];
+      const config: Pubnub.PubnubConfig = {
+        origin: 'apollo.pubnubapi.com',
+        subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+        publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+        ssl: true,
+        restore: true,
+      };
+      const pubnub = new Pubnub(config);
+      pubnub.publish(
+        {
+          message: { message: '^^#PATIENT_REJECTED_CALL' },
+          channel: appointmentId,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {
+          setLoading!(false);
+        }
+      );
+    } else {
+      getData(routeName, id, isCall, timeout, mediaSource);
     }
   };
 
@@ -527,7 +533,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
       const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
       if (appointmentData?.doctorInfo) {
-        getData('ChatRoom', appointmentData, false, isCall);
+        getData('ChatRoom_AppointmentData', appointmentData, false, isCall);
       } else {
         throw new Error('Doctor info is required to process the request.');
       }
@@ -538,7 +544,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         title: string.common.uhOh,
         description: string.appointmentDataError,
         CTAs: [
-          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.ConsultRoom);
+            },
+            type: 'white-button',
+          },
           {
             text: 'RETRY',
             onPress: () => {
@@ -913,12 +926,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   return (
     <View style={styles.mainView}>
-      <LottieView
-        style={styles.lottieAnimation}
-        source={require('@aph/mobile-patients/src/components/ui/animations/splash_animation.json')}
-        autoPlay
-        loop
-      />
+      <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+
+      {showSpinner ? (
+        <ActivityIndicator
+          animating={showSpinner}
+          size="large"
+          color="green"
+          style={{ bottom: 60, position: 'absolute' }}
+        />
+      ) : null}
     </View>
   );
 };

@@ -36,6 +36,7 @@ import {
   getDiffInMinutes,
   overlyCallPermissions,
   isPastAppointment,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -60,6 +61,7 @@ import {
   Platform,
   Dimensions,
   SectionListData,
+  BackHandler,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
@@ -404,6 +406,7 @@ export interface AppointmentFilterObject {
   availability: string[] | null;
   doctorsList: string[] | null;
   specialtyList: string[] | null;
+  movedFrom?: string;
 }
 
 export type Appointment = getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
@@ -411,6 +414,7 @@ export type Appointment = getPatientAllAppointments_getPatientAllAppointments_ac
 export const Consult: React.FC<ConsultProps> = (props) => {
   const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
+  const movedFrom = props.navigation.getParam('movedFrom');
 
   const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
   const [activeFollowUpAppointments, setActiveFollowUpAppointments] = useState<
@@ -466,6 +470,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     }
     currentPatient && setProfile(currentPatient!);
   }, [currentPatient, props.navigation.state.params]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
 
   useEffect(() => {
     async function fetchData() {

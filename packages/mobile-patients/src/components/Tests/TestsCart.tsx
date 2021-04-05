@@ -395,12 +395,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const getAge = (dob: string) => {
-    const now = new Date();
-    let age = parse(dob);
-    return differenceInYears(now, age);
-  };
-
   const checkPatientAge = () => {
     let age =
       !!currentPatient?.dateOfBirth || !!selectedPatient?.dateOfBirth
@@ -2726,7 +2720,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {renderTotalCharges()}
             {cartItems?.length > 0 ? renderAlsoAddItems() : null}
           </View>
-          <View style={{ height: cartItems?.length > 0 ? 120 : 70 }} />
+          <View style={{ height: cartItems?.length > 0 ? 140 : 90 }} />
         </ScrollView>
         {renderTestProceedBar()}
       </SafeAreaView>

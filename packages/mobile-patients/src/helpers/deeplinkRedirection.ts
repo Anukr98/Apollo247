@@ -32,347 +32,293 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 export const handleOpenURL = (event: any) => {
   try {
     let route;
-    const a = event.indexOf('https://www.apollo247.com');
+    let data;
+    let linkId = '';
+    let attributes = {
+      media_source: 'not set',
+    };
+    const apolloUrl = 'https://www.apollo247.com';
+    const a = event.indexOf(apolloUrl);
     if (a == 0) {
-      handleDeeplinkFormatTwo(event);
+      const url = event?.replace(`${apolloUrl}/`, '');
+      data = url?.split('/');
+      route = data?.[0];
     } else {
       route = event?.replace('apollopatients://', '');
-      const data = route?.split('?');
+      data = route?.split('?');
       setBugFenderLog('DEEP_LINK_DATA', data);
       route = data?.[0];
+    }
 
-      let linkId = '';
-      let attributes = {
-        media_source: 'not set',
-      };
-
-      try {
-        if (data?.length >= 2) {
-          linkId = data?.[1]?.split('&');
-          const params = data[1]?.split('&');
-          const utmParams = params?.map((item: any) => item.split('='));
-          utmParams?.forEach(
-            (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
-          );
-          if (linkId?.length > 0) {
-            linkId = linkId?.[0];
-            setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
-          }
+    try {
+      if (data?.length >= 2) {
+        linkId = data?.[1]?.split('&');
+        const params = data[1]?.split('&');
+        const utmParams = params?.map((item: any) => item.split('='));
+        utmParams?.forEach(
+          (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
+        );
+        if (linkId?.length > 0) {
+          linkId = linkId?.[0];
+          setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
-      } catch (error) {}
+      }
+    } catch (error) {}
 
-      switch (route) {
-        case 'consult':
-        case 'Consult':
+    switch (route) {
+      case 'consult':
+      case 'Consult':
+        return {
+          routeName: 'Consult',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
+
+      case 'medicine':
+      case 'Medicine':
+        return {
+          routeName: 'Medicine',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
+
+      case 'uploadprescription':
+      case 'UploadPrescription':
+        return {
+          routeName: 'UploadPrescription',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
+
+      case 'medicinerecommendedsection':
+      case 'MedicineRecommendedSection':
+        return {
+          routeName: 'MedicineRecommendedSection',
+        };
+        break;
+
+      case 'test':
+      case 'Test':
+        return {
+          routeName: 'Test',
+        };
+        break;
+
+      case 'speciality':
+      case 'Speciality':
+        if (data.length === 2) {
           return {
-            routeName: 'Consult',
-            id: data.length === 2 ? linkId : undefined,
+            routeName: 'Speciality',
+            id: linkId,
           };
-          break;
-
-        case 'medicine':
-        case 'Medicine':
-          return {
-            routeName: 'Medicine',
-            id: data.length === 2 ? linkId : undefined,
-          };
-          break;
-
-        case 'uploadprescription':
-        case 'UploadPrescription':
-          return {
-            routeName: 'UploadPrescription',
-            id: data.length === 2 ? linkId : undefined,
-          };
-          break;
-
-        case 'medicinerecommendedsection':
-        case 'MedicineRecommendedSection':
-          return {
-            routeName: 'MedicineRecommendedSection',
-          };
-          break;
-
-        case 'test':
-        case 'Test':
-          return {
-            routeName: 'Test',
-          };
-          break;
-
-        case 'speciality':
-        case 'Speciality':
-          if (data.length === 2) {
-            return {
-              routeName: 'Speciality',
-              id: linkId,
-            };
-          } else {
-            return {
-              routeName: 'Test',
-            };
-          }
-          break;
-
-        case 'doctor':
-        case 'Doctor':
-          if (data.length === 2)
-            return {
-              routeName: 'Doctor',
-              id: linkId,
-              timeout: undefined,
-              isCall: undefined,
-              mediaSource: attributes?.media_source,
-            };
-          break;
-
-        case 'doctorsearch':
-        case 'DoctorSearch':
+        } else {
           return {
             routeName: 'DoctorSearch',
           };
-          break;
+        }
+        break;
 
-        case 'medicinesearch':
-        case 'MedicineSearch':
+      case 'doctor':
+      case 'Doctor':
+        if (data.length === 2) {
           return {
-            routeName: 'MedicineSearch',
-            id: data.length === 2 ? linkId : undefined,
+            routeName: 'Doctor',
+            id: linkId,
+            timeout: undefined,
+            isCall: undefined,
+            mediaSource: attributes?.media_source,
           };
-          break;
-
-        case 'medicinedetail':
-        case 'MedicineDetail':
+        } else {
           return {
-            routeName: 'MedicineDetail',
-            id: data.length === 2 ? linkId : undefined,
+            routeName: 'DoctorSearch',
           };
-          break;
+        }
+        break;
 
-        case 'medicinecart':
-        case 'MedicineCart':
+      case 'doctorsearch':
+      case 'DoctorSearch':
+        return {
+          routeName: 'DoctorSearch',
+        };
+        break;
+
+      case 'medicinesearch':
+      case 'MedicineSearch':
+        return {
+          routeName: 'MedicineSearch',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
+
+      case 'medicinedetail':
+      case 'MedicineDetail':
+        return {
+          routeName: 'MedicineDetail',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
+
+      case 'medicinecart':
+      case 'MedicineCart':
+        return {
+          routeName: 'MedicineCart',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
+
+      case 'chatroom':
+      case 'ChatRoom':
+        if (data.length === 2) {
           return {
-            routeName: 'MedicineCart',
-            id: data.length === 2 ? linkId : undefined,
+            routeName: 'ChatRoom_AppointmentData',
+            id: linkId,
+            isCall: false,
           };
-          break;
+        }
+        break;
 
-        case 'chatroom':
-        case 'ChatRoom':
-          if (data.length === 2) {
-            return {
-              routeName: 'ChatRoom_AppointmentData',
-              id: linkId,
-              isCall: false,
-            };
-          }
-          break;
-
-        case 'doctorcall':
-        case 'DoctorCall':
-          if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
-            return {
-              routeName: 'DoctorCall_AppointmentData',
-              id: linkId,
-              isCall: false,
-            };
-          }
-          break;
-
-        case 'doctorcallrejected':
-        case 'DoctorCallRejected':
+      case 'doctorcall':
+      case 'DoctorCall':
+        if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
           return {
-            routeName: 'DoctorCallRejected',
+            routeName: 'DoctorCall_AppointmentData',
+            id: linkId,
+            isCall: false,
+          };
+        }
+        break;
+
+      case 'doctorcallrejected':
+      case 'DoctorCallRejected':
+        return {
+          routeName: 'DoctorCallRejected',
+          id: linkId,
+        };
+        break;
+
+      case 'order':
+      case 'Order':
+        if (data.length === 2) {
+          return {
+            routeName: 'Order',
             id: linkId,
           };
-          break;
+        }
+        break;
 
-        case 'order':
-        case 'Order':
-          if (data.length === 2) {
-            return {
-              routeName: 'Order',
-              id: linkId,
-            };
-          }
-          break;
+      case 'myorders':
+      case 'MyOrders':
+        return {
+          routeName: 'MyOrders',
+        };
+        break;
 
-        case 'myorders':
-        case 'MyOrders':
+      case 'webview':
+        if (data.length >= 1) {
+          let url = data[1].replace('param=', '');
           return {
-            routeName: 'MyOrders',
+            routeName: 'webview',
+            id: url,
           };
-          break;
+        }
+        break;
 
-        case 'webview':
-          if (data.length >= 1) {
-            let url = data[1].replace('param=', '');
-            return {
-              routeName: 'webview',
-              id: url,
-            };
-          }
-          break;
-
-        case 'finddoctors':
-        case 'FindDoctors':
-          if (data.length === 2) {
-            return {
-              routeName: 'FindDoctors',
-              id: linkId,
-            };
-          }
-          break;
-
-        case 'healthrecordshome':
-        case 'HealthRecordsHome':
+      case 'finddoctors':
+      case 'FindDoctors':
+        if (data.length === 2) {
           return {
-            routeName: 'HealthRecordsHome',
+            routeName: 'FindDoctors',
+            id: linkId,
           };
-          break;
+        }
+        break;
 
-        case 'manageprofile':
-        case 'ManageProfile':
-          return {
-            routeName: 'ManageProfile',
-          };
-          break;
+      case 'healthrecordshome':
+      case 'HealthRecordsHome':
+        return {
+          routeName: 'HealthRecordsHome',
+        };
+        break;
 
-        case 'oneapollomembership':
-        case 'OneApolloMembership':
-          return {
-            routeName: 'OneApolloMembership',
-          };
-          break;
+      case 'manageprofile':
+      case 'ManageProfile':
+        return {
+          routeName: 'ManageProfile',
+        };
+        break;
 
-        case 'testdetails':
-        case 'TestDetails':
-          return {
-            routeName: 'TestDetails',
-            id: data.length === 2 ? linkId : undefined,
-          };
-          break;
+      case 'oneapollomembership':
+      case 'OneApolloMembership':
+        return {
+          routeName: 'OneApolloMembership',
+        };
+        break;
 
-        case 'consultdetails':
-        case 'ConsultDetails':
-          return {
-            routeName: 'ConsultDetails',
-            id: data.length === 2 ? linkId : undefined,
-          };
-          break;
+      case 'testdetails':
+      case 'TestDetails':
+        return {
+          routeName: 'TestDetails',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
 
-        case 'circlemembershipdetails':
-        case 'CircleMembershipDetails':
-          return {
-            routeName: 'CircleMembershipDetails',
-          };
-          break;
+      case 'consultdetails':
+      case 'ConsultDetails':
+        return {
+          routeName: 'ConsultDetails',
+          id: data.length === 2 ? linkId : undefined,
+        };
+        break;
 
-        case 'testlisting':
-        case 'TestListing':
-          return {
-            routeName: 'TestListing',
-            id: data?.length === 2 ? linkId : undefined,
-          };
-          break;
+      case 'circlemembershipdetails':
+      case 'CircleMembershipDetails':
+        return {
+          routeName: 'CircleMembershipDetails',
+        };
+        break;
 
-        case 'testreport':
-        case 'TestReport':
-          return {
-            routeName: 'TestReport',
-            id: data?.length === 2 ? linkId : undefined,
-          };
-          break;
+      case 'testlisting':
+      case 'TestListing':
+        return {
+          routeName: 'TestListing',
+          id: data?.length === 2 ? linkId : undefined,
+        };
+        break;
 
-        case 'mytestorders':
-        case 'MyTestOrders':
-          return {
-            routeName: 'MyTestOrders',
-          };
-          break;
+      case 'testreport':
+      case 'TestReport':
+        return {
+          routeName: 'TestReport',
+          id: data?.length === 2 ? linkId : undefined,
+        };
+        break;
 
-        default:
-          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'deeplink',
-          };
-          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-          return {
-            routeName: 'ConsultRoom',
-            id: undefined,
-            timeout: true,
-          };
-          break;
-      }
+      case 'mytestorders':
+      case 'MyTestOrders':
+        return {
+          routeName: 'MyTestOrders',
+        };
+        break;
+
+      case 'prescription-review':
+        return {
+          routeName: 'UploadPrescription',
+        };
+        break;
+
+      default:
+        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+          source: 'deeplink',
+        };
+        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+        return {
+          routeName: 'ConsultRoom',
+          id: undefined,
+          timeout: true,
+        };
+        break;
     }
   } catch (error) {}
-};
-
-const handleDeeplinkFormatTwo = (event: any) => {
-  const url = event.replace('https://www.apollo247.com/', '');
-  const data = url.split('/');
-  const route = data[0];
-  let linkId = '';
-  try {
-    if (data.length >= 2) {
-      linkId = data[1].split('&');
-      if (linkId.length > 0) {
-        linkId = linkId[0];
-      }
-    }
-  } catch (error) {}
-  switch (route) {
-    case 'medicines':
-      return {
-        routeName: 'Medicine',
-      };
-      break;
-    case 'prescription-review':
-      return {
-        routeName: 'UploadPrescription',
-      };
-      break;
-    case 'specialties':
-      if (linkId == '') {
-        return { routeName: 'DoctorSearch' };
-      } else {
-        return {
-          routeName: 'SpecialityByName',
-          id: linkId,
-        };
-      }
-      break;
-    case 'doctors':
-      if (linkId == '') {
-        return { routeName: 'DoctorSearch' };
-      } else {
-        return {
-          routeName: 'DoctorByNameId',
-          id: linkId,
-        };
-      }
-      break;
-    case 'medicine':
-      if (linkId == '') {
-        return { routeName: 'Medicine' };
-      } else {
-        return {
-          routeName: 'MedicineByName',
-          id: linkId,
-        };
-      }
-      break;
-    default:
-      const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-        source: 'deeplink',
-      };
-      postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-      return {
-        routeName: 'ConsultRoom',
-        id: undefined,
-        timeout: true,
-      };
-      break;
-  }
 };
 
 export const pushTheView = (
@@ -388,16 +334,19 @@ export const pushTheView = (
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
     case 'Consult':
-      navigation.navigate('APPOINTMENTS');
+      navigation.navigate('APPOINTMENTS', { movedFrom: 'deeplink' });
       break;
     case 'Medicine':
-      navigation.navigate('MEDICINES');
+      navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
       break;
     case 'UploadPrescription':
-      navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
+      navigation.navigate('MEDICINES', {
+        showUploadPrescriptionPopup: true,
+        comingFrom: 'deeplink',
+      });
       break;
     case 'MedicineRecommendedSection':
-      navigation.navigate('MEDICINES', { showRecommendedSection: true });
+      navigation.navigate('MEDICINES', { showRecommendedSection: true, comingFrom: 'deeplink' });
       break;
     case 'MedicineDetail':
       navigateToView(navigation, AppRoutes.ProductDetailPage, {
@@ -406,7 +355,7 @@ export const pushTheView = (
       });
       break;
     case 'Test':
-      navigation.navigate('TESTS', {movedFrom:'deeplink'});
+      navigation.navigate('TESTS', { movedFrom: 'deeplink' });
       break;
     case 'ConsultRoom':
       navigation.replace(AppRoutes.ConsultRoom);
@@ -461,9 +410,10 @@ export const pushTheView = (
         movedFrom: 'splashscreen',
       });
       break;
-    case 'ChatRoom':
+    case 'ChatRoom_AppointmentData':
+    case 'DoctorCall_AppointmentData':
       navigateToView(navigation, AppRoutes.ChatRoom, {
-        id: id,
+        data: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',
         prescription: '',
         isCall: isCall,
@@ -484,7 +434,7 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.CommonWebView, { url: id });
       break;
     case 'HealthRecordsHome':
-      navigation.navigate('HEALTH RECORDS');
+      navigation.navigate('HEALTH RECORDS', { movedFrom: 'deeplink' });
       break;
     case 'ManageProfile':
       navigateToView(navigation, AppRoutes.ManageProfile);
@@ -495,7 +445,7 @@ export const pushTheView = (
     case 'TestDetails':
       navigateToView(navigation, AppRoutes.TestDetails, {
         itemId: id,
-        movedFrom: 'deeplink'
+        movedFrom: 'deeplink',
       });
       break;
     case 'ConsultDetails':
@@ -505,7 +455,7 @@ export const pushTheView = (
       break;
     case 'DoctorCall':
       navigateToView(navigation, AppRoutes.ChatRoom, {
-        id: id,
+        data: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',
         prescription: '',
         isCall: true,
@@ -532,7 +482,7 @@ export const pushTheView = (
           comingFrom: 'Deeplink',
         });
       } else {
-        navigation.navigate(AppRoutes.ConsultRoom);
+        navigation.replace(AppRoutes.ConsultRoom);
       }
       break;
     case 'TestListing':
@@ -555,7 +505,7 @@ export const pushTheView = (
         source: 'deeplink',
       };
       postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-      navigation.navigate(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.ConsultRoom);
       break;
   }
 };
@@ -606,7 +556,7 @@ const fetchSpecialities = async (
     }
   } catch (error) {
     CommonBugFender('DoctorSearch_fetchSpecialities', error);
-    navigation.navigate(AppRoutes.ConsultRoom);
+    navigation.replace(AppRoutes.ConsultRoom);
   }
 };
 
@@ -627,9 +577,9 @@ const getMedicineSKU = async (
           sku: data?.sku,
           movedFrom: ProductPageViewedSource.DEEP_LINK,
         })
-      : navigation.navigate('MEDICINES');
+      : navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
   } catch (error) {
     CommonBugFender('getMedicineSku', error);
-    navigation.navigate('MEDICINES');
+    navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
   }
 };
