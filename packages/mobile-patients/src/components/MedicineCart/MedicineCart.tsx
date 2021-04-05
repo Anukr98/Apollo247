@@ -1235,7 +1235,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
 const isPricesWithInSpecifiedRange = (num1: number, num2: number, percentage: number) => {
   const diffP = ((num1 - num2) / num1) * 100;
-  const result = diffP <= percentage && diffP >= -percentage;
+  const result = diffP >= percentage || diffP <= -percentage;
   return result;
 };
 
