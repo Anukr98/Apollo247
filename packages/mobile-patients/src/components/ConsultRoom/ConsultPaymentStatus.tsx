@@ -260,9 +260,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     try {
       const response = await getOrderInfo();
       const txnStatus = response?.data?.getOrderInternal?.payment_status || PAYMENT_STATUS.PENDING;
-      const appmtDetails = response?.data?.getOrderInternal?.internal_orders?.find(
-        (item: any) => item?.AppointmentDetails
-      )?.AppointmentDetails;
+      const appmtDetails = response?.data?.getOrderInternal?.AppointmentDetails?.find(
+        (item: any) => item
+      );
       const displayId = appmtDetails?.displayId || '';
       firePaymentStatusEvent(txnStatus);
       if (txnStatus == success) {

@@ -113,7 +113,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
     var event: string = data.event || '';
-    setisTxnProcessing(false);
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
@@ -129,6 +128,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
           status == 'PENDING_VBV' && handlePaymentPending(payload?.errorCode);
           FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
+          setisTxnProcessing(false);
         } else if (action == 'upiTxn' && !payload?.error && !status) {
           setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (payload?.error) {
@@ -152,7 +152,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const handlePaymentPending = (errorCode: string) => {
     switch (errorCode) {
-      case ('JP_002', 'JP_005', 'JP_009', 'JP_012'):
+      case 'JP_002':
+      case 'JP_005':
+      case 'JP_009':
+      case 'JP_012':
         // User aborted txn or no Internet or user had exceeded the limit of incorrect OTP submissions or txn failed at PG end
         showTxnFailurePopUP();
         break;
