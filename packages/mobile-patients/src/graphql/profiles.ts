@@ -2601,7 +2601,114 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
     }
   }
 `;
-
+export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
+  query getDiagnosticOrdersListByMobile(
+    $mobileNumber: String
+    $paginated: Boolean
+    $limit: Int
+    $offset: Int
+  ) {
+    getDiagnosticOrdersListByMobile(
+      mobileNumber: $mobileNumber
+      offset: $offset
+      limit: $limit
+      paginated: $paginated
+    ) {
+      ordersList {
+        id
+        isRescheduled
+        rescheduleCount
+        areaId
+        attachmentData {
+          fileName
+          documentName
+          documentBase64String
+        }
+        addressType
+        addressLine1
+        addressLine2
+        patientId
+        displayId
+        deviceType
+        diagnosticDate
+        diagnosticBranchCode
+        diagnosticEmployeeCode
+        diagnosticOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          itemId
+          packageId
+          itemName
+          packageName
+          hideStatus
+          statusMessage
+        }
+        diagnosticOrderLineItems {
+          quantity
+          itemName
+          groupPlan
+          diagnostics {
+            rate
+            state
+            itemName
+            itemRemarks
+            toAgeInDays
+            canonicalTag
+            fromAgeInDays
+            diagnosticPricing {
+              status
+              endDate
+              groupPlan
+              startDate
+            }
+            packageCalculatedMrp
+            testPreparationData
+          }
+          testPreparationData
+          packageCalculatedMrp
+        }
+        totalPrice
+        centerName
+        centerState
+        orderStatus
+        createdDate
+        paymentType
+        diagnosticDate
+        centerLocality
+        paymentOrderId
+        paymentOrderId
+        patientAddressId
+        phleboDetailsObj {
+          PhelboOTP
+        }
+        slotDateTimeInUTC
+        collectionCharges
+        diagnosticBranchCode
+        diagnosticEmployeeCode
+        diagnosticOrderReschedule {
+          patientId
+          createdDate
+          updatedDate
+          rescheduleDate
+          rescheduleReason
+          diagnosticOrdersId
+          rescheduleDateTimeInUTC
+        }
+        diagnosticOrderCancellation {
+          patientId
+          cancelType
+          createdDate
+          updatedDate
+          cancelByName
+          diagnosticOrdersId
+          cancellationReason
+        }
+      }
+      ordersCount
+    }
+  }
+`;
 export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
   query GetMedicineOrderShipmentDetails(
     $patientId: String

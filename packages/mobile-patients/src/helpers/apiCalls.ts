@@ -1163,14 +1163,11 @@ export const getDiagnosticListingWidget = (
   });
 };
 
-export const GetAllUHIDSForNumber_CM = (
-  phoneNumber: string
-): Promise<AxiosResponse<any>> => {
+export const GetAllUHIDSForNumber_CM = (phoneNumber: string): Promise<AxiosResponse<any>> => {
   const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/askapollo/user/uhids?phoneNumber=${phoneNumber}`;
   console.log('GetAllUHIDSForNumber_CM_Url', url);
   return Axios.get(url);
 };
-
 
 export const GenrateVitalsToken_CM = (
   appId: string,
@@ -1181,3 +1178,14 @@ export const GenrateVitalsToken_CM = (
   return Axios.get(url);
 };
 
+export const getDiagnosticCartItemReportGenDetails = (
+  itemIds: string
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getReportGenDetails = `${baseurl}/diagnostic/cart-items?itemId=${itemIds}`;
+  return Axios.get(getReportGenDetails, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};

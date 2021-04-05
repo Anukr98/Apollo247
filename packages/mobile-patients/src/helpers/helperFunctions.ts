@@ -98,6 +98,7 @@ import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from 
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
@@ -238,12 +239,12 @@ export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
-    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+    [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
   );
-  const landmark = [address.landmark];
+  const landmark = [address?.landmark];
   // to handle state value getting twice
   const addrLine2 = removeConsecutiveComma(
-    [address.city, address.state]
+    [address?.city, address?.state]
       .filter((v) => v)
       .join(', ')
       .split(',')
@@ -251,13 +252,29 @@ export const formatAddressWithLandmark = (
       .filter((item, idx, array) => array.indexOf(item) === idx)
       .join(', ')
   );
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  if (address.landmark != '') {
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
+  if (address?.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
 };
+
+export const getAge = (dob: string) => {
+  const now = new Date();
+  let age = parse(dob);
+  return differenceInYears(now, age);
+};
+
+export function isAddressLatLngInValid(address: any) {
+  let isInvalid =
+    address?.latitude == null ||
+    address?.longitude == null ||
+    address?.latitude == 0 ||
+    address?.longitude == 0;
+
+  return isInvalid;
+}
 
 export const formatAddressBookAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
@@ -882,10 +899,14 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
-    const current = moment(new Date());
+    const d=new Date();
+    const current = moment(d);
+    const hoursPassedToday=d.getHours();
+    const minPassedToday=hoursPassedToday*60 + d.getMinutes();
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
     const diffDays = Math.ceil(difference.asDays());
+
     const isTomorrow = moment(nextSlot).isAfter(
       current
         .add(1, 'd')
@@ -901,7 +922,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && diffDays < 2) {
+    } else if (isTomorrow && differenceMinute<(2880-minPassedToday)) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
